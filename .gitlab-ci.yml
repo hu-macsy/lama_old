@@ -49,8 +49,21 @@ variables:
         "$EXTRA_CMAKE_OPTS"
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
-    - ctest --output-on-failure
-    - make install
+    - eval python run_tests.py --output_dir $BUILD_DIR/testoutput "$RUN_TESTS_ARGS"
+    - make install > $CI_PROJECT_DIR/make_install_output.txt
+  after_script:
+    - mv $BUILD_DIR/testoutput $CI_PROJECT_DIR/testoutput
+    - cp $CI_PROJECT_DIR/testoutput/report.html $CI_PROJECT_DIR/test_report.html
+  artifacts:
+    paths:
+    # Note: These paths should be relative, otherwise weird things may happen!
+    - testoutput/
+    - test_report.html
+    - make_install_output.txt
+    expire_in: 1 week
+    when: always
+  # By default, artifacts from the previous stage are passed through. We don't want this!
+  dependencies: []
 
 ###############################################################
 # CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO ANY BRANCH
@@ -65,39 +78,18 @@ common basic build serial gcc 4.9.1 (debug):
   stage: basic build test
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
+    - module unload gcc
     - module load gcc/4.9.1
-    - module load libs/boost/1.56
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_OPENMP: 0
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
-    BOOST_ROOT: /cluster/libs/boost/1.56
-    BOOST_INCLUDEDIR: /cluster/libs/boost/1.56/include
-    BOOST_LIBRARYDIR: /cluster/libs/boost/1.56/lib
+    BOOST_ROOT: /scaihome/lama/boost_test_1_65_1_gcc_4_9_1
     # Note the SCAI_MODULES definition
-    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DSCAI_MODULES=common
-  tags:
-    - draco
-
-serial gcc 4.9.1 (release):
-  <<: *build_test_install_template
-  stage: build test install
-  before_script:
-    - *before_every_job
-    - module load tools/cmake/3.5.2
-    - module load gcc/4.9.1
-    - module load libs/boost/1.56
-  variables:
-    LAMA_BUILD_TYPE: Release
-    USE_CUDA: 0
-    OMP_NUM_THREADS: 1
-    # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /cluster/libs/boost/1.56
-    BOOST_INCLUDEDIR: /cluster/libs/boost/1.56/include
-    BOOST_LIBRARYDIR: /cluster/libs/boost/1.56/lib
-    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DSCAI_MODULES=common
+    RUN_TESTS_ARGS: --tests commonTest
   tags:
     - draco
 
@@ -106,18 +98,37 @@ serial gcc 4.9.1 (debug):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
+    - module unload gcc
     - module load gcc/4.9.1
-    - module load libs/boost/1.56
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /cluster/libs/boost/1.56
-    BOOST_INCLUDEDIR: /cluster/libs/boost/1.56/include
-    BOOST_LIBRARYDIR: /cluster/libs/boost/1.56/lib
-    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1
+    BOOST_ROOT: /scaihome/lama/boost_test_1_65_1_gcc_4_9_1
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
+  tags:
+    - draco
+
+mpi gcc 5.4.0 (release):
+  <<: *build_test_install_template
+  stage: build test install
+  before_script:
+    - *before_every_job
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
+    - module unload gcc
+    - module load gcc/5.4.0
+    - module load openmpi/gcc/2.1.2
+  variables:
+    LAMA_BUILD_TYPE: Release
+    USE_CUDA: 0
+    USE_MPI: 1
+    OMP_NUM_THREADS: 1
+    # It seems to be necessary to specifically specify the Boost installation
+    BOOST_ROOT: /scaihome/lama/boost_test_1_65_1_gcc_5_4_0
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
+    RUN_TESTS_ARGS: --mpi --np 1 2 3 5
   tags:
     - draco
 
@@ -126,23 +137,16 @@ parallel gcc 6.3.0 (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
-    # Need to use more recent Boost version, because the precompiled 1.56 version
-    # is not compatible with GCC 6.3.0
-    - module load libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
     - module unload gcc
     - module load gcc/6.3.0
-    # LIBRARY_PATH messes up which library gets linked, see issue #40
-    - unset LIBRARY_PATH
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
-    BOOST_INCLUDEDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/include
-    BOOST_LIBRARYDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/lib
-    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1
+    BOOST_ROOT: /scaihome/lama/boost_test_1_65_1_gcc_6_3_0
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
 
@@ -151,27 +155,41 @@ parallel gcc 6.3.0 (release):
 # CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO MASTER/DEVELOP
 ##################################################################
 
+serial gcc 4.9.1 (release):
+  <<: *build_test_install_template
+  stage: build test install
+  before_script:
+    - *before_every_job
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
+    - module unload gcc
+    - module load gcc/4.9.1
+  variables:
+    LAMA_BUILD_TYPE: Release
+    USE_CUDA: 0
+    OMP_NUM_THREADS: 1
+    # It seems to be necessary to specifically specify the Boost installation
+    BOOST_ROOT: /scaihome/lama/boost_test_1_65_1_gcc_4_9_1
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
+  tags:
+    - draco
+  only:
+    - master
+    - develop
+
 parallel gcc 5.4.0 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
-    # Need to use more recent Boost version, because the precompiled 1.56 version
-    # is not compatible with GCC 6.3.0
-    - module load libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
+    - module unload gcc
     - module load gcc/5.4.0
-    # LIBRARY_PATH messes up which library gets linked, see issue #40
-    - unset LIBRARY_PATH
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
-    # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
-    BOOST_INCLUDEDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/include
-    BOOST_LIBRARYDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/lib
-    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1
+    BOOST_ROOT: /scaihome/lama/boost_test_1_65_1_gcc_5_4_0
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
   only:
@@ -183,22 +201,15 @@ sanitized parallel gcc 6.3.0:
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
-    # Need to use more recent Boost version, because the precompiled 1.56 version
-    # is not compatible with GCC 6.3.0
-    - module load libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
     - module unload gcc
     - module load gcc/6.3.0
-    # LIBRARY_PATH messes up which library gets linked, see issue #40
-    - unset LIBRARY_PATH
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
-    # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
-    BOOST_INCLUDEDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/include
-    BOOST_LIBRARYDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/lib
+    BOOST_ROOT: /scaihome/lama/boost_test_1_65_1_gcc_6_3_0
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
     UBSAN_OPTIONS: print_stacktrace=1
     # We currently have some tests which try to allocate too much memory,
     # expecting to receive an exception. ASAN will by default not allow returning

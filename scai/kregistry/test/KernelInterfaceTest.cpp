@@ -32,9 +32,17 @@
  * @date 16.10.2015
  */
 
+#ifndef BOOST_TEST_DYN_LINK
 #define BOOST_TEST_DYN_LINK
+#endif
 
 #define BOOST_TEST_MODULE KernelRegistryTest
+#define BOOST_TEST_NO_MAIN
 
-#include <boost/test/unit_test.hpp>
+#include <scai/testsupport/commonTestMain.hpp>
+
+int main( int argc, char* argv[] )
+{
+    return scai::testsupport::commonTestMain(argc, argv);
+}
 
