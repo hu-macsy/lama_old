@@ -68,7 +68,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.TypedStorageTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( factoryTest, ValueType, scai_numeric_test_types )
 {
     TypedStorages<ValueType> allMatrixStorages;    // is created by factory
-    size_t nFormats = Format::UNDEFINED;
+    size_t nFormats = static_cast<size_t>( Format::UNDEFINED );
     nFormats -= 1;  // stencil not in Factory
     SCAI_LOG_INFO( logger, "factoryTest<" << common::TypeTraits<ValueType>::id() << "> : "
                    << allMatrixStorages.size() << " storages"                        )
@@ -339,8 +339,8 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
         LArray<IndexType> firstColIndexes1;
         LArray<IndexType> firstColIndexes2;
 
-        if (     storage.getFormat() == _MatrixStorage::DENSE
-                 ||  storage.getFormat() == _MatrixStorage::DIA  )
+        if (     storage.getFormat() == Format::DENSE
+                 ||  storage.getFormat() == Format::DIA  )
         {
             BOOST_CHECK_THROW(
             { storage.getFirstColumnIndexes( firstColIndexes1 ); },
@@ -612,7 +612,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorSparseTest )
         SCAI_LOG_DEBUG( logger, "GEMV sparse storage = " << storage << ", set dense halo data" )
         storage.setCompressThreshold( 1.0f );  // introduce row indexes in any case
         setDenseHalo( storage );
-        Format::MatrixStorageFormat format = storage.getFormat();
+        Format format = storage.getFormat();
 
         if ( format == Format::CSR || format == Format::ELL )
         {
@@ -692,7 +692,7 @@ BOOST_AUTO_TEST_CASE( matrixVectorTimesSparseTest )
         SCAI_LOG_DEBUG( logger, "GEMV sparse storage = " << storage << ", set dense halo data" )
         storage.setCompressThreshold( 1.0f );  // introduce row indexes in any case
         setDenseHalo( storage );
-        Format::MatrixStorageFormat format = storage.getFormat();
+        Format format = storage.getFormat();
 
         if ( format == Format::CSR || format == Format::ELL )
         {

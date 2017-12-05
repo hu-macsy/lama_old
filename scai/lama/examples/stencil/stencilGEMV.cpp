@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/expression/all.hpp>
@@ -74,7 +74,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
     std::cout << *comm << ": distribution = " << *gridDistribution << std::endl;
 
-    lama::Matrix::SyncKind syncKind = lama::Matrix::SYNCHRONOUS;
+    lama::SyncKind syncKind = lama::SyncKind::SYNCHRONOUS;
 
     // by default do matrix-vector operations synchronously, but can be set via environment
 
@@ -84,7 +84,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
     {
         if ( isSet )
         {
-            syncKind = scai::lama::Matrix::ASYNCHRONOUS;
+            syncKind = scai::lama::SyncKind::ASYNCHRONOUS;
         }
     }
 

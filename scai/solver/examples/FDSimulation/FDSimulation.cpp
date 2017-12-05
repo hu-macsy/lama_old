@@ -87,9 +87,9 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
 {
     SCAI_REGION( "derivatives" )
 
-    // Matrix A,B are created in 2 steps:
+    // _Matrix A,B are created in 2 steps:
     //   1: create MatrixStorage in CSR format
-    //   2: duplicate MatrixStorage along Diagonal till full Matrix size is reached
+    //   2: duplicate MatrixStorage along Diagonal till full _Matrix size is reached
 
     // for creating CSR MatrixStorage
     std::unique_ptr<lama::MatrixStorage<ValueType> > storageHelp( new lama::CSRStorage<ValueType>() );
@@ -227,7 +227,7 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
  */
 template<typename ValueType>
 void initializeMatrices( lama::SparseMatrix<ValueType>& A, lama::SparseMatrix<ValueType>& B, lama::SparseMatrix<ValueType>& C,
-                         lama::Matrix& D, lama::Matrix& E, lama::Matrix& F, dmemo::DistributionPtr dist, hmemo::ContextPtr ctx,
+                         lama::_Matrix& D, lama::_Matrix& E, lama::_Matrix& F, dmemo::DistributionPtr dist, hmemo::ContextPtr ctx,
                          IndexType NX, IndexType NY, IndexType NZ, dmemo::CommunicatorPtr comm )
 {
     SCAI_REGION( "initializeMatrices" )
@@ -292,8 +292,8 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
  */
 template <typename ValueType>
 void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<ValueType>& source, lama::DenseVector<ValueType>& p,
-                lama::Vector& vX, lama::Vector& vY, lama::Vector& vZ,
-                lama::Matrix& A, lama::Matrix& B, lama::Matrix& C, lama::Matrix& D, lama::Matrix& E, lama::Matrix& F,
+                lama::_Vector& vX, lama::_Vector& vY, lama::_Vector& vZ,
+                lama::_Matrix& A, lama::_Matrix& B, lama::_Matrix& C, lama::_Matrix& D, lama::_Matrix& E, lama::_Matrix& F,
                 lama::Scalar v_factor, lama::Scalar p_factor,
                 IndexType NT, lama::Scalar DH_INV, IndexType source_index, IndexType seismogram_index,
                 dmemo::CommunicatorPtr comm, dmemo::DistributionPtr /*dist*/ )
@@ -315,14 +315,14 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         // velocity y: vY = vY + DT / ( DH * rho ) * C * p;
         vY += v_factor * C * p;
 
-        lama::Scalar znorm = vZ.l2Norm();
-        lama::Scalar xnorm = vX.l2Norm();
-        lama::Scalar ynorm = vY.l2Norm();
+        lama::Scalar znorm = vZ._l2Norm();
+        lama::Scalar xnorm = vX._l2Norm();
+        lama::Scalar ynorm = vY._l2Norm();
 
         // create new Vector(Pointer) with same configuration as vZ
-        std::unique_ptr<lama::Vector> helpPtr( vZ.newVector() );
+        std::unique_ptr<lama::_Vector> helpPtr( vZ.newVector() );
         // get Reference of VectorPointer
-        lama::Vector& help = *helpPtr;
+        lama::_Vector& help = *helpPtr;
 
         // pressure update
         help =  DH_INV * D * vZ;
@@ -330,7 +330,7 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         help += DH_INV * F * vY;
         p += p_factor * help; // p_factor is 'DT * M'
 
-        lama::Scalar hnorm = help.l2Norm();
+        lama::Scalar hnorm = help._l2Norm();
         lama::Scalar pnorm = p.l2Norm();
 
         // update seismogram and pressure with source terms
@@ -385,8 +385,8 @@ int main( int /*argc*/, char** /*argv[]*/ )
     start_t = common::Walltime::get();
     // get source signal
     // init vector with a sequence of values (MATLAB t=0:DT:(NT*DT-DT);)
-    lama::DenseVector<ValueType> source( ctx );
-    source.setRange( config.getNT(), ValueType( 0 ), config.getDT() );
+    lama::DenseVector<ValueType> source = lama::linearValuesVector<ValueType>( config.getNT(), 0, config.getDT() );
+    source.setContextPtr( ctx );
     sourceFunction( source, config.getFC(), config.getAMP(), comm );
     end_t = common::Walltime::get();
     HOST_PRINT( comm, "Finished calculating source in " << end_t - start_t << " sec.\n\n" );

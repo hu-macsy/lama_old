@@ -81,10 +81,10 @@ int main( int argc, char* argv[] )
     std::shared_ptr<Timer> timer( new Timer() );
     LoggerPtr logger( new CommonLogger( "CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer ) );
     //Create a CG solver using the Constructor with logger as an argument
-    CG cgSolver( "CGTestSolver", logger );
+    CG<ValueType> cgSolver( "CGTestSolver", logger );
     //Create a stopping criterion for the iterative solver cgSolver
-    NormPtr norm = NormPtr( new L2Norm() );
-    CriterionPtr criterion( new ResidualThreshold( norm, 1E-8, ResidualThreshold::Absolute ) );
+    NormPtr<ValueType> norm( new L2Norm<ValueType>() );
+    CriterionPtr<ValueType> criterion( new ResidualThreshold<ValueType>( norm, 1E-8, ResidualCheck::Absolute ) );
     cgSolver.setStoppingCriterion( criterion );
     //Initialize the solver
     cgSolver.initialize( m );

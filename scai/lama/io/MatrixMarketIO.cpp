@@ -957,7 +957,7 @@ void MatrixMarketIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
-    if ( storage.getFormat() == _MatrixStorage::DENSE )
+    if ( storage.getFormat() == Format::DENSE )
     {
         const DenseStorage<ValueType>& denseStorage = reinterpret_cast<const DenseStorage<ValueType>&>( storage );
         writeDenseMatrix( denseStorage, fileName );

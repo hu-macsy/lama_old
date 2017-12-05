@@ -75,10 +75,10 @@ int main ( int argc, char* argv[] )
     //Reset solution to zero so that there is something to solve
     solution = 0.0;
     //Create a CG solver
-    CG cgSolver ( "CGTestSolver" );
+    CG<ValueType> cgSolver ( "CGTestSolver" );
     //Create a stopping criterion for the iterative solver cgSolver
-    NormPtr norm = NormPtr ( new L2Norm ( ) );
-    CriterionPtr criterion ( new ResidualThreshold ( norm, 1E-8, ResidualThreshold::Absolute ) );
+    NormPtr<ValueType> norm( new L2Norm<ValueType>( ) );
+    CriterionPtr<ValueType> criterion ( new ResidualThreshold<ValueType> ( norm, 1E-8, ResidualCheck::Absolute ) );
     cgSolver.setStoppingCriterion ( criterion );
     //Initialize the solver
     cgSolver.initialize ( m );

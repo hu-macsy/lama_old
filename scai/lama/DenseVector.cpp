@@ -38,8 +38,6 @@
 #include <scai/lama/VectorAssemblyAccess.hpp>
 
 // local library
-#include <scai/lama/matrix/Matrix.hpp>
-
 #include <scai/lama/expression/Expression.hpp>
 
 #include <scai/lama/io/FileIO.hpp>
@@ -60,6 +58,7 @@
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/mepr/TypeList.hpp>
 
 // std
 #include <ostream>
@@ -84,7 +83,7 @@ namespace lama
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector() :
-    _DenseVector( 0 ),
+    Vector<ValueType>( 0 ),
     mLocalValues()
 {
 }
@@ -92,7 +91,7 @@ DenseVector<ValueType>::DenseVector() :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( ContextPtr context ) :
 
-    _DenseVector( 0, context ),
+    Vector<ValueType>( 0, context ),
     mLocalValues()
 {
 }
@@ -100,7 +99,7 @@ DenseVector<ValueType>::DenseVector( ContextPtr context ) :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size ) :
 
-    _DenseVector( size ), 
+    Vector<ValueType>( size ), 
     mLocalValues( size )
 
 {
@@ -111,7 +110,7 @@ DenseVector<ValueType>::DenseVector( const IndexType size ) :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution ) :
 
-    _DenseVector( distribution ), 
+    Vector<ValueType>( distribution ), 
     mLocalValues( distribution->getLocalSize() )
 {
     SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( dist = " 
@@ -121,29 +120,29 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution ) :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, ContextPtr context ) : 
 
-    _DenseVector( size, context ), 
+    Vector<ValueType>( size, context ), 
     mLocalValues( size )
 
 {
     SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( size = " 
-                            << size << " ), undefined values, @ctx = " << *mContext )
+                            << size << " ), undefined values, @ctx = " << getContext() )
 }
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution, ContextPtr context ) : 
 
-    _DenseVector( distribution, context ), 
+    Vector<ValueType>( distribution, context ), 
     mLocalValues( distribution->getLocalSize() )
 
 {
     SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( dist = " 
-                   << *distribution << "), undefined values, @ctx = " << *mContext )
+                   << *distribution << "), undefined values, @ctx = " << getContext() )
 }
 
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context ) :
 
-    _DenseVector( size, context ), 
+    Vector<ValueType>( size, context ), 
     mLocalValues( size, value, context )
 
 {
@@ -153,7 +152,7 @@ DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context ) :
 
-    _DenseVector( distribution, context ), 
+    Vector<ValueType>( distribution, context ), 
     mLocalValues( distribution->getLocalSize(), value )
 
 {
@@ -162,7 +161,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
 }
 
 template <typename ValueType>
-void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar inc )
+void DenseVector<ValueType>::fillLinearValues( const ValueType startValue, const ValueType inc )
 {
     const Distribution& dist = getDistribution();
 
@@ -170,7 +169,7 @@ void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar in
     {
         SCAI_ASSERT_EQ_DEBUG( dist.getGlobalSize(), dist.getLocalSize(), dist << " not replicated" );
 
-        HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), dist.getGlobalSize() );
+        HArrayUtils::setSequence( mLocalValues, startValue, inc, dist.getGlobalSize() );
         return;
     }
 
@@ -187,14 +186,14 @@ void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar in
     // localValues[] =  indexes[] * inc + startValue
 
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), common::BinaryOp::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), common::BinaryOp::ADD, context );
+    HArrayUtils::assignScalar( mLocalValues, inc, common::BinaryOp::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue, common::BinaryOp::ADD, context );
 }
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Vector& other ) :
+DenseVector<ValueType>::DenseVector( const _Vector& other ) :
 
-    _DenseVector( other )
+    Vector<ValueType>( other )
 
 {
     allocate();
@@ -202,9 +201,9 @@ DenseVector<ValueType>::DenseVector( const Vector& other ) :
 }
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Vector& other, DistributionPtr distribution ) :
+DenseVector<ValueType>::DenseVector( const _Vector& other, DistributionPtr distribution ) :
 
-    _DenseVector( other )
+    Vector<ValueType>( other )
 
 {
     allocate();       // make sure that local values array fits distribution, context
@@ -217,7 +216,7 @@ DenseVector<ValueType>::DenseVector( const Vector& other, DistributionPtr distri
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const std::string& filename ) : 
 
-    _DenseVector( 0 )
+    Vector<ValueType>( 0 )
 
 {
     SCAI_LOG_INFO( logger, "Construct dense vector from file " << filename )
@@ -245,7 +244,7 @@ void DenseVector<ValueType>::fillSparseRandom( const float fillRate, const Index
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const _HArray& localValues ) :
 
-    _DenseVector( distribution ),
+    Vector<ValueType>( distribution ),
     mLocalValues( localValues )
 {
     SCAI_ASSERT_EQ_ERROR( localValues.size(), distribution->getLocalSize(), "size mismatch" )
@@ -256,7 +255,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const _HArray
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const _HArray& values ) :
 
-    _DenseVector( DistributionPtr( new NoDistribution( values.size() ) ) ),
+    Vector<ValueType>( DistributionPtr( new NoDistribution( values.size() ) ) ),
     mLocalValues( values )
 
 {
@@ -274,24 +273,24 @@ DenseVector<ValueType>::DenseVector( const _HArray& values ) :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SV& expression ):
 
-    _DenseVector( expression.getArg2() )
+    Vector<ValueType>( expression.getArg2() )
 
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x )" )
-    Vector::operator=( expression );
+    _Vector::operator=( expression );
 }
 
 // linear algebra expression: a+x/x+a
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SV_S& expression ) :
 
-    _DenseVector( expression.getArg1().getArg2() )
+    Vector<ValueType>( expression.getArg1().getArg2() )
 
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta)" )
-    Vector::operator=( expression );
+    _Vector::operator=( expression );
 }
 
 // linear algebra expression: x*y
@@ -299,25 +298,25 @@ DenseVector<ValueType>::DenseVector( const Expression_SV_S& expression ) :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_VV& expression ) :
 
-    _DenseVector( expression.getArg1() )
+    Vector<ValueType>( expression.getArg1() )
 
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( x * y )" )
     Expression_SVV tmpExp( Scalar( 1 ), expression );
-    Vector::operator=( tmpExp );
+    _Vector::operator=( tmpExp );
 }
 
 // linear algebra expression: s*x*y
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SVV& expression ) :
 
-    _DenseVector( expression.getArg2().getArg1() )
+    Vector<ValueType>( expression.getArg2().getArg1() )
 
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * y )" )
-    Vector::operator=( expression );
+    _Vector::operator=( expression );
 }
 
 // linear algebra expression: a*x+b*y, inherit distribution/context from vector x
@@ -325,12 +324,12 @@ DenseVector<ValueType>::DenseVector( const Expression_SVV& expression ) :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SV_SV& expression ) :
 
-    _DenseVector( expression.getArg1().getArg2() )
+    Vector<ValueType>( expression.getArg1().getArg2() )
 
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta * y )" )
-    Vector::operator=( expression );
+    _Vector::operator=( expression );
 }
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
@@ -338,12 +337,12 @@ DenseVector<ValueType>::DenseVector( const Expression_SV_SV& expression ) :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SMV_SV& expression ) :
 
-    _DenseVector( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
+    Vector<ValueType>( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
                   expression.getArg1().getArg2().getArg1().getContextPtr() )
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
-    Vector::operator=( expression );
+    _Vector::operator=( expression );
 }
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
@@ -351,25 +350,25 @@ DenseVector<ValueType>::DenseVector( const Expression_SMV_SV& expression ) :
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SVM_SV& expression ) :
 
-    _DenseVector( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
-                  expression.getArg1().getArg2().getArg2().getContextPtr() )
+    Vector<ValueType>( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
+            expression.getArg1().getArg2().getArg2().getContextPtr() )
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
-    Vector::operator=( expression );
+    _Vector::operator=( expression );
 }
 
 // linear algebra expression: a*A*x, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SMV& expression )
+DenseVector<ValueType>::DenseVector( const Expression_SMV& expression ) : 
 
-    : _DenseVector( expression.getArg2().getArg1().getRowDistributionPtr(),
-                    expression.getArg2().getArg1().getContextPtr() )
+    Vector<ValueType>( expression.getArg2().getArg1().getRowDistributionPtr(),
+            expression.getArg2().getArg1().getContextPtr() )
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x )" )
-    Vector::operator=( expression );
+    _Vector::operator=( expression );
 }
 
 // linear algebra expression: a*x*A, inherit distribution/context from matrix A
@@ -377,13 +376,13 @@ DenseVector<ValueType>::DenseVector( const Expression_SMV& expression )
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SVM& expression ) :
 
-    _DenseVector( expression.getArg2().getArg2().getColDistributionPtr(),
-                  expression.getArg2().getArg2().getContextPtr() )
+    Vector<ValueType>( expression.getArg2().getArg2().getColDistributionPtr(),
+            expression.getArg2().getArg2().getContextPtr() )
 
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A )" )
-    Vector::operator=( expression );
+    _Vector::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -416,7 +415,8 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 
 /* ------------------------------------------------------------------------- */
 
-bool _DenseVector::isConsistent() const
+template<typename ValueType>
+bool DenseVector<ValueType>::isConsistent() const
 {
     // for a dense vector we just have to check that the locally allocated
     // data has the same size as the local size of the distribution
@@ -892,14 +892,6 @@ void DenseVector<ValueType>::swap( HArray<ValueType>& newValues, DistributionPtr
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::ScalarType DenseVector<ValueType>::getValueType() const
-{
-    return TypeTraits<ValueType>::stype;
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void DenseVector<ValueType>::setDenseValues( const _HArray& values )
 {
     const IndexType localSize = getDistribution().getLocalSize();
@@ -944,7 +936,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors ) 
+void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors ) 
 {
     DenseVector<ValueType> newVector( dist );
     {
@@ -954,7 +946,7 @@ void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std
 
         for ( size_t k = 0; k < vectors.size(); ++k )
         {
-            const Vector& v = *vectors[k];
+            const _Vector& v = *vectors[k];
 
             if ( offset + v.size() > dist->getGlobalSize() )
             {
@@ -1030,82 +1022,82 @@ void DenseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::min() const
+ValueType DenseVector<ValueType>::min() const
 {
     // Note: min returns the maximal representation value on zero-sized vectors, TypeTraits<ValueType>::getMax()
     ValueType localMin = mLocalValues.min();
-    return Scalar( getDistribution().getCommunicator().min( localMin ) );
+    return getDistribution().getCommunicator().min( localMin );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::max() const
+ValueType DenseVector<ValueType>::max() const
 {
     // Note: max returns the minimal representation value on zero-sized vectors
     ValueType localMax = mLocalValues.max();
-    return Scalar( getDistribution().getCommunicator().max( localMax ) );
+    return getDistribution().getCommunicator().max( localMax );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::l1Norm() const
+NormType<ValueType> DenseVector<ValueType>::l1Norm() const
 {
-    ValueType localL1Norm = mLocalValues.l1Norm();
-    return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
+    NormType<ValueType> localL1Norm = mLocalValues.l1Norm();
+    return getDistribution().getCommunicator().sum( localL1Norm );
 }
 
 /*---------------------------------------------------------------------------*/
 template<typename ValueType>
-Scalar DenseVector<ValueType>::sum() const
+ValueType DenseVector<ValueType>::sum() const
 {
     ValueType localsum = mLocalValues.sum();
-    return Scalar( getDistribution().getCommunicator().sum( localsum ) );
+    return getDistribution().getCommunicator().sum( localsum );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::l2Norm() const
+NormType<ValueType> DenseVector<ValueType>::l2Norm() const
 {
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
-    ValueType localDotProduct = mLocalValues.dotProduct( mLocalValues );
-    ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-    return Scalar( common::Math::sqrt( globalDotProduct ) );
+    NormType<ValueType> localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    NormType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    return common::Math::sqrt( globalDotProduct );
 }
 
 template<>
-Scalar DenseVector<IndexType>::l2Norm() const
+IndexType DenseVector<IndexType>::l2Norm() const
 {
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
 
-    ScalarRepType localDotProduct = mLocalValues.dotProduct( mLocalValues );
-    ScalarRepType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-    return Scalar( common::Math::sqrt( globalDotProduct ) );
+    double localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    return IndexType( common::Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::maxNorm() const
+NormType<ValueType> DenseVector<ValueType>::maxNorm() const
 {
-    ValueType localMaxNorm = mLocalValues.maxNorm();
+    NormType<ValueType> localMaxNorm = mLocalValues.maxNorm();
     const Communicator& comm = getDistribution().getCommunicator();
-    ValueType globalMaxNorm = comm.max( localMaxNorm );
+    NormType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
                    << ", max norm global = " << globalMaxNorm )
-    return Scalar( globalMaxNorm );
+    return globalMaxNorm;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::maxDiffNorm( const Vector& other ) const
+NormType<ValueType> DenseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
 {
     if (   other.getDistribution() != getDistribution() 
-       ||  other.getVectorKind() != Vector::DENSE 
+       ||  other.getVectorKind() != VectorKind::DENSE 
        ||  other.getValueType() != getValueType()        )
     {
         DenseVector<ValueType> tmpOther( other, getDistributionPtr() );
@@ -1114,19 +1106,19 @@ Scalar DenseVector<ValueType>::maxDiffNorm( const Vector& other ) const
 
     SCAI_ASSERT_DEBUG( dynamic_cast<const DenseVector<ValueType>*>( &other ), "wrong cast" )
 
-    const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+    const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
 
-    ValueType localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
+    NormType<ValueType> localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType globalMaxNorm = comm.max( localMaxNorm );
+    NormType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
                    << ", max norm global = " << globalMaxNorm )
 
-    return Scalar( globalMaxNorm );
+    return globalMaxNorm;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1146,15 +1138,15 @@ bool DenseVector<ValueType>::all( const common::CompareOp op, const Scalar value
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DenseVector<ValueType>::all( const common::CompareOp op, const Vector& other ) const
+bool DenseVector<ValueType>::all( const common::CompareOp op, const _Vector& other ) const
 {
     SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
 
     bool localAll;
 
-    if ( other.getValueType() == getValueType() && other.getVectorKind() == Vector::DENSE )
+    if ( other.getValueType() == getValueType() && other.getVectorKind() == VectorKind::DENSE )
     {
-        const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+        const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
         localAll = HArrayUtils::all( getLocalValues(), op, denseOther.getLocalValues() );
     }
     else
@@ -1172,7 +1164,7 @@ bool DenseVector<ValueType>::all( const common::CompareOp op, const Vector& othe
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::swap( Vector& other )
+void DenseVector<ValueType>::swap( _Vector& other )
 {
     SCAI_LOG_DEBUG( logger, "swap:" << *this << " with " << other )
     DenseVector* otherPtr = dynamic_cast<DenseVector*>( &other );
@@ -1182,7 +1174,7 @@ void DenseVector<ValueType>::swap( Vector& other )
         COMMON_THROWEXCEPTION( "Tried to swap with a Vector of a different type." )
     }
 
-    Vector::swapVector( other );
+    _Vector::swapVector( other );
     mLocalValues.swap( otherPtr->mLocalValues );
     // mHaloValues.swap( otherPtr->mHaloValues );
 }
@@ -1195,17 +1187,17 @@ void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const Vector& x )
+void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const _Vector& x )
 {
     SCAI_LOG_INFO( logger, "assignScaledVector: this = " << alpha << " * x, with x = " << x << ", this = " << *this )
 
     const ValueType alphaV = alpha.getValue<ValueType>();
 
-    if ( x.getVectorKind() != DENSE || x.getValueType() != getValueType() )
+    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != getValueType() )
     {
         SCAI_LOG_INFO( logger, "this = " << alpha << " * x -> this = x;  this *= " << alpha )
         assign( x );
-        HArrayUtils::setScalar( mLocalValues, alphaV, common::BinaryOp::MULT, mContext );
+        HArrayUtils::setScalar( mLocalValues, alphaV, common::BinaryOp::MULT, getContextPtr() );
         return;
     }
 
@@ -1228,32 +1220,36 @@ void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const Vect
 
     ValueType betaV = 0;
 
-    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseX.mLocalValues, mContext );
+    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseX.mLocalValues, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
+void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
 {
     SCAI_LOG_INFO( logger, "axpy: this += " << alpha << " * x, with x = " << x << ", this = " << *this )
 
     SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getDistribution(), "distribution mismatch for axpy vector" )
+    SCAI_ASSERT_EQ_ERROR( x.getValueType(), getValueType(), "type mismatch for axpy vector" )
 
     const ValueType alphaV = alpha.getValue<ValueType>();
 
-    if ( x.getVectorKind() == SPARSE )
+    if ( x.getVectorKind() == VectorKind::SPARSE )
     {
         SCAI_REGION( "Vector.Dense.axpySparse" )
 
-        SCAI_ASSERT_DEBUG( dynamic_cast<const _SparseVector*>( &x ), "illegal cast" );
+        SCAI_ASSERT_DEBUG( dynamic_cast<const SparseVector<ValueType>*>( &x ), "illegal cast" );
 
-        const _SparseVector& sparseX = reinterpret_cast<const _SparseVector&>( x );
+        const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
 
         const HArray<IndexType>& nonZeroIndexes = sparseX.getNonZeroIndexes();
-        const _HArray& nonZeroValues  = sparseX.getNonZeroValues();
+        const HArray<ValueType>& nonZeroValues  = sparseX.getNonZeroValues();
 
-        const ValueType xZeroVal = sparseX.getZero().getValue<ValueType>();
+        // const ValueType xZeroVal = sparseX.getZero().getValue<ValueType>();
+
+        const Scalar xZero = sparseX.getZero();
+        const ValueType xZeroVal = xZero.getValue<ValueType>();
 
         const bool unique = true;  // non-zero indexes in sparse vectors are always unique
 
@@ -1263,49 +1259,37 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
 
             HArray<ValueType> xDenseValues;
             sparseX.buildLocalValues( xDenseValues);
-            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xDenseValues, mContext );
+            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xDenseValues, getContextPtr() );
         }
-        else if ( nonZeroValues.getValueType() == getValueType() && alphaV == common::Constants::ONE )
+        else if ( alphaV == common::Constants::ONE )
         {
-            const HArray<ValueType>& typedValues = reinterpret_cast<const HArray<ValueType>&>( nonZeroValues );
-            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, common::BinaryOp::ADD, getContextPtr());
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, nonZeroValues, common::BinaryOp::ADD, getContextPtr());
         }
         else
         {
             // ToDo: if there is scatter with scaling factor for the scattered values, employ it here
 
-            HArray<ValueType> typedValues;
-            HArrayUtils::assign( typedValues, nonZeroValues, mContext );
-            HArrayUtils::compute( typedValues, typedValues, common::BinaryOp::MULT, alphaV, mContext );
-            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, common::BinaryOp::ADD, mContext );
+            HArray<ValueType> tmpValues;
+            HArrayUtils::compute( tmpValues, nonZeroValues, common::BinaryOp::MULT, alphaV, getContextPtr() );
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, tmpValues, common::BinaryOp::ADD, getContextPtr() );
         }
     }
     else
     {
         SCAI_REGION( "Vector.Dense.axpyDense" )
 
-        const _DenseVector& denseX = reinterpret_cast<const _DenseVector&>( x );
+        const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
 
-        const _HArray& xValues = denseX.getLocalValues();
+        const LArray<ValueType>& xValues = denseX.getLocalValues();
 
-        if ( xValues.getValueType() == getValueType() )
-        {
-            const HArray<ValueType>& typedValues = reinterpret_cast<const HArray<ValueType>&>( xValues );
-            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, typedValues, mContext );
-        }
-        else
-        {
-            HArray<ValueType> typedValues;
-            utilskernel::HArrayUtils::assign( typedValues, xValues );
-            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, typedValues, mContext );
-        }
+        utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xValues, getContextPtr() );
     }
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector& x, const Scalar& beta, const Vector& y )
+void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const _Vector& x, const Scalar& beta, const _Vector& y )
 {
     SCAI_LOG_INFO( logger, "vectorPlusVector: z = " << alpha << " * x + " << beta << " * y"
                              << ", with  x = " << x << ", y = " << y << ", z = " << *this )
@@ -1336,17 +1320,17 @@ void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector
         return;
     }
 
-    if ( x.getVectorKind() != DENSE || x.getValueType() != getValueType() )
+    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != getValueType() )
     {
-        SCAI_LOG_WARN( logger, "vectorPlusVector: use temporary DenseVector<" << getValueType() << "> for x = " << x )
+        SCAI_UNSUPPORTED( "vectorPlusVector: use temporary DenseVector<" << getValueType() << "> for x = " << x )
         DenseVector<ValueType> xTmp( x );
         vectorPlusVector( alpha, xTmp, beta, y );
         return;
     }
 
-    if ( y.getVectorKind() != DENSE || y.getValueType() != getValueType() )
+    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != getValueType() )
     {
-        SCAI_LOG_WARN( logger, "vectorPlusVector: use temporary DenseVector<" << getValueType() << "> for y = " << y )
+        SCAI_UNSUPPORTED( "vectorPlusVector: use temporary DenseVector<" << getValueType() << "> for y = " << y )
         DenseVector<ValueType> yTmp( y );
         vectorPlusVector( alpha, x, beta, yTmp );
         return;
@@ -1379,11 +1363,11 @@ void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector
     }
 
     SCAI_LOG_DEBUG( logger, "call arrayPlusArray" )
-    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseY.mLocalValues, mContext );
+    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseY.mLocalValues, getContextPtr() );
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const Vector& x, const Vector& y )
+void DenseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const _Vector& x, const _Vector& y )
 {
     SCAI_LOG_INFO( logger, "z = x * y, z = " << *this << " , x = " << x << " , y = " << y )
     SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
@@ -1400,22 +1384,22 @@ void DenseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const Vecto
         allocate( x.getDistributionPtr() );
     }
 
-    if ( x.getVectorKind() != DENSE || x.getValueType() != getValueType() )
+    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != getValueType() )
     {
         DenseVector<ValueType> xTmp( x );
         vectorTimesVector( alpha, xTmp, y );
         return;
     }
 
-    if ( y.getVectorKind() != DENSE || y.getValueType() != getValueType() )
+    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != getValueType() )
     {
         DenseVector<ValueType> yTmp( y );
         vectorTimesVector( alpha, x, yTmp );
         return;
     }
 
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
-    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
+    const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
 
     mLocalValues.resize( denseX.mLocalValues.size() );
 
@@ -1423,13 +1407,13 @@ void DenseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const Vecto
 
     ValueType alphaV = alpha.getValue<ValueType>();
 
-    utilskernel::HArrayUtils::arrayTimesArray( mLocalValues, alphaV, denseX.mLocalValues, denseY.mLocalValues, mContext );
+    utilskernel::HArrayUtils::arrayTimesArray( mLocalValues, alphaV, denseX.mLocalValues, denseY.mLocalValues, getContextPtr() );
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const Vector& x, const Scalar& beta )
+void DenseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const _Vector& x, const Scalar& beta )
 {
-    if ( x.getVectorKind() != DENSE || x.getValueType() != getValueType() )
+    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorAddScalar, uses tmp for x" )
 
@@ -1460,7 +1444,7 @@ void DenseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const Vector
 
     SCAI_LOG_DEBUG( logger, "call arrayPlusScalar" )
 
-    utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alphaV, denseX.mLocalValues, betaV, mContext );
+    utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alphaV, denseX.mLocalValues, betaV, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1669,12 +1653,12 @@ void DenseVector<ValueType>::scatter(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
+ValueType DenseVector<ValueType>::dotProduct( const _Vector& other ) const
 {
     SCAI_REGION( "Vector.Dense.dotP" )
     SCAI_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
 
-    // add other->getVectorKind() == DENSE, if sparse is also supported
+    // add other->getVectorKind() == VectorKind::DENSE, if sparse is also supported
 
     SCAI_ASSERT_EQ_ERROR( getValueType(), other.getValueType(),
                           "dotProduct not supported for different value types. "
@@ -1686,11 +1670,11 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 
     ValueType localDotProduct;
 
-    if ( other.getVectorKind() == Vector::DENSE )
+    if ( other.getVectorKind() == VectorKind::DENSE )
     {
         SCAI_ASSERT_DEBUG( dynamic_cast<const DenseVector<ValueType>*>( &other ), "dynamic cast failed, other = " << other )
 
-        const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+        const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
 
         localDotProduct = mLocalValues.dotProduct( denseOther.getLocalValues() );
     }
@@ -1698,7 +1682,7 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
     {
         SCAI_ASSERT_DEBUG( dynamic_cast<const SparseVector<ValueType>*>( &other ), "dynamic cast failed, other = " << other )
 
-        const SparseVector<ValueType>& sparseOther = reinterpret_cast<const SparseVector<ValueType>&>( other );
+        const SparseVector<ValueType>& sparseOther = static_cast<const SparseVector<ValueType>&>( other );
     
         LArray<ValueType> myValues;   // build values at same position as sparse vector
 
@@ -1711,13 +1695,13 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
     ValueType dotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
-    return Scalar( dotProduct );
+    return dotProduct;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setVector( const Vector& other, common::BinaryOp op, const bool swapArgs )
+void DenseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp op, const bool swapArgs )
 {
     SCAI_REGION( "Vector.Dense.setVector" )
 
@@ -1744,7 +1728,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::allocate()
 {
     // allocate local dense values with correct local size, touch on its context
-    WriteOnlyAccess<ValueType> dummyWAccess( mLocalValues, mContext, getDistribution().getLocalSize() );
+    WriteOnlyAccess<ValueType> dummyWAccess( mLocalValues, getContextPtr(), getDistribution().getLocalSize() );
 }
 
 template<typename ValueType>
@@ -1768,7 +1752,80 @@ void DenseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
     // assign the scalar value on the home of this dense vector.
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::BinaryOp::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::BinaryOp::COPY, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType, typename TList> struct VectorWrapperT;
+
+template<typename ValueType>
+struct VectorWrapperT<ValueType, common::mepr::NullType>
+{
+    static void assign(
+        DenseVector<ValueType>& target,
+        const _Vector& source )
+    {
+        COMMON_THROWEXCEPTION( "unresolved untyped assign, target = " << target << ", source = " << source )
+    }
+};
+
+template<typename ValueType, typename H, typename Tail>
+struct VectorWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
+{
+    static void assign(
+        DenseVector<ValueType>& target,
+        const _Vector& source )
+    {
+        if ( common::getScalarType<H>() ==  source.getValueType() )
+        {
+            VectorKind sourceKind = source.getVectorKind();
+
+            if ( sourceKind == VectorKind::SPARSE )
+            {
+                const SparseVector<H>& typedSource = static_cast<const SparseVector<H>&>( source );
+                target.assignImpl( typedSource );
+            }
+            else if ( sourceKind == VectorKind::DENSE )
+            {
+                const DenseVector<H>& typedSource = static_cast<const DenseVector<H>&>( source );
+                target.assignImpl( typedSource );
+            }
+            else
+            {
+                COMMON_THROWEXCEPTION( "unsupported vector kind for assign to sparse vector: " << sourceKind )
+            }
+        }
+        else
+        {
+            VectorWrapperT< ValueType, Tail >::assign( target, source );
+        }
+    }
+};
+
+template<typename ValueType>
+void DenseVector<ValueType>::assign( const _Vector& other )
+{
+    // use metaprogramming to call the correspoing assignImpl method
+
+    VectorWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::assign( *this, other );
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+void DenseVector<ValueType>::assignImpl( const SparseVector<OtherValueType>& other )
+{
+    allocate( other.getDistributionPtr() );
+    assign( other.getZero() );
+    fillSparseData( other.getNonZeroIndexes(), other.getNonZeroValues(), common::BinaryOp::COPY );
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+void DenseVector<ValueType>::assignImpl( const DenseVector<OtherValueType>& other )
+{
+    allocate( other.getDistributionPtr() );
+    setDenseValues( other.getLocalValues() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1782,7 +1839,7 @@ void DenseVector<ValueType>::setScalar( const Scalar value, common::BinaryOp op,
 
     ValueType val = value.getValue<ValueType>();
 
-    HArrayUtils::binaryOpScalar( mLocalValues, mLocalValues, val, op, swapScalar, mContext );
+    HArrayUtils::binaryOpScalar( mLocalValues, mLocalValues, val, op, swapScalar, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1835,7 +1892,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::applyUnary( const common::UnaryOp op )
 {
     // myValues = op ( myValues )
-    HArrayUtils::UnaryOpOp( mLocalValues, mLocalValues, op, mContext );
+    HArrayUtils::unaryOp( mLocalValues, mLocalValues, op, getContextPtr() );
 }
 
 template<typename ValueType>
@@ -2003,7 +2060,7 @@ void DenseVector<ValueType>::clearValues()
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-Vector* DenseVector<ValueType>::create()
+_Vector* DenseVector<ValueType>::create()
 {
     return new DenseVector<ValueType>();
 }
@@ -2011,7 +2068,7 @@ Vector* DenseVector<ValueType>::create()
 template<typename ValueType>
 VectorCreateKeyType DenseVector<ValueType>::createValue()
 {
-    return VectorCreateKeyType( Vector::DENSE, common::getScalarType<ValueType>() );
+    return VectorCreateKeyType( VectorKind::DENSE, common::getScalarType<ValueType>() );
 }
 
 template<typename ValueType>
@@ -2025,7 +2082,7 @@ VectorCreateKeyType DenseVector<ValueType>::getCreateValue() const
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other ) :
 
-    _DenseVector( other )
+    Vector<ValueType>( other )
 
 {
     // implementation here can be simpler as DenseVector( const Vector& other )

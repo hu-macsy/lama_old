@@ -160,7 +160,7 @@ public:
 
     /** Make size() of Vector visible */
 
-    using Vector::size;
+    using _Vector::size;
 
     /** Swap available array with data into a grid vector. */
 
@@ -179,13 +179,13 @@ public:
         DenseVector<ValueType>::swap( other );
     }
 
-    using Vector::swap;
+    using _Vector::swap;
 
     /** Set this grid vector by another grid vector that is reduced in one dimension */
 
     void reduce( const GridVector<ValueType>& other, IndexType dim, const common::BinaryOp redOp );
 
-    /** Matrix-matrix multiplication : this += alpha * v1 * v2
+    /** _Matrix-matrix multiplication : this += alpha * v1 * v2
      *
      *  @param alpha is just an additional scaling factor to avoid temporaries
      *  @param v1 must be a two-dimensional grid-vector with v1.size( 0 ) == this->size( 0 )
@@ -238,7 +238,7 @@ public:
         const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
-    /** Override of Vector::readLocalFromFile 
+    /** Override of _Vector::readLocalFromFile 
      *
      *  This method reads the local part of a grid vector and tries to read also the shape.
      */

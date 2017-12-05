@@ -186,7 +186,7 @@ void DIAStorage<ValueType>::clear()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat DIAStorage<ValueType>::getFormat() const
+Format DIAStorage<ValueType>::getFormat() const
 {
     return Format::DIA;
 }
@@ -497,7 +497,7 @@ void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DIAStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -920,7 +920,7 @@ void DIAStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DIAStorage<ValueType>::l1Norm() const
+NormType<ValueType> DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
@@ -930,7 +930,7 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DIAStorage<ValueType>::l2Norm() const
+NormType<ValueType> DIAStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
@@ -941,7 +941,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename DIAStorage<ValueType>::StorageAbsType DIAStorage<ValueType>::maxNorm() const
+NormType<ValueType> DIAStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
@@ -950,7 +950,7 @@ typename DIAStorage<ValueType>::StorageAbsType DIAStorage<ValueType>::maxNorm() 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    StorageAbsType maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
+    NormType<ValueType> maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
     return maxval;
 }
 

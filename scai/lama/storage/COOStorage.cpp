@@ -136,7 +136,7 @@ COOStorage<ValueType>::COOStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat COOStorage<ValueType>::getFormat() const
+Format COOStorage<ValueType>::getFormat() const
 {
     return Format::COO;
 }
@@ -464,7 +464,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -544,7 +544,7 @@ void COOStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType COOStorage<ValueType>::l1Norm() const
+NormType<ValueType> COOStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     // asum over the full array mValues
@@ -554,7 +554,7 @@ ValueType COOStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType COOStorage<ValueType>::l2Norm() const
+NormType<ValueType> COOStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     ValueType res = HArrayUtils::dotProduct( mValues, mValues, this->getContextPtr() );
@@ -564,7 +564,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename COOStorage<ValueType>::StorageAbsType COOStorage<ValueType>::maxNorm() const
+NormType<ValueType> COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     return HArrayUtils::reduce( mValues, common::BinaryOp::ABS_MAX, this->getContextPtr() );

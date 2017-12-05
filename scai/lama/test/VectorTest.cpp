@@ -44,6 +44,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/expression/all.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -62,11 +63,11 @@ BOOST_AUTO_TEST_CASE( WriteTest )
 {
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v = vectors[i];
+        _VectorPtr v = vectors[i];
         v->allocate( n );
 
         std::ostringstream out1;
@@ -74,7 +75,7 @@ BOOST_AUTO_TEST_CASE( WriteTest )
         BOOST_CHECK( out1.str().length() > 0 );
 
         std::ostringstream out2;
-        v->Vector::writeAt( out2 );
+        v->_Vector::writeAt( out2 );
         BOOST_CHECK( out1.str().length() > 0 );
 
         BOOST_CHECK( out2.str() != out1.str() );
@@ -89,7 +90,7 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
     dmemo::DistributionPtr dist1( new dmemo::BlockDistribution( n + 1, comm ) );
@@ -97,7 +98,7 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v = vectors[i];
+        _VectorPtr v = vectors[i];
 
         size_t size0 = v->getMemoryUsage();
 
@@ -105,13 +106,13 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
         size_t size1 = v->getMemoryUsage();
 
-        if ( v->getVectorKind() == Vector::DENSE )
+        if ( v->getVectorKind() == VectorKind::DENSE )
         {
             // a dense vector allocates really memory
 
             BOOST_CHECK( size1 >= size0 + n * common::typeSize( v->getValueType() ) );
         }
-        else if ( v->getVectorKind() == Vector::SPARSE )
+        else if ( v->getVectorKind() == VectorKind::SPARSE )
         {
             // a sparse vector does not allocate here memory
 
@@ -141,24 +142,24 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( SetGetTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetGetTest, ValueType, scai_array_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector& v = *vectors[i];
+        Vector<ValueType>& v =*vectors[i];
 
         v.allocate( n );
 
         v = 1;
 
-        Scalar s = v[0];
-        BOOST_CHECK_EQUAL( s, Scalar( 1 ) );
+        ValueType s = v[0];
+        BOOST_CHECK_EQUAL( s, ValueType( 1 ) );
 
         v[n-2] = 9;
         v[1] = 7;
@@ -169,67 +170,69 @@ BOOST_AUTO_TEST_CASE( SetGetTest )
         }, common::Exception );
 
         s = v[2];
-        BOOST_CHECK_EQUAL( s, Scalar( 1 ) );
+        BOOST_CHECK_EQUAL( s, ValueType( 1 ) );
         s = v[1];
-        BOOST_CHECK_EQUAL( s, Scalar( 7 ) );
+        BOOST_CHECK_EQUAL( s, ValueType( 7 ) );
         v[1] = 5;
         s = v[1];
-        BOOST_CHECK_EQUAL( s, Scalar( 5 ) );
+        BOOST_CHECK_EQUAL( s, ValueType( 5 ) );
+        v[1] = v[2];
+        s = v[1];
+        BOOST_CHECK_EQUAL( s, ValueType( 1 ) );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( InvertTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v = vectors[i];
+        Vector<ValueType>& v = *vectors[i];
 
-        if ( ! common::isNumeric( v->getValueType() ) )
-        {
-            continue;   // this test does not work for int, uint, ....
-        }
+        v.allocate( dist );
 
-        v->allocate( dist );
+        v = 4;
 
-        *v = 4;
+        v.invert();
 
-        v->invert();
+        ValueType s = v[n / 2 ];
 
-        Scalar s = ( *v )( n / 2 );
+        // s should be 0.25, but might not be exact
 
-        // s should be 2, but might not be exact
+        ValueType expected = 0.25;
 
-        BOOST_CHECK( ( s - Scalar( 0.25 ) ) < 0.00001 );
+        NormType<ValueType> eps  = 0.00001;
+
+        BOOST_CHECK( common::Math::abs( s - expected )  < eps );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( ConjTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v = vectors[i];
+        Vector<ValueType>& v = *vectors[i];
 
-        if ( ! common::isComplex( v->getValueType() ) )
+        if ( ! common::isComplex( v.getValueType() ) )
         {
             continue;   // test only useful for complex numbers
         }
@@ -238,20 +241,21 @@ BOOST_AUTO_TEST_CASE( ConjTest )
 
         float fillRate = 0.1f;
 
-        v->setSparseRandom( dist, 0, fillRate, 1 );
+        v.setSparseRandom( dist, 0, fillRate, 1 );
         
-        VectorPtr v1( v->copy() );
+        VectorPtr<ValueType> v1Ptr( v.copy() );
+        Vector<ValueType>& v1 = *v1Ptr;
 
-        v->conj();
+        v.conj();
 
-        *v *= *v1;  // ( a + b i ) ( a - b i )
+        v.cwiseProduct( v1 );  // ( a + b i ) ( a - b i ), elementwise multiplication
         
-        Scalar s1 = v->sum();
-        Scalar s2 = v1->dotProduct( *v1 );
+        ValueType s1 = v.sum();
+        ValueType s2 = v1.dotProduct( v1 );
 
         SCAI_LOG_DEBUG( logger, "sum( v * conj(v ) = " << s1 << ", dotProduct( v, v ) = " << s2 )
 
-        BOOST_CHECK( abs( s1 - s2 ) < Scalar( 0.0001 ) );
+        BOOST_CHECK( common::Math::abs( s1 - s2 ) < 0.0001 );
     }
 }
 
@@ -263,13 +267,13 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
     const IndexType n = 100;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector& v1 = *vectors[i];
+        _Vector& v1 = *vectors[i];
 
         if ( ! common::isNumeric( v1.getValueType() ) )
         {
@@ -284,15 +288,15 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
         v1 += 2;
 
-        VectorPtr v2Ptr( v1.copy() );
-        const Vector& v2 = *v2Ptr;
+        _VectorPtr v2Ptr( v1.copy() );
+        const _Vector& v2 = *v2Ptr;
 
         v1.exp();
         v1.log();
 
         v1 -= v2;
 
-        Scalar diff = v1.maxNorm();
+        Scalar diff = v1._maxNorm();
 
         SCAI_LOG_DEBUG( logger, "v = " << v1 << ": maxNorm( log( exp ( v ) ) - v ) = " << diff )
 
@@ -302,31 +306,26 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( SinCosTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SinCosTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector& v1 = *vectors[i];
-
-        if ( ! common::isNumeric( v1.getValueType() ) )
-        {
-            continue;   // this test would fail for IndexType
-        }
+        Vector<ValueType>& v1 = *vectors[i];
 
         float fillRate = 0.1f;
 
         v1.setSparseRandom( vectorDist, 0, fillRate, 1 );
 
-        VectorPtr v2Ptr( v1.copy() );
-        Vector& v2 = *v2Ptr;
+        VectorPtr<ValueType> v2Ptr( v1.copy() );
+        Vector<ValueType>& v2 = *v2Ptr;
 
         // build:  sin(v1) * sin(v1) + cos(v2) * cos(v2) - 1, must all be 0
 
@@ -335,63 +334,64 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
 
         // v1 = v1 * v1 - v2 * v2 - 1
 
-        v1 *= v1;
-        v2 *= v2;
+        v1.cwiseProduct( v1 );
+        v2.cwiseProduct( v2 );
         v1 += v2;
-        v1 -= Scalar( 1 );
+        v1 -= ValueType( 1 );
 
-        Scalar diff = v1.maxNorm();
+        NormType<ValueType> diff = v1.maxNorm();
+        NormType<ValueType> eps  = 0.00001;
 
-        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+        BOOST_CHECK( diff < eps );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( PowTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector& v1 = *vectors[i];
-
-        if ( ! common::isNumeric( v1.getValueType() ) )
-        {
-            continue;   // this test would fail for IndexType
-        }
+        Vector<ValueType>& v1 = *vectors[i];
 
         float fillRate = 0.1f;
 
-        v1.setSparseRandom( vectorDist, 0, fillRate, 2 );
+        ValueType zero = 0;
+
+        IndexType bound = 2;
+
+        v1.setSparseRandom( vectorDist, zero, fillRate, bound );
 
         v1 += 2.0;   // range 2 .. 4
 
-        VectorPtr v2Ptr( v1.copy() );
-        Vector& v2 = *v2Ptr;
+        VectorPtr<ValueType> v2Ptr( v1.copy() );
+        Vector<ValueType>& v2 = *v2Ptr;
 
         v1.powExp( 2 );   // v[i] = v[i] ** 2.0
         v1.powExp( 0.5 ); 
 
         v1 -= v2;
 
-        Scalar diff = v1.maxNorm();
+        NormType<ValueType> diff = v1.maxNorm();
+        NormType<ValueType> eps  = 0.0001;
 
-        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+        BOOST_CHECK( diff < eps );
  
-        Scalar e( common::Math::exp( 0.0 ) );
+        ValueType e( common::Math::exp( ValueType( 0 ) ) );
 
         v1.powBase( e );  // v1[i] = 2 ** v1
         v2.exp();
         v1 -= v2;
 
-        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+        BOOST_CHECK( diff < eps );
     }
 }
 
@@ -401,13 +401,13 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
 {
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v1 = vectors[i];
+        _VectorPtr v1 = vectors[i];
 
         if ( ! common::isNumeric( v1->getValueType() ) )
         {
@@ -425,10 +425,10 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
             SCAI_LOG_DEBUG( logger, "dist " << j << " of " << dists.size() << ", v1 = " << *v1 )
 
             *v1 = 3;
-            VectorPtr v2( v1->copy() );
+            _VectorPtr v2( v1->copy() );
             *v2 = 5;
-            VectorPtr v3( v1->newVector() );
-            VectorPtr v4( v1->newVector() );
+            _VectorPtr v3( v1->newVector() );
+            _VectorPtr v4( v1->newVector() );
             *v3 = *v1 * *v2;
             *v4 = 3 * *v1 * *v2;
             *v4 -= 2 * *v3;
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
 
             *v3 -= *v4;
 
-            BOOST_CHECK( v3->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v3->_maxNorm() < Scalar( 1e-4 ) );
         }
     }
 }
@@ -448,20 +448,20 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 {
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v1 = vectors[i];
+        _VectorPtr v1 = vectors[i];
 
-        if ( v1->getVectorKind() != Vector::DENSE )
+        if ( v1->getVectorKind() != VectorKind::DENSE )
         {
             break;
         }
 
-        _DenseVector& dV1 = reinterpret_cast<_DenseVector&>( *v1 );
+        _Vector& dV1 = *v1;
 
         if ( ! common::isNumeric( v1->getValueType() ) )
         {
@@ -472,12 +472,14 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
         {
             dmemo::DistributionPtr dist = dists[j];
 
-            dV1.setRange( dist, 3, 2 );   // only supported for dense vectors
+            IndexType bound = 5;   // random values between 0 and 5
 
-            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
+            dV1.setRandom( dist, bound );  
+
+            _MatrixPtr m( _Matrix::getMatrix( Format::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
 
-            VectorPtr v2( dV1.newVector() );
+            _VectorPtr v2( dV1.newVector() );
 
             *v2 = *m * dV1;
 
@@ -485,7 +487,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
             *v2 -= dV1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = 2 * *m * dV1;
 
@@ -493,15 +495,15 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
             *v2 -= 2 * dV1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = *m * dV1 - dV1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = 2 * *m * dV1 - 2 * dV1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
         }
     }
 }
@@ -512,13 +514,13 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 {
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v1 = vectors[i];
+        _VectorPtr v1 = vectors[i];
 
         if ( ! common::isNumeric( v1->getValueType() ) )
         {
@@ -532,11 +534,11 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
             v1->allocate( dist );
             *v1 = 3;
 
-            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
+            _MatrixPtr m( _Matrix::getMatrix( Format::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
-            m->setCommunicationKind( Matrix::ASYNCHRONOUS );
+            m->setCommunicationKind( SyncKind::ASYNCHRONOUS );
 
-            VectorPtr v2( v1->newVector() );
+            _VectorPtr v2( v1->newVector() );
 
             *v2 = ( *v1 ) * ( *m );
 
@@ -544,7 +546,7 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 
             *v2 -= *v1;
 
-            Scalar s = v2->maxNorm();
+            Scalar s = v2->_maxNorm();
 
             BOOST_CHECK( s < Scalar( 1e-4 ) );
 
@@ -554,15 +556,15 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 
             *v2 -= 2 * *v1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = *v1 * *m - *v1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = 2 * *v1 * *m - 2 * *v1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
         }
     }
 }
@@ -580,12 +582,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_
 
     common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
-    VectorPtr v( Vector::getDenseVector( stype, dist, ctx ) );
+    _VectorPtr v( _Vector::getDenseVector( stype, dist, ctx ) );
 
-    std::string format = Vector::kind2Str( v->getVectorKind() );
+    std::string format = vectorKind2Str( v->getVectorKind() );
 
     BOOST_CHECK_EQUAL( "DENSE", format );
-    BOOST_CHECK_EQUAL( Vector::str2Kind( "DENSE" ), v->getVectorKind() );
+    BOOST_CHECK_EQUAL( str2VectorKind( "DENSE" ), v->getVectorKind() );
 
     DenseVector<ValueType>* denseV = dynamic_cast<DenseVector<ValueType>* >( v.get() );
 
@@ -607,8 +609,8 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
     // we want to compare all combination of sparse/dense vectors
 
-    TestVectors vectors1;
-    TestVectors vectors2;
+    _TestVectors vectors1;
+    _TestVectors vectors2;
 
     dmemo::TestDistributions dists( n );
 
@@ -618,8 +620,8 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
     {
         for ( size_t j = 0; j < vectors2.size(); ++j )
         {
-            VectorPtr v1 = vectors1[i];
-            VectorPtr v2 = vectors2[j];
+            _VectorPtr v1 = vectors1[i];
+            _VectorPtr v2 = vectors2[j];
 
             if ( ! common::isNumeric( v1->getValueType() ) )
             {
@@ -647,7 +649,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
             SCAI_LOG_DEBUG( logger, "dotProduct, v1 = " << *v1 << ", v2 = " << *v2 );
 
-            Scalar dotp = v1->dotProduct( *v2 );  // replicated computation
+            Scalar dotp = v1->_dotProduct( *v2 );  // replicated computation
 
             for ( size_t j = 0; j < dists.size(); ++j )
             {
@@ -658,7 +660,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
                 v1->redistribute( dist );
                 v2->redistribute( dist );
 
-                Scalar distDotp = v1->dotProduct( *v2 );
+                Scalar distDotp = v1->_dotProduct( *v2 );
 
                 // we cannot check for equality due to different rounding errors
 
@@ -670,13 +672,13 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( scaleTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 {
     using namespace hmemo;
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::TestDistributions dists( n );
 
@@ -684,49 +686,42 @@ BOOST_AUTO_TEST_CASE( scaleTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v1 = vectors[i];
+        VectorPtr<ValueType> v1Ptr = vectors[i];
+        Vector<ValueType>& v1 = *v1Ptr;
 
-        if ( ! common::isNumeric( v1->getValueType() ) )
-        {
-            continue;   // this test does not work for int, uint, ....
-        }
+        HArray<ValueType> data1( n );
+        utilskernel::HArrayUtils::setRandom( data1, 1 );
 
-        std::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
-        data1->resize( n );
-        utilskernel::HArrayUtils::setRandom( *data1, 1 );
-
-        v1->assign( *data1 );
+        v1.assign( data1 );
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {
-            v1->redistribute( dists[j] );
+            v1.redistribute( dists[j] );
 
-            // CSRSparseMatrix<ValueType> m;
+            CSRSparseMatrix<ValueType> m;
 
-            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
+            m.setIdentity( dists[j] );
+            m.setDiagonal( v1 );
 
-            m->setIdentity( dists[j] );
-            m->setDiagonal( *v1 );
+            VectorPtr<ValueType> v2Ptr( v1.newVector() );
+            Vector<ValueType>& v2 = *v2Ptr;
 
-            VectorPtr v2( v1->newVector() );
+            v2 = v1;
+            v2 += v1;
+            v2 -= v1;
+            v2 *= 2;
+            v2 /= 2;
 
-            *v2 = *v1;
-            *v2 += *v1;
-            *v2 -= *v1;
-            *v2 *= 2;
-            *v2 /= 2;
+            v2.cwiseProduct( v2 );   // is v1 * v1 elementwise
 
-            *v2 *= *v2;   // is v1 * v1
+            VectorPtr<ValueType> v3Ptr( v1.newVector() );
+            Vector<ValueType>& v3 = *v3Ptr;
 
-            VectorPtr v3( v1->newVector() );
+            v3 = 2 * m * v1 - v2;   // is v1 * v1
+            v3 -= v2;
 
-            *v3 = 2 * ( *m ) * ( *v1 ) - ( *v2 );   // is v1 * v1
-
-            // ToDO: Lauretta: v3 -= v1 * m
-
-            *v3 -= *v2;
-
-            BOOST_CHECK( v3->maxNorm() < Scalar( 0.0001 ) );
+            NormType<ValueType> eps = 0.0001;
+            BOOST_CHECK( v3.maxNorm() < eps );
         }
     }
 }
@@ -747,12 +742,12 @@ BOOST_AUTO_TEST_CASE( allTest )
 
     // we want to compare all combination of sparse/dense vectors
 
-    TestVectors vectors1;
-    TestVectors vectors2;
+    _TestVectors vectors1;
+    _TestVectors vectors2;
 
     for ( size_t i = 0; i < vectors1.size(); ++i )
     {
-        VectorPtr v1 = vectors1[i];
+        _VectorPtr v1 = vectors1[i];
 
         v1->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
 
@@ -764,7 +759,7 @@ BOOST_AUTO_TEST_CASE( allTest )
 
         for ( size_t j = 0; j < vectors2.size(); ++j )
         {
-            VectorPtr v2 = vectors2[j];
+            _VectorPtr v2 = vectors2[j];
 
             v2->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
 

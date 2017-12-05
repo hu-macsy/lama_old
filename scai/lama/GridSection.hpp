@@ -109,7 +109,7 @@ public:
     template<typename OtherValueType>
     GridSection& operator= ( const GridSection<OtherValueType>& other )
     {
-        UnaryOpOp( other, common::UnaryOp::COPY );
+        unaryOp( other, common::UnaryOp::COPY );
         return *this;
     }
 
@@ -117,7 +117,7 @@ public:
     template<typename OtherValueTyper>
     GridSection& operator= ( const GridVector<OtherValueType>& other )
     {
-        UnaryOpOp( static_cast<GridSection<OtherValueType> >( other ), common::UnaryOp::COPY );
+        unaryOp( static_cast<GridSection<OtherValueType> >( other ), common::UnaryOp::COPY );
         return *this;
     }
     */
@@ -189,7 +189,7 @@ public:
     void binOpScalar( const ValueType other, common::BinaryOp, bool swap );
 
     template<typename OtherValueType>
-    void UnaryOpOp( const GridSection<OtherValueType>& other, common::UnaryOp op );
+    void unaryOp( const GridSection<OtherValueType>& other, common::UnaryOp op );
 
     void localize();
 };

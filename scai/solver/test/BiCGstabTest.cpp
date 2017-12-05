@@ -51,24 +51,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BiCGstabTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<BiCGstab>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    BiCGstab BiCGstabSolver( "BiCGstabTestSolver", slogger );
-    BOOST_CHECK_EQUAL( BiCGstabSolver.getId(), "BiCGstabTestSolver" );
-    BiCGstab BiCGstabSolver2( "BiCGstabTestSolver2" );
-    BOOST_CHECK_EQUAL( BiCGstabSolver2.getId(), "BiCGstabTestSolver2" );
-    BiCGstab BiCGstabSolver3( BiCGstabSolver2 );
-    BOOST_CHECK_EQUAL( BiCGstabSolver3.getId(), "BiCGstabTestSolver2" );
-    BOOST_CHECK( BiCGstabSolver3.getPreconditioner() == 0 );
-    BiCGstab BiCGstabSolver4( "BiCGstabSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    BiCGstabSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    BiCGstabSolver4.setStoppingCriterion( criterion );
-    BiCGstab BiCGstabSolver5( BiCGstabSolver4 );
-    BOOST_CHECK_EQUAL( BiCGstabSolver5.getId(), BiCGstabSolver4.getId() );
-    BOOST_CHECK_EQUAL( BiCGstabSolver5.getPreconditioner()->getId(), BiCGstabSolver4.getPreconditioner()->getId() );
+    BiCGstab<ValueType> solver( "BiCGstabTestSolver", slogger );
+    BOOST_CHECK_EQUAL( solver.getId(), "BiCGstabTestSolver" );
+    BiCGstab<ValueType> solver2( "BiCGstabTestSolver2" );
+    BOOST_CHECK_EQUAL( solver2.getId(), "BiCGstabTestSolver2" );
+    BiCGstab<ValueType> solver3( solver2 );
+    BOOST_CHECK_EQUAL( solver3.getId(), "BiCGstabTestSolver2" );
+    BOOST_CHECK( solver3.getPreconditioner() == 0 );
+    BiCGstab<ValueType> solver4( "solver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    solver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    solver4.setStoppingCriterion( criterion );
+    BiCGstab<ValueType> solver5( solver4 );
+    BOOST_CHECK_EQUAL( solver5.getId(), solver4.getId() );
+    BOOST_CHECK_EQUAL( solver5.getPreconditioner()->getId(), solver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

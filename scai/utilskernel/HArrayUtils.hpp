@@ -395,7 +395,7 @@ public:
      */
 
     template<typename ValueType>
-    static void UnaryOpOp(
+    static void unaryOp(
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
         const common::UnaryOp op,

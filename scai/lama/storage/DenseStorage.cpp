@@ -325,7 +325,7 @@ void DenseStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DenseStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mData, mData, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mData, mData, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -429,7 +429,7 @@ common::ScalarType DenseStorage<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat DenseStorage<ValueType>::getFormat() const
+Format DenseStorage<ValueType>::getFormat() const
 {
     return Format::DENSE;
 }
@@ -1007,7 +1007,7 @@ DenseStorage<ValueType>::~DenseStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorage<ValueType>::l1Norm() const
+NormType<ValueType> DenseStorage<ValueType>::l1Norm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1028,7 +1028,7 @@ ValueType DenseStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorage<ValueType>::l2Norm() const
+NormType<ValueType> DenseStorage<ValueType>::l2Norm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1048,7 +1048,7 @@ ValueType DenseStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename DenseStorage<ValueType>::StorageAbsType DenseStorage<ValueType>::maxNorm() const
+NormType<ValueType> DenseStorage<ValueType>::maxNorm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1063,14 +1063,14 @@ typename DenseStorage<ValueType>::StorageAbsType DenseStorage<ValueType>::maxNor
     ReadAccess<ValueType> read1( mData, loc );
     SCAI_CONTEXT_ACCESS( loc )
     ValueType zero   = 0;
-    StorageAbsType maxval = reduce[loc]( read1.get(), n, zero, common::BinaryOp::ABS_MAX );
+    NormType<ValueType> maxval = reduce[loc]( read1.get(), n, zero, common::BinaryOp::ABS_MAX );
     return maxval;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename DenseStorage<ValueType>::StorageAbsType DenseStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+NormType<ValueType> DenseStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )

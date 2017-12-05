@@ -185,7 +185,7 @@ void SparseAssemblyStorage<ValueType>::allocate( const IndexType numRows, const 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat SparseAssemblyStorage<ValueType>::getFormat() const
+Format SparseAssemblyStorage<ValueType>::getFormat() const
 {
     return Format::ASSEMBLY;
 }
@@ -264,9 +264,9 @@ SparseAssemblyStorage<ValueType>* SparseAssemblyStorage<ValueType>::newMatrixSto
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
+NormType<ValueType> SparseAssemblyStorage<ValueType>::l1Norm() const
 {
-    ValueType val = static_cast<ValueType>( 0.0 );
+    NormType<ValueType> val = 0;
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -282,16 +282,15 @@ ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
+NormType<ValueType> SparseAssemblyStorage<ValueType>::l2Norm() const
 {
-    ValueType val = static_cast<ValueType>( 0.0 );
-    ValueType tmp;
+    NormType<ValueType> val = 0;
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
         for ( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-            tmp = Math::abs( mRows[i].values[jj] );
+            NormType<ValueType> tmp = Math::abs( mRows[i].values[jj] );
             val += tmp * tmp;
         }
     }
@@ -299,15 +298,14 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
     return Math::sqrt( val );
 }
 
-
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename SparseAssemblyStorage<ValueType>::StorageAbsType SparseAssemblyStorage<ValueType>::maxNorm() const
+NormType<ValueType> SparseAssemblyStorage<ValueType>::maxNorm() const
 {
     // SparseAssemblyStorage not supported on GPUs
 
-    StorageAbsType maxval = 0;
+    NormType<ValueType> maxval = 0;
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -315,7 +313,7 @@ typename SparseAssemblyStorage<ValueType>::StorageAbsType SparseAssemblyStorage<
 
         for ( size_t jj = 0; jj < values.size(); ++jj )
         {
-            StorageAbsType val = Math::abs( mRows[i].values[jj] );
+            NormType<ValueType> val = Math::abs( mRows[i].values[jj] );
 
             if ( val > maxval )
             {

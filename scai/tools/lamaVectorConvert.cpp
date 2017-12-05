@@ -91,13 +91,12 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    // take double as default
+    // the code here works fine for any type, so it can be chosen by command  line argument
 
     common::ScalarType type = getType();
 
-    std::unique_ptr<Vector> vectorPtr( Vector::getVector( Vector::DENSE, type ) );
-
-    Vector& vector = *vectorPtr;
+    _VectorPtr vectorPtr( _Vector::getVector( VectorKind::DENSE, type ) );
+    _Vector&   vector = *vectorPtr;
 
     std::string inFileName = argv[1];
 

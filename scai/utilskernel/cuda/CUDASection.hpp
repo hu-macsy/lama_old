@@ -84,10 +84,10 @@ public:
         const common::BinaryOp op,
         const bool swapOperands );
 
-    /** CUDA implementation on host for SectionKernelTrait::UnaryOpOp */
+    /** CUDA implementation on host for SectionKernelTrait::unaryOp */
 
     template<typename TargetValueType, typename SourceValueType>
-    static void UnaryOpOp( 
+    static void unaryOp( 
         TargetValueType targetSection[],
         const IndexType nDims,
         const IndexType sizes[],
@@ -187,28 +187,28 @@ private:
         const bool swapOperands );
 
     template<typename TargetValueType, typename SourceValueType>
-    static void UnaryOpOp1(
+    static void unaryOp1(
         TargetValueType targetSection[],
         const SourceValueType sourceSection[],
         const IndexType sizes[],
         const common::UnaryOp op );
 
     template<typename TargetValueType, typename SourceValueType>
-    static void UnaryOpOp2(
+    static void unaryOp2(
         TargetValueType targetSection[],
         const SourceValueType sourceSection[],
         const IndexType sizes[],
         const common::UnaryOp op );
 
     template<typename TargetValueType, typename SourceValueType>
-    static void UnaryOpOp3(
+    static void unaryOp3(
         TargetValueType targetSection[],
         const SourceValueType sourceSection[],
         const IndexType sizes[],
         const common::UnaryOp op );
 
     template<typename TargetValueType, typename SourceValueType>
-    static void UnaryOpOp4(
+    static void unaryOp4(
         TargetValueType targetSection[],
         const SourceValueType sourceSection[],
         const IndexType sizes[],

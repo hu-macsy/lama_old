@@ -176,7 +176,7 @@ public:
 
 private:
 
-    /** Enumeration type for the different symmetry flags in the Matrix Market file */
+    /** Enumeration type for the different symmetry flags in the _Matrix Market file */
 
     typedef enum
     {

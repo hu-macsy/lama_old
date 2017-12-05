@@ -36,7 +36,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -249,13 +249,14 @@ int main( int argc, const char* argv[] )
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
 
     // use vector of outDataType so no information is lost
-    std::shared_ptr<Matrix> matrix;
-    std::shared_ptr<_DenseVector> v ( _DenseVector::create( options.outDataType ) );
+
+    _MatrixPtr matrix;
+    _VectorPtr v ( _Vector::getVector( VectorKind::DENSE, options.outDataType ) );
 
     if ( options.matFileName != "" )
     {
         MatrixCreateKeyType matrixType( Format::CSR, options.outDataType );
-        matrix.reset( Matrix::create( MatrixCreateKeyType ( matrixType ) ) );
+        matrix.reset( _Matrix::create( MatrixCreateKeyType ( matrixType ) ) );
         matrix->readFromFile( options.matFileName );
         cout << "Read in matrix from file " << options.matFileName << ": " << *matrix << endl;
     }
@@ -279,14 +280,15 @@ int main( int argc, const char* argv[] )
 
         // scale random numbers from 0 .. 1 with options.value
 
-        *v *= options.value;
+        v->_scale( options.value );
     }
 
     cout << "Vector generated: " << *v << endl;
 
     if ( matrix.get() )
     {
-        std::shared_ptr<_DenseVector> rhs ( _DenseVector::create( options.outDataType ) );
+        _VectorPtr rhs ( _Vector::getVector( VectorKind::DENSE, options.outDataType ) );
+
         *rhs = *matrix * *v;
         v = rhs;
         cout << "Vector now rhs of multiplication with matrix: " << *v << endl;

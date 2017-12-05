@@ -79,7 +79,7 @@ int main()
     DenseVector<ValueType> tmp6 ( y * 2.0 );
     DenseVector<ValueType> tmp7 ( y / 2.0 );
     //
-    // Matrix vector expressions
+    // _Matrix vector expressions
     //
     DenseMatrix<ValueType> A;
     z = A * x + 2.0 * y;

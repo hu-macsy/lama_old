@@ -249,7 +249,7 @@ JDSStorage<ValueType>::JDSStorage()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-Format::MatrixStorageFormat JDSStorage<ValueType>::getFormat() const
+Format JDSStorage<ValueType>::getFormat() const
 {
     return Format::JDS;
 }
@@ -547,7 +547,7 @@ void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void JDSStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1395,7 +1395,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType JDSStorage<ValueType>::l1Norm() const
+NormType<ValueType> JDSStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     const IndexType n = mNumValues;
@@ -1416,7 +1416,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType JDSStorage<ValueType>::l2Norm() const
+NormType<ValueType> JDSStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     const IndexType n = mNumValues;
@@ -1437,7 +1437,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-typename JDSStorage<ValueType>::StorageAbsType JDSStorage<ValueType>::maxNorm() const
+NormType<ValueType> JDSStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     return mValues.maxNorm();

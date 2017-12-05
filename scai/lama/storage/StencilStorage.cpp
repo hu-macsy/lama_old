@@ -132,7 +132,7 @@ void StencilStorage<ValueType>::conj()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType StencilStorage<ValueType>::l1Norm() const
+NormType<ValueType> StencilStorage<ValueType>::l1Norm() const
 {
     COMMON_THROWEXCEPTION( "l1Norm unsupported" )
     return 0;
@@ -141,7 +141,7 @@ ValueType StencilStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType StencilStorage<ValueType>::l2Norm() const
+NormType<ValueType> StencilStorage<ValueType>::l2Norm() const
 {
     COMMON_THROWEXCEPTION( "l2Norm unsupported" )
     return 0;
@@ -150,7 +150,7 @@ ValueType StencilStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename StencilStorage<ValueType>::StorageAbsType StencilStorage<ValueType>::maxNorm() const
+NormType<ValueType> StencilStorage<ValueType>::maxNorm() const
 {
     COMMON_THROWEXCEPTION( "maxNorm unsupported" )
     return 0;
@@ -463,7 +463,7 @@ void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType 
 
     values.resize( mNumColumns );
 
-    HArrayUtils::assignScalar( values, ValueType( 0 ), common::BinaryOp::COPY );
+    HArrayUtils::assignScalar( values, ValueType( 0 ), BinaryOp::COPY );
 
     HArray<IndexType> sparseIA;
     HArray<ValueType> sparseValues;
@@ -472,7 +472,7 @@ void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType 
 
     bool unique = true;  // sparseIA has only unique values
 
-    HArrayUtils::scatter( values, sparseIA, unique, sparseValues, common::BinaryOp::COPY );
+    HArrayUtils::scatter( values, sparseIA, unique, sparseValues, BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -632,7 +632,7 @@ void StencilStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
         return;
     }
 
@@ -646,12 +646,12 @@ void StencilStorage<ValueType>::matrixTimesVector(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), BinaryOp::COPY, loc );
     }
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
     }
 
     bool async = false;
@@ -687,7 +687,7 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
     if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
         return NULL;
     }
 
@@ -701,12 +701,12 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), BinaryOp::COPY, loc );
     }
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
     }
 
     bool async = true;

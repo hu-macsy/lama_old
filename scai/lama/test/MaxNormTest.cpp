@@ -36,7 +36,6 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
@@ -60,7 +59,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, scai_numeric_test_
     IndexType n = 4;
     ValueType val = 5.0;
     DenseVector<ValueType> vec( n, val );
-    MaxNorm maxnorm;
+    MaxNorm<ValueType> maxnorm;
     ValueType expected = 5.0;
     BOOST_CHECK_EQUAL( expected, maxnorm( vec ) );
     BOOST_CHECK_EQUAL( vec.maxNorm(), maxnorm( vec ) );
@@ -77,11 +76,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, scai_numeric_test_
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( MaxNormScalarTests )
+BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormScalarTests, ValueType, scai_numeric_test_types )
 {
-    Scalar scalar( -4.0 );
-    MaxNorm maxnorm;
-    BOOST_CHECK_EQUAL( Scalar( 4.0 ), maxnorm( scalar ) );
+    ValueType scalar( -4 );
+    MaxNorm<ValueType> maxnorm;
+    BOOST_CHECK_EQUAL( ValueType( 4 ), maxnorm( scalar ) );
 }
 
 /* --------------------------------------------------------------------- */

@@ -27,1030 +27,455 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Matrix.cpp
- * @author Jiri Kraus
- * @date 22.02.2011
+ * @brief Implementation of methods for the abstract class Matrix<ValueType>
+ * @author Thomas Brandes
+ * @date 31.10.2017
  */
 
-// hpp
 #include <scai/lama/matrix/Matrix.hpp>
 
-// local library
-#include <scai/lama/DenseVector.hpp>
-#include <scai/lama/io/PartitionIO.hpp>
-#include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/SingleDistribution.hpp>
-#include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
-
-// internal scai libraries
-#include <scai/common/macros/assert.hpp>
-#include <scai/common/Constants.hpp>
-#include <scai/common/Settings.hpp>
-
-#include <memory>
+#include <scai/tracing.hpp>
+#include <scai/common/macros/unsupported.hpp>
+#include <scai/common/mepr/TypeList.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
 
-using namespace common;
-using namespace dmemo;
+using common::TypeTraits;
 
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
+/* ------------------------------------------------------------------------- */
+/*    static methods                                                         */
+/* ------------------------------------------------------------------------- */
 
-/* ---------------------------------------------------------------------------------------*/
-/*    Factory to create a matrix                                                          */
-/* ---------------------------------------------------------------------------------------*/
-
-Matrix* Matrix::getMatrix( const Format::MatrixStorageFormat format, const common::ScalarType valueType )
+template<typename ValueType>
+Matrix<ValueType>* Matrix<ValueType>::getMatrix( Format format )
 {
-    MatrixCreateKeyType mattype( format, valueType );
-    return Matrix::create( mattype );
+    return reinterpret_cast<Matrix<ValueType>*>( _Matrix::getMatrix( format, TypeTraits<ValueType>::stype ) );
 }
 
-/* ----------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- */
+/*    Constructors / Destructor                                              */
+/* ------------------------------------------------------------------------- */
 
-Matrix::Matrix( const Matrix& other ) :
-
-    Distributed( other ),
-    mColDistribution( other.mColDistribution ),
-    mCommunicationKind( other.mCommunicationKind )
+template<typename ValueType>
+Matrix<ValueType>::Matrix() : _Matrix()
 {
-    SCAI_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." )
 }
 
-/* ----------------------------------------------------------------------- */
+template<typename ValueType>
+Matrix<ValueType>::Matrix( const IndexType numRows, const IndexType numColumns ) : 
 
-Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist ) :
+    _Matrix( numRows, numColumns )
 
-    Distributed( rowDist ),
-    mColDistribution( colDist ),
-    mCommunicationKind( other.mCommunicationKind )
 {
-    // Very important: here we check that new distributions fit the matrix
-    checkSettings();
-    SCAI_LOG_INFO( logger,
-                   "Creating copy of " << other << " with new distributions: " << "row = " << getDistribution() << ", col = " << getColDistribution() )
+    SCAI_LOG_DEBUG( logger, "Matrix<" << TypeTraits<ValueType>::id() << "> ( "
+                            << _Matrix::getNumRows() << " x " << _Matrix::getNumColumns() << " )" )
 }
 
-/* ----------------------------------------------------------------------- */
+template<typename ValueType>
+Matrix<ValueType>::Matrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) :
 
-Matrix::Matrix( const IndexType numRows, const IndexType numColumns ) :
-
-    Distributed( DistributionPtr( new NoDistribution( numRows ) ) ),
-    mColDistribution( DistributionPtr( new NoDistribution( numColumns ) ) )
+    _Matrix( rowDistribution, colDistribution )
 {
-    setDefaultKind();
-    SCAI_LOG_INFO( logger, "Creating a replicated Matrix of size " << numRows << " x " << numColumns )
 }
 
-/* ----------------------------------------------------------------------- */
+template<typename ValueType>
+Matrix<ValueType>::Matrix( const _Matrix& other, 
+                           dmemo::DistributionPtr rowDistribution, 
+                           dmemo::DistributionPtr colDistribution ) :
 
-void Matrix::setIdentity( const IndexType n )
+    _Matrix( other, rowDistribution, colDistribution )
+
 {
-    // take replicated distribution and use pure method
-    setIdentity( DistributionPtr( new NoDistribution( n ) ) );
 }
 
-/* ----------------------------------------------------------------------- */
+template<typename ValueType>
+Matrix<ValueType>::Matrix( const _Matrix& other ) :
 
-void Matrix::setDiagonalProperty()
+    _Matrix( other )
 {
-    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), getColDistribution(),
-                          "col/row distribution must be equal to set diagonal property" );
+}
 
-    // Now we can set it for the local storage
+template<typename ValueType>
+Matrix<ValueType>::Matrix( const Matrix<ValueType>& other ) :
 
-    _MatrixStorage& m = const_cast<_MatrixStorage&>( getLocalStorage() );
+    _Matrix( other )
+{
+}
 
-    bool errorFlag = false;
+template<typename ValueType>
+Matrix<ValueType>::~Matrix()
+{
+    SCAI_LOG_DEBUG( logger, "~Matrix<" << TypeTraits<ValueType>::id() << ">" )
+}
 
-    try
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+common::ScalarType Matrix<ValueType>::getValueType() const
+{
+    return common::getScalarType<ValueType>();
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+size_t Matrix<ValueType>::getValueTypeSize() const
+{
+    return sizeof( ValueType );
+}
+
+/* ========================================================================= */
+
+template<typename ValueType>
+void Matrix<ValueType>::matrixTimesVector(
+    _Vector& result,
+    const Scalar alpha,
+    const _Vector& x,
+    const Scalar beta,
+    const _Vector& y ) const
+{
+    SCAI_REGION( "Mat.timesVector" )
+
+    SCAI_LOG_INFO( logger, 
+                   "result = " << alpha << " * M<" << this->getValueType() << ">[" << this->getNumRows() << " x " << this->getNumColumns() << "]"
+                   << " * x [ " << x.size() << "] + " << beta << " * y[ " << y.size() << "]" )
+
+    if ( &result == &y )
     {
-        m.setDiagonalProperty();
-    }
-    catch ( Exception& e )
-    {
-        SCAI_LOG_ERROR( logger, "This processor could not force diagonal property" )
-        errorFlag = true;
-    }
-
-    errorFlag = getRowDistribution().getCommunicator().any( errorFlag );
-
-    if ( errorFlag )
-    {
-        COMMON_THROWEXCEPTION( "Not all processes could set diagonal property" )
-    }
-}
-
-/* ----------------------------------------------------------------------- */
-
-void Matrix::checkSettings() const
-{
-    if ( !mColDistribution )
-    {
-        COMMON_THROWEXCEPTION( "NULL pointer for column distribution" )
-    }
-}
-
-/* ----------------------------------------------------------------------- */
-
-Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
-    : Distributed( rowDistribution )
-{
-    setDistributedMatrix( rowDistribution, colDistribution );
-    setDefaultKind();
-    SCAI_LOG_INFO( logger,
-                   "Construct a Matrix of size " << getNumRows() << " x " << getNumColumns() 
-                    << " with the distribution " << getDistribution() )
-}
-
-Matrix::Matrix( DistributionPtr distribution )
-    : Distributed( distribution )
-{
-    setDistributedMatrix( distribution, distribution );
-    SCAI_LOG_INFO( logger,
-                   "Construct a square Matrix of size " << getNumRows() << " x " << getNumColumns() 
-                   << " with the row/col distribution " << getDistribution() )
-}
-
-Matrix::Matrix() : 
-
-    Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), 
-    mColDistribution( DistributionPtr( new NoDistribution( 0 ) ) )
-{
-    setDefaultKind();
-}
-
-Matrix::~Matrix()
-{
-    SCAI_LOG_DEBUG( logger, "~Matrix" )
-}
-
-Matrix::SyncKind Matrix::getDefaultSyncKind()
-{
-    static bool computed = false;
-
-    static SyncKind syncKind = ASYNCHRONOUS;
-
-    if ( !computed )
-    {
-        bool isAsync = true;
-
-        common::Settings::getEnvironment( isAsync, "SCAI_ASYNCHRONOUS" );
-
-        if ( !isAsync )
-        {
-            syncKind = SYNCHRONOUS;
-        }
-    }
-
-    return syncKind;
-}
-
-void Matrix::setDefaultKind()
-{
-    mCommunicationKind = getDefaultSyncKind();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalIndexes ) const
-{
-    getLocalStorage().buildCSRGraph( ia, ja, vwgt, globalIndexes );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-IndexType Matrix::getCSRGraphSize() const
-{
-    // Currently only supported if column distribution is replicated
-    SCAI_ASSERT_EQ_ERROR( getNumColumns(), getLocalStorage().getNumColumns(), "getCSRGraphSize only for replicated column distribution" )
-    // diagonal elements will not be used
-    return getLocalNumValues() - getDistribution().getLocalSize();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
-{
-    SCAI_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )
-    SCAI_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowed" )
-    setDistributionPtr( rowDistribution );
-    mColDistribution = colDistribution;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numColumns )
-{
-    DistributionPtr rowDist( new NoDistribution( numRows ) );
-
-    if ( numRows == numColumns )
-    {
-        setDistributedMatrix( rowDist, rowDist );
+        SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
     else
     {
-        setDistributedMatrix( rowDist, DistributionPtr( new NoDistribution( numColumns ) ) );
-    }
-}
+        // we inherit the row distribution of this matrix to result
 
-/* ---------------------------------------------------------------------------------*/
-
-Scalar Matrix::operator()( IndexType i, IndexType j ) const
-{
-    return getValue( i, j );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::setCommunicationKind( SyncKind communicationKind )
-{
-    mCommunicationKind = communicationKind;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::inheritAttributes( const Matrix& other )
-{
-    setCommunicationKind( other.getCommunicationKind() );
-    setContextPtr( other.getContextPtr() );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::writeAt( std::ostream& stream ) const
-{
-    stream << "Matrix(" << getNumRows() << "x" << getNumColumns() << ")";
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix& Matrix::operator=( const Matrix& other )
-{
-    // assignment operator is just implemented by the assign method
-    SCAI_LOG_INFO( logger, *this << ": operator = " << other )
-    this->assign( other );
-    SCAI_LOG_INFO( logger, *this << ": end operator = " << other )
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix& Matrix::operator=( const Expression_SM& exp )
-{
-    // exp is Expression object that stands for s * A
-    const Matrix& A = exp.getArg2();
-    const Scalar& s = exp.getArg1();
-    this->matrixTimesScalar( A, s );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix& Matrix::operator*=( const Scalar exp )
-{
-    // this *= alpha  -> this->scale( exp )
-    this->scale( exp );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix& Matrix::operator+=( const Expression_SM& exp )
-{
-    // this += alpha * A  -> this = alpha * A + 1.0 * this
-    *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1.0 ), *this ) );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix& Matrix::operator-=( const Expression_SM& exp )
-{
-    // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A
-    Expression_SM minusExp( -exp.getArg1(), exp.getArg2() );
-    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), minusExp );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix& Matrix::operator+=( const Matrix& exp )
-{
-    // this += A  -> this = 1.0 * A + 1.0 * this
-    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( 1.0 ), exp ) );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix& Matrix::operator-=( const Matrix& exp )
-{
-    // this -= A  -> this = -1.0 * A + 1.0 * this
-    *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( -1.0 ), exp ) );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix& Matrix::operator=( const Expression_SMM& exp )
-{
-    // exp is Expression object that stands for A * B with matrices A * B
-    //   ->   1.0 * A * B + 0.0 * A
-    Expression_SM exp2( Scalar( 0.0 ), *this );
-    *this = Expression_SMM_SM( exp, exp2 );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::swapMatrix( Matrix& other )
-{
-    Distributed::swap( other );
-    std::swap( mColDistribution, other.mColDistribution );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-double Matrix::getSparsityRate() const
-{
-    return ( double ) getNumValues() / getNumRows() / getNumColumns();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-bool Matrix::checkSymmetry() const
-{
-    // check symmetry of matrix
-    IndexType n = getNumRows();
-
-    if ( n != getNumColumns() )
-    {
-        return false;
+        result.allocate( this->getRowDistributionPtr() );
     }
 
-    // Note: this solution is not very efficient
-
-    for ( IndexType i = 0; i < n; ++i )
+    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getColDistribution() )
     {
-        for ( IndexType j = 0; j < i; ++j )
-        {
-            if ( getValue( i, j ) != getValue( j, i ) )
-            {
-                return false;
-            }
-        }
-    }
+        SCAI_UNSUPPORTED( "alpha * M * x, x requires temporary DenseVector<" << this->getValueType() << ">" )
 
-    return true;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp )
-{
-    // check sanity of matrix product exp = A * B
-    const Matrix& A = exp.getArg1();
-    const Matrix& B = exp.getArg2();
-    const Distribution& colDistA = A.getColDistribution();
-    const Distribution& rowDistB = B.getDistribution();
-
-    if ( colDistA != rowDistB )
-    {
-        COMMON_THROWEXCEPTION(
-            "A * B with A = " << A << ", B = " << B << std::endl << "col size/distribution of A  = " << A.getColDistribution() << " does not match row/size distribution of B = " << B.getDistribution() );
-    }
-}
-
-void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C )
-{
-    sanityCheck( exp ); // verify the sanity of the matrix product
-    // verify that result of matrix multiplication and C are conform
-    const Matrix& A = exp.getArg1();
-    const Matrix& B = exp.getArg2();
-    const Distribution& rowDistA = A.getDistribution();
-    const Distribution& colDistB = B.getColDistribution();
-    const Distribution& rowDistC = C.getDistribution();
-    const Distribution& colDistC = C.getColDistribution();
-
-    if ( rowDistA != rowDistC )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << C )
-    }
-
-    if ( colDistB != colDistC )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << B << ", ARG2 = " << C )
-    }
-}
-
-void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
-{
-    // verify that A and B are conform for addition
-    const Distribution& rowDistA = A.getDistribution();
-    const Distribution& colDistA = A.getColDistribution();
-    const Distribution& rowDistB = B.getDistribution();
-    const Distribution& colDistB = B.getColDistribution();
-
-    if ( rowDistA != rowDistB )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
-    }
-
-    if ( colDistA != colDistB )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-/**
- * @brief the assignment operator for a GEMM expression.
- */
-Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
-{
-    const Expression_SMM& arg1 = exp.getArg1();
-    const Expression_SM& arg11 = arg1.getArg1();
-    const Expression_SM& arg2 = exp.getArg2();
-    const Matrix& A = arg11.getArg2();
-    const Matrix& B = arg1.getArg2();
-    const Matrix& C = arg2.getArg2();
-    const Scalar& alpha = arg11.getArg1();
-    const Scalar& beta = arg2.getArg1();
-    SCAI_LOG_INFO( logger,
-                   "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
-    const Scalar zero( 0 );
-
-    if ( beta == zero )
-    {
-        sanityCheck( Expression<Matrix, Matrix, Times>( A, B ) );
-    }
-    else
-    {
-        sanityCheck( Expression<Matrix, Matrix, Times>( A, B ), C );
-    }
-
-    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
-    A.matrixTimesMatrix( *this, alpha, B, beta, C );
-    SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
-    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-/**
- * @brief the assignment operator for a MM addition.
- */
-Matrix& Matrix::operator=( const Expression_SM_SM& exp )
-{
-    SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
-    const Matrix& A = exp.getArg1().getArg2();
-    const Matrix& B = exp.getArg2().getArg2();
-    const Scalar& alpha = exp.getArg1().getArg1();
-    const Scalar& beta = exp.getArg2().getArg1();
-    const Scalar zero( 0.0 );
-
-    if ( beta == zero )
-    {
-        // second term not needed
-        this->matrixTimesScalar( A, alpha );
-        return *this;
-    }
-
-    if ( alpha == zero )
-    {
-        // first term not needed
-        this->matrixTimesScalar( B, beta );
-        return *this;
-    }
-
-    // Do sanity checks
-    sanityCheck( A, B );
-    this->matrixPlusMatrix( alpha, A, beta, B );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::writeToSingleFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType /* = UNKNOWN for DEFAULT */,
-    const common::ScalarType indexType /* = UNKNOWN for DEFAULT */,
-    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
-
-    if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
-    {
-        // make sure that only one processor writes to file
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-        if ( comm->getRank() == 0 )
-        {
-            getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
-        }
-
-        // synchronization to avoid that other processors start with
-        // something that might depend on the finally written file
-        comm->synchronize();
-    }
-    else
-    {
-        DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
-        DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        std::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
-        repM->writeToSingleFile( fileName, fileType, dataType, indexType, fileMode );
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::writeToPartitionedFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType /* = UNKNOWN for DEFAULT */,
-    const common::ScalarType indexType /* = UNKNOWN for DEFAULT */,
-    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
-
-    if ( getColDistribution().isReplicated() )
-    {
-        // each processor writes its partition to a file with unique name
-
-        getLocalStorage().writeToFile( fileName, fileType, dataType, indexType, fileMode );
-    }
-    else
-    {
-        DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        std::unique_ptr<Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
-        repM->writeToPartitionedFile( fileName, fileType, dataType, indexType, fileMode );
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::writeToFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType,
-    const common::ScalarType indexType,
-    const FileIO::FileMode fileMode ) const
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
-
-    std::string newFileName = fileName;
-
-    bool isPartitioned;
-
-    const Communicator& comm = getRowDistribution().getCommunicator();
-
-    PartitionIO::getPartitionFileName( newFileName, isPartitioned, comm );
-
-    if ( !isPartitioned )
-    {
-        writeToSingleFile( newFileName, fileType, dataType, indexType, fileMode );
-    }
-    else
-    {
-        writeToPartitionedFile( newFileName, fileType, dataType, indexType, fileMode );
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::readFromSingleFile( const std::string& fileName )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    const PartitionId MASTER = 0;
-    const PartitionId myRank = comm->getRank();
-
-    // this is a bit tricky stuff, but it avoids an additional copy from storage -> matrix
-
-    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
-
-    IndexType dims[2];
-
-    if ( myRank == MASTER )
-    {
-        localMatrix.readFromFile( fileName );
-
-        dims[0] = localMatrix.getNumRows();
-        dims[1] = localMatrix.getNumColumns();
-    }
-
-    comm->bcast( dims, 2, MASTER );
-
-    if ( myRank != MASTER )
-    {
-        IndexType localNumRows = 0;
-        localMatrix.allocate( localNumRows, dims[1] );
-    }
-
-    DistributionPtr rowDist( new SingleDistribution( dims[0], comm, MASTER ) );
-    DistributionPtr colDist( new NoDistribution( dims[1] ) );
-
-    // works fine as assign can deal with alias, i.e. localMatrix und getLocalStorage() are same
-
-    SCAI_LOG_DEBUG( logger, *comm << ": assign local storage " << localMatrix );
-
-    assign( localMatrix, rowDist, colDist );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
-{
-    if ( distribution.get() == NULL )
-    {
-        readFromSingleFile( fileName );
+        DenseVector<ValueType> tmpX( x, this->getColDistributionPtr() );
+        matrixTimesVector( result, alpha, tmpX, beta, y );
         return;
     }
 
-    // dist must be block distributed, not checked again here
+    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
 
-    const IndexType n = distribution->getBlockDistributionSize();
+    // Note: in case of beta == 0, we might skip this test
 
-    if ( n == nIndex )
+    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getRowDistribution() )
     {
-        readFromSingleFile( fileName );
-        redistribute( distribution, getColDistributionPtr() );
+        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for y in alpha * M * x + beta * y" )
+        DenseVector<ValueType> tmpY( y, this->getRowDistributionPtr() );
+        matrixTimesVector( result, alpha, x, beta, tmpY );
         return;
     }
 
-    const Communicator& comm = distribution->getCommunicator();
+    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-    IndexType first = 0;
-
-    if ( n > 0 )
+    if ( result.getVectorKind() != VectorKind::DENSE || result.getValueType() != this->getValueType() )
     {
-        first = distribution->local2global( 0 );   // first global index
+        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for result in alpha * M * x + beta * y" )
+        DenseVector<ValueType> tmpResult( this->getRowDistributionPtr() );
+        matrixTimesVector( tmpResult, alpha, x, beta, y );
+        result = tmpResult;
+        return;
     }
 
-    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
+    DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
 
-    bool error = false;
+    const ValueType alphaV = alpha.getValue<ValueType>();
+    const ValueType betaV  = beta.getValue<ValueType>();
 
-    try
-    {
-        localMatrix.readFromFile( fileName, first, n );
-    }
-    catch ( Exception& ex )
-    {
-        SCAI_LOG_ERROR( logger, ex.what() )
-        error = true;
-    }
+    // Now call the typed version implemented by derived class
 
-    error = distribution->getCommunicator().any( error );
-
-    if ( error )
-    {
-        COMMON_THROWEXCEPTION( "readFromSingleFile failed." )
-    }
-
-    IndexType numColumns = comm.max( localMatrix.getNumColumns() );
-
-    DistributionPtr colDist( new NoDistribution( numColumns ) );
-
-    assign( localMatrix, distribution, colDist );
+    matrixTimesVectorImpl( denseResult, alphaV, denseX, betaV, denseY );
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
 
-void Matrix::readFromPartitionedFile( const std::string& myPartitionFileName )
+template<typename ValueType>
+void Matrix<ValueType>::vectorTimesMatrix(
+    _Vector& result,
+    const Scalar alpha,
+    const _Vector& x,
+    const Scalar beta,
+    const _Vector& y ) const
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    SCAI_REGION( "Mat.vectorTimes" )
 
-    // this is a bit tricky stuff, but it avoids an additional copy from storage -> matrix
+    SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
-    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
-
-    bool errorFlag = false;
-
-    IndexType localSize = 0;
-
-    try
+    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getRowDistribution() )
     {
-        localMatrix.readFromFile( myPartitionFileName );
-
-        localSize = localMatrix.getNumRows();
-
-    }
-    catch ( common::Exception& e )
-    {
-        SCAI_LOG_ERROR( logger, *comm << ": failed to read " << myPartitionFileName << ": " << e.what() )
-        errorFlag = true;
+        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for x in alpha * M * x + beta * y" )
+        DenseVector<ValueType> tmpX( x, this->getRowDistributionPtr() );
+        vectorTimesMatrix( result, alpha, tmpX, beta, y );
+        return;
     }
 
-    errorFlag = comm->any( errorFlag );
+    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
 
-    if ( errorFlag )
+    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getColDistribution() )
     {
-        COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
+        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for y in alpha * x * M + beta * y" )
+        DenseVector<ValueType> tmpY( y, this->getColDistributionPtr() );
+        vectorTimesMatrix( result, alpha, x, beta, tmpY );
+        return;
     }
 
-    // We assume a general block distribution
+    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-    IndexType globalSize = comm->sum( localSize );
-
-    DistributionPtr rowDist( new GenBlockDistribution( globalSize, localSize, comm ) );
-
-    // make sure that all processors have the same number of columns
-
-    IndexType numColumns = comm->max( localMatrix.getNumColumns() );
-
-    // for consistency we have to set the number of columns in each stroage
-
-    localMatrix.setDimension( localSize, numColumns );
-
-    DistributionPtr colDist( new NoDistribution( numColumns ) );
-
-    assign( localMatrix, rowDist, colDist );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::resetRowDistribution( DistributionPtr newDist )
-{
-    SCAI_ASSERT_EQ_ERROR( getNumRows(), newDist->getGlobalSize(), "global size mismatch" )
-
-    const _MatrixStorage& localMatrix = getLocalStorage();
-
-    SCAI_ASSERT_EQ_ERROR( localMatrix.getNumRows(), newDist->getLocalSize(), "local size mismatch" );
-
-    setDistributionPtr( newDist );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::resetRowDistributionByFirstColumn()
-{
-    if ( getRowDistribution().isReplicated() )
+    if ( result.getVectorKind() != VectorKind::DENSE || result.getValueType() != this->getValueType() )
     {
-        return;   // nothing to do
+        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for result in alpha * M * x + beta * y" )
+        DenseVector<ValueType> tmpResult( this->getColDistributionPtr() );
+        vectorTimesMatrix( tmpResult, alpha, x, beta, y );
+        result = tmpResult;
+        return;
     }
 
-    bool errorFlag = false;
-
-    CommunicatorPtr comm = getRowDistribution().getCommunicatorPtr();
-
-    // catch local exceptions and throw later a global exception
-
-    try
+    if ( &result == &y )
     {
-        SCAI_LOG_INFO( logger, "getRowDistributionByFirstColumn" )
-
-        const _MatrixStorage& localMatrix = getLocalStorage();
-
-        hmemo::HArray<IndexType> myGlobalIndexes;
-
-        localMatrix.getFirstColumnIndexes( myGlobalIndexes );
-
-        SCAI_LOG_DEBUG( logger, "first col indexes = " << myGlobalIndexes )
-
-        // if storage has not the global column index of diagonal first, this test is likely to fail
-
-        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::CompareOp::LE ),
-                           "first column indexes are not sorted, cannot be global indexes" )
-
-        // otherwise building the distribution will fail
-
-        DistributionPtr dist( new dmemo::GeneralDistribution( getNumRows(), myGlobalIndexes, comm ) );
-
-        resetRowDistribution( dist );
-    }
-    catch ( common::Exception& e )
-    {
-        SCAI_LOG_ERROR( logger, *comm << ": serious error for building general distribution by first col index" )
-        errorFlag = true;
-    }
-
-    errorFlag = comm->any( errorFlag );
-
-    if ( errorFlag )
-    {
-        COMMON_THROWEXCEPTION( "determing general distribution by column indexes failed." )
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::readFromFile( const std::string& matrixFileName, const std::string& distributionFileName )
-{
-    if ( distributionFileName.size() == 0 )
-    {
-        readFromFile( matrixFileName );
-        resetRowDistributionByFirstColumn();
-    }
-    else if ( distributionFileName == "BLOCK" )
-    {
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-        DistributionPtr rowDist;
-
-        // for a single file we set a BlockDistribution
-
-        if ( matrixFileName.find( "%r" ) == std::string::npos )
-        {
-            PartitionId root = 0;
-
-            IndexType numRows = nIndex;
-
-            if ( comm->getRank() == root )
-            {
-                numRows = FileIO::getStorageSize( matrixFileName );
-            }
-
-            comm->bcast( &numRows, 1, root );
-
-            rowDist.reset( new BlockDistribution( numRows, comm ) );
-        }
-
-        readFromFile( matrixFileName, rowDist );
+        SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
     else
     {
-        // read the distribution
-
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-        DistributionPtr rowDist = PartitionIO::readDistribution( distributionFileName, comm );
-
-        readFromFile( matrixFileName, rowDist );
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist )
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": readFromFile( " << fileName << " )" )
-
-    std::string newFileName = fileName;
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // take default
-
-    if ( rowDist.get() )
-    {
-        comm = rowDist->getCommunicatorPtr();
+        result.allocate( this->getColDistributionPtr() );
     }
 
-    bool isPartitioned;
+    DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
 
-    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+    const ValueType alphaV = alpha.getValue<ValueType>();
+    const ValueType betaV  = beta.getValue<ValueType>();
 
-    SCAI_LOG_INFO( logger, *comm << ": Matrix.readFromFile ( " << fileName << " ) -> read "
-                   << newFileName << ", partitioned = " << isPartitioned );
-
-    if ( !isPartitioned )
+    if ( this->getColDistribution().getCommunicator().getSize() == 1 )
     {
-        readFromSingleFile( newFileName, rowDist );
+        // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
+        // use routine provided by this CRTP
+
+        this->vectorTimesMatrixRepCols( denseResult, alphaV, denseX, betaV, denseY );
     }
     else
     {
-        readFromPartitionedFile( newFileName );
-
-        if ( rowDist.get() )
-        {
-            resetRowDistribution( rowDist );
-        }
+        this->vectorTimesMatrixImpl( denseResult, alphaV, denseX, betaV, denseY );
     }
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
 
-void Matrix::concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const Matrix*>& matrices )
+template<typename ValueType>
+void Matrix<ValueType>::setRow( 
+    const _Vector& row, 
+    const IndexType globalRowIndex,
+    const common::BinaryOp op )
 {
-    COMMON_THROWEXCEPTION( "concatenation of matrices not supported, #matrices = " << matrices.size()
-                           << ", row dist = " << *rowDist << ", col dist = " << *colDist )
+    SCAI_ASSERT_EQ_ERROR( row.size(), this->getNumColumns(), "row size mismatch" )
+
+    SCAI_LOG_DEBUG( logger, "setRow " << globalRowIndex << ": row = " << row << ", op = " << op )
+
+    bool needsTmp = false;
+
+    if ( row.getValueType() != this->getValueType() )
+    {
+        needsTmp = true;
+        SCAI_UNSUPPORTED( "setRow, matrix has type " << this->getValueType() 
+                           << ", row has type " << row.getValueType() << ", use temporary" )
+    }
+    if ( ! row.getDistribution().isReplicated() )
+    {
+        needsTmp = true;
+        SCAI_UNSUPPORTED( "setRow, row is not replicated, use temporary" )
+    }
+    if ( row.getVectorKind() != VectorKind::DENSE )
+    {
+        needsTmp = true;
+        SCAI_UNSUPPORTED( "setRow, row is not DENSE vector" )
+    }
+
+    if ( needsTmp )
+    {
+        DenseVector<ValueType> tmpRow( row );
+        tmpRow.replicate();
+        setRow( tmpRow, globalRowIndex, op );
+        return;
+    }
+
+    using namespace scai::hmemo;
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, this->getNumRows(), "illegal row index" )
+
+    // row should be a DenseVector of same type, otherwise use a temporary
+
+    std::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
+
+    const DenseVector<ValueType>* typedRow = dynamic_cast<const DenseVector<ValueType>*>( &row );
+
+    SCAI_ASSERT_ERROR( typedRow, "illegal dynamic cast" )
+
+    SCAI_ASSERT_ERROR( typedRow->getDistribution().isReplicated(), "cannot set distributed row" )
+
+    SCAI_ASSERT_EQ_ERROR( typedRow->size(), this->getNumColumns(), "row to set has wrong size" )
+
+    // owner sets the row, maybe each processor for replicated row distribution
+
+    IndexType localRowIndex = this->getRowDistribution().global2local( globalRowIndex );
+
+    if ( localRowIndex != nIndex )
+    {
+        this->setLocalRow( typedRow->getLocalValues(), localRowIndex, op );
+    }
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
 
-void Matrix::vcat( const Matrix& m1, const Matrix& m2 )
+template<typename ValueType>
+void Matrix<ValueType>::setColumn( 
+    const _Vector& column,
+    const IndexType colIndex,
+    const common::BinaryOp op )
 {
-    SCAI_ASSERT_EQ_ERROR( m1.getRowDistribution(), m2.getRowDistribution(), "vcat: matrices must have same row distribution" )
+    using namespace scai::hmemo;
 
-    DistributionPtr rowDist = m1.getRowDistributionPtr();
+    SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, this->getNumColumns(), "illegal col index" )
 
-    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() + m2.getNumColumns() ) );
+    // col should be a DenseVector of same type, otherwise use a temporary
 
-    std::vector<const Matrix*> matrices;
+    std::shared_ptr<const DenseVector<ValueType> > tmpVector;  // only allocated if needed
 
-    matrices.push_back( &m1 );
-    matrices.push_back( &m2 );
-    
-    concatenate( rowDist, colDist, matrices );
+    const DenseVector<ValueType>* typedColumn = dynamic_cast<const DenseVector<ValueType>*>( &column );
+
+    if ( !typedColumn )
+    {
+        // so we create a temporaray DenseVector of same type, has already correct size
+        tmpVector.reset( new DenseVector<ValueType>( column ) );
+        typedColumn = tmpVector.get();
+    }
+
+    SCAI_ASSERT_EQ_ERROR( typedColumn->getDistribution(), this->getRowDistribution(), "distribution mismatch" )
+
+    this->setLocalColumn( typedColumn->getLocalValues(), colIndex, op );
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
 
-void Matrix::hcat( const Matrix& m1, const Matrix& m2 )
+template<typename ValueType>
+void Matrix<ValueType>::vectorTimesMatrixRepCols(
+    DenseVector<ValueType>& denseResult,
+    const ValueType alphaValue,
+    const DenseVector<ValueType>& denseX,
+    const ValueType betaValue,
+    const DenseVector<ValueType>& denseY ) const
 {
-    SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cut possible due to different column sizes" )
- 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    SCAI_REGION( "Mat.vectorTimesMatrixRepCols" )
 
-    DistributionPtr rowDist( new BlockDistribution( m1.getNumRows() + m2.getNumRows(), comm ) ); 
-    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() ) );
-    
-    std::vector<const Matrix*> matrices;
+    const hmemo::HArray<ValueType>& localY = denseY.getLocalValues();
+    const hmemo::HArray<ValueType>& localX = denseX.getLocalValues();
 
-    matrices.push_back( &m1 );
-    matrices.push_back( &m2 );
+    hmemo::HArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    concatenate( rowDist, colDist, matrices );
+    const dmemo::Distribution& colDist = this->getColDistribution();
+
+    // this routine is only for non-replicated columns, i.e. mHaloData is empty
+
+    SCAI_ASSERT( 1, colDist.getNumPartitions() );
+
+    const dmemo::Distribution& rowDist = this->getRowDistribution();
+    const dmemo::Communicator& comm = rowDist.getCommunicator();
+
+    const MatrixStorage<ValueType>& localData = reinterpret_cast<const MatrixStorage<ValueType>&>( this->getLocalStorage() );
+
+    if ( comm.getRank() == 0 )
+    {
+        // only one single processor adds beta * y
+        localData.vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
+    }
+    else
+    {
+        localData.vectorTimesMatrix( localResult, alphaValue, localX, ValueType( 0 ), localY );
+    }
+
+    if ( comm.getSize() >  1 )
+    {
+        // Sum up all incarnations of localResult
+
+        comm.sumArray( localResult );
+    }
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
 
-Scalar Matrix::maxDiffNorm( const Matrix& other ) const
+template<typename ValueType>
+Scalar Matrix<ValueType>::_l1Norm() const
+{
+    return Scalar( l1Norm() );
+}
+
+template<typename ValueType>
+Scalar Matrix<ValueType>::_l2Norm() const
+{
+    return Scalar( l2Norm() );
+}
+
+template<typename ValueType>
+Scalar Matrix<ValueType>::_maxNorm() const
+{
+    return Scalar( maxNorm() );
+}
+
+template<typename ValueType>
+Scalar Matrix<ValueType>::_maxDiffNorm( const _Matrix& other ) const
+{
+    return Scalar( maxDiffNorm( other ) );
+}
+
+template<typename ValueType>
+NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
 {
     IndexType nRows = getNumRows();
     IndexType nCols = getNumColumns();
+
     SCAI_ASSERT_EQUAL( nRows, other.getNumRows(), "size mismatch" )
     SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), "size mismatch" )
-    VectorCreateKeyType vectorType1( Vector::DENSE, getValueType() );
-    VectorCreateKeyType vectorType2( Vector::DENSE, other.getValueType() );
-    std::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
-    std::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
-    Scalar diff( 0 );
+
+    DenseVector<ValueType> row;
+    DenseVector<ValueType> rowOther;
+
+    NormType<ValueType> diff = 0;
 
     // now traverse  all rows
 
     for ( IndexType i = 0; i < nRows; ++i )
     {
         // Note: rows will be broadcast in case of distributed matrices
-        getRow( *ptrRow1, i );
-        other.getRow( *ptrRow2, i );
 
-        // compare the two vectors element-wise
+        getRow( row, i );
+        other.getRow( rowOther, i );
 
-        for ( IndexType j = 0; j < nCols; j++ )
+        NormType<ValueType> diffRow = row.maxDiffNorm( rowOther );
+
+        if ( diffRow > diff )
         {
-            Scalar elem1 = ptrRow1->getValue( j );
-            Scalar elem2 = ptrRow2->getValue( j );
-            Scalar diff1  = abs( elem1 - elem2 );
-
-            if ( diff1 > diff )
-            {
-                diff = diff1;
-            }
+            diff = diffRow;
         }
     }
 
     return diff;
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
+/*       Template specializations and instantiations                         */
+/* ========================================================================= */
 
-void Matrix::redistribute( const dmemo::Redistributor& redistributor )
-{
-    if ( getColDistribution().isReplicated() ) 
-    {
-        redistribute( redistributor, getColDistributionPtr() );
-    }
-    else if ( getColDistribution() == getRowDistribution() )
-    {
-        redistribute( redistributor, redistributor.getTargetDistributionPtr() );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "redistribute: no new column distribution" )
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
-{
-    // simple default implementation that works for each matrix
-    std::unique_ptr<Matrix> rep( copy() );
-    // unique_ptr guarantees that data is freed if redistribute fails for any reason
-    rep->redistribute( rowDistribution, colDistribution );
-    return rep.release();
-}
-
-MatrixCreateKeyType Matrix::getCreateValue() const
-{
-    return MatrixCreateKeyType( getFormat(), getValueType() );
-}
+SCAI_COMMON_INST_CLASS( Matrix, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 
 } /* end namespace scai */
+

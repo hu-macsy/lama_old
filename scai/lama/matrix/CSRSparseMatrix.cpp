@@ -122,7 +122,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const CSRSparseMatrix& other )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Matrix& other, bool transposeFlag )
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const _Matrix& other, bool transposeFlag )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -143,7 +143,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Matrix& other, bool transpose
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const _Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -190,10 +190,10 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SM& expression )
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg2();
+    const _Matrix& master = expression.getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -204,10 +204,10 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SMM& expression )
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg1().getArg2();
+    const _Matrix& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -218,10 +218,10 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix( const Expression_SM_SM& expression 
     : SparseMatrix<ValueType>( createStorage() )
 {
     // inherit context from matA in alpha * matA + beta * matB
-    const Matrix& master = expression.getArg1().getArg2();
+    const _Matrix& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -343,7 +343,7 @@ const char* CSRSparseMatrix<ValueType>::getTypeName() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Matrix* CSRSparseMatrix<ValueType>::create()
+_Matrix* CSRSparseMatrix<ValueType>::create()
 {
     return new CSRSparseMatrix<ValueType>();
 }

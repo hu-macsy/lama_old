@@ -1006,7 +1006,7 @@ void HArrayUtils::arrayTimesArray(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::UnaryOpOp(
+void HArrayUtils::unaryOp(
     hmemo::HArray<ValueType>& result,
     const hmemo::HArray<ValueType>& x,
     const UnaryOp op,
@@ -1017,7 +1017,7 @@ void HArrayUtils::UnaryOpOp(
 
     const IndexType n = x.size();
 
-    static LAMAKernel<UtilKernelTrait::UnaryOpOp<ValueType> > UnaryOpOpKernel;
+    static LAMAKernel<UtilKernelTrait::unaryOp<ValueType> > unaryOpKernel;
 
     ContextPtr loc = prefLoc;
 
@@ -1028,7 +1028,7 @@ void HArrayUtils::UnaryOpOp(
         loc = x.getValidContext();
     }
 
-    UnaryOpOpKernel.getSupportedContext( loc );
+    unaryOpKernel.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -1037,7 +1037,7 @@ void HArrayUtils::UnaryOpOp(
     ReadAccess<ValueType> rX( x, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    UnaryOpOpKernel[loc]( wResult.get(), rX.get(), n, op );
+    unaryOpKernel[loc]( wResult.get(), rX.get(), n, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2534,10 +2534,10 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 // and will therefore cause runtime errors, i.e. throw an exception
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                        \
-    template void HArrayUtils::UnaryOpOp<ValueType>(                \
+    template void HArrayUtils::unaryOp<ValueType>(                \
             hmemo::HArray<ValueType>&,                            \
             const hmemo::HArray<ValueType>&,                      \
-            const UnaryOp, hmemo::ContextPtr);             \
+            const UnaryOp, hmemo::ContextPtr);                    \
     template void HArrayUtils::binaryOp<ValueType>(               \
             hmemo::HArray<ValueType>&,                            \
             const hmemo::HArray<ValueType>&,                      \

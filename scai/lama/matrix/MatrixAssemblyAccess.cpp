@@ -54,13 +54,13 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixAssemblyAccess
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( Matrix& matrix, const common::BinaryOp op ) : 
+MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( _Matrix& matrix, const common::BinaryOp op ) : 
 
     mMatrix( matrix ),
     mIsReleased( false ),
     mOp( op )
 {
-    SCAI_ASSERT_EQ_ERROR( matrix.getMatrixKind(), Matrix::SPARSE, "Assembly only for sparse matrix supported" )
+    SCAI_ASSERT_EQ_ERROR( matrix.getMatrixKind(), MatrixKind::SPARSE, "Assembly only for sparse matrix supported" )
 
     // SCAI_ASSERT_EQ_ERROR( matrix.getNumValues(), 0, "Assembly only for zero sparse matrices supported" )
 }

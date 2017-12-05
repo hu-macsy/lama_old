@@ -47,6 +47,8 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
+#include <scai/lama/expression/all.hpp>
+
 using namespace scai;
 using namespace lama;
 
@@ -215,9 +217,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
     IndexType n = 16;
 
-    DenseVector<ValueType> repV( ctx );  // just a sequence: 0, 1, ...
-
-    repV.setRange( n, 0, 1 ); 
+    DenseVector<ValueType> repV = linearValuesVector<ValueType>( n, 0, 1, ctx );  // just a sequence: 0, 1, ...
 
     BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
 
@@ -238,9 +238,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
         // distV1 = [ 0, ..., n-1] distributed, must be same
 
-        DenseVector<ValueType> distV1( ctx );
-
-        distV1.setRange( dist, 0, 1 );
+        DenseVector<ValueType> distV1 = linearValuesVector<ValueType>( dist, 0, 1, ctx );
 
         BOOST_CHECK_EQUAL( 0, distV1.getLocalValues().maxDiffNorm( distV.getLocalValues() ) );
     }
@@ -289,9 +287,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        DenseVector<ValueType> distV( ctx );
-
-        distV.setRange( dist, 1, 1 );  // set vector elements as sequence 1, 2, ... 
+        DenseVector<ValueType> distV = linearValuesVector<ValueType>( dist, 1, 1, ctx );
 
         try
         {
@@ -428,7 +424,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
             CSRSparseMatrix<RealType> mat( rowDist, colDist );
 
             DenseVector<ValueType> x( colDist, 3 );
-            SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
+            SCAI_LOG_INFO( logger, "linear algebra expression: alpha * _Matrix * Vector" );
             DenseVector<ValueType> y( 2 * mat * x );
 
             BOOST_CHECK_EQUAL( y.getDistribution(), *rowDist );
@@ -509,7 +505,7 @@ BOOST_AUTO_TEST_CASE( assignTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_test_types )
 {
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
 
@@ -547,11 +543,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            _Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                Matrix& A1 = *matrices[k];
+                _Matrix& A1 = *matrices[k];
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );
@@ -633,13 +629,13 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            _Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                Matrix& A1 = *matrices[k];
+                _Matrix& A1 = *matrices[k];
 
-                A1.setCommunicationKind( Matrix::SYNCHRONOUS );
+                A1.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );

@@ -122,7 +122,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ELLSparseMatrix& other )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Matrix& other, bool transposeFlag )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const _Matrix& other, bool transposeFlag )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -143,7 +143,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Matrix& other, bool transpose
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const _Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -190,10 +190,10 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM& expression )
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg2();
+    const _Matrix& master = expression.getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -204,10 +204,10 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SMM& expression )
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg1().getArg2();
+    const _Matrix& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -218,10 +218,10 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM_SM& expression 
     : SparseMatrix<ValueType>( createStorage() )
 {
     // inherit context from matA in alpha * matA + beta * matB
-    const Matrix& master = expression.getArg1().getArg2();
+    const _Matrix& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -343,7 +343,7 @@ const char* ELLSparseMatrix<ValueType>::getTypeName() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Matrix* ELLSparseMatrix<ValueType>::create()
+_Matrix* ELLSparseMatrix<ValueType>::create()
 {
     return new ELLSparseMatrix<ValueType>();
 }
