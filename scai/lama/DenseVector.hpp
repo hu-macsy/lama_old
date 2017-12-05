@@ -64,7 +64,7 @@ namespace lama
 {
 
 
-// forward declaration required as we do not include DenseVector.hpp here
+// forward declaration required as we do not include SparseVector.hpp here
 
 template<typename ValueType>
 class SparseVector;

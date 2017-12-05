@@ -91,7 +91,7 @@ struct DenseMatrixWrapper<ValueType, common::mepr::TypeList<H, T> >
     {
         if ( other.getValueType() == common::getScalarType<H>() )
         {
-            obj.copyDenseMatrix( reinterpret_cast<const DenseMatrix<H>& >( other ) );
+            obj.copyDenseMatrix( static_cast<const DenseMatrix<H>& >( other ) );
         }
         else
         {
@@ -1241,7 +1241,7 @@ void DenseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowInde
 
     SCAI_REGION( "Mat.Dense.getRow" )
 
-    DenseVector<ValueType>& denseRow = reinterpret_cast<DenseVector<ValueType>&>( row );
+    DenseVector<ValueType>& denseRow = static_cast<DenseVector<ValueType>&>( row );
 
     denseRow.allocate( getColDistributionPtr() );   // same dist as column dist
 
@@ -1369,7 +1369,7 @@ void DenseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalColI
 
     SCAI_ASSERT_DEBUG( dynamic_cast<DenseVector<ValueType>*>( &col ), "col not DenseVector<" << getValueType() << ">" )
 
-    DenseVector<ValueType>& denseCol = reinterpret_cast<DenseVector<ValueType>&>( col );
+    DenseVector<ValueType>& denseCol = static_cast<DenseVector<ValueType>&>( col );
 
     // result vector inherits the row distribution 
 
@@ -1511,7 +1511,7 @@ void DenseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
 
     // we can recast it now to dense vector, so we have access to its local values
 
-    DenseVector<ValueType>& denseDiagonal = reinterpret_cast<DenseVector<ValueType>&>( diagonal );
+    DenseVector<ValueType>& denseDiagonal = static_cast<DenseVector<ValueType>&>( diagonal );
 
     denseDiagonal.allocate( getRowDistributionPtr() );
     getLocalStorage().getDiagonal( denseDiagonal.getLocalValues() );
@@ -1540,7 +1540,7 @@ void DenseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
         return;
     }
 
-    const DenseVector<ValueType>& diagonalDense = reinterpret_cast<const DenseVector<ValueType>&>( diagonal );
+    const DenseVector<ValueType>& diagonalDense = static_cast<const DenseVector<ValueType>&>( diagonal );
 
     getLocalStorage().setDiagonalV( diagonalDense.getLocalValues() );
 }
@@ -1569,7 +1569,7 @@ void DenseMatrix<ValueType>::reduce(
 
     // SCAI_ASSERT_EQ_ERROR( v.getValueType(), 
 
-    DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
+    DenseVector<ValueType>& denseV = static_cast<DenseVector<ValueType>&>( v );
 
     if ( dim == 0 )
     {
@@ -1667,7 +1667,7 @@ void DenseMatrix<ValueType>::scale( const _Vector& vector )
         return;
     }
     
-    const DenseVector<ValueType>& denseVector = reinterpret_cast<const DenseVector<ValueType>&>( vector );
+    const DenseVector<ValueType>& denseVector = static_cast<const DenseVector<ValueType>&>( vector );
 
     getLocalStorage().scaleRows( denseVector.getLocalValues() );
 }

@@ -37,9 +37,6 @@
 
 #include <scai/common/macros/instantiate.hpp>
 
-// template scai::lama::Norm::Register<scai::lama::L2Norm>::RegisterGuard
-// scai::lama::Norm::Register<scai::lama::L2Norm>::registerGuard;
-
 namespace scai
 {
 

@@ -68,8 +68,6 @@ class COMMON_DLL_IMPORTEXPORT CSRSparseMatrix:
 
 public:
 
-    typedef ValueType _MatrixValueType; //!< This is the type of the matrix values.
-
     /** Type definition of the storage type for this sparse matrix. */
 
     typedef CSRStorage<ValueType> StorageType;

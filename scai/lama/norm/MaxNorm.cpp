@@ -39,9 +39,6 @@
 namespace scai
 {
 
-// template lama::Norm::Register<lama::MaxNorm>::RegisterGuard
-// lama::Norm::Register<lama::MaxNorm>::registerGuard;
-
 namespace lama
 {
 

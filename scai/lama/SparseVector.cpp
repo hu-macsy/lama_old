@@ -212,12 +212,12 @@ struct VectorWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         {
             if ( source.getVectorKind() == VectorKind::SPARSE )
             {
-                const SparseVector<H>& typedSource = reinterpret_cast<const SparseVector<H>&>( source );
+                const SparseVector<H>& typedSource = static_cast<const SparseVector<H>&>( source );
                 target.assignImpl( typedSource );
             }
             else if ( source.getVectorKind() == VectorKind::DENSE )
             {
-                const DenseVector<H>& typedSource = reinterpret_cast<const DenseVector<H>&>( source );
+                const DenseVector<H>& typedSource = static_cast<const DenseVector<H>&>( source );
                 target.assignImpl( typedSource );
             }
             else
@@ -1109,7 +1109,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const _Vector& ot
 
     bool localAll;
 
-    const SparseVector<ValueType>& otherSparse = reinterpret_cast<const SparseVector<ValueType>& >( other );
+    const SparseVector<ValueType>& otherSparse = static_cast<const SparseVector<ValueType>& >( other );
 
     // ValueType otherZero = otherSparse.getZero().getValue<ValueType>();
 
@@ -1142,7 +1142,7 @@ void SparseVector<ValueType>::swap( _Vector& other )
     SCAI_ASSERT_EQ_ERROR( getVectorKind(), other.getVectorKind(), "Swap only for same kind of vector allowed" )
     SCAI_ASSERT_EQ_ERROR( getValueType(), other.getValueType(), "Swap only for same value type of vector allowed" )
 
-    SparseVector<ValueType>& typedOther = reinterpret_cast<SparseVector<ValueType>&>( other );
+    SparseVector<ValueType>& typedOther = static_cast<SparseVector<ValueType>&>( other );
 
     _Vector::swapVector( other );   // swap sizes, distributions
 
@@ -1169,11 +1169,11 @@ void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const _Vect
 {
     if ( x.getValueType() == getValueType() && x.getVectorKind() == VectorKind::SPARSE  )
     {
-        const SparseVector<ValueType>& spX = reinterpret_cast<const SparseVector<ValueType>&>( x );
+        const SparseVector<ValueType>& spX = static_cast<const SparseVector<ValueType>&>( x );
 
         if ( y.getValueType() == getValueType() && y.getVectorKind() == VectorKind::SPARSE )
         {
-            const SparseVector<ValueType>& spY = reinterpret_cast<const SparseVector<ValueType>&>( y );
+            const SparseVector<ValueType>& spY = static_cast<const SparseVector<ValueType>&>( y );
          
             const ValueType alphaV = alpha.getValue<ValueType>();
             const ValueType betaV = beta.getValue<ValueType>();
@@ -1375,7 +1375,7 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
     }
     else if ( other.getVectorKind() == VectorKind::SPARSE )
     {
-        const SparseVector<ValueType>& otherSparse = reinterpret_cast<const SparseVector<ValueType>&>( other );
+        const SparseVector<ValueType>& otherSparse = static_cast<const SparseVector<ValueType>&>( other );
 
         binOpSparse( otherSparse, op, swapArgs );
     }

@@ -1106,7 +1106,7 @@ NormType<ValueType> DenseVector<ValueType>::maxDiffNorm( const _Vector& other ) 
 
     SCAI_ASSERT_DEBUG( dynamic_cast<const DenseVector<ValueType>*>( &other ), "wrong cast" )
 
-    const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+    const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
 
     NormType<ValueType> localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
 
@@ -1146,7 +1146,7 @@ bool DenseVector<ValueType>::all( const common::CompareOp op, const _Vector& oth
 
     if ( other.getValueType() == getValueType() && other.getVectorKind() == VectorKind::DENSE )
     {
-        const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+        const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
         localAll = HArrayUtils::all( getLocalValues(), op, denseOther.getLocalValues() );
     }
     else
@@ -1241,7 +1241,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
 
         SCAI_ASSERT_DEBUG( dynamic_cast<const SparseVector<ValueType>*>( &x ), "illegal cast" );
 
-        const SparseVector<ValueType>& sparseX = reinterpret_cast<const SparseVector<ValueType>&>( x );
+        const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
 
         const HArray<IndexType>& nonZeroIndexes = sparseX.getNonZeroIndexes();
         const HArray<ValueType>& nonZeroValues  = sparseX.getNonZeroValues();
@@ -1278,7 +1278,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
     {
         SCAI_REGION( "Vector.Dense.axpyDense" )
 
-        const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
+        const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
 
         const LArray<ValueType>& xValues = denseX.getLocalValues();
 
@@ -1398,8 +1398,8 @@ void DenseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const _Vect
         return;
     }
 
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
-    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
+    const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
 
     mLocalValues.resize( denseX.mLocalValues.size() );
 
@@ -1674,7 +1674,7 @@ ValueType DenseVector<ValueType>::dotProduct( const _Vector& other ) const
     {
         SCAI_ASSERT_DEBUG( dynamic_cast<const DenseVector<ValueType>*>( &other ), "dynamic cast failed, other = " << other )
 
-        const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+        const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
 
         localDotProduct = mLocalValues.dotProduct( denseOther.getLocalValues() );
     }
@@ -1682,7 +1682,7 @@ ValueType DenseVector<ValueType>::dotProduct( const _Vector& other ) const
     {
         SCAI_ASSERT_DEBUG( dynamic_cast<const SparseVector<ValueType>*>( &other ), "dynamic cast failed, other = " << other )
 
-        const SparseVector<ValueType>& sparseOther = reinterpret_cast<const SparseVector<ValueType>&>( other );
+        const SparseVector<ValueType>& sparseOther = static_cast<const SparseVector<ValueType>&>( other );
     
         LArray<ValueType> myValues;   // build values at same position as sparse vector
 
@@ -1766,7 +1766,7 @@ struct VectorWrapperT<ValueType, common::mepr::NullType>
         DenseVector<ValueType>& target,
         const _Vector& source )
     {
-        COMMON_THROWEXCEPTION( "vector assign = " << target << ", source = " << source  )
+        COMMON_THROWEXCEPTION( "unresolved untyped assign, target = " << target << ", source = " << source )
     }
 };
 
@@ -1779,19 +1779,21 @@ struct VectorWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
     {
         if ( common::getScalarType<H>() ==  source.getValueType() )
         {
-            if ( source.getVectorKind() == VectorKind::SPARSE )
+            VectorKind sourceKind = source.getVectorKind();
+
+            if ( sourceKind == VectorKind::SPARSE )
             {
-                const SparseVector<H>& typedSource = reinterpret_cast<const SparseVector<H>&>( source );
+                const SparseVector<H>& typedSource = static_cast<const SparseVector<H>&>( source );
                 target.assignImpl( typedSource );
             }
-            else if ( source.getVectorKind() == VectorKind::DENSE )
+            else if ( sourceKind == VectorKind::DENSE )
             {
-                const DenseVector<H>& typedSource = reinterpret_cast<const DenseVector<H>&>( source );
+                const DenseVector<H>& typedSource = static_cast<const DenseVector<H>&>( source );
                 target.assignImpl( typedSource );
             }
             else
             {
-                COMMON_THROWEXCEPTION( "unsupported vector kind for assign to sparse vector" )
+                COMMON_THROWEXCEPTION( "unsupported vector kind for assign to sparse vector: " << sourceKind )
             }
         }
         else

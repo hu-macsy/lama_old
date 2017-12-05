@@ -153,7 +153,7 @@ void setDenseHalo( scai::lama::MatrixStorage<ValueType>& storage )
 template<typename ValueType>
 void setSymDenseData( scai::lama::MatrixStorage<ValueType>& storage )
 {
-    /* _Matrix:     1  2  0  5
+    /* Matrix:     1  2  0  5
      *             2  1  3  0
      *             0  3  1  4
      *             5  0  4  2

@@ -51,7 +51,9 @@ namespace lama
 template<typename ValueType>
 Vector<ValueType>* Vector<ValueType>::getVector( VectorKind kind )
 {
-    return reinterpret_cast<Vector<ValueType>*>( _Vector::getVector( kind, TypeTraits<ValueType>::stype ) );
+    // create it by factory, untyped vector is cast to typed vector.
+
+    return static_cast<Vector<ValueType>*>( _Vector::getVector( kind, TypeTraits<ValueType>::stype ) );
 }
 
 /* ------------------------------------------------------------------------- */

@@ -72,8 +72,6 @@ class COMMON_DLL_IMPORTEXPORT StencilMatrix:
 
 public:
 
-    typedef ValueType _MatrixValueType; //!< This is the type of the matrix values.
-
     /** Static method that returns the name of the matrix class. */
 
     static const char* typeName();

@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of methods to read/write _Matrix Market files
+ * @brief Implementation of methods to read/write Matrix Market files
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -258,7 +258,7 @@ void MatrixMarketIO::readMMHeader(
     else
     {
         SCAI_THROWEXCEPTION( common::IOException,
-                             "Reading _Matrix Market file " << fileName << ": object type " << buffer
+                             "Reading Matrix Market file " << fileName << ": object type " << buffer
                              << " illegal, must be matrix or vector" )
     }
 
@@ -282,7 +282,7 @@ void MatrixMarketIO::readMMHeader(
     else
     {
         SCAI_THROWEXCEPTION( common::IOException,
-                             "Reading _Matrix Market file " << fileName << ": format type " << buffer
+                             "Reading Matrix Market file " << fileName << ": format type " << buffer
                              << " illegal, must be array or coordinate" )
     }
 
@@ -314,7 +314,7 @@ void MatrixMarketIO::readMMHeader(
     else
     {
         SCAI_THROWEXCEPTION( common::IOException,
-                             "Reading _Matrix Market fille " << fileName
+                             "Reading Matrix Market fille " << fileName
                              << ": data type field = " << buffer << " is illegal"
                              << ", should be real, double, integer, complex, pattern" )
     }
@@ -343,7 +343,7 @@ void MatrixMarketIO::readMMHeader(
     else
     {
         SCAI_THROWEXCEPTION( common::IOException,
-                             "Reading _Matrix Market fille " << inFile.getFileName()
+                             "Reading Matrix Market fille " << inFile.getFileName()
                              << ": symmetry = " << buffer << " is illegal"
                              << ", should be general, symmetric, skew-symmetric or hermitian" )
     }
@@ -464,7 +464,7 @@ void MatrixMarketIO::writeArrayImpl(
 {
     SCAI_LOG_INFO( logger, *this << ": write array " << array << " to " << fileName );
 
-    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": _Matrix market format can not be written binary" );
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
@@ -505,7 +505,7 @@ void MatrixMarketIO::writeSparseImpl(
 
     SCAI_LOG_INFO( logger, *this << ": write sparse to " << fileName );
 
-    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": _Matrix market format can not be written binary" );
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
@@ -966,7 +966,7 @@ void MatrixMarketIO::writeStorageImpl(
 
     SCAI_REGION( "IO.MM.writeCOO" )
 
-    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": _Matrix market format can not be written binary" );
+    SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     COOStorage<ValueType> coo( storage );
 
@@ -992,7 +992,7 @@ void MatrixMarketIO::writeStorageImpl(
         SCAI_LOG_INFO( logger, "#values = " << cooIA.size() << ", due to symmetry " << symmetry2str( symFlag ) )
     }
 
-    // Attention: indexing in _MatrixMarket starts with 1 and not with 0 as in LAMA
+    // Attention: indexing in MatrixMarket starts with 1 and not with 0 as in LAMA
 
     cooIA += 1;
     cooJA += 1;
@@ -1190,7 +1190,7 @@ void MatrixMarketIO::readStorageImpl(
 
     if ( common::isComplex( mmType ) && !common::isComplex( common::TypeTraits<ValueType>::stype ) )
     {
-        SCAI_LOG_WARN( logger, "Read matrix from _Matrix Market file " << fileName
+        SCAI_LOG_WARN( logger, "Read matrix from Matrix Market file " << fileName
                        << ": contains complex data but read in non-complex storage " << storage )
     }
 
@@ -1240,7 +1240,7 @@ void MatrixMarketIO::readStorageImpl(
     SCAI_LOG_DEBUG( logger, "read ja  : " << ja  )
     SCAI_LOG_DEBUG( logger, "read val : " << val )
 
-    // _MatrixMarket starts indexes always with one, so shift all row/col indexes
+    // MatrixMarket starts indexes always with one, so shift all row/col indexes
 
     ia -= 1;
     ja -= 1;
