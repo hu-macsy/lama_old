@@ -180,13 +180,13 @@ public:
      *  Implementation of pure method of _Matrix::getValueType 
      *
      *  The following code demonstrates how this routine might be used to
-     *  make a safe reinterpret_cast from the base class _Matrix.
+     *  make a safe static_cast from the base class _Matrix.
      *
      *  \code
      *    _Matrix& m = ...   
      *    if ( m.getValueType() == TypeTraits<T>::stype )
      *    {
-     *        Matrix<T>& mt = reinterpret_cast<Matrix<T>&>( m );
+     *        Matrix<T>& mt = static_cast<Matrix<T>&>( m );
      *    }
      *  \endcode
      */

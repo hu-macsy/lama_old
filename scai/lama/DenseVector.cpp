@@ -1331,8 +1331,8 @@ void DenseVector<ValueType>::vectorPlusVector( const ValueType& alpha, const Vec
         allocate( x.getDistributionPtr() );   // result inherits distribution of operands
     }
 
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
-    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
+    const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
 
     SCAI_ASSERT_EQ_DEBUG( mLocalValues.size(), denseX.mLocalValues.size(), "serious space mismatch" )
     SCAI_ASSERT_EQ_DEBUG( mLocalValues.size(), denseY.mLocalValues.size(), "serious space mismatch" )
@@ -1861,7 +1861,7 @@ void DenseVector<ValueType>::unaryOp( const Vector<ValueType>& x, common::UnaryO
 
     allocate( x.getDistributionPtr() );
 
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
 
     HArrayUtils::unaryOp( mLocalValues, denseX.mLocalValues, op, getContextPtr() );
 }
@@ -1895,8 +1895,8 @@ void DenseVector<ValueType>::binaryOp( const Vector<ValueType>& x, BinaryOp op, 
 
     allocate( x.getDistributionPtr() );
 
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
-    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
+    const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
 
     HArrayUtils::binaryOp( mLocalValues, denseX.getLocalValues(), denseY.getLocalValues(), op, getContextPtr() );
 }
@@ -1929,7 +1929,7 @@ void DenseVector<ValueType>::binaryOpScalar( const Vector<ValueType>& x, const V
         allocate( x.getDistributionPtr() ); 
     }
     
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
     
     HArrayUtils::binaryOpScalar( mLocalValues, denseX.getLocalValues(), alpha, op, swap, getContextPtr() );
 }

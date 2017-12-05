@@ -1187,7 +1187,7 @@ void SparseVector<ValueType>::unaryOp( const Vector<ValueType>& x, common::Unary
         return;
     }
 
-    const SparseVector<ValueType>& sparseX = reinterpret_cast<const SparseVector<ValueType>&>( x );
+    const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
 
     if ( &x != this )
     {
@@ -1213,8 +1213,8 @@ void SparseVector<ValueType>::binaryOp( const Vector<ValueType>& x, const common
 
     if ( x.getVectorKind() == VectorKind::SPARSE && y.getVectorKind() == VectorKind::SPARSE )
     {
-        const SparseVector<ValueType>& sparseX = reinterpret_cast<const SparseVector<ValueType>&>( x );
-        const SparseVector<ValueType>& sparseY = reinterpret_cast<const SparseVector<ValueType>&>( y );
+        const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
+        const SparseVector<ValueType>& sparseY = static_cast<const SparseVector<ValueType>&>( y );
 
         binaryOpSparse( sparseX, op, sparseY );
     }
@@ -1252,7 +1252,7 @@ void SparseVector<ValueType>::binaryOpScalar( const Vector<ValueType>& x, const 
         return;
     }
 
-    const SparseVector<ValueType> sparseX = reinterpret_cast<const SparseVector<ValueType>&>( x );
+    const SparseVector<ValueType> sparseX = static_cast<const SparseVector<ValueType>&>( x );
 
     if ( &x != this )
     {
@@ -1437,7 +1437,7 @@ void SparseVector<ValueType>::vectorPlusScalar( const ValueType& alpha, const Ve
         return;
     }
 
-    const SparseVector<ValueType>& sparseX = reinterpret_cast<const SparseVector<ValueType>&>( x );
+    const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
 
     if ( &x != this )
     {

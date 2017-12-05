@@ -261,7 +261,7 @@ void DIAStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 
     SCAI_REGION( "Storage.DIA.getSparseRow" )
 
-    HArray<ValueType>& typedValues = reinterpret_cast<HArray<ValueType>&>( values );
+    HArray<ValueType>& typedValues = static_cast<HArray<ValueType>&>( values );
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
 
@@ -1073,7 +1073,7 @@ void DIAStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<DIAStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<DIAStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<DIAStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */

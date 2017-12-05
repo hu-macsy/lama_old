@@ -729,7 +729,7 @@ void StencilStorage<ValueType>::assign( const _MatrixStorage& other )
 
     _MatrixStorage::setDimension( other.getNumRows(), other.getNumColumns() );
 
-    const StencilStorage<ValueType> otherStencilStorage = reinterpret_cast<const StencilStorage<ValueType>&>( other );
+    const StencilStorage<ValueType> otherStencilStorage = static_cast<const StencilStorage<ValueType>&>( other );
 
     // Important: swap the border types in each, border type must not be BORDER_REFLECTING
 
@@ -750,7 +750,7 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
     SCAI_ASSERT_EQ_ERROR( Format::STENCIL, other.getFormat(),
                           "stencil matrix/storage: transposed argument must also be stencil matrix" );
 
-    const StencilStorage<ValueType> otherStencilStorage = reinterpret_cast<const StencilStorage<ValueType>&>( other );
+    const StencilStorage<ValueType> otherStencilStorage = static_cast<const StencilStorage<ValueType>&>( other );
 
     // Important: swap the border types in each, border type must not be BORDER_REFLECTING
 

@@ -59,7 +59,7 @@ namespace lama
 template<typename ValueType>
 Matrix<ValueType>* Matrix<ValueType>::getMatrix( Format format )
 {
-    return reinterpret_cast<Matrix<ValueType>*>( _Matrix::getMatrix( format, TypeTraits<ValueType>::stype ) );
+    return static_cast<Matrix<ValueType>*>( _Matrix::getMatrix( format, TypeTraits<ValueType>::stype ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -273,10 +273,10 @@ void Matrix<ValueType>::matrixTimesVector(
         result.allocate( targetDist );
     }
 
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
-    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
+    const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
 
-    DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
+    DenseVector<ValueType>& denseResult = static_cast<DenseVector<ValueType>&>( result );
 
     // Now call the typed version implemented by derived class
 
@@ -334,7 +334,7 @@ void Matrix<ValueType>::setRow(
 
     // row should be a DenseVector of same type, otherwise use a temporary
 
-    const DenseVector<ValueType>& denseRow = reinterpret_cast<const DenseVector<ValueType>&>( row );
+    const DenseVector<ValueType>& denseRow = static_cast<const DenseVector<ValueType>&>( row );
 
     SCAI_ASSERT_ERROR( denseRow.getDistribution().isReplicated(), "cannot set distributed row" )
 
@@ -382,7 +382,7 @@ void Matrix<ValueType>::setColumn(
 
     SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, this->getNumColumns(), "illegal col index" )
 
-    const DenseVector<ValueType>& denseColumn = reinterpret_cast<const DenseVector<ValueType>&>( column );
+    const DenseVector<ValueType>& denseColumn = static_cast<const DenseVector<ValueType>&>( column );
 
     SCAI_ASSERT_EQ_ERROR( denseColumn.getDistribution(), this->getRowDistribution(), "distribution mismatch" )
 
@@ -415,7 +415,7 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
     const Distribution& rowDist = this->getRowDistribution();
     const Communicator& comm = rowDist.getCommunicator();
 
-    const MatrixStorage<ValueType>& localData = reinterpret_cast<const MatrixStorage<ValueType>&>( this->getLocalStorage() );
+    const MatrixStorage<ValueType>& localData = static_cast<const MatrixStorage<ValueType>&>( this->getLocalStorage() );
 
     if ( comm.getRank() == 0 )
     {

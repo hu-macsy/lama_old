@@ -813,7 +813,7 @@ void SparseMatrix<ValueType>::getRowLocal( Vector<ValueType>& row, const IndexTy
 
     if ( row.getVectorKind() == VectorKind::SPARSE )
     {
-        SparseVector<ValueType>& sparseRow = reinterpret_cast<SparseVector<ValueType>&>( row );
+        SparseVector<ValueType>& sparseRow = static_cast<SparseVector<ValueType>&>( row );
 
         sparseRow.allocate( getNumColumns() );
 
@@ -825,7 +825,7 @@ void SparseMatrix<ValueType>::getRowLocal( Vector<ValueType>& row, const IndexTy
     }
     else if ( row.getVectorKind() == VectorKind::DENSE )
     {
-        DenseVector<ValueType>& denseRow = reinterpret_cast<DenseVector<ValueType>&>( row );
+        DenseVector<ValueType>& denseRow = static_cast<DenseVector<ValueType>&>( row );
         denseRow.allocate( getNumColumns() );
         getLocalRowDense( denseRow.getLocalValues(), localRowIndex );
     }
@@ -856,7 +856,7 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
         return;
     }
 
-    SparseVector<ValueType>& spRow = reinterpret_cast<SparseVector<ValueType>&>( row );
+    SparseVector<ValueType>& spRow = static_cast<SparseVector<ValueType>&>( row );
 
     spRow.allocate( getColDistributionPtr() );   // by this way it gets the correct rep distribution
 
@@ -996,7 +996,7 @@ void SparseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType
 
     SCAI_ASSERT_DEBUG( dynamic_cast<SparseVector<ValueType>*>( &col ), "col not SparseVector<" << getValueType() << ">" )
 
-    SparseVector<ValueType>& spCol = reinterpret_cast<SparseVector<ValueType>&>( col );
+    SparseVector<ValueType>& spCol = static_cast<SparseVector<ValueType>&>( col );
 
     spCol.allocate( getRowDistributionPtr() );   // resizes local arrays to 0
 
@@ -1080,7 +1080,7 @@ void SparseMatrix<ValueType>::getLocalRowSparse( HArray<IndexType>& indexes, _HA
 
     if ( values.getValueType() == tmpValues.getValueType() )
     {
-        HArray<ValueType>& typedValues = reinterpret_cast<HArray<ValueType>& >( values );
+        HArray<ValueType>& typedValues = static_cast<HArray<ValueType>& >( values );
         typedValues.swap( tmpValues );
     }
     else
