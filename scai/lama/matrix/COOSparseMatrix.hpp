@@ -134,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit COOSparseMatrix( const Expression_SM& expression );
+    explicit COOSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit COOSparseMatrix( const Expression_SMM& expression );
+    explicit COOSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit COOSparseMatrix( const Expression_SM_SM& expression );
+    explicit COOSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a COO sparse matrix with distributed COO storage data.
      *

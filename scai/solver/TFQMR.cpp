@@ -249,7 +249,7 @@ void TFQMR<ValueType>::iterationOdd()
         vecVT = vecVEven;
     }
 
-    vecZ.scale( beta );
+    vecZ *= beta;
     vecZ = beta * A * vecVOdd + beta * vecZ;
     vecZ = A * vecVT + vecZ;
     rhoOld = rhoNew;

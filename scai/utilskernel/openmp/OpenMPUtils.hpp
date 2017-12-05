@@ -184,6 +184,7 @@ public:
     template<typename ValueType1, typename ValueType2>
     static void setGatherSparse(
         ValueType1 target[],
+        const ValueType2 sourceZeroVal,
         const ValueType2 sourceNonZeroValues[],
         const IndexType sourceNonZeroIndexes[],
         const IndexType sourceNNZ,

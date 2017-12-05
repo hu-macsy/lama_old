@@ -36,7 +36,6 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
@@ -93,7 +92,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NormTest" )
 BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
 {
     scai::lama::DenseVector<ValueType> x( 4, 1.0 );
-    scai::lama::Scalar s = 3.0;
+    ValueType s = 3.0;
 
     scai::lama::DenseVector<ValueType> tmp( s * x );
 

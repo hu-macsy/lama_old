@@ -35,7 +35,7 @@ All you need for the LAMA installation are the following software packages:
 
   - Now mandatory: support of the ISO-C++ standard C++11 (e.g. since gcc 4.7, icc 11.1, clang 2.9)
 
-- :ref:`Boost <scaicommon:Boost>` (version 1.34 or later)
+- :ref:`Boost <scaicommon:Boost>` (version 1.58 or later)
 
   - Required if unit tests of the projects should be built
 

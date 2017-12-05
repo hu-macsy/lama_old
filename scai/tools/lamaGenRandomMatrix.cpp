@@ -103,6 +103,87 @@ static common::ScalarType getType()
     return type;
 }
 
+template<typename ValueType> 
+void generate( const IndexType nrows, const IndexType ncols, const float fillRate, std::string& matrixFileName )
+{
+    CSRSparseMatrix<ValueType> m( nrows, ncols );
+
+    {
+        MatrixAssemblyAccess<ValueType> access( m, common::BinaryOp::COPY );
+
+        for ( IndexType i = 0; i < nrows; ++i )
+        {
+            for ( IndexType j = 0; j < ncols; ++j )
+            {
+                bool takeIt = common::Math::randomBool( fillRate );
+
+                if ( takeIt )
+                {
+                    double val = common::Math::random<ValueType>( 1 );
+                    access.push( i, j, val );
+                }
+            }
+        }
+    }
+
+    DenseVector<ValueType> x;
+    DenseVector<ValueType> b;
+
+    x.setRandom( m.getColDistributionPtr(), 1 );
+    b = m * x;
+
+    cout << "m = " << m << endl;
+    cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;
+    cout << "x = " << x << endl;
+    cout << "b = " << b << endl;
+    cout << endl;
+
+    string suffix = FileIO::getSuffix( matrixFileName );
+
+    string vectorXFileName = matrixFileName;
+    string vectorBFileName = matrixFileName;
+
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // known suffix so we can use it directly
+
+        vectorXFileName.replace( vectorXFileName.length() - suffix.length(), 1, "_x." );
+        vectorBFileName.replace( vectorBFileName.length() - suffix.length(), 1, "_b." );
+
+        if ( suffix == ".frm" )
+        {
+            // SAMG format uses two different suffixes for matrix and vector
+            // take <filename>.frv instead of <filename>.frm
+
+            vectorXFileName.replace( vectorXFileName.length() - 1, 1, "v" );
+            vectorBFileName.replace( vectorBFileName.length() - 1, 1, "v" );
+        }
+    }
+    else
+    {
+        if ( suffix.length() > 0 )
+        {
+            cout << "ATTENTION: " << suffix << " is unknown suffix, take SAMG format" << endl;
+        }
+
+        matrixFileName += ".frm";
+        vectorXFileName += "_x.frv";
+        vectorBFileName += "_b.frv";
+
+    }
+
+    cout << "Write matrix to file " << matrixFileName;
+    cout << ", vector x to " << vectorXFileName;
+    cout << ", and vector b to file " << vectorBFileName << endl;
+
+    b.writeToFile( vectorBFileName );
+    cout << "Written vector b (rhs) to file " << vectorBFileName << endl;
+    x.writeToFile( vectorXFileName );
+    cout << "Written matrix to file " << matrixFileName << endl;
+    m.writeToFile( matrixFileName );
+    cout << "Written vector x (solution) to file " << vectorXFileName << endl;
+}
+
 int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
@@ -160,90 +241,15 @@ int main( int argc, const char* argv[] )
 
     common::ScalarType stype = getType();
 
-    _MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, stype ) );
+#define DO_GENERATE( ValueType )                                        \
+    if ( stype == common::TypeTraits<ValueType>::stype )                \
+    {                                                                   \
+        generate<ValueType>( nrows, ncols, fillRate, matrixFileName );  \
+    }                                                                  
 
-    _Matrix& m = *matrixPtr;
+    SCAI_COMMON_LOOP( DO_GENERATE, SCAI_NUMERIC_TYPES_HOST )
 
-    m.allocate( nrows, ncols );
-
-    {
-        MatrixAssemblyAccess<double> access( m, common::BinaryOp::COPY );
-
-        for ( IndexType i = 0; i < nrows; ++i )
-        {
-            for ( IndexType j = 0; j < ncols; ++j )
-            {
-                bool takeIt = common::Math::randomBool( fillRate );
-
-                if ( takeIt )
-                {
-                    double val = common::Math::random<double>( 1 );
-                    access.push( i, j, val );
-                }
-            }
-        }
-    }
-
-    std::unique_ptr<_Vector> xPtr( _Vector::getVector( VectorKind::DENSE, stype ) );
-    std::unique_ptr<_Vector> bPtr( _Vector::getVector( VectorKind::DENSE, stype ) );
-
-    _Vector& x = *xPtr;
-    _Vector& b = *bPtr;
-
-    x.setRandom( m.getColDistributionPtr(), 1 );
-    b = m * x;
-
-    cout << "m = " << m << endl;
-    cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;
-    cout << "x = " << x << endl;
-    cout << "b = " << b << endl;
-    cout << endl;
-
-    string suffix = FileIO::getSuffix( matrixFileName );
-
-    string vectorXFileName = matrixFileName;
-    string vectorBFileName = matrixFileName;
-
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // known suffix so we can use it directly
-
-        vectorXFileName.replace( vectorXFileName.length() - suffix.length(), 1, "_x." );
-        vectorBFileName.replace( vectorBFileName.length() - suffix.length(), 1, "_b." );
-
-        if ( suffix == ".frm" )
-        {
-            // SAMG format uses two different suffixes for matrix and vector
-            // take <filename>.frv instead of <filename>.frm
-
-            vectorXFileName.replace( vectorXFileName.length() - 1, 1, "v" );
-            vectorBFileName.replace( vectorBFileName.length() - 1, 1, "v" );
-        }
-    }
-    else
-    {
-        if ( suffix.length() > 0 )
-        {
-            cout << "ATTENTION: " << suffix << " is unknown suffix, take SAMG format" << endl;
-        }
-
-        matrixFileName += ".frm";
-        vectorXFileName += "_x.frv";
-        vectorBFileName += "_b.frv";
-
-    }
-
-    cout << "Write matrix to file " << matrixFileName;
-    cout << ", vector x to " << vectorXFileName;
-    cout << ", and vector b to file " << vectorBFileName << endl;
-
-    b.writeToFile( vectorBFileName );
-    cout << "Written vector b (rhs) to file " << vectorBFileName << endl;
-    x.writeToFile( vectorXFileName );
-    cout << "Written matrix to file " << matrixFileName << endl;
-    m.writeToFile( matrixFileName );
-    cout << "Written vector x (solution) to file " << vectorXFileName << endl;
+#undef DO_GENERATE
 
     return 0;
 }

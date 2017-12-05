@@ -185,43 +185,43 @@ DIASparseMatrix<ValueType>::DIASparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM& expression )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const _Matrix& master = expression.getArg2();
+    const Matrix<ValueType>& master = expression.getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    _Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM& expression )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const _Matrix& master = expression.getArg1().getArg2();
+    const Matrix<ValueType>& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    _Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM_SM& expression )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
     // inherit context from matA in alpha * matA + beta * matB
-    const _Matrix& master = expression.getArg1().getArg2();
+    const Matrix<ValueType>& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    _Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */

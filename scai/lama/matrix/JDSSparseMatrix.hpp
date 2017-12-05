@@ -134,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit JDSSparseMatrix( const Expression_SM& expression );
+    explicit JDSSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit JDSSparseMatrix( const Expression_SMM& expression );
+    explicit JDSSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit JDSSparseMatrix( const Expression_SM_SM& expression );
+    explicit JDSSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a JDS sparse matrix with distributed JDS storage data.
      *

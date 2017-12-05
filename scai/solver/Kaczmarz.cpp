@@ -55,7 +55,9 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, Kaczmarz<ValueType>::logger, "Solver.IterativeSolver.Kaczmarz" )
 
 using lama::Matrix;
+using lama::MatrixKind;
 using lama::Vector;
+using lama::VectorKind;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -118,7 +120,15 @@ void Kaczmarz<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 
     // matrix type dense or sparse decides whether vector mRow is dense or sparse
 
-    runtime.mRow.reset( coefficients.newVector( coefficients.getRowDistributionPtr() ) );
+    VectorKind kind = VectorKind::DENSE;
+
+    if ( coefficients.getMatrixKind() == MatrixKind::SPARSE )
+    {
+        kind = VectorKind::SPARSE;
+    }
+
+    runtime.mRow.reset( Vector<ValueType>::getVector( kind ) );
+    runtime.mRow->allocate( coefficients.getRowDistributionPtr() );
 }
 
 /* ========================================================================= */

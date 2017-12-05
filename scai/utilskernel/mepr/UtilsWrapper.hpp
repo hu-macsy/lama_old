@@ -128,14 +128,15 @@ struct UtilsWrapperT<ValueType, common::mepr::NullType>
     }
 
     static void sparseGather(
-        hmemo::HArray<ValueType>&,
-        const hmemo::_HArray& sourceVA,
+        hmemo::_HArray& target,
+        const ValueType,
+        const hmemo::HArray<ValueType>&,
         const hmemo::HArray<IndexType>&,
         const hmemo::HArray<IndexType>&,
         const common::BinaryOp,
         const hmemo::ContextPtr )
     {
-        COMMON_THROWEXCEPTION( "sparseGather: source type " << sourceVA.getValueType() << " unsupported" )
+        COMMON_THROWEXCEPTION( "sparseGather: target type " << target.getValueType() << " unsupported" )
     }
 
     static void scatter(
@@ -208,17 +209,6 @@ struct UtilsWrapperTT<common::mepr::NullType, TList>
         const hmemo::ContextPtr )
     {
         COMMON_THROWEXCEPTION( "gather: target type unsupported, target = " << target << ", source = " << source )
-    }
-
-    static void sparseGather(
-        hmemo::_HArray& target,
-        const hmemo::_HArray& source,
-        const hmemo::HArray<IndexType>&,
-        const hmemo::HArray<IndexType>&,
-        const common::BinaryOp,
-        const hmemo::ContextPtr )
-    {
-        COMMON_THROWEXCEPTION( "sparseGather: target type unsupported, target = " << target << ", source = " << source )
     }
 
     static void scatter(
@@ -325,21 +315,22 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
     }
 
     static void sparseGather(
-        hmemo::HArray<ValueType>& target,
-        const hmemo::_HArray& sourceVA,
+        hmemo::_HArray& target,
+        const ValueType sourceZ,
+        const hmemo::HArray<ValueType>& sourceVA,
         const hmemo::HArray<IndexType>& sourceIA,
         const hmemo::HArray<IndexType>& indexes,
         const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
     {
-        if ( common::getScalarType<H>() ==  sourceVA.getValueType() )
+        if ( common::getScalarType<H>() ==  target.getValueType() )
         {
-            const hmemo::HArray<H>& typedSourceVA = reinterpret_cast<const hmemo::HArray<H>&>( sourceVA );
-            HArrayUtils::sparseGatherImpl( target, typedSourceVA, sourceIA, indexes, op, prefLoc );
+            hmemo::HArray<H>& typedTarget = reinterpret_cast<hmemo::HArray<H>&>( target );
+            HArrayUtils::sparseGatherImpl( typedTarget, sourceZ, sourceVA, sourceIA, indexes, op, prefLoc );
         }
         else
         {
-            UtilsWrapperT< ValueType, Tail >::sparseGather( target, sourceVA, sourceIA, indexes, op, prefLoc );
+            UtilsWrapperT< ValueType, Tail >::sparseGather( target, sourceZ, sourceVA, sourceIA, indexes, op, prefLoc );
         }
     }
 
@@ -468,25 +459,6 @@ struct UtilsWrapperTT<common::mepr::TypeList<H, Tail>, TList2 >
         else
         {
             UtilsWrapperTT<Tail, TList2>::gather( target, source, indexes, op, prefLoc );
-        }
-    }
-
-    static void sparseGather(
-        hmemo::_HArray& target,
-        const hmemo::_HArray& sourceVA,
-        const hmemo::HArray<IndexType>& sourceIA,
-        const hmemo::HArray<IndexType>& indexes,
-        const common::BinaryOp op,
-        const hmemo::ContextPtr prefLoc )
-    {
-        if ( common::getScalarType<H>() == target.getValueType() )
-        {
-            hmemo::HArray<H>& typedTarget = reinterpret_cast<hmemo::HArray<H>&>( target );
-            UtilsWrapperT<H, TList2>::sparseGather( typedTarget, sourceVA, sourceIA, indexes, op, prefLoc );
-        }
-        else
-        {
-            UtilsWrapperTT<Tail, TList2>::sparseGather( target, sourceVA, sourceIA, indexes, op, prefLoc );
         }
     }
 

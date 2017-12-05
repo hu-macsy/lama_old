@@ -174,7 +174,7 @@ void MINRES<ValueType>::Lanczos()
     beta = betaNew;
     vecVOld.swap( vecV );
     vecV.swap( vecVNew );
-    vecVNew = A * vecV - beta * vecVOld;
+    vecVNew = A * vecV - ValueType( beta ) * vecVOld;
     alpha = vecV.dotProduct( vecVNew );
     vecVNew = vecVNew - alpha * vecV;
     betaNew = vecVNew.l2Norm();
@@ -185,7 +185,7 @@ void MINRES<ValueType>::Lanczos()
     }
     else
     {
-        vecVNew = vecVNew / betaNew;
+        vecVNew = vecVNew / ValueType( betaNew );
     }
 }
 

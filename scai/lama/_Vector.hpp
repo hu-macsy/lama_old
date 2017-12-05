@@ -85,20 +85,18 @@ typedef std::shared_ptr<class _Vector> _VectorPtr;
 
 typedef std::pair<VectorKind, common::ScalarType> VectorCreateKeyType;
 
+/* ========================================================================= */
+/*  class _Vector                                                            */
+/* ========================================================================= */
+
 /**
- * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
- *
- * Vector is one of the LAMA base types and should be used in all situations where it is not necessary to access a
- * single element or to create a new Vector.
+ * @brief The class _Vector is an abstract class that represents a distributed 1D real or complex vector.
  *
  * As this class is an abstract class, all constructors are protected.
  *
- * The following methods must be implemented by derived classes:
- *
- *  - buildLocalValues to get all local elements on one processor
- *
- * This base class can be used to define dense and sparse vectors of
- * any type.
+ * This base class just provides all methods that are independent of the type used for
+ * the representation of vector elements. Furthermore it provides a factory to generate vectors
+ * of any kind (DENSE, SPARSE ) and any value Type.
  */
 class COMMON_DLL_IMPORTEXPORT _Vector:
 
@@ -108,20 +106,12 @@ class COMMON_DLL_IMPORTEXPORT _Vector:
 {
 public:
 
-    /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
-     */
-    static _Vector* getVector( const VectorKind format, const common::ScalarType valueType );
-
-    /** @brief More convenient routine to create a dense vector with certain properties.
+    /** @brief More convenient interface of the create routine of factory that avoids the use of CreateKeyType.
      *
-     *  @param[in] valueType specifies the type of the Vector to be created
-     *  @param[in] distribution becomes the distribution of the new vector
-     *  @param[in] context optional, becomes the context of the new vector
+     *  @param[in] kind is either VectorKind::SPARSE or VectorKind::DENSE
+     *  @param[in] type is value type of elements, e.g. ScalarType::FLOAT, ScalarType::DOUBLE 
      */
-    static _Vector* getDenseVector(
-        const common::ScalarType valueType,
-        dmemo::DistributionPtr distribution,
-        hmemo::ContextPtr context = hmemo::ContextPtr() );
+    static _Vector* getVector( const VectorKind kind, const common::ScalarType type );
 
     /**
      * @brief Checks for this vector whether the content of its data is sound.
@@ -141,11 +131,6 @@ public:
     virtual bool isConsistent() const = 0;
 
     /**
-     * @brief ExpressionMemberType is the type that is used the template Expression to store a _Vector.
-     */
-    typedef const _Vector& ExpressionMemberType;
-
-    /**
      * @brief Releases all allocated resources.
      */
     virtual ~_Vector();
@@ -153,141 +138,6 @@ public:
     /** Each derived vector must give info about its kind (DENSE or SPARSE). */
 
     virtual VectorKind getVectorKind() const = 0;
-
-    /**
-     * @brief The assignment operator assigns the result of the passed expression
-     *        to this.
-     *
-     * The assignment operator assigns the result of the passed expression to
-     * this, if necessary new memory will be allocated. The Vector will hold
-     * the result of the _Matrix Vector multiplication represented by
-     * expression.
-     *
-     * @param[in] expression the input expression.
-     * @return               a reference to this.
-     * @throws               Exceptions thrown by the Allocator
-     */
-
-    /** this = alpha * A * x */
-
-    _Vector& operator=( const Expression_SMV& expression );
-
-    /** this = alpha * x * A */
-
-    _Vector& operator=( const Expression_SVM& expression );
-
-    /** this = alpha * x + beta * y */
-
-    _Vector& operator=( const Expression_SV_SV& expression );
-
-    /** this = alpha * A * x + beta * y */
-
-    _Vector& operator=( const Expression_SMV_SV& expression );
-
-    /** this = alpha * x * A + beta * y */
-
-    _Vector& operator=( const Expression_SVM_SV& expression );
-
-    /** this = alpha * x */
-
-    _Vector& operator=( const Expression_SV& expression );
-
-    /** this = alpha * x + beta */
-
-    _Vector& operator=( const Expression_SV_S& );
-
-    /** this = x * y */
-
-    _Vector& operator=( const Expression_VV& );
-
-    /** this = alpha * x * y */
-
-    _Vector& operator=( const Expression_SVV& );
-
-    /** this +=  alpha * A * x */
-
-    _Vector& operator+=( const Expression_SMV& expression );
-
-    /** this +=  alpha * x * A */
-
-    _Vector& operator+=( const Expression_SVM& expression );
-
-    /** this +=  alpha * x */
-
-    _Vector& operator+=( const Expression_SV& expression );
-
-    /** this -=  alpha * A * x */
-
-    _Vector& operator-=( const Expression_SMV& expression );
-
-    /** this -=  alpha * x * A */
-
-    _Vector& operator-=( const Expression_SVM& expression );
-
-    /** this -=  alpha * x */
-
-    _Vector& operator-=( const Expression_SV& expression );
-
-    /**
-     * @brief Assigns the values of other to the elements of this.
-     *
-     * @param[in] other   the vector to get values from.
-     * @return            a reference to this.
-     */
-    _Vector& operator=( const _Vector& other );
-
-    /**
-     * @brief Returns the addition of this and other.
-     *
-     * @param[in] other the vector to do the addition with.
-     * @return          a reference to this.
-     */
-    _Vector& operator+=( const _Vector& other );
-
-    /**
-     * @brief Returns the subtraction of this and other.
-     *
-     * @param[in] other the vector to do the subtraction with.
-     * @return          a reference to this.
-     */
-    _Vector& operator-=( const _Vector& other );
-
-    /**
-     * @brief Add a scalar value to all elements of this vector.
-     *
-     * @param[in] value   the value to add all elements of this with.
-     * @return            a reference to this.
-     */
-    _Vector& operator+=( const Scalar value );
-
-    /**
-     * @brief Sub a scalar value to all elements of this vector.
-     *
-     * @param[in] value   the value to add all elements of this with.
-     * @return            a reference to this.
-     */
-    _Vector& operator-=( const Scalar value );
-
-    /**
-     * @brief Assigns the passed value to all elements of this.
-     *
-     * @param[in] value   the value to assign to all elements of this.
-     * @return            a reference to this.
-     */
-    _Vector& operator=( const Scalar value );
-
-    /**
-     * @brief Returns a copy of the value at the passed global index.
-     *
-     * @param[in] i    the global index to get the value at.
-     * @return         a copy of the value at the passed global position.
-     *
-     * As this operator requires communication ins SPMD mode it can be very inefficient in some situations.
-     */
-    Scalar operator()( const IndexType i ) const
-    {
-        return getValue( i );
-    }
 
     /**
      * @brief Sets the local values of a vector by a dense array.
@@ -366,45 +216,6 @@ public:
     template<typename OtherValueType>
     void setRawData( const IndexType size, const OtherValueType values[] );
 
-    /** Set a replicated vector with sparse vector data
-     *
-     *  @param[in] n will be the size of the vector
-     *  @param[in] nonZeroIndexes positions with non-zero values
-     *  @param[in] nonZeroValues values for the non-zero value
-     *  @param[in] zeroValue is the 'zero' value, defaults to 0
-     *
-     *  nonZeroIndexes and nonZeroValues must have the same size. nonZeroIndexes must 
-     *  contain valid indexes. They do not have to be sorted.
-     */
-    void setSparseData( 
-        const IndexType n, 
-        const hmemo::HArray<IndexType>& nonZeroIndexes, 
-        const hmemo::_HArray& nonZeroValues, 
-        const Scalar zeroValue = Scalar( 0 ) )
-    {
-        setSameValue( n, zeroValue );
-        fillSparseData( nonZeroIndexes, nonZeroValues, common::BinaryOp::COPY );
-    } 
-
-    /** Same as setSparseData but here with raw data for non-zero indexes and values. 
-     *
-     *  @tparam OtherValueType is the type of the raw data 
-     *  @param[in] n will be the size of the vector
-     *  @param[in] nnz stands for the number of the non-zero values
-     *  @param[in] nonZeroIndexes pointer to array with positions of non-zero values
-     *  @param[in] nonZeroValues pointer to array with values
-     *  @param[in] zeroValue is the value for all positions that do not appear in nonZeroIndexes
-     *
-     *  Note: The value type of the raw data might be different to the value type of the vector.
-     */
-    template<typename OtherValueType>
-    void setSparseRawData( 
-        const IndexType n, 
-        const IndexType nnz,
-        const IndexType nonZeroIndexes[],
-        const OtherValueType nonZeroValues[],
-        const Scalar zeroValue = Scalar( 0 ) );
-
     /**
      * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
      *
@@ -476,46 +287,6 @@ public:
         fillRandom( bound );
     }
 
-    /** 
-     *  This method gives the vector a size and initializes it with a value.
-     *
-     *  @param[in] n is the size of the replicated vector
-     *  @param[in] value is the value assigned to all elements
-     *
-     *  \code
-     *    DenseVector<double> v1; 
-     *    v1.setSameValue( n, value );
-     *    DenseVector<double> v2( n );
-     *    v2 = value;
-     *    DenseVector<double> v3( n, value );
-     *  \endcode
-     */
-    void setSameValue( const IndexType n, const Scalar value )
-    {
-        allocate( n );
-        assign( value );
-    }
-
-    /** 
-     *  This method gives the vector a distribution and initializes it with a value.
-     *
-     *  @param[in] dist specifies size of the vector and mapping to the processors
-     *  @param[in] value is the value assigned to all elements
-     *
-     *  \code
-     *    DenseVector<double> v1; 
-     *    v1.setSameValue( n, value );
-     *    DenseVector<double> v2( n );
-     *    v2 = value;
-     *    DenseVector<double> v3( n, value );
-     *  \endcode
-     */
-    void setSameValue( dmemo::DistributionPtr dist, const Scalar value )
-    {
-        allocate( dist );
-        assign( value );
-    }
-
     /**
      *  Similiar to fillRandom but only replaces the vector elements with a certain probability.
      *
@@ -530,54 +301,6 @@ public:
      * \endcode
      */
     virtual void fillSparseRandom( const float fillRate, const IndexType bound ) = 0;
-
-    /**
-     *  Allocate a vector by its size, initialize it with a zero value and fill it sparsely.
-     *
-     * \code
-     *     A.allocate( n );
-     *     A = zeroValue;
-     *     A.fillSparseRandom( fill, bound );
-     * \endcode
-     */
-    void setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound );
-
-    /**
-     *  Allocate a vector by its distribution, initialize it with a zero value and fill it sparsely.
-     *
-     * \code
-     *     A.allocate( dist );
-     *     A = zeroValue;
-     *     A.fillSparseRandom( fill, bound );
-     * \endcode
-     */
-    void setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound );
-
-    /** @brief This method scales all vector values with a scalar.
-     *
-     * @param[in] scaling   is the source value.
-     *
-     * \deprecated{Please use operator*= or operator/= of Vector<ValueType>}
-     */
-    virtual void _scale( const Scalar scaling );
-
-    /**
-     * @brief Elementwise multiplication with another vector (same size), i.e. this[i] = this[i] * other[i]
-     *
-     * @param[in] other   the vector to multiply to do the multiplication per element
-     *
-     * \deprecated{Please use Vector<ValueType>::cwiseProdouct}
-     */
-    virtual void _cwiseProduct( const _Vector& other );
-
-    /**
-     * @brief Elementwise disision with another vector (same size), i.e. this[i] = this[i] / other[i]
-     *
-     * @param[in] other   the vector used for elementwise division
-     *
-     * \deprecated{Please use Vector<ValueType>::cwiseDivision}
-     */
-    virtual void _cwiseDivision( const _Vector& other );
 
     /**
      * This method sets a vector by reading its values from one or multiple files.
@@ -631,138 +354,11 @@ public:
     virtual common::ScalarType getValueType() const = 0;
 
     /**
-     * @brief Returns the value at the passed global index.
-     *
-     * @param[in] globalIndex   the global index to get the value at.
-     * @return                  a copy of the value at the passed global position.
-     *
-     * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
-     * Therefore it is recommended to query values on the local vector data with local indexes.
-     */
-    virtual Scalar getValue( IndexType globalIndex ) const = 0;
-
-    /**
-     *
-     * @brief This methods sets/updates a value of a vector.
-     *
-     * Be careful: this method might throw an exception on a sparse vector, if the element is not available
-     */
-    virtual void setValue( const IndexType globalIndex, const Scalar value ) = 0;
-
-    /**
-     * @brief Concatenate multiple vectors to a new vector.
-     *
-     * @param[in] dist specifies the distribution of the concatenated vector.
-     * @param[in] vectors is a vector with const pointers/references to the concatenated vectors
-     *
-     * Note: dist.getGlobalSize() == v[0]->size() + ... v[n-1]->size() 
-     *
-     * This routine should also be able to deal with aliases, i.e. one ore more of the pointers might be
-     * this vector itself.
-     */
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors ) = 0;
-
-    /**
-     * @brief Concatenate two vectors to a new vector.
-     *
-     * @param[in] v1 first part of the new vector
-     * @param[in] v2 second part of the new vector
-     */
-    virtual void cat( const _Vector& v1, const _Vector& v2 );
-
-    /**
-     * @brief Returns the global minimum value of this.
-     *
-     * @return   the global minimum value of this vector.
-     */
-    virtual Scalar _min() const = 0;
-
-    /**
-     * @brief Returns the global maximum value of this.
-     *
-     * @return the global maximum value of this vector.
-     */
-    virtual Scalar _max() const = 0;
-
-    /**
-     * @brief Returns the sum of all vector elements.
-     *
-     * @return the sum of all vector elements.
-     *
-     * As the summation of the values depends on the mapping of the values to
-     * the processors, this routine might return slightly different results
-     * for different parallel environments.
-     */
-    virtual Scalar _sum() const = 0;
-
-    /**
-     * @brief Returns the L1 norm of this.
-     *
-     * @return the L1 norm of this.
-     *
-     * l1Norm computes the sum of the absolute values of this.
-     */
-    virtual Scalar _l1Norm() const = 0;
-
-    /**
-     * @brief Returns the L2 norm of this.
-     *
-     * @return the L2 norm of this.
-     *
-     * l2Norm computes the sum of the absolute values of this.
-     */
-    virtual Scalar _l2Norm() const = 0;
-
-    /**
-     * @brief Returns the max norm of this.
-     *
-     * @return the max norm of this.
-     *
-     * maxNorm computes the value of this with the largest magnitude.
-     */
-    virtual Scalar _maxNorm() const = 0;
-
-    /**
-     * @brief Returns the max norm of the difference with another vector
-     *
-     *  v1.maxDiffNorm( v2 ) is equivalent to:
-     *
-     *  \code
-     *      Vector tmp = v1 - v2;
-     *      maxNorm( tmp )
-     *  \endcode
-     *
-     *  But it avoids the temporary vector wherever possible
-     */
-    virtual Scalar _maxDiffNorm( const _Vector& other ) const = 0;
-
-    /**
-     *  Method to create a new vector of the same kind and same type
-     *
-     *  /code
-     *    const _Vector& old = ...
-     *    _Vector* new = _Vector::create( old.getCreateValue() );
-     *  /endcode
-     *
-     *  This routine is very important to write code that can deal with arbitrary types
-     *  but does not have a template param for the value type.
-     */
-
-    virtual VectorCreateKeyType getCreateValue() const = 0;
-
-    /**
      *  @brief Creates a new Vector of the same kind and value type, and same context
      *
      *  /code
      *    const Vector& old = ...
      *    ....
-     *    Vector* new = old.newVector();
-     *
-     *    // is same as
-     *
-     *    Vector* new = Vector::create( old.getCreateValue() );
-     *    new->setContextPtr( old.getContextPtr() );
-     *  /endcode
      *
      *  The new vector is a zero vector, neither allocated, nor initialized.
      */
@@ -867,43 +463,7 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**
-     * @brief Assigns the passed value to all elements of this.
-     *
-     * @param[in] value   the value to assign to all elements of this.
-     */
-    virtual void assign( const Scalar value ) = 0;
-
-    /**
-     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX + scalarBeta * vectorY 
-     *
-     * Each vector class has to implement its own version of this assignment. 
-     */
-    virtual void vectorPlusVector( const Scalar& alphaS, const _Vector& x, const Scalar& betaS, const _Vector& y ) = 0;
-
-    /**
-     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * vectorY
-     *
-     * Each vector class has to implement its own version of this assignment. 
-     */
-    virtual void vectorTimesVector( const Scalar& alphaS, const _Vector& x, const _Vector& y ) = 0;
-
-    /**
-     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * scalarBeta
-     *
-     * Each vector class has to implement its own version of this assignment. 
-     */
-    virtual void vectorPlusScalar( const Scalar& alphaS, const _Vector& x, const Scalar& betaS ) = 0;
-
-    /**
-     * @brief Returns the dot product of this and other.
-     *
-     * @param[in] other   the vector to calculate the dot product with.
-     * @return            the dot product of this and other
-     */
-    virtual Scalar _dotProduct( const _Vector& other ) const = 0;
-
-    /**
-     *  @brief Update this vector with another vector elementwise
+     *  @brief Update this vector with another vector of any value elementwise
      * 
      *  @param[in] other is the input vector for setting, must have same distribution
      *  @param[in] op specifies the binary operation for the update
@@ -923,47 +483,6 @@ public:
      *  In contrary to the loop, it can be assumed that the vector operation is full parallel.
      */
     virtual void setVector( const _Vector& other, common::BinaryOp op, const bool swapArgs = false ) = 0;
-
-    /**
-     *  @brief Update this vector with a scalar value elementswise
-     * 
-     *  @param[in] value is th scalar element used for the operation
-     *  @param[in] op specifies the binary operation for the update
-     *  @param[in] swapScalar if true the operands are swapped
-     * 
-     *  The call v.setScalar( s, op ) is equivalent to the following code:
-     *
-     *  \code
-     *      for ( IndexType i = 0; i < v1.size(); ++i )
-     *      {
-     *          v[i] = v[i] op s;    // swapScalar = false
-     *          v[i] = s op v[i];    // swapScalar = true
-     *      }
-     *  \endcode
-     *
-     *  Here are some examples how this method is used:
-     *  \code
-     *      v.invert()      v.setScalar( Scalar( 1 ), BinaryOp::DIVIDE, true );
-     *      v += s;         v.setScalar( s, BinaryOp::ADD, false );
-     *      v *= s;         v.setScalar( s, BinaryOp::MULT, false );
-     *  \endcode
-     */
-    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar = false ) = 0;
-
-    /**
-     *  @brief Apply a UnaryOp operation for each element of the vector.
-     */
-    virtual void applyUnary( common::UnaryOp op ) = 0;
-
-    /**
-     *  @brief Boolean reduction returns true if all elements fullfill the compare operation with a scalar.
-     */
-    virtual bool all( common::CompareOp op, const Scalar value ) const = 0;
-
-    /**
-     *  @brief Boolean reduction returns true if elementwise comparison with other vector is true for all elements
-     */
-    virtual bool all( common::CompareOp op, const _Vector& other ) const = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -1020,12 +539,7 @@ public:
      *
      *  Note: vector itself remains uninitialized.
      */
-    void setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx )
-    {
-        // set the context before the allocate so it will be allocated at the right place
-        setContextPtr( ctx );
-        allocate( distributionPtr );
-    }
+    inline void setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx );
 
     /**
      *  @brief Allocates or reallocates this vector as replicted with the given size.
@@ -1057,86 +571,6 @@ public:
      * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )
      */
     void replicate();
-
-    /**
-     * @brief This method inverts all elements of the vector and is completely local.
-     */
-    void invert();
-
-    /**
-     *  Build the conjugate vector in place.
-     */
-    void conj();
-
-    /**
-     *  Build the absolute in place.
-     */
-    void abs();
-
-    /**
-     *  Calculates the exponentional function of the vector elements in place.
-     */
-    void exp();
-
-    /**
-     *  Calculates the logarithm of the vector elements in place.
-     */
-    void log();
-
-    /**
-     *  Calculates the floor function of the vector elements in place.
-     */
-    void floor();
-
-    /**
-     *  Calculates the ceil function of the vector elements in place.
-     */
-    void ceil();
-
-    /**
-     *  Calculates the square root of the vector elements.
-     */
-    void sqrt();
-
-    /**
-     *  Calculates the sinus of the vector elements.
-     */
-    void sin();
-
-    /**
-     *  Calculates the cosinus of the vector elements.
-     */
-    void cos();
-
-    /**
-     *  Calculates the tangens of the vector elements.
-     */
-    void tan();
-
-    /**
-     *  Calculates the arcus tangens of the vector elements.
-     */
-    void atan();
-
-    /**
-     *  Calculates the pow function for the vector elements with the elements of another vector.
-     */
-    void powBase( const _Vector& other );
-
-    /**
-     *  Calculates the pow function for the vector elements with the elements of another vector.
-     */
-    void powExp( const _Vector& other );
-
-    /**
-     *  Calculates the pow function for a base the vector elements as exponents.
-     */
-    void powBase( const Scalar base );
-
-    /**
-     *  Calculates the pow function for the vector elements as base and an exponent.
-     */
-    void powExp( const Scalar exp );
 
 protected:
 
@@ -1220,9 +654,17 @@ private:
     void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
 };
 
-/* ------------------------------------------------------------------------- */
+/* ========================================================================= */
 /*  Implementation of inline methods                                         */
-/* ------------------------------------------------------------------------- */
+/* ========================================================================= */
+
+void _Vector::setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx )
+{
+    // set the context before the allocate so it will be allocated at the right place
+
+    setContextPtr( ctx );
+    allocate( distributionPtr );
+}
 
 IndexType _Vector::size() const
 {
@@ -1251,20 +693,6 @@ void _Vector::setRawData( const IndexType size, const OtherValueType values[] )
     setDenseValues( valuesArrayRef );
 }
 
-template<typename OtherValueType>
-void _Vector::setSparseRawData( 
-    const IndexType n, 
-    const IndexType nnz,
-    const IndexType nonZeroIndexes[],
-    const OtherValueType nonZeroValues[],
-    const Scalar zeroValue )
-{
-    setSameValue( n, zeroValue );
-    hmemo::HArrayRef<IndexType> aNonZeroIndexes( nnz, nonZeroIndexes );
-    hmemo::HArrayRef<OtherValueType> aNonZeroValues( nnz, nonZeroValues );
-    fillSparseData( aNonZeroIndexes, aNonZeroValues, common::BinaryOp::COPY );
-} 
-  
 } /* end namespace lama */
 
 } /* end namespace scai */

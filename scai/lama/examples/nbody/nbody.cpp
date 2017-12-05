@@ -61,6 +61,7 @@ using scai::hmemo::ReadAccess;
 using scai::hmemo::WriteAccess;
 using scai::dmemo::Distributed;
 using scai::common::Math;
+using scai::common::UnaryOp;
 
 
 typedef RealType ValueType;
@@ -108,8 +109,8 @@ void randomBodies( )
     // circular velocities for each particle depenent on particle position
     for ( IndexType i = 0; i < nBodies; i++ )
     {
-        ValueType px = x.getValue( i ).getValue<ValueType>();
-        ValueType py = y.getValue( i ).getValue<ValueType>();
+        ValueType px = x.getValue( i );
+        ValueType py = y.getValue( i );
 
         ValueType denum = Math::sqrt( px * px + py * py );
         ValueType num = ( 6.67e-11 ) * 1e6 * maxMass;
@@ -134,8 +135,7 @@ void randomBodies( )
     mass.setValue( 0, maxMass );
 
     inversemass = mass;
-    inversemass.invert( );
-
+    inversemass.unaryOp( inversemass, UnaryOp::RECIPROCAL);
 }
 
 void updateParticles( )
@@ -166,19 +166,19 @@ void resetForce( )
 
 void computeForce( IndexType i, IndexType j )
 {
-    ValueType dx = x.getValue( j ).getValue<ValueType>() - x.getValue( i ).getValue<ValueType>();
-    ValueType dy = y.getValue( j ).getValue<ValueType>() - y.getValue( i ).getValue<ValueType>();
+    ValueType dx = x.getValue( j ) - x.getValue( i );
+    ValueType dy = y.getValue( j ) - y.getValue( i );
 
     // distance between the bodies
     ValueType dist = Math::sqrt( dx * dx + dy * dy );
 
     // force between the bodies = ( gravity * mass(a) * mass(b) ) / ( distance^2 + softening^2)         -> softening used to avoid infinities
-    ValueType force = ( G * mass.getValue( i ).getValue<ValueType>() * mass.getValue( j ).getValue<ValueType>() ) / ( dist * dist + softening * softening );
+    ValueType force = ( G * mass.getValue( i ) * mass.getValue( j ) ) / ( dist * dist + softening * softening );
 
     // force update for bodie a : force(a) = sum of the forces between a and all other bodies
     // force(a) += dx * force between a and b / distance between a and b
-    ValueType f1 = fx.getValue( i ).getValue<ValueType>() + dx * force / dist;
-    ValueType f2 = fy.getValue( i ).getValue<ValueType>() + dy * force / dist;
+    ValueType f1 = fx.getValue( i ) + dx * force / dist;
+    ValueType f2 = fy.getValue( i ) + dy * force / dist;
 
     // update global Force
     fx.setValue( i, f1 );
@@ -214,9 +214,9 @@ void onDisplay()
     for ( IndexType i = 0; i < nBodies; i++ )
     {
         // get position and mass of each body
-        ValueType xpos = x.getValue( i ).getValue<ValueType>() * ( DIMx - 5.0 ) / radius ;
-        ValueType ypos = y.getValue( i ).getValue<ValueType>() * ( DIMy - 5.0 ) / radius;
-        ValueType m = mass.getValue( i ).getValue<ValueType>();
+        ValueType xpos = x.getValue( i ) * ( DIMx - 5.0 ) / radius ;
+        ValueType ypos = y.getValue( i ) * ( DIMy - 5.0 ) / radius;
+        ValueType m = mass.getValue( i );
         m *= 1.0 / ( ( ValueType )maxMass );
 
         glColor3f( 0.90, 0.91, 0.98 );

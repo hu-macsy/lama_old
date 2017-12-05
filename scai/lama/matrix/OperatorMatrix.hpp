@@ -172,40 +172,40 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getRow( _Vector&, IndexType ) const
+    virtual void getRow( Vector<ValueType>&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getRowLocal( _Vector&, IndexType ) const
+    virtual void getRowLocal( Vector<ValueType>&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getColumn( _Vector&, IndexType ) const
+    virtual void getColumn( Vector<ValueType>&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setRow( const _Vector&, IndexType, common::BinaryOp )
+    virtual void setRow( const Vector<ValueType>&, IndexType, common::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setColumn( const _Vector&, IndexType, common::BinaryOp )
+    virtual void setColumn( const Vector<ValueType>&, IndexType, common::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getDiagonal( _Vector& ) const
+    virtual void getDiagonal( DenseVector<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setDiagonal( const _Vector& )
+    virtual void setDiagonal( const DenseVector<ValueType>& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setDiagonal(Scalar)
+    virtual void setDiagonal( const ValueType& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
 
-    virtual void reduce( _Vector&, 
+    virtual void reduce( DenseVector<ValueType>&, 
                          const IndexType,
                          const common::BinaryOp,
                          const common::UnaryOp ) const
@@ -213,11 +213,11 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
 
-    virtual void scale(const _Vector&)
+    virtual void scaleRows( const DenseVector<ValueType>& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void scale(Scalar)
+    virtual void scale( const ValueType& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
@@ -225,11 +225,11 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual Scalar getValue(IndexType, IndexType) const
+    virtual ValueType getValue(IndexType, IndexType) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setValue(IndexType, IndexType, Scalar, common::BinaryOp)
+    virtual void setValue(IndexType, IndexType, ValueType, common::BinaryOp)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
@@ -243,15 +243,15 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void matrixTimesScalar(const _Matrix&, Scalar)
+    virtual void matrixTimesScalar( const Matrix<ValueType>&, ValueType )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void matrixPlusMatrix(Scalar, const _Matrix&, Scalar, const _Matrix&)
+    virtual void matrixPlusMatrix( const ValueType, const Matrix<ValueType>&, const ValueType, const Matrix<ValueType>&)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void matrixTimesMatrix( _Matrix&, Scalar, const _Matrix&, Scalar, const _Matrix& ) const
+    virtual void matrixTimesMatrix( Matrix<ValueType>&, ValueType, const Matrix<ValueType>&, ValueType, const Matrix<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
@@ -303,7 +303,7 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual ValueType maxDiffNorm( const _Matrix& ) const
+    virtual ValueType maxDiffNorm( const Matrix<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

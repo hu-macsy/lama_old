@@ -76,9 +76,9 @@ int main()
     //
     // Define a few scalars:
     //
-    lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between t and double by typedef
-    lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
-    lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
+    ScalarType s1 = 3.1415926;   // static_cast is only needed to switch between t and double by typedef
+    ScalarType s2 = 2.71763;
+    ScalarType s3 = 42.0;
     // pure scalar operations only can be executed on the host
     std::cout << "Manipulating a few scalars..." << std::endl;
     std::cout << "operator +=" << std::endl;
@@ -153,8 +153,8 @@ int main()
     // Plane rotation of two vectors:
     // Computes (x,y) <- (alpha * x + beta * y, -beta * x + alpha * y)
     //
-    lama::Scalar alpha( 1.1f );
-    lama::Scalar beta( 2.3f );
+    ScalarType alpha = 1.1;
+    ScalarType beta = 2.3;
     lama_vec1 = alpha * lama_vec1 + beta * lama_vec2;
     lama_vec2 = -beta * lama_vec1 + alpha * lama_vec2;
     std::cout << "plain rotation calculated" << std::endl;
