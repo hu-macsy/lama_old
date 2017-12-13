@@ -152,7 +152,7 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual const _MatrixStorage& getLocalStorage() const
+    virtual const MatrixStorage<ValueType>& getLocalStorage() const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

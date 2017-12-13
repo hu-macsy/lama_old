@@ -129,14 +129,23 @@ void CGS<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
     hmemo::ContextPtr ctx = coefficients.getContextPtr();
 
-    runtime.mRes0.setSpace( dist, ctx );
-    runtime.mVecT.setSpace( dist, ctx );
-    runtime.mVecP.setSpace( dist, ctx );
-    runtime.mVecQ.setSpace( dist, ctx );
-    runtime.mVecU.setSpace( dist, ctx );
-    runtime.mVecPT.setSpace( dist, ctx );
-    runtime.mVecUT.setSpace( dist, ctx );
-    runtime.mVecTemp.setSpace( dist, ctx );
+    runtime.mRes0.setContextPtr( ctx );
+    runtime.mVecT.setContextPtr( ctx );
+    runtime.mVecP.setContextPtr( ctx );
+    runtime.mVecQ.setContextPtr( ctx );
+    runtime.mVecU.setContextPtr( ctx );
+    runtime.mVecPT.setContextPtr( ctx );
+    runtime.mVecUT.setContextPtr( ctx );
+    runtime.mVecTemp.setContextPtr( ctx );
+
+    runtime.mRes0.allocate( dist );
+    runtime.mVecT.allocate( dist );
+    runtime.mVecP.allocate( dist );
+    runtime.mVecQ.allocate( dist );
+    runtime.mVecU.allocate( dist );
+    runtime.mVecPT.allocate( dist );
+    runtime.mVecUT.allocate( dist );
+    runtime.mVecTemp.allocate( dist );
 }
 
 /* ========================================================================= */

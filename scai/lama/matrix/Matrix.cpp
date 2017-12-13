@@ -336,10 +336,6 @@ void Matrix<ValueType>::setRow(
 
     const DenseVector<ValueType>& denseRow = static_cast<const DenseVector<ValueType>&>( row );
 
-    SCAI_ASSERT_ERROR( denseRow.getDistribution().isReplicated(), "cannot set distributed row" )
-
-    SCAI_ASSERT_EQ_ERROR( denseRow.size(), this->getNumColumns(), "row to set has wrong size" )
-
     // owner sets the row, maybe each processor for replicated row distribution
 
     IndexType localRowIndex = this->getRowDistribution().global2local( globalRowIndex );
@@ -384,7 +380,8 @@ void Matrix<ValueType>::setColumn(
 
     const DenseVector<ValueType>& denseColumn = static_cast<const DenseVector<ValueType>&>( column );
 
-    SCAI_ASSERT_EQ_ERROR( denseColumn.getDistribution(), this->getRowDistribution(), "distribution mismatch" )
+    SCAI_ASSERT_EQ_ERROR( denseColumn.getDistribution(), this->getRowDistribution(), 
+                          "distribution of vector to set as column must match distribution of rows" )
 
     this->setLocalColumn( denseColumn.getLocalValues(), colIndex, op );
 }
@@ -415,7 +412,7 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
     const Distribution& rowDist = this->getRowDistribution();
     const Communicator& comm = rowDist.getCommunicator();
 
-    const MatrixStorage<ValueType>& localData = static_cast<const MatrixStorage<ValueType>&>( this->getLocalStorage() );
+    const MatrixStorage<ValueType>& localData = this->getLocalStorage();
 
     if ( comm.getRank() == 0 )
     {
@@ -492,23 +489,11 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM_SM<ValueTy
 
     SCAI_LOG_INFO( logger,
                    "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
-    /*
-    const Scalar zero( 0 );
 
-    if ( beta == zero )
-    {
-        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ) );
-    }
-    else
-    {
-        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ), C );
-    }
-    */
-
-    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
     A.matrixTimesMatrix( *this, alpha, B, beta, C );
-    SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
+
     SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
+
     return *this;
 }
 
@@ -539,8 +524,8 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM_SM<ValueTyp
         return *this;
     }
 
-    // Do sanity checks
-    sanityCheck( A, B );
+    // conformance check of matrices A and B is done in the routines
+
     this->matrixPlusMatrix( alpha, A, beta, B );
     return *this;
 }

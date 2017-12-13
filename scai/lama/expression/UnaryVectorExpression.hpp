@@ -42,16 +42,16 @@ namespace lama
 {
 
 /**
- * @brief The template class Expression1 represents a unary expression.
+ * @brief The template class UnaryExpression represents a unary expression.
  *
  * @param T     the type of the operand of the expression
  */
 template<typename T>
-class Expression1
+class UnaryExpression
 {
 public:
     typedef T ArgType;
-    typedef const Expression1 ExpressionMemberType;
+    typedef const UnaryExpression ExpressionMemberType;
 
 private:
 
@@ -62,11 +62,11 @@ private:
 public:
 
     /**
-     * @brief This constructor creates an Expression1 for the given type.
+     * @brief This constructor creates an UnaryExpression for the given type.
      *
      * @param arg is the operand of the expression
      */
-    Expression1( const ArgType& arg, const common::UnaryOp type ) :
+    UnaryExpression( const ArgType& arg, const common::UnaryOp type ) :
 
         mOp( type ),
         mArg( arg )
@@ -75,9 +75,9 @@ public:
     }
 
     /**
-     * @brief The destructor destroys this Expression1.
+     * @brief The destructor destroys this UnaryExpression.
      */
-    virtual ~Expression1()
+    virtual ~UnaryExpression()
     {
     }
 
@@ -113,7 +113,7 @@ class Vector;
 /** Symbolic expression op ( Vector ) */
 
 template<typename ValueType>
-using UnaryVectorExpression = Expression1<Vector<ValueType> >;
+using UnaryVectorExpression = UnaryExpression<Vector<ValueType> >;
 
 /** Symbolic expression: apply conj element-wise to the elements. */
 

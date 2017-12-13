@@ -1374,7 +1374,7 @@ void SparseMatrix<ValueType>::concatenate(
 
     newMatrix.allocate( rowDist, repColDist );
 
-    SCAI_LOG_DEBUG( logger, "Concatenate " << matrices.size() << " matrices into this matrix: " << newMatrix );
+    SCAI_LOG_INFO( logger, "Concatenate " << matrices.size() << " matrices into this matrix: " << newMatrix );
 
     CSRStorage<ValueType> storage;  // reuse in loop
 
@@ -1389,6 +1389,10 @@ void SparseMatrix<ValueType>::concatenate(
         for ( size_t k = 0; k < matrices.size(); ++k )
         {
             const Matrix<ValueType>& m = *matrices[k];
+
+            const Distribution& mRowDist = m.getRowDistribution();
+
+            SCAI_LOG_DEBUG( logger, "dissassemble this matrix: " << m )
 
             if ( offsetRow + m.getNumRows() > rowDist->getGlobalSize() )
             {
@@ -1414,7 +1418,7 @@ void SparseMatrix<ValueType>::concatenate(
 
             for ( IndexType i = 0; i < storage.getNumRows(); ++i )
             {
-                IndexType globalI = rowDist->local2global( i );
+                IndexType globalI = mRowDist.local2global( i );
 
                 for ( IndexType jj = rIA[i]; jj < rIA[i+1]; ++jj )
                 {
@@ -1429,15 +1433,19 @@ void SparseMatrix<ValueType>::concatenate(
 
             offsetCol += m.getNumColumns();
 
-            // decide by the sizes whether we concatenate the next 
+            // decide by the sizes where (horizontally or vertically)  we concatenate the next 
 
             if ( offsetCol == colDist->getGlobalSize() )
             {
                 offsetCol = 0;
                 offsetRow = offsetRow + m.getNumRows();
             }
+
+            SCAI_LOG_DEBUG( logger, "offsets for next disassembling: row " << offsetRow << ", col " << offsetCol)
         }
     }
+
+    SCAI_LOG_INFO( logger, "assembling finished, new Matrix = " << newMatrix )
 
     swap( newMatrix );
 
@@ -1461,34 +1469,49 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
     {
         // we can deal here with DenseMatrix = SparseMatrix * DenseMatrix + DenseMatrix as it can
         // be considered as matrixTimesVectorN
-        DenseMatrix<ValueType>* typedResult = dynamic_cast<DenseMatrix<ValueType>*>( &result );
-        SCAI_ASSERT_ERROR( typedResult, "Must be dense matrix<" << getValueType() << "> : " << result )
-        const DenseMatrix<ValueType>* typedB = dynamic_cast<const DenseMatrix<ValueType>*>( &B );
-        SCAI_ASSERT_ERROR( typedB, "Must be dense matrix<" << getValueType() << "> : " << B )
-        const DenseMatrix<ValueType>* typedC = dynamic_cast<const DenseMatrix<ValueType>*>( &C );
+
+        DenseMatrix<ValueType>& denseResult = static_cast<DenseMatrix<ValueType>&>( result );
+ 
+        SCAI_ASSERT_EQ_ERROR( B.getMatrixKind(), MatrixKind::DENSE, "DenseMatrix = SparseMatrix * B, B must be dense: " << B )
+
+        const DenseMatrix<ValueType>& denseB = static_cast<const DenseMatrix<ValueType>&>( B );
+
+        bool setAlias = false;
 
         if ( beta != common::Constants::ZERO )
         {
-            SCAI_ASSERT_ERROR( typedC, "Must be dense matrix<" << getValueType() << "> : " << C )
+            SCAI_ASSERT_EQ_ERROR( C.getMatrixKind(), MatrixKind::DENSE, "DenseMatrix = SparseMatrix * B + C, C must be dense: " << C )
         }
         else
         {
-            typedC = typedResult; // this alias is well handled
+            // with beta == 0 we do not care at all what type C is
+
+            setAlias = true;
         }
 
-        // Now the typed version can be used
-        matrixTimesVectorNImpl( *typedResult, alpha, *typedB, beta, *typedC );
+        const DenseMatrix<ValueType>& denseC = setAlias ? denseResult : static_cast<const DenseMatrix<ValueType>&>( C );
+
+        // Now it is just as matrixTimesVector but where Vector is DenseMatrix or just multiple vectors.
+
+        matrixTimesVectorNImpl( denseResult, alpha, denseB, beta, denseC );
+    }
+    else if ( result.getMatrixKind() == MatrixKind::SPARSE )
+    {
+        SparseMatrix<ValueType>& sparseResult = static_cast<SparseMatrix<ValueType>&>( result );
+
+        SCAI_ASSERT_EQ_ERROR( B.getMatrixKind(), MatrixKind::SPARSE, "SparseMatrix = SparseMatrix * B, B must be sparse: " << B )
+        SCAI_ASSERT_EQ_ERROR( C.getMatrixKind(), MatrixKind::SPARSE, "SparseMatrix = SparseMatrix * SparseMatrix + C, C must be sparse: " << C )
+
+        const SparseMatrix<ValueType>& sparseB = static_cast<const SparseMatrix<ValueType>&>( B );
+        const SparseMatrix<ValueType>& sparseC = static_cast<const SparseMatrix<ValueType>&>( C );
+
+        // Now the 'pure' sparse version of matrix mult can be used
+
+        sparseResult.matrixTimesMatrixImpl( alpha, *this, sparseB, beta, sparseC );
     }
     else
     {
-        SparseMatrix<ValueType>* typedResult = dynamic_cast<SparseMatrix<ValueType>*>( &result );
-        SCAI_ASSERT_ERROR( typedResult, "Must be sparse matrix<" << getValueType() << "> : " << result )
-        const SparseMatrix<ValueType>* typedB = dynamic_cast<const SparseMatrix<ValueType>*>( &B );
-        SCAI_ASSERT_ERROR( typedB, "Must be sparse matrix<" << getValueType() << "> : " << B )
-        const SparseMatrix<ValueType>* typedC = dynamic_cast<const SparseMatrix<ValueType>*>( &C );
-        SCAI_ASSERT_ERROR( typedC, "Must be sparse matrix<" << getValueType() << "> : " << C )
-        // Now the typed version can be used
-        typedResult->matrixTimesMatrixImpl( alpha, *this, *typedB, beta, *typedC );
+        COMMON_THROWEXCEPTION( "Result matrix for matrix-matrix multiplication neither sparse nor dense: " << result )
     }
 }
 
@@ -1501,19 +1524,26 @@ void SparseMatrix<ValueType>::matrixPlusMatrix(
     const ValueType beta,
     const Matrix<ValueType>& matB )
 {
+    SCAI_ASSERT_EQ_ERROR( matA.getRowDistribution(), matB.getRowDistribution(), "size/dist mismatch of matrices to add" )
+    SCAI_ASSERT_EQ_ERROR( matB.getColDistribution(), matB.getColDistribution(), "size/dist mismatch of matrices to add" )
+
     SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
-    const SparseMatrix<ValueType>* sparseA = dynamic_cast<const SparseMatrix<ValueType>*>( &matA );
-    SCAI_ASSERT_ERROR( sparseA, "Must be sparse matrix<" << getValueType() << "> : " << matA )
-    const SparseMatrix<ValueType>* sparseB = dynamic_cast<const SparseMatrix<ValueType>*>( &matB );
-    SCAI_ASSERT_ERROR( sparseB, "Must be sparse matrix<" << getValueType() << "> : " << matB )
+
+    SCAI_ASSERT_EQ_ERROR( matA.getMatrixKind(), MatrixKind::SPARSE, "sparseMatrix = alpha * matA + beta * matB, matA must be sparse" )
+    SCAI_ASSERT_EQ_ERROR( matB.getMatrixKind(), MatrixKind::SPARSE, "sparseMatrix = alpha * matA + beta * matB, matB must be sparse" )
+
+    const SparseMatrix<ValueType>& sparseA = static_cast<const SparseMatrix<ValueType>&>( matA );
+    const SparseMatrix<ValueType>& sparseB = static_cast<const SparseMatrix<ValueType>&>( matB );
+
     // Now we can add sparse matrices
-    matrixPlusMatrixImpl( alpha, *sparseA, beta, *sparseB );
+
+    matrixPlusMatrixSparse( alpha, sparseA, beta, sparseB );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
+void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
     const ValueType alpha,
     const SparseMatrix<ValueType>& A,
     const ValueType beta,

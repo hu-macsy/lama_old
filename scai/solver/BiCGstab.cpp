@@ -136,14 +136,23 @@ void BiCGstab<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
     hmemo::ContextPtr      ctx  = coefficients.getContextPtr();
 
-    runtime.mRes0.setSpace( dist, ctx );
-    runtime.mVecV.setSpace( dist, ctx );
-    runtime.mVecP.setSpace( dist, ctx );
-    runtime.mVecS.setSpace( dist, ctx );
-    runtime.mVecT.setSpace( dist, ctx );
-    runtime.mVecPT.setSpace( dist, ctx );
-    runtime.mVecST.setSpace( dist, ctx );
-    runtime.mVecTT.setSpace( dist, ctx );
+    runtime.mRes0.setContextPtr( ctx );
+    runtime.mVecV.setContextPtr( ctx );
+    runtime.mVecP.setContextPtr( ctx );
+    runtime.mVecS.setContextPtr( ctx );
+    runtime.mVecT.setContextPtr( ctx );
+    runtime.mVecPT.setContextPtr( ctx );
+    runtime.mVecST.setContextPtr( ctx );
+    runtime.mVecTT.setContextPtr( ctx );
+
+    runtime.mRes0.allocate( dist );
+    runtime.mVecV.allocate( dist );
+    runtime.mVecP.allocate( dist );
+    runtime.mVecS.allocate( dist );
+    runtime.mVecT.allocate( dist );
+    runtime.mVecPT.allocate( dist );
+    runtime.mVecST.allocate( dist );
+    runtime.mVecTT.allocate( dist );
 }
 
 /* ========================================================================= */

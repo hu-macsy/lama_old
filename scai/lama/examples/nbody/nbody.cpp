@@ -134,8 +134,7 @@ void randomBodies( )
     vy.setValue( 0, 0.0 );
     mass.setValue( 0, maxMass );
 
-    inversemass = mass;
-    inversemass.unaryOp( inversemass, UnaryOp::RECIPROCAL);
+    inversemass = 1 / mass;
 }
 
 void updateParticles( )

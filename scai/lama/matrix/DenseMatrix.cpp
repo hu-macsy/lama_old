@@ -2006,19 +2006,26 @@ void DenseMatrix<ValueType>::matrixPlusMatrix(
     const ValueType beta,
     const Matrix<ValueType>& matB )
 {
+    SCAI_ASSERT_EQ_ERROR( matA.getRowDistribution(), matB.getRowDistribution(), "size/dist mismatch of matrices to add" )
+    SCAI_ASSERT_EQ_ERROR( matB.getColDistribution(), matB.getColDistribution(), "size/dist mismatch of matrices to add" )
+
     SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
-    const DenseMatrix<ValueType>* denseA = dynamic_cast<const DenseMatrix<ValueType>*>( &matA );
-    SCAI_ASSERT_ERROR( denseA, "Must be dense matrix<" << getValueType() << "> : " << matA )
-    const DenseMatrix<ValueType>* denseB = dynamic_cast<const DenseMatrix<ValueType>*>( &matB );
-    SCAI_ASSERT_ERROR( denseB, "Must be dense matrix<" << getValueType() << "> : " << matB )
-// Now we can add sparse matrices
-    matrixPlusMatrixImpl( alpha, *denseA, beta, *denseB );
+
+    SCAI_ASSERT_EQ_ERROR( matA.getMatrixKind(), MatrixKind::DENSE, "denseMatrix = alpha * matA + beta * matB, matA must be dense" )
+    SCAI_ASSERT_EQ_ERROR( matB.getMatrixKind(), MatrixKind::DENSE, "denseMatrix = alpha * matA + beta * matB, matB must be dense" )
+
+    const DenseMatrix<ValueType>& denseA = static_cast<const DenseMatrix<ValueType>&>( matA );
+    const DenseMatrix<ValueType>& denseB = static_cast<const DenseMatrix<ValueType>&>( matB );
+
+    // Now we can add dense matrices
+
+    matrixPlusMatrixDense( alpha, denseA, beta, denseB );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
+void DenseMatrix<ValueType>::matrixPlusMatrixDense(
     const ValueType alpha,
     const DenseMatrix<ValueType>& A,
     const ValueType beta,
@@ -2028,8 +2035,8 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
 
     // already verified
 
-    SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
-    SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
+    SCAI_ASSERT_EQ_DEBUG( A.getRowDistribution(), B.getRowDistribution(), "size/dist mismatch of matrices to add" )
+    SCAI_ASSERT_EQ_DEBUG( B.getColDistribution(), B.getColDistribution(), "size/dist mismatch of matrices to add" )
 
     // Now we can do it completely local
 

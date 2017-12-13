@@ -317,10 +317,6 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         // velocity y: vY = vY + DT / ( DH * rho ) * C * p;
         vY += v_factor * C * p;
 
-        // ValueType znorm = vZ.l2Norm();
-        // ValueType xnorm = vX.l2Norm();
-        // ValueType ynorm = vY.l2Norm();
-
         // create new Vector(Pointer) with same configuration as vZ
         std::unique_ptr<lama::Vector<ValueType> > helpPtr( vZ.newVector() );
         // get Reference of VectorPointer
@@ -331,9 +327,6 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         help += DH_INV * E * vX;
         help += DH_INV * F * vY;
         p += p_factor * help; // p_factor is 'DT * M'
-
-        // ValueType hnorm = help.l2Norm();
-        // ValueType pnorm = p.l2Norm();
 
         // update seismogram and pressure with source terms
         // CAUTION: elementwise access by setVal and getVal cause performace issues executed on CUDA

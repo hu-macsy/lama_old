@@ -119,7 +119,7 @@ void generate( const IndexType nrows, const IndexType ncols, const float fillRat
 
                 if ( takeIt )
                 {
-                    double val = common::Math::random<ValueType>( 1 );
+                    ValueType val = common::Math::random<ValueType>( 1 );
                     access.push( i, j, val );
                 }
             }

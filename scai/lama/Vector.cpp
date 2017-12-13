@@ -333,9 +333,10 @@ Vector<ValueType>& Vector<ValueType>::operator/=( const ValueType value )
 {
     SCAI_ASSERT_NE_ERROR( value, ValueType( 0 ), "Divide by zero for vector" )
 
-    // binaryOp( ValueType( 1 ), common::BinaryOp::DIVIDE, value ) 
+    // Note: multiplication is faster than division, so do it right here
 
     binaryOp( *this, common::BinaryOp::MULT, ValueType( 1 ) / value );
+
     return *this;
 }
 

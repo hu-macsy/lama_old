@@ -339,7 +339,8 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SMV_SV<ValueType>& expression ) 
 {
     const Matrix<ValueType>& m = expression.getArg1().getArg2().getArg1();
-    this->setSpace( m.getRowDistributionPtr(), m.getContextPtr()  );
+    this->setContextPtr( m.getContextPtr()  );
+    this->allocate( m.getRowDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
     Vector<ValueType>::operator=( expression );
 }
@@ -350,7 +351,8 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_SVM_SV<ValueType>& expression ) 
 {
     const Matrix<ValueType>& m = expression.getArg1().getArg2().getArg2();
-    this->setSpace( m.getColDistributionPtr(), m.getContextPtr()  );
+    this->setContextPtr( m.getContextPtr() );
+    this->allocate( m.getColDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
     Vector<ValueType>::operator=( expression );
 }

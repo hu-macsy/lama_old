@@ -851,13 +851,6 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Check if two matrices have same source and target space 
-     * 
-     *  @param[in] A, B two matrices
-     *  @throws an Space mismatch exception if there is any mismatch 
-     */
-    void sanityCheck( const _Matrix& A, const _Matrix& B );
-
 private:
 
     /* ============================================================= */
@@ -871,10 +864,6 @@ private:
     using Distributed::getDistribution;
 
     using Distributed::getDistributionPtr;
-
-    // void sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp );
-
-    // void sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp, const _Matrix& C );
 
     void setDefaultKind(); // set default values for communication and compute kind
 

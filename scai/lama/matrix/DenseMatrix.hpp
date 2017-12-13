@@ -634,14 +634,9 @@ public:
 protected:
 
     /**
-     * @brief Set this matrix = alpha * A + beta * B
-     *
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  A        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  B        TODO[doxy] Complete Description.
+     * @brief Same as matrixPlusMatrix but now input matrices A and B are really dense
      */
-    void matrixPlusMatrixImpl(
+    void matrixPlusMatrixDense(
         const ValueType alpha,
         const DenseMatrix<ValueType>& A,
         const ValueType beta,

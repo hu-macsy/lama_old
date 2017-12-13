@@ -463,7 +463,7 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**
-     *  @brief Update this vector with another vector of any value elementwise
+     *  @brief Update this vector element-wise with another vector of any value type.
      * 
      *  @param[in] other is the input vector for setting, must have same distribution
      *  @param[in] op specifies the binary operation for the update
@@ -533,13 +533,6 @@ public:
      *  This operation will allocate memory at the context of this vector.
      */
     virtual void allocate( dmemo::DistributionPtr distributionPtr ) = 0;
-
-    /**
-     *  @brief Set distribution and context in one method for convenience
-     *
-     *  Note: vector itself remains uninitialized.
-     */
-    inline void setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx );
 
     /**
      *  @brief Allocates or reallocates this vector as replicted with the given size.
@@ -657,14 +650,6 @@ private:
 /* ========================================================================= */
 /*  Implementation of inline methods                                         */
 /* ========================================================================= */
-
-void _Vector::setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx )
-{
-    // set the context before the allocate so it will be allocated at the right place
-
-    setContextPtr( ctx );
-    allocate( distributionPtr );
-}
 
 IndexType _Vector::size() const
 {

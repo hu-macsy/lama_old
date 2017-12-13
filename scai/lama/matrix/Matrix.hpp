@@ -74,6 +74,10 @@ public:
 
     virtual Matrix<ValueType>* copy( void ) const = 0;
 
+    /** Overwrite _Matrix::getLocalStorage to get the covariant return type */
+
+    virtual const MatrixStorage<ValueType>& getLocalStorage( void ) const = 0;
+
     // Important: pass assign operator so it can also be used here
 
     using _Matrix::operator=;

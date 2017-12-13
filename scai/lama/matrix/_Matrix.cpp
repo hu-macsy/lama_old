@@ -382,66 +382,6 @@ double _Matrix::getSparsityRate() const
 
 /* ---------------------------------------------------------------------------------*/
 
-/*
-void _Matrix::sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp )
-{
-    // check sanity of matrix product exp = A * B
-    const _Matrix& A = exp.getArg1();
-    const _Matrix& B = exp.getArg2();
-    const Distribution& colDistA = A.getColDistribution();
-    const Distribution& rowDistB = B.getDistribution();
-
-    if ( colDistA != rowDistB )
-    {
-        COMMON_THROWEXCEPTION(
-            "A * B with A = " << A << ", B = " << B << std::endl << "col size/distribution of A  = " << A.getColDistribution() << " does not match row/size distribution of B = " << B.getDistribution() );
-    }
-}
-
-void _Matrix::sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp, const _Matrix& C )
-{
-    sanityCheck( exp ); // verify the sanity of the matrix product
-    // verify that result of matrix multiplication and C are conform
-    const _Matrix& A = exp.getArg1();
-    const _Matrix& B = exp.getArg2();
-    const Distribution& rowDistA = A.getDistribution();
-    const Distribution& colDistB = B.getColDistribution();
-    const Distribution& rowDistC = C.getDistribution();
-    const Distribution& colDistC = C.getColDistribution();
-
-    if ( rowDistA != rowDistC )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << C )
-    }
-
-    if ( colDistB != colDistC )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << B << ", ARG2 = " << C )
-    }
-}
-*/
-
-void _Matrix::sanityCheck( const _Matrix& A, const _Matrix& B )
-{
-    // verify that A and B are conform for addition
-    const Distribution& rowDistA = A.getDistribution();
-    const Distribution& colDistA = A.getColDistribution();
-    const Distribution& rowDistB = B.getDistribution();
-    const Distribution& colDistB = B.getColDistribution();
-
-    if ( rowDistA != rowDistB )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
-    }
-
-    if ( colDistA != colDistB )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void _Matrix::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,

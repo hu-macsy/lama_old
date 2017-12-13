@@ -130,19 +130,33 @@ void QMR<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     runtime.mConjTransposeA->assignTranspose( coefficients );
     runtime.mConjTransposeA->conj();
 
-    runtime.mVecD.setSpace( rowDist, ctx );
-    runtime.mVecP.setSpace( rowDist, ctx );
-    runtime.mVecQ.setSpace( rowDist, ctx );
-    runtime.mVecS.setSpace( rowDist, ctx );
-    runtime.mVecV.setSpace( rowDist, ctx );
-    runtime.mVecW.setSpace( rowDist, ctx );
-    runtime.mVecY.setSpace( rowDist, ctx );
-    runtime.mVecZ.setSpace( rowDist, ctx );
-    runtime.mVecPT.setSpace( rowDist, ctx );
-    runtime.mVecVT.setSpace( rowDist, ctx );
-    runtime.mVecWT.setSpace( rowDist, ctx );
-    runtime.mVecYT.setSpace( rowDist, ctx );
-    runtime.mVecZT.setSpace( rowDist, ctx );
+    runtime.mVecD.setContextPtr( ctx );
+    runtime.mVecP.setContextPtr( ctx );
+    runtime.mVecQ.setContextPtr( ctx );
+    runtime.mVecS.setContextPtr( ctx );
+    runtime.mVecV.setContextPtr( ctx );
+    runtime.mVecW.setContextPtr( ctx );
+    runtime.mVecY.setContextPtr( ctx );
+    runtime.mVecZ.setContextPtr( ctx );
+    runtime.mVecPT.setContextPtr( ctx );
+    runtime.mVecVT.setContextPtr( ctx );
+    runtime.mVecWT.setContextPtr( ctx );
+    runtime.mVecYT.setContextPtr( ctx );
+    runtime.mVecZT.setContextPtr( ctx );
+
+    runtime.mVecD.allocate( rowDist );
+    runtime.mVecP.allocate( rowDist );
+    runtime.mVecQ.allocate( rowDist );
+    runtime.mVecS.allocate( rowDist );
+    runtime.mVecV.allocate( rowDist );
+    runtime.mVecW.allocate( rowDist );
+    runtime.mVecY.allocate( rowDist );
+    runtime.mVecZ.allocate( rowDist );
+    runtime.mVecPT.allocate( rowDist );
+    runtime.mVecVT.allocate( rowDist );
+    runtime.mVecWT.allocate( rowDist );
+    runtime.mVecYT.allocate( rowDist );
+    runtime.mVecZT.allocate( rowDist );
 }
 
 /* ========================================================================= */

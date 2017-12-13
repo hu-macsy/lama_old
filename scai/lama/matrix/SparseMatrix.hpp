@@ -641,7 +641,7 @@ protected:
      * @param[in]  beta     scaling of input matrix B
      * @param[in]  B        input matrix
      */
-    void matrixPlusMatrixImpl(
+    void matrixPlusMatrixSparse(
         const ValueType alpha,
         const SparseMatrix<ValueType>& A,
         const ValueType beta,

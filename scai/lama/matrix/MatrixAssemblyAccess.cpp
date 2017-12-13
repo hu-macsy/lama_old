@@ -83,9 +83,21 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
 
     dist.computeOwners( owners, inIA );
 
-    SCAI_LOG_DEBUG( logger, "owners = " << owners )
-
     const dmemo::Communicator& comm = dist.getCommunicator();
+
+    SCAI_LOG_DEBUG( logger, comm << ": owners = " << owners )
+
+    if ( comm.getRank() == 0 )
+    {
+        FileIO::write( owners, "owners_0.txt" );
+        FileIO::write( inIA, "inIA_0.txt" );
+    }
+    if ( comm.getRank() == 1 )
+    {
+        FileIO::write( owners, "owners_1.txt" );
+        FileIO::write( inIA, "inIA_.txt" );
+    }
+
     PartitionId np = comm.getSize();
 
     HArray<IndexType> perm;
@@ -93,7 +105,7 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
 
     HArrayUtils::bucketSort( offsets, perm, owners, np );
 
-    SCAI_LOG_DEBUG( logger, "sorted, perm = " << perm << ", offsets = " << offsets )
+    SCAI_LOG_DEBUG( logger, comm << ": sorted, perm = " << perm << ", offsets = " << offsets )
 
     HArray<IndexType> sendIA;
     HArray<IndexType> sendJA;
@@ -105,7 +117,7 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
 
     HArrayUtils::unscan( offsets );  // now we have size
 
-    SCAI_LOG_DEBUG( logger, "sizes = " << offsets )
+    SCAI_LOG_DEBUG( logger, comm << ": sizes = " << offsets )
 
     dmemo::CommunicationPlan sendPlan;
     dmemo::CommunicationPlan recvPlan;
@@ -115,9 +127,11 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
         sendPlan.allocate( rSizes.get(), np );
     }
 
+    SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
+
     recvPlan.allocateTranspose( sendPlan, comm );
 
-    SCAI_LOG_DEBUG( logger, "recv plan: " << recvPlan )
+    SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )
 
     comm.exchangeByPlan( outIA, recvPlan, sendIA, sendPlan );
     comm.exchangeByPlan( outJA, recvPlan, sendJA, sendPlan );

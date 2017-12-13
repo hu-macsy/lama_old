@@ -1124,8 +1124,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_ty
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
 {
-    return;  // not yet for all distributions
-
     const IndexType n = 15; 
     const IndexType m =  8;  
 
@@ -1137,6 +1135,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
     MatrixCreator::fillRandom( csr, 0.1f );
 
     CSRSparseMatrix<ValueType> csr2;
+
+    SCAI_LOG_INFO( logger, "hcat( csr, csr ) with csr = " << csr )
+
     csr2.hcat( csr, csr );           
 
     TestDistributions distributions( n );
@@ -1164,6 +1165,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
             matrix = csr;
 
             matrix.redistribute( dist, colDist);
+
+            SCAI_LOG_DEBUG( logger, "hcat matrix = " << matrix )
 
             matrix.hcat( matrix, matrix );
 

@@ -482,11 +482,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpLogTest, ValueType, scai_numeric_test_types )
         const Vector<ValueType>& v2 = *v2Ptr;
 
         v1 = exp( v1 );
-        // v1.assign ( v1 );
-        // v1.applyUnary( common::UnaryOp::EXP );
         v1 = log( v1 );
-        // v1.assign( v1 );
-        // v1.applyUnary( common::UnaryOp::LOG );
 
         v1 -= v2;
 
@@ -659,19 +655,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_MV_Test, ValueType, scai_numeric_test_type
 
         DenseVector<ValueType> v2;
 
-        v2 = m * dV1;
+        v2 = m * dV1;   // v1 and v2 are now equal
 
-        v2.setSameValue( dist, 0 );
-
-        // Now v1 and v2 must be equal
-
-        // v2 -= dV1;
+        v2 -= dV1;
 
         NormType<ValueType> eps = 1e-4;
 
         BOOST_CHECK( v2.maxNorm() < eps );
 
-        if ( false ) {
         v2 = 2 * m * dV1;
 
         // Now v1 and v2 must be equal
@@ -687,7 +678,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_MV_Test, ValueType, scai_numeric_test_type
         v2 = 2 * m * dV1 - 2 * dV1;
 
         BOOST_CHECK( v2.maxNorm() < eps );
-        }
     }
 }
 
@@ -841,20 +831,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 
         v2 = v1;
 
-        // v2 += v1;
-        // v2 -= v1;
-        // v2 *= 2;
-        // v2 /= 2;
+        v2 += v1;
+        v2 *= 2;
+        v2 /= 2;
+        v2 -= v1;
 
         v2 = v1 * v2;   // is v2 * v2 elementwise
 
         DenseVector<ValueType> v3;
 
-        // v3 = 2 * m * v1 - v2;   // is v1 * v1
-
         v3 = m * v1 - v2;   // is v1 * v1
-
-        // v3 -= v2;
 
         NormType<ValueType> eps = 0.0001;
         BOOST_CHECK( v3.maxNorm() < eps );

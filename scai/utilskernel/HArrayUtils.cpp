@@ -240,11 +240,10 @@ void HArrayUtils::sparseGather(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call sparseGatherImpl version with the correct value type for target
+
     mepr::UtilsWrapperT<SourceValueType, SCAI_ARRAY_TYPES_HOST_LIST>::
            sparseGather( target, sourceZeroValue, sourceNonZeroValues, sourceNonZeroIndexes, indexes, op, prefLoc );
 
-    // HArray<double>& targetT = reinterpret_cast<HArray<double>&>( target );
-    // sparseGatherImpl( targetT, sourceZeroValue, sourceNonZeroValues, sourceNonZeroIndexes, indexes, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2297,21 +2296,6 @@ void HArrayUtils::mergeSparse(
 }
 
 /* --------------------------------------------------------------------------- */
-
-/*
-template<typename SourceValueType>
-void HArrayUtils::sparseGather(
-    _HArray& target,
-    const SourceValueType sourceZeroValue,
-    const HArray<SourceValueType>& sourceNonZeroValues,
-    const HArray<IndexType>& sourceNonZeroIndexes,
-    const HArray<IndexType>& indexes,
-    const BinaryOp op,
-    const ContextPtr prefLoc )
-
-
-
-*/
 
 /** Makro for the instantiation of routines with two template arguments for source and target type. */
 
