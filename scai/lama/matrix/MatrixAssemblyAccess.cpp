@@ -87,17 +87,6 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
 
     SCAI_LOG_DEBUG( logger, comm << ": owners = " << owners )
 
-    if ( comm.getRank() == 0 )
-    {
-        FileIO::write( owners, "owners_0.txt" );
-        FileIO::write( inIA, "inIA_0.txt" );
-    }
-    if ( comm.getRank() == 1 )
-    {
-        FileIO::write( owners, "owners_1.txt" );
-        FileIO::write( inIA, "inIA_.txt" );
-    }
-
     PartitionId np = comm.getSize();
 
     HArray<IndexType> perm;
