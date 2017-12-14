@@ -60,21 +60,22 @@ namespace common
  */
 enum class UnaryOp
 {
-    COPY,    //!< just identity
-    CONJ,    //!< for conjugate of a vector
-    ABS,     //!< for absolute value
-    ASUM,    //!< sum of magnitudes of real and imaginary part, same as abs for real
-    SQR,     //!< square the value
-    MINUS,   //!< for negative value
-    EXP,     //!< call exp on each vector element
-    SQRT,    //!< call sqare root on each vector element
-    SIN,     //!< call sin on each vector element
-    COS,     //!< trigonometric function cos for each vector element
-    TAN,     //!< trigonometric function tan on each vector element
-    ATAN,    //!< call atan on each vector element
-    LOG,     //!< call log on each vector element
-    FLOOR,   //!< rounds downward
-    CEIL,    //!< rounds upward
+    COPY,       //!< just identity
+    CONJ,       //!< for conjugate of a vector
+    ABS,        //!< for absolute value
+    ASUM,       //!< sum of magnitudes of real and imaginary part, same as abs for real
+    SQR,        //!< square the value
+    MINUS,      //!< for negative value
+    EXP,        //!< call exp on each vector element
+    SQRT,       //!< call sqare root on each vector element
+    SIN,        //!< call sin on each vector element
+    COS,        //!< trigonometric function cos for each vector element
+    TAN,        //!< trigonometric function tan on each vector element
+    ATAN,       //!< call atan on each vector element
+    LOG,        //!< call log on each vector element
+    FLOOR,      //!< rounds downward
+    CEIL,       //!< rounds upward
+    RECIPROCAL, //!< builds multiplicate inverse, x^-1
 
 
     MAX_UNARY_OP //!< internal use only
@@ -126,6 +127,8 @@ inline ValueType applyUnary( const UnaryOp op, const ValueType& x )
             return common::Math::floor( x );
         case UnaryOp::CEIL:
             return common::Math::ceil( x );
+        case UnaryOp::RECIPROCAL:
+            return ValueType( 1 ) / x;
         default:
             return ValueType( 0 );
     }
@@ -231,6 +234,10 @@ inline std::ostream& operator<<( std::ostream& stream, const UnaryOp& op )
 
         case UnaryOp::CEIL:
             stream << "CEIL";
+            break;
+
+        case UnaryOp::RECIPROCAL:
+            stream << "RECIPROCAL";
             break;
 
         case UnaryOp::MAX_UNARY_OP:

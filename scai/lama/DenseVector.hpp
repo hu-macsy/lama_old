@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/_DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -63,6 +63,12 @@ class Redistributor;
 namespace lama
 {
 
+
+// forward declaration required as we do not include SparseVector.hpp here
+
+template<typename ValueType>
+class SparseVector;
+
 /**
  * @brief The template DenseVector represents a distributed 1D Vector with elements of type ValueType.
  *
@@ -71,12 +77,25 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseVector:
 
-    public _DenseVector,
-
-    public Vector::Register<DenseVector<ValueType> >    // register at factory
+    public Vector<ValueType>,
+    public _Vector::Register<DenseVector<ValueType> >    // register at factory
 
 {
 public:
+
+    using _Vector::logger;
+    using _Vector::getDistribution;
+    using _Vector::getContextPtr;
+    using _Vector::getContext;
+    using _Vector::readFromFile;
+    using _Vector::setDistributionPtr;
+    using _Vector::getDistributionPtr;
+    using _Vector::size;
+    using _Vector::assign;
+
+    using Vector<ValueType>::operator=;
+    using Vector<ValueType>::getValueType;
+    using Vector<ValueType>::binaryOp;    
 
     /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
 
@@ -160,7 +179,7 @@ public:
      *     sub( vd );               // compile error to avoid implicit conversions
      * \endcode
      */
-    explicit DenseVector( const Vector& other );
+    explicit DenseVector( const _Vector& other );
 
     /**
      * @brief creates a redistributed copy of the passed vector
@@ -170,7 +189,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
+    DenseVector( const _Vector& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
@@ -212,14 +231,14 @@ public:
      *
      * @param[in] expression    alpha * x
      */
-    explicit DenseVector( const Expression_SV& expression );
+    explicit DenseVector( const Expression_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha + x.
      *
      * @param[in] expression    alpha * x + beta
      */
-    explicit DenseVector( const Expression_SV_S& expression );
+    explicit DenseVector( const Expression_SV_S<ValueType>& expression );
 
     /**
      *  @brief creates a DenseVector with the Expression alpha * x * Y.
@@ -227,7 +246,7 @@ public:
      * @param[in] expression    x * y
      */
 
-    explicit DenseVector( const Expression_VV& expression );
+    explicit DenseVector( const Expression_VV<ValueType>& expression );
 
 
     /**
@@ -236,14 +255,14 @@ public:
      * @param[in] expression    alpha * x * y
      */
 
-    explicit DenseVector( const Expression_SVV& expression );
+    explicit DenseVector( const Expression_SVV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x + beta * y.
      *
      * @param[in] expression  is alpha * x + beta * y
      */
-    explicit DenseVector( const Expression_SV_SV& expression );
+    explicit DenseVector( const Expression_SV_SV<ValueType>& expression );
 
     /* --------------------------------------------------------------------- */
 
@@ -252,53 +271,68 @@ public:
      *
      * @param[in] expression     alpha * A * x + beta * y
      */
-    explicit DenseVector( const Expression_SMV_SV& expression );
+    explicit DenseVector( const Expression_SMV_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A + beta * y.
      *
      * @param[in] expression     alpha * x * A + beta * y
      */
-    explicit DenseVector( const Expression_SVM_SV& expression );
+    explicit DenseVector( const Expression_SVM_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * A * x.
      *
      * @param[in] expression     alpha * A * x
      */
-    explicit DenseVector( const Expression_SMV& expression );
+    explicit DenseVector( const Expression_SMV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    explicit DenseVector( const Expression_SVM& expression );
+    explicit DenseVector( const Expression_SVM<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    explicit DenseVector( const Expression_MV& expression );
+    explicit DenseVector( const Expression_MV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    explicit DenseVector( const Expression_VM& expression );
+    explicit DenseVector( const Expression_VM<ValueType>& expression );
 
     /**
      * @brief releases all allocated resources.
      */
     virtual ~DenseVector();
 
-    /** Implememenation of pure routine Vector::allocate. */
+    /* --------------------------------------------------------------------- */
+
+    /** 
+     * @brief Implementation of pure method _Vector::getVectorKind() 
+     */
+
+    inline virtual VectorKind getVectorKind() const;
+
+    /**
+     * @brief Implementation of pure method _Vector::isConsistent 
+     */
+    virtual bool isConsistent() const;
+
+    /* --------------------------------------------------------------------- */
+
+    /** Implememenation of pure routine _Vector::allocate. */
 
     virtual void allocate( dmemo::DistributionPtr distribution );
 
-    /** Implememenation of pure routine Vector::allocate. */
+    /** Implememenation of pure routine _Vector::allocate. */
 
     virtual void allocate( const IndexType n );
 
@@ -306,31 +340,47 @@ public:
 
     DenseVector& operator=( const DenseVector<ValueType>& other );
 
-    /** Reimplement Vector::operator= as otherwise a constructor of DenseVector might be called */
-
-    DenseVector& operator=( const Scalar );
-
     // All other assignment operators are inherited from class Vector, but using is required
 
-    using Vector::operator=;
-    using Vector::assign;
+    /** Implementation of pure method _Vector::asign 
+     *
+     *  uses metaprogramming to call assignImpl with actual type and kind
+     */
+    virtual void assign( const _Vector& other );
+
+    /** 
+     *  @brief Specific implementation of assign for a sparse vector of a certain type.
+     */
+    template<typename OtherValueType>
+    void assignImpl( const SparseVector<OtherValueType>& other );
+
+    /** 
+     *  @brief Specific implementation of assign for a dense vector of a certain type.
+     */
+    template<typename OtherValueType>
+    void assignImpl( const DenseVector<OtherValueType>& other );
 
     /**
-     * Implementation of pure method Vector::fillRandom 
+     * Implementation of pure method _Vector::fillRandom 
      */
     virtual void fillRandom( const IndexType bound );
 
-    /** Implementation of pure method Vector::fillSparseRandom */
+    /** Implementation of pure method _Vector::fillSparseRandom */
 
     virtual void fillSparseRandom( const float fillRate, const IndexType bound );
 
-    /** Implementation of pure method _DenseVector::fillRange */
+    /**
+     * @brief This method fills/initializes an allocated vector 
+     *
+     * @param[in] startValue value for the first element
+     * @param[in] inc increment between the elements
+     *
+     */
+    void fillLinearValues( const ValueType startValue, const ValueType inc );
 
-    virtual void fillRange( const Scalar startValue, const Scalar inc );
+    /** Implemenation of pure method Vector<ValueType>::concatenate */
 
-    /** Implemenation of pure method Vector::cat */
-
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors );
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors );
 
     /** Sort all elements of this vector.
      *
@@ -372,17 +422,13 @@ public:
 
     void scan( const DenseVector<ValueType>& other );
 
-    /** Implementation of Vector::getValueType */
-
-    virtual common::ScalarType getValueType() const;
-
     /**
-     * Implementation of pure method Vector::setDenseValues.
+     * Implementation of pure method _Vector::setDenseValues.
      */
     virtual void setDenseValues( const hmemo::_HArray& values );
 
     /**
-     * Implementation of pure method Vector::fillSparseData
+     * Implementation of pure method _Vector::fillSparseData
      */
     virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes,
@@ -390,12 +436,12 @@ public:
         const common::BinaryOp op );
 
     /**
-     * Implementation of Vector::copy with covariant return type.
+     * Implementation of _Vector::copy with covariant return type.
      */
     virtual DenseVector* copy() const;
 
     /**
-     * Implementation of Vector::newVector with covariant return type.
+     * Implementation of _Vector::newVector with covariant return type.
      */
     virtual DenseVector* newVector() const;
 
@@ -425,35 +471,45 @@ public:
 
     inline utilskernel::LArray<ValueType>& getHaloValues() const;
 
-    virtual Scalar getValue( IndexType globalIndex ) const;
+    /** @brief Implementation of pure method Vector<ValueType>::getValue */
 
-    virtual void setValue( const IndexType globalIndex, const Scalar value );
+    virtual ValueType getValue( IndexType globalIndex ) const;
 
-    virtual Scalar min() const;
+    /** @brief Implementation of pure method Vector<ValueType>::setValue */
 
-    virtual Scalar max() const;
+    virtual void setValue( const IndexType globalIndex, const ValueType value );
 
-    virtual Scalar sum() const;
+    virtual ValueType min() const;
 
-    virtual Scalar l1Norm() const;
+    virtual ValueType max() const;
 
-    virtual Scalar l2Norm() const;
+    virtual ValueType sum() const;
 
-    virtual Scalar maxNorm() const;
+    /** Implementation of pure method Vector<ValueType>::l1Norm() for dense vector */
 
-    /** Implementation of pure method Vector::maxDiffNorm */
+    virtual NormType<ValueType> l1Norm() const;
 
-    virtual Scalar maxDiffNorm( const Vector& other ) const;
+    /** Implementation of pure method Vector<ValueType>::l2Norm() for dense vector */
 
-    /** Implementation of pure method Vector::all */
+    virtual NormType<ValueType> l2Norm() const;
 
-    virtual bool all( common::CompareOp op, const Scalar value ) const;
+    /** Implementation of pure method Vector<ValueType>::maxNorm() for dense vector */
 
-    /** Implementation of pure method Vector::all */
+    virtual NormType<ValueType> maxNorm() const;
 
-    virtual bool all( common::CompareOp op, const Vector& other ) const;
+    /** Implementation of pure method Vector<ValueType>::maxDiffNorm */
 
-    virtual void swap( Vector& other );
+    virtual NormType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const;
+
+    /** Implementation of pure method Vector<ValueType>::all */
+
+    virtual bool all( common::CompareOp op, const ValueType value ) const;
+
+    /** Implementation of pure method Vector<ValueType>::all */
+
+    virtual bool all( common::CompareOp op, const Vector<ValueType>& other ) const;
+
+    virtual void swap( _Vector& other );
 
     /** Reset a dense vector with a new array of local values and a new distribution.
      *
@@ -470,41 +526,41 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Implementation of pure method Vector::vectorPlusVector */
+    /** Implementation of pure method Vector<ValueType>::unaryOp for dense vector. */
 
-    virtual void vectorPlusVector( const Scalar& alphaS, const Vector& x, const Scalar& betaS, const Vector& y );
+    void unaryOp( const Vector<ValueType>& x, common::UnaryOp op );
 
-    /** vectorPlusVector with one zero term */
+    /** Implementation of pure method Vector<ValueType>::binaryOp for dense vector. */
 
-    void assignScaledVector( const Scalar& alpha, const Vector& x );
+    void binaryOp( const Vector<ValueType>& x, common::BinaryOp op, const Vector<ValueType>& y );
+
+    /** Implementation of pure method Vector<ValueType>::binaryOpScalar for dense vector. */
+
+    void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
+
+    /** Implementation of pure method Vector<ValueType>::vectorPlusVector */
+
+    virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta, const Vector<ValueType>& y );
 
     /** vectorPlusVector with aliased */
 
-    void axpy( const Scalar& alpha, const Vector& x );
+    void axpy( const ValueType& alpha, const Vector<ValueType>& x );
 
-    /** Implementation of pure method Vector::vectorTimesVector */
+    /** Implementation of pure method Vector<ValueType>::vectorTimesVector */
 
-    virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y );
+    virtual void vectorTimesVector( const ValueType& alpha, const Vector<ValueType>& x, const Vector<ValueType>& y );
 
-    /** Implementation of pure method Vector::vectorPlusScalar */
+    /** Implementation of pure method Vector<ValueType>::vectorPlusScalar */
 
-    virtual void vectorPlusScalar( const Scalar& alphaS, const Vector& x, const Scalar& betaS );
+    virtual void vectorPlusScalar( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta );
 
-    /** Assign this vector with a scalar values, does not change size, distribution. */
+    /** Implementation for pure method Vector<ValueType>::setScalar */
 
-    virtual void assign( const Scalar value );
+    virtual void setScalar( const ValueType& alpha );
 
-    /** Implementation of pure method Vector::setScalar */
+    /** Implementation of pure method _Vector::setVector */
 
-    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar = false );
-
-    /** Implementation of pure method Vector::setVector */
-
-    virtual void setVector( const Vector& other, const common::BinaryOp op, const bool swapScalar = false );
-
-    /** Implementation of pure method Vector::applyUnary */
-
-    virtual void applyUnary( common::UnaryOp op );
+    virtual void setVector( const _Vector& other, const common::BinaryOp op, const bool swapScalar = false );
 
     /** Setting this vector by gathering vector elements from another vector.
      *
@@ -534,7 +590,7 @@ public:
         const common::BinaryOp op = common::BinaryOp::COPY );
 
     /**
-     * @brief Implementation of pure method Vector::buildLocalValues.
+     * @brief Implementation of pure method _Vector::buildLocalValues.
      */
     virtual void buildLocalValues( 
         hmemo::_HArray& localValues,
@@ -542,7 +598,7 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /**
-     * @brief Implementation of pure method Vector::gatherLocalValues.
+     * @brief Implementation of pure method _Vector::gatherLocalValues.
      *
      * For a dense vector this is just a corresponding gather of the HArray containing
      * all local values.
@@ -553,9 +609,9 @@ public:
         const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
-    virtual Scalar dotProduct( const Vector& other ) const;
+    virtual ValueType dotProduct( const _Vector& other ) const;
 
-    using Vector::prefetch; // prefetch() with no arguments
+    using _Vector::prefetch; // prefetch() with no arguments
 
     virtual void prefetch( const hmemo::ContextPtr location ) const;
 
@@ -565,13 +621,9 @@ public:
 
     virtual void redistribute( dmemo::DistributionPtr distribution );
 
-    /** Implementation of pure method Vector::redistribute */
+    /** Implementation of pure method _Vector::redistribute */
 
     virtual void redistribute( const dmemo::Redistributor& redistributor );
-
-protected:
-
-    using Vector::mContext;
 
 private:
 
@@ -593,7 +645,7 @@ private:
 
     mutable utilskernel::LArray<ValueType> mHaloValues;
 
-    /** Implementation of Vector::writeLocalToFile */
+    /** Implementation of _Vector::writeLocalToFile */
 
     virtual void writeLocalToFile(
         const std::string& fileName,
@@ -601,11 +653,11 @@ private:
         const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
-    /** Implementation of Vector::readLocalFromFile */
+    /** Implementation of _Vector::readLocalFromFile */
 
     virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex );
 
-    /** Implementation of Vector::clearValues */
+    /** Implementation of _Vector::clearValues */
 
     virtual void clearValues();
 
@@ -613,16 +665,69 @@ public:
 
     // static methods, variables to register create routine in Vector factory of base class.
 
-    static Vector* create();
+    static _Vector* create();
 
     // key for factory
 
     static VectorCreateKeyType createValue();
-
-    virtual VectorCreateKeyType getCreateValue() const;
 };
 
 /* ------------------------------------------------------------------------- */
+/*  Functions that return a DenseVector                                      */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief create a replicated vector and fill it with linear values
+ *
+ * @param[in] n becomes the size of the vector
+ * @param[in] startValue value for the first element, $vector[0] = startValue$
+ * @param[in] inc increment between two elements, i.e. $vector[i+1] - vector[i] = inc$
+ * @param[in] ctx specifies the context of the vector.
+ *
+ * Note: if ctx is specified, the vector will be allocated in its memory.
+ */
+template<typename ValueType>
+DenseVector<ValueType> linearValuesVector( 
+    const IndexType n,
+    const ValueType startValue, 
+    const ValueType inc, 
+    hmemo::ContextPtr ctx = hmemo::ContextPtr() )
+{
+    DenseVector<ValueType> result( ctx );
+    result.allocate( n );
+    result.fillLinearValues( startValue, inc );
+    return result;
+}
+/**
+ * @brief create a distributed vector and fill it with linear values
+ *
+ * @param[in] distribution determines global/local size of the vector
+ * @param[in] startValue value for the first elemen
+ * @param[in] inc increment between the element
+ * @param[in] ctx context where the vector is allocated
+ */
+template<typename ValueType>
+DenseVector<ValueType> linearValuesVector( 
+    dmemo::DistributionPtr distribution, 
+    const ValueType startValue, 
+    const ValueType inc, 
+    hmemo::ContextPtr ctx = hmemo::ContextPtr() )
+{
+    DenseVector<ValueType> result( ctx );
+    result.allocate( distribution );
+    result.fillLinearValues( startValue, inc );
+    return result;
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+VectorKind DenseVector<ValueType>::getVectorKind() const
+{
+    return VectorKind::DENSE;
+}
 
 template<typename ValueType>
 utilskernel::LArray<ValueType>& DenseVector<ValueType>::getLocalValues()

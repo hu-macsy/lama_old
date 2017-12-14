@@ -68,7 +68,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.TypedStorageTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( factoryTest, ValueType, scai_numeric_test_types )
 {
     TypedStorages<ValueType> allMatrixStorages;    // is created by factory
-    size_t nFormats = Format::UNDEFINED;
+    size_t nFormats = static_cast<size_t>( Format::UNDEFINED );
     nFormats -= 1;  // stencil not in Factory
     SCAI_LOG_INFO( logger, "factoryTest<" << common::TypeTraits<ValueType>::id() << "> : "
                    << allMatrixStorages.size() << " storages"                        )
@@ -110,9 +110,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_numeric_test_types )
     DenseStorage<ValueType> dense;
     setDenseData( dense );
     const LArray<ValueType> denseData = dense.getData();
-    ValueType expectedL1Norm = denseData.l1Norm();
-    ValueType expectedL2Norm = denseData.l2Norm();
-    ValueType expectedMaxNorm = denseData.maxNorm();
+    NormType<ValueType> expectedL1Norm = denseData.l1Norm();
+    NormType<ValueType> expectedL2Norm = denseData.l2Norm();
+    NormType<ValueType> expectedMaxNorm = denseData.maxNorm();
     TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
@@ -120,12 +120,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_numeric_test_types )
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         SCAI_LOG_DEBUG( logger, "normTest, storage = " << storage << " @ " << *storage.getContextPtr() )
         setDenseData( storage );
-        ValueType maxNorm = storage.maxNorm();
-        SCAI_CHECK_CLOSE( expectedMaxNorm, maxNorm, 1 );
-        ValueType l1Norm = storage.l1Norm();
-        SCAI_CHECK_CLOSE( expectedL1Norm, l1Norm, 1 );
-        ValueType l2Norm = storage.l2Norm();
-        SCAI_CHECK_CLOSE( expectedL2Norm, l2Norm, 1 );
+        NormType<ValueType> maxNorm = storage.maxNorm();
+        BOOST_CHECK_CLOSE( expectedMaxNorm, maxNorm, 1 );
+        NormType<ValueType> l1Norm = storage.l1Norm();
+        BOOST_CHECK_CLOSE( expectedL1Norm, l1Norm, 1 );
+        NormType<ValueType> l2Norm = storage.l2Norm();
+        BOOST_CHECK_CLOSE( expectedL2Norm, l2Norm, 1 );
     }
 }
 
@@ -339,8 +339,8 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
         LArray<IndexType> firstColIndexes1;
         LArray<IndexType> firstColIndexes2;
 
-        if (     storage.getFormat() == _MatrixStorage::DENSE
-                 ||  storage.getFormat() == _MatrixStorage::DIA  )
+        if (     storage.getFormat() == Format::DENSE
+                 ||  storage.getFormat() == Format::DIA  )
         {
             BOOST_CHECK_THROW(
             { storage.getFirstColumnIndexes( firstColIndexes1 ); },
@@ -612,7 +612,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorSparseTest )
         SCAI_LOG_DEBUG( logger, "GEMV sparse storage = " << storage << ", set dense halo data" )
         storage.setCompressThreshold( 1.0f );  // introduce row indexes in any case
         setDenseHalo( storage );
-        Format::MatrixStorageFormat format = storage.getFormat();
+        Format format = storage.getFormat();
 
         if ( format == Format::CSR || format == Format::ELL )
         {
@@ -692,7 +692,7 @@ BOOST_AUTO_TEST_CASE( matrixVectorTimesSparseTest )
         SCAI_LOG_DEBUG( logger, "GEMV sparse storage = " << storage << ", set dense halo data" )
         storage.setCompressThreshold( 1.0f );  // introduce row indexes in any case
         setDenseHalo( storage );
-        Format::MatrixStorageFormat format = storage.getFormat();
+        Format format = storage.getFormat();
 
         if ( format == Format::CSR || format == Format::ELL )
         {

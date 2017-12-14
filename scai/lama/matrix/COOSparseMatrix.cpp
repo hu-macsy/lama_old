@@ -122,7 +122,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const COOSparseMatrix& other )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const Matrix& other, bool transposeFlag )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const _Matrix& other, bool transposeFlag )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -143,7 +143,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const Matrix& other, bool transpose
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const _Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -185,43 +185,43 @@ COOSparseMatrix<ValueType>::COOSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg2();
+    const Matrix<ValueType>& master = expression.getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SMM& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SMM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg1().getArg2();
+    const Matrix<ValueType>& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM_SM& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
     // inherit context from matA in alpha * matA + beta * matB
-    const Matrix& master = expression.getArg1().getArg2();
+    const Matrix<ValueType>& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -343,7 +343,7 @@ const char* COOSparseMatrix<ValueType>::getTypeName() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Matrix* COOSparseMatrix<ValueType>::create()
+_Matrix* COOSparseMatrix<ValueType>::create()
 {
     return new COOSparseMatrix<ValueType>();
 }

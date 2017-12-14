@@ -77,7 +77,7 @@ int main( int argc, const char* argv[] )
 
         for ( int iter = 0; iter < 10; ++iter )
         {
-            HArrayUtils::UnaryOpOp( values3, values1, op, ctx );
+            HArrayUtils::unaryOp( values3, values1, op, ctx );
         }
 
         double time1 = common::Walltime::get() - start;

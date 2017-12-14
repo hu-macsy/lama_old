@@ -186,7 +186,7 @@ void DIAStorage<ValueType>::clear()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat DIAStorage<ValueType>::getFormat() const
+Format DIAStorage<ValueType>::getFormat() const
 {
     return Format::DIA;
 }
@@ -261,7 +261,7 @@ void DIAStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 
     SCAI_REGION( "Storage.DIA.getSparseRow" )
 
-    HArray<ValueType>& typedValues = reinterpret_cast<HArray<ValueType>&>( values );
+    HArray<ValueType>& typedValues = static_cast<HArray<ValueType>&>( values );
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
 
@@ -497,7 +497,7 @@ void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DIAStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -519,7 +519,7 @@ void DIAStorage<ValueType>::scaleImpl( const HArray<OtherType>& diagonal )
 
                 if ( common::Utils::validIndex( j, mNumColumns ) )
                 {
-                    wValues[ii * mNumRows + i] *= static_cast<ValueType>( rDiagonal[j] );
+                    wValues[ii * mNumRows + i] *= static_cast<ValueType>( rDiagonal[i] );
                 }
             }
         }
@@ -920,7 +920,7 @@ void DIAStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DIAStorage<ValueType>::l1Norm() const
+NormType<ValueType> DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
@@ -930,7 +930,7 @@ ValueType DIAStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DIAStorage<ValueType>::l2Norm() const
+NormType<ValueType> DIAStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
@@ -941,7 +941,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename DIAStorage<ValueType>::StorageAbsType DIAStorage<ValueType>::maxNorm() const
+NormType<ValueType> DIAStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
@@ -950,7 +950,7 @@ typename DIAStorage<ValueType>::StorageAbsType DIAStorage<ValueType>::maxNorm() 
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    StorageAbsType maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
+    NormType<ValueType> maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
     return maxval;
 }
 
@@ -1073,7 +1073,7 @@ void DIAStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<DIAStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<DIAStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<DIAStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */

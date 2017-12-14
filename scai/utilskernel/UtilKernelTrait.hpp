@@ -268,7 +268,7 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct UnaryOpOp
+    struct unaryOp
     {
         /** Apply UnaryOp op sin/cos/sqrt/... function elementwise on vector
          *  This routine can also be used for aliased arrays, i.e. in == out
@@ -282,7 +282,7 @@ struct UtilKernelTrait
 
         static const char* getId()
         {
-            return "Util.UnaryOpOp";
+            return "Util.unaryOp";
         }
     };
 
@@ -365,6 +365,7 @@ struct UtilKernelTrait
 
         typedef void ( *FuncType ) (
             TargetValueType out[],
+            const SourceValueType inZeroValue,
             const SourceValueType inNonZeroValues[],
             const IndexType inNonZeroIndexes[],
             const IndexType nnz,

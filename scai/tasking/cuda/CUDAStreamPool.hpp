@@ -88,6 +88,11 @@ public:
 
     static void freePool( const common::CUDACtx& cuda );
 
+    /** 
+     *  Query if all streams are released 
+     */
+    bool isEmpty();
+
 private:
 
     /** Logger for this class. */

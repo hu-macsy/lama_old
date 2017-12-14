@@ -55,7 +55,7 @@ namespace scai
 namespace lama
 {
 
-/** Matrix storage format for a COO sparse matrix.
+/** _Matrix storage format for a COO sparse matrix.
  *
  * COO stores a list of (row, column, value) tuples. For efficiency reasons,
  * three separate arrays are used instead of a single array of triples.
@@ -82,7 +82,6 @@ class COMMON_DLL_IMPORTEXPORT COOStorage:
 public:
 
     typedef ValueType StorageValueType;
-    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
 
     /** get typename of the matrix storage format. */
 
@@ -157,7 +156,7 @@ public:
 
     /** Getter routine for the enum value that stands for this format. */
 
-    virtual Format::MatrixStorageFormat getFormat() const;
+    virtual Format getFormat() const;
 
     /** Resize of a zero matrix.
      *
@@ -324,7 +323,7 @@ public:
     virtual COOStorage* newMatrixStorage() const;
 
     /******************************************************************
-     *  Matrix times Vector                                            *
+     *  _Matrix times Vector                                            *
      ******************************************************************/
 
     /** Implementation of MatrixStorage::matrixTimesVector for COO */
@@ -392,15 +391,15 @@ public:
 
     /** Implementation for MatrixStorage::l1Norm */
 
-    virtual ValueType l1Norm() const;
+    virtual NormType<ValueType> l1Norm() const;
 
     /** Implementation for MatrixStorage::l2Norm */
 
-    virtual ValueType l2Norm() const;
+    virtual NormType<ValueType> l2Norm() const;
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual StorageAbsType maxNorm() const;
+    virtual NormType<ValueType> maxNorm() const;
 
     /** Get a value of the matrix.
      *

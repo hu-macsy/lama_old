@@ -57,11 +57,8 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         AMGSetup
-        BiCG
         BiCGstab
         CG
-        CGNE
-        CGNR
         CGS
         DecompositionSolver
         GMRES
@@ -70,15 +67,20 @@ scai_project (
         Jacobi
         Kaczmarz
         MINRES
-        OmegaSolver
         QMR
         Richardson
         SimpleAMG
         SingleGridSetup
         SolutionProxy
+        _Solver
         Solver
         TFQMR
         TrivialPreconditioner
+
+    HEADERS
+
+        OmegaSolver
+        MatrixWithT
 
     )
 

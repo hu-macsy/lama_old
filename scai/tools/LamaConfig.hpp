@@ -92,7 +92,7 @@ public:
 
     /** Getter for the specified matrix format, might default */
 
-    scai::lama::Matrix::MatrixStorageFormat getFormat( ) const;
+    scai::lama::Format getFormat( ) const;
 
     /** Getter for the value type to be used */
 
@@ -108,7 +108,8 @@ public:
 
     /** get a new matrix of the specified matrix format and value type. */
 
-    scai::lama::Matrix* getMatrix();
+    template<typename ValueType>
+    scai::lama::Matrix<ValueType>* getMatrix();
 
     scai::hmemo::ContextPtr getContextPtr() const
     {
@@ -154,7 +155,7 @@ public:
 
     scai::solver::LogLevel::LogLevel getLogLevel() const;
 
-    scai::lama::Matrix::SyncKind getCommunicationKind() const
+    scai::lama::SyncKind getCommunicationKind() const
     {
         return mCommunicationKind;
     }
@@ -188,11 +189,11 @@ private:
     std::string mSolverName;   // name of solver, used for factory
     std::string mNorm;         // name of norm, not yet factory
 
-    scai::lama::Matrix::MatrixStorageFormat mMatrixFormat;
+    scai::lama::Format mMatrixFormat;
 
     scai::hmemo::ContextPtr mContext;
 
-    scai::lama::Matrix::SyncKind     mCommunicationKind;
+    scai::lama::SyncKind    mCommunicationKind;
 
     scai::common::ScalarType   mValueType;          // value type to use
 
@@ -277,13 +278,13 @@ LamaConfig::LamaConfig()
 
     bool isSet;
 
-    mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
+    mCommunicationKind = scai::lama::SyncKind::SYNCHRONOUS;
 
     if ( Settings::getEnvironment( isSet, "SCAI_ASYNCHRONOUS" ) )
     {
         if ( isSet )
         {
-            mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
+            mCommunicationKind = scai::lama::SyncKind::ASYNCHRONOUS;
         }
     }
 
@@ -341,7 +342,7 @@ LamaConfig::LamaConfig()
         {
             CONFIG_ERROR( "SCAI_TYPE=" << val << " illegal, is not a scalar type" )
         }
-        else if ( scai::lama::Vector::canCreate( scai::lama::VectorCreateKeyType( scai::lama::Vector::DENSE, type ) ) )
+        else if ( scai::lama::_Vector::canCreate( scai::lama::VectorCreateKeyType( scai::lama::VectorKind::DENSE, type ) ) )
         {
             mValueType = type;
         }
@@ -353,18 +354,18 @@ LamaConfig::LamaConfig()
 
     if ( mContext->getType() == scai::hmemo::Context::CUDA )
     {
-        mMatrixFormat = scai::lama::Matrix::ELL;
+        mMatrixFormat = scai::lama::Format::ELL;
     }
     else
     {
-        mMatrixFormat = scai::lama::Matrix::CSR;
+        mMatrixFormat = scai::lama::Format::CSR;
     }
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_FORMAT" ) )
     {
         // check if we can create a matrix of this type
 
-        scai::lama::Format::MatrixStorageFormat format = scai::lama::str2Format( val.c_str() );
+        scai::lama::Format format = scai::lama::str2Format( val.c_str() );
 
         if ( format != scai::lama::Format::UNDEFINED )
         {
@@ -378,7 +379,7 @@ LamaConfig::LamaConfig()
     {
         // check if solver is available
 
-        if ( !scai::solver::Solver::canCreate( val ) )
+        if ( !scai::solver::_Solver::canCreate( scai::solver::SolverCreateKeyType( mValueType, val ) ) )
         {
             CONFIG_ERROR( "solver " << val << " not available" )
         }
@@ -392,7 +393,7 @@ LamaConfig::LamaConfig()
 
     scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
 
-    if ( ! scai::lama::Norm::canCreate( mNorm ) )
+    if ( ! scai::lama::Norm<RealType>::canCreate( mNorm ) )
     {
         CONFIG_ERROR( "norm " << mNorm << " not available" )
     }
@@ -482,7 +483,7 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     stream << "Norm              = " << getNorm() << std::endl;
 }
 
-scai::lama::Matrix::MatrixStorageFormat LamaConfig::getFormat( ) const
+scai::lama::Format LamaConfig::getFormat( ) const
 {
     return mMatrixFormat;
 }
@@ -517,9 +518,10 @@ IndexType LamaConfig::getMaxIter() const
     return mMaxIter;
 }
 
-scai::lama::Matrix* LamaConfig::getMatrix()
+template<typename ValueType>
+scai::lama::Matrix<ValueType>* LamaConfig::getMatrix()
 {
-    return scai::lama::Matrix::getMatrix( mMatrixFormat, mValueType );
+    return scai::lama::Matrix<ValueType>::getMatrix( mMatrixFormat );
 }
 
 static std::string getLoggers()
@@ -527,7 +529,7 @@ static std::string getLoggers()
     std::ostringstream loggerNames;
 
     std::vector<std::string> vals;
-    scai::solver::Solver::getCreateValues( vals );
+    scai::solver::Solver<RealType>::getCreateValues( vals );
 
     for ( size_t i = 0; i < vals.size(); ++i )
     {

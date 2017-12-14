@@ -35,7 +35,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 
 #include <vector>
 
@@ -62,7 +62,7 @@ public:
      *  @param[in] op specifies how to deal with entries at same positions
      */
 
-    VectorAssemblyAccess( Vector& vector, const common::BinaryOp op = common::BinaryOp::COPY );
+    VectorAssemblyAccess( _Vector& vector, const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Destructor of the access, also communicates and inserts the assembled entries into the vector. */
 
@@ -136,7 +136,7 @@ private:
         const hmemo::HArray<IndexType>& myIA, 
         const hmemo::HArray<ValueType>& myValues );
 
-    Vector& mVector;
+    _Vector& mVector;
 
     // for pushing globally assembled data we use the C++ vector class
 

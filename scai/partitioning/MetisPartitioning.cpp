@@ -74,7 +74,7 @@ void MetisPartitioning::writeAt( std::ostream& stream ) const
     stream << "MetisPartitioning";
 }
 
-DistributionPtr MetisPartitioning::partitionIt( const CommunicatorPtr comm, const Matrix& matrix, float weight ) const
+DistributionPtr MetisPartitioning::partitionIt( const CommunicatorPtr comm, const _Matrix& matrix, float weight ) const
 {
     std::vector<float> weights;
     gatherWeights( weights, weight, *comm );
@@ -83,7 +83,7 @@ DistributionPtr MetisPartitioning::partitionIt( const CommunicatorPtr comm, cons
     return computeIt( comm, matrix, weights );
 }
 
-DistributionPtr MetisPartitioning::computeIt( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights ) const
+DistributionPtr MetisPartitioning::computeIt( const CommunicatorPtr comm, const _Matrix& matrix, std::vector<float>& weights ) const
 {
     // TODO check only for replicated matrix
     IndexType size = comm->getSize();
@@ -185,7 +185,7 @@ DistributionPtr MetisPartitioning::computeIt( const CommunicatorPtr comm, const 
 
     // verify that indexes are sorted otherwise global to local via binary search won't work
 
-    SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::binary::LT ), 
+    SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::CompareOp::LT ), 
                        *comm << ": local row indexes unsorted." )
 
     IndexType globalSize = matrix.getRowDistribution().getGlobalSize();
@@ -205,7 +205,7 @@ void MetisPartitioning::callPartitioning(
     IndexType& parts,
     std::vector<WeightType>& tpwgts,
     const CommunicatorPtr,
-    const Matrix& matrix ) const
+    const _Matrix& matrix ) const
 {
     SCAI_REGION( "METIScall" )
     // Note that here we have: global size == local size of distribution
@@ -252,7 +252,7 @@ void MetisPartitioning::checkAndMapWeights(
 void MetisPartitioning::rectangularPartitioning( 
     HArray<PartitionId>& rowMapping,
     HArray<PartitionId>& colMapping,
-    const lama::Matrix& matrix,
+    const lama::_Matrix& matrix,
     const HArray<float>& processorWeights ) const
 {
     IndexType np = processorWeights.size();

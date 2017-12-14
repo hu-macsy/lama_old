@@ -51,24 +51,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GMRESTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    GMRES GMRESSolver( "GMRESSolver", slogger );
-    BOOST_CHECK_EQUAL( GMRESSolver.getId(), "GMRESSolver" );
-    GMRES GMRESSolver2( "GMRESSolver2" );
-    BOOST_CHECK_EQUAL( GMRESSolver2.getId(), "GMRESSolver2" );
-    GMRES GMRESSolver3( GMRESSolver2 );
-    BOOST_CHECK_EQUAL( GMRESSolver3.getId(), "GMRESSolver2" );
-    BOOST_CHECK( GMRESSolver3.getPreconditioner() == 0 );
-    GMRES GMRESSolver4( "GMRESSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    GMRESSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    GMRESSolver4.setStoppingCriterion( criterion );
-    GMRES GMRESSolver5( GMRESSolver4 );
-    BOOST_CHECK_EQUAL( GMRESSolver5.getId(), GMRESSolver4.getId() );
-    BOOST_CHECK_EQUAL( GMRESSolver5.getPreconditioner()->getId(), GMRESSolver4.getPreconditioner()->getId() );
+    GMRES<ValueType> cgSolver( "GMRESTestSolver", slogger );
+    BOOST_CHECK_EQUAL( cgSolver.getId(), "GMRESTestSolver" );
+    GMRES<ValueType> cgSolver2( "GMRESTestSolver2" );
+    BOOST_CHECK_EQUAL( cgSolver2.getId(), "GMRESTestSolver2" );
+    GMRES<ValueType> cgSolver3( cgSolver2 );
+    BOOST_CHECK_EQUAL( cgSolver3.getId(), "GMRESTestSolver2" );
+    BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
+    GMRES<ValueType> cgSolver4( "cgSolver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    cgSolver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    cgSolver4.setStoppingCriterion( criterion );
+    GMRES<ValueType> cgSolver5( cgSolver4 );
+    BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
+    BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

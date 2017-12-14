@@ -47,6 +47,7 @@ using namespace std;
 using namespace scai::lama;
 using namespace scai::hmemo;
 using scai::common::Walltime;
+using scai::common::UnaryOp;
 
 /** ValueType is the type used for matrix and vector elements. */
 
@@ -251,8 +252,8 @@ int main( int argc, char* argv[] )
     const IndexType numCols = affinityMatrix.getNumColumns();
     DenseVector<ValueType> oneVector( numCols, 1.0 );
     DenseVector<ValueType> y( affinityMatrix * oneVector );  // rowSums
-    y.invert();   // y(i) = 1.0 / y(i)
-    affinityMatrix.scale( y );  // scales each row
+    y.unaryOp( y, UnaryOp::RECIPROCAL );   // y(i) = 1.0 / y(i)
+    affinityMatrix.scaleRows( y );  // scales each row
     cout << "invert/scale calculations took " << Walltime::get() - start << " secs." << endl;
     // update affinityMatrix so that labelsMatrix remains unchanged
     // where initial entries are set
@@ -285,7 +286,7 @@ int main( int argc, char* argv[] )
         // w already stores (D-1 * W)
         labelsMatrixNew = affinityMatrix * labelsMatrix;
         int nnzOld = labelsMatrix.getNumValues();
-        ValueType maxDiff = labelsMatrix.maxDiffNorm( labelsMatrixNew ).getValue<ValueType>();
+        ValueType maxDiff = labelsMatrix.maxDiffNorm( labelsMatrixNew );
         // use more efficient swap instead of: labelsMatrix = labelsMatrixNew;
         // Note: works only for same matrix type
         labelsMatrix.swap( labelsMatrixNew );

@@ -80,7 +80,7 @@ int main( int argc, const char* argv[] )
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
     A.setContextPtr( ctx );
-    A.setCommunicationKind( Matrix::SYNCHRONOUS );
+    A.setCommunicationKind( _Matrix::SYNCHRONOUS );
     b.setContextPtr( ctx );
     ub.setContextPtr( ctx );
     lb.setContextPtr( ctx );
@@ -122,7 +122,7 @@ int main( int argc, const char* argv[] )
 
     DenseVector<double> x( ctx );
 
-    MatrixWithT Aopt( A );   // Allocate also a transposed matrix to optimize A' * x operations
+    _MatrixWithT Aopt( A );   // Allocate also a transposed matrix to optimize A' * x operations
 
     ConstrainedLeastSquares lsq( Aopt );
 

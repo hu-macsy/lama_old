@@ -111,7 +111,7 @@ int main( int argc, char** argv )
 
     for ( int level = 0; level < ( int )amgSolver->getNumLevels(); ++level )
     {
-        const Matrix& mat = amgSolver->getGalerkin( level );
+        const _Matrix& mat = amgSolver->getGalerkin( level );
         std::cout << "Galerkin matrix on level " << level << ": " << mat << std::endl;
         HArray<IndexType> ia;
         HArray<IndexType> ja;
@@ -157,7 +157,7 @@ int main( int argc, char** argv )
 
     for ( int level = 0; level < ( int )amgSolver->getNumLevels() - 1; ++level )
     {
-        const Matrix& mat = amgSolver->getInterpolation( level );
+        const _Matrix& mat = amgSolver->getInterpolation( level );
         std::cout << "Interpolation matrix on level " << level << ": " << mat << std::endl;
         HArray<IndexType> ia;
         HArray<IndexType> ja;

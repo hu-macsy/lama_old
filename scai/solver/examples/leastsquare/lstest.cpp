@@ -37,8 +37,6 @@
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/solver/CG.hpp>
-#include <scai/solver/CGNE.hpp>
-#include <scai/solver/CGNR.hpp>
 
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
@@ -84,7 +82,7 @@ int main( int, char** )
 
     m.setDenseData( rowDist, colDist, data, 0.0 );
 
-    GramianMatrix mTm( m );
+    GramianMatrix<ValueType> mTm( m );
 
     DenseVector<ValueType> b;
     b.setRawData( numRows, rawB );
@@ -98,10 +96,10 @@ int main( int, char** )
     // definie stopping criteria
 
     ValueType eps = 1e-8;
-    CriterionPtr criterion1( new IterationCount( 20 ) );
-    NormPtr norm( Norm::create( "L2" ) );   // Norm from factory
-    CriterionPtr criterion2( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
-    CriterionPtr criterion( new Criterion( criterion1, criterion2, Criterion::OR ) );
+    CriterionPtr<ValueType> criterion1( new IterationCount<ValueType>( 20 ) );
+    NormPtr<ValueType> norm( Norm<ValueType>::create( "L2" ) );   // Norm from factory
+    CriterionPtr<ValueType> criterion2( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
+    CriterionPtr<ValueType> criterion( new Criterion<ValueType>( criterion1, criterion2, BooleanOp::OR ) );
 
     // define common logger to print convergence history
 
@@ -112,7 +110,7 @@ int main( int, char** )
 
     // Do it with CG
 
-    CG solver( "NormalEquationSolver" );
+    CG<ValueType> solver( "NormalEquationSolver" );
     solver.setLogger( logger );
     solver.setStoppingCriterion( criterion );
     solver.initialize( mTm );
@@ -125,20 +123,20 @@ int main( int, char** )
     std::cout << "residual norm of computed x : " << computedRes.l2Norm() << std::endl;
     std::cout << "residual norm of expected x : " << expectedRes.l2Norm() << std::endl;
 
-    // Do it with CGNR
+    // Do it with CGNR ( is same, but builds the transposed matrix always explicitly )
 
-    CGNR solver1( "NormalEquationSolver" );
+    // CGNR solver1( "NormalEquationSolver" );
 
-    solver1.setStoppingCriterion( criterion );
-    solver1.setLogger( logger );
+    // solver1.setStoppingCriterion( criterion );
+    // solver1.setLogger( logger );
 
-    x0 = 0;  
-    solver1.initialize( m );
-    solver1.solve( x0, b );
+    // x0 = 0; 
+    // solver1.initialize( m );
+    // solver1.solve( x0, b );
 
-    computedRes =  m * x0 - b;
+    // computedRes =  m * x0 - b;
 
-    std::cout << "residual norm of computed x : " << computedRes.l2Norm() << std::endl;
+    // std::cout << "residual norm of computed x : " << computedRes.l2Norm() << std::endl;
 
     return 0;
 }

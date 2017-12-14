@@ -22,5 +22,6 @@ In the following you find aninstallation guide, explanation to the modules, and 
    installation
    modules
    tutorial
+   changes
    extension
    faq

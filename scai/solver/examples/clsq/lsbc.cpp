@@ -69,7 +69,7 @@ int main( int argc, const char* argv[] )
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
     A.setContextPtr( ctx );
-    A.setCommunicationKind( Matrix::SYNCHRONOUS );
+    A.setCommunicationKind( _Matrix::SYNCHRONOUS );
     b.setContextPtr( ctx );
     ub.setContextPtr( ctx );
     lb.setContextPtr( ctx );

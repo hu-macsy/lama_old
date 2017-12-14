@@ -242,65 +242,6 @@ IndexType _MatrixStorage::getNumValues() const
 
 /* ---------------------------------------------------------------------------------- */
 
-const char* format2Str( const Format::MatrixStorageFormat storageFormat )
-{
-    switch ( storageFormat )
-    {
-        case Format::CSR:
-            return "CSR";
-            break;
-
-        case Format::ELL:
-            return "ELL";
-            break;
-
-        case Format::DIA:
-            return "DIA";
-            break;
-
-        case Format::JDS:
-            return "JDS";
-            break;
-
-        case Format::COO:
-            return "COO";
-            break;
-
-        case Format::DENSE:
-            return "DENSE";
-            break;
-
-        case Format::STENCIL:
-            return "STENCIL";
-            break;
-
-        case Format::ASSEMBLY:
-            return "ASSEMBLY";
-            break;
-
-        case Format::UNDEFINED:
-            return "UNDEFINED";
-            break;
-    }
-
-    return "UNDEFINED";
-}
-
-Format::MatrixStorageFormat str2Format( const char* str )
-{
-    for ( int format = 0; format < Format::UNDEFINED; ++format )
-    {
-        if ( strcmp( format2Str( Format::MatrixStorageFormat( format ) ), str ) == 0 )
-        {
-            return Format::MatrixStorageFormat( format );
-        }
-    }
-
-    return Format::UNDEFINED;
-}
-
-/* ---------------------------------------------------------------------------------- */
-
 void _MatrixStorage::offsets2sizes( HArray<IndexType>& offsets )
 {
     const IndexType n = offsets.size() - 1;
@@ -1371,8 +1312,7 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename MatrixStorage<ValueType>::StorageAbsType
-MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+NormType<ValueType> MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
@@ -1532,8 +1472,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    SCAI_ASSERT_GT_ERROR( StorageAbsType( epsilon ), 0, "epsilon = " << epsilon << ", must not be negative" )
-    mEpsilon = epsilon;
+    mEpsilon = common::Math::abs( epsilon );
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
     HArrayRef<OtherValueType> data( numRows * numColumns, values );
@@ -1726,12 +1665,6 @@ bool MatrixStorage<ValueType>::checkSymmetry() const
     }
 
     return true;
-}
-
-std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageFormat& storageFormat )
-{
-    stream << scai::lama::format2Str( storageFormat );
-    return stream;
 }
 
 /* ========================================================================= */

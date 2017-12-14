@@ -270,7 +270,7 @@ static inline void getStencil(
 /* ------------------------------------------------------------------------- */
 
 void MatrixCreator::buildPoisson(
-    Matrix& matrix,
+    _Matrix& matrix,
     const IndexType dimension,
     const IndexType stencilType,
     const IndexType dimX,
@@ -398,7 +398,7 @@ void MatrixCreator::buildPoisson(
 /* ------------------------------------------------------------------------- */
 
 void MatrixCreator::buildPoisson1D(
-    Matrix& matrix,
+    _Matrix& matrix,
     const IndexType stencilType,
     const IndexType dim )
 {
@@ -409,7 +409,7 @@ void MatrixCreator::buildPoisson1D(
 /* ------------------------------------------------------------------------- */
 
 void MatrixCreator::buildPoisson2D(
-    Matrix& matrix,
+    _Matrix& matrix,
     const IndexType stencilType,
     const IndexType dim1,
     const IndexType dim2 )
@@ -421,7 +421,7 @@ void MatrixCreator::buildPoisson2D(
 /* ------------------------------------------------------------------------- */
 
 void MatrixCreator::buildPoisson3D(
-    Matrix& matrix,
+    _Matrix& matrix,
     const IndexType stencilType,
     const IndexType dim1,
     const IndexType dim2,
@@ -433,7 +433,7 @@ void MatrixCreator::buildPoisson3D(
 
 /* ------------------------------------------------------------------------- */
 
-void MatrixCreator::fillRandom( Matrix& matrix, float density )
+void MatrixCreator::fillRandom( _Matrix& matrix, float density )
 {
     // Shape and distribution of matrix is not changed
     const dmemo::Distribution& dist = matrix.getRowDistribution();
@@ -501,7 +501,7 @@ void MatrixCreator::fillRandom( Matrix& matrix, float density )
 /* ------------------------------------------------------------------------- */
 
 void MatrixCreator::buildRandom(
-    Matrix& matrix,
+    _Matrix& matrix,
     const IndexType size,
     const float density )
 {

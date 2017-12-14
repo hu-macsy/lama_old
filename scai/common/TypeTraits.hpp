@@ -603,5 +603,10 @@ template<typename ValueType> inline ScalarType getScalarType()
 
 }  // namespace common
 
+/** Make type alias to have NormType<ValueType> as type used in norm computations. */
+
+template<typename ValueType>
+using NormType = typename scai::common::TypeTraits<ValueType>::AbsType;
+
 }  // namespace scai
 
