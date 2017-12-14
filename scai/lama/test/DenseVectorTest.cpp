@@ -48,7 +48,7 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/expression/all.hpp>
-#include <scai/testsupport/unique_path.hpp>
+#include <scai/testsupport/uniquePath.hpp>
 #include <scai/testsupport/GlobalTempDir.hpp>
 
 using namespace scai;
