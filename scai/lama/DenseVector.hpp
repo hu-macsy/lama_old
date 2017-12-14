@@ -95,6 +95,7 @@ public:
 
     using Vector<ValueType>::operator=;
     using Vector<ValueType>::getValueType;
+    using Vector<ValueType>::binaryOp;    
 
     /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
 
@@ -230,14 +231,14 @@ public:
      *
      * @param[in] expression    alpha * x
      */
-    explicit DenseVector( const Expression_SV& expression );
+    explicit DenseVector( const Expression_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha + x.
      *
      * @param[in] expression    alpha * x + beta
      */
-    explicit DenseVector( const Expression_SV_S& expression );
+    explicit DenseVector( const Expression_SV_S<ValueType>& expression );
 
     /**
      *  @brief creates a DenseVector with the Expression alpha * x * Y.
@@ -245,7 +246,7 @@ public:
      * @param[in] expression    x * y
      */
 
-    explicit DenseVector( const Expression_VV& expression );
+    explicit DenseVector( const Expression_VV<ValueType>& expression );
 
 
     /**
@@ -254,14 +255,14 @@ public:
      * @param[in] expression    alpha * x * y
      */
 
-    explicit DenseVector( const Expression_SVV& expression );
+    explicit DenseVector( const Expression_SVV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x + beta * y.
      *
      * @param[in] expression  is alpha * x + beta * y
      */
-    explicit DenseVector( const Expression_SV_SV& expression );
+    explicit DenseVector( const Expression_SV_SV<ValueType>& expression );
 
     /* --------------------------------------------------------------------- */
 
@@ -270,42 +271,42 @@ public:
      *
      * @param[in] expression     alpha * A * x + beta * y
      */
-    explicit DenseVector( const Expression_SMV_SV& expression );
+    explicit DenseVector( const Expression_SMV_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A + beta * y.
      *
      * @param[in] expression     alpha * x * A + beta * y
      */
-    explicit DenseVector( const Expression_SVM_SV& expression );
+    explicit DenseVector( const Expression_SVM_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * A * x.
      *
      * @param[in] expression     alpha * A * x
      */
-    explicit DenseVector( const Expression_SMV& expression );
+    explicit DenseVector( const Expression_SMV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    explicit DenseVector( const Expression_SVM& expression );
+    explicit DenseVector( const Expression_SVM<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    explicit DenseVector( const Expression_MV& expression );
+    explicit DenseVector( const Expression_MV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    explicit DenseVector( const Expression_VM& expression );
+    explicit DenseVector( const Expression_VM<ValueType>& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -338,10 +339,6 @@ public:
     /** Override the default assignment operator.  */
 
     DenseVector& operator=( const DenseVector<ValueType>& other );
-
-    /** Reimplement _Vector::operator= as otherwise a constructor of DenseVector might be called */
-
-    DenseVector& operator=( const Scalar );
 
     // All other assignment operators are inherited from class Vector, but using is required
 
@@ -381,9 +378,9 @@ public:
      */
     void fillLinearValues( const ValueType startValue, const ValueType inc );
 
-    /** Implemenation of pure method _Vector::cat */
+    /** Implemenation of pure method Vector<ValueType>::concatenate */
 
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors );
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors );
 
     /** Sort all elements of this vector.
      *
@@ -474,9 +471,13 @@ public:
 
     inline utilskernel::LArray<ValueType>& getHaloValues() const;
 
-    virtual Scalar getValue( IndexType globalIndex ) const;
+    /** @brief Implementation of pure method Vector<ValueType>::getValue */
 
-    virtual void setValue( const IndexType globalIndex, const Scalar value );
+    virtual ValueType getValue( IndexType globalIndex ) const;
+
+    /** @brief Implementation of pure method Vector<ValueType>::setValue */
+
+    virtual void setValue( const IndexType globalIndex, const ValueType value );
 
     virtual ValueType min() const;
 
@@ -484,23 +485,29 @@ public:
 
     virtual ValueType sum() const;
 
+    /** Implementation of pure method Vector<ValueType>::l1Norm() for dense vector */
+
     virtual NormType<ValueType> l1Norm() const;
+
+    /** Implementation of pure method Vector<ValueType>::l2Norm() for dense vector */
 
     virtual NormType<ValueType> l2Norm() const;
 
+    /** Implementation of pure method Vector<ValueType>::maxNorm() for dense vector */
+
     virtual NormType<ValueType> maxNorm() const;
 
-    /** Implementation of pure method _Vector::maxDiffNorm */
+    /** Implementation of pure method Vector<ValueType>::maxDiffNorm */
 
-    virtual NormType<ValueType> maxDiffNorm( const _Vector& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const;
 
-    /** Implementation of pure method _Vector::all */
+    /** Implementation of pure method Vector<ValueType>::all */
 
-    virtual bool all( common::CompareOp op, const Scalar value ) const;
+    virtual bool all( common::CompareOp op, const ValueType value ) const;
 
-    /** Implementation of pure method _Vector::all */
+    /** Implementation of pure method Vector<ValueType>::all */
 
-    virtual bool all( common::CompareOp op, const _Vector& other ) const;
+    virtual bool all( common::CompareOp op, const Vector<ValueType>& other ) const;
 
     virtual void swap( _Vector& other );
 
@@ -519,41 +526,41 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Implementation of pure method _Vector::vectorPlusVector */
+    /** Implementation of pure method Vector<ValueType>::unaryOp for dense vector. */
 
-    virtual void vectorPlusVector( const Scalar& alphaS, const _Vector& x, const Scalar& betaS, const _Vector& y );
+    void unaryOp( const Vector<ValueType>& x, common::UnaryOp op );
 
-    /** vectorPlusVector with one zero term */
+    /** Implementation of pure method Vector<ValueType>::binaryOp for dense vector. */
 
-    void assignScaledVector( const Scalar& alpha, const _Vector& x );
+    void binaryOp( const Vector<ValueType>& x, common::BinaryOp op, const Vector<ValueType>& y );
+
+    /** Implementation of pure method Vector<ValueType>::binaryOpScalar for dense vector. */
+
+    void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
+
+    /** Implementation of pure method Vector<ValueType>::vectorPlusVector */
+
+    virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta, const Vector<ValueType>& y );
 
     /** vectorPlusVector with aliased */
 
-    void axpy( const Scalar& alpha, const _Vector& x );
+    void axpy( const ValueType& alpha, const Vector<ValueType>& x );
 
-    /** Implementation of pure method _Vector::vectorTimesVector */
+    /** Implementation of pure method Vector<ValueType>::vectorTimesVector */
 
-    virtual void vectorTimesVector( const Scalar& alphaS, const _Vector& x, const _Vector& y );
+    virtual void vectorTimesVector( const ValueType& alpha, const Vector<ValueType>& x, const Vector<ValueType>& y );
 
-    /** Implementation of pure method _Vector::vectorPlusScalar */
+    /** Implementation of pure method Vector<ValueType>::vectorPlusScalar */
 
-    virtual void vectorPlusScalar( const Scalar& alphaS, const _Vector& x, const Scalar& betaS );
+    virtual void vectorPlusScalar( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta );
 
-    /** Assign this vector with a scalar values, does not change size, distribution. */
+    /** Implementation for pure method Vector<ValueType>::setScalar */
 
-    virtual void assign( const Scalar value );
-
-    /** Implementation of pure method _Vector::setScalar */
-
-    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar = false );
+    virtual void setScalar( const ValueType& alpha );
 
     /** Implementation of pure method _Vector::setVector */
 
     virtual void setVector( const _Vector& other, const common::BinaryOp op, const bool swapScalar = false );
-
-    /** Implementation of pure method _Vector::applyUnary */
-
-    virtual void applyUnary( common::UnaryOp op );
 
     /** Setting this vector by gathering vector elements from another vector.
      *
@@ -663,8 +670,6 @@ public:
     // key for factory
 
     static VectorCreateKeyType createValue();
-
-    virtual VectorCreateKeyType getCreateValue() const;
 };
 
 /* ------------------------------------------------------------------------- */

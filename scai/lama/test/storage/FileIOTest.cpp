@@ -78,7 +78,7 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
     // values: take numRows x numColums random numbers of required type
 
     LArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
-    SCAI_LOG_ERROR( logger, "setDenseData, values = " << values )
+    SCAI_LOG_INFO( logger, "setDenseData, values = " << values )
 
     values.setSparseRandom( 0.2f, 1 );
 
@@ -289,14 +289,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
 
+        NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
         // due to formatted output we might have lost some precision
 
         for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
         {
             for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
             {
-                SCAI_CHECK_CLOSE( csrStorage.getValue( i, j ),
-                                  readStorage.getValue( i, j ), 0.01f );
+                BOOST_CHECK( common::Math::abs( csrStorage.getValue( i, j ) - readStorage.getValue( i, j ) ) < eps );
             }
         }
 
@@ -313,8 +314,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
             {
                 for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
                 {
-                    SCAI_CHECK_CLOSE( csrStorage.getValue( i, j ),
-                                      csrBlock.getValue( i - 1, j ), 0.01f );
+                    BOOST_CHECK( common::Math::abs( csrStorage.getValue( i, j ) - csrBlock.getValue( i - 1, j ) ) < eps );
                 }
             }
         }
@@ -705,6 +705,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         // Test the method readArray
 
+        NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
         {
             LArray<ValueType> inArray;
 
@@ -714,6 +716,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
             BOOST_REQUIRE_EQUAL( N, inArray.size() );
 
+            NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
             for ( IndexType i = 0; i < N; ++i )
             {
                 ValueType expectedVal = array[i];
@@ -721,7 +725,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
                 // Due to the formatted output there might be a loss of precision
 
-                SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
+                BOOST_CHECK( common::Math::abs( expectedVal - readVal ) < eps );
             }
         }
 
@@ -748,7 +752,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
                 // Due to the formatted output there might be a loss of precision
 
-                SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
+                BOOST_CHECK( common::Math::abs( expectedVal - readVal ) < eps );
             }
         }
 
@@ -966,6 +970,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
         // Test the method readSparse
 
+        NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
         {
             IndexType         inN;
             LArray<ValueType> inValues;
@@ -991,7 +997,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
                 // Due to the formatted output there might be a loss of precision
 
-                SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
+                BOOST_CHECK( common::Math::abs( expectedVal - readVal ) < eps );
             }
         }
 

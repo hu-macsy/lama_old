@@ -505,7 +505,7 @@ void COOStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<COOStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<COOStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<COOStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */

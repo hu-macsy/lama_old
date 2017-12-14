@@ -49,7 +49,7 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/storage/Storages.hpp>
 
 #include <scai/logging.hpp>

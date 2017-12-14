@@ -708,7 +708,7 @@ void CSRStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<CSRStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<CSRStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<CSRStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -1061,7 +1061,7 @@ void ELLStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<ELLStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<ELLStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<ELLStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */

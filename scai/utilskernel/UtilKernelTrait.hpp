@@ -365,6 +365,7 @@ struct UtilKernelTrait
 
         typedef void ( *FuncType ) (
             TargetValueType out[],
+            const SourceValueType inZeroValue,
             const SourceValueType inNonZeroValues[],
             const IndexType inNonZeroIndexes[],
             const IndexType nnz,

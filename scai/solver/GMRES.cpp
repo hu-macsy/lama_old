@@ -141,13 +141,18 @@ void GMRES<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
     hmemo::ContextPtr ctx = coefficients.getContextPtr();
 
-    runtime.mW.setSpace( dist, ctx );
-    runtime.mT.setSpace( dist, ctx ); 
-    runtime.mX0.setSpace( dist, ctx ); 
+    runtime.mW.setContextPtr( ctx );
+    runtime.mT.setContextPtr( ctx ); 
+    runtime.mX0.setContextPtr( ctx ); 
+
+    runtime.mW.allocate( dist );
+    runtime.mT.allocate( dist ); 
+    runtime.mX0.allocate( dist ); 
 
     for ( IndexType i = 0; i <=mKrylovDim; ++i )
     {
-        runtime.mV[i].setSpace( dist, ctx );
+        runtime.mV[i].setContextPtr( ctx );
+        runtime.mV[i].allocate( dist );
     }
 }
 

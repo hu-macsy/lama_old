@@ -33,6 +33,9 @@
  */
 
 #include <scai/lama/Vector.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
+
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/mepr/TypeList.hpp>
@@ -110,79 +113,361 @@ common::ScalarType Vector<ValueType>::getValueType() const
     return TypeTraits<ValueType>::stype;
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*   element-wise operations on vector                                                    */
-/* ---------------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-void Vector<ValueType>::cwiseProduct( const _Vector& other )
-{
-    bool noSwapArgs = false;
-    setVector( other, common::BinaryOp::MULT, noSwapArgs );
-}
-
-template<typename ValueType>
-void Vector<ValueType>::cwiseDivision( const _Vector& other )
-{
-    bool noSwapArgs = false;
-    setVector( other, common::BinaryOp::DIVIDE, noSwapArgs );
-}
-
-template<typename ValueType>
-void Vector<ValueType>::scale( ValueType value )
-{
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::MULT, noSwapArgs );
-}
-
+/* ========================================================================= */
+/*        operator= < vector expression>                                     */
 /* ========================================================================= */
 
 template<typename ValueType>
-Scalar Vector<ValueType>::_l1Norm() const
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_SV<ValueType>& expression )
 {
-    return Scalar( l1Norm() );
+    const Scalar alphaS        = expression.getArg1().getArg1();
+    const Scalar betaS         = expression.getArg2().getArg1();
+    const ValueType alpha      = alphaS.getValue<ValueType>();
+    const ValueType beta       = betaS.getValue<ValueType>();
+    const Vector<ValueType>& x = expression.getArg1().getArg2();
+    const Vector<ValueType>& y = expression.getArg2().getArg2();
+
+    SCAI_LOG_DEBUG( logger, "this = " << alpha << " * x = " << x << " + " << beta << " * y = " << y )
+
+    // Note: all checks are done the vector specific implementations
+
+    vectorPlusVector( alpha, x, beta, y );
+
+    return *this;
 }
 
 template<typename ValueType>
-Scalar Vector<ValueType>::_l2Norm() const
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_S<ValueType>& expression )
 {
-    return Scalar( l2Norm() );
+    const Expression_SV<ValueType>& exp = expression.getArg1();
+    const Scalar& alpha = exp.getArg1();
+    const Vector<ValueType>& x = exp.getArg2();
+    const Scalar& beta = expression.getArg2();
+
+    vectorPlusScalar( alpha.getValue<ValueType>(), x, beta.getValue<ValueType>() );
+
+    return *this;
 }
 
 template<typename ValueType>
-Scalar Vector<ValueType>::_maxNorm() const
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV<ValueType>& expression )
 {
-    return Scalar( maxNorm() );
+    Scalar alphaS = expression.getArg1(); 
+    ValueType alpha = alphaS.getValue<ValueType>();
+
+    const Matrix<ValueType>& matrix = expression.getArg2().getArg1();
+    const Vector<ValueType>& vector = expression.getArg2().getArg2();
+
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * matrix * vector" )
+
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this, false );
+
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
 }
 
 template<typename ValueType>
-Scalar Vector<ValueType>::_maxDiffNorm( const _Vector& other ) const
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM<ValueType>& expression )
+{   
+    Scalar alphaS = expression.getArg1(); 
+    ValueType alpha = alphaS.getValue<ValueType>();
+
+    const Vector<ValueType>& vector = expression.getArg2().getArg1();
+    const Matrix<ValueType>& matrix = expression.getArg2().getArg2();
+
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * vector * matrix" )
+
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this, true );
+
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM<IndexType>& )
 {
-    return Scalar( maxDiffNorm( other ) );
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
 }
 
 template<typename ValueType>
-Scalar Vector<ValueType>::_min() const
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueType>& expression )
 {
-    return Scalar( min() );
+    SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
+    const Expression_SMV<ValueType>& exp1 = expression.getArg1();
+    const Expression_SV<ValueType>& exp2 = expression.getArg2();
+    Scalar alphaS = exp1.getArg1();
+    ValueType alpha = alphaS.getValue<ValueType>();
+    const Expression_MV<ValueType> matrixTimesVectorExp = exp1.getArg2();
+    const Scalar& betaS = exp2.getArg1();
+    const ValueType& beta = betaS.getValue<ValueType>();
+    const Vector<ValueType>& vectorY = exp2.getArg2();
+    const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1();
+    const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
+
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY, false );
+
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV_SV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
 }
 
 template<typename ValueType>
-Scalar Vector<ValueType>::_max() const
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM_SV<ValueType>& expression )
+
+{   
+    SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
+    const Expression_SVM<ValueType>& exp1 = expression.getArg1();
+    const Expression_SV<ValueType>& exp2 = expression.getArg2();
+    const Expression_VM<ValueType>& vectorTimesMatrixExp = exp1.getArg2();
+    
+    // resolve : result = alhpa * A * x + beta * y
+    
+    const Scalar& alphaS  = exp1.getArg1();
+    const Scalar& betaS   = exp2.getArg1();
+    const ValueType alpha = alphaS.getValue<ValueType>();
+    const ValueType beta  = betaS.getValue<ValueType>();
+    const Vector<ValueType>& vectorY = exp2.getArg2();
+    const Vector<ValueType>& vectorX = vectorTimesMatrixExp.getArg1();
+    const Matrix<ValueType>& matrix = vectorTimesMatrixExp.getArg2();
+    
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY, true );
+    
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM_SV<IndexType>& )
 {
-    return Scalar( min() );
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
 }
 
 template<typename ValueType>
-Scalar Vector<ValueType>::_sum() const
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV<ValueType>& expression )
 {
-    return Scalar( sum() );
+    const Scalar& alpha = expression.getArg1();
+    const Vector<ValueType>& x = expression.getArg2();
+
+    vectorPlusVector( alpha.getValue<ValueType>(), x, 0, x );
+
+    return *this;
 }
 
 template<typename ValueType>
-Scalar Vector<ValueType>::_dotProduct( const _Vector& other ) const
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_VV<ValueType>& expression )
 {
-    return Scalar( dotProduct( other ) );
+    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
+
+    const Vector<ValueType>& x = expression.getArg1();
+    const Vector<ValueType>& y = expression.getArg2();
+
+    ValueType alpha = 1;
+
+    vectorTimesVector( alpha, x, y );
+
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVV<ValueType>& exp )
+{
+    // extract componennts from alpha * ( x * y )
+
+    Scalar a = exp.getArg1();
+
+    const ValueType alpha = a.getValue<ValueType>();
+
+    const Vector<ValueType>& x = exp.getArg2().getArg1();
+    const Vector<ValueType>& y = exp.getArg2().getArg2();
+
+    vectorTimesVector( alpha, x, y );
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   vector [?]= scalar                                                                   */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const ValueType value )
+{
+    setScalar( value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::ADD, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::SUB, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator*=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::MULT, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator/=( const ValueType value )
+{
+    SCAI_ASSERT_NE_ERROR( value, ValueType( 0 ), "Divide by zero for vector" )
+
+    // Note: multiplication is faster than division, so do it right here
+
+    binaryOp( *this, common::BinaryOp::MULT, ValueType( 1 ) / value );
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   vector [?]= scalar * vector                                                          */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SV<ValueType>& exp )
+{
+    const Scalar b = exp.getArg1();
+
+    ValueType alpha = 1;
+    ValueType beta  = b.getValue<ValueType>();
+
+    const Vector<ValueType>& x = *this;
+    const Vector<ValueType>& y = exp.getArg2();
+
+    vectorPlusVector( alpha, x, beta, y );
+
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SV<ValueType>& exp )
+{
+    ValueType alpha = 1;
+    Scalar beta  = exp.getArg1();
+
+    const Vector<ValueType>& x = *this;
+    const Vector<ValueType>& y = exp.getArg2();
+
+    vectorPlusVector( alpha, x, -beta.getValue<ValueType>(), y );
+
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SMV<ValueType>& expression )
+{
+    return operator=( Expression_SMV_SV<ValueType>( expression, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SVM<ValueType>& expression )
+{
+    return operator=( Expression_SVM_SV<ValueType>( expression, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SMV<ValueType>& exp )
+{
+    Expression_SMV<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
+    return operator=( Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   setRandom, setSparseRandom                                                           */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::setSparseRandom( const IndexType n, const ValueType& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( n );
+
+    if ( fillRate < 1.0f )
+    {
+        setScalar( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+template<typename ValueType>
+void Vector<ValueType>::setSparseRandom( dmemo::DistributionPtr dist, const ValueType& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( dist );
+
+    if ( fillRate < 1.0f )
+    {
+        setScalar( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   assign concatenation of vectors                                                      */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::cat( const Vector<ValueType>& v1, const Vector<ValueType>& v2 )
+{
+    std::vector<const Vector<ValueType>*> vectors;
+
+    vectors.push_back( &v1 );
+    vectors.push_back( &v2 );
+
+    dmemo::CommunicatorPtr comm = v1.getDistribution().getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
+
+    SCAI_LOG_INFO( logger, "this = " << *this << ", dist of concat vector = " << *dist )
+
+    concatenate( dist, vectors );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   miscallaneous                                                                        */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::setRandom( const IndexType n, const IndexType bound )
+{
+    allocate ( n );
+    fillRandom( bound );
+}
+
+template<typename ValueType>
+void Vector<ValueType>::setRandom( dmemo::DistributionPtr dist, const IndexType bound )
+{
+    allocate ( dist );
+    fillRandom( bound );
 }
 
 

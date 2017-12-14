@@ -35,6 +35,10 @@
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/tracing.hpp>
+
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -43,6 +47,7 @@ namespace scai
 {
 
 using common::TypeTraits;
+using namespace dmemo;
 
 namespace lama
 {
@@ -54,7 +59,7 @@ namespace lama
 template<typename ValueType>
 Matrix<ValueType>* Matrix<ValueType>::getMatrix( Format format )
 {
-    return reinterpret_cast<Matrix<ValueType>*>( _Matrix::getMatrix( format, TypeTraits<ValueType>::stype ) );
+    return static_cast<Matrix<ValueType>*>( _Matrix::getMatrix( format, TypeTraits<ValueType>::stype ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -77,7 +82,7 @@ Matrix<ValueType>::Matrix( const IndexType numRows, const IndexType numColumns )
 }
 
 template<typename ValueType>
-Matrix<ValueType>::Matrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) :
+Matrix<ValueType>::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution ) :
 
     _Matrix( rowDistribution, colDistribution )
 {
@@ -85,8 +90,8 @@ Matrix<ValueType>::Matrix( dmemo::DistributionPtr rowDistribution, dmemo::Distri
 
 template<typename ValueType>
 Matrix<ValueType>::Matrix( const _Matrix& other, 
-                           dmemo::DistributionPtr rowDistribution, 
-                           dmemo::DistributionPtr colDistribution ) :
+                           DistributionPtr rowDistribution, 
+                           DistributionPtr colDistribution ) :
 
     _Matrix( other, rowDistribution, colDistribution )
 
@@ -116,6 +121,14 @@ Matrix<ValueType>::~Matrix()
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType Matrix<ValueType>::operator()( IndexType i, IndexType j ) const
+{
+    return getValue( i, j );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 common::ScalarType Matrix<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
@@ -132,139 +145,155 @@ size_t Matrix<ValueType>::getValueTypeSize() const
 /* ========================================================================= */
 
 template<typename ValueType>
-void Matrix<ValueType>::matrixTimesVector(
-    _Vector& result,
-    const Scalar alpha,
-    const _Vector& x,
-    const Scalar beta,
-    const _Vector& y ) const
+bool Matrix<ValueType>::checkSymmetry() const
 {
-    SCAI_REGION( "Mat.timesVector" )
+    // check symmetry of matrix
+    IndexType n = getNumRows();
 
-    SCAI_LOG_INFO( logger, 
-                   "result = " << alpha << " * M<" << this->getValueType() << ">[" << this->getNumRows() << " x " << this->getNumColumns() << "]"
-                   << " * x [ " << x.size() << "] + " << beta << " * y[ " << y.size() << "]" )
-
-    if ( &result == &y )
+    if ( n != getNumColumns() )
     {
-        SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
-    }
-    else
-    {
-        // we inherit the row distribution of this matrix to result
-
-        result.allocate( this->getRowDistributionPtr() );
+        return false;
     }
 
-    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getColDistribution() )
-    {
-        SCAI_UNSUPPORTED( "alpha * M * x, x requires temporary DenseVector<" << this->getValueType() << ">" )
+    // Note: this solution is not very efficient
 
-        DenseVector<ValueType> tmpX( x, this->getColDistributionPtr() );
-        matrixTimesVector( result, alpha, tmpX, beta, y );
-        return;
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        for ( IndexType j = 0; j < i; ++j )
+        {
+            if ( getValue( i, j ) != getValue( j, i ) )
+            {
+                return false;
+            }
+        }
     }
 
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
-
-    // Note: in case of beta == 0, we might skip this test
-
-    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getRowDistribution() )
-    {
-        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for y in alpha * M * x + beta * y" )
-        DenseVector<ValueType> tmpY( y, this->getRowDistributionPtr() );
-        matrixTimesVector( result, alpha, x, beta, tmpY );
-        return;
-    }
-
-    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
-
-    if ( result.getVectorKind() != VectorKind::DENSE || result.getValueType() != this->getValueType() )
-    {
-        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for result in alpha * M * x + beta * y" )
-        DenseVector<ValueType> tmpResult( this->getRowDistributionPtr() );
-        matrixTimesVector( tmpResult, alpha, x, beta, y );
-        result = tmpResult;
-        return;
-    }
-
-    DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
-
-    const ValueType alphaV = alpha.getValue<ValueType>();
-    const ValueType betaV  = beta.getValue<ValueType>();
-
-    // Now call the typed version implemented by derived class
-
-    matrixTimesVectorImpl( denseResult, alphaV, denseX, betaV, denseY );
+    return true;
 }
 
 /* ========================================================================= */
 
 template<typename ValueType>
-void Matrix<ValueType>::vectorTimesMatrix(
-    _Vector& result,
-    const Scalar alpha,
-    const _Vector& x,
-    const Scalar beta,
-    const _Vector& y ) const
+void Matrix<ValueType>::matrixTimesVector(
+    Vector<ValueType>& result,
+    const ValueType alpha,
+    const Vector<ValueType>& x,
+    const ValueType beta,
+    const Vector<ValueType>& y,
+    bool transposeFlag ) const
 {
-    SCAI_REGION( "Mat.vectorTimes" )
+    SCAI_REGION( "Mat.timesVector" )
 
-    SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+    SCAI_LOG_INFO( logger, 
+                   "result = " << alpha << " * M<" << this->getValueType() << ","
+                   << ( transposeFlag ? "transpose" : "normal" )
+                   << ">[" << this->getNumRows() << " x " << this->getNumColumns() << "]"
+                   << " * x[" << x.size() << "] + " << beta << " * y[" << y.size() << "]" )
 
-    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getRowDistribution() )
+    DistributionPtr sourceDist = transposeFlag ? getRowDistributionPtr() : getColDistributionPtr();
+    DistributionPtr targetDist = transposeFlag ? getColDistributionPtr() : getRowDistributionPtr();
+
+    // temorary X required if not DENSE, distribution does not match or if an alias
+
+    bool needsTemporaryX = false;
+
+    if ( &x == &result )
     {
-        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for x in alpha * M * x + beta * y" )
-        DenseVector<ValueType> tmpX( x, this->getRowDistributionPtr() );
-        vectorTimesMatrix( result, alpha, tmpX, beta, y );
+        SCAI_UNSUPPORTED( "z = alpha * A * x + beta * y: temporary needed for x due to alias with z" );
+        needsTemporaryX = true;
+    }
+
+    if ( beta != common::Constants::ZERO && &x == &y )
+    {
+        SCAI_UNSUPPORTED( "z = alpha * A * x + beta * y: temporary needed for x due to alias with y" );
+        needsTemporaryX = true;
+    }
+
+    if ( x.getVectorKind() != VectorKind::DENSE )
+    {
+        SCAI_UNSUPPORTED( "z = alpha * A * x + beta * y: temporary needed for x as it is sparse" );
+        needsTemporaryX = true;
+    }
+
+    if ( x.getDistribution() != *sourceDist )
+    {
+        SCAI_UNSUPPORTED( "z = alpha * A * x + beta * y: temporary needed for x as distribution does not match" );
+        needsTemporaryX = true;
+    }
+
+    if ( needsTemporaryX )
+    {
+        DenseVector<ValueType> tmpX( x, sourceDist );
+        // recursive call is as all previous conditions will fail
+        matrixTimesVector( result, alpha, tmpX, beta, y, transposeFlag );  
         return;
     }
 
-    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
+    bool needsTemporaryY = false;
 
-    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getColDistribution() )
+    if ( beta != common::Constants::ZERO )
     {
-        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for y in alpha * x * M + beta * y" )
-        DenseVector<ValueType> tmpY( y, this->getColDistributionPtr() );
-        vectorTimesMatrix( result, alpha, x, beta, tmpY );
+        if ( y.getVectorKind() != VectorKind::DENSE )
+        {
+            SCAI_UNSUPPORTED( "matrixTimesVector: temporary needed for y as it is sparse vector" );
+            needsTemporaryY = true;
+        }
+    
+        if ( y.getDistribution() != *targetDist )
+        {
+            SCAI_UNSUPPORTED( "matrixTimesVector: temporary needed for y as distribution does not match" );
+            needsTemporaryY = true;
+        }
+    }
+
+    if ( needsTemporaryY )
+    {
+        DenseVector<ValueType> tmpY( y, targetDist );
+        matrixTimesVector( result, alpha, x, beta, tmpY, transposeFlag );
         return;
     }
 
-    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
-
-    if ( result.getVectorKind() != VectorKind::DENSE || result.getValueType() != this->getValueType() )
+    if ( result.getVectorKind() != VectorKind::DENSE )
     {
-        SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for result in alpha * M * x + beta * y" )
-        DenseVector<ValueType> tmpResult( this->getColDistributionPtr() );
-        vectorTimesMatrix( tmpResult, alpha, x, beta, y );
+        SCAI_UNSUPPORTED( "matrixTimesVector: temporary needed for result as not dense" )
+        DenseVector<ValueType> tmpResult( targetDist );
+        matrixTimesVector( tmpResult, alpha, x, beta, y, transposeFlag );
         result = tmpResult;
         return;
     }
 
-    if ( &result == &y )
+    if ( &result == &y && beta != common::Constants::ZERO )
     {
         SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
     else
     {
-        result.allocate( this->getColDistributionPtr() );
+        // we inherit the row distribution of this matrix to result vector
+
+        result.allocate( targetDist );
     }
 
-    DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
+    const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
 
-    const ValueType alphaV = alpha.getValue<ValueType>();
-    const ValueType betaV  = beta.getValue<ValueType>();
+    DenseVector<ValueType>& denseResult = static_cast<DenseVector<ValueType>&>( result );
 
-    if ( this->getColDistribution().getCommunicator().getSize() == 1 )
+    // Now call the typed version implemented by derived class
+
+    if ( !transposeFlag )
+    {
+        matrixTimesVectorImpl( denseResult, alpha, denseX, beta, denseY );
+    }
+    else if ( this->getColDistribution().getCommunicator().getSize() == 1 )
     {
         // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
         // use routine provided by this CRTP
 
-        this->vectorTimesMatrixRepCols( denseResult, alphaV, denseX, betaV, denseY );
+        this->vectorTimesMatrixRepCols( denseResult, alpha, denseX, beta, denseY );
     }
     else
     {
-        this->vectorTimesMatrixImpl( denseResult, alphaV, denseX, betaV, denseY );
+        this->vectorTimesMatrixImpl( denseResult, alpha, denseX, beta, denseY );
     }
 }
 
@@ -272,7 +301,7 @@ void Matrix<ValueType>::vectorTimesMatrix(
 
 template<typename ValueType>
 void Matrix<ValueType>::setRow( 
-    const _Vector& row, 
+    const Vector<ValueType>& row, 
     const IndexType globalRowIndex,
     const common::BinaryOp op )
 {
@@ -282,12 +311,6 @@ void Matrix<ValueType>::setRow(
 
     bool needsTmp = false;
 
-    if ( row.getValueType() != this->getValueType() )
-    {
-        needsTmp = true;
-        SCAI_UNSUPPORTED( "setRow, matrix has type " << this->getValueType() 
-                           << ", row has type " << row.getValueType() << ", use temporary" )
-    }
     if ( ! row.getDistribution().isReplicated() )
     {
         needsTmp = true;
@@ -307,21 +330,11 @@ void Matrix<ValueType>::setRow(
         return;
     }
 
-    using namespace scai::hmemo;
-
     SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, this->getNumRows(), "illegal row index" )
 
     // row should be a DenseVector of same type, otherwise use a temporary
 
-    std::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
-
-    const DenseVector<ValueType>* typedRow = dynamic_cast<const DenseVector<ValueType>*>( &row );
-
-    SCAI_ASSERT_ERROR( typedRow, "illegal dynamic cast" )
-
-    SCAI_ASSERT_ERROR( typedRow->getDistribution().isReplicated(), "cannot set distributed row" )
-
-    SCAI_ASSERT_EQ_ERROR( typedRow->size(), this->getNumColumns(), "row to set has wrong size" )
+    const DenseVector<ValueType>& denseRow = static_cast<const DenseVector<ValueType>&>( row );
 
     // owner sets the row, maybe each processor for replicated row distribution
 
@@ -329,7 +342,7 @@ void Matrix<ValueType>::setRow(
 
     if ( localRowIndex != nIndex )
     {
-        this->setLocalRow( typedRow->getLocalValues(), localRowIndex, op );
+        this->setLocalRow( denseRow.getLocalValues(), localRowIndex, op );
     }
 }
 
@@ -337,30 +350,40 @@ void Matrix<ValueType>::setRow(
 
 template<typename ValueType>
 void Matrix<ValueType>::setColumn( 
-    const _Vector& column,
+    const Vector<ValueType>& column,
     const IndexType colIndex,
     const common::BinaryOp op )
 {
     using namespace scai::hmemo;
 
-    SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, this->getNumColumns(), "illegal col index" )
+    bool needsTmp = false;
 
-    // col should be a DenseVector of same type, otherwise use a temporary
-
-    std::shared_ptr<const DenseVector<ValueType> > tmpVector;  // only allocated if needed
-
-    const DenseVector<ValueType>* typedColumn = dynamic_cast<const DenseVector<ValueType>*>( &column );
-
-    if ( !typedColumn )
+    if ( column.getDistribution() != this->getRowDistribution() )
     {
-        // so we create a temporaray DenseVector of same type, has already correct size
-        tmpVector.reset( new DenseVector<ValueType>( column ) );
-        typedColumn = tmpVector.get();
+        needsTmp = true;
+        SCAI_UNSUPPORTED( "setColumn, distribution of col does not match distribution of matrix, use temporary" )
+    }
+    if ( column.getVectorKind() != VectorKind::DENSE )
+    {
+        needsTmp = true;
+        SCAI_UNSUPPORTED( "setColumn, col is not DENSE vector" )
     }
 
-    SCAI_ASSERT_EQ_ERROR( typedColumn->getDistribution(), this->getRowDistribution(), "distribution mismatch" )
+    if ( needsTmp )
+    {
+        DenseVector<ValueType> tmpColumn( column, this->getRowDistributionPtr() );
+        setColumn( tmpColumn, colIndex, op );
+        return;
+    }
 
-    this->setLocalColumn( typedColumn->getLocalValues(), colIndex, op );
+    SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, this->getNumColumns(), "illegal col index" )
+
+    const DenseVector<ValueType>& denseColumn = static_cast<const DenseVector<ValueType>&>( column );
+
+    SCAI_ASSERT_EQ_ERROR( denseColumn.getDistribution(), this->getRowDistribution(), 
+                          "distribution of vector to set as column must match distribution of rows" )
+
+    this->setLocalColumn( denseColumn.getLocalValues(), colIndex, op );
 }
 
 /* ========================================================================= */
@@ -380,16 +403,16 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 
     hmemo::HArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    const dmemo::Distribution& colDist = this->getColDistribution();
+    const Distribution& colDist = this->getColDistribution();
 
     // this routine is only for non-replicated columns, i.e. mHaloData is empty
 
     SCAI_ASSERT( 1, colDist.getNumPartitions() );
 
-    const dmemo::Distribution& rowDist = this->getRowDistribution();
-    const dmemo::Communicator& comm = rowDist.getCommunicator();
+    const Distribution& rowDist = this->getRowDistribution();
+    const Communicator& comm = rowDist.getCommunicator();
 
-    const MatrixStorage<ValueType>& localData = reinterpret_cast<const MatrixStorage<ValueType>&>( this->getLocalStorage() );
+    const MatrixStorage<ValueType>& localData = this->getLocalStorage();
 
     if ( comm.getRank() == 0 )
     {
@@ -412,31 +435,7 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 /* ========================================================================= */
 
 template<typename ValueType>
-Scalar Matrix<ValueType>::_l1Norm() const
-{
-    return Scalar( l1Norm() );
-}
-
-template<typename ValueType>
-Scalar Matrix<ValueType>::_l2Norm() const
-{
-    return Scalar( l2Norm() );
-}
-
-template<typename ValueType>
-Scalar Matrix<ValueType>::_maxNorm() const
-{
-    return Scalar( maxNorm() );
-}
-
-template<typename ValueType>
-Scalar Matrix<ValueType>::_maxDiffNorm( const _Matrix& other ) const
-{
-    return Scalar( maxDiffNorm( other ) );
-}
-
-template<typename ValueType>
-NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     IndexType nRows = getNumRows();
     IndexType nCols = getNumColumns();
@@ -467,6 +466,205 @@ NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
     }
 
     return diff;
+}
+
+/* ========================================================================= */
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM_SM<ValueType>& exp )
+{
+    const Expression_SMM<ValueType>& arg1 = exp.getArg1();
+    const Expression_SM<ValueType>& arg11 = arg1.getArg1();
+    const Expression_SM<ValueType>& arg2 = exp.getArg2();
+
+    const Matrix<ValueType>& A = arg11.getArg2();
+    const Matrix<ValueType>& B = arg1.getArg2();
+    const Matrix<ValueType>& C = arg2.getArg2();
+
+    const Scalar& alphaS = arg11.getArg1();
+    const Scalar& betaS  = arg2.getArg1();
+
+    const ValueType& alpha = alphaS.getValue<ValueType>();
+    const ValueType& beta  = betaS.getValue<ValueType>();
+
+    SCAI_LOG_INFO( logger,
+                   "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
+
+    A.matrixTimesMatrix( *this, alpha, B, beta, C );
+
+    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
+
+    return *this;
+}
+
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM_SM<ValueType>& exp )
+{
+    SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
+    const Matrix<ValueType>& A = exp.getArg1().getArg2();
+    const Matrix<ValueType>& B = exp.getArg2().getArg2();
+    const Scalar& alphaS = exp.getArg1().getArg1();
+    const Scalar& betaS = exp.getArg2().getArg1();
+    const ValueType& alpha = alphaS.getValue<ValueType>();
+    const ValueType& beta = betaS.getValue<ValueType>();
+    const ValueType zero( 0.0 );
+
+    if ( beta == zero )
+    {
+        // second term not needed
+        this->matrixTimesScalar( A, alpha );
+        return *this;
+    }
+
+    if ( alpha == zero )
+    {
+        // first term not needed
+        this->matrixTimesScalar( B, beta );
+        return *this;
+    }
+
+    // conformance check of matrices A and B is done in the routines
+
+    this->matrixPlusMatrix( alpha, A, beta, B );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM<ValueType>& exp )
+{
+    // exp =  ( alpha * A ) * B
+
+    const Scalar& alpha = exp.getArg1().getArg1();
+
+    const Matrix<ValueType>& A = exp.getArg1().getArg2();
+    const Matrix<ValueType>& B = exp.getArg2();
+
+    A.matrixTimesMatrix( *this, alpha.getValue<ValueType>(), B, ValueType( 0 ), *this );
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM<ValueType>& exp )
+{
+    // exp is Expression object that stands for s * A
+    const Matrix<ValueType>& A = exp.getArg2();
+    const Scalar& s = exp.getArg1();
+    this->matrixTimesScalar( A, s.getValue<ValueType>() );
+    return *this;
+}
+
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator+=( const Matrix<ValueType>& exp )
+{
+    // this += A  -> this = 1.0 * A + 1.0 * this
+
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), *this ), 
+                                         Expression_SM<ValueType>( Scalar( 1 ), exp ) );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator-=( const Matrix<ValueType>& exp )
+{
+    // this -= A  -> this = -1.0 * A + 1.0 * this
+
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), *this ), 
+                                         Expression_SM<ValueType>( Scalar( -1 ), exp ) );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator+=( const Expression_SM<ValueType>& exp )
+{
+    // this += alpha * A  -> this = alpha * A + 1.0 * this
+    *this = Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), *this ) );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator-=( const Expression_SM<ValueType>& exp )
+{
+    // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A
+    Expression_SM<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), *this ), minusExp );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator*=( const ValueType alpha )
+{
+    this->scale( alpha );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Matrix<ValueType>::concatenate( 
+    DistributionPtr rowDist, 
+    DistributionPtr colDist, 
+    const std::vector<const Matrix<ValueType>*>& matrices )
+{
+    COMMON_THROWEXCEPTION( "concatenation of matrices not supported:"
+                           << " matrix kind = " << this->getMatrixKind() << ", format = " << this->getFormat()
+                           << " , #matrices = " << matrices.size()
+                           << ", row dist = " << *rowDist << ", col dist = " << *colDist )
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Matrix<ValueType>::vcat( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 )
+{
+    SCAI_ASSERT_EQ_ERROR( m1.getRowDistribution(), m2.getRowDistribution(), "vcat: matrices must have same row distribution" )
+
+    DistributionPtr rowDist = m1.getRowDistributionPtr();
+
+    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() + m2.getNumColumns() ) );
+
+    std::vector<const Matrix<ValueType>*> matrices;
+
+    matrices.push_back( &m1 );
+    matrices.push_back( &m2 );
+
+    concatenate( rowDist, colDist, matrices );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Matrix<ValueType>::hcat( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 )
+{
+    SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cut possible due to different column sizes" )
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    DistributionPtr rowDist( new BlockDistribution( m1.getNumRows() + m2.getNumRows(), comm ) );
+    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() ) );
+
+    std::vector<const Matrix<ValueType>*> matrices;
+
+    matrices.push_back( &m1 );
+    matrices.push_back( &m2 );
+
+    concatenate( rowDist, colDist, matrices );
 }
 
 /* ========================================================================= */

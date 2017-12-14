@@ -807,13 +807,13 @@ void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const In
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getRowLocal( _Vector& row, const IndexType localRowIndex ) const
+void SparseMatrix<ValueType>::getRowLocal( Vector<ValueType>& row, const IndexType localRowIndex ) const
 {
     SCAI_ASSERT_EQ_ERROR( row.getValueType(), getValueType(), "type mismatch" )
 
     if ( row.getVectorKind() == VectorKind::SPARSE )
     {
-        SparseVector<ValueType>& sparseRow = reinterpret_cast<SparseVector<ValueType>&>( row );
+        SparseVector<ValueType>& sparseRow = static_cast<SparseVector<ValueType>&>( row );
 
         sparseRow.allocate( getNumColumns() );
 
@@ -823,18 +823,22 @@ void SparseMatrix<ValueType>::getRowLocal( _Vector& row, const IndexType localRo
 
         sparseRow.swapSparseValues( indexes, values );
     }
-    else
+    else if ( row.getVectorKind() == VectorKind::DENSE )
     {
-        DenseVector<ValueType>& denseRow = reinterpret_cast<DenseVector<ValueType>&>( row );
+        DenseVector<ValueType>& denseRow = static_cast<DenseVector<ValueType>&>( row );
         denseRow.allocate( getNumColumns() );
         getLocalRowDense( denseRow.getLocalValues(), localRowIndex );
+    }
+    else 
+    {
+        COMMON_THROWEXCEPTION( "Unsupported vector kind for row: " << row );
     }
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowIndex ) const
+void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType globalRowIndex ) const
 {
     SCAI_REGION( "Mat.Sp.getRow" )
 
@@ -843,7 +847,7 @@ void SparseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowInd
 
     // if v is not a sparse vector, use a temporary sparse vector
 
-    if ( row.getVectorKind() != VectorKind::SPARSE || row.getValueType() != getValueType() )
+    if ( row.getVectorKind() != VectorKind::SPARSE )
     {
         SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getRow( DenseVector, " << globalRowIndex << ") requires temporary" )
         SparseVector<ValueType> spRow;
@@ -852,7 +856,7 @@ void SparseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowInd
         return;
     }
 
-    SparseVector<ValueType>& spRow = reinterpret_cast<SparseVector<ValueType>&>( row );
+    SparseVector<ValueType>& spRow = static_cast<SparseVector<ValueType>&>( row );
 
     spRow.allocate( getColDistributionPtr() );   // by this way it gets the correct rep distribution
 
@@ -972,7 +976,7 @@ void SparseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowInd
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalColIndex ) const
+void SparseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType globalColIndex ) const
 {
     SCAI_REGION( "Mat.Sp.getCol" )
 
@@ -980,7 +984,7 @@ void SparseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalCol
 
     // if col is not a sparse vector use a temporary sparse vector
 
-    if ( col.getVectorKind() != VectorKind::SPARSE || col.getValueType() != getValueType() )
+    if ( col.getVectorKind() != VectorKind::SPARSE )
     {
         SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getCol( " << globalColIndex 
                                << ") requires temporary vector for col, kind = " << col.getVectorKind() )
@@ -992,7 +996,7 @@ void SparseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalCol
 
     SCAI_ASSERT_DEBUG( dynamic_cast<SparseVector<ValueType>*>( &col ), "col not SparseVector<" << getValueType() << ">" )
 
-    SparseVector<ValueType>& spCol = reinterpret_cast<SparseVector<ValueType>&>( col );
+    SparseVector<ValueType>& spCol = static_cast<SparseVector<ValueType>&>( col );
 
     spCol.allocate( getRowDistributionPtr() );   // resizes local arrays to 0
 
@@ -1076,7 +1080,7 @@ void SparseMatrix<ValueType>::getLocalRowSparse( HArray<IndexType>& indexes, _HA
 
     if ( values.getValueType() == tmpValues.getValueType() )
     {
-        HArray<ValueType>& typedValues = reinterpret_cast<HArray<ValueType>& >( values );
+        HArray<ValueType>& typedValues = static_cast<HArray<ValueType>& >( values );
         typedValues.swap( tmpValues );
     }
     else
@@ -1185,34 +1189,21 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
+void SparseMatrix<ValueType>::getDiagonal( DenseVector<ValueType>& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for square matrices with same row/col distribution" )
     }
 
-    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
-    {
-        SCAI_UNSUPPORTED( "getDiagonal: diagonal not DenseVector<" << getValueType() << ">, temporary + conversion needed" )
-        DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
-        getDiagonal( tmpDiagonal );
-        diagonal.assign( tmpDiagonal );   // does the correct type / kind conversion
-        return;
-    }
-
-    // we can recast it now to dense vector, so we have access to its local values
-
-    DenseVector<ValueType>& denseDiagonal = reinterpret_cast<DenseVector<ValueType>&>( diagonal );
-
-    denseDiagonal.allocate( getRowDistributionPtr() );
-    mLocalData->getDiagonal( denseDiagonal.getLocalValues() );
+    diagonal.allocate( getRowDistributionPtr() );
+    mLocalData->getDiagonal( diagonal.getLocalValues() );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
+void SparseMatrix<ValueType>::setDiagonal( const DenseVector<ValueType>& diagonal )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
@@ -1224,77 +1215,62 @@ void SparseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
         COMMON_THROWEXCEPTION( "diagonal must have same distribution as matrix" )
     }
 
-    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
-    {
-        SCAI_UNSUPPORTED( "setDiagonal: diagonal not DenseVector<" << getValueType() << ">, temporary + conversion needed" )
-        DenseVector<ValueType> tmpDiagonal( diagonal );
-        setDiagonal( tmpDiagonal );
-        return;
-    }
-
-    const DenseVector<ValueType>& denseDiagonal = reinterpret_cast<const DenseVector<ValueType>&>( diagonal );
-
-    mLocalData->setDiagonalV( denseDiagonal.getLocalValues() );
+    mLocalData->setDiagonalV( diagonal.getLocalValues() );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setDiagonal( Scalar value )
+void SparseMatrix<ValueType>::setDiagonal( const ValueType& value )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    mLocalData->setDiagonal( value.getValue<ValueType>() );
+    mLocalData->setDiagonal( value );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::reduce(
-    _Vector& v, 
+    DenseVector<ValueType>& v, 
     const IndexType dim,
     const common::BinaryOp reduceOp,
     const common::UnaryOp elemOp ) const
 {
     SCAI_REGION( "Mat.Sp.reduce" )
 
-    SCAI_ASSERT_EQ_ERROR( v.getValueType(), getValueType(), "type mismatch" )
-    SCAI_ASSERT_EQ_ERROR( v.getVectorKind(), VectorKind::DENSE, "result vector in reduce must be DENSE" )
-
-    DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
-
     if ( dim == 0 )
     {
-        denseV.allocate( getRowDistributionPtr() );
+        v.allocate( getRowDistributionPtr() );
 
         // initialize v with neutral element
 
-        denseV = ValueType( 0 );
+        v = ValueType( 0 );
 
-        SCAI_LOG_INFO( logger, "reduce dim = 0, denseV = " << denseV );
+        SCAI_LOG_INFO( logger, "reduce dim = 0, v = " << v );
 
-        mLocalData->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+        mLocalData->reduce( v.getLocalValues(), 0, reduceOp, elemOp );
         
         if ( mHaloData->getNumRows() > 0 && mHaloData->getNumColumns() > 0 )
         {
-            mHaloData->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+            mHaloData->reduce( v.getLocalValues(), 0, reduceOp, elemOp );
         }
 
-        SCAI_LOG_INFO( logger, "reduced dim = 0, denseV = " << denseV );
+        SCAI_LOG_INFO( logger, "reduced dim = 0, v = " << v );
 
         return;
     }
 
     if ( dim == 1 )
     {
-        denseV.allocate( getColDistributionPtr() );
+        v.allocate( getColDistributionPtr() );
 
-        denseV = ValueType( 0 );  // neutral element of reduce op
+        v = ValueType( 0 );  // neutral element of reduce op
 
-        mLocalData->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
+        mLocalData->reduce( v.getLocalValues(), 1, reduceOp, elemOp );
 
         if ( getRowDistribution().getCommunicator().getSize() == 1 )
         {
@@ -1306,7 +1282,7 @@ void SparseMatrix<ValueType>::reduce(
         if ( getColDistribution().getCommunicator().getSize() == 1 )
         {
              SCAI_ASSERT_EQ_ERROR( reduceOp, common::BinaryOp::ADD, "only add supported" )
-             getRowDistribution().getCommunicator().sumArray( denseV.getLocalValues() );
+             getRowDistribution().getCommunicator().sumArray( v.getLocalValues() );
              return;
         }
         
@@ -1323,7 +1299,7 @@ void SparseMatrix<ValueType>::reduce(
 
         if ( haloResult.size() > 0 )
         {
-            HArrayUtils::scatterImpl( denseV.getLocalValues(), mHalo.getProvidesIndexes(), false, haloResult, reduceOp );
+            HArrayUtils::scatterImpl( v.getLocalValues(), mHalo.getProvidesIndexes(), false, haloResult, reduceOp );
         }
 
         return;
@@ -1335,11 +1311,12 @@ void SparseMatrix<ValueType>::reduce(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::scale( const _Vector& scaling )
+void SparseMatrix<ValueType>::scaleRows( const DenseVector<ValueType>& scaleY )
 {
-    SCAI_ASSERT_EQUAL( scaling.getDistribution(), getRowDistribution(), "distribution mismatch" )
-    HArray<ValueType> localValues;
-    scaling.buildLocalValues( localValues );
+    SCAI_ASSERT_EQUAL( scaleY.getDistribution(), getRowDistribution(), "distribution mismatch" )
+
+    const HArray<ValueType>& localValues = scaleY.getLocalValues();
+
     mLocalData->scaleRows( localValues );
 
     // scale Halo storage only if it is used; otherwise there might be a size mismatch
@@ -1353,14 +1330,13 @@ void SparseMatrix<ValueType>::scale( const _Vector& scaling )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::scale( Scalar scaling )
+void SparseMatrix<ValueType>::scale( const ValueType& alpha )
 {
-    ValueType value = scaling.getValue<ValueType>();
-    mLocalData->scale( value );
+    mLocalData->scale( alpha );
 
     if ( mHaloData->getNumRows() )
     {
-        mHaloData->scale( value );
+        mHaloData->scale( alpha );
     }
 }
 
@@ -1383,7 +1359,7 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::concatenate( 
     dmemo::DistributionPtr rowDist,
     dmemo::DistributionPtr colDist,
-    const std::vector<const _Matrix*>& matrices )
+    const std::vector<const Matrix<ValueType>*>& matrices )
 {
     unique_ptr<_Matrix> mPtr( this->newMatrix() );
 
@@ -1398,7 +1374,7 @@ void SparseMatrix<ValueType>::concatenate(
 
     newMatrix.allocate( rowDist, repColDist );
 
-    SCAI_LOG_DEBUG( logger, "Concatenate " << matrices.size() << " matrices into this matrix: " << newMatrix );
+    SCAI_LOG_INFO( logger, "Concatenate " << matrices.size() << " matrices into this matrix: " << newMatrix );
 
     CSRStorage<ValueType> storage;  // reuse in loop
 
@@ -1412,7 +1388,11 @@ void SparseMatrix<ValueType>::concatenate(
 
         for ( size_t k = 0; k < matrices.size(); ++k )
         {
-            const _Matrix& m = *matrices[k];
+            const Matrix<ValueType>& m = *matrices[k];
+
+            const Distribution& mRowDist = m.getRowDistribution();
+
+            SCAI_LOG_DEBUG( logger, "dissassemble this matrix: " << m )
 
             if ( offsetRow + m.getNumRows() > rowDist->getGlobalSize() )
             {
@@ -1438,7 +1418,7 @@ void SparseMatrix<ValueType>::concatenate(
 
             for ( IndexType i = 0; i < storage.getNumRows(); ++i )
             {
-                IndexType globalI = rowDist->local2global( i );
+                IndexType globalI = mRowDist.local2global( i );
 
                 for ( IndexType jj = rIA[i]; jj < rIA[i+1]; ++jj )
                 {
@@ -1453,15 +1433,19 @@ void SparseMatrix<ValueType>::concatenate(
 
             offsetCol += m.getNumColumns();
 
-            // decide by the sizes whether we concatenate the next 
+            // decide by the sizes where (horizontally or vertically)  we concatenate the next 
 
             if ( offsetCol == colDist->getGlobalSize() )
             {
                 offsetCol = 0;
                 offsetRow = offsetRow + m.getNumRows();
             }
+
+            SCAI_LOG_DEBUG( logger, "offsets for next disassembling: row " << offsetRow << ", col " << offsetCol)
         }
     }
+
+    SCAI_LOG_INFO( logger, "assembling finished, new Matrix = " << newMatrix )
 
     swap( newMatrix );
 
@@ -1472,11 +1456,11 @@ void SparseMatrix<ValueType>::concatenate(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesMatrix(
-    _Matrix& result,
-    const Scalar alpha,
-    const _Matrix& B,
-    const Scalar beta,
-    const _Matrix& C ) const
+    Matrix<ValueType>& result,
+    const ValueType alpha,
+    const Matrix<ValueType>& B,
+    const ValueType beta,
+    const Matrix<ValueType>& C ) const
 {
     SCAI_LOG_INFO( logger,
                    "result = alpha * A * B + beta * C with result = " << result << ", alpha = " << alpha << ", A = " << *this << ", B = " << B << ", beta = " << beta << ", C = " << C )
@@ -1485,37 +1469,49 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
     {
         // we can deal here with DenseMatrix = SparseMatrix * DenseMatrix + DenseMatrix as it can
         // be considered as matrixTimesVectorN
-        DenseMatrix<ValueType>* typedResult = dynamic_cast<DenseMatrix<ValueType>*>( &result );
-        SCAI_ASSERT_ERROR( typedResult, "Must be dense matrix<" << getValueType() << "> : " << result )
-        const DenseMatrix<ValueType>* typedB = dynamic_cast<const DenseMatrix<ValueType>*>( &B );
-        SCAI_ASSERT_ERROR( typedB, "Must be dense matrix<" << getValueType() << "> : " << B )
-        ValueType betaVal = beta.getValue<ValueType>();
-        const DenseMatrix<ValueType>* typedC = dynamic_cast<const DenseMatrix<ValueType>*>( &C );
 
-        if ( betaVal != common::Constants::ZERO )
+        DenseMatrix<ValueType>& denseResult = static_cast<DenseMatrix<ValueType>&>( result );
+ 
+        SCAI_ASSERT_EQ_ERROR( B.getMatrixKind(), MatrixKind::DENSE, "DenseMatrix = SparseMatrix * B, B must be dense: " << B )
+
+        const DenseMatrix<ValueType>& denseB = static_cast<const DenseMatrix<ValueType>&>( B );
+
+        bool setAlias = false;
+
+        if ( beta != common::Constants::ZERO )
         {
-            SCAI_ASSERT_ERROR( typedC, "Must be dense matrix<" << getValueType() << "> : " << C )
+            SCAI_ASSERT_EQ_ERROR( C.getMatrixKind(), MatrixKind::DENSE, "DenseMatrix = SparseMatrix * B + C, C must be dense: " << C )
         }
         else
         {
-            typedC = typedResult; // this alias is well handled
+            // with beta == 0 we do not care at all what type C is
+
+            setAlias = true;
         }
 
-        // Now the typed version can be used
-        matrixTimesVectorNImpl( *typedResult, alpha.getValue<ValueType>(), *typedB, beta.getValue<ValueType>(),
-                                *typedC );
+        const DenseMatrix<ValueType>& denseC = setAlias ? denseResult : static_cast<const DenseMatrix<ValueType>&>( C );
+
+        // Now it is just as matrixTimesVector but where Vector is DenseMatrix or just multiple vectors.
+
+        matrixTimesVectorNImpl( denseResult, alpha, denseB, beta, denseC );
+    }
+    else if ( result.getMatrixKind() == MatrixKind::SPARSE )
+    {
+        SparseMatrix<ValueType>& sparseResult = static_cast<SparseMatrix<ValueType>&>( result );
+
+        SCAI_ASSERT_EQ_ERROR( B.getMatrixKind(), MatrixKind::SPARSE, "SparseMatrix = SparseMatrix * B, B must be sparse: " << B )
+        SCAI_ASSERT_EQ_ERROR( C.getMatrixKind(), MatrixKind::SPARSE, "SparseMatrix = SparseMatrix * SparseMatrix + C, C must be sparse: " << C )
+
+        const SparseMatrix<ValueType>& sparseB = static_cast<const SparseMatrix<ValueType>&>( B );
+        const SparseMatrix<ValueType>& sparseC = static_cast<const SparseMatrix<ValueType>&>( C );
+
+        // Now the 'pure' sparse version of matrix mult can be used
+
+        sparseResult.matrixTimesMatrixImpl( alpha, *this, sparseB, beta, sparseC );
     }
     else
     {
-        SparseMatrix<ValueType>* typedResult = dynamic_cast<SparseMatrix<ValueType>*>( &result );
-        SCAI_ASSERT_ERROR( typedResult, "Must be sparse matrix<" << getValueType() << "> : " << result )
-        const SparseMatrix<ValueType>* typedB = dynamic_cast<const SparseMatrix<ValueType>*>( &B );
-        SCAI_ASSERT_ERROR( typedB, "Must be sparse matrix<" << getValueType() << "> : " << B )
-        const SparseMatrix<ValueType>* typedC = dynamic_cast<const SparseMatrix<ValueType>*>( &C );
-        SCAI_ASSERT_ERROR( typedC, "Must be sparse matrix<" << getValueType() << "> : " << C )
-        // Now the typed version can be used
-        typedResult->matrixTimesMatrixImpl( alpha.getValue<ValueType>(), *this, *typedB, beta.getValue<ValueType>(),
-                                            *typedC );
+        COMMON_THROWEXCEPTION( "Result matrix for matrix-matrix multiplication neither sparse nor dense: " << result )
     }
 }
 
@@ -1523,33 +1519,42 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::matrixPlusMatrix(
-    const Scalar alpha,
-    const _Matrix& matA,
-    const Scalar beta,
-    const _Matrix& matB )
+    const ValueType alpha,
+    const Matrix<ValueType>& matA,
+    const ValueType beta,
+    const Matrix<ValueType>& matB )
 {
+    SCAI_ASSERT_EQ_ERROR( matA.getRowDistribution(), matB.getRowDistribution(), "size/dist mismatch of matrices to add" )
+    SCAI_ASSERT_EQ_ERROR( matB.getColDistribution(), matB.getColDistribution(), "size/dist mismatch of matrices to add" )
+
     SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
-    const SparseMatrix<ValueType>* sparseA = dynamic_cast<const SparseMatrix<ValueType>*>( &matA );
-    SCAI_ASSERT_ERROR( sparseA, "Must be sparse matrix<" << getValueType() << "> : " << matA )
-    const SparseMatrix<ValueType>* sparseB = dynamic_cast<const SparseMatrix<ValueType>*>( &matB );
-    SCAI_ASSERT_ERROR( sparseB, "Must be sparse matrix<" << getValueType() << "> : " << matB )
+
+    SCAI_ASSERT_EQ_ERROR( matA.getMatrixKind(), MatrixKind::SPARSE, "sparseMatrix = alpha * matA + beta * matB, matA must be sparse" )
+    SCAI_ASSERT_EQ_ERROR( matB.getMatrixKind(), MatrixKind::SPARSE, "sparseMatrix = alpha * matA + beta * matB, matB must be sparse" )
+
+    const SparseMatrix<ValueType>& sparseA = static_cast<const SparseMatrix<ValueType>&>( matA );
+    const SparseMatrix<ValueType>& sparseB = static_cast<const SparseMatrix<ValueType>&>( matB );
+
     // Now we can add sparse matrices
-    matrixPlusMatrixImpl( alpha.getValue<ValueType>(), *sparseA, beta.getValue<ValueType>(), *sparseB );
+
+    matrixPlusMatrixSparse( alpha, sparseA, beta, sparseB );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
+void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
     const ValueType alpha,
     const SparseMatrix<ValueType>& A,
     const ValueType beta,
     const SparseMatrix<ValueType>& B )
 {
     SCAI_REGION( "Mat.plusMatrix" )
+
     // already verified
-    SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
-    SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
+
+    SCAI_ASSERT_EQ_DEBUG( A.getRowDistribution(), B.getRowDistribution(), "added matrices have different target space" )
+    SCAI_ASSERT_EQ_DEBUG( A.getColDistribution(), B.getColDistribution(), "added matrices have different source space" )
 
     if ( !B.getColDistribution().isReplicated() )
     {
@@ -1562,61 +1567,6 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
     // replicated columns, so no halo needed
     mHaloData->allocate( getNumRows(), 0 );
     mHalo.clear();
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void SparseMatrix<ValueType>::cat( const IndexType dim, const _Matrix* other[], const IndexType n )
-{
-    SCAI_ASSERT_GT_ERROR( n, 0, "concatenation of 0 matrices" )
-
-    SCAI_ASSERT_VALID_INDEX_ERROR( dim, IndexType( 2 ), "Illegal dimension for matrix concatentation, must be 0 or 1" )
-
-    if ( n == 1 )
-    {
-        SCAI_ASSERT_ERROR( other[0], "NULL matrix for concatenation" )
-        assign( *other[0] );
-        return;
-    }
-
-    // check for valid concatenation
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        SCAI_ASSERT_ERROR( other[i], "other matrix " << i << " is NULL for concatenation" )
-        
-        const Distribution& rowDist = other[i]->getRowDistribution();
-        const Distribution& colDist = other[i]->getColDistribution();
-
-        if ( dim == 0 )
-        {
-            SCAI_ASSERT_ERROR( rowDist.isReplicated(), "vertical concatenation, row dist must be replicated" )
-            SCAI_ASSERT_EQ_ERROR( colDist, other[0]->getColDistribution(), "vertical concatenation, col dist must be same" )
-        }
-        else
-        {
-            SCAI_ASSERT_ERROR( colDist.isReplicated(), "horizontal concatenation, col dist must be replicated" )
-            SCAI_ASSERT_EQ_ERROR( rowDist, other[0]->getRowDistribution(), "horizontal concatenaton, row dist must be same" )
-        }
-    }
-
-    if ( dim == 0  )
-    {
-        std::unique_ptr<const _MatrixStorage*[]> storages( new const _MatrixStorage*[ n ] );
-
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            storages[i] = &other[i]->getLocalStorage();
-        }
-        mLocalData->cat( 0, storages.get(), n );
-        dmemo::DistributionPtr rowDist( new NoDistribution( mLocalData->getNumRows() ) );
-        assign( *mLocalData, rowDist, other[0]->getColDistributionPtr() );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "horizontal concatenation not supported yet" )
-    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2044,16 +1994,17 @@ void SparseMatrix<ValueType>::matrixTimesVectorNImpl(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::matrixTimesScalar( const _Matrix& other, Scalar alpha )
+void SparseMatrix<ValueType>::matrixTimesScalar( const Matrix<ValueType>& A, ValueType alpha )
 {
-    SCAI_LOG_INFO( logger, "this  = " << alpha << " * " << other )
-    // should also work fine if other == *this, will not create new data
-    assign( other );
-    mLocalData->scale( alpha.getValue<ValueType>() );
+    SCAI_LOG_INFO( logger, "this  = " << alpha << " * " << A )
+
+    assign( A );  // can also deal with alias
+
+    mLocalData->scale( alpha );
 
     if ( mHaloData->getNumRows() * mHaloData->getNumColumns() > 0 )
     {
-        mHaloData->scale( alpha.getValue<ValueType>() );
+        mHaloData->scale( alpha );
     }
 }
 
@@ -2114,32 +2065,33 @@ NormType<ValueType> SparseMatrix<ValueType>::maxNorm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     // Implementation works only for same row distribution, replicated col distribution
     // and the same type
     SCAI_REGION( "Mat.Sp.maxDiffNorm" )
 
-    if ( ( getRowDistribution() == other.getRowDistribution() ) && getColDistribution().isReplicated()
-            && other.getColDistribution().isReplicated() && ( getValueType() == other.getValueType() ) )
+    bool distributionMatch = getRowDistribution() == other.getRowDistribution();
+    bool kindMatch = other.getMatrixKind() == MatrixKind::SPARSE;
+
+    if ( distributionMatch && kindMatch )
     {
         const SparseMatrix<ValueType>* typedOther = dynamic_cast<const SparseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
         return maxDiffNormImpl( *typedOther );
     }
-    else if ( !getColDistribution().isReplicated() )
+    else 
     {
-        // take default implementation of base class
+        if ( !distributionMatch )
+        {
+            SCAI_UNSUPPORTED( "maxDiffNorm might be inefficient as distributions do not match" )
+        }
+        else
+        {
+            SCAI_UNSUPPORTED( "maxDiffNorm might be inefficient as one matrix is sparse and the other dense" )
+        }
+
         return Matrix<ValueType>::maxDiffNorm( other );
-    }
-    else
-    {
-        SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
-        shared_ptr<MatrixStorage<ValueType> > tmpPtr( getLocalStorage().newMatrixStorage() );
-        SparseMatrix<ValueType> typedOther( tmpPtr );
-        typedOther.assign( other );
-        typedOther.redistribute( getRowDistributionPtr(), getColDistributionPtr() );
-        return maxDiffNormImpl( typedOther );
     }
 }
 
@@ -2148,14 +2100,40 @@ NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other )
 template<typename ValueType>
 ValueType SparseMatrix<ValueType>::maxDiffNormImpl( const SparseMatrix<ValueType>& other ) const
 {
-    // implementation only supported for same row distributions, replicated columns
-    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), other.getRowDistribution() )
-    SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), *this << ": not replicated column dist" )
-    SCAI_ASSERT_ERROR( other.getColDistribution().isReplicated(), other << ": not replicated column dist" )
-    ValueType myMaxDiff = mLocalData->maxDiffNorm( other.getLocalStorage() );
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), other.getRowDistribution(), "maxDiffNorm: space mismatch" )
+
+    const MatrixStorage<ValueType>* myLocalStorage    = &getLocalStorage();
+    const MatrixStorage<ValueType>* otherLocalStorage = &other.getLocalStorage();
+
+    // we might need temporaries for the joined local storage if halo exists
+
+    std::unique_ptr<MatrixStorage<ValueType> > tmp1;
+    std::unique_ptr<MatrixStorage<ValueType> > tmp2;
+
+    // ToDo: if col distribution is the same, local and halo might be compared separately.
+    //       But halo must be translated to global index space in any case
+
+    if ( !getColDistribution().isReplicated() )
+    {
+        tmp1.reset( new CSRStorage<ValueType>() );
+        tmp1->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), false );
+        myLocalStorage = tmp1.get();
+    }
+
+    if ( !other.getColDistribution().isReplicated() )
+    {
+        tmp2.reset( new CSRStorage<ValueType>() );
+        tmp2->joinHalo( *other.mLocalData, *other.mHaloData, other.mHalo, other.getColDistribution(), false );
+        otherLocalStorage = tmp2.get();
+    }
+
+    ValueType myMaxDiff = myLocalStorage->maxDiffNorm( *otherLocalStorage );
+
     const Communicator& comm = getRowDistribution().getCommunicator();
     ValueType allMaxDiff = comm.max( myMaxDiff );
+
     SCAI_LOG_INFO( logger, "max diff norm: local max = " << myMaxDiff << ", global max = " << allMaxDiff )
+
     return allMaxDiff;
 }
 
@@ -2202,7 +2180,7 @@ IndexType SparseMatrix<ValueType>::getPartitialNumValues() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
     const Distribution& distributionRow = getRowDistribution();
     const Distribution& distributionCol = getColDistribution();
@@ -2239,7 +2217,8 @@ Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 
     SCAI_LOG_TRACE( logger, "myValue = " << myValue )
     myValue = distributionRow.getCommunicator().sum( myValue );
-    return Scalar( myValue );
+
+    return myValue; 
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2248,7 +2227,7 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
-    const Scalar val,
+    const ValueType val,
     const common::BinaryOp op )
 {
     const Distribution& distributionRow = getRowDistribution();
@@ -2266,7 +2245,7 @@ void SparseMatrix<ValueType>::setValue(
 
     if ( nIndex != jLocal )
     {
-        mLocalData->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
+        mLocalData->setValue( iLocal, jLocal, val, op );
     }
     else
     {
@@ -2274,7 +2253,7 @@ void SparseMatrix<ValueType>::setValue(
 
         if ( nIndex != jLocal )
         {
-            mHaloData->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
+            mHaloData->setValue( iLocal, jLocal, val, op );
         }
         else
         {

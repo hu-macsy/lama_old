@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/lama/GridVector.hpp>
 #include <scai/lama/GridReadAccess.hpp>

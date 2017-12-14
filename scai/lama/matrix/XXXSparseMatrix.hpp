@@ -134,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit XXXSparseMatrix( const Expression_SM& expression );
+    explicit XXXSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit XXXSparseMatrix( const Expression_SMM& expression );
+    explicit XXXSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit XXXSparseMatrix( const Expression_SM_SM& expression );
+    explicit XXXSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a XXX sparse matrix with distributed XXX storage data.
      *

@@ -1290,6 +1290,7 @@ static IndexType binarySearch( const IndexType indexes[], const IndexType n, con
 template<typename ValueType1, typename ValueType2>
 void OpenMPUtils::setGatherSparse(
     ValueType1 target[],
+    const ValueType2 sourceZeroValue,
     const ValueType2 sourceNonZeroValues[],
     const IndexType sourceNonZeroIndexes[],
     const IndexType sourceNNZ,
@@ -1313,14 +1314,11 @@ void OpenMPUtils::setGatherSparse(
 
         SCAI_LOG_TRACE( logger, "binarySearch( " << indexes[i] << " ) -> " << k )
 
-        ValueType1 sourceVal = 0;   // default value if value not availabe in sparse input array
+        // default value if value not availabe in sparse input array
 
-        if ( k != nIndex )
-        {
-            sourceVal = static_cast<ValueType1>( sourceNonZeroValues[k] );
-        }
+        ValueType2 sourceVal = k == nIndex ? sourceZeroValue : sourceNonZeroValues[k];
 
-        target[i] = applyBinary( target[i], op, sourceVal );
+        target[i] = applyBinary( target[i], op, static_cast<ValueType1>( sourceVal ) );
     }
 }
 

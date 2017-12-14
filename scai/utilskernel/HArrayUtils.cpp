@@ -229,17 +229,21 @@ void HArrayUtils::gather(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename SourceValueType>
 void HArrayUtils::sparseGather(
     _HArray& target,
-    const _HArray& sourceNonZeroValues,
+    const SourceValueType sourceZeroValue,
+    const HArray<SourceValueType>& sourceNonZeroValues,
     const HArray<IndexType>& sourceNonZeroIndexes,
     const HArray<IndexType>& indexes,
     const BinaryOp op,
     const ContextPtr prefLoc )
 {
-    // use metaprogramming to call the gather version with the correct value types for target and source
-    mepr::UtilsWrapperTT<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::
-        sparseGather( target, sourceNonZeroValues, sourceNonZeroIndexes, indexes, op, prefLoc );
+    // use metaprogramming to call sparseGatherImpl version with the correct value type for target
+
+    mepr::UtilsWrapperT<SourceValueType, SCAI_ARRAY_TYPES_HOST_LIST>::
+           sparseGather( target, sourceZeroValue, sourceNonZeroValues, sourceNonZeroIndexes, indexes, op, prefLoc );
+
 }
 
 /* --------------------------------------------------------------------------- */
@@ -247,6 +251,7 @@ void HArrayUtils::sparseGather(
 template<typename TargetValueType, typename SourceValueType>
 void HArrayUtils::sparseGatherImpl(
     hmemo::HArray<TargetValueType>& target,
+    const SourceValueType sourceZeroValue,
     const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
     const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
     const hmemo::HArray<IndexType>& indexes,
@@ -275,7 +280,8 @@ void HArrayUtils::sparseGatherImpl(
 
     if ( op == BinaryOp::COPY )
     {
-        target.setSameValue( n, TargetValueType( 0 ) );    // initialize with zero as default
+        target.clear();       // old values are no more needed
+        target.resize( n );    
     }
     else
     {
@@ -291,7 +297,7 @@ void HArrayUtils::sparseGatherImpl(
     ReadAccess<IndexType> rSourceIndexes( sourceNonZeroIndexes, loc );
     ReadAccess<IndexType> rIndexes( indexes, loc );
 
-    setGatherSparse[loc] ( wTarget.get(), rSourceVals.get(), rSourceIndexes.get(), nnz, rIndexes.get(), op, n );
+    setGatherSparse[loc] ( wTarget.get(), sourceZeroValue, rSourceVals.get(), rSourceIndexes.get(), nnz, rIndexes.get(), op, n );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2302,6 +2308,7 @@ void HArrayUtils::mergeSparse(
             const hmemo::ContextPtr );                                               \
     template void HArrayUtils::sparseGatherImpl<TargetType, SourceType>(             \
             hmemo::HArray<TargetType>&,                                              \
+            const SourceType,                                                        \
             const hmemo::HArray<SourceType>&,                                        \
             const hmemo::HArray<IndexType>&,                                         \
             const hmemo::HArray<IndexType>&,                                         \
@@ -2338,6 +2345,14 @@ void HArrayUtils::mergeSparse(
             hmemo::_HArray&,                                            \
             const IndexType,                                            \
             const ValueType );                                          \
+    template void HArrayUtils::sparseGather<ValueType>(                 \
+            hmemo::_HArray&,                                            \
+            const ValueType,                                            \
+            const hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<IndexType>&,                            \
+            const hmemo::HArray<IndexType>&,                            \
+            const BinaryOp,                                             \
+            const hmemo::ContextPtr );                                  \
     template void HArrayUtils::setValImpl<ValueType>(                   \
             hmemo::HArray<ValueType>&,                                  \
             const IndexType,                                            \

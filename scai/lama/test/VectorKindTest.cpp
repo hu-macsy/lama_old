@@ -1,5 +1,5 @@
 /**
- * @file vector.cpp
+ * @file VectorKindTest.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,53 +27,34 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief vector.cpp
- * @author
- * @date 17.05.2013
+ * @brief Test enum class VectorKind
+ * @author Thomas Brandes
+ * @date 24.11.2017
  */
 
-#include <scai/lama.hpp>
+#include <boost/test/unit_test.hpp>
 
-#include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
-#include <scai/lama/expression/all.hpp>
+#include <scai/lama/VectorKind.hpp>
+#include <scai/common/test/TestMacros.hpp>
+#include <sstream>
 
-#include <iostream>
-#include <stdlib.h>
+using namespace scai;
+using namespace lama;
 
-using namespace scai::lama;
-
-int main()
-
+BOOST_AUTO_TEST_CASE( VecorKindTest )
 {
-    /** Take default real type for this example. */
-    typedef RealType ValueType;
+    // arithmetic binary operations
 
-    ValueType singleValue = 2;
-    //
-    // Create a DenseVector out of a simple c array
-    //
-    const ValueType inputData[] = { 1.0, 2.0, 3.0, 4.0 };
+    for ( int kind = 0; kind < static_cast<int>( VectorKind::UNDEFINED ); ++kind )
+    {
+        std::ostringstream s;
+        s << VectorKind( kind );
+        BOOST_CHECK( s.str().length() > 0 );
+    }
 
-    DenseVector<ValueType> sequenceOfValues;
 
-    sequenceOfValues.setRawData( 4, inputData );
-
-    // same: sequenceOfValues.setRange( 4, 1, 1 );
-
-    //
-    // scale vector
-    //
-    sequenceOfValues = singleValue * sequenceOfValues;
-    //
-    // print vector to file vector.frm/.vec (SAMG format)
-    //
-    sequenceOfValues.writeToFile( "vector.frv" );
-    std::cout << "DenseVector is written to 'vector.frm/.vec'" << std::endl;
-    //
-    //  That's it.
-    //
-    std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
-    return EXIT_SUCCESS;
+    BOOST_CHECK_EQUAL( str2VectorKind( "SPARSE" ), VectorKind::SPARSE );
+    BOOST_CHECK_EQUAL( str2VectorKind( "DENSE" ), VectorKind::DENSE );
+    BOOST_CHECK_EQUAL( str2VectorKind( "JOINED" ), VectorKind::JOINED );
+    BOOST_CHECK_EQUAL( str2VectorKind( "NONSENSE" ), VectorKind::UNDEFINED );
 }
-

@@ -222,8 +222,7 @@ int main( int argc, const char* argv[] )
 
             if ( isNumeric( val, rhsFilename ) )
             {
-                rhs.allocate( matrix.getRowDistributionPtr() );
-                rhs = Scalar( val );
+                rhs.setSameValue( matrix.getRowDistributionPtr(), val );
 
                 HOST_PRINT( myRank, "Set rhs = " << val )
             }
@@ -258,8 +257,7 @@ int main( int argc, const char* argv[] )
             }
             else
             {
-                solution.allocate( matrix.getRowDistributionPtr() );
-                solution = Scalar( 0 );   // initialize of a vector
+                solution.setSameValue( matrix.getRowDistributionPtr(), ValueType( 0 ) );
                 HOST_PRINT( myRank, "Set initial solution = 0" )
             }
 
@@ -452,12 +450,12 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                std::unique_ptr<_Vector> compSolutionPtr( rhs.newVector() );
-                _Vector& compSolution = *compSolutionPtr;
+                std::unique_ptr<Vector<ValueType> > compSolutionPtr( rhs.newVector() );
+                Vector<ValueType>& compSolution = *compSolutionPtr;
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
-                Scalar maxDiff = compSolution._maxNorm();
+                ValueType maxDiff = compSolution.maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else

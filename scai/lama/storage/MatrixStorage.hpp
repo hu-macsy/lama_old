@@ -1301,7 +1301,7 @@ void MatrixStorage<ValueType>::setRawDIAData(
 template<typename ValueType>
 MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )
 {
-    return reinterpret_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
+    return static_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
 }
 
 } /* end namespace lama */
