@@ -255,8 +255,6 @@ void checkHaloAgainstExpected(const Halo & halo, const BuildFromProvidedOwnersRe
 
 BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
 {
-
-
     if ( comm->getSize() == 1)
     {
         const auto dist = DistributionPtr ( new CyclicDistribution(3, 1, comm) );
@@ -274,6 +272,11 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         Halo halo;
         HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
         checkHaloAgainstExpected(halo, expected);
+
+        // Check global -> local mapping for required indexes
+        BOOST_TEST( halo.global2halo( 0 ) == 0 );
+        BOOST_TEST( halo.global2halo( 1 ) == 1 );
+        BOOST_TEST( halo.global2halo( 2 ) == 2 );
     }
     else if ( comm->getSize() == 2 )
     {
@@ -308,6 +311,19 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         Halo halo;
         HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
         checkHaloAgainstExpected(halo, expected);
+
+        // Check global -> local mapping for required indexes
+        if (rank == 0)
+        {
+            BOOST_TEST( halo.global2halo(4) == 0 );
+            BOOST_TEST( halo.global2halo(1) == 1 );
+        }
+        else if ( rank == 1 )
+        {
+            BOOST_TEST( halo.global2halo(0) == 0 );
+            BOOST_TEST( halo.global2halo(2) == 1 );
+            BOOST_TEST( halo.global2halo(3) == 2 );
+        }
     }
     else if ( comm->getSize() == 3 )
     {
@@ -349,6 +365,27 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         Halo halo;
         HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
         checkHaloAgainstExpected(halo, expected);
+
+        // Check global -> local mapping for required indexes
+        if ( rank == 0 )
+        {
+            BOOST_TEST( halo.global2halo( 9 ) == 0 );
+            BOOST_TEST( halo.global2halo( 1 ) == 1 );
+            BOOST_TEST( halo.global2halo( 5 ) == 2 );
+            BOOST_TEST( halo.global2halo( 8 ) == 3 );
+        }
+        else if ( rank == 1 )
+        {
+            BOOST_TEST( halo.global2halo( 6 ) == 0 );
+            BOOST_TEST( halo.global2halo( 4 ) == 1 );
+            BOOST_TEST( halo.global2halo( 2 ) == 2 );
+        }
+        else if ( rank == 2 )
+        {
+            BOOST_TEST( halo.global2halo( 0 ) == 0 );
+            BOOST_TEST( halo.global2halo( 3 ) == 1 );
+            BOOST_TEST( halo.global2halo( 7 ) == 2 );
+        }
     }
     else
     {
