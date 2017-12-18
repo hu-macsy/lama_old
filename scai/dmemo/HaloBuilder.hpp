@@ -52,7 +52,16 @@ class COMMON_DLL_IMPORTEXPORT HaloBuilder
 public:
     static void build( const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes, Halo& halo );
 
-    // TODO: Does this naming actually make sense? Or, put it differently, does it make sense outside of redistribution?
+    /**
+     * Build a Halo data structure from prior knowledge about the owners of provided indexes.
+     *
+     * @param[in]  distribution     The distribution used for mapping local to global indices.
+     * @param[in]  ownersOfProvided An array mapping local, provided indices to owners. More precisely, ownersOfProvided[i] must contain
+     *                              the owner of provided index i.
+     * @param[out] halo             The Halo data structure to store the result in.
+     *
+     * @remark Note that an implicit assumption of this method is that owners of *all* local values are provided.
+     */
     static void buildFromProvidedOwners( const Distribution & distribution, const hmemo::HArray<PartitionId> & ownersOfProvided, Halo & halo );
 
 private:
