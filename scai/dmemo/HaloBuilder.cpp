@@ -34,11 +34,14 @@
 
 // hpp
 #include <scai/dmemo/HaloBuilder.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
+
+#include <vector>
 
 using namespace scai::hmemo;
 
@@ -53,6 +56,8 @@ SCAI_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" )
 void HaloBuilder::build( const Distribution& distribution, const HArray<IndexType>& requiredIndexes, Halo& halo )
 {
     SCAI_REGION( "HaloBuilder.build" )
+    halo.clear();
+
     const PartitionId noPartitions = distribution.getNumPartitions();
     const Communicator& communicator = distribution.getCommunicator();
     SCAI_LOG_INFO( logger,
@@ -166,6 +171,71 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
             partitionumIndexes[i] = localIndex;
         }
     }
+}
+
+static void createRequiredGlobal2LocalMapping(std::map<IndexType, IndexType> & map, const HArray<IndexType> & requiredIndexes)
+{
+    ReadAccess<IndexType> rRequiredIndexes(requiredIndexes);
+    for (IndexType i = 0; i < rRequiredIndexes.size(); ++i)
+    {
+        const auto globalIndex = rRequiredIndexes[i];
+        const auto localIndex = i;
+        map[globalIndex] = localIndex;
+    }
+}
+
+static void globalizeProvidedIndexes(HArray<IndexType> & globalProvidedIndexes,
+                                     const HArray<IndexType> localProvidedIndexes,
+                                     const Distribution & dist)
+{
+    const auto size = localProvidedIndexes.size();
+
+    ReadAccess<IndexType> rLocalProvidedIndexes(localProvidedIndexes);
+    WriteAccess<IndexType> wGlobalProvidedIndexes(globalProvidedIndexes);
+    wGlobalProvidedIndexes.resize(size);
+
+    for (IndexType i = 0; i < size; ++i)
+    {
+        const auto localIndex = rLocalProvidedIndexes[i];
+        const auto globalIndex = dist.local2global(localIndex);
+        wGlobalProvidedIndexes[i] = globalIndex;
+    }
+}
+
+void HaloBuilder::buildFromProvidedOwners( const Distribution & distribution, const HArray<PartitionId> & ownersOfProvided, Halo & halo )
+{
+    SCAI_REGION( "HaloBuilder.buildFromProvidedOwners" )
+    halo.clear();
+
+    // TODO: Make context an argument (with default to Host/default context)
+    const auto contextPtr = Context::getContextPtr();
+    const auto & comm = distribution.getCommunicator();
+    const auto nPartitions = distribution.getNumPartitions();
+
+    auto & requiredPlan = halo.mRequiredPlan;
+    auto & providedPlan = halo.mProvidesPlan;
+    auto & requiredIndexes = halo.mRequiredIndexes;
+    auto & providedIndexes = halo.mProvidesIndexes;
+
+    hmemo::HArray<IndexType> offsets(nPartitions + 1, contextPtr);
+    providedIndexes.resize(ownersOfProvided.size());
+
+    scai::utilskernel::HArrayUtils::bucketSort(offsets, providedIndexes, ownersOfProvided, nPartitions, contextPtr);
+
+    {
+        ReadAccess<IndexType> rOffsets(offsets);
+        providedPlan.allocateByOffsets(rOffsets.get(), nPartitions);
+    }
+
+    requiredPlan.allocateTranspose(providedPlan, comm);
+    requiredIndexes.resize(requiredPlan.totalQuantity());
+
+    HArray<IndexType> globalProvidedIndexes(providedIndexes.size());
+    globalizeProvidedIndexes(globalProvidedIndexes, providedIndexes, distribution);
+
+    comm.exchangeByPlan(requiredIndexes, requiredPlan, globalProvidedIndexes, providedPlan);
+
+    createRequiredGlobal2LocalMapping(halo.mGlobal2Halo, requiredIndexes);
 }
 
 } /* end namespace dmemo */

@@ -52,6 +52,9 @@ class COMMON_DLL_IMPORTEXPORT HaloBuilder
 public:
     static void build( const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes, Halo& halo );
 
+    // TODO: Does this naming actually make sense? Or, put it differently, does it make sense outside of redistribution?
+    static void buildFromProvidedOwners( const Distribution & distribution, const hmemo::HArray<PartitionId> & ownersOfProvided, Halo & halo );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
