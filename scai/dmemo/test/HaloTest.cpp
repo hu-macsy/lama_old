@@ -228,33 +228,34 @@ HArray<T> hArrayFromVector(const std::vector<T> array)
 
 
 
+// Helper struct to simplify building expected values
+// on multiple processors
+struct BuildFromProvidedOwnersResult
+{
+    std::vector<IndexType> providedIndexes;
+    std::vector<IndexType> requiredIndexes;
+    std::vector<IndexType> providedQuantities;
+    std::vector<IndexType> requiredQuantities;
+};
+
+void checkHaloAgainstExpected(const Halo & halo, const BuildFromProvidedOwnersResult & expected)
+{
+    const auto providedIndexes = hArrayToVector(halo.getProvidesIndexes());
+    const auto requiredIndexes = hArrayToVector(halo.getRequiredIndexes());
+
+    const auto expectedProvidedPlan = CommunicationPlan( expected.providedQuantities.data(), expected.providedQuantities.size() );
+    const auto expectedRequiredPlan = CommunicationPlan( expected.requiredQuantities.data(), expected.requiredQuantities.size() );
+
+    CHECK_COMMUNICATION_PLANS_EQUAL(expectedProvidedPlan, halo.getProvidesPlan());
+    CHECK_COMMUNICATION_PLANS_EQUAL(expectedRequiredPlan, halo.getRequiredPlan());
+
+    BOOST_TEST(providedIndexes == expected.providedIndexes, boost::test_tools::per_element());
+    BOOST_TEST(requiredIndexes == expected.requiredIndexes, boost::test_tools::per_element());
+};
 
 BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
 {
-    // Helper struct to simplify building expected values
-    // on multiple processors
-    struct BuildFromProvidedOwnersResult
-    {
-        std::vector<IndexType> providedIndexes;
-        std::vector<IndexType> requiredIndexes;
-        std::vector<IndexType> providedQuantities;
-        std::vector<IndexType> requiredQuantities;
-    };
 
-    const auto checkHaloAgainstExpected = [] (const Halo & halo, const BuildFromProvidedOwnersResult & expected)
-    {
-        const auto providedIndexes = hArrayToVector(halo.getProvidesIndexes());
-        const auto requiredIndexes = hArrayToVector(halo.getRequiredIndexes());
-
-        const auto expectedProvidedPlan = CommunicationPlan( expected.providedQuantities.data(), expected.providedQuantities.size() );
-        const auto expectedRequiredPlan = CommunicationPlan( expected.requiredQuantities.data(), expected.requiredQuantities.size() );
-
-        CHECK_COMMUNICATION_PLANS_EQUAL(expectedProvidedPlan, halo.getProvidesPlan());
-        CHECK_COMMUNICATION_PLANS_EQUAL(expectedRequiredPlan, halo.getRequiredPlan());
-
-        BOOST_TEST(providedIndexes == expected.providedIndexes, boost::test_tools::per_element());
-        BOOST_TEST(requiredIndexes == expected.requiredIndexes, boost::test_tools::per_element());
-    };
 
     if ( comm->getSize() == 1)
     {
@@ -353,6 +354,22 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
     {
         BOOST_TEST_MESSAGE( "No test data for communicator size " << comm->getSize() );
     }
+}
+
+BOOST_AUTO_TEST_CASE( buildFromProvidedOwners_empty )
+{
+    const auto dist = DistributionPtr ( new CyclicDistribution(10, 1, comm) );
+    const auto ownersOfProvided = hArrayFromVector<PartitionId>( { } );
+
+    BuildFromProvidedOwnersResult expected;
+    expected.providedIndexes = std::vector<IndexType>();
+    expected.providedQuantities = std::vector<IndexType>( comm->getSize(), 0 );
+    expected.requiredIndexes = expected.providedIndexes;
+    expected.requiredQuantities = expected.providedQuantities;
+
+    Halo halo;
+    HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
+    checkHaloAgainstExpected(halo, expected);
 }
 
 /* --------------------------------------------------------------------- */
