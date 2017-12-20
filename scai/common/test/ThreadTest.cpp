@@ -44,6 +44,8 @@
 using namespace scai;
 using namespace common;
 
+BOOST_AUTO_TEST_SUITE( ThreadTest )
+
 Thread::Mutex barrierMutex;
 Thread::Condition barrierCondition;
 
@@ -178,3 +180,4 @@ BOOST_AUTO_TEST_CASE( concurrentTest )
     BOOST_CHECK_CLOSE( time, double( SLEEP_TIME ), 20 );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
