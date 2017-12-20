@@ -44,24 +44,20 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/unique_ptr.hpp>
-#include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/loop.hpp>
 #include <scai/common/BinaryOp.hpp>
 
 // std
 #include <iostream>
 #include <algorithm>
+#include <memory>
 
 using namespace std;
 
+using std::unique_ptr;
+
 namespace scai
 {
-
-using common::shared_ptr;
-using common::unique_ptr;
-using common::scoped_array;
 
 namespace dmemo
 {
@@ -295,7 +291,7 @@ void MPICommunicator::max_operator( void* in, void* out, int* count, MPI_Datatyp
 
     for ( int i = 0; i < *count; ++i )
     {
-        b[i] = common::applyBinary( a[i], common::binary::MAX, b[i] );
+        b[i] = common::applyBinary( a[i], common::BinaryOp::MAX, b[i] );
     }
 }
 
@@ -307,7 +303,7 @@ void MPICommunicator::min_operator( void* in, void* out, int* count, MPI_Datatyp
 
     for ( int i = 0; i < *count; ++i )
     {
-        b[i] = common::applyBinary( a[i], common::binary::MIN, b[i] );
+        b[i] = common::applyBinary( a[i], common::BinaryOp::MIN, b[i] );
     }
 }
 
@@ -364,10 +360,10 @@ MPICommunicator::~MPICommunicator()
                 int resultlen = MPI_MAX_ERROR_STRING;
                 MPI_Error_string( status, mpiErrorString, &resultlen );
                 SCAI_LOG_ERROR( logger, "MPI_Finalize: error, status = " << status << ", " << mpiErrorString )
-            } 
+            }
         }
         else
-        {
+        { 
             SCAI_LOG_INFO( logger, "ATTENTION: no call MPI_Finalize, was externally initialized" )
         }
     }
@@ -404,7 +400,7 @@ MPI_Comm MPICommunicator::getMPIComm() const
     return mComm;
 }
 
-MPI_Request MPICommunicator::startrecv( void* buffer, int count, int source, common::scalar::ScalarType stype ) const
+MPI_Request MPICommunicator::startrecv( void* buffer, int count, int source, common::ScalarType stype ) const
 {
     MPI_Request request;
 
@@ -416,7 +412,7 @@ MPI_Request MPICommunicator::startrecv( void* buffer, int count, int source, com
     return request;
 }
 
-MPI_Request MPICommunicator::startsend( const void* buffer, int count, int target, common::scalar::ScalarType stype ) const
+MPI_Request MPICommunicator::startsend( const void* buffer, int count, int target, common::ScalarType stype ) const
 {
     MPI_Request request;
 
@@ -431,7 +427,7 @@ MPI_Request MPICommunicator::startsend( const void* buffer, int count, int targe
     return request;
 }
 
-int MPICommunicator::getCount( MPI_Status& mpiStatus, common::scalar::ScalarType stype ) const
+int MPICommunicator::getCount( MPI_Status& mpiStatus, common::ScalarType stype ) const
 {
     int size = 0;
     MPI_Datatype commType = getMPIType( stype );
@@ -439,7 +435,7 @@ int MPICommunicator::getCount( MPI_Status& mpiStatus, common::scalar::ScalarType
     return size;
 }
 
-void MPICommunicator::send( const void* buffer, int count, int target, common::scalar::ScalarType stype ) const
+void MPICommunicator::send( const void* buffer, int count, int target, common::ScalarType stype ) const
 {
     MPI_Datatype commType = getMPIType( stype );
     SCAI_MPICALL( logger,
@@ -494,7 +490,7 @@ void MPICommunicator::exchangeByPlanImpl(
     const CommunicationPlan& recvPlan,
     const void* sendData,
     const CommunicationPlan& sendPlan,
-    common::scalar::ScalarType stype ) const
+    common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.exchangeByPlan" )
 
@@ -509,7 +505,7 @@ void MPICommunicator::exchangeByPlanImpl(
     PartitionId noReceives = 0; // will be incremented
     void* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
-    scoped_array<MPI_Request> commRequest( new MPI_Request[maxReceives] );
+    unique_ptr<MPI_Request[]> commRequest( new MPI_Request[maxReceives] );
 
     size_t typeSize = common::typeSize( stype );
 
@@ -561,7 +557,7 @@ void MPICommunicator::exchangeByPlanImpl(
     }
 
     // wait for completion of receives
-    scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
+    unique_ptr<MPI_Status[]> statuses( new MPI_Status[noReceives] );
     SCAI_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
     // ToDo: check for correct sizes, was done in earlier version, but is now redundant
 }
@@ -573,7 +569,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     const CommunicationPlan& recvPlan,
     const void* const sendData,
     const CommunicationPlan& sendPlan,
-    const common::scalar::ScalarType stype ) const
+    const common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.exchangeByPlanAsync" )
     SCAI_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
@@ -583,7 +579,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
     // create MPIToken as unique_ptr, so it will be freed in case of exception
-    scai::common::unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
+    std::unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
     MPISyncToken& syncToken = *pSyncToken;
     void* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
@@ -660,7 +656,7 @@ inline MPI_Comm MPICommunicator::selectMPIComm() const
 /*              bcast                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const
+void MPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId root, common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.bcast" )
     MPI_Datatype commType = getMPIType( stype );
@@ -673,13 +669,13 @@ void MPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
 
 void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[],
                                     void* sendBuffer[], IndexType sendCount[],
-                                    common::scalar::ScalarType stype ) const
+                                    common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.all2allv" )
 
     int noReceives = 0;
 
-    scoped_array<MPI_Request> commRequest( new MPI_Request[getSize()] );
+    unique_ptr<MPI_Request[]> commRequest( new MPI_Request[getSize()] );
 
     for ( PartitionId i = 0; i < getSize(); ++i )
     {
@@ -694,7 +690,7 @@ void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[],
 
     // wait for completion of receives
 
-    scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
+    unique_ptr<MPI_Status[]> statuses( new MPI_Status[noReceives] );
 
     SCAI_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
 }
@@ -710,7 +706,7 @@ IndexType MPICommunicator::shiftImpl(
     const void* sendVals,
     const IndexType sendSize,
     const PartitionId dest,
-    common::scalar::ScalarType stype ) const
+    common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.shift" )
 
@@ -751,7 +747,7 @@ tasking::SyncToken* MPICommunicator::shiftAsyncImpl(
     const void* sendVals,
     const PartitionId dest,
     const IndexType size,
-    common::scalar::ScalarType stype ) const
+    common::ScalarType stype ) const
 {
     SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << ", send to " << dest << ", both " << size << " values." )
@@ -773,7 +769,7 @@ tasking::SyncToken* MPICommunicator::shiftAsyncImpl(
 /*              scan                                                                  */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
+void MPICommunicator::scanImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.scan" )
 
@@ -798,7 +794,7 @@ void MPICommunicator::scanImpl( void* outValues, const void* inValues, const Ind
 /*              sum                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
+void MPICommunicator::sumImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.sum" )
 
@@ -821,7 +817,7 @@ void MPICommunicator::sumImpl( void* outValues, const void* inValues, const Inde
 /*              min                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
+void MPICommunicator::minImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.min" )
 
@@ -844,7 +840,7 @@ void MPICommunicator::minImpl( void* outValues, const void* inValues, const Inde
 /*              min                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
+void MPICommunicator::maxImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.max" )
 
@@ -878,7 +874,7 @@ void MPICommunicator::scatterImpl(
     const IndexType n,
     const PartitionId root,
     const void* allVals,
-    common::scalar::ScalarType stype ) const
+    common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.scatter" )
 
@@ -906,7 +902,7 @@ void MPICommunicator::scatterVImpl(
     const PartitionId root,
     const void* allVals,
     const IndexType sizes[],
-    common::scalar::ScalarType stype ) const
+    common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.scatterV" )
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
@@ -916,8 +912,8 @@ void MPICommunicator::scatterVImpl(
     {
         void* sendbuf = const_cast<void*>( allVals );
         PartitionId np = getSize();
-        scoped_array<int> counts( new int[np] );
-        scoped_array<int> displs( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
+        unique_ptr<int[]> displs( new int[np] );
         int displacement = 0;
 
         for ( PartitionId i = 0; i < np; i++ )
@@ -938,7 +934,7 @@ void MPICommunicator::scatterVImpl(
     {
         // VampirTrace: requires valid counts array, even if values will be ignored
         PartitionId np = getSize();
-        scoped_array<int> counts( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
 
         for ( PartitionId i = 0; i < np; i++ )
         {
@@ -961,7 +957,7 @@ void MPICommunicator::gatherImpl(
     const IndexType n,
     const PartitionId root,
     const void* myVals,
-    const common::scalar::ScalarType stype ) const
+    const common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.gather" )
 
@@ -988,7 +984,7 @@ void MPICommunicator::gatherVImpl(
     const PartitionId root,
     const void* myVals,
     const IndexType sizes[],
-    const common::scalar::ScalarType stype ) const
+    const common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.gatherV" )
     SCAI_ASSERT_ERROR( root < getSize(), "illegal root, root = " << root )
@@ -998,8 +994,8 @@ void MPICommunicator::gatherVImpl(
     if ( root == getRank() )
     {
         PartitionId np = getSize();
-        scoped_array<int> counts( new int[np] );
-        scoped_array<int> displs( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
+        unique_ptr<int[]> displs( new int[np] );
         int displacement = 0;
 
         for ( PartitionId i = 0; i < np; i++ )
@@ -1022,7 +1018,7 @@ void MPICommunicator::gatherVImpl(
 
         PartitionId np = getSize();
 
-        scoped_array<int> counts( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
 
         for ( PartitionId i = 0; i < np; i++ )
         {
@@ -1041,7 +1037,7 @@ void MPICommunicator::gatherVImpl(
 /*           maxloc                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const
+void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.maxloc" )
 
@@ -1061,7 +1057,7 @@ void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId ro
 
     // only on Host
 
-    common::scoped_array<char> tmp ( new char[ tmpSize ] );
+    std::unique_ptr<char[]> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
     MPI_Reduce( tmp.get(), val, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
@@ -1071,7 +1067,7 @@ void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId ro
 /*           minloc                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const
+void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.minloc" )
 
@@ -1091,7 +1087,7 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
 
     // only on host
 
-    common::scoped_array<char> tmp ( new char[ tmpSize ] );
+    std::unique_ptr<char[]> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
     MPI_Reduce( tmp.get(), val, 1, commType, MPI_MINLOC, root, selectMPIComm() );
@@ -1101,7 +1097,7 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
 /*          supportsLocReduction                                                      */
 /* ---------------------------------------------------------------------------------- */
 
-bool MPICommunicator::supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const
+bool MPICommunicator::supportsLocReduction( common::ScalarType vType, common::ScalarType iType ) const
 {
     if ( common::TypeTraits<int>::stype != iType )
     {
@@ -1113,11 +1109,11 @@ bool MPICommunicator::supportsLocReduction( common::scalar::ScalarType vType, co
 
     switch ( vType )
     {
-        case common::scalar::INT       :
+        case common::ScalarType::INT       :
             return true;
-        case common::scalar::FLOAT     :
+        case common::ScalarType::FLOAT     :
             return true;
-        case common::scalar::DOUBLE    :
+        case common::ScalarType::DOUBLE    :
             return true;
         default                        :
             return false;
@@ -1128,7 +1124,7 @@ bool MPICommunicator::supportsLocReduction( common::scalar::ScalarType vType, co
 /*           swap                                                                     */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partner, common::scalar::ScalarType stype ) const
+void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partner, common::ScalarType stype ) const
 {
     if ( partner == getRank() )
     {
@@ -1139,7 +1135,7 @@ void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
 
     // only on host
 
-    common::scoped_array<char> tmp ( new char[ n * common::typeSize( stype ) ] );
+    std::unique_ptr<char[]> tmp ( new char[ n * common::typeSize( stype ) ] );
 
     memcpy( tmp.get(), val, n * common::typeSize( stype ) );
 
