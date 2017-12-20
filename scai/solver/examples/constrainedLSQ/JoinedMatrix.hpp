@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Abstract Matrix class that encapsulates A and an explicit transposed A
+ * @brief Abstract _Matrix class that encapsulates A and an explicit transposed A
  * @author Thomas Brandes
  * @date 27.07.2017
  */
@@ -51,7 +51,7 @@ class JoinedMatrix : public AbstractMatrix
 
 public:
 
-    JoinedMatrix ( const Matrix& A1, const Matrix& A2 ) :
+    JoinedMatrix ( const _Matrix& A1, const _Matrix& A2 ) :
 
         AbstractMatrix( dmemo::DistributionPtr( new dmemo::JoinedDistribution( A1.getRowDistributionPtr(),
                                                                                A2.getRowDistributionPtr() ) ),
@@ -68,7 +68,7 @@ public:
     {
     }
 
-    /** Override default implementation of Matrix as we need here a joined vector */
+    /** Override default implementation of _Matrix as we need here a joined vector */
 
     virtual Vector* newVector( const IndexType dim ) const
     {
@@ -124,7 +124,7 @@ public:
         Vector& v,
         const IndexType dim,
         const common::BinaryOp reduceOp,
-        const common::UnaryOp elemOp ) const
+        const common::unary::UnaryOp elemOp ) const
     {
         if ( dim == 0 )
         {
@@ -133,7 +133,7 @@ public:
         else
         {
             mA1.reduce( v, dim, reduceOp, elemOp );
-            VectorPtr tmpV( v.copy() );
+            _VectorPtr tmpV( v.copy() );
             mA2.reduce( *tmpV, dim, reduceOp, elemOp );
             v += *tmpV;
         }
@@ -155,8 +155,8 @@ public:
 
 private:
 
-    const Matrix& mA1;
-    const Matrix& mA2;
+    const _Matrix& mA1;
+    const _Matrix& mA2;
 
     IndexType joinedDim;
 };

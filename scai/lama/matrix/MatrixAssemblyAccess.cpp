@@ -54,13 +54,13 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixAssemblyAccess
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( Matrix& matrix, const common::BinaryOp op ) : 
+MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( _Matrix& matrix, const common::BinaryOp op ) : 
 
     mMatrix( matrix ),
     mIsReleased( false ),
     mOp( op )
 {
-    SCAI_ASSERT_EQ_ERROR( matrix.getMatrixKind(), Matrix::SPARSE, "Assembly only for sparse matrix supported" )
+    SCAI_ASSERT_EQ_ERROR( matrix.getMatrixKind(), MatrixKind::SPARSE, "Assembly only for sparse matrix supported" )
 
     // SCAI_ASSERT_EQ_ERROR( matrix.getNumValues(), 0, "Assembly only for zero sparse matrices supported" )
 }
@@ -83,9 +83,10 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
 
     dist.computeOwners( owners, inIA );
 
-    SCAI_LOG_DEBUG( logger, "owners = " << owners )
-
     const dmemo::Communicator& comm = dist.getCommunicator();
+
+    SCAI_LOG_DEBUG( logger, comm << ": owners = " << owners )
+
     PartitionId np = comm.getSize();
 
     HArray<IndexType> perm;
@@ -93,7 +94,7 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
 
     HArrayUtils::bucketSort( offsets, perm, owners, np );
 
-    SCAI_LOG_DEBUG( logger, "sorted, perm = " << perm << ", offsets = " << offsets )
+    SCAI_LOG_DEBUG( logger, comm << ": sorted, perm = " << perm << ", offsets = " << offsets )
 
     HArray<IndexType> sendIA;
     HArray<IndexType> sendJA;
@@ -105,7 +106,7 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
 
     HArrayUtils::unscan( offsets );  // now we have size
 
-    SCAI_LOG_DEBUG( logger, "sizes = " << offsets )
+    SCAI_LOG_DEBUG( logger, comm << ": sizes = " << offsets )
 
     dmemo::CommunicationPlan sendPlan;
     dmemo::CommunicationPlan recvPlan;
@@ -115,9 +116,11 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
         sendPlan.allocate( rSizes.get(), np );
     }
 
+    SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
+
     recvPlan.allocateTranspose( sendPlan, comm );
 
-    SCAI_LOG_DEBUG( logger, "recv plan: " << recvPlan )
+    SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )
 
     comm.exchangeByPlan( outIA, recvPlan, sendIA, sendPlan );
     comm.exchangeByPlan( outJA, recvPlan, sendJA, sendPlan );

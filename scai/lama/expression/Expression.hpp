@@ -28,10 +28,12 @@
  * @endlicense
  *
  * @brief Definition of template class Expression used for symbolic expressions.
- * @author brandes
+ * @author Thomas Brandes
  * @date 28.03.2011
  */
 #pragma once
+
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -43,18 +45,10 @@ namespace lama
 {
 
 /**
- * @brief ExpressionTypes expresses the type of an Expression.
- */
-enum ExpressionTypes
-{
-    Plus, Minus, Times, Divide
-};
-
-/**
- * @brief The template class Expression represents a mathematical expression.
+ * @brief The template class Expression represents a binary expression for two arguments.
  *
  * The template class Expression represents a mathematical expression with two
- * operands. The supported operators are defined with ExpressionTypes. The
+ * operands. The supported operators are defined with BinaryOp. The
  * expression holds references to the two operands.
  *
  * @param T1    the type of the first operand of the expression
@@ -65,7 +59,7 @@ enum ExpressionTypes
  * for a binary expression. Operations on this object are just the constructor,
  * the getter for the expression type and the two getters for the operands.
  */
-template<typename T1, typename T2, ExpressionTypes type>
+template<typename T1, typename T2, common::BinaryOp type>
 class Expression
 {
 public:
@@ -75,9 +69,12 @@ public:
     typedef const ExpressionType ExpressionMemberType;
 
 private:
-    const ExpressionTypes mExpressionType;
+
+    const common::BinaryOp mExpressionType;
+
     typename Arg1Type::ExpressionMemberType mArg1;
     typename Arg2Type::ExpressionMemberType mArg2;
+
 public:
 
     /**
@@ -86,11 +83,14 @@ public:
      * @param arg1 the first operand of the expression
      * @param arg2 the second operand of the expression
      */
-    Expression( const Arg1Type& arg1, const Arg2Type& arg2 )
-        : mExpressionType( type ), mArg1( arg1 ), mArg2( arg2 )
+    Expression( const Arg1Type& arg1, const Arg2Type& arg2 ) : 
+
+        mExpressionType( type ), 
+        mArg1( arg1 ), 
+        mArg2( arg2 )
+
     {
     }
-    ;
 
     /**
      * @brief The destructor destroys this Expression.
@@ -104,7 +104,7 @@ public:
      *
      * @return the type of this Expression.
      */
-    inline ExpressionTypes getExpressionType() const
+    inline common::BinaryOp getExpressionType() const
     {
         return mExpressionType;
     }
@@ -131,76 +131,95 @@ public:
 };
 
 class Scalar;
-class Vector;
-class Matrix;
+template<typename ValueType> class Matrix;
+template<typename ValueType> class Vector;
 
-// Vector Expressions
+/* ============================================================================ */
+/*    Vector expressions                                                        */
+/* ============================================================================ */
 
-/** Symbolic expression 'Scalar * Vector' */
+/** Symbolic expression 'Scalar * Vector */
 
-typedef Expression<Scalar, Vector, Times> Expression_SV;
+template<typename ValueType>
+using Expression_SV = Expression<Scalar, Vector<ValueType>, common::BinaryOp::MULT>;
 
-/** Symbolic expression 'Vector * Vector' */
+/** Symbolic expression 'Vector1 * Vector2 element-wise */
 
-typedef Expression<Vector, Vector, Times> Expression_VV;
+template<typename ValueType>
+using Expression_VV = Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>;
 
-/** Symbolic expression 'Scalar * Vector * Vector' */
+/** Symbolic expression 'Scalar * Vector * Vector', element-wise */
 
-typedef Expression<Scalar, Expression<Vector, Vector, Times>, Times> Expression_SVV;
+template<typename ValueType>
+using Expression_SVV = Expression<Scalar, Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar' */
 
-typedef Expression<Expression_SV, Scalar, Plus> Expression_SV_S;
+template<typename ValueType>
+using Expression_SV_S = Expression<Expression_SV<ValueType>, Scalar, common::BinaryOp::ADD>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
 
-typedef Expression<Expression_SV, Expression_SV, Plus> Expression_SV_SV;
+template<typename ValueType>
+using Expression_SV_SV = Expression<Expression_SV<ValueType>, Expression_SV<ValueType>, common::BinaryOp::ADD>;
 
-// Matrix Expression
+/* ============================================================================ */
+/*    Matrix expressions                                                        */
+/* ============================================================================ */
 
 /** Symbolic expression 'Scalar * Matrix' */
 
-typedef Expression<Scalar, Matrix, Times> Expression_SM;
-
-// Matrix-Vector Expressions
-
-/** Symbolic expression 'Matrix * Vector' */
-
-typedef Expression<Matrix, Vector, Times> Expression_MV;
-
-/** Symbolic expression 'Vector * Matrix' */
-
-typedef Expression<Vector, Matrix, Times> Expression_VM;
-
-/** Symbolic expression 'Scalar * Matrix * Vector' */
-
-typedef Expression<Scalar, Expression<Matrix, Vector, Times>, Times> Expression_SMV;
-
-/** Symbolic expression 'Scalar * Vector * Matrix' */
-
-typedef Expression<Scalar, Expression<Vector, Matrix, Times>, Times> Expression_SVM;
-
-/** Symbolic expression 'Scalar * Matrix * Vector + Scalar * Vector' */
-
-typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
-
-/** Symbolic expression 'Scalar * Vector * Matrix + Scalar * Vector' */
-
-typedef Expression<Expression_SVM, Expression_SV, Plus> Expression_SVM_SV;
-
-// Matrix-Matrix Expressions
+template<typename ValueType>
+using Expression_SM = Expression<Scalar, Matrix<ValueType>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Scalar * Matrix * Matrix' */
 
-typedef Expression<Expression_SM, Matrix, Times> Expression_SMM;
+template<typename ValueType>
+using Expression_SMM = Expression<Expression_SM<ValueType>, Matrix<ValueType>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Scalar * Matrix + Scalar * Matrix' */
 
-typedef Expression<Expression_SM, Expression_SM, Plus> Expression_SM_SM;
+template<typename ValueType>
+using Expression_SM_SM = Expression<Expression_SM<ValueType>, Expression_SM<ValueType>, common::BinaryOp::ADD>;
 
 /** Symbolic expression 'Scalar * Matrix * Matrix + Scalar * Matrix' */
 
-typedef Expression<Expression_SMM, Expression_SM, Plus> Expression_SMM_SM;
+template<typename ValueType>
+using Expression_SMM_SM = Expression<Expression_SMM<ValueType>, Expression_SM<ValueType>, common::BinaryOp::ADD>;
+
+/* ============================================================================ */
+/*    Matrix - Vector expressions                                               */
+/* ============================================================================ */
+
+/** Symbolic expression 'Matrix * Vector' */
+
+template<typename ValueType>
+using Expression_MV = Expression<Matrix<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>;
+
+/** Symbolic expression 'Vector * Matrix' */
+
+template<typename ValueType>
+using Expression_VM = Expression<Vector<ValueType>, Matrix<ValueType>, common::BinaryOp::MULT>;
+
+/** Symbolic expression 'Scalar * Matrix * Vector' */
+
+template<typename ValueType>
+using Expression_SMV = Expression<Scalar, Expression<Matrix<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>, common::BinaryOp::MULT>;
+
+/** Symbolic expression 'Scalar * Vector * Matrix' */
+
+template<typename ValueType>
+using Expression_SVM = Expression<Scalar, Expression<Vector<ValueType>, Matrix<ValueType>, common::BinaryOp::MULT>, common::BinaryOp::MULT>;
+
+/** Symbolic expression 'Scalar * Matrix * Vector + Scalar * Vector' */
+
+template<typename ValueType>
+using Expression_SMV_SV = Expression<Expression_SMV<ValueType>, Expression_SV<ValueType>, common::BinaryOp::ADD>;
+
+/** Symbolic expression 'Scalar * Vector * Matrix + Scalar * Vector' */
+
+template<typename ValueType>
+using Expression_SVM_SV = Expression<Expression_SVM<ValueType>, Expression_SV<ValueType>, common::BinaryOp::ADD>;
 
 } /* end namespace lama */
 

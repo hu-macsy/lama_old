@@ -58,12 +58,8 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
-#include <memory>
-
 using namespace scai::hmemo;
 using namespace scai::dmemo;
-
-using std::unique_ptr;
 
 namespace scai
 {
@@ -82,7 +78,7 @@ struct DenseMatrixWrapper;
 template<typename ValueType>
 struct DenseMatrixWrapper<ValueType, common::mepr::NullType>
 {
-    static void assignDense( DenseMatrix<ValueType>&, const Matrix& other )
+    static void assignDense( DenseMatrix<ValueType>&, const _Matrix& other )
     {
         COMMON_THROWEXCEPTION( "type dense matrix not supported --> " << other )
     }
@@ -91,11 +87,11 @@ struct DenseMatrixWrapper<ValueType, common::mepr::NullType>
 template<typename ValueType, typename H, typename T>
 struct DenseMatrixWrapper<ValueType, common::mepr::TypeList<H, T> >
 {
-    static void assignDense( DenseMatrix<ValueType>& obj, const Matrix& other )
+    static void assignDense( DenseMatrix<ValueType>& obj, const _Matrix& other )
     {
         if ( other.getValueType() == common::getScalarType<H>() )
         {
-            obj.copyDenseMatrix( reinterpret_cast<const DenseMatrix<H>& >( other ) );
+            obj.copyDenseMatrix( static_cast<const DenseMatrix<H>& >( other ) );
         }
         else
         {
@@ -133,7 +129,7 @@ DenseMatrix<ValueType>::DenseMatrix()
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType numColumns ) :
 
-    Matrix( numRows, numColumns )
+    Matrix<ValueType>( numRows, numColumns )
 
 {
     computeOwners();
@@ -143,7 +139,7 @@ DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType nu
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist ) :
 
-    Matrix( rowDist, colDist )
+    Matrix<ValueType>( rowDist, colDist )
 
 {
     computeOwners();
@@ -164,7 +160,7 @@ DenseMatrix<ValueType>::DenseMatrix(
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix(
-    const Matrix& other,
+    const _Matrix& other,
     DistributionPtr rowDistribution,
     DistributionPtr colDistribution )
 {
@@ -185,37 +181,37 @@ DenseMatrix<ValueType>::DenseMatrix(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM<ValueType>& expression )
 {
     // resolve expression in base class matrix
-    Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM<ValueType>& expression )
 {
     // resolve expression in base class matrix
-    Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM<ValueType>& expression )
 {
     // resolve expression in base class matrix, usually -> matrixPlusMatrix
-    Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression_SM& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SM<ValueType>& expression )
 {
     // resolve expression in base class matrix
-    Matrix::operator=( expression );
+    Matrix<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -256,10 +252,9 @@ DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const DenseMatrix<Val
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
-    :
+DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other ) :
 
-    Matrix()
+    Matrix<ValueType>()
 
 {
     SCAI_LOG_INFO( logger, "copy constructor( dense matrix, same value type) : " << other )
@@ -269,7 +264,7 @@ DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Matrix& other, bool transposeFlag )
+DenseMatrix<ValueType>::DenseMatrix( const _Matrix& other, bool transposeFlag )
 {
     SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other << ", transpse = " << transposeFlag )
 
@@ -288,7 +283,7 @@ DenseMatrix<ValueType>::DenseMatrix( const Matrix& other, bool transposeFlag )
 template<typename ValueType>
 void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 {
-    Matrix::setDistributedMatrix( dist, dist );
+    _Matrix::setDistributedMatrix( dist, dist );
     computeOwners();
     allocateData();   // initialized with zero
     // Note: data is already allocated, so we just set it
@@ -303,7 +298,8 @@ void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 
         if ( i == rank )
         {
-            mData[i]->setDiagonal( ValueType( 1 ) );
+            ValueType one = 1;
+            mData[i]->setDiagonal( one );
         }
     }
 }
@@ -328,7 +324,7 @@ void DenseMatrix<ValueType>::setDenseData(
         tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
     }
 
-    Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
+    _Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
     // due to temporary replicated col distribution, mData has only one entry
     mData[0]->setDenseData( n, m, values, eps.getValue<ValueType>() );
     SCAI_LOG_INFO( logger,
@@ -367,7 +363,7 @@ void DenseMatrix<ValueType>::setCSRData(
         tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
     }
 
-    Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
+    _Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
     // due to temporary replicated col distribution, mData has only one entry
     mData[0]->setCSRData( n, m, numValues, ia, ja, values );
 
@@ -398,7 +394,7 @@ void DenseMatrix<ValueType>::setDIAData(
         tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
     }
 
-    Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
+    _Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
 
     // due to temporary replicated col distribution, mData has only one entry
 
@@ -421,7 +417,7 @@ bool DenseMatrix<ValueType>::isConsistent() const
 
     try
     {
-        Matrix::checkSettings();
+        _Matrix::checkSettings();
 
         for ( size_t i = 0; i < mData.size(); ++i )
         {
@@ -442,7 +438,7 @@ bool DenseMatrix<ValueType>::isConsistent() const
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::invert( const Matrix& other )
+void DenseMatrix<ValueType>::invert( const _Matrix& other )
 {
     SCAI_ASSERT_ERROR( other.getNumRows() == other.getNumColumns(),
                        "invert not allowed for non-square matrices: " << other )
@@ -516,7 +512,7 @@ void DenseMatrix<ValueType>::setCSRDataLocal(
 template<typename ValueType>
 void DenseMatrix<ValueType>::clear()
 {
-    Matrix::setReplicatedMatrix( 0, 0 ); // clear Matrix
+    _Matrix::setReplicatedMatrix( 0, 0 ); // clear _Matrix
     mData.resize( 1 ); // clear Data
     mData[0]->clear();
 }
@@ -524,7 +520,7 @@ void DenseMatrix<ValueType>::clear()
 template<typename ValueType>
 void DenseMatrix<ValueType>::purge()
 {
-    Matrix::setReplicatedMatrix( 0, 0 ); // clear Matrix
+    _Matrix::setReplicatedMatrix( 0, 0 ); // clear _Matrix
     mData.resize( 1 ); // clear Data
     mData[0]->purge();
 }
@@ -545,7 +541,7 @@ void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, Distribu
                    *this << " with mData[" << mData.size() << "]" << ", allocate row dist = " << *rowDistribution 
                          << ", col dist = " << *colDistribution )
 
-    Matrix::setDistributedMatrix( rowDistribution, colDistribution );
+    _Matrix::setDistributedMatrix( rowDistribution, colDistribution );
 
     computeOwners();
     allocateData();
@@ -556,13 +552,13 @@ void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, Distribu
 template<typename ValueType>
 void DenseMatrix<ValueType>::swap( DenseMatrix<ValueType>& other )
 {
-    Matrix::swapMatrix( other );
+    _Matrix::swapMatrix( other );
     // now swap own member variables
     std::swap( mData, other.mData );
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
+void DenseMatrix<ValueType>::assignTranspose( const _Matrix& other  )
 {
     SCAI_LOG_INFO( logger, "assign transposed " << other << " to " << *this )
     const DenseMatrix<ValueType>* denseMatrix = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
@@ -656,7 +652,7 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assign( const Matrix& other )
+void DenseMatrix<ValueType>::assign( const _Matrix& other )
 {
     SCAI_LOG_INFO( logger, "assign " << other << " to " << *this )
 
@@ -664,12 +660,12 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
     {
         SCAI_LOG_INFO( logger, "self assign, is skpped" )
     }
-    else if ( other.getMatrixKind() == Matrix::DENSE )
+    else if ( other.getMatrixKind() == MatrixKind::DENSE )
     {
         SCAI_LOG_INFO( logger, "copy dense matrix" )
         DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignDense( *this, other );
     }
-    else if ( other.getMatrixKind() == Matrix::SPARSE )
+    else if ( other.getMatrixKind() == MatrixKind::SPARSE )
     {
         SCAI_LOG_INFO( logger, "copy sparse matrix" )
         assignSparse( other );
@@ -683,7 +679,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
 /* ------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assignSparse( const Matrix& other )
+void DenseMatrix<ValueType>::assignSparse( const _Matrix& other )
 {
     // we need replicated column distribution to get this routine working
 
@@ -707,7 +703,7 @@ void DenseMatrix<ValueType>::assignSparse( const Matrix& other )
 
     // replicated columns in sparse matrix, so we can assign local data
 
-    Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
+    _Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
     mData.resize( 1 );
     mData[0].reset( new DenseStorage<ValueType>( other.getLocalStorage() ) );
 
@@ -734,7 +730,7 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage )
     SCAI_LOG_INFO( logger, "assign matrix storage = " << storage )
     const IndexType numRows = storage.getNumRows();
     const IndexType numColumns = storage.getNumColumns();
-    Matrix::setReplicatedMatrix( numRows, numColumns );
+    _Matrix::setReplicatedMatrix( numRows, numColumns );
     mData.resize( 1 );
     mData[0].reset( new DenseStorage<ValueType>( storage ) );
 }
@@ -746,7 +742,7 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distribution
 {
     SCAI_LOG_INFO( logger, "assign local matrix storage = " << storage )
 
-    Matrix::setDistributedMatrix( rowDist, colDist );
+    _Matrix::setDistributedMatrix( rowDist, colDist );
 
     colDist->enableAnyAddressing();
 
@@ -1009,11 +1005,11 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
         return;
     }
 
-// Currently we only support redistribution of rows, col distribution must be replicated
+    // As only rows are exchanged, col distribution must be replicated
 
     if ( getColDistribution().getNumPartitions() != 1 )
     {
-// Join all column data
+        // Join all column data
         const IndexType numCols = getNumColumns();
         const IndexType numLocalRows = getRowDistribution().getLocalSize();
         std::shared_ptr<DenseStorage<ValueType> > colData;
@@ -1022,7 +1018,8 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
         mData.clear();
         mData.resize( 1 );
         mData[0] = colData;
-        this->mColDistribution.reset( new NoDistribution( getNumColumns() ) );
+        DistributionPtr noColDist( new NoDistribution( getNumColumns() ) );
+        _Matrix::setDistributedMatrix( getRowDistributionPtr(), noColDist );
     }
 
     redistributeRows( rowDistribution );
@@ -1034,7 +1031,7 @@ void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
 {
     SCAI_ASSERT_EQUAL_ERROR( 1, getColDistribution().getNumPartitions() )
     std::shared_ptr<DenseStorage<ValueType> > oldStorage = mData[0];
-    Matrix::setDistributedMatrix( getRowDistributionPtr(), colDistribution );
+    _Matrix::setDistributedMatrix( getRowDistributionPtr(), colDistribution );
     computeOwners(); // compute mapping column index -> chunk
     SCAI_ASSERT_EQUAL_ERROR( getRowDistribution().getLocalSize(), oldStorage->getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), oldStorage->getNumColumns() )
@@ -1062,7 +1059,7 @@ void DenseMatrix<ValueType>::redistribute( const Redistributor& redistributor, D
     newData->redistribute( *mData[0], redistributor );
     mData[0] = newData;
 
-    Matrix::setDistributedMatrix( redistributor.getTargetDistributionPtr(), getColDistributionPtr() );
+    _Matrix::setDistributedMatrix( redistributor.getTargetDistributionPtr(), getColDistributionPtr() );
 
     redistribute( getRowDistributionPtr(), colDistributionPtr );
 }
@@ -1222,7 +1219,7 @@ void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTyp
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getRowLocal( Vector&, const IndexType ) const
+void DenseMatrix<ValueType>::getRowLocal( Vector<ValueType>&, const IndexType ) const
 {
     COMMON_THROWEXCEPTION( "not available yet" )
 }
@@ -1230,11 +1227,11 @@ void DenseMatrix<ValueType>::getRowLocal( Vector&, const IndexType ) const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
+void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType globalRowIndex ) const
 {
     // if v is not a dense vector or not of same type, use a temporary dense vector
 
-    if ( row.getVectorKind() != Vector:: DENSE || row.getValueType() != getValueType() )
+    if ( row.getVectorKind() != VectorKind::DENSE )
     {
         SCAI_LOG_WARN( logger, "getRow requires temporary" )
         DenseVector<ValueType> denseRow;
@@ -1245,7 +1242,7 @@ void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex
 
     SCAI_REGION( "Mat.Dense.getRow" )
 
-    DenseVector<ValueType>& denseRow = reinterpret_cast<DenseVector<ValueType>&>( row );
+    DenseVector<ValueType>& denseRow = static_cast<DenseVector<ValueType>&>( row );
 
     denseRow.allocate( getColDistributionPtr() );   // same dist as column dist
 
@@ -1356,24 +1353,24 @@ void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColIndex ) const
+void DenseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType globalColIndex ) const
 {
     // if col is not a dense vector, use a temporary dense vector
 
-    if ( col.getVectorKind() != Vector:: DENSE )
+    if ( col.getVectorKind() != VectorKind::DENSE )
     {
         SCAI_LOG_WARN( logger, "getCol requires temporary, use DenseVector on DenseMatrix" )
         DenseVector<ValueType> denseColumn;
         getColumn( denseColumn, globalColIndex );
-        col.assign( denseColumn );   // transform the dense vector into sparse vector
+        col.assign( denseColumn );   // transform the dense vector into sparse vector, works for all
         return;
     }
 
     SCAI_REGION( "Mat.Dense.getColumn" )
 
-    SCAI_ASSERT_DEBUG( dynamic_cast<_DenseVector*>( &col ), "col not _DenseVector" )
+    SCAI_ASSERT_DEBUG( dynamic_cast<DenseVector<ValueType>*>( &col ), "col not DenseVector<" << getValueType() << ">" )
 
-    _DenseVector& denseCol = reinterpret_cast<_DenseVector&>( col );
+    DenseVector<ValueType>& denseCol = static_cast<DenseVector<ValueType>&>( col );
 
     // result vector inherits the row distribution 
 
@@ -1399,7 +1396,7 @@ void DenseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColIn
     SCAI_LOG_INFO( logger, "getColumn( " << globalColIndex << " ) : owner = " << owner
                            << ", local col = " << localColIndex << ", mData = " << *mData[owner] )
 
-    _HArray& values = denseCol.getLocalValues();
+    HArray<ValueType>& values = denseCol.getLocalValues();
 
     mData[owner]->getColumn( values, localColIndex );
 
@@ -1498,37 +1495,27 @@ void DenseMatrix<ValueType>::setLocalColumn(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
+void DenseMatrix<ValueType>::getDiagonal( DenseVector<ValueType>& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( diagonal.getVectorKind() != Vector::DENSE )
-    {
-        DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
-        getDiagonal( tmpDiagonal );
-        diagonal.assign( tmpDiagonal );
-        return;
-    }
-
     // we can recast it now to dense vector, so we have access to its local values
 
-    _DenseVector& denseDiagonal = reinterpret_cast<_DenseVector&>( diagonal );
-
-    denseDiagonal.allocate( getRowDistributionPtr() );
-    getLocalStorage().getDiagonal( denseDiagonal.getLocalValues() );
+    diagonal.allocate( getRowDistributionPtr() );
+    getLocalStorage().getDiagonal( diagonal.getLocalValues() );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
+void DenseMatrix<ValueType>::setDiagonal( const DenseVector<ValueType>& diagonal )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
-        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
+        COMMON_THROWEXCEPTION( "setDiagonal only for square matrices with same row/col distribution" )
     }
 
     if ( getRowDistribution() != diagonal.getDistribution() )
@@ -1536,59 +1523,42 @@ void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( diagonal.getVectorKind() == Vector::DENSE )
-    {
-        // set diagonal via getLocalValues, only for DENSE available
+    const DenseVector<ValueType>& diagonalDense = static_cast<const DenseVector<ValueType>&>( diagonal );
 
-        const _DenseVector& diagonalDense = reinterpret_cast<const _DenseVector&>( diagonal );
-
-        getLocalStorage().setDiagonalV( diagonalDense.getLocalValues() );
-    }
-    else if ( diagonal.getVectorKind() == Vector::SPARSE )
-    {
-        COMMON_THROWEXCEPTION( "setDiagonal: for sparse vectors not available yet" )
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "unknwon vector kind: " << diagonal.getVectorKind() );
-    }
+    getLocalStorage().setDiagonalV( diagonalDense.getLocalValues() );
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setDiagonal( const Scalar diagonalValue )
+void DenseMatrix<ValueType>::setDiagonal( const ValueType& diagonalValue )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().setDiagonal( diagonalValue.getValue<ValueType>() );
+    getLocalStorage().setDiagonal( diagonalValue );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::reduce(
-    Vector& v, 
+    DenseVector<ValueType>& v, 
     const IndexType dim, 
     const common::BinaryOp reduceOp, 
     const common::UnaryOp elemOp ) const
 {
     SCAI_REGION( "Mat.Dense.reduce" )
 
-    // SCAI_ASSERT_EQ_ERROR( v.getValueType(), 
-
-    DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
-
     if ( dim == 0 )
     {
-        denseV.allocate( getRowDistributionPtr() );
+        v.allocate( getRowDistributionPtr() );
 
-        denseV = ValueType( 0 );   // initialize v with neutral element
+        v = ValueType( 0 );   // initialize v with neutral element
 
         for ( size_t k = 0; k < mData.size(); ++k )
         {
-            mData[k]->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+            mData[k]->reduce( v.getLocalValues(), 0, reduceOp, elemOp );
         }
 
         return;
@@ -1596,9 +1566,9 @@ void DenseMatrix<ValueType>::reduce(
 
     if ( dim == 1 )
     {
-        denseV.allocate( getColDistributionPtr() );
+        v.allocate( getColDistributionPtr() );
 
-        denseV = ValueType( 0 );   // initialize v with neutral element
+        v = ValueType( 0 );   // initialize v with neutral element
 
         if ( getRowDistribution().getCommunicator().getSize() == 1 )
         {
@@ -1606,7 +1576,7 @@ void DenseMatrix<ValueType>::reduce(
 
             PartitionId rank = getColDistribution().getCommunicator().getRank();
 
-            mData[rank]->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
+            mData[rank]->reduce( v.getLocalValues(), 1, reduceOp, elemOp );
 
             return;   // matrix is replicated, compute just my values
         }
@@ -1619,8 +1589,8 @@ void DenseMatrix<ValueType>::reduce(
         {
              SCAI_ASSERT_EQ_ERROR( reduceOp, common::BinaryOp::ADD, "only add supported" )
 
-             mData[0]->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
-             getRowDistribution().getCommunicator().sumArray( denseV.getLocalValues() );
+             mData[0]->reduce( v.getLocalValues(), 1, reduceOp, elemOp );
+             getRowDistribution().getCommunicator().sumArray( v.getLocalValues() );
              return;
         }
 
@@ -1637,7 +1607,7 @@ void DenseMatrix<ValueType>::reduce(
         recvValues.reserve( contextPtr, maxSize );
         sendValues.reserve( contextPtr, maxSize );
 
-        utilskernel::HArrayUtils::assign( sendValues, denseV.getLocalValues() );
+        utilskernel::HArrayUtils::assign( sendValues, v.getLocalValues() );
 
         const Communicator& comm = getColDistribution().getCommunicator();
 
@@ -1650,7 +1620,7 @@ void DenseMatrix<ValueType>::reduce(
             std::swap( sendValues, recvValues );
         }
 
-        utilskernel::HArrayUtils::assign( denseV.getLocalValues(), sendValues );
+        utilskernel::HArrayUtils::assign( v.getLocalValues(), sendValues );
     }
     else
     {
@@ -1659,48 +1629,45 @@ void DenseMatrix<ValueType>::reduce(
 }
 
 /* -------------------------------------------------------------------------- */
+/*   scaling of matrix entries                                                */
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::scale( const Vector& vector )
+void DenseMatrix<ValueType>::scaleRows( const DenseVector<ValueType>& scaleY )
 {
-    if ( getRowDistribution() != getColDistribution() )
-    {
-        COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
-    }
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), scaleY.getDistribution(), 
+                          "distribution of scale vector does not match" )
 
-    if ( vector.getVectorKind() == Vector::DENSE )
+    const HArray<ValueType>& localY = scaleY.getLocalValues();
+
+    for ( size_t i = 0; i < mData.size(); ++i )
     {
-        const _DenseVector& denseVector = reinterpret_cast<const _DenseVector&>( vector );
-        getLocalStorage().scaleRows( denseVector.getLocalValues() );
-    }
-    else if ( vector.getVectorKind() == Vector::SPARSE )
-    {
-        HArray<ValueType> localValues;
-        vector.buildLocalValues( localValues );
-        getLocalStorage().scaleRows( localValues );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "unknwon vector kind: " << vector.getVectorKind() );
+        mData[i]->scaleRows( localY );
     }
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
+void DenseMatrix<ValueType>::scale( const ValueType& alpha )
 {
-    getLocalStorage().scale( scaleValue.getValue<ValueType>() );
+    for ( size_t i = 0; i < mData.size(); ++i )
+    {
+        mData[i]->scale( alpha );
+    }
 }
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::conj()
 {
-    getLocalStorage().conj();
+    for ( size_t i = 0; i < mData.size(); ++i )
+    {
+        mData[i]->conj();
+    }
 }
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
-    ValueType myValue = static_cast<ValueType>( 0.0 );
+    ValueType myValue = 0;
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getRowDistribution();
     const Communicator& commRow = rowDist.getCommunicator();
@@ -1730,14 +1697,15 @@ Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     }
 
     SCAI_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
-    return Scalar( commRow.sum( myValue ) );
+
+    return commRow.sum( myValue );
 }
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
-    const Scalar val,
+    const ValueType val,
     const common::BinaryOp op )
 {
     const Distribution& distributionRow = getRowDistribution();
@@ -1767,11 +1735,11 @@ void DenseMatrix<ValueType>::setValue(
 
     SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
 
-    mData[owner]->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
+    mData[owner]->setValue( iLocal, jLocal, val, op );
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::matrixTimesScalar( const Matrix& other, Scalar alpha )
+void DenseMatrix<ValueType>::matrixTimesScalar( const Matrix<ValueType>& other, ValueType alpha )
 {
     SCAI_LOG_INFO( logger, " this = " << alpha << " * " << other )
     assign( other );
@@ -1779,7 +1747,7 @@ void DenseMatrix<ValueType>::matrixTimesScalar( const Matrix& other, Scalar alph
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        mData[i]->scale( alpha.getValue<ValueType>() );
+        mData[i]->scale( alpha );
     }
 }
 
@@ -1855,7 +1823,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     }
     const int COMM_DIRECTION = 1; // shift buffer to next processor
 
-    if ( Matrix::ASYNCHRONOUS == Matrix::getCommunicationKind() )
+    if ( SyncKind::ASYNCHRONOUS == _Matrix::getCommunicationKind() )
     {
         SCAI_LOG_INFO( logger, comm << ": asynchronous communication" )
 // asynchronous communication always requires same sizes of arrays, might shift some more data
@@ -2033,24 +2001,31 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::matrixPlusMatrix(
-    const Scalar alpha,
-    const Matrix& matA,
-    const Scalar beta,
-    const Matrix& matB )
+    const ValueType alpha,
+    const Matrix<ValueType>& matA,
+    const ValueType beta,
+    const Matrix<ValueType>& matB )
 {
+    SCAI_ASSERT_EQ_ERROR( matA.getRowDistribution(), matB.getRowDistribution(), "size/dist mismatch of matrices to add" )
+    SCAI_ASSERT_EQ_ERROR( matB.getColDistribution(), matB.getColDistribution(), "size/dist mismatch of matrices to add" )
+
     SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
-    const DenseMatrix<ValueType>* denseA = dynamic_cast<const DenseMatrix<ValueType>*>( &matA );
-    SCAI_ASSERT_ERROR( denseA, "Must be dense matrix<" << getValueType() << "> : " << matA )
-    const DenseMatrix<ValueType>* denseB = dynamic_cast<const DenseMatrix<ValueType>*>( &matB );
-    SCAI_ASSERT_ERROR( denseB, "Must be dense matrix<" << getValueType() << "> : " << matB )
-// Now we can add sparse matrices
-    matrixPlusMatrixImpl( alpha.getValue<ValueType>(), *denseA, beta.getValue<ValueType>(), *denseB );
+
+    SCAI_ASSERT_EQ_ERROR( matA.getMatrixKind(), MatrixKind::DENSE, "denseMatrix = alpha * matA + beta * matB, matA must be dense" )
+    SCAI_ASSERT_EQ_ERROR( matB.getMatrixKind(), MatrixKind::DENSE, "denseMatrix = alpha * matA + beta * matB, matB must be dense" )
+
+    const DenseMatrix<ValueType>& denseA = static_cast<const DenseMatrix<ValueType>&>( matA );
+    const DenseMatrix<ValueType>& denseB = static_cast<const DenseMatrix<ValueType>&>( matB );
+
+    // Now we can add dense matrices
+
+    matrixPlusMatrixDense( alpha, denseA, beta, denseB );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
+void DenseMatrix<ValueType>::matrixPlusMatrixDense(
     const ValueType alpha,
     const DenseMatrix<ValueType>& A,
     const ValueType beta,
@@ -2060,8 +2035,8 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
 
     // already verified
 
-    SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
-    SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
+    SCAI_ASSERT_EQ_DEBUG( A.getRowDistribution(), B.getRowDistribution(), "size/dist mismatch of matrices to add" )
+    SCAI_ASSERT_EQ_DEBUG( B.getColDistribution(), B.getColDistribution(), "size/dist mismatch of matrices to add" )
 
     // Now we can do it completely local
 
@@ -2089,11 +2064,11 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::matrixTimesMatrix(
-    Matrix& result,
-    const Scalar alpha,
-    const Matrix& B,
-    const Scalar beta,
-    const Matrix& C ) const
+    Matrix<ValueType>& result,
+    const ValueType alpha,
+    const Matrix<ValueType>& B,
+    const ValueType beta,
+    const Matrix<ValueType>& C ) const
 {
     SCAI_ASSERT_ERROR( getRowDistribution().isReplicated(), "this->rows are distributed" )
     SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), "this->cols are distributed" )
@@ -2131,7 +2106,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with B matrix" )
     }
-    else if ( res == Cp && beta.getValue<ValueType>() != 0.0 )
+    else if ( res == Cp && beta != common::Constants::ZERO )
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with C matrix" )
     }
@@ -2146,26 +2121,23 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
     mData[0]->prefetch();
     Bp->prefetch( localContext );
     Cp->prefetch( localContext );
-//We are calculating with a replicated Matrix. So there is no need for an asyncronous call,
+//We are calculating with a replicated _Matrix. So there is no need for an asyncronous call,
 //because we have to sync in this method anyway (returning void not SyncToken)
 // Note: any alias will be resolved by the matrix storage routine and not here
 //       as it might introduce a temporary in any case
-    res->mData[0]->matrixTimesMatrix( alpha.getValue<ValueType>(), *mData[0], *Bp->mData[0], beta.getValue<ValueType>(),
-                                      *Cp->mData[0] );
+    res->mData[0]->matrixTimesMatrix( alpha, *mData[0], *Bp->mData[0], beta, *Cp->mData[0] );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::maxNorm() const
+NormType<ValueType> DenseMatrix<ValueType>::maxNorm() const
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
-
-    AbsType myMaxDiff = 0;
+    NormType<ValueType> myMaxDiff = 0;
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        AbsType maxDiff = mData[i]->maxNorm();
+        NormType<ValueType> maxDiff = mData[i]->maxNorm();
 
         if ( maxDiff > myMaxDiff )
         {
@@ -2175,30 +2147,31 @@ Scalar DenseMatrix<ValueType>::maxNorm() const
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    return Scalar( comm.max( myMaxDiff ) );
+    return comm.max( myMaxDiff );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::l1Norm() const
+NormType<ValueType> DenseMatrix<ValueType>::l1Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
-    ValueType mySum = static_cast<ValueType>( 0.0 );
+
+    NormType<ValueType> mySum = 0;
     IndexType n = mData.size();
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        mySum += mData[i]->l1Norm();
+        mySum += static_cast<NormType<ValueType> >( mData[i]->l1Norm() );
     }
 
-    return Scalar( comm.sum( mySum ) );
+    return comm.sum( mySum );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::l2Norm() const
+NormType<ValueType> DenseMatrix<ValueType>::l2Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
     ValueType mySum = static_cast<ValueType>( 0.0 );
@@ -2211,33 +2184,33 @@ Scalar DenseMatrix<ValueType>::l2Norm() const
         mySum += tmp * tmp;
     }
 
-    return Scalar( common::Math::sqrt( comm.sum( mySum ) ) );
+    return common::Math::sqrt( comm.sum( mySum ) );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
+NormType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     if ( !( ( getNumColumns() == other.getNumColumns() ) && ( getNumRows() == other.getNumRows() ) ) )
     {
         COMMON_THROWEXCEPTION( "maxDiffNorm requires matrices of same format" );
     }
 
-// Implementation works only for same distributions and same type
+    // Implementation works only for same distributions and same type
 
     if ( ( getRowDistribution() == other.getRowDistribution() ) && ( getColDistribution() == other.getColDistribution() )
-            && ( getValueType() == other.getValueType() ) )
+            && ( MatrixKind::DENSE == other.getMatrixKind() ) )
     {
         const DenseMatrix<ValueType>* typedOther = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
-        return Scalar( maxDiffNormImpl( *typedOther ) );
+        return maxDiffNormImpl( *typedOther );
     }
     else
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
         DenseMatrix<ValueType> typedOther( other, getRowDistributionPtr(), getColDistributionPtr() );
-        return Scalar( maxDiffNormImpl( typedOther ) );
+        return maxDiffNormImpl( typedOther );
     }
 }
 
@@ -2386,18 +2359,6 @@ void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-common::ScalarType DenseMatrix<ValueType>::getValueType() const
-{
-    return common::getScalarType<ValueType>();
-}
-
-template<typename ValueType>
-size_t DenseMatrix<ValueType>::getValueTypeSize() const
-{
-    return sizeof( ValueType );
-}
-
-template<typename ValueType>
 size_t DenseMatrix<ValueType>::getMemoryUsage() const
 {
     size_t memoryUsage = 0;
@@ -2435,7 +2396,7 @@ DenseMatrix<ValueType>* DenseMatrix<ValueType>::copy() const
 }
 
 template<typename ValueType>
-Matrix* DenseMatrix<ValueType>::create()
+_Matrix* DenseMatrix<ValueType>::create()
 {
     return new DenseMatrix<ValueType>();
 }

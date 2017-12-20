@@ -58,14 +58,13 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        _DenseVector
-        _SparseVector
-
         DenseVector
         GridVector
         GridSection
         SparseVector
 
+        VectorKind
+        _Vector
         Vector
         VectorAssemblyAccess
 

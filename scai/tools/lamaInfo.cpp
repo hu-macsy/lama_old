@@ -37,7 +37,6 @@
 #include "scai/lama.hpp"
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/norm/Norm.hpp>
@@ -104,17 +103,17 @@ void matrixInfo()
 {
     using namespace scai::lama;
     vector<MatrixCreateKeyType> keys;
-    Matrix::getCreateValues( keys );
+    _Matrix::getCreateValues( keys );
     cout << endl;
-    cout << "Factory of Matrix: " << keys.size() << " entries" << endl;
+    cout << "Factory of _Matrix: " << keys.size() << " entries" << endl;
     cout << "=============================" << endl;
     cout << endl;
 
     for ( size_t i = 0; i < keys.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
-        std::shared_ptr<Matrix> matrix ( Matrix::create( keys[i] ) );
-        cout << "    Matrix: " << *matrix << endl;
+        _MatrixPtr matrix ( _Matrix::create( keys[i] ) );
+        cout << "    _Matrix: " << *matrix << endl;
     }
 
     cout << endl;
@@ -124,7 +123,7 @@ void vectorInfo()
 {
     using namespace scai::lama;
     vector<VectorCreateKeyType> keys;
-    Vector::getCreateValues( keys );
+    _Vector::getCreateValues( keys );
     cout << endl;
     cout << "Factory of Vector: " << keys.size() << " entries" << endl;
     cout << "=============================" << endl;
@@ -133,7 +132,7 @@ void vectorInfo()
     for ( size_t i = 0; i < keys.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
-        std::shared_ptr<Vector> vector ( Vector::create( keys[i] ) );
+        _VectorPtr vector ( _Vector::create( keys[i] ) );
         cout << "    Vector: " << *vector << endl;
     }
 
@@ -144,7 +143,7 @@ void normInfo()
 {
     using namespace scai::lama;
     vector<string> values;  // string is create type for the factory
-    Norm::getCreateValues( values );
+    Norm<RealType>::getCreateValues( values );
     cout << endl;
     cout << "Factory of Norm: " << values.size() << " entries" << endl;
     cout << "===========================" << endl;
@@ -153,7 +152,7 @@ void normInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
-        std::shared_ptr<Norm> norm( Norm::create( values[i] ) );
+        NormPtr<RealType> norm( Norm<RealType>::create( values[i] ) );
         cout << "      Norm: " << *norm << endl;
     }
 
@@ -163,8 +162,8 @@ void normInfo()
 void solverInfo()
 {
     using namespace scai::solver;
-    vector<string> values;  // string is create type for the factory
-    Solver::getCreateValues( values );
+    vector<SolverCreateKeyType> values;  // string is create type for the factory
+    _Solver::getCreateValues( values );
     cout << endl;
     cout << "Factory of Solver: " << values.size() << " entries" << endl;
     cout << "=============================" << endl;
@@ -173,7 +172,7 @@ void solverInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
-        SolverPtr solver( Solver::create( values[i], "TestSolver" ) );
+        std::shared_ptr<_Solver> solver( _Solver::create( values[i] ) );
         cout << "      Solver: " << *solver << endl;
     }
 
@@ -184,8 +183,8 @@ void setupInfo()
 {
     using namespace scai::lama;
     using namespace scai::solver;
-    vector<string> values;  // string is create type for the factory
-    AMGSetup::getCreateValues( values );
+    vector<AMGSetupCreateKeyType> values; 
+    _AMGSetup::getCreateValues( values );
     cout << endl;
     cout << "Factory of AMG Setups: " << values.size() << " entries" << endl;
     cout << "================================" << endl;
@@ -194,7 +193,7 @@ void setupInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << values[i] << endl;
-        std::shared_ptr<AMGSetup> setup( AMGSetup::create( values[i] ) );
+        std::shared_ptr<_AMGSetup> setup( _AMGSetup::create( values[i] ) );
         cout << "    Setup: " << *setup << endl;
     }
 

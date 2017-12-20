@@ -75,7 +75,6 @@ class COMMON_DLL_IMPORTEXPORT ELLStorage:
 public:
 
     typedef ValueType StorageValueType;
-    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
 
     /** get typename of the matrix storage format. */
 
@@ -176,7 +175,7 @@ public:
 
     /** Getter routine for the enum value that stands for this format. */
 
-    virtual Format::MatrixStorageFormat getFormat() const;
+    virtual Format getFormat() const;
 
     /** Implementation of pure method of class MatrixStorage. */
 
@@ -454,15 +453,15 @@ public:
 
     /** Implementation for MatrixStorage::l1Norm */
 
-    virtual ValueType l1Norm() const;
+    virtual NormType<ValueType> l1Norm() const;
 
     /** Implementation for MatrixStorage::l2Norm */
 
-    virtual ValueType l2Norm() const;
+    virtual NormType<ValueType> l2Norm() const;
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual StorageAbsType maxNorm() const;
+    virtual NormType<ValueType> maxNorm() const;
 
     /**
      * @brief compress compresses this by removing non-diagonal elements that
@@ -543,13 +542,13 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Matrix + Matrix for ELL only */
+    /** _Matrix + _Matrix for ELL only */
     void    matrixAddMatrixELL( const ValueType alpha,
                                 const ELLStorage<ValueType>& a,
                                 const ValueType beta,
                                 const ELLStorage<ValueType>& b );
 
-    /** Matrix times Matrix for ELL only */
+    /** _Matrix times _Matrix for ELL only */
     void matrixTimesMatrixELL( const ValueType alpha,
                                const ELLStorage<ValueType>& a,
                                const ELLStorage<ValueType>& b );

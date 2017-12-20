@@ -409,7 +409,7 @@ void ConstrainedLeastSquares::solve(
 
     // diagATA = sum(A .* A)';
 
-    mA.reduce( mDiagATA, 1, common::BinaryOp::ADD, common::UnaryOp::SQR );
+    mA.reduce( mDiagATA, 1, common::BinaryOp::ADD, common::unary::SQR );
 
     SCAI_ASSERT_EQ_ERROR( mDiagATA.size(), n, "serious mismatch" )
 

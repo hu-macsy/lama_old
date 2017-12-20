@@ -41,21 +41,28 @@
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 
+#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
+
 using namespace scai;
 using namespace lama;
 
+using scai::testsupport::uniquePath;
+using scai::testsupport::GlobalTempDir;
+
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( MatrixConstructorTest )
+BOOST_AUTO_TEST_SUITE( _MatrixConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
@@ -96,7 +103,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
 
     BOOST_CHECK_EQUAL( matrix.getFormat(), local.getFormat() );
 
-    if ( matrix.getMatrixKind() == Matrix::SPARSE )
+    if ( matrix.getMatrixKind() == MatrixKind::SPARSE )
     {
         SparseMatrix<ValueType>& spMatrix = reinterpret_cast<SparseMatrix<ValueType>& >( matrix );
         spMatrix.prefetch();
@@ -245,11 +252,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        Matrices testMatrices( ctx );
+        _Matrices testMatrices( ctx );
 
         for ( size_t k = 0; k < testMatrices.size(); ++k )
         {
-            Matrix& otherMatrix = *testMatrices[k];
+            _Matrix& otherMatrix = *testMatrices[k];
 
             otherMatrix.assign( globalStorage );
 
@@ -546,7 +553,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
 
         MatrixType matrix1( globalStorage );
 
-        if ( matrix1.getMatrixKind() == Matrix::DENSE )
+        if ( matrix1.getMatrixKind() == MatrixKind::DENSE )
         {
             return;   // DENSE supports some other distribution
         }
@@ -579,7 +586,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
     const IndexType numRows = 16;
     const IndexType numCols = 16;
 
-    std::string fileName = "myMatrix.psc";   // binary type, so no loss of precision
+    const auto fileName = uniquePath(GlobalTempDir::getPath(), "myMatrix") + ".psc";
 
     float fillRate = 0.2;
 

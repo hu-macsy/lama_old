@@ -43,10 +43,7 @@ scai_project (
 	SOURCES
 
     	BiCGstabTest
-    	BiCGTest
         CGTest
-        CGNETest # here may be problems in convergence ?!
-        CGNRTest
         CGSTest
         CommonLoggerTest
         CriterionTest

@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/storage/Format.hpp>
 
 #include <scai/dmemo/Communicator.hpp>
 
@@ -73,40 +74,12 @@ namespace lama
 template<typename ValueType> class CSRStorage;
 template<typename ValueType> class DenseStorage;
 
-/** Enumeration type for different matrix storage formats.
- *
- *  Note: operator<< is implemented for this type and should be adapted in case of modifications.
- */
-struct Format
-{
-
-    typedef enum
-    {
-        DENSE,    //!< Dense, all elements are stored
-        CSR,      //!< Compressed Sparse Row
-        ELL,      //!< ELLPack
-        DIA,      //!< Diagonal
-        JDS,      //!< Jagged Diagonal Storage
-        COO,      //!< Coordinate list
-        STENCIL,  //!< stencil pattern
-        ASSEMBLY, //!<  Matrix storage used for assembling of values
-        UNDEFINED //!<  Default value
-    } MatrixStorageFormat;
-
-}; /* end struct Format */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageFormat& storageFormat );
-
-COMMON_DLL_IMPORTEXPORT const char* format2Str( const Format::MatrixStorageFormat storageFormat );
-
-COMMON_DLL_IMPORTEXPORT Format::MatrixStorageFormat str2Format( const char* str );
-
-/** Key type used for the Matrix factory.
+/** Key type used for the _Matrix factory.
  *
  *  Note: own struct instead of std::pair to allow definition of operator <<
  */
 
-typedef std::pair<Format::MatrixStorageFormat, common::ScalarType> MatrixStorageCreateKeyType;
+typedef std::pair<Format, common::ScalarType> MatrixStorageCreateKeyType;
 
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.
@@ -125,7 +98,6 @@ typedef std::pair<Format::MatrixStorageFormat, common::ScalarType> MatrixStorage
  */
 
 class COMMON_DLL_IMPORTEXPORT _MatrixStorage:
-    public Format,
     public common::Factory<MatrixStorageCreateKeyType, _MatrixStorage*>,
     public common::Printable
 {
@@ -253,7 +225,7 @@ public:
 
     inline bool hasDiagonalProperty() const;
 
-    virtual Format::MatrixStorageFormat getFormat() const = 0;
+    virtual Format getFormat() const = 0;
 
     /** This method sets storage for the identity matrix
      *
@@ -584,7 +556,7 @@ public:
      * @brief write the matrix storage to an output file
      *
      * @param[in] fileName  is the name of the output file (suffix must be added according to the file type)
-     * @param[in] type      format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
+     * @param[in] type      format of the output file ("frm" for SAMG, "mtx" for _MatrixMarket), default is to decide by suffix
      * @param[in] dataType  representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
      * @param[in] fileMode  use BINARY or FORMATTED to force a certain mode, otherwise DEFAULT
@@ -681,7 +653,6 @@ class COMMON_DLL_IMPORTEXPORT MatrixStorage: public _MatrixStorage
 public:
 
     typedef ValueType StorageValueType;
-    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
 
     /** Constructor of matrix storage contains dimensions of the matrix. */
 
@@ -1000,7 +971,7 @@ public:
     virtual void invert( const MatrixStorage<ValueType>& other );
 
     /******************************************************************
-     *   Matrix * ( Vector | Matrix )                                  *
+     *   _Matrix * ( Vector | _Matrix )                                  *
      ******************************************************************/
 
     /** This method implements result = alpha * thisMatrix * x + beta * y.
@@ -1104,7 +1075,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual ValueType l1Norm() const = 0;
+    virtual NormType<ValueType> l1Norm() const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -1113,14 +1084,14 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual ValueType l2Norm() const = 0;
+    virtual NormType<ValueType> l2Norm() const = 0;
 
     /** Get the maximum norm of this matrix
      *
      *  @return maximal absolute value of matrix elements
      */
 
-    virtual StorageAbsType maxNorm() const = 0;
+    virtual NormType<ValueType> maxNorm() const = 0;
 
     /** Gets the maximal absolute element-wise difference between two matrices
      *
@@ -1131,7 +1102,7 @@ public:
      *        and computing maxNorm of it.
      */
 
-    virtual StorageAbsType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /******************************************************************
      *   Solver methods (e.g. Jacobi )                                 *
@@ -1330,7 +1301,7 @@ void MatrixStorage<ValueType>::setRawDIAData(
 template<typename ValueType>
 MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )
 {
-    return reinterpret_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
+    return static_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
 }
 
 } /* end namespace lama */

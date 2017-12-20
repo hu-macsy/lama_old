@@ -43,11 +43,12 @@
 #include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Grid.hpp>
-#include <scai/common/bind.hpp>
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/copy.h>
+
+#include <functional>
 
 namespace scai
 {
@@ -495,8 +496,8 @@ void CUDAStencilKernel::stencilGEMV3(
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbind1 ) ( const int* ) = &vectorUnbindTexture;
             // delay unbind until synchroniziaton
-            syncToken->pushRoutine( common::bind( unbind, stencilVal ) );
-            syncToken->pushRoutine( common::bind( unbind1, stencilOffset ) );
+            syncToken->pushRoutine( std::bind( unbind, stencilVal ) );
+            syncToken->pushRoutine( std::bind( unbind1, stencilOffset ) );
         }
     }
     else

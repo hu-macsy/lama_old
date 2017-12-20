@@ -87,7 +87,7 @@ SCAI_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 
 template<typename ValueType>
 __global__
-void UnaryOpOpKernel( ValueType out[], const UnaryOp op, const ValueType in[], IndexType n )
+void unaryOpKernel( ValueType out[], const UnaryOp op, const ValueType in[], IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -97,7 +97,7 @@ void UnaryOpOpKernel( ValueType out[], const UnaryOp op, const ValueType in[], I
     }
 }
 
-/** The following kernel is a specialization of UnaryOpOpKernel with op == UnaryOp::CONJ
+/** The following kernel is a specialization of unaryOp with op == UnaryOp::CONJ
  *
  *  Note: latest CUDA compiler releases show no performance benefits but we keep it
  *        here to demonstrate how specific kernels might be used for optimization
@@ -433,11 +433,11 @@ void CUDAUtils::scatterVal( ValueType out[], const IndexType indexes[], const Va
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::UnaryOpOp( ValueType out[], const ValueType in[], const IndexType n, const UnaryOp op )
+void CUDAUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n, const UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Utils.UnaryOpOp" )
+    SCAI_REGION( "CUDA.Utils.unaryOp" )
 
-    SCAI_LOG_INFO( logger, "UnaryOpOp<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_INFO( logger, "unaryOp<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
 
     if ( n <= 0 )
     {
@@ -475,7 +475,7 @@ void CUDAUtils::UnaryOpOp( ValueType out[], const ValueType in[], const IndexTyp
         case UnaryOp::FLOOR :
         {
             // the performance of this kernel should be compared to
-            // UnaryOpOpKernel with op == UnaryOp::CEIL to decide whether it is worth
+            // unaryOp with op == UnaryOp::CEIL to decide whether it is worth
 
             floorKernel <<< dimGrid, dimBlock>>>( out, in, n );
 
@@ -484,7 +484,7 @@ void CUDAUtils::UnaryOpOp( ValueType out[], const ValueType in[], const IndexTyp
 
         default:
 
-            UnaryOpOpKernel <<< dimGrid, dimBlock>>>( out, op, in, n );
+            unaryOpKernel <<< dimGrid, dimBlock>>>( out, op, in, n );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
@@ -649,7 +649,7 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scaleVectorAddScalar<ValueType> >( scaleVectorAddScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::UnaryOpOp<ValueType> >( UnaryOpOp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar<ValueType> >( binaryOpScalar, ctx, flag );
 }

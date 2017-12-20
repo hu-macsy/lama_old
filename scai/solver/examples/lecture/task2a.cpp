@@ -76,10 +76,10 @@ int main( int argc, char* argv[] )
     hwarhs.release();
     DenseVector<ValueType> solution( size , 0.0 );
     std::cout << "Vector solution : " << solution << std::endl;
-    Scalar eps = 0.00001;
-    NormPtr norm = NormPtr( new L2Norm() );
-    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
-    CG cgSolver( "CGTestSolver" );
+    ValueType eps = 0.00001;
+    NormPtr<ValueType> norm( new L2Norm<ValueType>() );
+    CriterionPtr<ValueType> rt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
+    CG<ValueType> cgSolver( "CGTestSolver" );
     cgSolver.setStoppingCriterion( rt );
     cgSolver.initialize( m );
     cgSolver.solve( solution, rhs );

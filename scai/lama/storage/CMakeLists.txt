@@ -33,16 +33,22 @@
 ###
 
 ### Add classes and header files ###
+
 set ( CLASSES
+
+        Format
+
+        MatrixStorage
+
         COOStorage
         CSRStorage
         DenseStorage
         DIAStorage
         ELLStorage
         JDSStorage
-        MatrixStorage
         SparseAssemblyStorage
         StencilStorage
+
         StorageMethods
     )
     

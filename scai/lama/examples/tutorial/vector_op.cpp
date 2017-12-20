@@ -36,7 +36,6 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
 
 #include <scai/utilskernel/LArray.hpp>
@@ -48,14 +47,16 @@ using namespace scai;
 using namespace lama;
 using utilskernel::LArray;
 
+typedef RealType ValueType;
+
 void methods1()
 {
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
     const IndexType n = 10;
 
-    LArray<double> x( n, 1.0, ctx );
-    LArray<double> y( n, 2.0, ctx );
+    LArray<ValueType> x( n, 1.0, ctx );
+    LArray<ValueType> y( n, 2.0, ctx );
  
     x[0] = 0.5;
     y[1] = x[0] * 1.0 - 0.5 * y[0];
@@ -89,9 +90,11 @@ void methods1()
     x.powBase( y );    // x[i] = y[i] ** x[i]
     y.powExp( x );     // y[i] = y[i] ** x[i]
 
-    double s;
+    ValueType s;
 
     s = x.sum();
+    std::cout << "sum of x = " << s << std::endl;
+
     s = x.min();
     s = x.max();
 
@@ -109,8 +112,8 @@ void methods2()
 
     const IndexType n = 10;
 
-    DenseVector<double> x( n, 1.0, ctx );
-    DenseVector<double> y( n, 2.0, ctx );
+    DenseVector<ValueType> x( n, 1.0, ctx );
+    DenseVector<ValueType> y( n, 2.0, ctx );
 
     x[0] = 0.5;
     y[1] = x[0] * 1.0 - 0.5 * y[0];
@@ -129,22 +132,27 @@ void methods2()
 
     // UnaryOp operations
 
-    x.invert();      // x[i] = 1.0 / x[i]
-    y.conj();        // y[i] = conj( y[i] )
-    x.log();
-    y.floor();
-    x.ceil();
-    x.sqrt();
-    x.sin();
-    x.cos();
-    x.tan();
-    x.atan();
-    x.powBase( 2.0 );  // x[i] = 2.0 ** x[i] 
-    y.powExp( 2.0 );   // x[i] = x[i] ** 2.0
-    x.powBase( y );    // x[i] = y[i] ** x[i]
-    y.powExp( x );     // y[i] = y[i] ** x[i]
+    // x = 1 / x;            // x[i] = 1.0 / x[i]
+    x.unaryOp( x, common::UnaryOp::RECIPROCAL );
+    y = conj( y );        // y[i] = conj( y[i] )
+    x = log( x );
+    y = floor( y );
+    x = ceil( x );
+    x = sqrt( x );
+    x = sin( x );
+    x = cos( x );
+    x = tan( x );
+    x = atan( x);
+    // x = pow( 2.0, x )
+    x.binaryOp( ValueType( 2 ), common::BinaryOp::POW, x );  // x[i] = 2.0 ** x[i] 
+    // x = pow( x, 2.0 )
+    y.binaryOp( y, common::BinaryOp::POW, ValueType( 2 ) );  // x[i] = x[i] ** 2.0
+    // x = pow( y, x )
+    x.binaryOp( y, common::BinaryOp::POW, x );  // x[i] = y[i] ** x[i]
+    // x = pow( x, y )
+    y.binaryOp( y, common::BinaryOp::POW, x );  // y[i] = y[i] ** x[i]
 
-    Scalar s;
+    ValueType s;
 
     s = x.sum();
     s = x.min();
@@ -157,6 +165,8 @@ void methods2()
     s = x.dotProduct( y );
     s = x.maxDiffNorm( y );
 
+    std::cout << "max( abs( x - y ) ) = " << s << std::endl;
+
     x = 2 * x * y ;
     x = 2 * x - y;
 }
@@ -166,36 +176,36 @@ int main()
 {
     IndexType n = 10;
 
-    DenseVector<double> xD( n, 1 );
+    DenseVector<ValueType> xD( n, 1 );
 
-    SparseVector<double> xS( n, 1 );
+    SparseVector<ValueType> xS( n, 1 );
 
     std::cout << "DenseVector = " << xS << std::endl;
 
     xD = xS;
 
-    Scalar s = xS[0];
-    Scalar d = xD[0];
+    ValueType s = xS[0];
+    ValueType d = xD[0];
 
     std::cout << "xD[0] = " << d << ", xS[0] = " << s << std::endl;
 
     xD = 1.0;
 
     IndexType rawNonZeroIndexes1[] = { 0, 5, 6 };
-    double rawNonZeroValues1[] = { 0.5, 0.6, 0.7 };
+    ValueType rawNonZeroValues1[] = { 0.5, 0.6, 0.7 };
 
     xS.setSparseValues( 3, rawNonZeroIndexes1, rawNonZeroValues1, 1.0 );
  
     xD *= xS;  // be careful, sets most of xD to 0
 
     IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
-    double rawNonZeroValues2[] = { 0.5, 0.4, 0.9 };
+    ValueType rawNonZeroValues2[] = { 0.5, 0.4, 0.9 };
 
-    SparseVector<double> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, 1.0 );
-    SparseVector<double> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, 1.0 );
+    SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, 1.0 );
+    SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, 1.0 );
 
-    DenseVector<double> xD1( xS1 );
-    DenseVector<double> xD2( xS2 );
+    DenseVector<ValueType> xD1( xS1 );
+    DenseVector<ValueType> xD2( xS2 );
 
     std::cout << "Max norm xS1 = " << xS1.maxNorm() << ", xD1 = " << xD1.maxNorm() << std::endl;
     std::cout << "L1 norm xS1 = " << xS1.l1Norm() << ", xD1 = " << xD1.l1Norm() << std::endl;

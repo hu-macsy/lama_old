@@ -44,7 +44,7 @@
 #include <scai/common/Factory.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 #include <vector>
 
@@ -91,7 +91,7 @@ public:
 
     /** Pure method that must be implemented by each partitioning class */
 
-    virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, float weight ) const = 0;
+    virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::_Matrix& matrix, float weight ) const = 0;
 
     /** Partitioning of rectangular matrix
      *
@@ -110,7 +110,7 @@ public:
      */
     virtual void rectangularPartitioning( hmemo::HArray<PartitionId>& rowMapping,
                                           hmemo::HArray<PartitionId>& colMapping,
-                                          const lama::Matrix& matrix,
+                                          const lama::_Matrix& matrix,
                                           const hmemo::HArray<float>& processorWeights ) const = 0;
 
     /** Repartitioning of a rectangular matrix with redistribution.
@@ -118,13 +118,13 @@ public:
      *  @param[in,out]  matrix  that will be redistributed
      *  @param[in]      weight  is the weight used by the calling processor
      *
-     *  Matrix must be distributed among the calling processors with a given communicator
+     *  _Matrix must be distributed among the calling processors with a given communicator
      *  that is taken for the redistribution.
      *
      *  Default implementation uses rectangular partititioning by determining the owners and
      *  building a general distribution.
      */
-    virtual void rectangularRedistribute( lama::Matrix& matrix, const float weight ) const;
+    virtual void rectangularRedistribute( lama::_Matrix& matrix, const float weight ) const;
 
     /** Override Printable::writeAt */
 

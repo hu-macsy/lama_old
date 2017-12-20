@@ -38,7 +38,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
@@ -53,32 +53,36 @@ using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
 
-typedef std::shared_ptr<_DenseVector> DenseVectorPtr;
-
-static void bench( Matrix& mat )
+template<typename ValueType>
+static void bench( Matrix<ValueType>& mat )
 {
     ContextPtr ctx = Context::getContextPtr();
 
-    DenseVectorPtr x( mat.newVector( mat.getRowDistributionPtr() ) );
-    DenseVectorPtr y1( mat.newVector( mat.getRowDistributionPtr() ) );
-    DenseVectorPtr y2( mat.newVector( mat.getRowDistributionPtr() ) );
+    DenseVector<ValueType> x( ctx );
+    DenseVector<ValueType> y1( ctx );
+    DenseVector<ValueType> y2( ctx );
+
+    x.allocate( mat.getRowDistributionPtr() );
+    y1.allocate( mat.getRowDistributionPtr() );
+    y2.allocate( mat.getRowDistributionPtr() );
 
     const IndexType size = mat.getNumRows();
+    const IndexType bound = 1; 
 
-    x->setRange( size, 0, 0.1 );
+    x.setRandom( size, bound );
 
-    mat.setCommunicationKind( Matrix::SYNCHRONOUS );
+    mat.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
     mat.setContextPtr( ctx );
-    x->setContextPtr( ctx );
+    x.setContextPtr( ctx );
     mat.prefetch();
-    x->prefetch();
+    x.prefetch();
     mat.wait();
-    x->wait();
+    x.wait();
 
-    cout << "x = " << *x << endl;
+    cout << "x = " << x << endl;
 
-    std::unique_ptr<Matrix> matT( mat.newMatrix() );
+    std::unique_ptr<Matrix<ValueType> > matT( mat.newMatrix() );
 
     double timeT = Walltime::get();
     {
@@ -94,18 +98,18 @@ static void bench( Matrix& mat )
 
     {
         SCAI_REGION( "Main.Bench.gemv" )
-        *y1 = mat * *x;
+        y1 = mat * x;
     }
 
     time1 = Walltime::get() - time1;
     time1 *= 1000.0;   // scale to ms
 
-    cout << "y1  = mat * x = " << *y1 << endl;
+    cout << "y1  = mat * x = " << y1 << endl;
 
     double time2 = Walltime::get();
     {
         SCAI_REGION( "Main.Bench.gevm" )
-        *y2 = *x * *matT;
+        y2 = x * *matT;
     }
 
     time2 = Walltime::get() - time2;
@@ -116,9 +120,9 @@ static void bench( Matrix& mat )
 
     // check result
 
-    *y1 -= *y2;
+    y1 -= y2;
 
-    cout << "max diff = " << y1->maxNorm() << endl;
+    cout << "max diff = " << y1.maxNorm() << endl;
 }
 
 int main( int argc, const char* argv[] )

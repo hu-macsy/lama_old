@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
@@ -46,9 +46,12 @@
 #include <scai/lama/matrix/SparseMatrix.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/expression/all.hpp>
 
 using namespace scai;
 using namespace lama;
+
+using common::Math;
 
 /* --------------------------------------------------------------------- */
 
@@ -175,7 +178,7 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = sparseV.getValue( k ).getValue<ValueType>();
+            data1[k] = sparseV.getValue( k );
         }
 
         BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
@@ -197,7 +200,7 @@ BOOST_AUTO_TEST_CASE( SparseConstructorTest )
     hmemo::HArray<ValueType> values( nnz, values_raw );
     hmemo::HArray<IndexType> indexes( nnz, indexes_raw );
 
-    Scalar zero = 1;
+    ValueType zero = 1;
 
     dmemo::DistributionPtr dist( new dmemo::NoDistribution( n ) );
 
@@ -247,7 +250,7 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = sparseV.getValue( k ).getValue<ValueType>();
+            data1[k] = sparseV.getValue( k );
         }
 
         BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
@@ -277,7 +280,9 @@ BOOST_AUTO_TEST_CASE( diffTest )
 
     xS1 -= xS2;
 
-    BOOST_CHECK( xS1.maxNorm() < Scalar( 1e-4 ) );
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    BOOST_CHECK( xS1.maxNorm() < eps );
 }
 
 /* --------------------------------------------------------------------- */
@@ -300,6 +305,8 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( IndexType icase = 0; icase < 5; ++icase )
     {
         ValueType zero1 = 1.0;
@@ -319,21 +326,21 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
         {
             case 0 : xS1 += xS2; 
                      BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
-                     BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 + zero2 ) ) < Scalar( 0.0001 ) );
+                     BOOST_CHECK( Math::abs( xS1.getZero() - ( zero1 + zero2 ) ) < eps );
                      xD1 += xD2;
                      break;
-            case 1 : xS1 *= xS2; 
+            case 1 : xS1 *= xS2;
                      BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
-                     BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 * zero2 ) ) < Scalar( 0.0001 ) );
+                     BOOST_CHECK( Math::abs( xS1.getZero() - ( zero1 * zero2 ) ) < eps );
                      xD1 *= xD2;
                      break;
             case 2 : xS1 = 5 * xS1 - 2 * xS2; 
                      BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
-                     BOOST_CHECK( abs( xS1.getZero() - Scalar( 5 * zero1 - 2 * zero2 ) ) < Scalar( 0.0001 ) );
+                     BOOST_CHECK( Math::abs( xS1.getZero() - ( 5 * zero1 - 2 * zero2 ) ) < eps );
                      xD1 = 5 * xD1 - 2 * xD2;
                      break;
-            case 3 : xS1.invert();   // this op is okay if zero element is not 0
-                     xD1.invert();
+            case 3 : xS1.unaryOpInPlace( common::UnaryOp::RECIPROCAL );   // this op is okay if zero element is not 0
+                     xD1.unaryOpInPlace( common::UnaryOp::RECIPROCAL );
                      break;
             case 4 : xS1 += xD2;     // add with dense vector okay, but might be entry for each elem
                      xD1 += xD2;
@@ -344,7 +351,7 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
 
         xD1 -= xS1;
 
-        BOOST_CHECK( xD1.maxNorm() < Scalar( 1e-4 ) );
+        BOOST_CHECK( xD1.maxNorm() < eps );
     }
 }
 
@@ -364,6 +371,8 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
 
     IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
     ValueType rawNonZeroValues2[] = { 5, 4, 9 };
+
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 
@@ -405,7 +414,8 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
 
         result1 -= result2;
 
-        BOOST_CHECK( result1.maxNorm() < Scalar( 1e-4 ) );
+
+        BOOST_CHECK( result1.maxNorm() < eps );
     }
 }
 

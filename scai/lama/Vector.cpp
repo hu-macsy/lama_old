@@ -27,424 +27,107 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementations of methods for class Vector.
- * @author Jiri Kraus
- * @date 22.02.2011
+ * @brief Implementation of methods for the abstract class Vector.
+ * @author Thomas Brandes
+ * @date 31.10.2017
  */
 
-// hpp
 #include <scai/lama/Vector.hpp>
-
-// local library
-
-#include <scai/lama/DenseVector.hpp>
-#include <scai/lama/SparseVector.hpp>
-
-#include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/SingleDistribution.hpp>
-#include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/dmemo/Distribution.hpp>
-
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/io/PartitionIO.hpp>
 
-// tracing
-#include <scai/tracing.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
-// std
-#include <map>
-#include <ostream>
-
-using namespace scai::common;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/mepr/TypeList.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
 
+using common::TypeTraits;
+
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
+/* ------------------------------------------------------------------------- */
 
-/* ---------------------------------------------------------------------------------- */
-
-const char* _Vector::kind2Str( const VectorKind vectorKind )
+template<typename ValueType>
+Vector<ValueType>* Vector<ValueType>::getVector( VectorKind kind )
 {
-    switch ( vectorKind )
-    {
-        case DENSE:
-            return "DENSE";
-            break;
+    // create it by factory, untyped vector is cast to typed vector.
 
-        case SPARSE:
-            return "SPARSE";
-            break;
-
-        case JOINED:
-            return "JOINED";
-            break;
-
-        case UNDEFINED:
-            return "Undefined";
-            break;
-    }
-
-    return "<illegal_vector_kind>";
+    return static_cast<Vector<ValueType>*>( _Vector::getVector( kind, TypeTraits<ValueType>::stype ) );
 }
 
-_Vector::VectorKind _Vector::str2Kind( const char* str )
+/* ------------------------------------------------------------------------- */
 
+template<typename ValueType>
+Vector<ValueType>::Vector( const IndexType size, hmemo::ContextPtr context ) :
+       
+   _Vector( size, context )
+    
 {
-    for ( int kind = DENSE; kind < UNDEFINED; ++kind )
-    {
-        if ( strcmp( kind2Str( VectorKind( kind ) ), str ) == 0 )
-        {
-            return VectorKind( kind );
-        }
-    }
+    // context will be set by base class _Vector
 
-    return UNDEFINED;
+    SCAI_LOG_DEBUG( logger, "Vector<" << TypeTraits<ValueType>::id() 
+                           << ">( size = " << size << ", ctx = " << getContext() << " )" )
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*    VectorKind opertor<<                                                                */
-/* ---------------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------- */
 
-std::ostream& operator<<( std::ostream& stream, const _Vector::VectorKind& kind )
+template<typename ValueType>
+Vector<ValueType>::Vector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context ) :
+
+    _Vector( distribution, context )
+
 {
-    stream << _Vector::kind2Str( kind );
-    return stream;
+    // context will be set by base class _Vector
+
+    SCAI_LOG_DEBUG( logger, "Vector<" << TypeTraits<ValueType>::id()
+                           << ">( dist = " << getDistribution() << ", ctx = " << getContext() << " )" )
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*    Factory to create a vector                                                          */
-/* ---------------------------------------------------------------------------------------*/
-
-Vector* Vector::getVector( const VectorKind kind, const common::ScalarType valueType )
+template<typename ValueType>
+Vector<ValueType>::Vector( const _Vector& other ) : _Vector( other )
 {
-    VectorCreateKeyType vectype( kind, valueType );
-    return Vector::create( vectype );
 }
 
-Vector* Vector::getDenseVector(
-    const common::ScalarType valueType,
-    DistributionPtr distribution,
-    ContextPtr context )
+template<typename ValueType>
+Vector<ValueType>::Vector( const Vector<ValueType>& other ) : _Vector( other )
 {
-    VectorCreateKeyType vectype( Vector::DENSE, valueType );
-    Vector* v = Vector::create( vectype );
-    v->allocate( distribution );
-
-    if ( context )
-    {
-        v->setContextPtr( context );
-    }
-
-    return v;
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*    Constructor / Destructor                                                            */
-/* ---------------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------- */
 
-Vector::Vector( const IndexType size, hmemo::ContextPtr context ) :
-
-    Distributed( DistributionPtr( new NoDistribution( size ) ) ),
-    mContext( context )
+template<typename ValueType>
+Vector<ValueType>::~Vector()
 {
-    if ( !mContext )
-    {
-        mContext = Context::getHostPtr();
-    }
-
-    SCAI_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
+    SCAI_LOG_DEBUG( logger, "~Vector<" << TypeTraits<ValueType>::id() << ">" )
 }
 
-Vector::Vector( DistributionPtr distribution, hmemo::ContextPtr context )
-    : Distributed( distribution ), mContext( context )
-{
-    if ( !mContext )
-    {
-        mContext = Context::getHostPtr();
-    }
+/* ------------------------------------------------------------------------- */
 
-    SCAI_LOG_INFO( logger,
-                   "Vector(" << distribution->getGlobalSize() << ") with " << getDistribution() << " constructed" )
+template<typename ValueType>
+common::ScalarType Vector<ValueType>::getValueType() const
+{
+    return TypeTraits<ValueType>::stype;
 }
 
-Vector::Vector( const Vector& other )
-    : Distributed( other ), mContext( other.getContextPtr() )
+/* ========================================================================= */
+/*        operator= < vector expression>                                     */
+/* ========================================================================= */
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_SV<ValueType>& expression )
 {
-    SCAI_ASSERT_ERROR( mContext, "NULL context not allowed" )
-    SCAI_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
-}
-
-Vector::~Vector()
-{
-    SCAI_LOG_DEBUG( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
-}
-
-/* ---------------------------------------------------------------------------------------*/
-/*    Reading vector from a file, only host reads                                         */
-/* ---------------------------------------------------------------------------------------*/
-
-void Vector::readFromSingleFile( const std::string& fileName )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    const PartitionId MASTER = 0;
-    const PartitionId myRank = comm->getRank();
-
-    // this is a bit tricky stuff, but it avoids an additional copy from array -> vector
-
-    IndexType globalSize;
-
-    if ( myRank == MASTER )
-    {
-        SCAI_LOG_INFO( logger, *comm << ": read local array from file " << fileName )
-
-        globalSize = readLocalFromFile( fileName );
-    }
-
-    comm->bcast( &globalSize, 1, MASTER );
-
-    if ( myRank != MASTER )
-    {
-        clearValues();
-    }
-
-    DistributionPtr distribution( new SingleDistribution( globalSize, comm, MASTER ) );
-
-    setDistributionPtr( distribution );
-
-    SCAI_LOG_INFO( logger, "readFromSingleFile, vector = " << *this )
-}
-
-/* ---------------------------------------------------------------------------------------*/
-/*    Reading vector from a file, every processor reads its partition                     */
-/* ---------------------------------------------------------------------------------------*/
-
-void Vector::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
-{
-    if ( distribution.get() == NULL )
-    {
-        SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << ", master only" )
-        readFromSingleFile( fileName );
-        return;
-    }
-
-    const IndexType n = distribution->getBlockDistributionSize();
-
-    if ( n == nIndex )
-    {
-        SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), master only + redistribute" )
-        readFromSingleFile( fileName );
-        redistribute( distribution );
-        return;
-    }
-
-    // we have a block distribution, so every processor reads its own part
-
-    IndexType first = 0;
-
-    if ( n > 0 )
-    {
-        first = distribution->local2global( 0 );   // first global index
-    }
-
-    bool error = false;
-
-    SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), block dist = " << *distribution 
-                           << ", read my block, first = " << first << ", n = " << n )
-
-    try
-    {
-        IndexType localSize = readLocalFromFile( fileName, first, n );
-        error = localSize != distribution->getLocalSize();
-    }
-    catch ( Exception& ex )
-    {
-        SCAI_LOG_ERROR( logger, ex.what() )
-        error = true;
-    }
-
-    error = distribution->getCommunicator().any( error );
-
-    if ( error )
-    {
-        COMMON_THROWEXCEPTION( "readFromSingleFile " << fileName << " failed, dist = " << *distribution )
-    }
-
-    setDistributionPtr( distribution );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    bool errorFlag = false;
-
-    IndexType localSize = 0;
-
-    try
-    {
-        localSize = readLocalFromFile( myPartitionFileName );
-
-        if ( dist.get() )
-        {
-            // size of storage must match the local size of distribution
-
-            SCAI_ASSERT_EQUAL( dist->getLocalSize(), localSize, "serious mismatch: local matrix in " << myPartitionFileName << " has illegal local size" )
-        }
-    }
-    catch ( common::Exception& e )
-    {
-        SCAI_LOG_ERROR( logger, *comm << ": failed to read " << myPartitionFileName << ": " << e.what() )
-        errorFlag = true;
-    }
-
-    errorFlag = comm->any( errorFlag );
-
-    if ( errorFlag )
-    {
-        COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
-    }
-
-    DistributionPtr vectorDist = dist;
-
-    if ( !vectorDist.get() )
-    {
-        // we have no distribution so assume a general block distribution
-
-        IndexType globalSize = comm->sum( localSize );
-
-        vectorDist.reset( new GenBlockDistribution( globalSize, localSize, comm ) );
-    }
-
-    setDistributionPtr( vectorDist );   // distribution matches size of local part
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Vector::readFromFile( const std::string& vectorFileName, const std::string& distributionFileName )
-{
-    // read the distribution
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    DistributionPtr distribution;
-
-    if ( distributionFileName == "BLOCK" )
-    {
-        // for a single file we set a BlockDistribution
-
-        if ( vectorFileName.find( "%r" ) == std::string::npos )
-        {
-            PartitionId root = 0;
-
-            IndexType numRows = nIndex;
-
-            if ( comm->getRank() == root )
-            {
-                numRows = FileIO::getStorageSize( vectorFileName );
-            }
-
-            comm->bcast( &numRows, 1, root );
-
-            distribution.reset( new BlockDistribution( numRows, comm ) );
-        }
-
-        // for a partitioned file general block distribution is default
-    }
-    else
-    {
-        distribution = PartitionIO::readDistribution( distributionFileName, comm );
-    }
-
-    readFromFile( vectorFileName, distribution );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
-{
-    SCAI_LOG_INFO( logger, *this << ": readFromFile( " << fileName << " )" )
-
-    std::string newFileName = fileName;
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // take default
-
-    if ( distribution.get() )
-    {
-        comm = distribution->getCommunicatorPtr();
-    }
-
-    bool isPartitioned;
-
-    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
-
-    if ( !isPartitioned )
-    {
-        readFromSingleFile( newFileName, distribution );
-    }
-    else
-    {
-        readFromPartitionedFile( newFileName, distribution );
-    }
-}
-
-/* ---------------------------------------------------------------------------------------*/
-/*   setRandom, setSparseRandom                                                           */
-/* ---------------------------------------------------------------------------------------*/
-
-void Vector::setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound )
-{
-    allocate( n );
-
-    if ( fillRate < 1.0f )
-    {
-        assign( zeroValue );
-        fillSparseRandom( fillRate, bound );
-    }
-    else
-    {
-        // initialization with zero value not required
-        fillRandom( bound );
-    }
-}
-
-void Vector::setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound )
-{
-    allocate( dist );
-
-    if ( fillRate < 1.0f )
-    {
-        assign( zeroValue );
-        fillSparseRandom( fillRate, bound );
-    }
-    else
-    {
-        // initialization with zero value not required
-        fillRandom( bound );
-    }
-}
-
-/* ---------------------------------------------------------------------------------------*/
-/*    Assignment operator                                                                 */
-/* ---------------------------------------------------------------------------------------*/
-
-Vector& Vector::operator=( const Expression_SV_SV& expression )
-{
-    SCAI_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
-
-    const Scalar& alpha = expression.getArg1().getArg1();
-    const Scalar& beta  = expression.getArg2().getArg1();
-    const Vector& x = expression.getArg1().getArg2();
-    const Vector& y = expression.getArg2().getArg2();
+    const Scalar alphaS        = expression.getArg1().getArg1();
+    const Scalar betaS         = expression.getArg2().getArg1();
+    const ValueType alpha      = alphaS.getValue<ValueType>();
+    const ValueType beta       = betaS.getValue<ValueType>();
+    const Vector<ValueType>& x = expression.getArg1().getArg2();
+    const Vector<ValueType>& y = expression.getArg2().getArg2();
+
+    SCAI_LOG_DEBUG( logger, "this = " << alpha << " * x = " << x << " + " << beta << " * y = " << y )
 
     // Note: all checks are done the vector specific implementations
 
@@ -453,357 +136,309 @@ Vector& Vector::operator=( const Expression_SV_SV& expression )
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SMV& expression )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_S<ValueType>& expression )
 {
-    SCAI_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
-    const Scalar beta( 0.0 );
-    Expression_SV exp2( beta, *this );
-    Expression_SMV_SV tmpExp( expression, exp2 );
-    const Vector& vectorX = expression.getArg2().getArg2();
+    const Expression_SV<ValueType>& exp = expression.getArg1();
+    const Scalar& alpha = exp.getArg1();
+    const Vector<ValueType>& x = exp.getArg2();
+    const Scalar& beta = expression.getArg2();
 
-    if ( &vectorX != this )
-    {
-        // so this is not aliased to the vector on the rhs
-        // as this will be used on rhs we do allocate it here
-        // distribution is given by the row distribution of the matrix
-        const Matrix& matrix = expression.getArg2().getArg1();
-        DistributionPtr dist = matrix.getRowDistributionPtr();
-        allocate( dist );
-        // values remain uninitialized as we assume that 0.0 * this (undefined) will
-        // never be executed as an operation
-    }
+    vectorPlusScalar( alpha.getValue<ValueType>(), x, beta.getValue<ValueType>() );
 
-    return operator=( tmpExp );
+    return *this;
 }
 
-Vector& Vector::operator=( const Expression_SVM& expression )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV<ValueType>& expression )
 {
-    SCAI_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
-    const Scalar beta( 0.0 );
-    Expression_SV exp2( beta, *this );
-    Expression_SVM_SV tmpExp( expression, exp2 );
-    const Vector& vectorX = expression.getArg2().getArg1();
+    Scalar alphaS = expression.getArg1(); 
+    ValueType alpha = alphaS.getValue<ValueType>();
 
-    if ( &vectorX != this )
-    {
-        // so this is not aliased to the vector on the rhs
-        // as this will be used on rhs we do allocate it here
-        // distribution is given by the row distribution of the matrix
-        const Matrix& matrix = expression.getArg2().getArg2();
-        DistributionPtr dist = matrix.getColDistributionPtr();
-        allocate( dist );
-        // values remain uninitialized as we assume that 0.0 * this (undefined) will
-        // never be executed as an operation
-    }
+    const Matrix<ValueType>& matrix = expression.getArg2().getArg1();
+    const Vector<ValueType>& vector = expression.getArg2().getArg2();
 
-    return operator=( tmpExp );
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * matrix * vector" )
+
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this, false );
+
+    return *this;
 }
 
-Vector& Vector::operator=( const Expression_SMV_SV& expression )
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM<ValueType>& expression )
+{   
+    Scalar alphaS = expression.getArg1(); 
+    ValueType alpha = alphaS.getValue<ValueType>();
+
+    const Vector<ValueType>& vector = expression.getArg2().getArg1();
+    const Matrix<ValueType>& matrix = expression.getArg2().getArg2();
+
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * vector * matrix" )
+
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this, true );
+
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueType>& expression )
 {
     SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
-    const Expression_SMV& exp1 = expression.getArg1();
-    const Expression_SV& exp2 = expression.getArg2();
-    const Scalar& alpha = exp1.getArg1();
-    const Expression<Matrix, Vector, Times>& matrixTimesVectorExp = exp1.getArg2();
-    const Scalar& beta = exp2.getArg1();
-    const Vector& vectorY = exp2.getArg2();
-    const Matrix& matrix = matrixTimesVectorExp.getArg1();
-    const Vector& vectorX = matrixTimesVectorExp.getArg2();
-    Vector* resultPtr = this;
-    VectorPtr tmpResult;
+    const Expression_SMV<ValueType>& exp1 = expression.getArg1();
+    const Expression_SV<ValueType>& exp2 = expression.getArg2();
+    Scalar alphaS = exp1.getArg1();
+    ValueType alpha = alphaS.getValue<ValueType>();
+    const Expression_MV<ValueType> matrixTimesVectorExp = exp1.getArg2();
+    const Scalar& betaS = exp2.getArg1();
+    const ValueType& beta = betaS.getValue<ValueType>();
+    const Vector<ValueType>& vectorY = exp2.getArg2();
+    const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1();
+    const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
 
-    if ( &vectorX == this )
-    {
-        SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult.reset( Vector::create( this->getCreateValue() ) );
-        resultPtr = tmpResult.get();
-    }
-
-    SCAI_LOG_DEBUG( logger, "call matrixTimesVector with matrix = " << matrix )
-    matrix.matrixTimesVector( *resultPtr, alpha, vectorX, beta, vectorY );
-
-    if ( resultPtr != this )
-    {
-        swap( *tmpResult );
-    }
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY, false );
 
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SVM_SV& expression )
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV_SV<IndexType>& )
 {
-    SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
-    const Expression_SVM& exp1 = expression.getArg1();
-    const Expression_SV& exp2 = expression.getArg2();
-    const Scalar& alpha = exp1.getArg1();
-    const Expression<Vector, Matrix, Times>& vectorTimesMatrixExp = exp1.getArg2();
-    const Scalar& beta = exp2.getArg1();
-    const Vector& vectorY = exp2.getArg2();
-    const Vector& vectorX = vectorTimesMatrixExp.getArg1();
-    const Matrix& matrix = vectorTimesMatrixExp.getArg2();
-    Vector* resultPtr = this;
-    VectorPtr tmpResult;
-
-    if ( &vectorX == this )
-    {
-        SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult.reset( Vector::create( this->getCreateValue() ) );
-        resultPtr = tmpResult.get();
-    }
-
-    SCAI_LOG_DEBUG( logger, "call vectorTimesMatrix with matrix = " << matrix )
-    matrix.vectorTimesMatrix( *resultPtr, alpha, vectorX, beta, vectorY );
-
-    if ( resultPtr != this )
-    {
-        swap( *tmpResult );
-    }
-
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SV& expression )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM_SV<ValueType>& expression )
+
+{   
+    SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
+    const Expression_SVM<ValueType>& exp1 = expression.getArg1();
+    const Expression_SV<ValueType>& exp2 = expression.getArg2();
+    const Expression_VM<ValueType>& vectorTimesMatrixExp = exp1.getArg2();
+    
+    // resolve : result = alhpa * A * x + beta * y
+    
+    const Scalar& alphaS  = exp1.getArg1();
+    const Scalar& betaS   = exp2.getArg1();
+    const ValueType alpha = alphaS.getValue<ValueType>();
+    const ValueType beta  = betaS.getValue<ValueType>();
+    const Vector<ValueType>& vectorY = exp2.getArg2();
+    const Vector<ValueType>& vectorX = vectorTimesMatrixExp.getArg1();
+    const Matrix<ValueType>& matrix = vectorTimesMatrixExp.getArg2();
+    
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY, true );
+    
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM_SV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV<ValueType>& expression )
 {
     const Scalar& alpha = expression.getArg1();
-    const Vector& x = expression.getArg2();
+    const Vector<ValueType>& x = expression.getArg2();
 
-    vectorPlusVector( alpha, x, 0, x );
+    vectorPlusVector( alpha.getValue<ValueType>(), x, 0, x );
 
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_VV& expression )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_VV<ValueType>& expression )
 {
     SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
 
-    const Vector& x = expression.getArg1();
-    const Vector& y = expression.getArg2();
+    const Vector<ValueType>& x = expression.getArg1();
+    const Vector<ValueType>& y = expression.getArg2();
 
-    Scalar alpha( 1 );
-
-    vectorTimesVector( alpha, x, y );
-
-    return *this;
-}
-
-Vector& Vector::operator=( const Expression_SVV& expression )
-{
-    const Scalar& alpha = expression.getArg1();
-
-    const Expression_VV& exp = expression.getArg2();
-    const Vector& x = exp.getArg1();
-    const Vector& y = exp.getArg2();
+    ValueType alpha = 1;
 
     vectorTimesVector( alpha, x, y );
 
     return *this;
 }
 
-Vector& Vector::operator=( const Vector& other )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVV<ValueType>& exp )
 {
-    assign( other );
+    // extract componennts from alpha * ( x * y )
 
-    return *this;
-}
+    Scalar a = exp.getArg1();
 
-Vector& Vector::operator=( const Expression_SV_S& expression )
-{
-    const Expression_SV& exp = expression.getArg1();
-    const Scalar& alpha = exp.getArg1();
-    const Vector& x = exp.getArg2();
-    const Scalar& beta = expression.getArg2();
+    const ValueType alpha = a.getValue<ValueType>();
 
-    vectorPlusScalar( alpha, x, beta );
+    const Vector<ValueType>& x = exp.getArg2().getArg1();
+    const Vector<ValueType>& y = exp.getArg2().getArg2();
 
-    return *this;
-}
+    vectorTimesVector( alpha, x, y );
 
-Vector& Vector::operator=( const Scalar value )
-{
-    assign( value );
     return *this;
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*   Compound assignments *=, /=                                                          */
+/*   vector [?]= scalar                                                                   */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector& Vector::operator*=( const Scalar value )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const ValueType value )
 {
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::MULT, noSwapArgs );
+    setScalar( value );
     return *this;
 }
 
-Vector& Vector::operator*=( const Vector& other )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const ValueType value )
 {
-    bool noSwapArgs = false;
-    setVector( other, common::BinaryOp::MULT, noSwapArgs );
+    binaryOp( *this, common::BinaryOp::ADD, value );
     return *this;
 }
 
-Vector& Vector::operator/=( const Scalar value )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const ValueType value )
 {
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::DIVIDE, noSwapArgs );
+    binaryOp( *this, common::BinaryOp::SUB, value );
     return *this;
 }
 
-Vector& Vector::operator/=( const Vector& other )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator*=( const ValueType value )
 {
-    bool noSwapArgs = false;
-    setVector( other, common::BinaryOp::DIVIDE, noSwapArgs );
+    binaryOp( *this, common::BinaryOp::MULT, value );
     return *this;
 }
 
-/* ---------------------------------------------------------------------------------------*/
-
-Vector& Vector::operator+=( const Vector& other )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator/=( const ValueType value )
 {
-    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ), Expression_SV( Scalar( 1 ), *this ) ) );
-}
+    SCAI_ASSERT_NE_ERROR( value, ValueType( 0 ), "Divide by zero for vector" )
 
-Vector& Vector::operator-=( const Vector& other )
-{
-    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
-}
+    // Note: multiplication is faster than division, so do it right here
 
-Vector& Vector::operator+=( const Scalar value )
-{
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::ADD, noSwapArgs );
+    binaryOp( *this, common::BinaryOp::MULT, ValueType( 1 ) / value );
+
     return *this;
-}
-
-Vector& Vector::operator-=( const Scalar value )
-{
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::SUB, noSwapArgs );
-    return *this;
-}
-
-Vector& Vector::operator+=( const Expression_SV& exp )
-{
-    return operator=( Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), *this ) ) );
-}
-
-Vector& Vector::operator-=( const Expression_SV& exp )
-{
-    Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
-    return operator=( Expression_SV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
-}
-
-Vector& Vector::operator+=( const Expression_SMV& expression )
-{
-    return operator=( Expression_SMV_SV( expression, Expression_SV( Scalar( 1 ), *this ) ) );
-}
-
-Vector& Vector::operator+=( const Expression_SVM& expression )
-{
-    return operator=( Expression_SVM_SV( expression, Expression_SV( Scalar( 1 ), *this ) ) );
-}
-
-Vector& Vector::operator-=( const Expression_SMV& exp )
-{
-    Expression_SMV minusExp( -exp.getArg1(), exp.getArg2() );
-    return operator=( Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*   assign operations                                                                    */
+/*   vector [?]= scalar * vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::assign( const Vector& other )
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SV<ValueType>& exp )
 {
-    SCAI_LOG_INFO( logger, "assign other = " << other )
+    const Scalar b = exp.getArg1();
 
-    if ( &other == this )
+    ValueType alpha = 1;
+    ValueType beta  = b.getValue<ValueType>();
+
+    const Vector<ValueType>& x = *this;
+    const Vector<ValueType>& y = exp.getArg2();
+
+    vectorPlusVector( alpha, x, beta, y );
+
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SV<ValueType>& exp )
+{
+    ValueType alpha = 1;
+    Scalar beta  = exp.getArg1();
+
+    const Vector<ValueType>& x = *this;
+    const Vector<ValueType>& y = exp.getArg2();
+
+    vectorPlusVector( alpha, x, -beta.getValue<ValueType>(), y );
+
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SMV<ValueType>& expression )
+{
+    return operator=( Expression_SMV_SV<ValueType>( expression, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SVM<ValueType>& expression )
+{
+    return operator=( Expression_SVM_SV<ValueType>( expression, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SMV<ValueType>& exp )
+{
+    Expression_SMV<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
+    return operator=( Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   setRandom, setSparseRandom                                                           */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::setSparseRandom( const IndexType n, const ValueType& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( n );
+
+    if ( fillRate < 1.0f )
     {
-        return;
-    }
-
-    allocate( other.getDistributionPtr() );
-
-    switch ( other.getVectorKind() )
-    {
-        case Vector::DENSE:
-        {
-            const _DenseVector& denseOther = reinterpret_cast<const _DenseVector&>( other );
-            setDenseValues( denseOther.getLocalValues() );
-            break;
-        }
-        case Vector::SPARSE:
-        {
-            const _SparseVector& sparseOther = reinterpret_cast<const _SparseVector&>( other );
-            assign( sparseOther.getZero() );
-            fillSparseData( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues(), common::BinaryOp::COPY );
-            break;
-        }
-        default:
-
-            COMMON_THROWEXCEPTION( "illegal vector kind, other = " << other.getVectorKind() )
-    }
-}
-
-void Vector::assign( const _HArray& localValues, DistributionPtr dist )
-{
-    SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "Mismatch local size of vecotr" )
-
-    setDistributionPtr( dist );
-    setDenseValues( localValues );
-}
-
-void Vector::assign( const _HArray& globalValues )
-{
-    SCAI_LOG_INFO( logger, "assign vector with globalValues = " << globalValues )
-
-    setDistributionPtr( DistributionPtr( new NoDistribution( globalValues.size() ) ) );
-    setDenseValues( globalValues );
-}
-
-/* ---------------------------------------------------------------------------------------*/
-/*   writeToFile                                                                          */
-/* ---------------------------------------------------------------------------------------*/
-
-void Vector::writeToSingleFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType,
-    const FileIO::FileMode fileMode
-) const
-{
-    if ( getDistribution().isReplicated() )
-    {
-        // make sure that only one processor writes to file
-
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-        if ( comm->getRank() == 0 )
-        {
-            writeLocalToFile( fileName, fileType, dataType, fileMode );
-        }
-
-        // synchronization to avoid that other processors start with
-        // something that might depend on the finally written file
-
-        comm->synchronize();
+        setScalar( zeroValue );
+        fillSparseRandom( fillRate, bound );
     }
     else
     {
-        // writing a distributed vector into a single file requires redistributon
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
 
-        std::unique_ptr<Vector> repV( copy() );
-        repV->replicate();
-        repV->writeToSingleFile( fileName, fileType, dataType, fileMode );
+template<typename ValueType>
+void Vector<ValueType>::setSparseRandom( dmemo::DistributionPtr dist, const ValueType& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( dist );
+
+    if ( fillRate < 1.0f )
+    {
+        setScalar( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
     }
 }
 
 /* ---------------------------------------------------------------------------------------*/
+/*   assign concatenation of vectors                                                      */
+/* ---------------------------------------------------------------------------------------*/
 
-void Vector::cat( const Vector& v1, const Vector& v2 )
+template<typename ValueType>
+void Vector<ValueType>::cat( const Vector<ValueType>& v1, const Vector<ValueType>& v2 )
 {
-    std::vector<const Vector*> vectors;
+    std::vector<const Vector<ValueType>*> vectors;
 
     vectors.push_back( &v1 );
     vectors.push_back( &v2 );
@@ -812,204 +447,35 @@ void Vector::cat( const Vector& v1, const Vector& v2 )
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
 
+    SCAI_LOG_INFO( logger, "this = " << *this << ", dist of concat vector = " << *dist )
+
     concatenate( dist, vectors );
 }
 
 /* ---------------------------------------------------------------------------------------*/
-
-void Vector::replicate()
-{
-    if ( getDistribution().isReplicated() )
-    {
-        return;
-    }
-
-    redistribute( DistributionPtr( new NoDistribution( size() ) ) );
-}
-
+/*   miscallaneous                                                                        */
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::writeToPartitionedFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType,
-    const FileIO::FileMode fileMode ) const
+template<typename ValueType>
+void Vector<ValueType>::setRandom( const IndexType n, const IndexType bound )
 {
-    bool errorFlag = false;
-
-    try
-    {
-        writeLocalToFile( fileName, fileType, dataType, fileMode );
-    }
-    catch ( common::Exception& e )
-    {
-        errorFlag = true;
-    }
-
-    const Communicator& comm = getDistribution().getCommunicator();
-
-    errorFlag = comm.any( errorFlag );
-
-    if ( errorFlag )
-    {
-        COMMON_THROWEXCEPTION( "Partitioned IO of vector failed" )
-    }
+    allocate ( n );
+    fillRandom( bound );
 }
 
-/* ---------------------------------------------------------------------------------------*/
-
-void Vector::writeToFile(
-    const std::string& fileName,
-    const std::string& fileType,               /* = "", take IO type by suffix   */
-    const common::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
-    const FileIO::FileMode fileMode            /* = DEFAULT_MODE */
-) const
+template<typename ValueType>
+void Vector<ValueType>::setRandom( dmemo::DistributionPtr dist, const IndexType bound )
 {
-    SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
-
-    std::string newFileName = fileName;
-
-    bool writePartitions;
-
-    const Communicator& comm = getDistribution().getCommunicator();
-
-    PartitionIO::getPartitionFileName( newFileName, writePartitions, comm );
-
-    if ( !writePartitions )
-    {
-        writeToSingleFile( newFileName, fileType, dataType, fileMode );
-    }
-    else
-    {
-        // matrix_%r.mtx -> matrix_0.4.mtx,  ..., matrix_3.4.mtxt
-        writeToPartitionedFile( newFileName, fileType, dataType, fileMode );
-    }
+    allocate ( dist );
+    fillRandom( bound );
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*   UnaryOp operations                                                                     */
-/* ---------------------------------------------------------------------------------------*/
 
-void Vector::invert()
-{
-    bool swapArgs = true;
-    setScalar( Scalar( 1 ), BinaryOp::DIVIDE, swapArgs );
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-void Vector::powBase( const Vector& other )
-{
-    bool swapArgs = true;
-    setVector( other, common::BinaryOp::POW, swapArgs );
-}
-
-void Vector::powExp( const Vector& other )
-{
-    bool swapArgs = false;
-    setVector( other, common::BinaryOp::POW, swapArgs );
-}
-
-void Vector::powBase( const Scalar value )
-{
-    bool swapArgs = true;  // this[i] =  value ** this[i] 
-    setScalar( value, common::BinaryOp::POW, swapArgs );
-}
-
-void Vector::powExp( const Scalar value )
-{
-    bool swapArgs = false;  // this[i] = this[i] ** value
-    setScalar( value, common::BinaryOp::POW, swapArgs );
-}
-
-void Vector::conj()
-{
-    applyUnary( common::UnaryOp::CONJ );
-}
-
-void Vector::abs()
-{
-    applyUnary( common::UnaryOp::ABS );
-}
-
-void Vector::exp()
-{
-    applyUnary( common::UnaryOp::EXP );
-}
-
-void Vector::sqrt()
-{
-    applyUnary( common::UnaryOp::SQRT );
-}
-
-void Vector::sin()
-{
-    applyUnary( common::UnaryOp::SIN );
-}
-
-void Vector::cos()
-{
-    applyUnary( common::UnaryOp::COS );
-}
-
-void Vector::tan()
-{
-    applyUnary( common::UnaryOp::TAN );
-}
-
-void Vector::atan()
-{
-    applyUnary( common::UnaryOp::ATAN );
-}
-
-void Vector::log()
-{
-    applyUnary( common::UnaryOp::LOG );
-}
-
-void Vector::floor()
-{
-    applyUnary( common::UnaryOp::FLOOR );
-}
-
-void Vector::ceil()
-{
-    applyUnary( common::UnaryOp::CEIL );
-}
-
-/* ---------------------------------------------------------------------------------------*/
-/*   Miscellaneous                                                                        */
-/* ---------------------------------------------------------------------------------------*/
-
-void Vector::swapVector( Vector& other )
-{
-    // swaps only on this base class, not whole vectors
-    mContext.swap( other.mContext );
-    Distributed::swap( other );
-}
-
-void Vector::writeAt( std::ostream& stream ) const
-{
-    stream << "Vector(" << getDistributionPtr()->getGlobalSize() << ")";
-}
-
-void Vector::setContextPtr( ContextPtr context )
-{
-    SCAI_ASSERT_DEBUG( context, "NULL context invalid" )
-
-    if ( mContext->getType() != context->getType() )
-    {
-        SCAI_LOG_DEBUG( logger, *this << ": new context = " << *context << ", old context = " << *mContext )
-    }
-
-    mContext = context;
-}
-
-void Vector::prefetch() const
-{
-    prefetch( mContext );
-}
-
-/* ---------------------------------------------------------------------------------- */
+SCAI_COMMON_INST_CLASS( Vector, SCAI_ARRAY_TYPES_HOST )
 
 } /* end namespace lama */
 

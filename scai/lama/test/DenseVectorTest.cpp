@@ -35,8 +35,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -47,8 +47,15 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
+#include <scai/lama/expression/all.hpp>
+#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
+
 using namespace scai;
 using namespace lama;
+
+using scai::testsupport::uniquePath;
+using scai::testsupport::GlobalTempDir;
 
 /* --------------------------------------------------------------------- */
 
@@ -145,7 +152,7 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = distV.getValue( k ).getValue<ValueType>();
+            data1[k] = distV.getValue( k );
         }
 
         BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
@@ -215,9 +222,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
     IndexType n = 16;
 
-    DenseVector<ValueType> repV( ctx );  // just a sequence: 0, 1, ...
-
-    repV.setRange( n, 0, 1 ); 
+    DenseVector<ValueType> repV = linearValuesVector<ValueType>( n, 0, 1, ctx );  // just a sequence: 0, 1, ...
 
     BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
 
@@ -238,36 +243,9 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
         // distV1 = [ 0, ..., n-1] distributed, must be same
 
-        DenseVector<ValueType> distV1( ctx );
-
-        distV1.setRange( dist, 0, 1 );
+        DenseVector<ValueType> distV1 = linearValuesVector<ValueType>( dist, 0, 1, ctx );
 
         BOOST_CHECK_EQUAL( 0, distV1.getLocalValues().maxDiffNorm( distV.getLocalValues() ) );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
-{
-    typedef RealType ValueType;
-
-    IndexType n = 4;
-
-    dmemo::TestDistributions dists( n );
-
-    for ( size_t i = 0; i < dists.size(); ++i )
-    {
-        dmemo::DistributionPtr dist = dists[i];
-
-        DenseVector<ValueType> b( dist , 3 );
-        DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( a + b );
-        DenseVector<ValueType> r( dist , 6 );
-
-        // prove same distribution, same values of r and c
-
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
     }
 }
 
@@ -289,9 +267,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        DenseVector<ValueType> distV( ctx );
-
-        distV.setRange( dist, 1, 1 );  // set vector elements as sequence 1, 2, ... 
+        DenseVector<ValueType> distV = linearValuesVector<ValueType>( dist, 1, 1, ctx );
 
         try
         {
@@ -333,7 +309,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
     const IndexType n = 10;
 
-    std::string fileName = "myVector.psc";   // binary type, so no loss of precision
+    const auto fileName = uniquePath(GlobalTempDir::getPath(), "myVector") + ".psc";
 
     float fillRate = 0.2;
 
@@ -380,31 +356,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( vecMultExpConstructorTest )
-{
-    typedef RealType ValueType;
-
-    IndexType n = 4;
-
-    dmemo::TestDistributions dists( n );
-
-    for ( size_t i = 0; i < dists.size(); ++i )
-    {
-        dmemo::DistributionPtr dist = dists[i];
-
-        DenseVector<ValueType> b( dist , 3 );
-        DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( a * b );
-        DenseVector<ValueType> r( dist , 9 );
-
-        // prove same distribution, same values of r and c
-
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 {
     // Note: it is sufficient to consider one matrix type and one value type
@@ -428,7 +379,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
             CSRSparseMatrix<RealType> mat( rowDist, colDist );
 
             DenseVector<ValueType> x( colDist, 3 );
-            SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
+            SCAI_LOG_INFO( logger, "linear algebra expression: alpha * _Matrix * Vector" );
             DenseVector<ValueType> y( 2 * mat * x );
 
             BOOST_CHECK_EQUAL( y.getDistribution(), *rowDist );
@@ -452,8 +403,8 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
 
         DenseVector<ValueType> x( dist, 3 );
         SCAI_LOG_INFO( logger, "linear algebra expression: alpha + Vector" );
-        DenseVector<ValueType> y( 2 + x );
-        DenseVector<ValueType> z( x + 2 );
+        DenseVector<ValueType> y( ValueType( 2 ) + x );
+        DenseVector<ValueType> z( x + ValueType( 2 ) );
         DenseVector<ValueType> r( dist, 5 );
 
         // prove same distribution, same values of r and y/z
@@ -509,7 +460,7 @@ BOOST_AUTO_TEST_CASE( assignTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_test_types )
 {
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
 
@@ -530,14 +481,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
     DenseVector<ValueType> y( ctx );
     x.setRandom( A.getColDistributionPtr(), 1 );
     y.setRandom( A.getRowDistributionPtr(), 1 );
-    DenseVector<ValueType> res( 2 * A * x - y );
+    DenseVector<ValueType> res( ValueType( 2 ) * A * x - y );
 
     // Now we do the same with all other matrices and all kind of distributions
 
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
 
-    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -547,11 +498,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            Matrices<ValueType> matrices( ctx );   // operations only with same ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                Matrix& A1 = *matrices[k];
+                Matrix<ValueType>& A1 = *matrices[k];
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );
@@ -562,12 +513,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
                 SCAI_LOG_INFO( logger, "matrixTimesVector with this matrix: " << A1 )
 
-                res1 = 2 * A1 * x1 - y1;
+                res1 = ValueType( 2 ) * A1 * x1 - y1;
 
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
 
-                BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+                BOOST_CHECK( res1.maxNorm() < eps );
             }
         }
     }
@@ -606,7 +557,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     x.setRandom( A.getRowDistributionPtr(), bound );
     y.setRandom( A.getColDistributionPtr(), bound );
 
-    DenseVector<ValueType> res( 2 * x * A - y );
+    DenseVector<ValueType> res( ValueType( 2 ) * x * A - y );
 
     // Now we do the same with all distributed matrices/vectors and all kind of distributions
 
@@ -623,7 +574,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         SCAI_LOG_DEBUG( logger, "Col distribution [ " << j << " ] = " << *colDists[j] )
     }
 
-    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -633,13 +584,13 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            Matrices<ValueType> matrices( ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                Matrix& A1 = *matrices[k];
+                Matrix<ValueType>& A1 = *matrices[k];
 
-                A1.setCommunicationKind( Matrix::SYNCHRONOUS );
+                A1.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );
@@ -650,7 +601,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
                 SCAI_LOG_INFO( logger, "vectorTimesMatrix[" << i << "," << j << "," << k << "] with this matrix: " << A1 << ", y1 = " << y1 )
 
-                res1 = 2 * x1 * A1 - y1;
+                res1 = ValueType( 2 ) * x1 * A1 - y1;
 
                 SCAI_LOG_INFO( logger, "res1 = 2 * x1 * A1 - y1: " << res1 )
 
@@ -661,7 +612,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
 
-                BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+                BOOST_CHECK( res1.maxNorm() < eps );
             }
         }
     }
@@ -699,8 +650,8 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 
     DenseMatrix<ValueType> At( A, true );
 
-    DenseVector<ValueType> res1( 2 * x * A - y );
-    DenseVector<ValueType> res2( 2 * At * x - y );
+    DenseVector<ValueType> res1( ValueType( 2 ) * x * A - y );
+    DenseVector<ValueType> res2( ValueType( 2 ) * At * x - y );
 
     const utilskernel::LArray<ValueType>& v1 = res1.getLocalValues();
     const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues();
@@ -735,9 +686,9 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
     for ( IndexType i = 0; i < n; ++i )
     {
         ValueType erg = alpha * sourceVals[i] + beta;
-        BOOST_CHECK_EQUAL( erg, res1.getValue( i ).getValue<ValueType>() );
-        BOOST_CHECK_EQUAL( erg, res2.getValue( i ).getValue<ValueType>() );
-        BOOST_CHECK_EQUAL( erg,    x.getValue( i ).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg, res1.getValue( i ) );
+        BOOST_CHECK_EQUAL( erg, res2.getValue( i ) );
+        BOOST_CHECK_EQUAL( erg,    x.getValue( i ) );
     }
 }
 

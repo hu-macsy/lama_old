@@ -37,7 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
@@ -70,7 +70,7 @@ static void bench( CSRSparseMatrix<ValueType>& mat )
     x = x + mat * y;  // warm up
     x = x + mat * y;  // warm up
 
-    mat.setCommunicationKind( Matrix::SYNCHRONOUS );
+    mat.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
     CommunicatorPtr comm = mat.getRowDistribution().getCommunicatorPtr();
 

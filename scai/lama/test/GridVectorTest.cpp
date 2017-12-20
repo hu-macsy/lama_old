@@ -35,14 +35,20 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/lama/GridVector.hpp>
 #include <scai/lama/GridReadAccess.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
 
+#include <scai/testsupport/uniquePathComm.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
+
 using namespace scai;
 using namespace lama;
+
+using scai::testsupport::uniquePathSharedAmongNodes;
+using scai::testsupport::GlobalTempDir;
 
 /* --------------------------------------------------------------------- */
 
@@ -83,9 +89,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
     const IndexType n3 = 2;
     const IndexType n4 = 4;
 
-    // Matalb binary format supports io of grids
-
-    const std::string fileName = "tmpGrid.mat";
+    // Matlab binary format supports io of grids
+    const auto comm = scai::dmemo::Communicator::getCommunicatorPtr();
+    const auto fileName = uniquePathSharedAmongNodes(GlobalTempDir::getPath(), *comm, "tmpGrid") + ".mat";
 
     GridVector<RealType> gv1( common::Grid4D( n1, n2, n3, n4 ) );
 

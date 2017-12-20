@@ -37,7 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
 
@@ -53,7 +53,7 @@ using scai::common::Walltime;
 static bool verboseFlag = false;
 
 template<typename ValueType>
-static void bench( IndexType size, double fillRate )
+static void bench( IndexType size, float fillRate )
 {
     ContextPtr host = Context::getHostPtr();
     CSRSparseMatrix<ValueType> a( size, size );
@@ -127,9 +127,9 @@ int main()
     }
 
     IndexType sizes[] = { 350, 1000, 2500, 5000 };
-    double fillrates[] = { 0.005, 0.01, 0.02, 0.05, 0.1 };
+    float fillrates[] = { 0.005, 0.01, 0.02, 0.05, 0.1 };
     int nsizes = sizeof( sizes ) / sizeof( IndexType );
-    int nrates = sizeof( fillrates ) / sizeof( double );
+    int nrates = sizeof( fillrates ) / sizeof( float );
 
     for ( int i = 0; i < nsizes; ++i )
     {

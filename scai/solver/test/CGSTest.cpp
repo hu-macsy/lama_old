@@ -52,24 +52,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CGSTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<CGS>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    CGS CGSSolver( "CGSTestSolver", slogger );
-    BOOST_CHECK_EQUAL( CGSSolver.getId(), "CGSTestSolver" );
-    CGS CGSSolver2( "CGSTestSolver2" );
-    BOOST_CHECK_EQUAL( CGSSolver2.getId(), "CGSTestSolver2" );
-    CGS CGSSolver3( CGSSolver2 );
-    BOOST_CHECK_EQUAL( CGSSolver3.getId(), "CGSTestSolver2" );
-    BOOST_CHECK( CGSSolver3.getPreconditioner() == 0 );
-    CGS CGSSolver4( "CGSSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    CGSSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    CGSSolver4.setStoppingCriterion( criterion );
-    CGS CGSSolver5( CGSSolver4 );
-    BOOST_CHECK_EQUAL( CGSSolver5.getId(), CGSSolver4.getId() );
-    BOOST_CHECK_EQUAL( CGSSolver5.getPreconditioner()->getId(), CGSSolver4.getPreconditioner()->getId() );
+    CGS<ValueType> solver( "CGSTestSolver", slogger );
+    BOOST_CHECK_EQUAL( solver.getId(), "CGSTestSolver" );
+    CGS<ValueType> solver2( "CGSTestSolver2" );
+    BOOST_CHECK_EQUAL( solver2.getId(), "CGSTestSolver2" );
+    CGS<ValueType> solver3( solver2 );
+    BOOST_CHECK_EQUAL( solver3.getId(), "CGSTestSolver2" );
+    BOOST_CHECK( solver3.getPreconditioner() == 0 );
+    CGS<ValueType> solver4( "solver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    solver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    solver4.setStoppingCriterion( criterion );
+    CGS<ValueType> solver5( solver4 );
+    BOOST_CHECK_EQUAL( solver5.getId(), solver4.getId() );
+    BOOST_CHECK_EQUAL( solver5.getPreconditioner()->getId(), solver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

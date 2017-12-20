@@ -49,7 +49,7 @@ variables:
         "$EXTRA_CMAKE_OPTS"
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
-    - eval python run_tests.py --output_dir $BUILD_DIR/testoutput "$RUN_TESTS_ARGS"
+    - eval python run_tests.py --output_dir $BUILD_DIR/testoutput --temp_dir tmp "$RUN_TESTS_ARGS"
     - make install > $CI_PROJECT_DIR/make_install_output.txt
   after_script:
     - mv $BUILD_DIR/testoutput $CI_PROJECT_DIR/testoutput

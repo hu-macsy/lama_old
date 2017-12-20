@@ -57,7 +57,7 @@ class CentralPathHessian : public AbstractMatrix
 
 public:
 
-    CentralPathHessian ( const Matrix& A ) :
+    CentralPathHessian ( const _Matrix& A ) :
 
         AbstractMatrix( A.getColDistributionPtr(), A.getColDistributionPtr() ),
 
@@ -67,7 +67,7 @@ public:
     {
         // create a tmp vector that contains result A * x
 
-        tmpVectorPtr.reset( A.newVector( 0 ) );
+        tmp_VectorPtr.reset( A.newVector( 0 ) );
     }
 
     ~CentralPathHessian()
@@ -89,7 +89,7 @@ public:
         const Scalar beta,
         const Vector& y ) const
     {
-        Vector& tmp = *tmpVectorPtr;
+        Vector& tmp = *tmp_VectorPtr;
 
         result = *mD * x;          // elmentwise multiplication
         result += beta * y;
@@ -113,11 +113,11 @@ public:
 
 private:
 
-    const Matrix& mA;   // reference kept the whole lifetime of this object
+    const _Matrix& mA;   // reference kept the whole lifetime of this object
     const Vector* mD;   // reference to the actual vector D
     Scalar mTau;        // value tau
 
-    VectorPtr tmpVectorPtr;   // avoid reallocation of temporary vector required in matrixTimesVector
+    _VectorPtr tmp_VectorPtr;   // avoid reallocation of temporary vector required in matrixTimesVector
 };
 
 }

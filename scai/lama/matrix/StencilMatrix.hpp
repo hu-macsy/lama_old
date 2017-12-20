@@ -72,8 +72,6 @@ class COMMON_DLL_IMPORTEXPORT StencilMatrix:
 
 public:
 
-    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
-
     /** Static method that returns the name of the matrix class. */
 
     static const char* typeName();
@@ -119,17 +117,17 @@ public:
 
     virtual const CSRStorage<ValueType>& getHaloStorage() const;
 
-    /* Implementation of pure method Matrix::newMatrix with covariant return type */
+    /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 
     virtual StencilMatrix<ValueType>* newMatrix() const;
 
-    /* Implementation of pure method Matrix::copy with covariant return type */
+    /* Implementation of pure method _Matrix::copy with covariant return type */
 
     virtual StencilMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormat */
+    /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormat() const
+    virtual Format getFormat() const
     {
         return Format::CSR;
     }
@@ -138,7 +136,7 @@ public:
 
     const common::Stencil<ValueType>& getStencil() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual const char* getTypeName() const;
 

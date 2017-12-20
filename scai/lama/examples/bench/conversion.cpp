@@ -37,7 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
 
@@ -51,7 +51,7 @@ using scai::common::Walltime;
 
 //static bool verboseFlag = false;
 
-static void bench( Matrix& b, Matrix& a )
+static void bench( _Matrix& b, _Matrix& a )
 {
     ContextPtr host = Context::getHostPtr();
     a.setContextPtr( host );
@@ -102,7 +102,7 @@ int main()
     }
 
     IndexType sizes[] = { 10000, 30000 };
-    double fillrates[] = { 0.001, 0.002, 0.003 };
+    float fillrates[] = { 0.001, 0.002, 0.003 };
     int nsizes = sizeof( sizes ) / sizeof( IndexType );
     int nrates = sizeof( fillrates ) / sizeof( double );
 
@@ -121,7 +121,7 @@ int main()
             // take the second supported value type
             typedef SCAI_COMMON_FIRST_ARG( SCAI_COMMON_TAIL( SCAI_NUMERIC_TYPES_HOST ) ) ValueType1;
 #endif
-            double rate = fillrates[j];
+            float rate = fillrates[j];
             CSRSparseMatrix<ValueType> a( size, size );
             CSRSparseMatrix<ValueType> a1( size, size );
             ELLSparseMatrix<ValueType1> b( size, size );

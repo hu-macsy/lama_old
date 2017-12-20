@@ -46,7 +46,7 @@
 
 #include "ConvolutionMatrices.hpp" 
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 
 using namespace scai;
 using namespace lama;

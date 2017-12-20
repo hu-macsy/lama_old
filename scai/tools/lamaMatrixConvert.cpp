@@ -38,8 +38,6 @@
 
 #include <scai/common/Settings.hpp>
 
-#include <memory>
-
 using namespace std;
 
 using namespace scai;
@@ -97,9 +95,8 @@ int main( int argc, const char* argv[] )
 
     // oops, no factory for storage, only for matrix
 
-    std::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
-
-    Matrix& matrix = *matrixPtr;
+    _MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, type ) );
+    _Matrix&   matrix = *matrixPtr;
 
     std::string inFileName = argv[1];
 

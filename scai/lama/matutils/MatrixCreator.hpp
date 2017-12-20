@@ -67,7 +67,7 @@ public:
      *  the scale method of matrices.
      */
 
-    static void fillRandom( Matrix& matrix, float density );
+    static void fillRandom( _Matrix& matrix, float density );
 
     /** Builds a block distributed matrix with random values from scratch.
      *
@@ -75,7 +75,7 @@ public:
      *  param[in] size is the size of the square matrix (number of rows and number of columns)
      *  param[in] density specifies the density of sparse entries (0.0 is empty, 1.0 is full )
      */
-    static void buildRandom( Matrix& matrix, const IndexType size, const float density );
+    static void buildRandom( _Matrix& matrix, const IndexType size, const float density );
 
     /** Build a sparse matrix representing the discretization of the Laplacian operator
      *  on a one-dimensional structured grid.
@@ -85,7 +85,7 @@ public:
      *  @param[in] dim is the grid size
      */
 
-    static void buildPoisson1D( Matrix& matrix, const IndexType stencilType, const IndexType dim );
+    static void buildPoisson1D( _Matrix& matrix, const IndexType stencilType, const IndexType dim );
 
     /** Build a sparse matrix representing the discretization of the Laplacian operator
      *  on a two-dimensional structured grid.
@@ -96,7 +96,7 @@ public:
      */
 
     static void buildPoisson2D(
-        Matrix& matrix,
+        _Matrix& matrix,
         const IndexType stencilType,
         const IndexType dim1,
         const IndexType dim2 );
@@ -110,7 +110,7 @@ public:
      */
 
     static void buildPoisson3D(
-        Matrix& matrix,
+        _Matrix& matrix,
         const IndexType stencilType,
         const IndexType dim1,
         const IndexType dim2,
@@ -127,7 +127,7 @@ public:
      *  Note: dimZ is ignored for dimension < 3, dimY is ignored for dimension < 2.
      */
     static void buildPoisson(
-        Matrix& matrix,
+        _Matrix& matrix,
         const IndexType dimension,
         const IndexType stencilType,
         const IndexType dimX,

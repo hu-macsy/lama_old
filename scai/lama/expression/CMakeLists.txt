@@ -42,6 +42,7 @@ scai_project (
         Expression
         MatrixExpressions
         MatrixVectorExpressions
+        UnaryVectorExpression
         VectorExpressions
 
     ADD_PARENT_SCOPE 

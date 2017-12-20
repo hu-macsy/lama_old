@@ -200,7 +200,7 @@ void ELLStorage<ValueType>::print( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat ELLStorage<ValueType>::getFormat() const
+Format ELLStorage<ValueType>::getFormat() const
 {
     return Format::ELL;
 }
@@ -738,7 +738,7 @@ void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void ELLStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1061,7 +1061,7 @@ void ELLStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<ELLStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<ELLStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<ELLStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1265,6 +1265,10 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
     static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
     ContextPtr loc = this->getContextPtr();
     normalGEMV.getSupportedContext( loc );
+    if ( loc != this->getContextPtr() )
+    {
+        SCAI_LOG_INFO( logger, "normalGEMV not on " << *this->getContextPtr() << " but on " << *loc )
+    }
     unique_ptr<SyncToken> syncToken;
 
     if ( async )
@@ -1720,7 +1724,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType ELLStorage<ValueType>::l1Norm() const
+NormType<ValueType> ELLStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
@@ -1740,7 +1744,7 @@ ValueType ELLStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType ELLStorage<ValueType>::l2Norm() const
+NormType<ValueType> ELLStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
@@ -1760,13 +1764,13 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename ELLStorage<ValueType>::StorageAbsType ELLStorage<ValueType>::maxNorm() const
+NormType<ValueType> ELLStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     if ( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
-        return StorageAbsType( 0 );
+        return NormType<ValueType>( 0 );
     }
 
     static LAMAKernel<ELLKernelTrait::absMaxVal<ValueType> > absMaxVal;

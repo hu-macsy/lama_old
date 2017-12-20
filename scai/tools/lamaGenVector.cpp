@@ -36,7 +36,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -218,6 +218,58 @@ void printUsage( const char* progName )
     cout << "   matrix_filename : if set, compute vector as rhs of matrix * vector" << endl;
 }
 
+template<typename ValueType>
+void generate( const CommandLineOptions& options )
+{
+    // use vector of outDataType so no information is lost
+
+    CSRSparseMatrix<ValueType> matrix;
+    DenseVector<ValueType> v;
+ 
+    ValueType initValue = options.value.getValue<ValueType>();
+
+    if ( options.matFileName != "" )
+    {
+        matrix.readFromFile( options.matFileName );
+        cout << "Read in matrix from file " << options.matFileName << ": " << matrix << endl;
+
+        v.setSameValue( matrix.getColDistributionPtr(), initValue );
+    }
+    else
+    {
+        v.setSameValue( options.size, initValue );
+    }
+
+    cout << "Vector (initialized): " << v << endl;
+
+    if ( options.random )
+    {
+        // generate random number for the vector, in range (0, 1)
+
+        v.fillRandom( 1 ); 
+
+        // scale random numbers from 0 .. 1 with options.value
+
+        v *= initValue;
+    }
+
+    cout << "Vector generated: " << v << endl;
+
+    if ( v.getDistribution() == matrix.getColDistribution() )
+    {
+        DenseVector<ValueType> rhs;
+        rhs = matrix * v;
+        v = rhs;
+        cout << "Vector now rhs of multiplication with matrix: " << v << endl;
+    }
+
+    cout << "write to output file " << options.outFileName << ", data type = " << options.outDataType;
+    cout << endl;
+    v.writeToFile( options.outFileName );
+
+    cout << "Done." << endl;
+}
+
 int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
@@ -248,53 +300,12 @@ int main( int argc, const char* argv[] )
     options.checkOutDataType();
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
 
-    // use vector of outDataType so no information is lost
-    std::shared_ptr<Matrix> matrix;
-    std::shared_ptr<_DenseVector> v ( _DenseVector::create( options.outDataType ) );
+#define DO_GENERATE( ValueType )                                        \
+    if ( options.outDataType == common::TypeTraits<ValueType>::stype )  \
+    {                                                                   \
+        generate<ValueType>( options );                                 \
+    }                                                                  
 
-    if ( options.matFileName != "" )
-    {
-        MatrixCreateKeyType matrixType( Format::CSR, options.outDataType );
-        matrix.reset( Matrix::create( MatrixCreateKeyType ( matrixType ) ) );
-        matrix->readFromFile( options.matFileName );
-        cout << "Read in matrix from file " << options.matFileName << ": " << *matrix << endl;
-    }
+    SCAI_COMMON_LOOP( DO_GENERATE, SCAI_NUMERIC_TYPES_HOST )
 
-    if ( options.size == 0 && matrix.get() )
-    {
-        v->setSameValue( matrix->getColDistributionPtr(), options.value );
-    }
-    else
-    {
-        v->setSameValue( options.size, options.value );
-    }
-
-    cout << "Vector (initialized): " << *v << endl;
-
-    if ( options.random )
-    {
-        // generate random number for the vector, in range (0, 1)
-
-        v->fillRandom( 1 ); 
-
-        // scale random numbers from 0 .. 1 with options.value
-
-        *v *= options.value;
-    }
-
-    cout << "Vector generated: " << *v << endl;
-
-    if ( matrix.get() )
-    {
-        std::shared_ptr<_DenseVector> rhs ( _DenseVector::create( options.outDataType ) );
-        *rhs = *matrix * *v;
-        v = rhs;
-        cout << "Vector now rhs of multiplication with matrix: " << *v << endl;
-    }
-
-    cout << "write to output file " << options.outFileName;
-    cout << ", data type = " << options.outDataType;
-    cout << endl;
-    v->writeToFile( options.outFileName );
-    cout << "Done." << endl;
 }

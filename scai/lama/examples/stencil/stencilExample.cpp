@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/GridVector.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>

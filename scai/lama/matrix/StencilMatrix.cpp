@@ -182,7 +182,7 @@ void StencilMatrix<ValueType>::define( dmemo::DistributionPtr dist, const Stenci
   
     SCAI_ASSERT_ERROR( gridDist, "not grid distribution: dist = " << *dist )
 
-    Matrix::setDistributedMatrix( dist, dist );
+    _Matrix::setDistributedMatrix( dist, dist );
 
     // const common::Grid& globalGrid = gridDist->getGlobalGrid();
     const common::Grid& localGrid  = gridDist->getLocalGrid();

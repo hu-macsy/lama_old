@@ -41,8 +41,9 @@
 
 //#include <complex>
 
-using namespace scai::lama;
-using namespace scai::common;
+using namespace scai;
+using namespace lama;
+using namespace common;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
 // and vectors have not been instantiated for these types
@@ -89,12 +90,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, ValueType, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, ValueType, test_types )
 {
-    Scalar s ( 2.0 );
-    Scalar t ( 3.0 );
+    Scalar s ( 2 );
+    Scalar t ( 3 );
     Scalar u = s * t;
     s *= t;
-    BOOST_CHECK_EQUAL( u.getValue<ValueType>(), 6.0 );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 6.0 );
+    BOOST_CHECK_EQUAL( u.getValue<ValueType>(), ValueType( 6 ) );
+    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), ValueType( 6 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -116,8 +117,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, ValueType, test_types )
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
     Scalar u = s / t;
-    s /= t;
-    SCAI_CHECK_CLOSE( u.getValue<ValueType>(), 0.6666, 1 );
+
+    ValueType v1 = u.getValue<ValueType>();
+    ValueType v2 = ValueType( 2 ) / ValueType( 3 );
+ 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    BOOST_CHECK( common::Math::abs( v1 - v2 ) < eps );
 }
 
 /* --------------------------------------------------------------------- */
@@ -139,16 +145,10 @@ BOOST_AUTO_TEST_CASE( EqualityTest )
     Scalar u ( 3.0 );
     BOOST_CHECK( s == t );
     BOOST_CHECK( s != u );
-    BOOST_CHECK( s < u );
-    BOOST_CHECK( u > s );
 
     // negative values
     Scalar n ( -2.0 );
-    BOOST_CHECK( n < s );
     BOOST_CHECK( n != s );
-    BOOST_CHECK( s > n );
-    BOOST_CHECK( !( n > s ) );
-    BOOST_CHECK( !( s < n ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -163,14 +163,10 @@ BOOST_AUTO_TEST_CASE( MiscTests )
     BOOST_CHECK_EQUAL( sqrt( t ), 3.0 );
     BOOST_CHECK_EQUAL( abs( u ), 2.5 );
     BOOST_CHECK_EQUAL( abs( t ), 9.0 );
-    BOOST_CHECK_EQUAL( max( s, t ), 9.0  );
-    BOOST_CHECK_EQUAL( min( s, t ), 6.25 );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
     Scalar c1( ComplexFloat( 3, 4 ) );
     Scalar c2( ComplexFloat( 4, 2 ) );
-    BOOST_CHECK_EQUAL( max( abs( c1 ), abs( c2 ) ), abs( c1 ) );
-    BOOST_CHECK_EQUAL( min( abs( c1 ), abs( c2 ) ), abs( c2 ) );
     // Pythagoras: 3^2 + 4^2 = 5^2
     BOOST_CHECK_EQUAL( abs( c1 ), 5.0f );
 #endif

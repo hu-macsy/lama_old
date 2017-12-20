@@ -58,9 +58,12 @@ namespace solver
  * precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
 
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT TFQMR:
-    public IterativeSolver,
-    public Solver::Register<TFQMR>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<TFQMR<ValueType> >
+
 {
 public:
     /**
@@ -84,7 +87,7 @@ public:
 
     virtual ~TFQMR();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
     * @brief Copies the status independent solver informations to create a new instance of the same
@@ -92,30 +95,27 @@ public:
     *
     * @return shared pointer of the copied solver
     */
-    virtual SolverPtr copy();
+    virtual TFQMR<ValueType>* copy();
 
-    struct TFQMRRuntime: IterativeSolverRuntime
+    struct TFQMRRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        TFQMRRuntime();
-        virtual ~TFQMRRuntime();
+        lama::DenseVector<ValueType> mVecD;
+        lama::DenseVector<ValueType> mInitialR;
+        lama::DenseVector<ValueType> mVecVEven;
+        lama::DenseVector<ValueType> mVecVOdd;
+        lama::DenseVector<ValueType> mVecVT;
+        lama::DenseVector<ValueType> mVecW;
+        lama::DenseVector<ValueType> mVecZ;
 
-        std::shared_ptr<lama::Vector> mVecD;
-        std::shared_ptr<lama::Vector> mInitialR;
-        std::shared_ptr<lama::Vector> mVecVEven;
-        std::shared_ptr<lama::Vector> mVecVOdd;
-        std::shared_ptr<lama::Vector> mVecVT;
-        std::shared_ptr<lama::Vector> mVecW;
-        std::shared_ptr<lama::Vector> mVecZ;
-
-        lama::Scalar mEps;
-        lama::Scalar mAlpha;
-        lama::Scalar mBeta;
-        lama::Scalar mC;
-        lama::Scalar mEta;
-        lama::Scalar mTheta;
-        lama::Scalar mTau;
-        lama::Scalar mRhoNew;
-        lama::Scalar mRhoOld;
+        NormType<ValueType> mEps;
+        ValueType mAlpha;
+        ValueType mBeta;
+        ValueType mC;
+        ValueType mEta;
+        ValueType mTheta;
+        ValueType mTau;
+        ValueType mRhoNew;
+        ValueType mRhoOld;
     };
     /**
     * @brief Returns the complete configuration of the derived class
@@ -124,15 +124,20 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class
     */
-    virtual const TFQMRRuntime& getConstRuntime() const;
+    virtual const TFQMRRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
@@ -145,6 +150,8 @@ protected:
     virtual void iterate();
     void iterationOdd();
     void iterationEven();
+
+    using IterativeSolver<ValueType>::mPreconditioner;
 
     /**
      *  @brief own implementation of Printable::writeAt

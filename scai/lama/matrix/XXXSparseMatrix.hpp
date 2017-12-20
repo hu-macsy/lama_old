@@ -63,12 +63,10 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT XXXSparseMatrix:
 
     public SparseMatrix<ValueType>,
-    public Matrix::Register<XXXSparseMatrix<ValueType> >    // register at factory
+    public _Matrix::Register<XXXSparseMatrix<ValueType> >    // register at factory
 {
 
 public:
-
-    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
     /** Type definition of the storage type for this sparse matrix. */
 
@@ -96,7 +94,7 @@ public:
 
     /** Most general copy constrcuctor with possibility of transpose. */
 
-    XXXSparseMatrix( const Matrix& other, bool transposeFlag = false );
+    XXXSparseMatrix( const _Matrix& other, bool transposeFlag = false );
 
     /** Constructor of a sparse matrix by another input matrix with redistribution.
      *
@@ -104,7 +102,7 @@ public:
      * @param[in] rowDist   row distribution of the new matrix
      * @param[in] colDist   column distribution of the new matrix
      */
-    XXXSparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    XXXSparseMatrix( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
@@ -136,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit XXXSparseMatrix( const Expression_SM& expression );
+    explicit XXXSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit XXXSparseMatrix( const Expression_SMM& expression );
+    explicit XXXSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit XXXSparseMatrix( const Expression_SM_SM& expression );
+    explicit XXXSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a XXX sparse matrix with distributed XXX storage data.
      *
@@ -186,7 +184,7 @@ public:
     /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
 
     /*
-     XXXSparseMatrix& operator=( const Matrix& matrix );
+     XXXSparseMatrix& operator=( const _Matrix& matrix );
 
      XXXSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
 
@@ -217,22 +215,22 @@ public:
 
     virtual void swapLocalStorage( StorageType& localStorage );
 
-    /* Implementation of pure method Matrix::newMatrix with covariant return type */
+    /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 
     virtual XXXSparseMatrix<ValueType>* newMatrix() const;
 
-    /* Implementation of pure method Matrix::copy with covariant return type */
+    /* Implementation of pure method _Matrix::copy with covariant return type */
 
     virtual XXXSparseMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormat */
+    /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormat() const
+    virtual Format getFormat() const
     {
         return Format::XXX;
     }
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual const char* getTypeName() const;
 
@@ -258,9 +256,9 @@ private:
 
 public:
 
-    // static create method that will be used to register at Matrix factory
+    // static create method that will be used to register at _Matrix factory
 
-    static Matrix* create();
+    static _Matrix* create();
 
     // key for factory
 
@@ -295,7 +293,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix(
     dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, myIndexes, communicator ) );
     // Halo is already splitted, but still contains the global indexes
     mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
-    Matrix::setDistributedMatrix( dist, dist );
+    _Matrix::setDistributedMatrix( dist, dist );
 }
 
 } /* end namespace lama */

@@ -58,7 +58,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MetisPartitioningTest" );
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    // CSR random Matrix
+    // CSR random matrix
 
     IndexType ia[]  = { 0,    2,    4,    6,    8,      11, 12 };
     IndexType ja[]  = { 1, 3, 0, 2, 1, 4, 0, 4, 3, 2, 5, 4 };

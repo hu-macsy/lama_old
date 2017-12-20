@@ -76,15 +76,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DecompositionSolverTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
-    LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    DecompositionSolver DecompositionSolverSolver( "DecompositionSolverSolver", slogger );
-    BOOST_CHECK_EQUAL( DecompositionSolverSolver.getId(), "DecompositionSolverSolver" );
-    DecompositionSolver DecompositionSolverSolver2( "DecompositionSolverSolver2" );
-    BOOST_CHECK_EQUAL( DecompositionSolverSolver2.getId(), "DecompositionSolverSolver2" );
-    DecompositionSolver DecompositionSolverSolver3( DecompositionSolverSolver2 );
-    BOOST_CHECK_EQUAL( DecompositionSolverSolver3.getId(), "DecompositionSolverSolver2" );
+    LoggerPtr slogger( new CommonLogger( "<Decomposition>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+    DecompositionSolver<ValueType> solver( "DecompositionSolver", slogger );
+    BOOST_CHECK_EQUAL( solver.getId(), "DecompositionSolver" );
+    DecompositionSolver<ValueType> solver2( "solver2" );
+    BOOST_CHECK_EQUAL( solver2.getId(), "solver2" );
+    DecompositionSolver<ValueType> solver3( solver2 );
+    BOOST_CHECK_EQUAL( solver3.getId(), "solver2" );
 }
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
     rhs.redistribute( dist );
     solution.redistribute( dist );
 
-    DecompositionSolver solver( "DecompositionSolver" );
+    DecompositionSolver<ValueType> solver( "DecompositionSolver" );
     solver.initialize( matrix );
     solver.solve( solution, rhs );
 

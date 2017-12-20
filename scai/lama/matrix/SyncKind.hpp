@@ -1,5 +1,5 @@
 /**
- * @file _DenseVector.cpp
+ * @file SyncKind.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,76 +27,62 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementations and instantiations for class DenseVector.
- * @author Thomas Brandes
+ * @brief Abstract base class for all matrices supported by LAMA.
+ * @author Jiri Kraus, Thomas Brandes
  * @date 22.02.2011
  */
+#pragma once
 
-// hpp
-#include <scai/lama/_DenseVector.hpp>
+#include <scai/common/config.hpp>
 
-// std
 #include <ostream>
 
 namespace scai
 {
 
-using namespace hmemo;
-using namespace dmemo;
-
 namespace lama
 {
 
-// common logger for all types of DenseVector
-
-SCAI_LOG_DEF_LOGGER( _DenseVector::logger, "Vector.DenseVector" )
-
-_DenseVector::_DenseVector( const IndexType n ) :
-
-    Vector( n )
+/**
+ * @brief SyncKind describes if the communication and computation should be done synchronously or asynchronously.
+ */
+enum class SyncKind
 {
+    ASYNCHRONOUS, // asynchronous execution to overlap computations, communications
+    SYNCHRONOUS // synchronous, operations will not overlap
+};
+
+/** This function prints a SyncKind on an output stream.
+ *
+ *  \param stream  is the reference to the output stream
+ *  \param kind    is the enum value that is printed
+ */
+inline std::ostream& operator<<( std::ostream& stream, const SyncKind& kind )
+{
+    switch ( kind )
+    {
+        case SyncKind::SYNCHRONOUS:
+        {
+            stream << "SYNCHRONOUS";
+            break;
+        }
+
+        case SyncKind::ASYNCHRONOUS:
+        {
+            stream << "ASYNCHRONOUS";
+            break;
+        }
+
+        default:
+        {
+            stream << "<unknown sync kind>";
+            break;
+        }
+    }
+
+    return stream;
 }
 
-_DenseVector::_DenseVector( const IndexType n, ContextPtr context ) :
-
-    Vector( n, context )
-{
-}
-
-_DenseVector::_DenseVector( DistributionPtr dist ) :
-
-    Vector( dist )
-{
-}
-
-_DenseVector::_DenseVector( DistributionPtr dist, ContextPtr context ) :
-
-    Vector( dist, context )
-{
-}
-
-_DenseVector::_DenseVector( const _DenseVector& other ) :
-
-    Vector( other )
-{
-}
-
-_DenseVector::_DenseVector( const Vector& other ) :
-
-    Vector( other )
-{
-}
-
-_DenseVector* _DenseVector::create( common::ScalarType type )
-{
-    // There is only one factor for all vectors
-
-    Vector* v = Vector::create( VectorCreateKeyType( Vector::DENSE, type ) );
-
-    // reinterpret cast is safe
-
-    return reinterpret_cast<_DenseVector*>( v );
-}
 
 } /* end namespace lama */
 

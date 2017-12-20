@@ -47,7 +47,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/bind.hpp>
 
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/cuda/CUDASettings.hpp>
@@ -60,6 +59,8 @@
 // thrust
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
+
+#include <functional>
 
 using namespace scai::tasking;
 
@@ -218,7 +219,7 @@ void CUDACOOUtils::normalGEMV(
         SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
         // setScale also deals with y undefined for beta == 0
 
-        CUDAUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
+        CUDAUtils::binaryOpScalar( result, y, beta, numRows, common::BinaryOp::MULT, false );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
@@ -281,7 +282,7 @@ void CUDACOOUtils::normalGEMV(
         if ( useTexture )
         {
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbind, x ) );
+            syncToken->pushRoutine( std::bind( unbind, x ) );
         }
     }
 }
@@ -327,7 +328,7 @@ void CUDACOOUtils::normalGEVM(
     else
     {
         SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
-        CUDAUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
+        CUDAUtils::binaryOpScalar( result, y, beta, numRows, common::BinaryOp::MULT, false );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGevmKernel FAILED" )
@@ -389,7 +390,7 @@ void CUDACOOUtils::normalGEVM(
         if ( useTexture )
         {
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbind, x ) );
+            syncToken->pushRoutine( std::bind( unbind, x ) );
         }
     }
 }
