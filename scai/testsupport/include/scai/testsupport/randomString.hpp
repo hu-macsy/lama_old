@@ -1,5 +1,5 @@
 /**
- * @file include/scai/testsupport/commonTestMain.hpp
+ * @file include/scai/testsupport/randomString.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,19 +27,15 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test binary main() function for non-heterogeneous, non-distributed tests.
+ * @brief Functionality for random string generation.
  * @author Andreas Longva
- * @date 09.11.2017
+ * @date 21.11.2017
  */
 #pragma once
 
-#include <boost/test/unit_test.hpp>
-#include <boost/test/unit_test_parameters.hpp>
-
-#include <scai/common/Settings.hpp>
-
-#include <scai/testsupport/detail/common.hpp>
-#include <scai/testsupport/GlobalTempDir.hpp>
+#include <random>
+#include <string>
+#include <cassert>
 
 namespace scai
 {
@@ -47,26 +43,32 @@ namespace scai
 namespace testsupport
 {
 
-int commonTestMain( int argc, char* argv[] )
+template <typename RandomEngine>
+std::string randomAlphaNumericString(RandomEngine & engine, size_t len)
 {
-    using scai::testsupport::detail::parseAndRebuildArgs;
+    const static std::string allowed_chars =
+        "01234567890"
+        "abcdefghjiklmnopqrstuvwxyz"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
+    // Need to use unsigned int instead of size_t because it is not guaranteed
+    // that a distribution for size_t exists
+    std::uniform_int_distribution<unsigned int> distribution(
+        static_cast<unsigned int>(0),
+        static_cast<unsigned int>(allowed_chars.size() - 1)
+    );
 
-    const auto boostTestModuleName = std::string(LAMATEST_STRINGIFY(BOOST_TEST_MODULE));
-    const auto testSuiteName = boostTestModuleName;
-
-    // Building args as a vector<vector<char>> ensures that lifetime of modified args is bounded by main() call
-    auto parseResult = parseAndRebuildArgs(argc, argv, testSuiteName);
-    std::vector<char *> charPointers;
-    for (auto & arg : parseResult.args)
+    std::string s;
+    s.reserve(len);
+    for (size_t i = 0; i < len; ++i)
     {
-        charPointers.push_back(arg.data());
+        const auto random_index = distribution(engine);
+        assert(random_index < allowed_chars.size());
+        const auto random_char = allowed_chars[static_cast<size_t>(random_index)];
+        s.push_back(random_char);
     }
 
-    GlobalTempDir::setPathOrDefault(parseResult.tempDir);
-
-    return boost::unit_test::unit_test_main(&init_unit_test, charPointers.size(), charPointers.data());
+    return s;
 }
 
 } // namespace testsupport

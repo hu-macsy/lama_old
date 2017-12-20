@@ -1,3 +1,36 @@
+/**
+ * @file include/scai/testsupport/detail/common.hpp
+ *
+ * @license
+ * Copyright (c) 2009-2017
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the SCAI framework LAMA.
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ * @endlicense
+ *
+ * @brief Common detail functionality for testsupport code.
+ * @author Andreas Longva
+ * @date 09.11.2017
+ */
 #pragma once
 
 #include <string>
@@ -19,12 +52,12 @@ namespace testsupport
 namespace detail
 {
 
-std::string boostTestModuleName()
+inline std::string boostTestModuleName()
 {
     return std::string(LAMATEST_STRINGIFY(BOOST_TEST_MODULE));
 }
 
-std::pair<std::string, std::string> getKeyValueFromArg(const std::string & arg)
+inline std::pair<std::string, std::string> getKeyValueFromArg(const std::string & arg)
 {
     const auto equalsPos = std::find(arg.begin(), arg.end(), '=');
     std::string key, value;
@@ -33,14 +66,14 @@ std::pair<std::string, std::string> getKeyValueFromArg(const std::string & arg)
     return std::make_pair(std::move(key), std::move(value));
 }
 
-bool argIsSink(const std::string & arg, const std::string & sinkName)
+inline bool argIsSink(const std::string & arg, const std::string & sinkName)
 {
     std::string key;
     std::tie(key, std::ignore) = getKeyValueFromArg(arg);
     return key == sinkName;
 }
 
-std::vector<char> intoNullTerminatedChars(const std::string & str)
+inline std::vector<char> intoNullTerminatedChars(const std::string & str)
 {
     std::vector<char> chars;
     std::copy(str.begin(), str.end(), std::back_inserter(chars));
@@ -48,17 +81,25 @@ std::vector<char> intoNullTerminatedChars(const std::string & str)
     return chars;
 }
 
-std::vector<std::vector<char>> rebuildArgs(int argc, char ** argv, const std::string & testSuiteName)
+struct ArgParseResult
+{
+    std::string tempDir;
+    std::vector<std::vector<char>> args;
+};
+
+inline ArgParseResult parseAndRebuildArgs(int argc, char ** argv, const std::string & testSuiteName)
 {
     static const std::string REPORT_SINK_ARG = "--report_sink";
     static const std::string LOG_SINK_ARG = "--log_sink";
     static const std::string OUTPUT_DIR_ARG = "--output_dir";
+    static const std::string TEMP_DIR_ARG = "--temp_dir";
+
+    ArgParseResult result;
 
     const std::array<std::string, 4> forbiddenSinks {
         { REPORT_SINK_ARG, LOG_SINK_ARG, std::string("-e"), std::string("-k") }
     };
 
-    std::vector<std::vector<char>> args;
     std::string outputDir;
     bool sinkIsPresent = false;
     for (int i = 0; i < argc; ++i)
@@ -71,12 +112,19 @@ std::vector<std::vector<char>> rebuildArgs(int argc, char ** argv, const std::st
                     [&key] (const std::string & sink) { return sink == key; });
         sinkIsPresent = sinkIsPresent || argHasSink;
 
+        // Do not include non-Boost options in new list of arguments,
+        // since Boost does not recognize them and will complain
         if (key == OUTPUT_DIR_ARG)
         {
-            // Do not include in new list of arguments, since Boost does not recognize it and will complain
             outputDir = value;
-        } else {
-            args.push_back(intoNullTerminatedChars(arg));
+        }
+        else if (key == TEMP_DIR_ARG)
+        {
+            result.tempDir = value;
+        }
+        else
+        {
+            result.args.push_back(intoNullTerminatedChars(arg));
         }
     }
 
@@ -91,11 +139,11 @@ std::vector<std::vector<char>> rebuildArgs(int argc, char ** argv, const std::st
     {
         const auto report_sink = REPORT_SINK_ARG + "=" + outputDir + "/" + testSuiteName + "_report.xml";
         const auto log_sink = LOG_SINK_ARG + "=" + outputDir + "/" + testSuiteName + "_log.xml";
-        args.push_back(intoNullTerminatedChars(report_sink));
-        args.push_back(intoNullTerminatedChars(log_sink));
+        result.args.push_back(intoNullTerminatedChars(report_sink));
+        result.args.push_back(intoNullTerminatedChars(log_sink));
     }
 
-    return args;
+    return result;
 }
 
 } // namespace detail

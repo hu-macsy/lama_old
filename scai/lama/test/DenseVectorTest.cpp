@@ -48,9 +48,14 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/expression/all.hpp>
+#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
 
 using namespace scai;
 using namespace lama;
+
+using scai::testsupport::uniquePath;
+using scai::testsupport::GlobalTempDir;
 
 /* --------------------------------------------------------------------- */
 
@@ -304,7 +309,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
     const IndexType n = 10;
 
-    std::string fileName = "myVector.psc";   // binary type, so no loss of precision
+    const auto fileName = uniquePath(GlobalTempDir::getPath(), "myVector") + ".psc";
 
     float fillRate = 0.2;
 

@@ -1,5 +1,5 @@
 /**
- * @file include/scai/testsupport/commonTestMain.hpp
+ * @file src/GlobalTempDir.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,19 +27,14 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test binary main() function for non-heterogeneous, non-distributed tests.
+ * @brief Implementations for GlobalTempDir functionality.
  * @author Andreas Longva
- * @date 09.11.2017
+ * @date 22.11.2017
  */
-#pragma once
-
-#include <boost/test/unit_test.hpp>
-#include <boost/test/unit_test_parameters.hpp>
-
-#include <scai/common/Settings.hpp>
-
-#include <scai/testsupport/detail/common.hpp>
 #include <scai/testsupport/GlobalTempDir.hpp>
+
+#include <memory>
+#include <string>
 
 namespace scai
 {
@@ -47,28 +42,8 @@ namespace scai
 namespace testsupport
 {
 
-int commonTestMain( int argc, char* argv[] )
-{
-    using scai::testsupport::detail::parseAndRebuildArgs;
+std::unique_ptr<std::string> GlobalTempDir::m_tempDirPath = std::unique_ptr<std::string>();
 
-    scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
-
-    const auto boostTestModuleName = std::string(LAMATEST_STRINGIFY(BOOST_TEST_MODULE));
-    const auto testSuiteName = boostTestModuleName;
-
-    // Building args as a vector<vector<char>> ensures that lifetime of modified args is bounded by main() call
-    auto parseResult = parseAndRebuildArgs(argc, argv, testSuiteName);
-    std::vector<char *> charPointers;
-    for (auto & arg : parseResult.args)
-    {
-        charPointers.push_back(arg.data());
-    }
-
-    GlobalTempDir::setPathOrDefault(parseResult.tempDir);
-
-    return boost::unit_test::unit_test_main(&init_unit_test, charPointers.size(), charPointers.data());
 }
 
-} // namespace testsupport
-
-} // namespace scai
+}
