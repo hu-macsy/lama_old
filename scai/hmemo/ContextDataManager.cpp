@@ -70,6 +70,47 @@ ContextDataManager::ContextDataManager() :
 
 /* ---------------------------------------------------------------------------------*/
 
+ContextDataManager::ContextDataManager( ContextDataManager&& other ) noexcept :
+
+    mContextData( std::move( other.mContextData ) )
+
+{
+    SCAI_LOG_INFO( logger, "move constructor: " 
+                          << ", this context data has now " << mContextData.size() << " entries"
+                          << ", other context data has now " << other.mContextData.size() << " entries" )
+
+    mLock[Context::Read] = 0;
+    mLock[Context::Write] = 0;
+    multiContext = false;
+    multiThreaded = false;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextDataManager& ContextDataManager::operator=( ContextDataManager&& other ) 
+{
+    SCAI_LOG_INFO( logger, "move asignment called for context data manager: " 
+                          << ", this context data has " << mContextData.size() << " entries"
+                          << ", other context data has " << other.mContextData.size() << " entries" )
+
+    mLock[Context::Read] = 0;
+    mLock[Context::Write] = 0;
+    multiContext = false;
+    multiThreaded = false;
+
+    // Note: existing entries in mContextData will be freed
+
+    mContextData = std::move( other.mContextData );
+
+    SCAI_LOG_INFO( logger, "move asignment done for context data manager: " 
+                          << ", this context data has " << mContextData.size() << " entries"
+                          << ", other context data has " << other.mContextData.size() << " entries" )
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 void ContextDataManager::wait()
 {
     if ( 0 != mSyncToken.get() )

@@ -58,7 +58,7 @@ int main()
     ContextPtr contextPtr = Context::getHostPtr();
     static IndexType N =  100;
     HArray<float> lamaArray ( N, 1.0 );
-    std::shared_ptr<HArray<float> > lamaArray1( HArray<float>::create( lamaArray.getValueType() ) );
+    std::shared_ptr<HArray<float> > lamaArray1( lamaArray.newArray() );
     *lamaArray1 = lamaArray;
     ReadAccess<float> read( lamaArray, contextPtr );
     ReadAccess<float> read1( *lamaArray1, contextPtr );
