@@ -44,6 +44,8 @@
 using namespace scai;
 using namespace common;
 
+BOOST_AUTO_TEST_SUITE( ThreadTest )
+
 Thread::Mutex barrierMutex;
 Thread::Condition barrierCondition;
 
@@ -71,40 +73,60 @@ static void barrier()
     }
 }
 
-// Shared array for all threads
-
-static int sharedArray[ NB_THREADS ];
-
-static void barrierRoutine( int& arg )
+struct BarrierArgs
 {
-    sharedArray[arg] = arg;
+    int threadNum;
+    int * sharedArray;
+    int sumForThisThread;
+};
+
+static void barrierRoutine( BarrierArgs& arg )
+{
+    arg.sharedArray[arg.threadNum] = arg.threadNum;
     barrier();
     int sum = 0;
 
     for ( int i = 0; i < NB_THREADS; ++i )
     {
-        sum += sharedArray[i];
+        sum += arg.sharedArray[i];
     }
 
-    int expected_sum = NB_THREADS * ( NB_THREADS - 1 ) / 2;
-    BOOST_CHECK_EQUAL( sum, expected_sum );
+    arg.sumForThisThread = sum;
 }
 
 BOOST_AUTO_TEST_CASE( barrierTest )
 {
+    // Note: this test is actually meant to test condition variables.
+    // A barrier is only an example use case for condition variables.
     Thread threads[NB_THREADS];
-    int threadArgs[NB_THREADS];
+    int sharedArray[NB_THREADS];
+    BarrierArgs threadArgs[NB_THREADS];
 
     for ( int i = 0; i < NB_THREADS; ++i )
     {
-        threadArgs[i] = i;
-        threads[i].run( barrierRoutine, threadArgs[i] );
+        auto & arg = threadArgs[i];
+        arg.threadNum = i;
+        arg.sharedArray = sharedArray;
+        threads[i].run( barrierRoutine, arg );
     }
 
     for ( int i = 0; i < NB_THREADS; ++i )
     {
         threads[i].join();
     }
+
+    for ( int i = 0; i < NB_THREADS; ++i )
+    {
+        const auto & arg = threadArgs[i];
+        const int expected_sum = NB_THREADS * ( NB_THREADS - 1 ) / 2;
+        const auto sum = arg.sumForThisThread;
+
+        BOOST_TEST_CONTEXT( " barrierTest for thread " << i << " " )
+        {
+            BOOST_CHECK_EQUAL( sum, expected_sum );
+        }
+    }
+
 }
 
 static const int SLEEP_TIME  = 1;  // in seconds
@@ -178,3 +200,4 @@ BOOST_AUTO_TEST_CASE( concurrentTest )
     BOOST_CHECK_CLOSE( time, double( SLEEP_TIME ), 20 );
 }
 
+BOOST_AUTO_TEST_SUITE_END()
