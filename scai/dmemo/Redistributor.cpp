@@ -77,7 +77,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     WriteOnlyAccess<IndexType> keepSourceIndexes( mKeepSourceIndexes, getSourceLocalSize() );
     WriteOnlyAccess<IndexType> keepTargetIndexes( mKeepTargetIndexes, getTargetLocalSize() );
     std::vector<IndexType> requiredIndexes;
-    mNumLocalValues = 0; // count number of local copies from source to target
+    IndexType numLocalValues = 0; // count number of local copies from source to target
 
     for ( IndexType i = 0; i < getTargetLocalSize(); i++ )
     {
@@ -89,9 +89,9 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
             SCAI_LOG_TRACE( logger,
                             "target local index " << i << " is global " << globalIndex << ", is source local index " << sourceLocalIndex )
             //  so globalIndex is local in both distributions
-            keepTargetIndexes[mNumLocalValues] = i; // where to scatter in target
-            keepSourceIndexes[mNumLocalValues] = sourceLocalIndex;
-            mNumLocalValues++;
+            keepTargetIndexes[numLocalValues] = i; // where to scatter in target
+            keepSourceIndexes[numLocalValues] = sourceLocalIndex;
+            numLocalValues++;
         }
         else
         {
@@ -102,11 +102,11 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     }
 
     // Adapt sizes of arrays with local indexes
-    keepSourceIndexes.resize( mNumLocalValues );
-    keepTargetIndexes.resize( mNumLocalValues );
+    keepSourceIndexes.resize( numLocalValues );
+    keepTargetIndexes.resize( numLocalValues );
     SCAI_LOG_DEBUG( logger,
                     sourceDist.getCommunicator() << ": target dist has local " << getTargetLocalSize()
-                                                 << " vals, " << mNumLocalValues << " are local, "
+                                                 << " vals, " << numLocalValues << " are local, "
                                                  << requiredIndexes.size() << " are remote." )
     // Halo is only for exchange of non-local values
     HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
@@ -140,10 +140,10 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     // In contrary to Halo schedules we have here the situation that each non-local
     // index of source should be required by some other processor.
     SCAI_ASSERT_EQ_ERROR( offset, exchangeSourceIndexes.size(), "serious mismatch" )
-    SCAI_ASSERT_EQ_ERROR( mNumLocalValues + offset, getSourceLocalSize(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( numLocalValues + offset, getSourceLocalSize(), "serious mismatch" )
     // Now add the indexes where to scatter the halo into destination
     IndexType haloSize = halo.getHaloSize();
-    SCAI_ASSERT_ERROR( mNumLocalValues + haloSize == getTargetLocalSize(), "size mismatch" )
+    SCAI_ASSERT_ERROR( numLocalValues + haloSize == getTargetLocalSize(), "size mismatch" )
     exchangeTargetIndexes.resize( haloSize );
 
     for ( IndexType i = 0; i < haloSize; i++ )
@@ -167,7 +167,7 @@ void Redistributor::writeAt( std::ostream& stream ) const
     stream << "Redistributor( ";
     stream << *mSourceDistribution << "->" << *mTargetDistribution;
     stream << ", " << getSourceLocalSize() << "->" << getTargetLocalSize();
-    stream << ", local:" << mNumLocalValues;
+    stream << ", local:" << getNumLocalValues();
     stream << ", source halo :" << getExchangeSourceSize();
     stream << ", target halo :" << getExchangeTargetSize();
     stream << ")";

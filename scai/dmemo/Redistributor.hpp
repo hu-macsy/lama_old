@@ -359,6 +359,11 @@ private:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    IndexType getNumLocalValues() const
+    {
+        return static_cast<IndexType>(mKeepSourceIndexes.size());
+    }
+
     DistributionPtr mSourceDistribution;
     DistributionPtr mTargetDistribution;
 
@@ -374,8 +379,6 @@ private:
     // (currently represented by mHalo provided/required plans)
     hmemo::HArray<IndexType> mExchangeSourceIndexes;
     hmemo::HArray<IndexType> mExchangeTargetIndexes;
-
-    IndexType mNumLocalValues; // common number of local values
 
     Halo mHalo; // Halo structure for exchanging non-local values
 
