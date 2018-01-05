@@ -109,14 +109,9 @@ public:
 
     ContextData( MemoryPtr memory );
 
-    /** Default constructor, provided for use in container classes. */
-
-    ContextData(); 
-
-    /** Move constructor, avoids use of copy constructor container classes.
+    /** Move constructor, allows use of this class container classes.
      *  The clause noexcept is mandatory and also safe here.
      */
-
     ContextData( ContextData&& other ) noexcept;
 
     /** Destructor, will also call free if not done before */
@@ -180,7 +175,7 @@ private:
 
     // disable the default copy constructor
 
-    ContextData( const ContextData& other );
+    ContextData( const ContextData& other ) = delete;
 
     ContextData& operator=( ContextData&& other ) noexcept;
 };

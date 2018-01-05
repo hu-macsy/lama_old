@@ -586,6 +586,54 @@ BOOST_AUTO_TEST_CASE( validTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( moveTest )
+{
+    // comparison operator used to sort array by their sizes
+
+    struct less_than_key
+    {
+        inline bool operator() ( const _HArray& array1, const _HArray& array2 )
+        {   
+            return array1.size() < array2.size();
+        }
+    };
+
+    typedef RealType ValueType;
+
+    const IndexType N = 20;   // number of arrays
+
+    const IndexType N_VALUES = 10000;
+
+    const ValueType initVal = 17;
+
+    const ValueType* ptrArray[N];  //  saves pointer data to arrays to check for correct moves
+
+    std::vector<HArray<ValueType> > myData;
+
+    // construct a certain number of different HArrays to store in a vector
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        myData.push_back( HArray<ValueType>( IndexType( N_VALUES - i ), initVal + i ) );
+        // save the pointer to the host data 
+        ReadAccess<ValueType> rA( myData[i] );
+        ptrArray[i] = rA.get();
+    }
+
+    // sort the array by sizes, here it gives exactly the reverse vector
+
+    std::sort( myData.begin(), myData.end(), less_than_key() );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ReadAccess<ValueType> rA( myData[i] );
+
+        BOOST_CHECK_EQUAL( rA.get(), ptrArray[ N - 1 - i ] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( remoteTest )
 {
     ContextPtr hostContext = Context::getHostPtr();

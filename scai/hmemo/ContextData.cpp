@@ -68,6 +68,7 @@ ContextData::ContextData( MemoryPtr memory ) :
 {
 }
 
+/*
 ContextData::ContextData() :
 
     size( 0 ),
@@ -77,6 +78,7 @@ ContextData::ContextData() :
     allocated( false )
 {
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 

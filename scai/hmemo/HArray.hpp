@@ -69,8 +69,9 @@ namespace hmemo
  *  (especially structures of such data). Do not use any ValueType that contains pointers
  *  or references; these might be invalid when data is moved to another context.
  *
- *  Move constructor, move assignment are also provided for this (template) class, so heterogeneous
- *  arrays might be used in C++ container classes with allocation/reallocation and/or copying of data.
+ *  Move constructor, move assignment are also provided for this (template) class. This allows
+ *  using the arrays in the new C++ way to avoid copies. Especially, heterogeneous 
+ *  arrays might be used in C++ container classes without allocation/reallocation and/or copying of data.
  *
  *  In contrary to other LAMA classes, this template class is a header-only class, so it
  *  can be used in applications for any value type.

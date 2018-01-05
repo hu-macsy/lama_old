@@ -227,8 +227,7 @@ void _HArray::resizeWithIndex( ContextDataIndex index, const IndexType size )
 
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
 
-    // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
-    // static cast to have multiplication with 64 bit values
+    // static cast to have multiplication with 64 bit values for memory addresses
 
     size_t allocSize = static_cast<size_t>( size )  * static_cast<size_t>( mValueSize );
     size_t validSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
