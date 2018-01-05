@@ -73,8 +73,8 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
                    sourceDist.getCommunicator() << ": build redistributor " << targetDist << " <- " << sourceDist << ", have " << mSourceSize << " source values and " << mTargetSize << " target values" )
     // localSourceIndexes, localTargetIndexes are used for local permutation
     // we do not know the exact sizes now so we take maximal value
-    WriteOnlyAccess<IndexType> localSourceIndexes( mLocalSourceIndexes, mSourceSize );
-    WriteOnlyAccess<IndexType> localTargetIndexes( mLocalTargetIndexes, mTargetSize );
+    WriteOnlyAccess<IndexType> keepSourceIndexes( mKeepSourceIndexes, mSourceSize );
+    WriteOnlyAccess<IndexType> keepTargetIndexes( mKeepTargetIndexes, mTargetSize );
     std::vector<IndexType> requiredIndexes;
     mNumLocalValues = 0; // count number of local copies from source to target
 
@@ -88,8 +88,8 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
             SCAI_LOG_TRACE( logger,
                             "target local index " << i << " is global " << globalIndex << ", is source local index " << sourceLocalIndex )
             //  so globalIndex is local in both distributions
-            localTargetIndexes[mNumLocalValues] = i; // where to scatter in target
-            localSourceIndexes[mNumLocalValues] = sourceLocalIndex;
+            keepTargetIndexes[mNumLocalValues] = i; // where to scatter in target
+            keepSourceIndexes[mNumLocalValues] = sourceLocalIndex;
             mNumLocalValues++;
         }
         else
@@ -101,8 +101,8 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     }
 
     // Adapt sizes of arrays with local indexes
-    localSourceIndexes.resize( mNumLocalValues );
-    localTargetIndexes.resize( mNumLocalValues );
+    keepSourceIndexes.resize( mNumLocalValues );
+    keepTargetIndexes.resize( mNumLocalValues );
     SCAI_LOG_DEBUG( logger,
                     sourceDist.getCommunicator() << ": target dist has local " << mTargetSize << " vals, " << mNumLocalValues << " are local, " << requiredIndexes.size() << " are remote." )
     // Halo is only for exchange of non-local values
@@ -114,10 +114,10 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
                    sourceDist.getCommunicator() << ": halo source has " << halo.getProvidesPlan().totalQuantity() << " indexes, " << "halo target has " << halo.getRequiredPlan().totalQuantity() << " indexes" )
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
     ContextPtr contextPtr = Context::getHostPtr();
-    WriteAccess<IndexType> haloSourceIndexes( mHaloSourceIndexes, contextPtr );
-    WriteAccess<IndexType> haloTargetIndexes( mHaloTargetIndexes, contextPtr );
+    WriteAccess<IndexType> exchangeSourceIndexes( mExchangeSourceIndexes, contextPtr );
+    WriteAccess<IndexType> exchangeTargetIndexes( mExchangeTargetIndexes, contextPtr );
     ReadAccess<IndexType> haloProvidesIndexes( halo.getProvidesIndexes(), contextPtr );
-    haloSourceIndexes.resize( providesPlan.totalQuantity() );
+    exchangeSourceIndexes.resize( providesPlan.totalQuantity() );
     IndexType offset = 0; // runs through halo source indexes
 
     for ( PartitionId i = 0; i < providesPlan.size(); i++ )
@@ -129,19 +129,19 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
         for ( IndexType j = 0; j < n; j++ )
         {
             SCAI_LOG_TRACE( logger, "halo source index[" << offset << "] = " << pindexes[j] )
-            haloSourceIndexes[offset++] = pindexes[j];
+            exchangeSourceIndexes[offset++] = pindexes[j];
         }
     }
 
     SCAI_LOG_INFO( logger, "have set " << offset << " halo source indexes" )
     // In contrary to Halo schedules we have here the situation that each non-local
     // index of source should be required by some other processor.
-    SCAI_ASSERT_EQ_ERROR( offset, haloSourceIndexes.size(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( offset, exchangeSourceIndexes.size(), "serious mismatch" )
     SCAI_ASSERT_EQ_ERROR( mNumLocalValues + offset, mSourceSize, "serious mismatch" )
     // Now add the indexes where to scatter the halo into destination
     IndexType haloSize = halo.getHaloSize();
     SCAI_ASSERT_ERROR( mNumLocalValues + haloSize == mTargetSize, "size mismatch" )
-    haloTargetIndexes.resize( haloSize );
+    exchangeTargetIndexes.resize( haloSize );
 
     for ( IndexType i = 0; i < haloSize; i++ )
     {
@@ -150,7 +150,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
         IndexType haloIndex = mHalo.global2halo( globalIndex );
         SCAI_LOG_TRACE( logger,
                         "saved mapping for target dist: local = " << localIndex << ", global = " << globalIndex << ", halo = " << haloIndex )
-        haloTargetIndexes[haloIndex] = localIndex;
+        exchangeTargetIndexes[haloIndex] = localIndex;
     }
 
     // all info needed for redistribution is now available
@@ -165,8 +165,8 @@ void Redistributor::writeAt( std::ostream& stream ) const
     stream << *mSourceDistribution << "->" << *mTargetDistribution;
     stream << ", " << mSourceSize << "->" << mTargetSize;
     stream << ", local:" << mNumLocalValues;
-    stream << ", source halo :" << getHaloSourceSize();
-    stream << ", target halo :" << getHaloTargetSize();
+    stream << ", source halo :" << getExchangeSourceSize();
+    stream << ", target halo :" << getExchangeTargetSize();
     stream << ")";
 }
 
@@ -230,7 +230,7 @@ void Redistributor::buildRowPlans(
     ContextPtr contextPtr = Context::getHostPtr();
     // For building the new schedule we need the sizes, can be calculated by the offsets
     {
-        ReadAccess<IndexType> indexes( mHaloSourceIndexes, contextPtr );
+        ReadAccess<IndexType> indexes( mExchangeSourceIndexes, contextPtr );
         ReadAccess<IndexType> sizes( sourceSizes, contextPtr );
 
         for ( IndexType i = 0; i < numProvides; i++ )
@@ -241,7 +241,7 @@ void Redistributor::buildRowPlans(
         }
     }
     {
-        ReadAccess<IndexType> indexes( mHaloTargetIndexes, contextPtr );
+        ReadAccess<IndexType> indexes( mExchangeTargetIndexes, contextPtr );
         ReadAccess<IndexType> sizes( targetSizes, contextPtr );
 
         for ( IndexType i = 0; i < numRequired; i++ )
