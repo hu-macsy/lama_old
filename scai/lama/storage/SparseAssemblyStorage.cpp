@@ -148,7 +148,7 @@ void SparseAssemblyStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<SparseAssemblyStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<SparseAssemblyStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<SparseAssemblyStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -834,7 +834,7 @@ void SparseAssemblyStorage<ValueType>::getSparseColumn(
         return;
     }
 
-    HArray<ValueType>& typedValues = reinterpret_cast<HArray<ValueType>&>( values );
+    HArray<ValueType>& typedValues = static_cast<HArray<ValueType>&>( values );
 
     ContextPtr loc = Context::getHostPtr();  // only on host here
 

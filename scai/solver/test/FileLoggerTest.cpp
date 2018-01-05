@@ -34,6 +34,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <scai/dmemo/Communicator.hpp>
+
 #include <scai/solver/logger/FileLogger.hpp>
 
 #include <fstream>
@@ -45,6 +47,9 @@
 #include <scai/common/test/Configuration.hpp>
 #include <scai/common/SCAITypes.hpp>
 
+#include <scai/testsupport/GlobalTempDir.hpp>
+#include <scai/testsupport/uniquePathComm.hpp>
+
 #include <memory>
 
 using namespace scai;
@@ -53,6 +58,11 @@ using namespace solver;
 
 using common::Exception;
 using std::unique_ptr;
+
+using scai::dmemo::Communicator;
+
+using scai::testsupport::uniquePathPerNode;
+using scai::testsupport::GlobalTempDir;
 
 /* --------------------------------------------------------------------- */
 
@@ -64,14 +74,16 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.FileLoggerTest" )
 
 BOOST_AUTO_TEST_CASE( LoggingTest )
 {
+    const auto logFileName = uniquePathPerNode(GlobalTempDir::getPath(),
+                                               *Communicator::getDefaultCommunicatorPtr(),
+                                               "FileLoggerTest.log");
+
+    BOOST_TEST_MESSAGE("Log filename: " << logFileName);
+
     std::string testMessage( "FileLoggerTestMessage\n" );
     FileLogger& flogger = FileLogger::getFileLogger();
     // This should throw an exception
     SCAI_CHECK_THROW( flogger.setLogFile( "/15/16/17" ), Exception );
-    const std::string path = scai::test::Configuration::getPath();
-    SCAI_LOG_INFO( logger, "Configuration path = " << path );
-    std::string logFileName( path + "/" + "FileLoggerTestFile.log" );
-    SCAI_LOG_INFO( logger, "Log file name = " << logFileName );
     flogger.setLogFile( logFileName );
     // Setting same name twice should be okay
     flogger.setLogFile( logFileName );

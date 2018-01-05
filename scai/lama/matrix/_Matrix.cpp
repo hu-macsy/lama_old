@@ -261,13 +261,6 @@ void _Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numC
 
 /* ---------------------------------------------------------------------------------*/
 
-Scalar _Matrix::operator()( IndexType i, IndexType j ) const
-{
-    return getValue( i, j );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void _Matrix::setCommunicationKind( SyncKind communicationKind )
 {
     mCommunicationKind = communicationKind;
@@ -301,35 +294,33 @@ _Matrix& _Matrix::operator=( const _Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-_Matrix& _Matrix::operator=( const Expression_SM& exp )
+/*
+template<typename ValueType>
+_Matrix& _Matrix::operator=( const Expression_SM<ValueType>& exp )
 {
     // exp is Expression object that stands for s * A
-    const _Matrix& A = exp.getArg2();
-    const Scalar& s = exp.getArg1();
+    const Matrix<ValueType>& A = exp.getArg2();
+    const ValueType& s = exp.getArg1();
     this->matrixTimesScalar( A, s );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
-_Matrix& _Matrix::operator*=( const Scalar exp )
-{
-    // this *= alpha  -> this->scale( exp )
-    this->scale( exp );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-_Matrix& _Matrix::operator+=( const Expression_SM& exp )
+/*
+template<typename ValueType>
+_Matrix& _Matrix::operator+=( const Expression_SM<ValueType>& exp )
 {
     // this += alpha * A  -> this = alpha * A + 1.0 * this
-    *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1.0 ), *this ) );
+    *this = Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( 1 ), *this ) );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 _Matrix& _Matrix::operator-=( const Expression_SM& exp )
 {
     // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A
@@ -337,27 +328,33 @@ _Matrix& _Matrix::operator-=( const Expression_SM& exp )
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), minusExp );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 _Matrix& _Matrix::operator+=( const _Matrix& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( 1.0 ), exp ) );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 _Matrix& _Matrix::operator-=( const _Matrix& exp )
 {
     // this -= A  -> this = -1.0 * A + 1.0 * this
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( -1.0 ), exp ) );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 _Matrix& _Matrix::operator=( const Expression_SMM& exp )
 {
     // exp is Expression object that stands for A * B with matrices A * B
@@ -366,6 +363,7 @@ _Matrix& _Matrix::operator=( const Expression_SMM& exp )
     *this = Expression_SMM_SM( exp, exp2 );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -380,161 +378,6 @@ void _Matrix::swapMatrix( _Matrix& other )
 double _Matrix::getSparsityRate() const
 {
     return ( double ) getNumValues() / getNumRows() / getNumColumns();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-bool _Matrix::checkSymmetry() const
-{
-    // check symmetry of matrix
-    IndexType n = getNumRows();
-
-    if ( n != getNumColumns() )
-    {
-        return false;
-    }
-
-    // Note: this solution is not very efficient
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        for ( IndexType j = 0; j < i; ++j )
-        {
-            if ( getValue( i, j ) != getValue( j, i ) )
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-void _Matrix::sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp )
-{
-    // check sanity of matrix product exp = A * B
-    const _Matrix& A = exp.getArg1();
-    const _Matrix& B = exp.getArg2();
-    const Distribution& colDistA = A.getColDistribution();
-    const Distribution& rowDistB = B.getDistribution();
-
-    if ( colDistA != rowDistB )
-    {
-        COMMON_THROWEXCEPTION(
-            "A * B with A = " << A << ", B = " << B << std::endl << "col size/distribution of A  = " << A.getColDistribution() << " does not match row/size distribution of B = " << B.getDistribution() );
-    }
-}
-
-void _Matrix::sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp, const _Matrix& C )
-{
-    sanityCheck( exp ); // verify the sanity of the matrix product
-    // verify that result of matrix multiplication and C are conform
-    const _Matrix& A = exp.getArg1();
-    const _Matrix& B = exp.getArg2();
-    const Distribution& rowDistA = A.getDistribution();
-    const Distribution& colDistB = B.getColDistribution();
-    const Distribution& rowDistC = C.getDistribution();
-    const Distribution& colDistC = C.getColDistribution();
-
-    if ( rowDistA != rowDistC )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << C )
-    }
-
-    if ( colDistB != colDistC )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << B << ", ARG2 = " << C )
-    }
-}
-
-void _Matrix::sanityCheck( const _Matrix& A, const _Matrix& B )
-{
-    // verify that A and B are conform for addition
-    const Distribution& rowDistA = A.getDistribution();
-    const Distribution& colDistA = A.getColDistribution();
-    const Distribution& rowDistB = B.getDistribution();
-    const Distribution& colDistB = B.getColDistribution();
-
-    if ( rowDistA != rowDistB )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of rows do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
-    }
-
-    if ( colDistA != colDistB )
-    {
-        COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-/**
- * @brief the assignment operator for a GEMM expression.
- */
-_Matrix& _Matrix::operator=( const Expression_SMM_SM& exp )
-{
-    const Expression_SMM& arg1 = exp.getArg1();
-    const Expression_SM& arg11 = arg1.getArg1();
-    const Expression_SM& arg2 = exp.getArg2();
-    const _Matrix& A = arg11.getArg2();
-    const _Matrix& B = arg1.getArg2();
-    const _Matrix& C = arg2.getArg2();
-    const Scalar& alpha = arg11.getArg1();
-    const Scalar& beta = arg2.getArg1();
-    SCAI_LOG_INFO( logger,
-                   "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
-    const Scalar zero( 0 );
-
-    if ( beta == zero )
-    {
-        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ) );
-    }
-    else
-    {
-        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ), C );
-    }
-
-    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
-    A.matrixTimesMatrix( *this, alpha, B, beta, C );
-    SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
-    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-/**
- * @brief the assignment operator for a MM addition.
- */
-_Matrix& _Matrix::operator=( const Expression_SM_SM& exp )
-{
-    SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
-    const _Matrix& A = exp.getArg1().getArg2();
-    const _Matrix& B = exp.getArg2().getArg2();
-    const Scalar& alpha = exp.getArg1().getArg1();
-    const Scalar& beta = exp.getArg2().getArg1();
-    const Scalar zero( 0.0 );
-
-    if ( beta == zero )
-    {
-        // second term not needed
-        this->matrixTimesScalar( A, alpha );
-        return *this;
-    }
-
-    if ( alpha == zero )
-    {
-        // first term not needed
-        this->matrixTimesScalar( B, beta );
-        return *this;
-    }
-
-    // Do sanity checks
-    sanityCheck( A, B );
-    this->matrixPlusMatrix( alpha, A, beta, B );
-    return *this;
 }
 
 /* ---------------------------------------------------------------------------------*/

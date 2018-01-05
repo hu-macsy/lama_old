@@ -547,7 +547,7 @@ void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void JDSStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1560,7 +1560,7 @@ void JDSStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<JDSStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<JDSStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<JDSStorage<ValueType>& >( other ) );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

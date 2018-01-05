@@ -212,12 +212,12 @@ struct VectorWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         {
             if ( source.getVectorKind() == VectorKind::SPARSE )
             {
-                const SparseVector<H>& typedSource = reinterpret_cast<const SparseVector<H>&>( source );
+                const SparseVector<H>& typedSource = static_cast<const SparseVector<H>&>( source );
                 target.assignImpl( typedSource );
             }
             else if ( source.getVectorKind() == VectorKind::DENSE )
             {
-                const DenseVector<H>& typedSource = reinterpret_cast<const DenseVector<H>&>( source );
+                const DenseVector<H>& typedSource = static_cast<const DenseVector<H>&>( source );
                 target.assignImpl( typedSource );
             }
             else
@@ -235,6 +235,11 @@ struct VectorWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
 template<typename ValueType>
 void SparseVector<ValueType>::assign( const _Vector& other )
 {
+    if ( &other == this )
+    {
+        return;
+    } 
+
     VectorWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::assign( *this, other );
 }
 
@@ -242,8 +247,11 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseVector<ValueType>::assignImpl( const SparseVector<OtherValueType>& other )
 {
+    SCAI_LOG_INFO( logger, "sparseVector<" << common::TypeTraits<ValueType>::id() << "> = "
+                        << "sparseVector<" << common::TypeTraits<OtherValueType>::id() )
+
     allocate( other.getDistributionPtr() );
-    assign( other.getZero() );
+    setScalar( other.getZero() );
     fillSparseData( other.getNonZeroIndexes(), other.getNonZeroValues(), common::BinaryOp::COPY );
 }
 
@@ -251,6 +259,9 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseVector<ValueType>::assignImpl( const DenseVector<OtherValueType>& other )
 {   
+    SCAI_LOG_INFO( logger, "sparseVector<" << common::TypeTraits<ValueType>::id() << "> = "
+                        << "denseVector<" << common::TypeTraits<OtherValueType>::id() )
+
     allocate( other.getDistributionPtr() );
     setDenseValues( other.getLocalValues() );
 }
@@ -284,12 +295,12 @@ SparseVector<ValueType>::SparseVector(
     dmemo::DistributionPtr distribution,
     const hmemo::HArray<IndexType>& indexes, 
     const hmemo::_HArray& values, 
-    const Scalar zero ) :
+    const ValueType zero ) :
 
     Vector<ValueType>( distribution )
 
 {
-    assign( zero );
+    setScalar( zero );
     fillSparseData( indexes, values, common::BinaryOp::COPY );
 }
 
@@ -341,108 +352,108 @@ void SparseVector<ValueType>::fillSparseRandom( const float fillRate, const Inde
 
 // linear algebra expression: a*x
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SV& expression ) : 
+SparseVector<ValueType>::SparseVector( const Expression_SV<ValueType>& expression ) : 
 
     Vector<ValueType>( expression.getArg2() )
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a+x/x+a
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SV_S& expression ) : 
+SparseVector<ValueType>::SparseVector( const Expression_SV_S<ValueType>& expression ) : 
 
     Vector<ValueType>( expression.getArg1().getArg2() )
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta)" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: x*y
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_VV& expression ) : 
+SparseVector<ValueType>::SparseVector( const Expression_VV<ValueType>& expression ) : 
 
     Vector<ValueType>( expression.getArg1() )
 
 {
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: s*x*y
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SVV& expression ) :
+SparseVector<ValueType>::SparseVector( const Expression_SVV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg2().getArg1() )
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*x+b*y, inherit distribution/context from vector x
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SV_SV& expression ) :
+SparseVector<ValueType>::SparseVector( const Expression_SV_SV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1().getArg2() )
 
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SMV_SV& expression ) :
+SparseVector<ValueType>::SparseVector( const Expression_SMV_SV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
             expression.getArg1().getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SVM_SV& expression )
+SparseVector<ValueType>::SparseVector( const Expression_SVM_SV<ValueType>& expression )
     : Vector<ValueType>( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
               expression.getArg1().getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x, inherit distribution/context from matrix A
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SMV& expression )
+SparseVector<ValueType>::SparseVector( const Expression_SMV<ValueType>& expression )
 
     : Vector<ValueType>( expression.getArg2().getArg1().getRowDistributionPtr(),
               expression.getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*x*A, inherit distribution/context from matrix A
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SVM& expression )
+SparseVector<ValueType>::SparseVector( const Expression_SVM<ValueType>& expression )
     : Vector<ValueType>( expression.getArg2().getArg2().getColDistributionPtr(),
               expression.getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -586,7 +597,7 @@ void SparseVector<ValueType>::buildLocalValues(
     {
         // temporary array needed for this operation
 
-        SCAI_LOG_WARN( logger, *this << ", is not ZERO element of " << op << ", temporary dense values are built" )
+        SCAI_UNSUPPORTED( *this << ", mZero = " << mZeroValue << " is not ZERO element of " << op << ", temporary dense values are built" )
 
         utilskernel::LArray<ValueType> myDenseValues( size, mZeroValue );
         HArrayUtils::scatterImpl( myDenseValues, mNonZeroIndexes, UNIQUE, mNonZeroValues, common::BinaryOp::COPY, loc );
@@ -603,7 +614,7 @@ void SparseVector<ValueType>::gatherLocalValues(
     const common::BinaryOp op,
     ContextPtr loc ) const
 {
-    HArrayUtils::sparseGather( values, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
+    HArrayUtils::sparseGather( values, mZeroValue, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -760,7 +771,7 @@ SparseVector<ValueType>* SparseVector<ValueType>::newVector() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::getValue( IndexType globalIndex ) const
+ValueType SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     ValueType myValue = 0;
 
@@ -790,13 +801,13 @@ Scalar SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     SCAI_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
 
-    return Scalar( allValue );
+    return allValue;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar value )
+void SparseVector<ValueType>::setValue( const IndexType globalIndex, const ValueType value )
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( globalIndex, size(), "illegal index" )
 
@@ -812,11 +823,9 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 
         IndexType pos = HArrayUtils::findPosInSortedIndexes( mNonZeroIndexes, localIndex );
 
-        ValueType typedValue = value.getValue<ValueType>();
-
         if ( pos != nIndex )
         {
-            mNonZeroValues[pos] = typedValue;
+            mNonZeroValues[pos] = value;
         }
         else
         {
@@ -824,7 +833,7 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 
             pos = HArrayUtils::insertSorted( mNonZeroIndexes, localIndex );
             SCAI_LOG_TRACE( logger, "setValue, local index = " << localIndex << " at pos = " << pos )
-            HArrayUtils::insertAtPos( mNonZeroValues, pos, typedValue );
+            HArrayUtils::insertAtPos( mNonZeroValues, pos, value );
         }
     }
 }
@@ -832,7 +841,7 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors )
+void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors )
 {
     SparseVector<ValueType> newVector( dist, ValueType( 0 ) );
 
@@ -862,6 +871,8 @@ void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const st
             }
         }
     }
+
+    swap( newVector );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1053,31 +1064,31 @@ NormType<ValueType> SparseVector<ValueType>::maxNorm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
+NormType<ValueType> SparseVector<ValueType>::maxDiffNorm( const Vector<ValueType>& other ) const
 {
+    SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "distribution mismatch for maxDiffNorm" )
+
     // ToDo: find some more efficient solutions wherever possible
 
-    SparseVector<ValueType> tmp( *this );
-    tmp.setVector( other, common::BinaryOp::SUB, false );
+    SparseVector<ValueType> tmp;
+    tmp.binaryOp( *this, common::BinaryOp::SUB, other );
     return tmp.maxNorm();
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool SparseVector<ValueType>::all( const common::CompareOp op, const Scalar value ) const
+bool SparseVector<ValueType>::all( const common::CompareOp op, const ValueType value ) const
 {
-    ValueType typedValue = value.getValue<ValueType>();
-
     // all non-zero values must fulfill the condition
 
-    bool localAll = HArrayUtils::allScalar( mNonZeroValues, op, typedValue );
+    bool localAll = HArrayUtils::allScalar( mNonZeroValues, op, value );
 
     if ( mNonZeroValues.size() != getDistribution().getLocalSize() )
     {
         // at least one entry has the ZERO value, so we compare it
 
-        localAll = localAll && common::applyBinary( mZeroValue, op, typedValue );
+        localAll = localAll && common::applyBinary( mZeroValue, op, value );
     }
 
     bool globalAll = getDistribution().getCommunicator().all( localAll );
@@ -1088,7 +1099,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const Scalar valu
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool SparseVector<ValueType>::all( const common::CompareOp op, const _Vector& other ) const
+bool SparseVector<ValueType>::all( const common::CompareOp op, const Vector<ValueType>& other ) const
 {
     SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
 
@@ -1109,7 +1120,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const _Vector& ot
 
     bool localAll;
 
-    const SparseVector<ValueType>& otherSparse = reinterpret_cast<const SparseVector<ValueType>& >( other );
+    const SparseVector<ValueType>& otherSparse = static_cast<const SparseVector<ValueType>& >( other );
 
     // ValueType otherZero = otherSparse.getZero().getValue<ValueType>();
 
@@ -1142,7 +1153,7 @@ void SparseVector<ValueType>::swap( _Vector& other )
     SCAI_ASSERT_EQ_ERROR( getVectorKind(), other.getVectorKind(), "Swap only for same kind of vector allowed" )
     SCAI_ASSERT_EQ_ERROR( getValueType(), other.getValueType(), "Swap only for same value type of vector allowed" )
 
-    SparseVector<ValueType>& typedOther = reinterpret_cast<SparseVector<ValueType>&>( other );
+    SparseVector<ValueType>& typedOther = static_cast<SparseVector<ValueType>&>( other );
 
     _Vector::swapVector( other );   // swap sizes, distributions
 
@@ -1165,28 +1176,170 @@ void SparseVector<ValueType>::writeAt( std::ostream& stream ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const _Vector& x, const Scalar& beta, const _Vector& y )
+void SparseVector<ValueType>::unaryOp( const Vector<ValueType>& x, common::UnaryOp op )
 {
-    if ( x.getValueType() == getValueType() && x.getVectorKind() == VectorKind::SPARSE  )
+    if ( x.getVectorKind() != VectorKind::SPARSE )
     {
-        const SparseVector<ValueType>& spX = reinterpret_cast<const SparseVector<ValueType>&>( x );
+        SCAI_UNSUPPORTED( "sparseVector = unaryOp( denseVector ), uses temporary dense vector" )
+        DenseVector<ValueType> tmpResult;
+        tmpResult.unaryOp( x, op );
+        assign( tmpResult );
+        return;
+    }
 
-        if ( y.getValueType() == getValueType() && y.getVectorKind() == VectorKind::SPARSE )
+    const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
+
+    if ( &x != this )
+    {
+        // allocation and copy of non-zero indexes only required if there is no alias
+
+        allocate( x.getDistributionPtr() );
+        mNonZeroValues.resize( sparseX.mNonZeroValues.size() );
+        mNonZeroIndexes = sparseX.mNonZeroIndexes;
+    }
+
+    mZeroValue = common::applyUnary( op, sparseX.mZeroValue );
+    HArrayUtils::unaryOp( mNonZeroValues, sparseX.mNonZeroValues, op, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::binaryOp( const Vector<ValueType>& x, const common::BinaryOp op, const Vector<ValueType>& y )
+{
+    SCAI_ASSERT_EQ_ERROR( x.getDistribution(), y.getDistribution(), "serious space mismatch" )
+
+    SCAI_LOG_INFO( logger, "binaryOp: this = x " << op << " y, with x = " << x << ", y = " << y );
+
+    if ( x.getVectorKind() == VectorKind::SPARSE && y.getVectorKind() == VectorKind::SPARSE )
+    {
+        const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
+        const SparseVector<ValueType>& sparseY = static_cast<const SparseVector<ValueType>&>( y );
+
+        binaryOpSparse( sparseX, op, sparseY );
+    }
+    else
+    {
+        SCAI_UNSUPPORTED( "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::binaryOp x " << op << " y" )
+        DenseVector<ValueType> tmp;
+        tmp.binaryOp( x, op, y );
+        assign( tmp );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap )
+{
+    if ( swap )
+    {
+        SCAI_LOG_INFO( logger, "binaryOp: this = " << alpha << " " << op << " x, with x = " << x );
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "binaryOp: this = x " << op << " " << alpha << ", with x = " << x );
+    }
+
+    if ( x.getVectorKind() != VectorKind::SPARSE )
+    {
+        // thisSparse = xDense op alpha -> tmpResult = xDense op alpha; thisSparse = tmpsDense 
+
+        SCAI_UNSUPPORTED( "sparseVector = denseVector op scalar, uses temporaray dense vector" )
+        DenseVector<ValueType> tmpResult;
+        tmpResult.binaryOpScalar( x, alpha, op, swap );
+        assign( tmpResult );
+        return;
+    }
+
+    const SparseVector<ValueType> sparseX = static_cast<const SparseVector<ValueType>&>( x );
+
+    if ( &x != this )
+    {
+        // allocation and copy of non-zero indexes only required if there is no alias
+
+        allocate( x.getDistributionPtr() );
+        mNonZeroValues.resize( sparseX.mNonZeroValues.size() );
+        mNonZeroIndexes = sparseX.mNonZeroIndexes;
+    }
+
+    // the following code works for any kind of alias
+
+    HArrayUtils::binaryOpScalar( mNonZeroValues, sparseX.mNonZeroValues, alpha, op, swap, getContextPtr() );
+
+    if ( !swap )
+    {
+        mZeroValue = common::applyBinary( sparseX.mZeroValue, op, alpha );
+    }
+    else
+    {
+        mZeroValue = common::applyBinary( alpha, op, sparseX.mZeroValue );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y )
+{
+    SCAI_ASSERT_EQ_DEBUG( x.getDistribution(), y.getDistribution(), "serious space mismatch" )
+
+    if ( getDistribution() != x.getDistribution() )
+    {
+        // there is no alias of this vector, neither with x nor with y
+
+        allocate( x.getDistributionPtr() );
+    }
+
+    SCAI_LOG_INFO( logger, "binaryOpSparse: this = x " << op << " y, with x = " << x << ", y = " << y );
+
+    const HArray<IndexType>& xIndexes = x.getNonZeroIndexes();
+    const HArray<ValueType>& xValues  = x.getNonZeroValues();
+    ValueType xZero = x.getZero();
+
+    const HArray<IndexType>& yIndexes = y.getNonZeroIndexes();
+    const HArray<ValueType>& yValues  = y.getNonZeroValues();
+    ValueType yZero = y.getZero();
+
+    // binary operation on sparse vectors
+
+    HArray<ValueType> resultValues;
+    HArray<IndexType> resultIndexes;
+
+    HArrayUtils::binaryOpSparse( resultIndexes, resultValues,
+                                 xIndexes, xValues, xZero,
+                                 yIndexes, yValues, yZero, op, getContextPtr() );
+
+    mZeroValue = common::applyBinary( xZero, op, yZero);
+     
+    // Note: entries in non-zero values that are now ZERO are not removed
+
+    swapSparseValues( resultIndexes, resultValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& x, 
+                                                const ValueType& beta, const Vector<ValueType>& y )
+{
+    if ( x.getVectorKind() == VectorKind::SPARSE  )
+    {
+        const SparseVector<ValueType>& spX = static_cast<const SparseVector<ValueType>&>( x );
+
+        if ( y.getVectorKind() == VectorKind::SPARSE )
         {
-            const SparseVector<ValueType>& spY = reinterpret_cast<const SparseVector<ValueType>&>( y );
+            const SparseVector<ValueType>& spY = static_cast<const SparseVector<ValueType>&>( y );
          
-            const ValueType alphaV = alpha.getValue<ValueType>();
-            const ValueType betaV = beta.getValue<ValueType>();
- 
-            vectorPlusVectorImpl( alphaV, spX, betaV, spY );
+            vectorPlusVectorImpl( alpha, spX, beta, spY );
             return;
         }
     }
 
     // just get it running: use DenseVector as temporary
 
-    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorPlusVector( " 
-                          << alpha << " * x + " << beta << " * y ) uses temporary dense vector" )
+    SCAI_UNSUPPORTED( "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorPlusVector( " 
+                       << alpha << " * x + " << beta << " * y ) uses temporary dense vector" )
 
     DenseVector<ValueType> tmp;
     tmp.vectorPlusVector( alpha, x, beta, y );
@@ -1232,31 +1385,72 @@ void SparseVector<ValueType>::vectorPlusVectorImpl(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const _Vector& x, const _Vector& y )
+void SparseVector<ValueType>::vectorTimesVector( 
+    const ValueType& alpha, 
+    const Vector<ValueType>& x, 
+    const Vector<ValueType>& y )
 {
     // just get it running: use DenseVector as temporary
 
-    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorTimesVector( " 
-                          << alpha << " * x * y ) uses temporary dense vector" )
+    SCAI_UNSUPPORTED( "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorTimesVector( " 
+                       << alpha << " * x * y ) uses temporary dense vector" )
 
     DenseVector<ValueType> tmp;
     tmp.vectorTimesVector( alpha, x, y );
-    assign( tmp );
+    this->assign( tmp );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const _Vector& x, const Scalar& beta )
+void SparseVector<ValueType>::vectorPlusScalar( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta )
 {
-    // just get it running: use DenseVector as temporary
+    if ( beta == common::Constants::ZERO )
+    {
+        binaryOpScalar( x, alpha, common::BinaryOp::MULT, true );
+        return;
+    }
 
-    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorAddScalar( " 
-                          << alpha << " * x + " << beta << " ) uses temporary dense vector" )
+    if ( alpha == common::Constants::ZERO )
+    {
+        // be careful, we inherit the space of x
+       
+        allocate( x.getDistributionPtr() );
+        setScalar( beta );
+        return;
+    }
 
-    DenseVector<ValueType> tmp;
-    tmp.vectorPlusScalar( alpha, x, beta );
-    assign( tmp );
+    if ( alpha == common::Constants::ONE )
+    {
+        // be careful, we inherit the space of x
+       
+        binaryOpScalar( x, beta, common::BinaryOp::ADD, false );
+        return;
+    }
+
+    if ( x.getVectorKind() != VectorKind::SPARSE )
+    {
+        SCAI_UNSUPPORTED( "sparseVector = alpha * denseVector + beta not supported, use denseResult as temporary" )
+        DenseVector<ValueType> tmpResult;
+        tmpResult.vectorPlusScalar( alpha, x, beta );
+        assign( tmpResult );
+        return;
+    }
+
+    const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
+
+    if ( &x != this )
+    {
+        // allocation and copy of non-zero indexes only required if there is no alias
+
+        allocate( x.getDistributionPtr() );
+        mNonZeroValues.resize( sparseX.mNonZeroValues.size() );
+        mNonZeroIndexes = sparseX.mNonZeroIndexes;
+    }
+
+    mZeroValue = alpha * sparseX.mZeroValue + beta;
+
+    utilskernel::HArrayUtils::arrayPlusScalar( mNonZeroValues, alpha, sparseX.mNonZeroValues, beta, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1294,8 +1488,8 @@ ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
     {
          utilskernel::LArray<ValueType> multValues;
 
-         buildLocalValues( multValues, common::BinaryOp::COPY, mContext );
-         other.buildLocalValues( multValues, common::BinaryOp::MULT, mContext );
+         buildLocalValues( multValues, common::BinaryOp::COPY, getContextPtr() );
+         other.buildLocalValues( multValues, common::BinaryOp::MULT, getContextPtr() );
          localDotProduct = multValues.sum();
     }
 
@@ -1311,77 +1505,72 @@ ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::binOpSparse( const SparseVector<ValueType>& other,
-                                           const common::BinaryOp op,
-                                           bool swapArgs )
-{
-    SCAI_LOG_INFO( logger, *this << " " << op << " = " << other )
-
-    const HArray<IndexType>& otherIndexes = other.getNonZeroIndexes();
-    const HArray<ValueType>& otherValues = other.getNonZeroValues();
-
-    Scalar otherZeroScalar = other.getZero();
-    ValueType otherZero = otherZeroScalar.getValue<ValueType>();
-
-    // binary operation on sparse vectors
-
-    HArray<ValueType> resultValues;
-    HArray<IndexType> resultIndexes;
-
-    if ( !swapArgs )
-    {
-        HArrayUtils::binaryOpSparse( resultIndexes, resultValues,
-                                     mNonZeroIndexes, mNonZeroValues, mZeroValue,
-                                     otherIndexes, otherValues, otherZero, op, mContext );
-    
-        mZeroValue = common::applyBinary( mZeroValue, op, otherZero );
-    }
-    else
-    {
-        HArrayUtils::binaryOpSparse( resultIndexes, resultValues,
-                                     otherIndexes, otherValues, otherZero, 
-                                     mNonZeroIndexes, mNonZeroValues, mZeroValue,
-                                     op, mContext );
-    
-        mZeroValue = common::applyBinary( otherZero, op, mZeroValue );
-    }
-
-    // ToDo: remove entries in non-zero values that are now ZERO 
-
-    swapSparseValues( resultIndexes, resultValues );
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp op, const bool swapArgs )
 {
     SCAI_REGION( "Vector.Sparse.setVector" )
 
     SCAI_LOG_INFO( logger, "set " << *this << " with " << other << ", op = " << op )
 
+    // op == COPY is special case 
+
+    if ( op == common::BinaryOp::COPY )
+    {
+        SCAI_ASSERT_ERROR( !swapArgs, "swapping for binary COPY operator not allowed" )
+
+        if ( &other == this )
+        {
+            return;
+        }
+
+        allocate( other.getDistributionPtr() );
+        assign( other );
+
+        return;
+    }
+
     SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "setVector only with same distributions supported" );
-    SCAI_ASSERT_EQ_ERROR( getValueType(), other.getValueType(), "setVector only with same value type supported" );
 
     SCAI_ASSERT_ERROR( !swapArgs, "swapping arguments not supported yet" )
 
     if ( mZeroValue == ValueType( 0 ) && op == common::BinaryOp::MULT )
     {
+        SCAI_LOG_INFO( logger, "setVector: thisSparse( zero = 0 ) *= otherSparse, other = " << other )
+
         // gather the values from other vector at the non-zero positions 
 
         HArray<ValueType> otherValues;  // = other[ nonZeroIndexes ]
+
         other.gatherLocalValues( otherValues, mNonZeroIndexes, common::BinaryOp::COPY, getContextPtr() );
+
         HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, op, getContextPtr() );
     }
-    else if ( other.getVectorKind() == VectorKind::SPARSE )
+    else if ( other.getValueType() == getValueType() )
     {
-        const SparseVector<ValueType>& otherSparse = reinterpret_cast<const SparseVector<ValueType>&>( other );
+        const Vector<ValueType>& otherTyped = static_cast<const Vector<ValueType>&>( other );
 
-        binOpSparse( otherSparse, op, swapArgs );
+        if ( !swapArgs )
+        {
+            binaryOp( *this, op, otherTyped );
+        }
+        else
+        {
+            binaryOp( otherTyped, op, *this );
+        }
     }
     else
     {
-        COMMON_THROWEXCEPTION( "setVector with dense vector makes this sparse vector dense, unsupported" )
+        // Maybe not very efficient if other vector is dense
+
+        SparseVector<ValueType> tmpOther( other );
+
+        if ( !swapArgs )
+        {
+            binaryOpSparse( *this, op, tmpOther );
+        }
+        else
+        {
+            binaryOpSparse( tmpOther, op, *this );
+        }
     }
 }
 
@@ -1409,44 +1598,15 @@ void SparseVector<ValueType>::allocate( const IndexType n )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::assign( const Scalar value )
+void SparseVector<ValueType>::setScalar( const ValueType& alpha )
 {
-    SCAI_LOG_INFO( logger, *this << ": assign " << value )
+    SCAI_LOG_INFO( logger, *this << ": set scalar " << alpha )
 
     // just set this values as the ZERO value for the sparse vector
 
     mNonZeroIndexes.clear();
     mNonZeroValues.clear();
-    mZeroValue = value.getValue<ValueType>();
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void SparseVector<ValueType>::setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar )
-{
-    SCAI_LOG_DEBUG( logger, *this << ": set " << value << ", op = " << op )
-
-    ValueType val = value.getValue<ValueType>();
-
-    if ( op == common::BinaryOp::COPY )
-    {
-        mNonZeroIndexes.clear();
-        mNonZeroValues.clear();
-        mZeroValue = val;
-        return;
-    }
-
-    if ( swapScalar )
-    {
-        mZeroValue = common::applyBinary( val, op, mZeroValue );
-    }
-    else
-    {
-        mZeroValue = common::applyBinary( mZeroValue, op, val );
-    }
-
-    HArrayUtils::binaryOpScalar( mNonZeroValues, mNonZeroValues, val, op, swapScalar, mContext );
+    mZeroValue = alpha;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1463,15 +1623,6 @@ void SparseVector<ValueType>::wait() const
 {
     mNonZeroValues.wait();
     mNonZeroIndexes.wait();
-}
-
-/* ------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void SparseVector<ValueType>::applyUnary( common::UnaryOp op )
-{
-    mZeroValue = common::applyUnary( op, mZeroValue );
-    HArrayUtils::UnaryOpOp( mNonZeroValues, mNonZeroValues, op, mContext );
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1678,7 +1829,9 @@ void SparseVector<ValueType>::writeLocalToFile(
     }
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
+/*       Factory methods (must be provided to register)                      */
+/* ========================================================================= */
 
 template<typename ValueType>
 _Vector* SparseVector<ValueType>::create()
@@ -1690,12 +1843,6 @@ template<typename ValueType>
 VectorCreateKeyType SparseVector<ValueType>::createValue()
 {
     return VectorCreateKeyType( VectorKind::SPARSE, common::getScalarType<ValueType>() );
-}
-
-template<typename ValueType>
-VectorCreateKeyType SparseVector<ValueType>::getCreateValue() const
-{
-    return createValue();
 }
 
 /* ---------------------------------------------------------------------------------*/

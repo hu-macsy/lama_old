@@ -34,7 +34,7 @@
 
 set ( CXX_SOURCES
 
-          atomicOpenMPTest
+          AtomicOpenMPTest
           commonTest
           BinaryOpTest
           ConstantsTest

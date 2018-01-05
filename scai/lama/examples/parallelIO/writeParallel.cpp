@@ -83,11 +83,7 @@ int main( int argc, const char* argv[] )
 
     // oops, no factory for storage, only for matrix
 
-<<<<<<< HEAD
-    common::unique_ptr<Matrix> matrixPtr( _Matrix::getMatrix( _Matrix::CSR, type ) );
-=======
-    std::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
->>>>>>> lama_intern/feature/remove_boost
+    _MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, type ) );
 
     _Matrix& matrix = *matrixPtr;
 

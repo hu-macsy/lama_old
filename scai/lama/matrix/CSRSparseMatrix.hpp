@@ -68,8 +68,6 @@ class COMMON_DLL_IMPORTEXPORT CSRSparseMatrix:
 
 public:
 
-    typedef ValueType _MatrixValueType; //!< This is the type of the matrix values.
-
     /** Type definition of the storage type for this sparse matrix. */
 
     typedef CSRStorage<ValueType> StorageType;
@@ -136,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit CSRSparseMatrix( const Expression_SM& expression );
+    explicit CSRSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit CSRSparseMatrix( const Expression_SMM& expression );
+    explicit CSRSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit CSRSparseMatrix( const Expression_SM_SM& expression );
+    explicit CSRSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a CSR sparse matrix with distributed CSR storage data.
      *

@@ -89,12 +89,12 @@ struct SectionKernelTrait
      *  @tparam TargetValueType specifies the value type used in the reduction.
      */
     template <typename TargetValueType, typename SourceValueType>
-    struct UnaryOpOp
+    struct unaryOp
     {
         /** @brief assign one section to another
          *
          *  \code
-         *     targetSection = UnaryOpOp( sourceSection );
+         *     targetSection = unaryOp( sourceSection );
          *  \endcode
          */
         typedef void ( *FuncType ) ( TargetValueType targetSection[],
@@ -107,7 +107,7 @@ struct SectionKernelTrait
 
         static const char* getId()
         {
-            return "Section.UnaryOpOp";
+            return "Section.unaryOp";
         }
     };
 

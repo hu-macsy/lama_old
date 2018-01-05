@@ -32,7 +32,16 @@
  * @date 27.01.2016
  */
 
+#ifndef BOOST_TEST_DYN_LINK
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE CommonTest
+#endif
 
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_MODULE commonTest
+#define BOOST_TEST_NO_MAIN
+
+#include <scai/testsupport/commonTestMain.hpp>
+
+int main( int argc, char* argv[] )
+{
+    return scai::testsupport::commonTestMain(argc, argv);
+}

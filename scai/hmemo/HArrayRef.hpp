@@ -58,6 +58,12 @@ namespace hmemo
  *
  * An object of this class is restricted in its use. Any resize operation that
  * would cause reallocation of data at the host throws an exception.
+ *
+ * If a const pointer/reference is passed, only read accesses will be possible.
+ *
+ * Instead of using an additional class like ConstHArrayRef this approach has been
+ * chosen to avoid additional class definitions. The penalty is that illegal access
+ * can only be identified at runtime and not at compile time.
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT HArrayRef: public HArray<ValueType>
@@ -78,15 +84,10 @@ public:
 
     HArrayRef( std::vector<ValueType>& data );
 
-protected:
-
-    using HArray<ValueType>::mSize;
-    using HArray<ValueType>::mValueSize;
-
-    using HArray<ValueType>::mContextDataManager;
-    using HArray<ValueType>::constFlag;
 };
 
+/* ---------------------------------------------------------------------------------*/
+/*   Implementation of template methods                                             */
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
@@ -99,47 +100,41 @@ HArrayRef<ValueType>::HArrayRef( IndexType size, ValueType* pointer )
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
-    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
-    host.setRef( pointer, size * mValueSize );
-    mSize = size;
+    _HArray::setHostRef( size, pointer );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArrayRef<ValueType>::HArrayRef( std::vector<ValueType>& data )
-    : HArray<ValueType>()
+HArrayRef<ValueType>::HArrayRef( std::vector<ValueType>& data ) : HArray<ValueType>()
 {
-    mSize = data.size();
+    IndexType size = data.size();
 
-    if ( mSize == 0 )
+    if ( size == 0 )
     {
         // in this case the HArray behaves like a usual array
         return;
     }
 
-    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
-    host.setRef( &data[0], mSize * mValueSize );
+    _HArray::setHostRef( size, &data[0] );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArrayRef<ValueType>::HArrayRef( IndexType size, const ValueType* pointer )
-    : HArray<ValueType>()
+HArrayRef<ValueType>::HArrayRef( IndexType size, const ValueType* pointer ) : 
+
+    HArray<ValueType>()
+
 {
-    // Important: context must be set to the DefaultHostContext
     if ( size != 0 && pointer == NULL )
     {
         COMMON_THROWEXCEPTION( "LAMAArryRef with NULL pointer" )
     }
 
-    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
-    // dealing with const references in ContextData is not supported
-    host.setRef( const_cast<ValueType*>( pointer ), size * sizeof( ValueType ) );
-    // Take care of const awareness by setting a flag
-    constFlag = true;
-    mSize = size;
+    // const cast required but const flag is set true
+
+    _HArray::setHostRef( size, pointer );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -147,17 +142,15 @@ HArrayRef<ValueType>::HArrayRef( IndexType size, const ValueType* pointer )
 template<typename ValueType>
 HArrayRef<ValueType>::HArrayRef( const std::vector<ValueType>& data ) : HArray<ValueType>()
 {
-    mSize = data.size();
+    IndexType size = data.size();
 
-    if ( mSize == 0 )
+    if ( size == 0 )
     {
         // in this case the HArray behaves like a usual array
         return;
     }
 
-    ContextData& host = mContextDataManager[ HostMemory::getIt() ];
-    host.setRef( const_cast<ValueType>( &data[0] ), mSize * mValueSize );
-    constFlag = true;
+    _HArray::setHostRef( size, &data[0] );
 }
 
 } /* end namespace hmemo */

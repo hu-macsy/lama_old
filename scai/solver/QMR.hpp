@@ -58,13 +58,20 @@ namespace solver
  * @brief The class QMR represents a IterativeSolver which uses the krylov subspace stabilized Quasi Minimal Residual method
  *        to solve a system of linear equations iteratively.
  *
+ * This solver needs for solving a matrix A also the tranposed matrix - vector multiplication.
+ * For efficiency it is often better to build the transposed matrix explicitly. Therefore
+ * it is better to encapsulate a matrix A in an object AwithT.
+ *
  * Remark:
  * The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT QMR:
-    public IterativeSolver,
-    public Solver::Register<QMR>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<QMR<ValueType> >
+
 {
 public:
     /**
@@ -89,7 +96,7 @@ public:
 
     virtual ~QMR();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -97,38 +104,36 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual QMR<ValueType>* copy();
 
-    struct QMRRuntime: IterativeSolverRuntime
+    struct QMRRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        QMRRuntime();
-        virtual ~QMRRuntime();
+        lama::MatrixPtr<ValueType> mConjTransposeA;
 
-        lama::_MatrixPtr mTransposeA;
-        lama::_VectorPtr mInitialRes;
-        lama::_VectorPtr mVecV;
-        lama::_VectorPtr mVecW;
-        lama::_VectorPtr mVecY;      /*preconditioning 1*/
-        lama::_VectorPtr mVecZ;
+        lama::DenseVector<ValueType> mInitialRes;
+        lama::DenseVector<ValueType> mVecV;
+        lama::DenseVector<ValueType> mVecW;
+        lama::DenseVector<ValueType> mVecY;      /*preconditioning 1*/
+        lama::DenseVector<ValueType> mVecZ;
 
-        lama::_VectorPtr mVecWT;
-        lama::_VectorPtr mVecVT;
-        lama::_VectorPtr mVecYT;
-        lama::_VectorPtr mVecZT;
-        lama::_VectorPtr mVecP;
-        lama::_VectorPtr mVecQ;
-        lama::_VectorPtr mVecPT;
-        lama::_VectorPtr mVecS;
-        lama::_VectorPtr mVecD;
+        lama::DenseVector<ValueType> mVecWT;
+        lama::DenseVector<ValueType> mVecVT;
+        lama::DenseVector<ValueType> mVecYT;
+        lama::DenseVector<ValueType> mVecZT;
+        lama::DenseVector<ValueType> mVecP;
+        lama::DenseVector<ValueType> mVecQ;
+        lama::DenseVector<ValueType> mVecPT;
+        lama::DenseVector<ValueType> mVecS;
+        lama::DenseVector<ValueType> mVecD;
 
-        lama::Scalar mGamma;
-        lama::Scalar mTheta;
-        lama::Scalar mPsi;
-        lama::Scalar mRho;
-        lama::Scalar mEpsilon;
-        lama::Scalar mEta;
+        ValueType mGamma;
+        ValueType mTheta;
+        ValueType mPsi;
+        ValueType mRho;
+        ValueType mEpsilon;
+        ValueType mEta;
 
-        lama::Scalar mEps;
+        ValueType mEps;
     };
 
     /**
@@ -138,19 +143,26 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
+    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const QMRRuntime& getConstRuntime() const;
+    virtual const QMRRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
     virtual void iterate();
+
+    using IterativeSolver<ValueType>::mPreconditioner;
 
     /**
      *  @brief own implementation of Printable::writeAt

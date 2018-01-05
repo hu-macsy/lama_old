@@ -44,20 +44,25 @@
 namespace scai
 {
 
+namespace lama
+{
+    template<typename ValueType> class Matrix;
+    template<typename ValueType> class DenseVector;
+}
+
 namespace solver
 {
 
 /**
  * @brief The class CG represents a IterativeSolver which uses the krylov subspace CG method
  *        to solve a system of linear equations iteratively.
- *
- * Remark:
- * The scalars in the algorithm are set to zero if they are smaller than machine precision
- * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
+template<class ValueType>
 class COMMON_DLL_IMPORTEXPORT CG:
-    public IterativeSolver,
-    public Solver::Register<CG>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<CG<ValueType> >    // register at solver factory
+
 {
 public:
     /**
@@ -82,25 +87,25 @@ public:
 
     virtual ~CG();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
-     * @brief Copies the status independent solver informations to create a new instance of the same
-     * type
-     *
-     * @return shared pointer of the copied solver
+     * @brief Copies the status independent solver informations to create a new instance of the same type
      */
-    virtual SolverPtr copy();
+    virtual CG<ValueType>* copy();
 
-    struct CGRuntime: IterativeSolverRuntime
+    using IterativeSolver<ValueType>::IterativeSolverRuntime;
+
+    struct CGRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        CGRuntime();
-        virtual ~CGRuntime();
+        /** Initialize the runtime with target space of the matrix to be solved */
 
-        lama::_VectorPtr mP;
-        lama::_VectorPtr mQ;
-        lama::_VectorPtr mZ;
-        lama::Scalar mPScalar;
+        void initialize( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx );
+
+        lama::DenseVector<ValueType> mP;
+        lama::DenseVector<ValueType> mQ;
+        lama::DenseVector<ValueType> mZ;
+        ValueType mPScalar;
     };
 
     /**
@@ -111,10 +116,15 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const CGRuntime& getConstRuntime() const;
+    virtual const CGRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 

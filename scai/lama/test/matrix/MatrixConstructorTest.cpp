@@ -44,15 +44,21 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 
+#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
+
 using namespace scai;
 using namespace lama;
+
+using scai::testsupport::uniquePath;
+using scai::testsupport::GlobalTempDir;
 
 /* ------------------------------------------------------------------------- */
 
@@ -580,7 +586,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
     const IndexType numRows = 16;
     const IndexType numCols = 16;
 
-    std::string fileName = "myMatrix.psc";   // binary type, so no loss of precision
+    const auto fileName = uniquePath(GlobalTempDir::getPath(), "myMatrix") + ".psc";
 
     float fillRate = 0.2;
 

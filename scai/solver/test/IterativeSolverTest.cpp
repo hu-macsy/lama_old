@@ -88,7 +88,8 @@ static void setupMatrix( CSRSparseMatrix<ValueType>& matrix, const IndexType N1,
 
 /** Help class where an object is a vector of all available iterative solvers. */
 
-class IterativeSolvers : public std::vector<SolverPtr>
+template<typename ValueType>
+class IterativeSolvers : public std::vector<SolverPtr<ValueType> >
 {
 
 public:
@@ -97,36 +98,36 @@ public:
 
     IterativeSolvers()
     {
-        std::vector<std::string> values;
-        Solver::getCreateValues( values );
+        std::vector<SolverCreateKeyType> values;
+
+        _Solver::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); i++ )
         {
-            if ( values[i] == "Kaczmarz" )
+            if ( values[i].second == "Kaczmarz" )
             {
                 continue;   
             }
 
-            SolverPtr solver( Solver::create( values[i], "" ) );
+            _SolverPtr _solver( _Solver::create( values[i] ) );
 
-            IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver.get() );
+            std::shared_ptr<IterativeSolver<ValueType> > itSolver =
+               std::dynamic_pointer_cast<IterativeSolver<ValueType> >( _solver );
 
-            if ( iterativeSolver == NULL )
+            if ( itSolver )
             {
-                continue;
+                this->push_back( itSolver );
             }
-
-            push_back( solver );
         }
     }
 
     // Destructor will free all matrix storages due to use of shared pointers
 
-    IterativeSolver& get( const size_t i )
+    IterativeSolver<ValueType>& get( const size_t i )
     {
-        SCAI_ASSERT_LT( i, size(), "Index out of range" )
-        SolverPtr solver = this->at( i );
-        IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver.get() );
+        SCAI_ASSERT_LT( i, this->size(), "Index out of range" )
+        SolverPtr<ValueType> solver = this->at( i );
+        IterativeSolver<ValueType>* iterativeSolver = dynamic_cast<IterativeSolver<ValueType>*>( solver.get() );
         SCAI_ASSERT( iterativeSolver, "Not iterative solver" )
         return *iterativeSolver;
     }
@@ -153,11 +154,11 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
     DenseVector<ValueType> solution( matrix.getRowDistributionPtr(), ValueType( 0 ) );
     solution.setContextPtr( matrix.getContextPtr() );
 
-    IterativeSolvers solvers;  // All available iterative solvers
+    IterativeSolvers<ValueType> solvers;  // All available iterative solvers
 
     for ( size_t i = 0; i < solvers.size(); i++ )
     {
-        IterativeSolver& iterativeSolver = solvers.get( i );
+        IterativeSolver<ValueType>& iterativeSolver = solvers.get( i );
 
         SCAI_LOG_INFO( logger, "Testing solver " << iterativeSolver );
 
@@ -188,13 +189,13 @@ BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest )
     exactSolution.setContextPtr( matrix.getContextPtr() );
     DenseVector<ValueType> rhs( matrix * exactSolution );
     IndexType numIterations = 300;
-    CriterionPtr criterion( new IterationCount( numIterations ) );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( numIterations ) );
 
-    IterativeSolvers solvers;  // vector with incarnation of each solver
+    IterativeSolvers<ValueType> solvers;  // vector with incarnation of each solver
 
     for ( size_t i = 0; i < solvers.size(); i++ )
     {
-        IterativeSolver& iterativeSolver = solvers.get( i );
+        IterativeSolver<ValueType>& iterativeSolver = solvers.get( i );
 
         solution = solutionInitValue;   // reset solution for each solver
 
@@ -235,13 +236,13 @@ BOOST_AUTO_TEST_CASE( ConservativeTest )
     DenseVector<ValueType> rhs( matrix * exactSolution );
 
     IndexType numIterations = 1;
-    CriterionPtr criterion( new IterationCount( numIterations ) );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( numIterations ) );
 
-    IterativeSolvers solvers;  // vector with incarnation of each solver
+    IterativeSolvers<ValueType> solvers;  // vector with incarnation of each solver
 
     for ( size_t i = 0; i < solvers.size(); i++ )
     {
-        IterativeSolver& iterativeSolver = solvers.get( i );
+        IterativeSolver<ValueType>& iterativeSolver = solvers.get( i );
 
         SCAI_LOG_INFO( logger, "ConservativeTest: solver " << iterativeSolver );
 
@@ -252,9 +253,7 @@ BOOST_AUTO_TEST_CASE( ConservativeTest )
         iterativeSolver.initialize( matrix );
         iterativeSolver.solve( solution, rhs );
 
-        Scalar res = maxNorm( iterativeSolver.getResidual() );
-
-        ValueType maxDiff = res.getValue<ValueType>();
+        ValueType maxDiff = maxNorm( iterativeSolver.getResidual() );
 
         SCAI_LOG_INFO( logger, "ConservativeTest: solver " << iterativeSolver << ", maxDiff = " << maxDiff )
 
@@ -276,22 +275,22 @@ BOOST_AUTO_TEST_CASE( SolveTest )
 
     SCAI_LOG_INFO( logger, "matrix = " << matrix );
 
-    const ValueType solutionInitValue = 1.0;
+    const ValueType solutionInitValue = 1;
     DenseVector<ValueType> solution( matrix.getColDistributionPtr(), solutionInitValue );
     // TODO: use constructor to set context
     solution.setContextPtr( matrix.getContextPtr() );
-    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionInitValue + 1.0 );
+    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionInitValue + ValueType( 1 ) );
     // TODO: use constructor to set context
     exactSolution.setContextPtr( matrix.getContextPtr() );
     DenseVector<ValueType> rhs( matrix * exactSolution );
     IndexType maxExpectedIterations = 3000;
-    CriterionPtr criterion( new IterationCount( maxExpectedIterations ) );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( maxExpectedIterations ) );
 
-    IterativeSolvers solvers;  // vector with incarnation of each solver
+    IterativeSolvers<ValueType> solvers;  // vector with incarnation of each solver
 
     for ( size_t i = 0; i < solvers.size(); i++ )
     {
-        IterativeSolver& iterativeSolver = solvers.get( i );
+        IterativeSolver<ValueType>& iterativeSolver = solvers.get( i );
 
         SCAI_LOG_INFO( logger, "Testing solver " << iterativeSolver );
 
@@ -300,14 +299,13 @@ BOOST_AUTO_TEST_CASE( SolveTest )
         solution = solutionInitValue;
         iterativeSolver.solve( solution, rhs );
         DenseVector<ValueType> diff( solution - exactSolution );
-        Scalar s                  = maxNorm( diff );
-        ValueType realMaxNorm     = s.getValue<ValueType>();
-        ValueType expectedMaxNorm = 1E-4;
-        SCAI_LOG_INFO( logger, "maxNorm of diff = " << s << " = ( solution - exactSolution ) = " << realMaxNorm );
+        NormType<ValueType> realMaxNorm     = maxNorm( diff );
+        NormType<ValueType> expectedMaxNorm = 1E-4;
+        SCAI_LOG_INFO( logger, "maxNorm of diff = ( solution - exactSolution ) = " << realMaxNorm );
         BOOST_CHECK_MESSAGE( realMaxNorm < expectedMaxNorm,
                              "Solver: " << iterativeSolver << " max norm = " << realMaxNorm << " >= " << expectedMaxNorm );
         // Test solve with preconditioner
-        SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
+        SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
         iterativeSolver.setPreconditioner( preconditioner );
         // TODO: this should be tested for ALL preconditioners
         // Solver has to be initialized AFTER a preconditioner is set
@@ -317,10 +315,10 @@ BOOST_AUTO_TEST_CASE( SolveTest )
         iterativeSolver.solve( solution, rhs );
         BOOST_CHECK_EQUAL( maxExpectedIterations, iterativeSolver.getIterationCount() );
         diff = solution - exactSolution;
-        s               = maxNorm( diff );
-        realMaxNorm     = s.getValue<ValueType>();
+        realMaxNorm     = maxNorm( diff );
         expectedMaxNorm = 1E-4;
         SCAI_LOG_INFO( logger, "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << realMaxNorm );
+ 
         BOOST_CHECK_MESSAGE( realMaxNorm < expectedMaxNorm,
                              "Solver: " << iterativeSolver << " max norm = " << realMaxNorm << " >= " << expectedMaxNorm );
     }

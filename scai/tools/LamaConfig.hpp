@@ -108,7 +108,8 @@ public:
 
     /** get a new matrix of the specified matrix format and value type. */
 
-    scai::lama::_Matrix* getMatrix();
+    template<typename ValueType>
+    scai::lama::Matrix<ValueType>* getMatrix();
 
     scai::hmemo::ContextPtr getContextPtr() const
     {
@@ -378,7 +379,7 @@ LamaConfig::LamaConfig()
     {
         // check if solver is available
 
-        if ( !scai::solver::Solver::canCreate( val ) )
+        if ( !scai::solver::_Solver::canCreate( scai::solver::SolverCreateKeyType( mValueType, val ) ) )
         {
             CONFIG_ERROR( "solver " << val << " not available" )
         }
@@ -392,7 +393,7 @@ LamaConfig::LamaConfig()
 
     scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
 
-    if ( ! scai::lama::Norm::canCreate( mNorm ) )
+    if ( ! scai::lama::Norm<RealType>::canCreate( mNorm ) )
     {
         CONFIG_ERROR( "norm " << mNorm << " not available" )
     }
@@ -517,9 +518,10 @@ IndexType LamaConfig::getMaxIter() const
     return mMaxIter;
 }
 
-scai::lama::_Matrix* LamaConfig::getMatrix()
+template<typename ValueType>
+scai::lama::Matrix<ValueType>* LamaConfig::getMatrix()
 {
-    return scai::lama::_Matrix::getMatrix( mMatrixFormat, mValueType );
+    return scai::lama::Matrix<ValueType>::getMatrix( mMatrixFormat );
 }
 
 static std::string getLoggers()
@@ -527,7 +529,7 @@ static std::string getLoggers()
     std::ostringstream loggerNames;
 
     std::vector<std::string> vals;
-    scai::solver::Solver::getCreateValues( vals );
+    scai::solver::Solver<RealType>::getCreateValues( vals );
 
     for ( size_t i = 0; i < vals.size(); ++i )
     {

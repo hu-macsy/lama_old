@@ -57,7 +57,6 @@ namespace lama
 
 // forward declarations
 
-class _Vector;
 template<typename > class DenseMatrix;
 
 /**
@@ -99,6 +98,9 @@ public:
     using _Matrix::redistribute;
 
     using Matrix<ValueType>::getValueType;
+    using Matrix<ValueType>::operator=;
+    using Matrix<ValueType>::operator-=;
+    using Matrix<ValueType>::operator+=;
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
@@ -237,11 +239,12 @@ public:
 
     virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
-    /** @brief Implementation of pure method _Matrix::getColumn 
+    /** @brief Implementation of pure method Matrix<ValueType>::getColumn 
      *
      *  It is recommended to call getColumn with a SparseVector for a sparse matrix.
+     *  It works also with a dense vector but setting the zero values causes a significant overhead.
      */
-    virtual void getColumn( _Vector& column, const IndexType globalColIndex ) const;
+    virtual void getColumn( Vector<ValueType>& column, const IndexType globalColIndex ) const;
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -297,47 +300,45 @@ public:
      */
     virtual ~SparseMatrix();
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::getDiagonal */
 
-    virtual void getDiagonal( _Vector& diagonal ) const;
+    virtual void getDiagonal( DenseVector<ValueType>& diagonal ) const;
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const _Vector& diagonal );
+    virtual void setDiagonal( const DenseVector<ValueType>& diagonal );
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const Scalar scalar );
+    virtual void setDiagonal( const ValueType& scalar );
 
-    /* Implementation of pure method of class _Matrix. */
+    /* Implementation of pure method Matrix<ValueType>::reduce */
 
     virtual void reduce( 
-        _Vector& v, 
+        DenseVector<ValueType>& v, 
         const IndexType dim, 
         const common::BinaryOp reduceOp, 
         const common::UnaryOp elemOp ) const;
 
-    /* Implementation of pure method of class _Matrix. */
+    /* ======================================================================= */
+    /*     scaling of matrix entries                                           */
+    /* ======================================================================= */
 
-    virtual void scale( const _Vector& scaling );
+    /* Implementation of pure method Matrix<ValueType>::scale */
 
-    /* Implementation of pure method of class _Matrix. */
+    virtual void scale( const ValueType& alpha );
 
-    virtual void scale( const Scalar scaling );
+    /* Implementation of pure method Matrix<ValueType>::scaleRows */
+
+    virtual void scaleRows( const DenseVector<ValueType>& scaleY );
 
     /* Implementation of pure method of class _Matrix. */
 
     virtual void conj();
 
-    /*
-     *  Set local data of the matrix.
-     *  The local part of the distributed matrix will be splitted into local / halo part.
-     *  corresponding to the column distribution, builds new halo
-     */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesScalar */
 
-    /* Implemenation of pure method of class _Matrix */
-
-    virtual void matrixTimesScalar( const _Matrix& other, const Scalar alpha );
+    virtual void matrixTimesScalar( const Matrix<ValueType>& other, const ValueType alpha );
 
     /**
      * @brief Same as matrixTimesVectorImpl but with multiple results and y
@@ -450,28 +451,26 @@ public:
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
-    /* Implemenation of pure method of class _Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
-    virtual void matrixPlusMatrix( const Scalar alpha, const _Matrix& A, const Scalar beta, const _Matrix& B );
-
-    /**
-     * Override _Matrix::cat
-     */
-    virtual void cat( const IndexType dim, const _Matrix* other[], const IndexType n );
+    virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
 
     /**
-     * Implementation of pure method _Matrix::concatenate
+     * Implementation of pure method Matrix<ValueType>::concatenate
      */
-    virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const _Matrix*>& matrices );
+    virtual void concatenate( 
+        dmemo::DistributionPtr rowDist, 
+        dmemo::DistributionPtr colDist, 
+        const std::vector<const Matrix<ValueType>*>& matrices );
 
-    /* Implemenation of pure method of class _Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesMatrix */
 
     virtual void matrixTimesMatrix(
-        _Matrix& result,
-        const Scalar alpha,
-        const _Matrix& B,
-        const Scalar beta,
-        const _Matrix& C ) const;
+        Matrix<ValueType>& result,
+        const ValueType alpha,
+        const Matrix<ValueType>& B,
+        const ValueType beta,
+        const Matrix<ValueType>& C ) const;
 
     /* Implementation of pure method of class Matrix. */
 
@@ -486,7 +485,7 @@ public:
 
     /** Implementation of pure method of class _Matrix for sparse matrices. */
 
-    virtual NormType<ValueType> maxDiffNorm( const _Matrix& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const;
 
     /**
      * @brief Same as maxDiffNorm but with other as sparse matrix of same value type.
@@ -515,14 +514,14 @@ public:
 
     /* Implementation of pure method of class _Matrix. */
 
-    virtual Scalar getValue( IndexType i, IndexType j ) const;
+    virtual ValueType getValue( IndexType i, IndexType j ) const;
 
     /** Implementation of pure method _Matrix::setValue */
 
     virtual void setValue(
         const IndexType i,
         const IndexType j,
-        const Scalar val,
+        const ValueType val,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
     /**
@@ -598,13 +597,13 @@ public:
 
     void getLocalRowSparse( hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const IndexType localRowIndex ) const;
 
-    /** Implementation of pure method _Matrix::getRow */
+    /** Implementation of pure method Matrix<ValueType>::getRow */
 
-    virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRow( Vector<ValueType>& row, const IndexType globalRowIndex ) const;
 
-    /** Implementation of pure method _Matrix::getRowLocal */
+    /** Implementation of pure method Matrix<ValueType>::getRowLocal */
 
-    virtual void getRowLocal( _Vector& row, const IndexType localRowIndex ) const;
+    virtual void getRowLocal( Vector<ValueType>& row, const IndexType localRowIndex ) const;
 
     /** Set a complete row of this matrix in its local part. */
 
@@ -642,7 +641,7 @@ protected:
      * @param[in]  beta     scaling of input matrix B
      * @param[in]  B        input matrix
      */
-    void matrixPlusMatrixImpl(
+    void matrixPlusMatrixSparse(
         const ValueType alpha,
         const SparseMatrix<ValueType>& A,
         const ValueType beta,

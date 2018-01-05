@@ -378,7 +378,7 @@ LamaConfig::LamaConfig()
     {
         // check if solver is available
 
-        if ( !scai::solver::Solver::canCreate( val ) )
+        if ( !scai::solver::Solver<RealType>::canCreate( val ) )
         {
             CONFIG_ERROR( "solver " << val << " not available" )
         }
@@ -392,7 +392,7 @@ LamaConfig::LamaConfig()
 
     scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
 
-    if ( ! scai::lama::Norm::canCreate( mNorm ) )
+    if ( ! scai::lama::Norm<RealType>::canCreate( mNorm ) )
     {
         CONFIG_ERROR( "norm " << mNorm << " not available" )
     }
@@ -527,7 +527,6 @@ static std::string getLoggers()
     std::ostringstream loggerNames;
 
     std::vector<std::string> vals;
-    scai::solver::Solver::getCreateValues( vals );
 
     for ( size_t i = 0; i < vals.size(); ++i )
     {

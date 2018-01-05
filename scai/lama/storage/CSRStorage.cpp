@@ -708,7 +708,7 @@ void CSRStorage<ValueType>::swap( _MatrixStorage& other )
 
     SCAI_ASSERT_DEBUG( dynamic_cast<CSRStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<CSRStorage<ValueType>& >( other ) );
+    swapImpl( static_cast<CSRStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1184,7 +1184,7 @@ void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void CSRStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

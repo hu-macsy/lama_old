@@ -63,12 +63,13 @@ int main( int , char** )
     DenseVector<ValueType> rhs ( matrix * exactSolution );
     DenseVector<ValueType> solution( vectorSize, 0.0 );
     LoggerPtr slogger( new CommonLogger( "MyJacobiLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly ) );
-    MyJacobi jacobiSolver( "MyJacobi", slogger );
+    MyJacobi<ValueType> jacobiSolver( "MyJacobi", slogger );
     jacobiSolver.initialize( matrix );
-    CriterionPtr criterion( new IterationCount( 100 ) );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 100 ) );
     jacobiSolver.setStoppingCriterion( criterion );
     jacobiSolver.solve( solution, rhs );
     DenseVector<ValueType> diff( solution - exactSolution );
-    L2Norm l2Norm;
-    Scalar norm = l2Norm( diff );
+    L2Norm<ValueType> l2Norm;
+    ValueType norm = l2Norm( diff );
+    std::cout << "Final norm = " << norm << std::endl;
 }

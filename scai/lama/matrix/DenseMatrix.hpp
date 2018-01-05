@@ -91,6 +91,9 @@ public:
 
     using _Matrix::redistribute;
 
+    using Matrix<ValueType>::operator=;
+    using Matrix<ValueType>::operator+=;
+    using Matrix<ValueType>::operator-=;
     using Matrix<ValueType>::getValueType;
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
@@ -212,28 +215,28 @@ public:
      *
      * @param[in] expression  matrix expression alpha * A * B + beta * C
      */
-    DenseMatrix( const Expression_SMM_SM& expression );
+    DenseMatrix( const Expression_SMM_SM<ValueType>& expression );
 
     /**
      * Constructor of a dense matrix by matrix expression alpha * A * B
      *
      * @param[in] expression   matrix espression alpha * A * B
      */
-    DenseMatrix( const Expression_SMM& expression );
+    DenseMatrix( const Expression_SMM<ValueType>& expression );
 
     /**
      * Constructor of a dense matrix by matrix expression alpha * A + beta * b
      *
      * @param[in] expression   matrix espression scalar * matrix + scalar * matrix
      */
-    DenseMatrix( const Expression_SM_SM& expression );
+    DenseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /**
      * Constructor of a dense matrix by matrix expression alpha * A
      *
      * @param[in] expression   matrix expression alpha * A where alpha is a Scalar and A a matrix
      */
-    DenseMatrix( const Expression_SM& expression );
+    DenseMatrix( const Expression_SM<ValueType>& expression );
 
     /** Constructor of a replicated dense matrix by reading the matrix
      *  data from a file.
@@ -399,33 +402,37 @@ public:
 
     virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr );
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::getDiagonal */
 
-    virtual void getDiagonal( _Vector& diagonal ) const;
+    virtual void getDiagonal( DenseVector<ValueType>& diagonal ) const;
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const _Vector& diagonal );
+    virtual void setDiagonal( const DenseVector<ValueType>& diagonal );
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const Scalar diagonalValue );
+    virtual void setDiagonal( const ValueType& scalar );
 
-    /* Implementation of pure method of class _Matrix. */
+    /* Implementation of pure method Matrix<ValueType>::reduce */
 
     virtual void reduce( 
-        _Vector& v, 
+        DenseVector<ValueType>& v, 
         const IndexType dim, 
         const common::BinaryOp reduceOp, 
         const common::UnaryOp elemOp ) const;
 
-    /* Implementation of pure method of class _Matrix. */
+    /* ======================================================================= */
+    /*     scaling of matrix entries                                           */
+    /* ======================================================================= */
 
-    virtual void scale( const _Vector& values );
+    /* Implementation of pure method Matrix<ValueType>::scale */
 
-    /* Implementation of pure method of class _Matrix. */
+    virtual void scale( const ValueType& alpha );
 
-    virtual void scale( const Scalar value );
+    /* Implementation of pure method Matrix<ValueType>::scale */
+
+    virtual void scaleRows( const DenseVector<ValueType>& scaleY );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -433,28 +440,28 @@ public:
 
     /* Implementation of pure method of class _Matrix. */
 
-    virtual Scalar getValue( IndexType i, IndexType j ) const;
+    virtual ValueType getValue( IndexType i, IndexType j ) const;
 
     /** Implementation of pure method _Matrix::setValue */
 
     virtual void setValue(
         const IndexType i,
         const IndexType j,
-        const Scalar val,
+        const ValueType val,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
-    /* Implemenation of pure method of class _Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesScalar */
 
-    virtual void matrixTimesScalar( const _Matrix& other, const Scalar alpha );
+    virtual void matrixTimesScalar( const Matrix<ValueType>& other, const ValueType alpha );
 
     /**
-     *  @brief _Matrix times vector with same value types and correct distributions.
+     *  @brief Provide method matrixTimesVector where all vectors are now dense
      *
-     * @param[out] denseResult   TODO[doxy] Complete Description.
-     * @param[in]  alphaValue    TODO[doxy] Complete Description.
-     * @param[in]  denseX        TODO[doxy] Complete Description.
-     * @param[in]  betaValue     TODO[doxy] Complete Description.
-     * @param[in]  denseY        TODO[doxy] Complete Description.
+     * @param[out] denseResult   result vector 
+     * @param[in]  alphaValue    scaling factor for matrix * vector
+     * @param[in]  denseX        vector that is used for multiplication
+     * @param[in]  betaValue     scaling factor for additional summand
+     * @param[in]  denseY        additional summand ( beta = 0 if not available )
      *
      *  Note: _Matrix::matrixTimesMatrix is implemented in the CRTPMatrix class.
      *        that requires this method.
@@ -498,24 +505,24 @@ public:
 
     /** Implementation of _Matrix::maxDiffNorm for dense matrices. */
 
-    virtual NormType<ValueType> maxDiffNorm( const _Matrix& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const;
 
     /** Get the maximal difference between two elements for dense matrices of same type. */
 
     ValueType maxDiffNormImpl( const DenseMatrix<ValueType>& other ) const;
 
-    /* Implemenation of pure method of class _Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
-    virtual void matrixPlusMatrix( const Scalar alpha, const _Matrix& A, const Scalar beta, const _Matrix& B );
+    virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
 
-    /** Implementation of pure method _Matrix::matrixTimesMatrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesMatrix */
 
-    void matrixTimesMatrix(
-        _Matrix& result,
-        const Scalar alpha,
-        const _Matrix& x,
-        const Scalar beta,
-        const _Matrix& y ) const;
+    virtual void matrixTimesMatrix(
+        Matrix<ValueType>& result,
+        const ValueType alpha,
+        const Matrix<ValueType>& B,
+        const ValueType beta,
+        const Matrix<ValueType>& C ) const;
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -590,17 +597,17 @@ public:
 
     std::vector<std::shared_ptr<DenseStorage<ValueType> > > mData;
 
-    /** Implementation of pure methode _Matrix::getRow */
+    /** Implementation of pure methode Matrix<ValueType>::getRow */
 
-    virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRow( Vector<ValueType>& row, const IndexType globalRowIndex ) const;
 
-    /** Implementation of pure methode _Matrix::getRowLocal */
+    /** Implementation of pure methode Matrix<ValueType>::getRowLocal */
 
-    virtual void getRowLocal( _Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRowLocal( Vector<ValueType>& row, const IndexType globalRowIndex ) const;
 
-    /** Implementation of pure methode _Matrix::getColumn */
+    /** Implementation of pure method Matrix<ValueType>::getColumn */
 
-    virtual void getColumn( _Vector& col, const IndexType globalColIndex ) const;
+    virtual void getColumn( Vector<ValueType>& col, const IndexType globalColIndex ) const;
 
     /** Get a complete row of the local storage */
 
@@ -627,14 +634,9 @@ public:
 protected:
 
     /**
-     * @brief Set this matrix = alpha * A + beta * B
-     *
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  A        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  B        TODO[doxy] Complete Description.
+     * @brief Same as matrixPlusMatrix but now input matrices A and B are really dense
      */
-    void matrixPlusMatrixImpl(
+    void matrixPlusMatrixDense(
         const ValueType alpha,
         const DenseMatrix<ValueType>& A,
         const ValueType beta,

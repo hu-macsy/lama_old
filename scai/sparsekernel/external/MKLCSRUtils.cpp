@@ -250,13 +250,13 @@ void MKLCSRUtils::decomposition(
 
     // iparm has now default values but some changes are required
 
-    if ( ( common::TypeTraits<ValueType>::stype == common::scalar::FLOAT ) ||
-            ( common::TypeTraits<ValueType>::stype == common::scalar::COMPLEX ) )
+    if ( ( common::TypeTraits<ValueType>::stype == common::ScalarType::FLOAT ) ||
+         ( common::TypeTraits<ValueType>::stype == common::ScalarType::COMPLEX ) )
     {
         iparm[27] = 1;  /* float */
     }
-    else if ( ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE ) ||
-              ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE_COMPLEX ) )
+    else if ( ( common::TypeTraits<ValueType>::stype == common::ScalarType::DOUBLE ) ||
+              ( common::TypeTraits<ValueType>::stype == common::ScalarType::DOUBLE_COMPLEX ) )
     {
         iparm[27] = 2;  /* double */
     }

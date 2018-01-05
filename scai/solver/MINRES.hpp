@@ -53,9 +53,10 @@ namespace solver
  * @brief The class MINRES represents a IterativeSolver which uses the krylov subspace Minimum Residual (MINRES)
  * method to solve a system of linear equations iteratively.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT MINRES:
-    public IterativeSolver,
-    public Solver::Register<MINRES>
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<MINRES<ValueType> >
 {
 public:
     /**
@@ -79,40 +80,39 @@ public:
 
     virtual ~MINRES();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    /** @brief Initialize the solver specific runtime data when a matrix is set.  */
+
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
-    * @brief Copies the status independent solver informations to create a new instance of the same
-    * type
+    * @brief Implementation of pure method to create a copy of this solver 
+    *        (without copying the runtime data).
     *
-    * @return shared pointer of the copied solver
+    * @return raw pointer of the copied solver, caller takes ownership
     */
-    virtual SolverPtr copy();
+    virtual MINRES<ValueType>* copy();
 
-    struct MINRESRuntime: IterativeSolverRuntime
+    struct MINRESRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        MINRESRuntime();
-        virtual ~MINRESRuntime();
+        lama::DenseVector<ValueType> mVecV;
+        lama::DenseVector<ValueType> mVecVOld;
+        lama::DenseVector<ValueType> mVecVNew;
+        lama::DenseVector<ValueType> mVecP;
+        lama::DenseVector<ValueType> mVecPOld;
+        lama::DenseVector<ValueType> mVecPNew;
 
-        lama::_VectorPtr mVecV;
-        lama::_VectorPtr mVecVOld;
-        lama::_VectorPtr mVecVNew;
-        lama::_VectorPtr mVecP;
-        lama::_VectorPtr mVecPOld;
-        lama::_VectorPtr mVecPNew;
+        ValueType mAlpha;
+        NormType<ValueType> mBetaNew;
+        NormType<ValueType> mBeta;
+        ValueType mC;
+        ValueType mCOld;
+        ValueType mCNew;
+        ValueType mS;
+        ValueType mSOld;
+        ValueType mSNew;
+        ValueType mZeta;
 
-        lama::Scalar mAlpha;
-        lama::Scalar mBetaNew;
-        lama::Scalar mBeta;
-        lama::Scalar mC;
-        lama::Scalar mCOld;
-        lama::Scalar mCNew;
-        lama::Scalar mS;
-        lama::Scalar mSOld;
-        lama::Scalar mSNew;
-        lama::Scalar mZeta;
-
-        lama::Scalar mEps;
+        NormType<ValueType> mEps;
     };
     /**
     * @brief Returns the complete configuration of the derived class
@@ -121,24 +121,33 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
+    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class
     */
-    virtual const MINRESRuntime& getConstRuntime() const;
+    virtual const MINRESRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
     MINRESRuntime mMINRESRuntime;
     /**
-     * @brief Performs one MINRES iteration based on _Matrix/Vector operations
+     * @brief Implementation of pure method IterativeSolver<ValueType>::iterate
+     * 
+     * Performs one MINRES iteration based on Matrix/Vector operations
      */
     virtual void iterate();
+
     void Lanczos();
+
     void applyGivensRotation();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

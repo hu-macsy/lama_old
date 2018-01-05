@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOpOpTest, ValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
 {
     // check of all UnaryOp array operations
 
@@ -233,13 +233,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOpOpTest, ValueType, scai_array_test_types )
         {
             BOOST_CHECK_THROW(
             {
-                HArrayUtils::UnaryOpOp( array, array, op, ctx );
+                HArrayUtils::unaryOp( array, array, op, ctx );
             }, Exception );
 
             continue;  // not all operations are supported for IndexType
         }
 
-        HArrayUtils::UnaryOpOp( array, array, op, ctx );
+        HArrayUtils::unaryOp( array, array, op, ctx );
 
         ReadAccess<ValueType> read( array, host );
 
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
         {
             // first argument must not be negative, build ABS
 
-            HArrayUtils::UnaryOpOp( array1, array1, UnaryOp::ABS, ctx );
+            HArrayUtils::unaryOp( array1, array1, UnaryOp::ABS, ctx );
         }
 
         HArrayUtils::binaryOp( array3, array1, array2, op, ctx );
@@ -814,7 +814,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SparseGatherTest, ValueType, scai_numeric_test_ty
 
     LArray<ValueType> target;
 
-    HArrayUtils::sparseGather( target, sourceVA, sourceIA, indexes, BinaryOp::COPY );
+    ValueType sourceZero = 0;
+
+    HArrayUtils::sparseGather( target, sourceZero, sourceVA, sourceIA, indexes, BinaryOp::COPY );
 
     BOOST_REQUIRE_EQUAL( target.size(), indexes.size() );
 

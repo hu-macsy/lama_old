@@ -53,31 +53,36 @@ using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
 
-static void bench( _Matrix& mat )
+template<typename ValueType>
+static void bench( Matrix<ValueType>& mat )
 {
     ContextPtr ctx = Context::getContextPtr();
 
-    _VectorPtr x( mat.newVector( mat.getRowDistributionPtr() ) );
-    _VectorPtr y1( mat.newVector( mat.getRowDistributionPtr() ) );
-    _VectorPtr y2( mat.newVector( mat.getRowDistributionPtr() ) );
+    DenseVector<ValueType> x( ctx );
+    DenseVector<ValueType> y1( ctx );
+    DenseVector<ValueType> y2( ctx );
+
+    x.allocate( mat.getRowDistributionPtr() );
+    y1.allocate( mat.getRowDistributionPtr() );
+    y2.allocate( mat.getRowDistributionPtr() );
 
     const IndexType size = mat.getNumRows();
     const IndexType bound = 1; 
 
-    x->setRandom( size, bound );
+    x.setRandom( size, bound );
 
     mat.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
     mat.setContextPtr( ctx );
-    x->setContextPtr( ctx );
+    x.setContextPtr( ctx );
     mat.prefetch();
-    x->prefetch();
+    x.prefetch();
     mat.wait();
-    x->wait();
+    x.wait();
 
-    cout << "x = " << *x << endl;
+    cout << "x = " << x << endl;
 
-    std::unique_ptr<_Matrix> matT( mat.newMatrix() );
+    std::unique_ptr<Matrix<ValueType> > matT( mat.newMatrix() );
 
     double timeT = Walltime::get();
     {
@@ -93,18 +98,18 @@ static void bench( _Matrix& mat )
 
     {
         SCAI_REGION( "Main.Bench.gemv" )
-        *y1 = mat * *x;
+        y1 = mat * x;
     }
 
     time1 = Walltime::get() - time1;
     time1 *= 1000.0;   // scale to ms
 
-    cout << "y1  = mat * x = " << *y1 << endl;
+    cout << "y1  = mat * x = " << y1 << endl;
 
     double time2 = Walltime::get();
     {
         SCAI_REGION( "Main.Bench.gevm" )
-        *y2 = *x * *matT;
+        y2 = x * *matT;
     }
 
     time2 = Walltime::get() - time2;
@@ -115,9 +120,9 @@ static void bench( _Matrix& mat )
 
     // check result
 
-    *y1 -= *y2;
+    y1 -= y2;
 
-    cout << "max diff = " << y1->_maxNorm() << endl;
+    cout << "max diff = " << y1.maxNorm() << endl;
 }
 
 int main( int argc, const char* argv[] )

@@ -87,22 +87,22 @@ int main( int argc, char* argv[] )
     // help = A * x;
     DenseVector<ValueType> r ( b - A * x );
     DenseVector<ValueType> d ( r );
-    Scalar rOld = r.dotProduct( r );
-    Scalar eps = 0.00001;
-    L2Norm norm;
+    ValueType rOld = r.dotProduct( r );
+    ValueType eps = 0.00001;
+    L2Norm<ValueType> norm;
 
     for ( int k = 0 ; k < maxIter and norm( r ) > eps; k++ )
     {
         DenseVector<ValueType> z( A * d );
-        Scalar alpha = rOld / d.dotProduct( z );
+        ValueType alpha = rOld / d.dotProduct( z );
         x = x + alpha * d;
         r = r - alpha * z;
-        Scalar rNew = r.dotProduct( r );
-        Scalar beta = rNew / rOld;
+        ValueType rNew = r.dotProduct( r );
+        ValueType beta = rNew / rOld;
         d = r + beta * d;
         rOld = rNew;
-        Scalar rnorm = norm( r );
-        std::cout << "Iter k = " << k << " : norm( r ) = " << rnorm.getValue<ValueType>() << std::endl;
+        ValueType rnorm = norm( r );
+        std::cout << "Iter k = " << k << " : norm( r ) = " << rnorm << std::endl;
     }
 
     return 0;

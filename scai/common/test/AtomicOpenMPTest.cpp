@@ -43,6 +43,8 @@
 using namespace scai;
 using namespace common;
 
+BOOST_AUTO_TEST_SUITE( AtomicOpenMPTest )
+
 /* -------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, scai_numeric_test_types )
@@ -60,3 +62,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( atomicAddTest, ValueType, scai_numeric_test_types
     ValueType res = ( size * ( size + 1 ) ) / static_cast<ValueType> ( 2 );
     BOOST_CHECK_EQUAL( globalResult, res );
 }
+
+BOOST_AUTO_TEST_SUITE_END()

@@ -45,11 +45,18 @@
 #include <scai/partitioning/Partitioning.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
-#include <scai/solver/GMRES.hpp>
-#include <scai/solver/SimpleAMG.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/CG.hpp>
+#include <scai/solver/SimpleAMG.hpp>
+#include <scai/solver/GMRES.hpp>
+#include <scai/solver/Kaczmarz.hpp>
+#include <scai/solver/Richardson.hpp>
+#include <scai/solver/BiCGstab.hpp>
+#include <scai/solver/DecompositionSolver.hpp>
+#include <scai/solver/QMR.hpp>
+#include <scai/solver/TFQMR.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -108,13 +115,14 @@ static bool isNumeric( double& val, const string& str )
 
 /** Help routine to combine criterions. */
 
-static void orCriterion( CriterionPtr& crit, const CriterionPtr& add )
+template<typename ValueType>
+static void orCriterion( CriterionPtr<ValueType>& crit, const CriterionPtr<ValueType>& add )
 {
     if ( crit )
     {
         // combine current one with the new one by an OR
 
-        crit.reset( new Criterion ( crit, add, Criterion::OR ) );
+        crit.reset( new Criterion<ValueType> ( crit, add, BooleanOp::OR ) );
     }
     else
     {
@@ -163,18 +171,12 @@ int main( int argc, const char* argv[] )
 
         // use auto pointer so that matrix will be deleted at program exit
 
-        _MatrixPtr matrixPtr( lamaconf.getMatrix() );
-        _VectorPtr rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
-        _VectorPtr solutionPtr( rhsPtr->newVector() );
+        MatrixPtr<ValueType> matrixPtr( lamaconf.getMatrix<ValueType>() );
+        Matrix<ValueType>& matrix = *matrixPtr;
+        DenseVector<ValueType> rhs( matrixPtr->getRowDistributionPtr() );
+        DenseVector<ValueType> solution;
 
-        _Matrix& matrix   = *matrixPtr;
-        _Vector& rhs      = *rhsPtr;
-        _Vector& solution = *solutionPtr;
-
-        // input matrix will be CSR format
-
-        _MatrixPtr in_MatrixPtr( _Matrix::getMatrix( Format::CSR, lamaconf.getValueType() ) );
-        _Matrix& inMatrix = *in_MatrixPtr;
+        CSRSparseMatrix<ValueType> inMatrix;  // matrix read fromfile
 
         // Here each processor should print its configuration
 
@@ -234,7 +236,7 @@ int main( int argc, const char* argv[] )
 
             if ( isNumeric( val, rhsFilename ) )
             {
-                rhs.setSameValue( inMatrix.getRowDistributionPtr(), Scalar( val ) );
+                rhs.setSameValue( inMatrix.getRowDistributionPtr(), val );
 
                 HOST_PRINT( myRank, "Set rhs = " << val )
             }
@@ -248,14 +250,11 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                _VectorPtr xPtr( rhs.newVector() );
-                _Vector& x = *xPtr;
-
-                x.setSameValue( inMatrix.getColDistributionPtr(), 1 );
+                DenseVector<ValueType> x( inMatrix.getColDistributionPtr(), ValueType( 1 ) );
 
                 rhs = inMatrix * x;
 
-                HOST_PRINT( myRank, "Set rhs = sum( _Matrix, 2) : " << rhs )
+                HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
             }
 
             if ( isNumeric( val, startSolutionFilename ) )
@@ -360,7 +359,7 @@ int main( int argc, const char* argv[] )
 
         string solverName = "<" + lamaconf.getSolverName() + ">";
 
-        std::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
+        std::unique_ptr<Solver<ValueType> > mySolver( Solver<ValueType>::getSolver( lamaconf.getSolverName() ) );
 
         // setting up a common logger, prints also rank of communicator
 
@@ -379,22 +378,22 @@ int main( int argc, const char* argv[] )
 
         // Set up stopping criterion, take thresholds and max iterations if specified
 
-        CriterionPtr crit;
+        CriterionPtr<ValueType> crit;
 
-        NormPtr norm( Norm::create( lamaconf.getNorm() ) );   // Norm from factory
+        NormPtr<ValueType> norm( Norm<ValueType>::create( lamaconf.getNorm() ) );   // Norm from factory
 
         double eps = lamaconf.getAbsoluteTolerance();
 
         if ( eps > 0.0 )
         {
-            crit.reset( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
         eps = lamaconf.getRelativeTolerance();
 
         if ( eps > 0.0 )
         {
-            CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Relative ) );
+            CriterionPtr<ValueType> rt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Relative ) );
 
             orCriterion( crit, rt );
         }
@@ -403,14 +402,14 @@ int main( int argc, const char* argv[] )
 
         if ( eps > 0.0 )
         {
-            CriterionPtr dt( new ResidualThreshold( norm, eps, ResidualThreshold::Divergence ) );
+            CriterionPtr<ValueType> dt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Divergence ) );
 
             orCriterion( crit, dt );
         }
 
         if ( lamaconf.hasMaxIter() )
         {
-            CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
+            CriterionPtr<ValueType> it( new IterationCount<ValueType>( lamaconf.getMaxIter() ) );
 
             orCriterion( crit, it );
         }
@@ -421,12 +420,12 @@ int main( int argc, const char* argv[] )
 
             eps = 0.001;
 
-            crit.reset( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
         // Stopping criterion can ony be set for an iterative solver
 
-        IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
+        IterativeSolver<ValueType>* itSolver = dynamic_cast<IterativeSolver<ValueType>*>( mySolver.get() );
 
         if ( itSolver != NULL )
         {
@@ -439,6 +438,9 @@ int main( int argc, const char* argv[] )
 
         // Allow individual settings for GMRES solver
 
+        // ToDo: enable GMRES
+
+        /*
         GMRES* gmresSolver = dynamic_cast<GMRES*>( mySolver.get() );
 
         if ( gmresSolver )
@@ -465,6 +467,8 @@ int main( int argc, const char* argv[] )
             amgSolver->setMaxLevels( 25 );
             amgSolver->setMinVarsCoarseLevel( 200 );
         }
+
+        */
 
         // Initialization with timing
 
@@ -500,13 +504,12 @@ int main( int argc, const char* argv[] )
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
 
-                _VectorPtr compSolutionPtr( rhs.newVector() );
-                _Vector& compSolution = *compSolutionPtr;
+                DenseVector<ValueType> compSolution;
 
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
-                Scalar maxDiff = compSolution._maxNorm();
+                NormType<ValueType> maxDiff = compSolution.maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else
@@ -516,6 +519,8 @@ int main( int argc, const char* argv[] )
                 solution.writeToFile( finalSolutionFilename );
             }
         }
+
+        HOST_PRINT( myRank, "lamaSolver finished, solver = " << *mySolver << ", A = " << matrix )
     }
     catch ( common::Exception& e )
     {

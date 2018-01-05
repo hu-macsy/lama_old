@@ -109,14 +109,30 @@ CUDAStreamPool::CUDAStreamPool( const common::CUDACtx& cuda ) : mCUDA( cuda )
 CUDAStreamPool::~CUDAStreamPool()
 {
     SCAI_LOG_INFO( logger, "~CUDAStreamPool( device = " << mCUDA.getDeviceNr() << " )" )
+
     common::CUDAAccess tmpAccess( mCUDA );
+
     // No exceptions in destructor !!
-    SCAI_ASSERT_EQUAL( mComputeReservations, 0, "Not all compute streams released" )
-    SCAI_ASSERT_EQUAL( mTransferReservations, 0, "Not all transfer streams released" )
+
+    if ( mComputeReservations != 0 )
+    {
+        SCAI_LOG_ERROR( logger, "Not all compute streams for CUDA released (no delete of SyncToken)" )
+    }
+
+    if ( mTransferReservations != 0 )
+    {
+        SCAI_LOG_ERROR( logger, "Not all transfer streams for CUDA released (no delete of SyncToken)" )
+    }
+
     SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mComputeStream ), "cuStreamSynchronize for compute failed" )
     SCAI_CUDA_DRV_CALL( cuStreamDestroy( mComputeStream ), "cuStreamDestroy for compute failed" )
     SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mTransferStream ), "cuStreamSynchronize for transfer failed" )
     SCAI_CUDA_DRV_CALL( cuStreamDestroy( mTransferStream ), "cuStreamDestroy for transfer failed" )
+}
+
+bool CUDAStreamPool::isEmpty()
+{
+    return mComputeReservations == 0 && mTransferReservations == 0;
 }
 
 typedef std::map<CUcontext, CUDAStreamPool*>  PoolMap;

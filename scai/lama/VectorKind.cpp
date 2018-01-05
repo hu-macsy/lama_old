@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Implementations of functions for enum class VectorKind
- * @author Jiri Kraus
+ * @author Thomas Brandes, Jiri Kraus
  * @date 31.10.2017
  */
 

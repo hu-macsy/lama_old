@@ -105,13 +105,16 @@ public:
         return pointer;
     }
 
-    /** Constructor, context must always be given. */
+    /** Constructor, memory object must always be given. */
 
     ContextData( MemoryPtr memory );
 
-    ContextData();  // allow default constructor for container
+    /** Move constructor, allows use of this class container classes.
+     *  The clause noexcept is mandatory and also safe here.
+     */
+    ContextData( ContextData&& other ) noexcept;
 
-    /** Destructor, will NOT free allocated data at a context. */
+    /** Destructor, will also call free if not done before */
 
     ~ContextData();
 
@@ -167,6 +170,14 @@ public:
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+private:
+
+    // disable the default copy constructor
+
+    ContextData( const ContextData& other ) = delete;
+
+    ContextData& operator=( ContextData&& other ) noexcept;
 };
 
 } /* end namespace hmemo */

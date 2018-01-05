@@ -50,18 +50,22 @@ namespace scai
 namespace solver
 {
 
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Richardson:
-    public OmegaSolver,
-    public Solver::Register<Richardson>
+
+    public OmegaSolver<ValueType>,
+    public _Solver::Register<Richardson<ValueType> >
+
 {
 public:
+
     Richardson( const std::string& id );
 
     Richardson( const std::string& id, LoggerPtr logger );
 
-    Richardson( const std::string& id, const lama::Scalar omega ); //2nd param _Matrix.Scalar
+    Richardson( const std::string& id, const ValueType omega );
 
-    Richardson( const std::string& id, const lama::Scalar omega, LoggerPtr logger );
+    Richardson( const std::string& id, const ValueType omega, LoggerPtr logger );
 
     /**
      * @brief Copy constructor that copies the status independent solver information
@@ -84,11 +88,9 @@ public:
      *if there is no initialized omega.
     */
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
-    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
-
-    virtual void solveFinalize();
+    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -96,17 +98,12 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual Richardson<ValueType>* copy();
 
-    struct RichardsonRuntime: OmegaSolverRuntime
+    struct RichardsonRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        RichardsonRuntime();
-        virtual ~RichardsonRuntime();
-
-        lama::_VectorPtr mOldSolution;
-        lama::_VectorPtr mX;
-
-        SolutionProxy mProxyOldSolution;
+        lama::DenseVector<ValueType> mOldSolution;
+        lama::DenseVector<ValueType> mX;
     };
     /**
      * @brief Returns the complete configuration of the derived class
@@ -116,20 +113,22 @@ public:
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const RichardsonRuntime& getConstRuntime() const;
+    virtual const RichardsonRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
-    RichardsonRuntime mRichardsonRuntime;
 
-    using OmegaSolver::mOmega;
+    RichardsonRuntime mRichardsonRuntime;
 
     /**
      * @brief Performs one Richardson iteration based on _Matrix/Vector operations
-     *
-     *
      */
     virtual void iterate();
 

@@ -58,9 +58,11 @@ namespace solver
  * 2. The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT CGS:
-    public IterativeSolver,
-    public Solver::Register<CGS>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<CGS<ValueType> >
 {
 public:
     /**
@@ -85,7 +87,7 @@ public:
 
     virtual ~CGS();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -93,25 +95,22 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual CGS<ValueType>* copy();
 
-    struct CGSRuntime: IterativeSolverRuntime
+    struct CGSRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        CGSRuntime();
-        virtual ~CGSRuntime();
+        lama::DenseVector<ValueType> mRes0;
+        lama::DenseVector<ValueType> mVecP;
+        lama::DenseVector<ValueType> mVecQ;
+        lama::DenseVector<ValueType> mVecU;
+        lama::DenseVector<ValueType> mVecT;
+        lama::DenseVector<ValueType> mVecPT;
+        lama::DenseVector<ValueType> mVecUT;
+        lama::DenseVector<ValueType> mVecTemp;
 
-        lama::_VectorPtr mRes0;
-        lama::_VectorPtr mVecP;
-        lama::_VectorPtr mVecQ;
-        lama::_VectorPtr mVecU;
-        lama::_VectorPtr mVecT;
-        lama::_VectorPtr mVecPT;
-        lama::_VectorPtr mVecUT;
-        lama::_VectorPtr mVecTemp;
-
-        lama::Scalar mEps;
-        lama::Scalar mNormRes;
-        lama::Scalar mInnerProdRes;
+        NormType<ValueType> mEps;
+        NormType<ValueType> mNormRes;
+        ValueType mInnerProdRes;
     };
 
     /**
@@ -121,15 +120,20 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
+    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const CGSRuntime& getConstRuntime() const;
+    virtual const CGSRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
@@ -139,6 +143,8 @@ protected:
     virtual void writeAt( std::ostream& stream ) const;
 
     virtual void iterate();
+
+    using IterativeSolver<ValueType>::mPreconditioner;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

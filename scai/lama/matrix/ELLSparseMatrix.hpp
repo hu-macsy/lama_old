@@ -68,8 +68,6 @@ class COMMON_DLL_IMPORTEXPORT ELLSparseMatrix:
 
 public:
 
-    typedef ValueType _MatrixValueType; //!< This is the type of the matrix values.
-
     /** Type definition of the storage type for this sparse matrix. */
 
     typedef ELLStorage<ValueType> StorageType;
@@ -136,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit ELLSparseMatrix( const Expression_SM& expression );
+    explicit ELLSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit ELLSparseMatrix( const Expression_SMM& expression );
+    explicit ELLSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit ELLSparseMatrix( const Expression_SM_SM& expression );
+    explicit ELLSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a ELL sparse matrix with distributed ELL storage data.
      *

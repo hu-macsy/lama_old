@@ -890,11 +890,11 @@ void floorOp( IndexType out[], const IndexType in[], const IndexType n )
 }
 
 template<typename ValueType>
-void OpenMPUtils::UnaryOpOp( ValueType out[], const ValueType in[], const IndexType n, const UnaryOp op )
+void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n, const UnaryOp op )
 {
-    SCAI_REGION( "OpenMP.Utils.UnaryOpOp" )
+    SCAI_REGION( "OpenMP.Utils.unaryOp" )
 
-    SCAI_LOG_DEBUG( logger, "UnaryOpOp<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
+    SCAI_LOG_DEBUG( logger, "unaryOp<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
 
     if ( n <= 0 )
     {
@@ -1290,6 +1290,7 @@ static IndexType binarySearch( const IndexType indexes[], const IndexType n, con
 template<typename ValueType1, typename ValueType2>
 void OpenMPUtils::setGatherSparse(
     ValueType1 target[],
+    const ValueType2 sourceZeroValue,
     const ValueType2 sourceNonZeroValues[],
     const IndexType sourceNonZeroIndexes[],
     const IndexType sourceNNZ,
@@ -1313,14 +1314,11 @@ void OpenMPUtils::setGatherSparse(
 
         SCAI_LOG_TRACE( logger, "binarySearch( " << indexes[i] << " ) -> " << k )
 
-        ValueType1 sourceVal = 0;   // default value if value not availabe in sparse input array
+        // default value if value not availabe in sparse input array
 
-        if ( k != nIndex )
-        {
-            sourceVal = static_cast<ValueType1>( sourceNonZeroValues[k] );
-        }
+        ValueType2 sourceVal = k == nIndex ? sourceZeroValue : sourceNonZeroValues[k];
 
-        target[i] = applyBinary( target[i], op, sourceVal );
+        target[i] = applyBinary( target[i], op, static_cast<ValueType1>( sourceVal ) );
     }
 }
 
@@ -2316,9 +2314,10 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<SparseKernelTrait::allCompareSparse<ValueType> >( allCompareSparse, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::mergeSparse<ValueType> >( mergeSparse, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::UnaryOpOp<ValueType> >( UnaryOpOp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar<ValueType> >( binaryOpScalar, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

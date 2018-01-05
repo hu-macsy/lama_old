@@ -79,8 +79,8 @@ int main( int argc, const char* argv[] )
     for ( int k = 0; k < 100; ++k )
     {
         y = A * r;
-        Scalar norm = y.l2Norm();
-        Scalar lambda = r.dotProduct ( y ) / r.dotProduct( r );
+        ValueType norm = y.l2Norm();
+        ValueType lambda = r.dotProduct ( y ) / r.dotProduct( r );
         r = y / norm;
         std::cout << "lambda = " << lambda << std::endl;
     }

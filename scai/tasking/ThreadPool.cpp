@@ -44,13 +44,12 @@
 
 #include <memory>
 
-using std::shared_ptr;
-using std::function;
-
 namespace scai
 {
 
 using common::Thread;
+using std::shared_ptr;
+using std::function;
 
 namespace tasking
 {
@@ -112,7 +111,7 @@ ThreadPool::ThreadPool( int size )
 
 /* ------------------------------------------------------------------------- */
 
-shared_ptr<ThreadPoolTask> ThreadPool::schedule( function<void()> work, int numOmpThreads /* = 0 */ )
+shared_ptr<ThreadPoolTask> ThreadPool::schedule( std::function<void()> work, int numOmpThreads /* = 0 */ )
 {
     SCAI_REGION( "ThreadPool::schedule" )
     Thread::Id thisThread = Thread::getSelf();

@@ -48,7 +48,8 @@ int main()
 {
     /** Take default real type for this example. */
     typedef RealType ValueType;
-    Scalar singleValue( 2.0 );
+
+    ValueType singleValue = 2;
     //
     // Create a DenseVector out of a simple c array
     //

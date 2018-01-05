@@ -42,6 +42,7 @@
 
 // internal scai library
 #include <scai/utilskernel/cuda/CUDAUtils.hpp>
+#include <scai/utilskernel/cuda/CUDASparseUtils.hpp>
 
 #include <scai/hmemo/Memory.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -54,7 +55,6 @@
 #include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
@@ -83,6 +83,8 @@
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
 
+#include <functional>
+
 // Parameters for Matrix Multiplication
 #define NUM_HASH_RETRIES 16
 #define NUM_ELEMENTS_PER_CHUNK 512
@@ -104,6 +106,7 @@ namespace scai
 {
 
 using utilskernel::CUDAUtils;
+using utilskernel::CUDASparseUtils;
 
 using tasking::SyncToken;
 using tasking::CUDAStreamSyncToken;
@@ -337,8 +340,8 @@ void CUDACSRUtils::convertCSR2CSC(
     const IndexType numDiagonals = 0;// not supported yet
     CUDACOOUtils::offsets2ia( cscJA, numValues, csrIA, numRows, numDiagonals );
     // switch cooIA and cooJA, copy values and resort
-    CUDAUtils::set( cooIA, csrJA, numValues, common::binary::COPY );
-    CUDAUtils::set( cscValues, csrValues, numValues, common::binary::COPY );
+    CUDASparseUtils::set( cooIA, csrJA, numValues, common::BinaryOp::COPY );
+    CUDASparseUtils::set( cscValues, csrValues, numValues, common::BinaryOp::COPY );
     thrust::device_ptr<IndexType> ja_d( cooIA );
     thrust::device_ptr<ValueType> values_d( cscValues );
     thrust::device_ptr<IndexType> ia_d( cscJA );
@@ -952,7 +955,7 @@ void CUDACSRUtils::normalGEMV(
             // get routine with the right signature
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
             // delay unbind until synchroniziaton
-            syncToken->pushRoutine( common::bind( unbind, x ) );
+            syncToken->pushRoutine( std::bind( unbind, x ) );
         }
     }
 }
@@ -1001,7 +1004,7 @@ void CUDACSRUtils::normalGEVM(
 
     // set result = beta * y, not needed if beta == 1 and y == result
 
-    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
+    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
 
     SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
 
@@ -1094,7 +1097,7 @@ void CUDACSRUtils::sparseGEMV(
             // get routine with the right signature
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
             // delay unbind until synchroniziaton
-            syncToken->pushRoutine( common::bind( unbind, x ) );
+            syncToken->pushRoutine( std::bind( unbind, x ) );
         }
     }
 }
@@ -2890,7 +2893,7 @@ void countNonZerosKernel(
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
             bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = common::Math::abs( values[jj] ) > eps;
+            bool nonZero    = common::Math::abs( values[jj] ) > common::Math::abs( eps );
 
             if ( nonZero || isDiagonal )
             {
@@ -2950,7 +2953,7 @@ void compressKernel(
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
             bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = common::Math::abs( values[jj] ) > eps;
+            bool nonZero    = common::Math::abs( values[jj] ) > common::Math::abs( eps );
 
             if ( nonZero || isDiagonal )
             {

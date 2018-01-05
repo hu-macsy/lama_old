@@ -89,9 +89,35 @@ public:
         const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /**
+     *  @brief Gathering of values in sparse array
+     *
+     *  This operation is the same as gather but here the source array is reprensented
+     *  as a sparse version.
+     *
+     *  @param target will contain results, can be any type
+     *  @param sourceZeroValue default value of source array if index does not appear in sourceNonZeroIndexes
+     *  @param sourceNonZeroIndexes indexes of source array with non-zero values
+     *  @param sourceNonZeroValues same size as sourceNonZeroIndexes, contains values of source array
+     *  @param indexes same size as target, indexes of source array to gather
+     *  @param op specifies binary op how to combine with existing values, can be COPY
+     *  @param prefLoc preferred location where to execute the operation
+     *
+     *  \code
+     *     for ( i = 0; i < indexes.size(); ++i )
+     *       if ( there is j with sourceNonZeroIndexes[j] == indexes[i] )
+     *         target[i] = target[i] op sourceNonZeroValues[j] ;
+     *       else
+     *         target[i] = target[i] op sourceZeroValue;
+     *  \endcode
+     *
+     *  As sourceNonZeroIndexes is sorted (ascending), binary search can be applied to find j for i
+     */
+    template<typename SourceValueType>
     static void sparseGather(
         hmemo::_HArray& target,
-        const hmemo::_HArray& sourceNonZeroValues,
+        const SourceValueType sourceZeroValue,
+        const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
         const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
         const hmemo::HArray<IndexType>& indexes,
         const common::BinaryOp op,
@@ -114,6 +140,7 @@ public:
     template<typename TargetValueType, typename SourceValueType>
     static void sparseGatherImpl(
         hmemo::HArray<TargetValueType>& target,
+        const SourceValueType sourceZero,
         const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
         const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
         const hmemo::HArray<IndexType>& indexes,
@@ -395,7 +422,7 @@ public:
      */
 
     template<typename ValueType>
-    static void UnaryOpOp(
+    static void unaryOp(
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
         const common::UnaryOp op,

@@ -397,7 +397,7 @@ void CUDASection::assign(
 
 template<typename TargetValueType, typename SourceValueType>
 __global__
-void UnaryOpOp1Kernel( 
+void unaryOp1Kernel( 
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const common::UnaryOp op )
@@ -416,32 +416,32 @@ void UnaryOpOp1Kernel(
 }
 
 template<typename TargetValueType, typename SourceValueType>
-void CUDASection::UnaryOpOp1(
+void CUDASection::unaryOp1(
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const IndexType sizes[],
     const common::UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Section.UnaryOpOp1" )
+    SCAI_REGION( "CUDA.Section.unaryOp1" )
 
     IndexType n0 = sizes[0];
 
-    SCAI_LOG_INFO( logger,  "UnaryOpOp1<" << common::TypeTraits<TargetValueType>::id() << 
+    SCAI_LOG_INFO( logger,  "unaryOp1<" << common::TypeTraits<TargetValueType>::id() << 
                            ", " << common::TypeTraits<SourceValueType>::id() << "> on " << n0 << " grid" )
 
     dim3 threadsPerBlock( 256 );
     dim3 numBlocks( ( n0 + threadsPerBlock.x - 1 ) / threadsPerBlock.x );
 
-    UnaryOpOp1Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
+    unaryOp1Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "UnaryOpOp1Kernel failed" ) ;
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unaryOp1Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
 __global__
-void UnaryOpOp2Kernel( 
+void unaryOp2Kernel( 
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const common::UnaryOp op )
@@ -461,18 +461,18 @@ void UnaryOpOp2Kernel(
 }
 
 template<typename TargetValueType, typename SourceValueType>
-void CUDASection::UnaryOpOp2(
+void CUDASection::unaryOp2(
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const IndexType sizes[],
     const common::UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Section.UnaryOpOp2" )
+    SCAI_REGION( "CUDA.Section.unaryOp2" )
 
     IndexType n0 = sizes[0];
     IndexType n1 = sizes[1];
 
-    SCAI_LOG_INFO( logger, "UnaryOpOp2<" << common::TypeTraits<TargetValueType>::id() << 
+    SCAI_LOG_INFO( logger, "unaryOp2<" << common::TypeTraits<TargetValueType>::id() << 
                            ", " << common::TypeTraits<SourceValueType>::id() 
                            << "> on " << n0 << " x " << n1 << " grid" )
 
@@ -481,16 +481,16 @@ void CUDASection::UnaryOpOp2(
     dim3 numBlocks( ( n1 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
                     ( n0 + threadsPerBlock.y - 1 ) / threadsPerBlock.y );
 
-    UnaryOpOp2Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
+    unaryOp2Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "UnaryOpOp2Kernel failed" ) ;
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unaryOp2Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
 __global__
-void UnaryOpOp3Kernel( 
+void unaryOp3Kernel( 
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const common::UnaryOp op )
@@ -511,19 +511,19 @@ void UnaryOpOp3Kernel(
 }
 
 template<typename TargetValueType, typename SourceValueType>
-void CUDASection::UnaryOpOp3(
+void CUDASection::unaryOp3(
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const IndexType sizes[],
     const common::UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Section.UnaryOpOp3" )
+    SCAI_REGION( "CUDA.Section.unaryOp3" )
 
     IndexType n0 = sizes[0];
     IndexType n1 = sizes[1];
     IndexType n2 = sizes[2];
 
-    SCAI_LOG_INFO( logger, "UnaryOpOp3<" << common::TypeTraits<TargetValueType>::id() << 
+    SCAI_LOG_INFO( logger, "unaryOp3<" << common::TypeTraits<TargetValueType>::id() << 
                            ", " << common::TypeTraits<SourceValueType>::id() 
                            << "> on " << n0 << " x " << n1 << " x " << n2 << " grid" )
 
@@ -533,16 +533,16 @@ void CUDASection::UnaryOpOp3(
                     ( n1 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
                     ( n0 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
 
-    UnaryOpOp3Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
+    unaryOp3Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "UnaryOpOp2Kernel failed" ) ;
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unaryOp2Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
 __global__
-void UnaryOpOp4Kernel( 
+void unaryOp4Kernel( 
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const common::UnaryOp op )
@@ -568,20 +568,20 @@ void UnaryOpOp4Kernel(
 }
 
 template<typename TargetValueType, typename SourceValueType>
-void CUDASection::UnaryOpOp4(
+void CUDASection::unaryOp4(
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const IndexType sizes[],
     const common::UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Section.UnaryOpOp3" )
+    SCAI_REGION( "CUDA.Section.unaryOp3" )
 
     IndexType n0 = sizes[0];
     IndexType n1 = sizes[1];
     IndexType n2 = sizes[2];
     IndexType n3 = sizes[3];
 
-    SCAI_LOG_INFO( logger, "UnaryOpOp3<" << common::TypeTraits<TargetValueType>::id() << 
+    SCAI_LOG_INFO( logger, "unaryOp3<" << common::TypeTraits<TargetValueType>::id() << 
                            ", " << common::TypeTraits<SourceValueType>::id() 
                            << "> on " << n0 << " x " << n1 << " x " << n2 << " x " << n3 << " grid" )
 
@@ -591,15 +591,15 @@ void CUDASection::UnaryOpOp4(
                     ( n2 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
                     ( n0 * n1 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
 
-    UnaryOpOp4Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
+    unaryOp4Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "UnaryOpOp2Kernel failed" ) ;
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unaryOp2Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void CUDASection::UnaryOpOp( 
+void CUDASection::unaryOp( 
     TargetValueType targetSection[],
     const IndexType nDims,
     const IndexType sizes[],
@@ -619,19 +619,19 @@ void CUDASection::UnaryOpOp(
 
     switch ( nDims )
     {
-        case 1 : UnaryOpOp1( targetSection, sourceSection, sizes, op );
+        case 1 : unaryOp1( targetSection, sourceSection, sizes, op );
                  break;
 
-        case 2 : UnaryOpOp2( targetSection, sourceSection, sizes, op );
+        case 2 : unaryOp2( targetSection, sourceSection, sizes, op );
                  break;
 
-        case 3 : UnaryOpOp3( targetSection, sourceSection, sizes, op );
+        case 3 : unaryOp3( targetSection, sourceSection, sizes, op );
                  break;
 
-        case 4 : UnaryOpOp4( targetSection, sourceSection, sizes, op );
+        case 4 : unaryOp4( targetSection, sourceSection, sizes, op );
                  break;
 
-        default: COMMON_THROWEXCEPTION( "UnaryOpOp for nDims = " << nDims << " not supported yet" )
+        default: COMMON_THROWEXCEPTION( "unaryOp for nDims = " << nDims << " not supported yet" )
     }
 }
 
@@ -1213,7 +1213,7 @@ void CUDASection::BinOpKernels<ValueType, OtherValueType>::registerKernels( kreg
     SCAI_LOG_DEBUG( logger, "register SectionKernel CUDA-routines for GPUs at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<SectionKernelTrait::UnaryOpOp<ValueType, OtherValueType> >( UnaryOpOp, ctx, flag );
+    KernelRegistry::set<SectionKernelTrait::unaryOp<ValueType, OtherValueType> >( unaryOp, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

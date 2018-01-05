@@ -220,9 +220,22 @@ public:
 
     /** Override the default copy construtor */
 
-    LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>()
+    LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>( other )
     {
-        HArrayUtils::assign( *this, other );
+    }
+
+    LArray( const hmemo::HArray<ValueType>& other ) : hmemo::HArray<ValueType>( other )
+    {
+    }
+
+    /** Move constructor */
+
+    LArray( LArray<ValueType>&& other ) noexcept: hmemo::HArray<ValueType>( std::move( other ) )
+    {
+    }
+
+    LArray( hmemo::HArray<ValueType>&& other ) noexcept: hmemo::HArray<ValueType>( std::move( other ) )
+    {
     }
 
     /** Copy constructor that works with HArray of any type. */
@@ -242,6 +255,22 @@ public:
     LArray& operator= ( const LArray<ValueType>& other )
     {
         HArrayUtils::assign( *this, other );
+        return *this;
+    }
+
+    /** Move assignment operator for local array */
+
+    LArray& operator= ( LArray<ValueType>&& other )
+    {
+        hmemo::HArray<ValueType>::operator=( std::move( other ) );
+        return *this;
+    }
+
+    /** Move assignment operator for local array, works also for heterogeneous arrays */
+
+    LArray& operator= ( hmemo::HArray<ValueType>&& other )
+    {
+        hmemo::HArray<ValueType>::operator=( std::move( other ) );
         return *this;
     }
 
@@ -408,52 +437,52 @@ public:
 
     void conj()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::CONJ );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::CONJ );
     }
 
     void exp()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::EXP );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::EXP );
     }
 
     void log()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::LOG );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::LOG );
     }
 
     void floor()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::FLOOR );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::FLOOR );
     }
 
     void ceil()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::CEIL );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::CEIL );
     }
 
     void sqrt()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::SQRT );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::SQRT );
     }
 
     void sin()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::SIN );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::SIN );
     }
 
     void cos()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::COS );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::COS );
     }
 
     void tan()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::TAN );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::TAN );
     }
 
     void atan()
     {
-        HArrayUtils::UnaryOpOp( *this, *this, common::UnaryOp::ATAN );
+        HArrayUtils::unaryOp( *this, *this, common::UnaryOp::ATAN );
     }
 
     void powBase( ValueType base )

@@ -68,8 +68,6 @@ class COMMON_DLL_IMPORTEXPORT COOSparseMatrix:
 
 public:
 
-    typedef ValueType _MatrixValueType; //!< This is the type of the matrix values.
-
     /** Type definition of the storage type for this sparse matrix. */
 
     typedef COOStorage<ValueType> StorageType;
@@ -136,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit COOSparseMatrix( const Expression_SM& expression );
+    explicit COOSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit COOSparseMatrix( const Expression_SMM& expression );
+    explicit COOSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit COOSparseMatrix( const Expression_SM_SM& expression );
+    explicit COOSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a COO sparse matrix with distributed COO storage data.
      *

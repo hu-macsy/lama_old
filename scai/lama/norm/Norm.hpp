@@ -38,11 +38,12 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/matrix/_Matrix.hpp>
-#include <scai/lama/_Vector.hpp>
-#include <scai/lama/Scalar.hpp>
 
+#include <scai/lama/Vector.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/common/Factory.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -50,19 +51,16 @@ namespace scai
 namespace lama
 {
 
-class Norm;
-
-typedef std::shared_ptr<Norm> NormPtr;
-
 /**
  * @brief Norm is a abstract functor to calculate the norms for the passed values.
  *
  * The Functor Norm is mainly used by the stopping criteria ResidualThreshold and
  * ResidualStagnation, to allow a to customize the Norms for these stopping criteria.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Norm :
 
-    public common::Factory<std::string, Norm*>,
+    public common::Factory<std::string, Norm<ValueType>* >,
     public common::Printable
 
 {
@@ -85,7 +83,7 @@ public:
      * @param[in] scalar    the Scalar to caluclate the norm for.
      * @return              the norm of scalar.
      */
-    Scalar operator()( const Scalar& scalar ) const;
+    NormType<ValueType> operator()( const ValueType& scalar ) const;
 
     /**
      * @brief Calculates the norm of the passed Vector.
@@ -95,7 +93,7 @@ public:
      * @param[in] vector    the Vector to caluclate the norm for.
      * @return              the norm of vector.
      */
-    Scalar operator()( const _Vector& vector ) const;
+    NormType<ValueType> operator()( const Vector<ValueType>& vector ) const;
 
     /**
      * @brief Calculates the norm of the passed _Matrix.
@@ -105,7 +103,7 @@ public:
      * @param[in] matrix    the _Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
-    Scalar operator()( const _Matrix& matrix ) const;
+    NormType<ValueType> operator()( const Matrix<ValueType>& matrix ) const;
 
     /**
      * @brief Calculates the norm of the passed Scalar.
@@ -113,7 +111,7 @@ public:
      * @param[in] scalar    the Scalar to caluclate the norm for.
      * @return              the norm of scalar.
      */
-    virtual Scalar apply( const Scalar& scalar ) const = 0;
+    virtual NormType<ValueType> apply( const ValueType& scalar ) const = 0;
 
     /**
      * @brief Calculates the norm of the passed Vector.
@@ -121,7 +119,7 @@ public:
      * @param[in] vector    the Vector to caluclate the norm for.
      * @return              the norm of vector.
      */
-    virtual Scalar apply( const _Vector& vector ) const = 0;
+    virtual NormType<ValueType> apply( const Vector<ValueType>& vector ) const = 0;
 
     /**
      * @brief Calculates the norm of the passed _Matrix.
@@ -129,8 +127,20 @@ public:
      * @param[in] matrix    the _Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
-    virtual Scalar apply( const _Matrix& matrix ) const = 0;
+    virtual NormType<ValueType> apply( const Matrix<ValueType>& matrix ) const = 0;
 };
+
+/** 
+ * Definiton of corresponding shared pointer type for the class Norm<ValueType> by a type alias.
+ *
+ *  \code
+ *      NormPtr<ValueType> x( Norm<ValueType>::getNorm( "L1" ) );
+ *      std::shared_ptr<Norm<ValueType> > x( Norm<ValueType>::getNorm( "Max" ) );
+ *  \endcode
+*/
+template<typename ValueType>
+using NormPtr = std::shared_ptr<Norm<ValueType> >;
+
 
 } /* end namespace lama */
 

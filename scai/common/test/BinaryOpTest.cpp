@@ -42,6 +42,8 @@
 using namespace scai;
 using namespace common;
 
+BOOST_AUTO_TEST_SUITE( BinaryOpTest )
+
 BOOST_AUTO_TEST_CASE( BinaryOpTest )
 {
     // arithmetic binary operations
@@ -105,3 +107,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
     BOOST_CHECK( applyBinary<T>( T( 3 ), CompareOp::GT, T( 2 ) ) );
 }
 
+BOOST_AUTO_TEST_SUITE_END()

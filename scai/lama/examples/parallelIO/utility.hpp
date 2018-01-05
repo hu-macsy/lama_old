@@ -40,7 +40,7 @@
 
 static scai::common::ScalarType getType()
 {
-    common::ScalarType type = common::TypeTraits<double>::stype;
+    scai::common::ScalarType type = scai::common::TypeTraits<double>::stype;
 
     std::string val;
 

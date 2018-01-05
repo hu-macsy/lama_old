@@ -68,8 +68,6 @@ class COMMON_DLL_IMPORTEXPORT XXXSparseMatrix:
 
 public:
 
-    typedef ValueType _MatrixValueType; //!< This is the type of the matrix values.
-
     /** Type definition of the storage type for this sparse matrix. */
 
     typedef XXXStorage<ValueType> StorageType;
@@ -136,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit XXXSparseMatrix( const Expression_SM& expression );
+    explicit XXXSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit XXXSparseMatrix( const Expression_SMM& expression );
+    explicit XXXSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit XXXSparseMatrix( const Expression_SM_SM& expression );
+    explicit XXXSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a XXX sparse matrix with distributed XXX storage data.
      *

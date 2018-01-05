@@ -68,8 +68,6 @@ class COMMON_DLL_IMPORTEXPORT DIASparseMatrix:
 
 public:
 
-    typedef ValueType _MatrixValueType; //!< This is the type of the matrix values.
-
     /** Type definition of the storage type for this sparse matrix. */
 
     typedef DIAStorage<ValueType> StorageType;
@@ -136,11 +134,11 @@ public:
 
     // Expression constructors
 
-    explicit DIASparseMatrix( const Expression_SM& expression );
+    explicit DIASparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit DIASparseMatrix( const Expression_SMM& expression );
+    explicit DIASparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit DIASparseMatrix( const Expression_SM_SM& expression );
+    explicit DIASparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a DIA sparse matrix with distributed DIA storage data.
      *

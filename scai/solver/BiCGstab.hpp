@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief BiCGstab.hpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 06.08.2013
  */
 
@@ -40,6 +40,7 @@
 // base classes
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/IterativeSolver.hpp>
+#include <scai/lama/DenseVector.hpp>
 
 // logging
 #include <scai/logging/Logger.hpp>
@@ -58,9 +59,11 @@ namespace solver
  * The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT BiCGstab:
-    public IterativeSolver,
-    public Solver::Register<BiCGstab>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<BiCGstab<ValueType> >
 {
 public:
     /**
@@ -85,7 +88,7 @@ public:
 
     virtual ~BiCGstab();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -93,51 +96,57 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual BiCGstab<ValueType>* copy();
 
-    struct BiCGstabRuntime: IterativeSolverRuntime
+    struct BiCGstabRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        BiCGstabRuntime();
-        virtual ~BiCGstabRuntime();
+        lama::DenseVector<ValueType> mRes0;
+        lama::DenseVector<ValueType> mVecV;
+        lama::DenseVector<ValueType> mVecP;
+        lama::DenseVector<ValueType> mVecS;
+        lama::DenseVector<ValueType> mVecT;
+        lama::DenseVector<ValueType> mVecPT;
+        lama::DenseVector<ValueType> mVecST;
+        lama::DenseVector<ValueType> mVecTT;
 
-        lama::_VectorPtr mRes0;
-        lama::_VectorPtr mVecV;
-        lama::_VectorPtr mVecP;
-        lama::_VectorPtr mVecS;
-        lama::_VectorPtr mVecT;
-        lama::_VectorPtr mVecPT;
-        lama::_VectorPtr mVecST;
-        lama::_VectorPtr mVecTT;
-
-        lama::Scalar mEps;
-        lama::Scalar mResNorm;
-        lama::Scalar mOmega;
-        lama::Scalar mAlpha;
-        lama::Scalar mBeta;
-        lama::Scalar mRhoOld;
-        lama::Scalar mRhoNew;
+        NormType<ValueType> mEps;      // used in comparison
+        NormType<ValueType> mResNorm;  // norm is always real
+        ValueType mOmega;
+        ValueType mAlpha;
+        ValueType mBeta;
+        ValueType mRhoOld;
+        ValueType mRhoNew;
     };
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
     virtual BiCGstabRuntime& getRuntime();
+
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
+    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const BiCGstabRuntime& getConstRuntime() const;
+    virtual const BiCGstabRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
     virtual void iterate();
+
+    using IterativeSolver<ValueType>::mPreconditioner;
+
     /**
      *  @brief own implementation of Printable::writeAt
      */
