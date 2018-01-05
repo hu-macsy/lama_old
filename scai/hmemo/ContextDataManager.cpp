@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/macros/terminate.hpp>
 
 namespace scai
 {
@@ -66,6 +67,71 @@ ContextDataManager::ContextDataManager() :
     multiContext = false;
     multiThreaded = false;
     SCAI_LOG_DEBUG( logger, "ContextDataManager()" )
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextDataManager::ContextDataManager( ContextDataManager&& other ) noexcept :
+
+    mContextData( std::move( other.mContextData ) )
+
+{
+    SCAI_LOG_INFO( logger, "move constructor: " 
+                          << ", this context data has now " << mContextData.size() << " entries"
+                          << ", other context data has now " << other.mContextData.size() << " entries" )
+
+    // check for current accesses, if yes terminate as there is no way to recover
+
+    if ( ( other.mLock[Context::Write] != 0 ) )
+    {
+        SCAI_TERMINATE( "SERIOUS: move operation on write locked array, causes termination" )
+    }
+
+    if ( ( other.mLock[Context::Read] != 0 ) )
+    {
+        SCAI_TERMINATE( "SERIOUS: move operation on read locked array, causes termination" )
+    }
+
+    mLock[Context::Read] = 0;
+    mLock[Context::Write] = 0;
+    multiContext = false;
+    multiThreaded = false;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextDataManager& ContextDataManager::operator=( ContextDataManager&& other ) 
+{
+    SCAI_LOG_INFO( logger, "move asignment called for context data manager: " 
+                          << ", this context data has " << mContextData.size() << " entries"
+                          << ", other context data has " << other.mContextData.size() << " entries" )
+
+    // check for current accesses, if yes terminate as there is no way to recover
+
+    if ( ( other.mLock[Context::Write] != 0 ) )
+    {
+        SCAI_TERMINATE( "SERIOUS: move operation on write locked array, causes termination" )
+    }
+
+    if ( ( other.mLock[Context::Read] != 0 ) )
+    {
+        SCAI_TERMINATE( "SERIOUS: move operation on read locked array, causes termination" )
+    }
+
+    mLock[Context::Read] = 0;
+    mLock[Context::Write] = 0;
+    multiContext = false;
+    multiThreaded = false;
+
+    // Note: existing entries in mContextData will be freed
+
+    mContextData = std::move( other.mContextData );
+
+    SCAI_LOG_INFO( logger, "move asignment done for context data manager: " 
+                          << ", this context data has " << mContextData.size() << " entries"
+                          << ", other context data has " << other.mContextData.size() << " entries" )
+
+    return *this;
 }
 
 /* ---------------------------------------------------------------------------------*/

@@ -220,9 +220,22 @@ public:
 
     /** Override the default copy construtor */
 
-    LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>()
+    LArray( const LArray<ValueType>& other ) : hmemo::HArray<ValueType>( other )
     {
-        HArrayUtils::assign( *this, other );
+    }
+
+    LArray( const hmemo::HArray<ValueType>& other ) : hmemo::HArray<ValueType>( other )
+    {
+    }
+
+    /** Move constructor */
+
+    LArray( LArray<ValueType>&& other ) noexcept: hmemo::HArray<ValueType>( std::move( other ) )
+    {
+    }
+
+    LArray( hmemo::HArray<ValueType>&& other ) noexcept: hmemo::HArray<ValueType>( std::move( other ) )
+    {
     }
 
     /** Copy constructor that works with HArray of any type. */
@@ -242,6 +255,22 @@ public:
     LArray& operator= ( const LArray<ValueType>& other )
     {
         HArrayUtils::assign( *this, other );
+        return *this;
+    }
+
+    /** Move assignment operator for local array */
+
+    LArray& operator= ( LArray<ValueType>&& other )
+    {
+        hmemo::HArray<ValueType>::operator=( std::move( other ) );
+        return *this;
+    }
+
+    /** Move assignment operator for local array, works also for heterogeneous arrays */
+
+    LArray& operator= ( hmemo::HArray<ValueType>&& other )
+    {
+        hmemo::HArray<ValueType>::operator=( std::move( other ) );
         return *this;
     }
 
