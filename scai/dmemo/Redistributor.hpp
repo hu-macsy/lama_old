@@ -88,12 +88,12 @@ public:
 
     IndexType getSourceLocalSize() const
     {
-        return mSourceSize;
+        return mSourceDistribution->getLocalSize();
     }
 
     IndexType getTargetLocalSize() const
     {
-        return mTargetSize;
+        return mTargetDistribution->getLocalSize();
     }
 
     /** Redistribution of a distributed vector as HArrays.
@@ -362,9 +362,6 @@ private:
     DistributionPtr mSourceDistribution;
     DistributionPtr mTargetDistribution;
 
-    IndexType mSourceSize; // = mSourceDistribution->getLocalSize()
-    IndexType mTargetSize; // = mTargetDistribution->getLocalSize()
-
     // sorted local indices in source dist which remain local
     // (i.e. the corresponding global index is also local in target)
     hmemo::HArray<IndexType> mKeepSourceIndexes;
@@ -396,7 +393,7 @@ void Redistributor::redistribute( hmemo::HArray<ValueType>& targetArray, const h
     SCAI_REGION( "Redistributor.redistribute" )
     {
         // make sure that target array has sufficient memory
-        hmemo::WriteOnlyAccess<ValueType> target( targetArray, mTargetSize );
+        hmemo::WriteOnlyAccess<ValueType> target( targetArray, getTargetLocalSize() );
     }
     // allocate memory for source (provides) and target (required) halo
     hmemo::HArray<ValueType> sourceHalo( getExchangeSourceSize() );
@@ -422,7 +419,7 @@ void Redistributor::redistributeN(
     hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
     {
         // make sure that target array has sufficient memory
-        hmemo::WriteOnlyAccess<ValueType> target( targetArray, loc, mTargetSize * n );
+        hmemo::WriteOnlyAccess<ValueType> target( targetArray, loc, getTargetLocalSize() * n );
     }
     // allocate memory for source (provides) and target (required) halo
     hmemo::HArray<ValueType> sourceHalo( n * getExchangeSourceSize() );

@@ -67,18 +67,19 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     const Distribution& targetDist = *targetDistribution;
     SCAI_ASSERT_EQ_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize(), "serious size mismatch" )
     SCAI_ASSERT_EQ_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator(), "redistribute only with same communicator" )
-    mSourceSize = sourceDist.getLocalSize();
-    mTargetSize = targetDist.getLocalSize();
     SCAI_LOG_INFO( logger,
-                   sourceDist.getCommunicator() << ": build redistributor " << targetDist << " <- " << sourceDist << ", have " << mSourceSize << " source values and " << mTargetSize << " target values" )
+                   sourceDist.getCommunicator()
+                    << ": build redistributor " << targetDist << " <- "
+                    << sourceDist << ", have " << getSourceLocalSize()
+                    << " source values and " << getTargetLocalSize() << " target values" )
     // localSourceIndexes, localTargetIndexes are used for local permutation
     // we do not know the exact sizes now so we take maximal value
-    WriteOnlyAccess<IndexType> keepSourceIndexes( mKeepSourceIndexes, mSourceSize );
-    WriteOnlyAccess<IndexType> keepTargetIndexes( mKeepTargetIndexes, mTargetSize );
+    WriteOnlyAccess<IndexType> keepSourceIndexes( mKeepSourceIndexes, getSourceLocalSize() );
+    WriteOnlyAccess<IndexType> keepTargetIndexes( mKeepTargetIndexes, getTargetLocalSize() );
     std::vector<IndexType> requiredIndexes;
     mNumLocalValues = 0; // count number of local copies from source to target
 
-    for ( IndexType i = 0; i < mTargetSize; i++ )
+    for ( IndexType i = 0; i < getTargetLocalSize(); i++ )
     {
         IndexType globalIndex = targetDist.local2global( i );
 
@@ -104,7 +105,9 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     keepSourceIndexes.resize( mNumLocalValues );
     keepTargetIndexes.resize( mNumLocalValues );
     SCAI_LOG_DEBUG( logger,
-                    sourceDist.getCommunicator() << ": target dist has local " << mTargetSize << " vals, " << mNumLocalValues << " are local, " << requiredIndexes.size() << " are remote." )
+                    sourceDist.getCommunicator() << ": target dist has local " << getTargetLocalSize()
+                                                 << " vals, " << mNumLocalValues << " are local, "
+                                                 << requiredIndexes.size() << " are remote." )
     // Halo is only for exchange of non-local values
     HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
     HaloBuilder::build( sourceDist, arrRequiredIndexes, mHalo );
@@ -137,10 +140,10 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     // In contrary to Halo schedules we have here the situation that each non-local
     // index of source should be required by some other processor.
     SCAI_ASSERT_EQ_ERROR( offset, exchangeSourceIndexes.size(), "serious mismatch" )
-    SCAI_ASSERT_EQ_ERROR( mNumLocalValues + offset, mSourceSize, "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( mNumLocalValues + offset, getSourceLocalSize(), "serious mismatch" )
     // Now add the indexes where to scatter the halo into destination
     IndexType haloSize = halo.getHaloSize();
-    SCAI_ASSERT_ERROR( mNumLocalValues + haloSize == mTargetSize, "size mismatch" )
+    SCAI_ASSERT_ERROR( mNumLocalValues + haloSize == getTargetLocalSize(), "size mismatch" )
     exchangeTargetIndexes.resize( haloSize );
 
     for ( IndexType i = 0; i < haloSize; i++ )
@@ -163,7 +166,7 @@ void Redistributor::writeAt( std::ostream& stream ) const
 {
     stream << "Redistributor( ";
     stream << *mSourceDistribution << "->" << *mTargetDistribution;
-    stream << ", " << mSourceSize << "->" << mTargetSize;
+    stream << ", " << getSourceLocalSize() << "->" << getTargetLocalSize();
     stream << ", local:" << mNumLocalValues;
     stream << ", source halo :" << getExchangeSourceSize();
     stream << ", target halo :" << getExchangeTargetSize();
