@@ -700,7 +700,7 @@ void CUDAStencilKernel::RegistratorV<ValueType>::registerKernels( kregistry::Ker
 {
     using kregistry::KernelRegistry;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger,
                     "register StencilKernel CUDA-routines for Host at kernel registry [" << flag 

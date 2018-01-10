@@ -2159,7 +2159,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     thrust::device_ptr<IndexType> cIaPtr( cIa );
     thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
 
-    ContextPtr loc = Context::getContextPtr( context::CUDA );
+    ContextPtr loc = Context::getContextPtr( common::ContextType::CUDA );
     MemoryPtr mem = loc->getMemoryPtr();
 
     bool hashErrorHost = false;
@@ -2689,7 +2689,7 @@ void CUDACSRUtils::matrixMultiply(
     SCAI_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
 
-    ContextPtr loc = Context::getContextPtr( context::CUDA );
+    ContextPtr loc = Context::getContextPtr( common::ContextType::CUDA );
     MemoryPtr mem = loc->getMemoryPtr();
 
     bool hashErrorHost = false;
@@ -2997,7 +2997,7 @@ void CUDACSRUtils::compress(
 void CUDACSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "set CSR routines for CUDA in Interface" )
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
@@ -3011,7 +3011,7 @@ template<typename ValueType>
 void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
@@ -3033,7 +3033,7 @@ template<typename ValueType, typename OtherValueType>
 void CUDACSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register CSRUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );

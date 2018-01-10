@@ -907,7 +907,7 @@ void CUDADIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     using kregistry::KernelRegistry;
     SCAI_LOG_DEBUG( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
 }
