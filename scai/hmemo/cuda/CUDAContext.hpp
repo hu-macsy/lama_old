@@ -138,9 +138,9 @@ public:
 
     /** This routine is required for Register in Context Factory. */
 
-    static common::context::ContextType createValue()
+    static common::ContextType createValue()
     {
-        return common::context::CUDA;
+        return common::ContextType::CUDA;
     }
 
     /** This routine is required for Register in Context Factory. */

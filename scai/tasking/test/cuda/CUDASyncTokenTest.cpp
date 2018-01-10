@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
     common::CUDACtx myCuda( deviceNr );
     {
-        CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::TransferStream );
+        CUDAStreamSyncToken token( myCuda, StreamType::TransferStream );
         // wait is done implicitly at end of this scope
     }
 }
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE( destructorTest )
 
     common::CUDACtx myCuda( deviceNr );
 
-    SyncToken* token = new CUDAStreamSyncToken( myCuda, CUDAStreamSyncToken::TransferStream );
+    SyncToken* token = new CUDAStreamSyncToken( myCuda, StreamType::TransferStream );
 
     // Note: token not freed, no synchronization, no release
 
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
     float* fpointer = reinterpret_cast<float*>( pointer );
     {
-        CUDAStreamSyncToken token( myCuda, CUDAStreamSyncToken::ComputeStream );
+        CUDAStreamSyncToken token( myCuda, StreamType::ComputeStream );
         // launch kernel asynchronously
         init( fpointer, N, 3.0 );
         // wait is done here implicitly

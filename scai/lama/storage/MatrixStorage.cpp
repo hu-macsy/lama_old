@@ -1312,7 +1312,7 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+RealType<ValueType> MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )

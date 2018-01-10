@@ -48,7 +48,8 @@ using namespace scai::tasking;
 
 SCAI_LOG_DEF_LOGGER( logger, "Threading" )
 
-using namespace scai::hmemo;
+using namespace scai;
+using namespace hmemo;
 
 void readJob( HArray<double>& X )
 {

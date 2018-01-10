@@ -1287,7 +1287,7 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     ContextPtr loc = this->getContextPtr();
     jacobi.getSupportedContext( loc );
 
-    if ( loc->getType() == Context::Host )
+    if ( loc->getType() == common::ContextType::Host )
     {
         // On host we start directly a new task, avoids pushing accesses
         void ( JDSStorage::*jb )(
@@ -1395,7 +1395,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> JDSStorage<ValueType>::l1Norm() const
+RealType<ValueType> JDSStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     const IndexType n = mNumValues;
@@ -1416,7 +1416,7 @@ NormType<ValueType> JDSStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> JDSStorage<ValueType>::l2Norm() const
+RealType<ValueType> JDSStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     const IndexType n = mNumValues;
@@ -1437,7 +1437,7 @@ NormType<ValueType> JDSStorage<ValueType>::l2Norm() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-NormType<ValueType> JDSStorage<ValueType>::maxNorm() const
+RealType<ValueType> JDSStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     return mValues.maxNorm();

@@ -331,7 +331,7 @@ LamaConfig::LamaConfig()
 
     // ValueType to be used for vector/matrix
 
-    mValueType = scai::common::TypeTraits<RealType>::stype;
+    mValueType = scai::common::TypeTraits<DefaultReal>::stype;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
@@ -378,7 +378,7 @@ LamaConfig::LamaConfig()
     {
         // check if solver is available
 
-        if ( !scai::solver::Solver<RealType>::canCreate( val ) )
+        if ( !scai::solver::Solver<DefaultReal>::canCreate( val ) )
         {
             CONFIG_ERROR( "solver " << val << " not available" )
         }
@@ -392,7 +392,7 @@ LamaConfig::LamaConfig()
 
     scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
 
-    if ( ! scai::lama::Norm<RealType>::canCreate( mNorm ) )
+    if ( ! scai::lama::Norm<DefaultReal>::canCreate( mNorm ) )
     {
         CONFIG_ERROR( "norm " << mNorm << " not available" )
     }

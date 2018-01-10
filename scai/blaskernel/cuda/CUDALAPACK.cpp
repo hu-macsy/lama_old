@@ -62,7 +62,7 @@ template<typename ValueType>
 void CUDALAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    // const common::context::ContextType ctx = common::context::CUDA;
+    // const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register LAPACK routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
 }
 

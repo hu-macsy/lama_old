@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
 
 BOOST_AUTO_TEST_CASE( VectorSingleIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     const IndexType n = 18;
 
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
 BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     const IndexType n = 18;
 
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 
 BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     const IndexType n = 18;
 
@@ -442,7 +442,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 
 BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     const IndexType numRows = 15;   // # rows for global matrix
     const IndexType numCols = 15;   // # cols for global matrix
@@ -501,7 +501,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
 BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     IndexType numRows = 15;   // # rows for global matrix
     IndexType numCols = 15;   // # cols for global matrix
@@ -594,7 +594,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 
 BOOST_AUTO_TEST_CASE( _MatrixColPartitionIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     CSRSparseMatrix<ValueType> stencilMatrix;
 

@@ -920,7 +920,7 @@ void DIAStorage<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DIAStorage<ValueType>::l1Norm() const
+RealType<ValueType> DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
@@ -930,7 +930,7 @@ NormType<ValueType> DIAStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DIAStorage<ValueType>::l2Norm() const
+RealType<ValueType> DIAStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
@@ -941,7 +941,7 @@ NormType<ValueType> DIAStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DIAStorage<ValueType>::maxNorm() const
+RealType<ValueType> DIAStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
@@ -950,7 +950,7 @@ NormType<ValueType> DIAStorage<ValueType>::maxNorm() const
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    NormType<ValueType> maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
+    RealType<ValueType> maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
     return maxval;
 }
 

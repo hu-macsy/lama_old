@@ -489,7 +489,7 @@ template<typename ValueType>
 void OpenMPSection::ArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register SectionKernel OpenMP routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
 
@@ -502,7 +502,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPSection::BinOpKernels<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
 
     SCAI_LOG_DEBUG( logger, "register SectionKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )

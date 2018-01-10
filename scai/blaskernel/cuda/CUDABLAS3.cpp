@@ -404,7 +404,7 @@ template<typename ValueType>
 void CUDABLAS3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register BLAS3 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( CUDABLAS3::gemm, ctx, flag );
 }

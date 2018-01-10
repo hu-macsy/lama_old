@@ -171,7 +171,7 @@ private:
     /**
      * @brief Stores the results of the residual-norm-calculations.
      */
-    std::vector<NormType<ValueType> > mLastResidualNorms;
+    std::vector<RealType<ValueType> > mLastResidualNorms;
 
     /**
      * @brief Index. Needed for circular use of the vector.
@@ -187,7 +187,7 @@ private:
     /**
      * @brief The precision used for the stagnation check.
      */
-    NormType<ValueType> mPrecision;
+    RealType<ValueType> mPrecision;
 };
 
 } /* end namespace solver */

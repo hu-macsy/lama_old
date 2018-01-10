@@ -494,18 +494,18 @@ public:
     }
 
     /* Implementation of pure method of class _Matrix. */
-    virtual NormType<ValueType> l1Norm() const;
+    virtual RealType<ValueType> l1Norm() const;
 
     /* Implementation of pure method of class _Matrix. */
-    virtual NormType<ValueType> l2Norm() const;
+    virtual RealType<ValueType> l2Norm() const;
 
     /** Implementation of _Matrix::maxNorm for dense matrices. */
 
-    virtual NormType<ValueType> maxNorm() const;
+    virtual RealType<ValueType> maxNorm() const;
 
     /** Implementation of _Matrix::maxDiffNorm for dense matrices. */
 
-    virtual NormType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const;
 
     /** Get the maximal difference between two elements for dense matrices of same type. */
 

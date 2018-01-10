@@ -282,7 +282,7 @@ template<typename ValueType>
 void LAPACK_LAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( LAPACK_LAPACK::getrf, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACK_LAPACK::getri, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACK_LAPACK::getinv, ctx, flag );

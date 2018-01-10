@@ -312,7 +312,7 @@ template<typename ValueType>
 void OpenMPBLAS2::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( OpenMPBLAS2::gemv, ctx, flag );
 }

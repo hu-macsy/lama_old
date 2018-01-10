@@ -64,7 +64,7 @@ using scai::common::Math;
 using scai::common::UnaryOp;
 
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 
 #define DIMx 900                // dimension of displayed window

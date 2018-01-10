@@ -102,8 +102,8 @@ public:
         lama::DenseVector<ValueType> mVecPNew;
 
         ValueType mAlpha;
-        NormType<ValueType> mBetaNew;
-        NormType<ValueType> mBeta;
+        RealType<ValueType> mBetaNew;
+        RealType<ValueType> mBeta;
         ValueType mC;
         ValueType mCOld;
         ValueType mCNew;
@@ -112,7 +112,7 @@ public:
         ValueType mSNew;
         ValueType mZeta;
 
-        NormType<ValueType> mEps;
+        RealType<ValueType> mEps;
     };
     /**
     * @brief Returns the complete configuration of the derived class

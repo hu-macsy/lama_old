@@ -51,7 +51,7 @@ using scai::common::UnaryOp;
 
 /** ValueType is the type used for matrix and vector elements. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 /** Specify the matrix type for the label matrices.
  *

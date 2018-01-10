@@ -487,19 +487,19 @@ public:
 
     /** Implementation of pure method Vector<ValueType>::l1Norm() for dense vector */
 
-    virtual NormType<ValueType> l1Norm() const;
+    virtual RealType<ValueType> l1Norm() const;
 
     /** Implementation of pure method Vector<ValueType>::l2Norm() for dense vector */
 
-    virtual NormType<ValueType> l2Norm() const;
+    virtual RealType<ValueType> l2Norm() const;
 
     /** Implementation of pure method Vector<ValueType>::maxNorm() for dense vector */
 
-    virtual NormType<ValueType> maxNorm() const;
+    virtual RealType<ValueType> maxNorm() const;
 
     /** Implementation of pure method Vector<ValueType>::maxDiffNorm */
 
-    virtual NormType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const;
 
     /** Implementation of pure method Vector<ValueType>::all */
 

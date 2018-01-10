@@ -55,7 +55,7 @@ int main()
     //
     // Define the ValueType used for the vector
     //
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
     //
     // initialize matrix and vector values
     //

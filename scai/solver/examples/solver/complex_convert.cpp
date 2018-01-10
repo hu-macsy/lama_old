@@ -142,7 +142,7 @@ int main( int argc, const char* argv[] )
 
     // take the abs type as real value type
 
-    typedef TypeTraits<ComplexValueType>::AbsType RealValueType;
+    typedef TypeTraits<ComplexValueType>::RealType RealValueType;
 
     common::Settings::parseArgs( argc, argv );
 

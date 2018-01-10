@@ -108,8 +108,8 @@ public:
         lama::DenseVector<ValueType> mVecUT;
         lama::DenseVector<ValueType> mVecTemp;
 
-        NormType<ValueType> mEps;
-        NormType<ValueType> mNormRes;
+        RealType<ValueType> mEps;
+        RealType<ValueType> mNormRes;
         ValueType mInnerProdRes;
     };
 

@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_numeric_test_t
     hwa.release();
     expected = static_cast<ValueType>( 5.47722 );
     ValueType s = l2norm( vec );
-    NormType<ValueType> eps = 0.001; // 
+    RealType<ValueType> eps = 0.001; // 
     BOOST_CHECK( common::Math::abs( expected - s ) < eps );
     BOOST_CHECK_EQUAL( vec.l2Norm(), l2norm( vec ) );
 }

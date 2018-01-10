@@ -64,6 +64,7 @@ scai_project (
         LArrayRef
         UtilKernelTrait
         SparseKernelTrait
+        TransferUtils
 )
 
 ## add subdirectories, uppercase for OPTIONAL stuff

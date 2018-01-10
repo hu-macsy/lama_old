@@ -51,7 +51,7 @@ template<typename ValueType>
 void outArray( const HArray<ValueType>& array, const char* name )
 {
     std::cout << name << "[ " << array.size() << " ] = {";
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::ContextType::Host );
     ReadAccess<ValueType> read( array, contextPtr );
 
     for ( IndexType i = 0; i < array.size(); ++i )
@@ -64,7 +64,7 @@ void outArray( const HArray<ValueType>& array, const char* name )
 
 int main()
 {
-    ContextPtr cuda = Context::getContextPtr( common::context::CUDA );
+    ContextPtr cuda = Context::getContextPtr( common::ContextType::CUDA );
     /***********************************************************************
      *  Definition of input data via heterogeneous arrays                  *
      **********************************************************************/

@@ -75,7 +75,7 @@ public:
      *
      * @return              the l2 norm of the Scalar scalar.
      */
-    virtual NormType<ValueType> apply( const ValueType& scalar ) const;
+    virtual RealType<ValueType> apply( const ValueType& scalar ) const;
 
     /**
      * @brief calculates the l2 norm of the passed Vector.
@@ -84,7 +84,7 @@ public:
      *
      * @return              the l2 norm of the Vector vector.
      */
-    virtual NormType<ValueType> apply( const Vector<ValueType>& vector ) const;
+    virtual RealType<ValueType> apply( const Vector<ValueType>& vector ) const;
 
     /**
      * @brief calculates the l2 norm of the passed matrix.
@@ -93,7 +93,7 @@ public:
      *
      * @return              the l2 norm of matrix.
      */
-    virtual NormType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
+    virtual RealType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
 
     /**
      *  Getter routine for key of this derived class used in Norm factory
@@ -118,7 +118,7 @@ public:
  * @return              the l2 norm of the Scalar scalar.
  */
 template<typename ValueType>
-inline NormType<ValueType> l2Norm( const ValueType& scalar )
+inline RealType<ValueType> l2Norm( const ValueType& scalar )
 {
     return common::Math::abs( scalar );
 }
@@ -131,7 +131,7 @@ inline NormType<ValueType> l2Norm( const ValueType& scalar )
  * @return              the l2 norm of the Vector vector.
  */
 template<typename ValueType>
-inline NormType<ValueType> l2Norm( const Vector<ValueType>& vector )
+inline RealType<ValueType> l2Norm( const Vector<ValueType>& vector )
 {
     return vector.l2Norm();
 }
@@ -144,7 +144,7 @@ inline NormType<ValueType> l2Norm( const Vector<ValueType>& vector )
  * @return              the l2 norm of the _Matrix matrix.
  */
 template<typename ValueType>
-inline NormType<ValueType> l2Norm( const Matrix<ValueType>& matrix )
+inline RealType<ValueType> l2Norm( const Matrix<ValueType>& matrix )
 {
     return matrix.l2Norm();
 }

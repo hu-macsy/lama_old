@@ -47,6 +47,7 @@ scai_project (
         SectionTest
         UtilsTest
         LArrayTest
+        TransferUtilsTest
 )
 
 scai_test ( EXECUTABLE utilskernelTest 

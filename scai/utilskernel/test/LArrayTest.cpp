@@ -139,7 +139,7 @@ typedef boost::mpl::list<SCAI_ARRAY_TYPES_CUDA> ArrayRedTypes;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;    // abs, <, <=, ..
+    typedef typename TypeTraits<ValueType>::RealType RealType;    // abs, <, <=, ..
 
     testContext = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "reductionTest on " << *testContext )
@@ -147,14 +147,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
     const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
     const IndexType N = sizeof( myVals ) / sizeof( ValueType );
 
-    AbsType expectedMin = TypeTraits<ValueType>::getMax();
-    AbsType expectedMax = TypeTraits<ValueType>::getMin();;
+    RealType expectedMin = TypeTraits<ValueType>::getMax();
+    RealType expectedMax = TypeTraits<ValueType>::getMin();;
     ValueType expectedSum = 0;
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        expectedMin = Math::min( expectedMin, AbsType( myVals[i] ) );
-        expectedMax = Math::max( expectedMax, AbsType( myVals[i] ) );
+        expectedMin = Math::min( expectedMin, RealType( myVals[i] ) );
+        expectedMax = Math::max( expectedMax, RealType( myVals[i] ) );
         expectedSum += myVals[i];
     }
 
@@ -165,10 +165,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 
     // reduction ops will be executed on testContext, min, max not possible for complex
 
-    if ( TypeTraits<ValueType>::stype == TypeTraits<AbsType>::stype )
+    if ( TypeTraits<ValueType>::stype == TypeTraits<RealType>::stype )
     {
-        BOOST_CHECK_EQUAL( expectedMin, AbsType( array.min() ) );
-        BOOST_CHECK_EQUAL( expectedMax, AbsType( array.max() ) );
+        BOOST_CHECK_EQUAL( expectedMin, RealType( array.min() ) );
+        BOOST_CHECK_EQUAL( expectedMax, RealType( array.max() ) );
     }
 
     BOOST_CHECK_EQUAL( expectedSum, array.sum() );
@@ -196,10 +196,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
         myVals[i] = Math::random<ValueType>( 1 );
     }
 
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-    AbsType expectedL1Norm = 0;
-    AbsType expectedL2Norm = 0;
-    AbsType expectedMaxNorm = 0;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
+    RealType expectedL1Norm = 0;
+    RealType expectedL2Norm = 0;
+    RealType expectedMaxNorm = 0;
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -214,16 +214,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
     // Constructor should have provided a valid copy on testContext
     BOOST_CHECK( array.isValid( testContext ) );
     // reduction ops will be executed on testContext
-    BOOST_CHECK_CLOSE( expectedL1Norm, AbsType( array.l1Norm() ), 0.1  );
-    BOOST_CHECK_CLOSE( expectedL2Norm, AbsType( array.l2Norm() ), 0.1 );
-    BOOST_CHECK_CLOSE( expectedMaxNorm, AbsType( array.maxNorm() ), 0.1 );
+    BOOST_CHECK_CLOSE( expectedL1Norm, RealType( array.l1Norm() ), 0.1  );
+    BOOST_CHECK_CLOSE( expectedL2Norm, RealType( array.l2Norm() ), 0.1 );
+    BOOST_CHECK_CLOSE( expectedMaxNorm, RealType( array.maxNorm() ), 0.1 );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
     testContext = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "binReductionTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
@@ -232,12 +232,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
     const ValueType myVals2[] = { 9, 5, 1, 3, 6, 3, 7, 8, 2, 0 };
     const IndexType N = sizeof( myVals1 ) / sizeof( ValueType );
     ValueType expectedDotProduct = 0;
-    AbsType expectedMaxDiffNorm = 0;
+    RealType expectedMaxDiffNorm = 0;
 
     for ( IndexType i = 0; i < N; ++i )
     {
         expectedDotProduct += myVals1[i] * Math::conj( myVals2[i] );
-        AbsType absDiff = Math::abs( myVals2[i] - myVals1[i] );
+        RealType absDiff = Math::abs( myVals2[i] - myVals1[i] );
         expectedMaxDiffNorm = Math::max( expectedMaxDiffNorm, absDiff );
     }
 
@@ -265,20 +265,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, ArithmeticRedTypes )
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        typedef typename TypeTraits<ValueType>::AbsType AbsType;
+        typedef typename TypeTraits<ValueType>::RealType RealType;
         ValueType x1 = 1 / myVals[i];
         ValueType x2 = array[i];
-        BOOST_CHECK_CLOSE( AbsType( x1 ), AbsType( x2 ), 0.01 );
+        BOOST_CHECK_CLOSE( RealType( x1 ), RealType( x2 ), 0.01 );
     }
 
     array.invert();
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        typedef typename TypeTraits<ValueType>::AbsType AbsType;
-        AbsType x1 =  myVals[i];
+        typedef typename TypeTraits<ValueType>::RealType RealType;
+        RealType x1 =  myVals[i];
         ValueType x2 = array[i];
-        BOOST_CHECK_CLOSE( x1, AbsType( x2 ), 0.01 );
+        BOOST_CHECK_CLOSE( x1, RealType( x2 ), 0.01 );
     }
 }
 

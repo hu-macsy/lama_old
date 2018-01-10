@@ -82,7 +82,7 @@ public:
 
     /** Type definition for thread identification used in tracing. */
 
-    typedef common::Thread::Id ThreadId;
+    typedef std::thread::id ThreadId;
 
     ~TraceConfig();
 

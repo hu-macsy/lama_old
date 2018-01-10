@@ -43,6 +43,7 @@
 
 using namespace std;
 using namespace scai::hmemo;
+using scai::common::ContextType;
 
 void bench( ContextPtr host, ContextPtr device )
 {
@@ -113,9 +114,9 @@ int main()
 {
     ContextPtr host = Context::getHostPtr();
 
-    if ( Context::canCreate( Context::CUDA ) )
+    if ( Context::canCreate( ContextType::CUDA ) )
     {
-        ContextPtr cuda = Context::getContextPtr( Context::CUDA );
+        ContextPtr cuda = Context::getContextPtr( ContextType::CUDA );
         std::cout << "CUDA bench test, context = " << *cuda << std::endl;
         bench( host, cuda );
     }

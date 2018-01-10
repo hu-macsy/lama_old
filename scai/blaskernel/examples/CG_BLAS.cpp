@@ -42,7 +42,8 @@
 
 #include <iostream>
 
-using scai::common::context;
+using scai::IndexType;
+using scai::common::ContextType;
 using scai::hmemo::HArray;
 using scai::hmemo::ReadAccess;
 using scai::hmemo::WriteAccess;
@@ -55,7 +56,7 @@ using scai::blaskernel::BLASKernelTrait;
 template<typename ValueType>
 void cg( const IndexType m, const IndexType n, const IndexType lda,
          HArray<ValueType>& x, HArray<ValueType>& A, const HArray<ValueType>& b,
-         const ValueType tol, const IndexType max_iter, const context::ContextType loc )
+         const ValueType tol, const IndexType max_iter, const ContextType loc )
 {
     // Needed temporary vectors
     HArray<ValueType> r( n );
@@ -130,9 +131,9 @@ int main()
     // Maximum number of iterations for solver
     const IndexType max_iter = 20;
     // Pointer used for initializing data structures
-    ContextPtr host = Context::getContextPtr( scai::common::context::Host );
+    ContextPtr host = Context::getContextPtr( scai::common::ContextType::Host );
     // Context used for computation
-    context::ContextType loc = context::Host;
+    ContextType loc = ContextType::Host;
     HArray<ValueType> A( m * m );
     {
         // Init Matrix

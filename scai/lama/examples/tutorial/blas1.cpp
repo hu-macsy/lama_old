@@ -69,7 +69,7 @@ int main()
     // Define the ValueType used for the vector
     // Change this type definition to double if your gpu supports that
     //
-    typedef RealType ScalarType;
+    typedef DefaultReal ScalarType;
     /////////////////////////////////////////////////
     ///////////// Scalar operations /////////////////
     /////////////////////////////////////////////////

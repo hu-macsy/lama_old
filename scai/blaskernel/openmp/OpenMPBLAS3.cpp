@@ -366,7 +366,7 @@ template<typename ValueType>
 void OpenMPBLAS3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "set BLAS3 routines for OpenMP in Interface" )
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, ctx, flag );
 }

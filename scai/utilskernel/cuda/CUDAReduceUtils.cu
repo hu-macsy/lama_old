@@ -128,20 +128,20 @@ ValueType CUDAReduceUtils::reduceMinVal( const ValueType array[], const IndexTyp
 
 // Be careful: template<ResultType, ArgumentType>, but unary_function<ArgumentType, ResultType> 
 
-template<typename AbsType, typename ValueType>
-struct absolute_value: public thrust::unary_function<ValueType, AbsType>
+template<typename RealType, typename ValueType>
+struct absolute_value: public thrust::unary_function<ValueType, RealType>
 {
     __host__ __device__
-    AbsType operator()( const ValueType& x ) const
+    RealType operator()( const ValueType& x ) const
     {
-        return static_cast<AbsType>( Math::abs( x ) );
+        return static_cast<RealType>( Math::abs( x ) );
     }
 };
 
 template<typename ValueType>
 ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "CUDA.Utils.reduceAbsMax" )
 
@@ -151,12 +151,12 @@ ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const Index
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-    AbsType result = thrust::transform_reduce(
+    RealType result = thrust::transform_reduce(
                            data,
                            data + n,
-                           absolute_value<AbsType, ValueType>(),
-                           AbsType( zero ),
-                           thrust::maximum<AbsType>() );
+                           absolute_value<RealType, ValueType>(),
+                           RealType( zero ),
+                           thrust::maximum<RealType>() );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
@@ -172,11 +172,11 @@ ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, c
 
     ValueType result;
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType absResult;
-    AbsType absZero = zero;
-    const AbsType* absArray = reinterpret_cast<const AbsType*>( array );
+    RealType absResult;
+    RealType absZero = zero;
+    const RealType* absArray = reinterpret_cast<const RealType*>( array );
 
     switch ( op )
     {
@@ -185,7 +185,7 @@ ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, c
             break;
 
         case BinaryOp::MAX :
-            // SCAI_ASSERT_EQ_ERROR( common::TypeTraits<AbsType>::stype, common::TypeTraits<ValueType>::stype, "MAX not supported for complex" )
+            // SCAI_ASSERT_EQ_ERROR( common::TypeTraits<RealType>::stype, common::TypeTraits<ValueType>::stype, "MAX not supported for complex" )
             absResult = reduceMaxVal( absArray, n, absZero );
             result = absResult;
             break;
@@ -393,7 +393,7 @@ bool CUDAReduceUtils::validIndexes( const IndexType array[], const IndexType n, 
 void CUDAReduceUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
@@ -403,7 +403,7 @@ template<typename ValueType>
 void CUDAReduceUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger, "registerV array UtilsKernel CUDA [" << flag
                     << "] --> ValueType = " << common::getScalarType<ValueType>() )

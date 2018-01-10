@@ -44,7 +44,8 @@
 #include <iostream>
 
 using namespace scai;
-using namespace scai::hmemo;
+using namespace hmemo;
+using common::ContextType;
 
 SCAI_LOG_DEF_LOGGER( logger, "CudaExample" )
 
@@ -89,8 +90,8 @@ int main()
 
     try
     {
-        std::cout << "try to get " << Context::CUDA << " context from factory" << std::endl;
-        cudaContext1 = Context::getContextPtr( Context::CUDA, 0 );
+        std::cout << "try to get " << ContextType::CUDA << " context from factory" << std::endl;
+        cudaContext1 = Context::getContextPtr( ContextType::CUDA, 0 );
         std::cout << "cudaContext1 = " << *cudaContext1 << std::endl;
     }
     catch ( scai::common::Exception& ex )
@@ -101,8 +102,8 @@ int main()
 
     try
     {
-        std::cout << "try to get " << Context::CUDA << " context from factory" << std::endl;
-        cudaContext2 = Context::getContextPtr( Context::CUDA, 1 );
+        std::cout << "try to get " << ContextType::CUDA << " context from factory" << std::endl;
+        cudaContext2 = Context::getContextPtr( ContextType::CUDA, 1 );
         std::cout << "cudaContext2 = " << *cudaContext2 << std::endl;
     }
     catch ( scai::common::Exception& ex )
@@ -111,8 +112,8 @@ int main()
         return 0;
     }
 
-    std::cout << "try to get " << Context::Host << " context from factory" << std::endl;
-    ContextPtr hostContext = Context::getContextPtr( Context::Host, 1 );
+    std::cout << "try to get " << ContextType::Host << " context from factory" << std::endl;
+    ContextPtr hostContext = Context::getContextPtr( ContextType::Host, 1 );
     std::cout << "hostContext = " << *hostContext << std::endl;
     const IndexType N = 100;
     HArray<double> data;

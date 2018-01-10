@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE( SetAndGetFirstNormResultTest )
 {
     std::unique_ptr<ResidualThreshold<ValueType>> testcriterion( new ResidualThreshold<ValueType>() );
     BOOST_CHECK_EQUAL( testcriterion->getFirstNormResult(), ValueType(-1) );
-    NormType<ValueType> s = 1;
+    RealType<ValueType> s = 1;
     testcriterion->setFirstNormResult( s );
     BOOST_CHECK_EQUAL( testcriterion->getFirstNormResult(), s );
 }
@@ -176,8 +176,8 @@ BOOST_AUTO_TEST_CASE( NormPtrTest )
     v[0] = 3;
     v[1] = 4;
 
-    NormType<ValueType> computed = norm->apply( v );
-    NormType<ValueType> expected = 5;
+    RealType<ValueType> computed = norm->apply( v );
+    RealType<ValueType> expected = 5;
 
     SCAI_LOG_INFO( logger, "v = " << v << ", Norm = " << *norm 
                            << ", computed = " << computed << ", expected = " << expected )
@@ -198,7 +198,7 @@ void testIsSatisfied( ResidualCheck checkMode )
     DenseVector<ValueType> solution( n, ValueType( 0 ) );
 
     NormPtr<ValueType> l2Norm( new L2Norm<ValueType>() );
-    NormType<ValueType> eps = 1e-5;
+    RealType<ValueType> eps = 1e-5;
     CriterionPtr<ValueType> residualThreshold( new ResidualThreshold<ValueType>( l2Norm, eps, checkMode ) );
     solver.setStoppingCriterion( residualThreshold );
     solver.initialize( coefficients );
@@ -207,7 +207,7 @@ void testIsSatisfied( ResidualCheck checkMode )
     BOOST_CHECK( residualThreshold->isSatisfied( solver ) );
 
     DenseVector<ValueType> residual( coefficients * solution - rhs );
-    NormType<ValueType> error = ( *l2Norm )( residual );
+    RealType<ValueType> error = ( *l2Norm )( residual );
 
     SCAI_LOG_INFO( logger, "solver = " << solver << ", error = " << error )
 

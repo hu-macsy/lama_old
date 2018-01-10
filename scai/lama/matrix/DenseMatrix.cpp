@@ -2131,13 +2131,13 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::maxNorm() const
+RealType<ValueType> DenseMatrix<ValueType>::maxNorm() const
 {
-    NormType<ValueType> myMaxDiff = 0;
+    RealType<ValueType> myMaxDiff = 0;
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        NormType<ValueType> maxDiff = mData[i]->maxNorm();
+        RealType<ValueType> maxDiff = mData[i]->maxNorm();
 
         if ( maxDiff > myMaxDiff )
         {
@@ -2153,16 +2153,16 @@ NormType<ValueType> DenseMatrix<ValueType>::maxNorm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::l1Norm() const
+RealType<ValueType> DenseMatrix<ValueType>::l1Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    NormType<ValueType> mySum = 0;
+    RealType<ValueType> mySum = 0;
     IndexType n = mData.size();
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        mySum += static_cast<NormType<ValueType> >( mData[i]->l1Norm() );
+        mySum += static_cast<RealType<ValueType> >( mData[i]->l1Norm() );
     }
 
     return comm.sum( mySum );
@@ -2171,7 +2171,7 @@ NormType<ValueType> DenseMatrix<ValueType>::l1Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::l2Norm() const
+RealType<ValueType> DenseMatrix<ValueType>::l2Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
     ValueType mySum = static_cast<ValueType>( 0.0 );
@@ -2190,7 +2190,7 @@ NormType<ValueType> DenseMatrix<ValueType>::l2Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
+RealType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     if ( !( ( getNumColumns() == other.getNumColumns() ) && ( getNumRows() == other.getNumRows() ) ) )
     {
@@ -2223,13 +2223,13 @@ ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>&
     SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), other.getRowDistribution() )
     SCAI_ASSERT_EQUAL_ERROR( getColDistribution(), other.getColDistribution() )
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType myMaxDiff = 0;
+    RealType myMaxDiff = 0;
 
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {
-        AbsType maxDiff = mData[i]->maxDiffNorm( *other.mData[i] );
+        RealType maxDiff = mData[i]->maxDiffNorm( *other.mData[i] );
 
         if ( maxDiff > myMaxDiff )
         {

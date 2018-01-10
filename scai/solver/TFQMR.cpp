@@ -192,7 +192,7 @@ void TFQMR<ValueType>::iterationEven()
     const DenseVector<ValueType>& vecVEven = runtime.mVecVEven;
     DenseVector<ValueType>& vecVOdd = runtime.mVecVOdd;
     const ValueType& rho = runtime.mRhoOld;
-    const NormType<ValueType>& eps = runtime.mEps;
+    const RealType<ValueType>& eps = runtime.mEps;
     const ValueType dotProduct = initialR.dotProduct( vecZ );
     ValueType& alpha = runtime.mAlpha;
 
@@ -222,7 +222,7 @@ void TFQMR<ValueType>::iterationOdd()
     ValueType& beta = runtime.mBeta;
     DenseVector<ValueType>& vecZ = runtime.mVecZ;
     DenseVector<ValueType>& vecVT = runtime.mVecVT;
-    const NormType<ValueType>& eps = runtime.mEps;
+    const RealType<ValueType>& eps = runtime.mEps;
 
     rhoNew  = initialR.dotProduct( vecW );
 
@@ -270,7 +270,7 @@ void TFQMR<ValueType>::iterate()
     ValueType& theta = runtime.mTheta;
     ValueType& tau = runtime.mTau;
 
-    NormType<ValueType>& eps = runtime.mEps;
+    RealType<ValueType>& eps = runtime.mEps;
 
     bool isEven = ( iteration % 2 ) == 0;
 

@@ -55,7 +55,7 @@ SCAI_LOG_DEF_LOGGER( CUDAStreamPool::logger, "CUDAStreamPool" )
 
 CUstream CUDAStreamPool::reserveStream( const StreamType type )
 {
-    if ( type == ComputeStream )
+    if ( type == StreamType::ComputeStream )
     {
         mComputeReservations++;
         SCAI_LOG_INFO( logger, "reserved computed stream " << mComputeStream << ", #reservations = " << mComputeReservations )

@@ -96,7 +96,7 @@ _HArray& _HArray::operator=( const _HArray& other )
     SCAI_ASSERT( !mContextDataManager.locked(), "assign to a locked array (read/write access)" )
 
     // ToDo: we might add an exception on same thread: only valid write location is copied
-    SCAI_ASSERT( !other.mContextDataManager.locked( common::context::Write ), "assign of a write locked array" )
+    SCAI_ASSERT( !other.mContextDataManager.locked( common::AccessKind::Write ), "assign of a write locked array" )
     mContextDataManager.invalidateAll();
     // Now the same stuff as in copy constructor
     mContextDataManager.copyAllValidEntries( other.mContextDataManager, mSize * mValueSize );
@@ -121,7 +121,7 @@ void _HArray::assign( const _HArray& other, ContextPtr context )
     mSize     = other.mSize;
     constFlag = false;
 
-    SCAI_ASSERT( !other.mContextDataManager.locked( common::context::Write ), "assign of a write locked array" )
+    SCAI_ASSERT( !other.mContextDataManager.locked( common::AccessKind::Write ), "assign of a write locked array" )
     mContextDataManager.invalidateAll();
     mContextDataManager.setValidData( context, other.mContextDataManager, mSize * mValueSize );
     SCAI_LOG_DEBUG( logger, *this << " has now been assigned at " << *context )
@@ -251,8 +251,8 @@ void _HArray::clearWithIndex( const ContextDataIndex index )
     // make sure that we have exactly one write access at this context
 
     ContextData& data = mContextDataManager[index];
-    SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( common::context::Write ), "multiple write access for clear" << data )
-    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( common::context::Read ), "further read access, cannot clear " << data )
+    SCAI_ASSERT_EQUAL( 1, mContextDataManager.locked( common::AccessKind::Write ), "multiple write access for clear" << data )
+    SCAI_ASSERT_EQUAL( 0, mContextDataManager.locked( common::AccessKind::Read ), "further read access, cannot clear " << data )
     mSize = 0;
 }
 

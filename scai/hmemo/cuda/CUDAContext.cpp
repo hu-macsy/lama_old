@@ -57,6 +57,7 @@ namespace scai
 
 using common::Thread;
 using tasking::SyncToken;
+using tasking::StreamType;
 using tasking::CUDAStreamSyncToken;
 using tasking::CUDAStreamPool;
 
@@ -71,7 +72,7 @@ SCAI_LOG_DEF_LOGGER( CUDAContext::logger, "Context.CUDAContext" )
 
 CUDAContext::CUDAContext( int deviceNr ) :
 
-    Context( common::context::CUDA ),
+    Context( common::ContextType::CUDA ),
     CUDACtx( deviceNr )
 
 {
@@ -193,21 +194,21 @@ CUDAStreamSyncToken* CUDAContext::getComputeSyncToken() const
     // ToDo: A possible problem might be that this CUDAContext is deleted before
     // synchronization has taken place. Solution: add a dummy routine where
     // one argument is bind to this context.
-    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::ComputeStream );
+    return new CUDAStreamSyncToken( *this, StreamType::ComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 SyncToken* CUDAContext::getSyncToken() const
 {
-    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::ComputeStream );
+    return new CUDAStreamSyncToken( *this, StreamType::ComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 {
-    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::TransferStream );
+    return new CUDAStreamSyncToken( *this, StreamType::TransferStream );
 }
 
 /* ----------------------------------------------------------------------------- */

@@ -112,12 +112,12 @@ bool ResidualStagnation<ValueType>::isSatisfied( const IterativeSolver<ValueType
 
     if ( mEntriesReady )
     {
-        NormType<ValueType> min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
-        NormType<ValueType> max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
-        min = std::max( std::numeric_limits<NormType<ValueType> >::min(), min );
+        RealType<ValueType> min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
+        RealType<ValueType> max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
+        min = std::max( std::numeric_limits<RealType<ValueType> >::min(), min );
         //std::cout<< " max ="<<max<<"       min = "<<min<<"      max/min = "<<max/min<<"1+p = "<<(1.0+mPrecision)<<std::endl;
         mEntriesReady = false;
-        return ( ( max / min ) < ( NormType<ValueType>( 1 ) + mPrecision ) );
+        return ( ( max / min ) < ( RealType<ValueType>( 1 ) + mPrecision ) );
     }
 
     return false;

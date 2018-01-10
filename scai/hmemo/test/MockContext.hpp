@@ -101,9 +101,9 @@ public:
         // return &memory == getMemory().get();
     }
 
-    virtual scai::common::context::ContextType getType() const
+    virtual scai::common::ContextType getType() const
     {
-        return scai::common::context::UserContext;
+        return scai::common::ContextType::UserContext;
     }
 
     virtual scai::tasking::TaskSyncToken* getSyncToken() const
@@ -118,16 +118,16 @@ public:
 
     static scai::hmemo::ContextPtr create( int deviceNr );
 
-    static scai::common::context::ContextType createValue()
+    static scai::common::ContextType createValue()
     {
-        return scai::common::context::UserContext;
+        return scai::common::ContextType::UserContext;
     }
 
 private:
 
     // MockContext uses the type UserContext as its type
 
-    MockContext( int deviceNr ) : scai::hmemo::Context( scai::common::context::UserContext )
+    MockContext( int deviceNr ) : scai::hmemo::Context( scai::common::ContextType::UserContext )
     {
         mDeviceNr = deviceNr;
     }

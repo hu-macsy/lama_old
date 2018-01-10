@@ -39,6 +39,7 @@
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/utilskernel/mepr/UtilsWrapper.hpp>
 
@@ -1404,7 +1405,7 @@ ValueType HArrayUtils::unscan(
     unscan.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
     WriteAccess<ValueType> wValues( array, loc );
-    ValueType first = unscan[loc]( wValues.get(), n );
+    ValueType first = unscan[loc]( wValues.get(), n - 1 );
 
     // One additional element will be removed from end
     wValues.resize( n - 1 );
@@ -1938,22 +1939,22 @@ IndexType HArrayUtils::insertSorted(
     const ValueType value, 
     hmemo::ContextPtr )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    if ( common::TypeTraits<ValueType>::stype != common::TypeTraits<AbsType>::stype )
+    if ( common::TypeTraits<ValueType>::stype != common::TypeTraits<RealType>::stype )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
         return 0;
     }
     else
     {
-        AbsType value1 = value;
+        RealType value1 = value;
 
         IndexType n = array.size();
  
-        HArray<AbsType>& array1 = reinterpret_cast<HArray<AbsType>&>( array );
+        HArray<RealType>& array1 = reinterpret_cast<HArray<RealType>&>( array );
 
-        WriteAccess<AbsType> wArray( array1 );
+        WriteAccess<RealType> wArray( array1 );
 
         wArray.resize( n + 1 );
 
@@ -2056,6 +2057,23 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType>& i
     }
 
     return nIndex;
+}
+
+/* --------------------------------------------------------------------------- */
+
+void HArrayUtils::findPosInSortedIndexesV( hmemo::HArray<IndexType>& outPos,
+                                           const hmemo::HArray<IndexType>& indexes, 
+                                           const hmemo::HArray<IndexType> inPos )
+{
+    const IndexType n = inPos.size();
+    const IndexType m = indexes.size();
+
+    // Note: alias of outPos and inPos is safe !!
+
+    ReadAccess<IndexType> rIn( inPos );
+    ReadAccess<IndexType> rIndexes( indexes );
+    WriteOnlyAccess<IndexType> wOut( outPos, n );
+    OpenMPUtils::binarySearch( wOut.get(), rIndexes.get(), m, rIn.get(), n );
 }
 
 /* --------------------------------------------------------------------------- */

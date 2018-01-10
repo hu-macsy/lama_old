@@ -241,21 +241,21 @@ ValueType OpenMPUtils::reduceBinOp(
 template<typename ValueType>
 ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "OpenMP.Utils.reduceAbsMaxVal" )
 
-    AbsType val = zero;
+    RealType val = zero;
 
     #pragma omp parallel
     {
-        AbsType threadVal = zero;
+        RealType threadVal = zero;
 
         #pragma omp for 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            AbsType elem = common::Math::abs( array[i] );
+            RealType elem = common::Math::abs( array[i] );
 
             if ( elem > threadVal )
             {
@@ -495,22 +495,22 @@ ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "OpenMP.Utils.absMaxDiffVal" )
     SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
 
-    AbsType val = static_cast<AbsType>( 0 );
+    RealType val = static_cast<RealType>( 0 );
 
     #pragma omp parallel
     {
-        AbsType threadVal = static_cast<AbsType>( 0 );
+        RealType threadVal = static_cast<RealType>( 0 );
 
         #pragma omp for 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            AbsType elem = common::Math::abs( array1[i] - array2[i] );
+            RealType elem = common::Math::abs( array1[i] - array2[i] );
 
             if ( elem > threadVal )
             {
@@ -1259,7 +1259,7 @@ void OpenMPUtils::setGather(
 
 /* --------------------------------------------------------------------------- */
 
-static IndexType binarySearch( const IndexType indexes[], const IndexType n, const IndexType pos )
+static IndexType _binarySearch( const IndexType indexes[], const IndexType n, const IndexType pos )
 {
     IndexType first = 0;
     IndexType last  = n;
@@ -1287,6 +1287,20 @@ static IndexType binarySearch( const IndexType indexes[], const IndexType n, con
 
 /* --------------------------------------------------------------------------- */
 
+void OpenMPUtils::binarySearch( IndexType outPos[], 
+                                const IndexType indexes[], const IndexType m, 
+                                const IndexType inPos[], const IndexType n )
+{
+    #pragma omp parallel for 
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        outPos[i] = _binarySearch( indexes, m, inPos[i] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType1, typename ValueType2>
 void OpenMPUtils::setGatherSparse(
     ValueType1 target[],
@@ -1310,7 +1324,7 @@ void OpenMPUtils::setGatherSparse(
     {
         // Binary search possible as source index array must be sorted
 
-        IndexType k = binarySearch( sourceNonZeroIndexes, sourceNNZ, indexes[i] );
+        IndexType k = _binarySearch( sourceNonZeroIndexes, sourceNNZ, indexes[i] );
 
         SCAI_LOG_TRACE( logger, "binarySearch( " << indexes[i] << " ) -> " << k )
 
@@ -1540,7 +1554,7 @@ template<typename ValueType>
 ValueType OpenMPUtils::unscan( ValueType array[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.unscan" )
-    SCAI_LOG_INFO( logger, "unscan array[ " << n << " ]" )
+    SCAI_LOG_DEBUG( logger, "unscan array[ " << n << " ]" )
 
     if ( n == 0 )
     {
@@ -1778,19 +1792,19 @@ void OpenMPUtils::sortInPlace(
 template<typename ValueType>
 IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "OpenMP.Utils.countNZ" )
 
     IndexType nonZeros = 0;
 
-    AbsType absEps = eps;
+    RealType absEps = eps;
 
     #pragma omp parallel for reduction( +:nonZeros )
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        AbsType absVal = common::Math::abs( denseArray[i] );
+        RealType absVal = common::Math::abs( denseArray[i] );
 
         if ( absVal > absEps )
         {
@@ -1813,7 +1827,7 @@ IndexType OpenMPUtils::compress(
     const IndexType n,
     const SourceType eps )
 {
-    typedef typename common::TypeTraits<SourceType>::AbsType AbsType;
+    typedef typename common::TypeTraits<SourceType>::RealType RealType;
 
     SCAI_REGION( "OpenMP.Utils.compress" )
 
@@ -1821,11 +1835,11 @@ IndexType OpenMPUtils::compress(
 
     // use of parallel for + atomicInc might be possible but would give an arbitrary order of sparse indexes
 
-    AbsType absEps = eps;
+    RealType absEps = eps;
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        AbsType sourceVal = common::Math::abs( denseArray[i] );
+        RealType sourceVal = common::Math::abs( denseArray[i] );
 
         if ( sourceVal > absEps )
         {
@@ -2276,7 +2290,7 @@ IndexType OpenMPUtils::mergeSparse(
 void OpenMPUtils::BaseKernels::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
@@ -2290,7 +2304,7 @@ template<typename ValueType>
 void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
@@ -2324,7 +2338,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPUtils::BinOpKernels<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );

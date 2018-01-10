@@ -107,7 +107,7 @@ public:
         lama::DenseVector<ValueType> mVecW;
         lama::DenseVector<ValueType> mVecZ;
 
-        NormType<ValueType> mEps;
+        RealType<ValueType> mEps;
         ValueType mAlpha;
         ValueType mBeta;
         ValueType mC;

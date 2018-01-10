@@ -78,7 +78,7 @@ public:
 
     virtual scai::hmemo::ContextPtr getContextPtr() const
     {
-        return scai::hmemo::Context::getContextPtr( scai::common::context::UserContext, mDeviceNr );
+        return scai::hmemo::Context::getContextPtr( scai::common::ContextType::UserContext, mDeviceNr );
     }
 
     virtual scai::hmemo::memtype::MemoryType getType() const

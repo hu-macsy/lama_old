@@ -1075,7 +1075,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual NormType<ValueType> l1Norm() const = 0;
+    virtual RealType<ValueType> l1Norm() const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -1084,14 +1084,14 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual NormType<ValueType> l2Norm() const = 0;
+    virtual RealType<ValueType> l2Norm() const = 0;
 
     /** Get the maximum norm of this matrix
      *
      *  @return maximal absolute value of matrix elements
      */
 
-    virtual NormType<ValueType> maxNorm() const = 0;
+    virtual RealType<ValueType> maxNorm() const = 0;
 
     /** Gets the maximal absolute element-wise difference between two matrices
      *
@@ -1102,7 +1102,7 @@ public:
      *        and computing maxNorm of it.
      */
 
-    virtual NormType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /******************************************************************
      *   Solver methods (e.g. Jacobi )                                 *

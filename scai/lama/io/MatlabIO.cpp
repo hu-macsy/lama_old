@@ -391,9 +391,9 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 
     if ( isComplex ( array.getValueType() ) )
     {
-        typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+        typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-        HArray<AbsType> real;
+        HArray<RealType> real;
 
         utilskernel::HArrayUtils::setArray( real, array );
 

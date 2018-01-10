@@ -526,11 +526,11 @@ void CUDASparseUtils::setScatter(
 template<typename ValueType>
 struct nonZero
 {
-    // AbsType is required otherwise operator > might be undefined 
+    // RealType is required otherwise operator > might be undefined 
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    const AbsType mEps;
+    const RealType mEps;
 
     nonZero( ValueType eps ) : mEps( Math::abs( eps ) )
     {
@@ -539,7 +539,7 @@ struct nonZero
     __host__ __device__
     bool operator()( ValueType x )
     {
-        AbsType absX = Math::abs( x );
+        RealType absX = Math::abs( x );
         return absX > mEps;
     }
 };
@@ -570,9 +570,9 @@ IndexType CUDASparseUtils::countNonZeros( const ValueType denseArray[], const In
 template<typename ValueType>
 struct changeIndexWithZeroSize
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    const AbsType mEps;
+    const RealType mEps;
     const IndexType mZeroIndex;
 
     changeIndexWithZeroSize( ValueType eps, IndexType zeroIndex ) :
@@ -585,7 +585,7 @@ struct changeIndexWithZeroSize
     __host__ __device__
     IndexType operator()( const ValueType& value, const IndexType& index )
     {
-        AbsType tmp = common::Math::abs( value );
+        RealType tmp = common::Math::abs( value );
 
         if ( tmp > mEps )
         {
@@ -667,7 +667,7 @@ IndexType CUDASparseUtils::compress(
 void CUDASparseUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
     KernelRegistry::set<UtilKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
@@ -677,7 +677,7 @@ template<typename ValueType>
 void CUDASparseUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger, "registerV array UtilsKernel CUDA [" << flag
                     << "] --> ValueType = " << common::getScalarType<ValueType>() )
@@ -693,7 +693,7 @@ template<typename ValueType, typename SourceValueType>
 void CUDASparseUtils::RegistratorVO<ValueType, SourceValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     KernelRegistry::set<SparseKernelTrait::compress<ValueType, SourceValueType> >( compress, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, SourceValueType> >( setScatter, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, SourceValueType> >( setGather, ctx, flag );

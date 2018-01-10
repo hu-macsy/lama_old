@@ -71,19 +71,19 @@ void MaxNorm<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-NormType<ValueType> MaxNorm<ValueType>::apply( const ValueType& scalar ) const
+RealType<ValueType> MaxNorm<ValueType>::apply( const ValueType& scalar ) const
 {
     return maxNorm( scalar );
 }
 
 template<typename ValueType>
-NormType<ValueType> MaxNorm<ValueType>::apply( const Vector<ValueType>& vector ) const
+RealType<ValueType> MaxNorm<ValueType>::apply( const Vector<ValueType>& vector ) const
 {
     return maxNorm( vector );
 }
 
 template<typename ValueType>
-NormType<ValueType> MaxNorm<ValueType>::apply( const Matrix<ValueType>& matrix ) const
+RealType<ValueType> MaxNorm<ValueType>::apply( const Matrix<ValueType>& matrix ) const
 {
     return maxNorm( matrix );
 }

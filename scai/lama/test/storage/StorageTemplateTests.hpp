@@ -75,8 +75,8 @@ void storageSwapTest()
     BOOST_CHECK_EQUAL( IndexType( 0 ), csr1.getNumColumns() );
     // now check that the other matrix contains the right values
     csr2.matrixTimesVector( z2, alpha, x, beta, y );
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
-    AbsType diff = common::Math::real( z1.maxDiffNorm( z2 ) );
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
+    RealType diff = common::Math::real( z1.maxDiffNorm( z2 ) );
     // even if storages are the same we can have different rounding errors
     BOOST_CHECK( diff < 0.001 );
 }

@@ -64,7 +64,7 @@ using namespace solver;
 
 // return: lb < x < ub, elementwise
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 bool isInterior( const DenseVector<ValueType>& x,
                  const DenseVector<ValueType>& lb,

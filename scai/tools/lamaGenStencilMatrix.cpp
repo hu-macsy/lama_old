@@ -185,7 +185,7 @@ struct CommandLineArguments
 
 /** Define the value type used in this example, take default real type. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {

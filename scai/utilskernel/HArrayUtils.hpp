@@ -849,6 +849,12 @@ public:
      */
     static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType index );
 
+    /** Find many indexes in an array of sorted indexes */
+
+    static void findPosInSortedIndexesV( hmemo::HArray<IndexType>& outPos,
+                                         const hmemo::HArray<IndexType>& indexes,
+                                         const hmemo::HArray<IndexType> inPos );
+
     /** Add two sparse arrays 
      *
      *  @param[out] resultIndexes, resultValues for sparse result array

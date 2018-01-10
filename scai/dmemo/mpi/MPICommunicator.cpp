@@ -82,7 +82,7 @@ SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type )
     : Communicator( type ),
-      mMainThread( common::Thread::getSelf() ),
+      mMainThread( std::this_thread::get_id() ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
     SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
@@ -91,7 +91,7 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv, const CommunicatorKi
 
 MPICommunicator::MPICommunicator()
     : Communicator( MPI ),
-      mMainThread( common::Thread::getSelf() ),
+      mMainThread( std::this_thread::get_id() ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
     int argc = 0;
@@ -102,7 +102,7 @@ MPICommunicator::MPICommunicator()
 
 MPICommunicator::MPICommunicator( int& argc, char** & argv )
     : Communicator( MPI ),
-      mMainThread( common::Thread::getSelf() ),
+      mMainThread( std::this_thread::get_id() ),
       mThreadSafetyLevel( Communicator::Funneled )
 {
     SCAI_TRACE_SCOPE( false ) // switch off tracing in this scope as it might call this constructor again
@@ -640,9 +640,9 @@ inline MPI_Comm MPICommunicator::selectMPIComm() const
         return mComm;
     }
 
-    const common::Thread::Id thisThread = common::Thread::getSelf();
+    const std::thread::id self = std::this_thread::get_id();
 
-    if ( thisThread == mMainThread )
+    if ( self == mMainThread )
     {
         return mComm;
     }
@@ -1159,14 +1159,14 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray
     hmemo::ContextPtr validContext = array.getValidContext();
     SCAI_LOG_DEBUG( logger, "CommunicationContext: valid context for " << array << ": " << *validContext )
 
-    if ( validContext->getType() == common::context::Host )
+    if ( validContext->getType() == common::ContextType::Host )
     {
         return validContext;
     }
 
     // This can only be used for CUDAaware MPI
 
-    if ( isCUDAAware && ( validContext->getType() == common::context::CUDA ) )
+    if ( isCUDAAware && ( validContext->getType() == common::ContextType::CUDA ) )
     {
         return validContext;
     }

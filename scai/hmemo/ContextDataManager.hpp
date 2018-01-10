@@ -38,6 +38,7 @@
 // base classes
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/AccessKind.hpp>
 
 // local libray
 #include <scai/hmemo/ContextData.hpp>
@@ -105,7 +106,7 @@ public:
      *  @returns  index to a corresponding entry for ContextData.
      */
 
-    ContextDataIndex acquireAccess( ContextPtr context, common::context::AccessKind kind, size_t allocSize, size_t validSize );
+    ContextDataIndex acquireAccess( ContextPtr context, common::AccessKind kind, size_t allocSize, size_t validSize );
 
     /** This routine must be called when an access is released, otherwise further accesses are not allowed.
      *
@@ -113,7 +114,7 @@ public:
      *  @param[in] kind    kind of access, read or write
      */
 
-    void releaseAccess( ContextDataIndex index, common::context::AccessKind kind );
+    void releaseAccess( ContextDataIndex index, common::AccessKind kind );
 
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
@@ -135,7 +136,7 @@ public:
 
     /** Return number of accesses for a certain kind. */
 
-    int locked( common::context::AccessKind kind ) const;
+    int locked( common::AccessKind kind ) const;
 
     void invalidateAll();
 
@@ -225,22 +226,23 @@ private:
 
     tasking::SyncToken* fetchAsync( ContextData& target, const ContextData& source, size_t size );
 
-    mutable common::Thread::Mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive
-    mutable common::Thread::Condition mAccessCondition;  // notify if all accesses are released
+    mutable std::mutex mAccessMutex; // needed to make accesses thread-safe, must not be recursive
+    mutable std::condition_variable_any mAccessCondition;  // notify if all accesses are released
 
-    void lockAccess( common::context::AccessKind kind, ContextPtr context );
+    void lockAccess( common::AccessKind kind, ContextPtr context );
 
-    void unlockAccess( common::context::AccessKind kind );
+    void unlockAccess( common::AccessKind kind );
 
-    int mLock[common::context::MaxAccessKind];
+    int mLock[static_cast<int>( common::AccessKind::MaxAccessKind )];
 
     ContextPtr accessContext;    // context that has locked
-    common::Thread::Id accessThread;     // thread that has locked
+
+    std::thread::id accessThread;     // thread that has locked
 
     bool  multiContext;   // multiple reads at different Context
     bool  multiThreaded;  // multiple reads by different threads
 
-    bool hasAccessConflict( common::context::AccessKind kind ) const;
+    bool hasAccessConflict( common::AccessKind kind ) const;
 };
 
 

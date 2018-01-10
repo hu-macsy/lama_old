@@ -68,8 +68,8 @@ IndexType OpenMPDenseUtils::nonZeroValues(
     const IndexType numColumns,
     const DenseValueType eps )
 {
-    typedef typename TypeTraits<DenseValueType>::AbsType AbsType;
-    AbsType absEps = Math::abs( eps );
+    typedef typename TypeTraits<DenseValueType>::RealType RealType;
+    RealType absEps = Math::abs( eps );
 
     SCAI_REGION( "OpenMP.DenseUtils.nonZeroValues" )
 
@@ -98,9 +98,9 @@ void OpenMPDenseUtils::getCSRSizes(
     const DenseValueType denseValues[],
     const DenseValueType eps )
 {
-    typedef typename TypeTraits<DenseValueType>::AbsType AbsType;
+    typedef typename TypeTraits<DenseValueType>::RealType RealType;
 
-    AbsType absEps = Math::abs( eps );
+    RealType absEps = Math::abs( eps );
 
     SCAI_REGION( "OpenMP.DenseUtils.getCSRSizes" )
 
@@ -151,9 +151,9 @@ void OpenMPDenseUtils::getCSRValues(
     const DenseValueType denseValues[],
     const DenseValueType eps )
 {
-    typedef typename TypeTraits<DenseValueType>::AbsType AbsType;
+    typedef typename TypeTraits<DenseValueType>::RealType RealType;
 
-    AbsType absEps = eps;
+    RealType absEps = eps;
 
     SCAI_REGION( "OpenMP.DenseUtils.getCSRValues" )
 
@@ -183,7 +183,7 @@ void OpenMPDenseUtils::getCSRValues(
 
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            AbsType absValue = common::Math::abs( value );
+            RealType absValue = common::Math::abs( value );
 
             if ( absValue > absEps )
             {
@@ -405,7 +405,7 @@ template<typename ValueType>
 void OpenMPDenseUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<DenseKernelTrait::nonZeroValues<ValueType> >( nonZeroValues, ctx, flag );
@@ -418,7 +418,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );

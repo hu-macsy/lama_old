@@ -45,15 +45,16 @@
 #include <iostream>
 
 using namespace scai;
-using namespace scai::hmemo;
+using namespace hmemo;
+using common::ContextType;
 
 SCAI_LOG_DEF_LOGGER( logger, "MemBandwidth" )
 
 template <typename ValueType>
 void bench( HArray<ValueType>& array )
 {
-    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
-    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( common::ContextType::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( common::ContextType::Host );
     const IndexType N = 8 * 1024 * 1024;
     const int NITER = 128;
     {
@@ -92,8 +93,8 @@ void bench( HArray<ValueType>& array )
 
 int main()
 {
-    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
-    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( ContextType::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( ContextType::Host );
     HArray<float> A1( hostContext );  // same as HArray<float> A1;
     HArray<float> A2( cudaContext );
     bench( A1 );

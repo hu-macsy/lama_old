@@ -54,7 +54,7 @@ using namespace dmemo;
 using namespace lama;
 using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, char* argv[] )
 {

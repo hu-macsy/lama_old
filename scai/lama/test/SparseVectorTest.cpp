@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( consistencyTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 20;   // let it really small, this test is very inefficient
     IndexType bound = 1000;
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 
 BOOST_AUTO_TEST_CASE( SparseConstructorTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType values_raw[] = { 3, 4, 3, 1, 2 };
     IndexType indexes_raw[] = { 7, 3, 11, 13, 5 };
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 20;   // let it really small, this test is very inefficient
 
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE( diffTest )
     // For comparison the same operations are computed with dense vectors
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE( diffTest )
 
     xS1 -= xS2;
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     BOOST_CHECK( xS1.maxNorm() < eps );
 }
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
     // For comparison the same operations are computed with dense vectors
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( IndexType icase = 0; icase < 5; ++icase )
     {
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
     // Test of different binary operations where result is dense vector
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -372,7 +372,7 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
     IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
     ValueType rawNonZeroValues2[] = { 5, 4, 9 };
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     // Test of different reduction operations on sparse vector
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 

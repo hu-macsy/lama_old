@@ -435,7 +435,7 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 /* ========================================================================= */
 
 template<typename ValueType>
-NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
+RealType<ValueType> Matrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     IndexType nRows = getNumRows();
     IndexType nCols = getNumColumns();
@@ -446,7 +446,7 @@ NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& oth
     DenseVector<ValueType> row;
     DenseVector<ValueType> rowOther;
 
-    NormType<ValueType> diff = 0;
+    RealType<ValueType> diff = 0;
 
     // now traverse  all rows
 
@@ -457,7 +457,7 @@ NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& oth
         getRow( row, i );
         other.getRow( rowOther, i );
 
-        NormType<ValueType> diffRow = row.maxDiffNorm( rowOther );
+        RealType<ValueType> diffRow = row.maxDiffNorm( rowOther );
 
         if ( diffRow > diff )
         {

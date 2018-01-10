@@ -47,7 +47,7 @@ int main()
 
 {
     /** Take default real type for this example. */
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType singleValue = 2;
     //

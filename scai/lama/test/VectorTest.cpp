@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_type
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
 
         ValueType expected = 0.25;
 
-        NormType<ValueType> eps  = 0.00001;
+        RealType<ValueType> eps  = 0.00001;
 
         BOOST_CHECK( common::Math::abs( s - expected )  < eps );
     }
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( BinaryOpTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType N = 3;
 
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
 
 BOOST_AUTO_TEST_CASE( BinaryOpExpTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType N = 20;
 
@@ -486,8 +486,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpLogTest, ValueType, scai_numeric_test_types )
 
         v1 -= v2;
 
-        NormType<ValueType> diff = v1.maxNorm();
-        NormType<ValueType> eps  = common::TypeTraits<ValueType>::small();
+        RealType<ValueType> diff = v1.maxNorm();
+        RealType<ValueType> eps  = common::TypeTraits<ValueType>::small();
 
         SCAI_LOG_DEBUG( logger, "v = " << v1 << ": maxNorm( log( exp ( v ) ) - v ) = " << diff )
 
@@ -531,8 +531,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SinCosTest, ValueType, scai_numeric_test_types )
         v1 += v2;
         v1 -= 1;
 
-        NormType<ValueType> diff = v1.maxNorm();
-        NormType<ValueType> eps  = 0.00001;
+        RealType<ValueType> diff = v1.maxNorm();
+        RealType<ValueType> eps  = 0.00001;
 
         BOOST_CHECK( diff < eps );
     }
@@ -572,8 +572,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 
         v1 -= v2;
 
-        NormType<ValueType> diff = v1.maxNorm();
-        NormType<ValueType> eps  = 0.0001;
+        RealType<ValueType> diff = v1.maxNorm();
+        RealType<ValueType> eps  = 0.0001;
 
         BOOST_CHECK( diff < eps );
  
@@ -624,7 +624,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_S_VV_Test, ValueType, scai_numeric_test_ty
 
             *v3 -= *v4;
 
-            NormType<ValueType> eps = 1e-4;
+            RealType<ValueType> eps = 1e-4;
 
             BOOST_CHECK( v3->maxNorm() < eps );
         }
@@ -659,7 +659,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_MV_Test, ValueType, scai_numeric_test_type
 
         v2 -= dV1;
 
-        NormType<ValueType> eps = 1e-4;
+        RealType<ValueType> eps = 1e-4;
 
         BOOST_CHECK( v2.maxNorm() < eps );
 
@@ -689,7 +689,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_VM_Test, ValueType, scai_numeric_test_type
 
     DenseVector<ValueType> v1;
 
-    NormType<ValueType> eps = 1e-4;  // accuracy
+    RealType<ValueType> eps = 1e-4;  // accuracy
 
     dmemo::TestDistributions dists( n );
 
@@ -789,7 +789,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dotProductTest, ValueType, scai_numeric_test_type
 
                 // we cannot check for equality due to different rounding errors
 
-                NormType<ValueType> eps = 0.0001;
+                RealType<ValueType> eps = 0.0001;
 
                 BOOST_CHECK( common::Math::abs( dotp - distDotp ) < eps );
             }
@@ -842,7 +842,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 
         v3 = m * v1 - v2;   // is v1 * v1
 
-        NormType<ValueType> eps = 0.0001;
+        RealType<ValueType> eps = 0.0001;
         BOOST_CHECK( v3.maxNorm() < eps );
     }
 }

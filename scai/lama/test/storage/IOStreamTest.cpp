@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_type
 
     BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
 
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-    AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
+    typedef typename TypeTraits<ValueType>::RealType RealType;
+    RealType diff = common::Math::real( data.maxDiffNorm( data1 ) );
 
     BOOST_CHECK( diff < 1e-3 );
 
@@ -136,8 +136,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
 
     BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
 
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-    AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
+    typedef typename TypeTraits<ValueType>::RealType RealType;
+    RealType diff = common::Math::real( data.maxDiffNorm( data1 ) );
 
     BOOST_CHECK_EQUAL( diff, 0 );
 
@@ -179,8 +179,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
 
     BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
 
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-    AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
+    typedef typename TypeTraits<ValueType>::RealType RealType;
+    RealType diff = common::Math::real( data.maxDiffNorm( data1 ) );
 
     BOOST_CHECK_EQUAL( diff, 0 );
 

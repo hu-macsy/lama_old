@@ -1591,7 +1591,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     ContextPtr loc = this->getContextPtr();
     jacobi.getSupportedContext( loc );
 
-    if ( loc->getType() == Context::Host )
+    if ( loc->getType() == common::ContextType::Host )
     {
         // used later in OpenMP to generate a TaskSyncToken
         void ( ELLStorage::*jb )(
@@ -1724,7 +1724,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> ELLStorage<ValueType>::l1Norm() const
+RealType<ValueType> ELLStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
@@ -1744,7 +1744,7 @@ NormType<ValueType> ELLStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> ELLStorage<ValueType>::l2Norm() const
+RealType<ValueType> ELLStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
@@ -1764,13 +1764,13 @@ NormType<ValueType> ELLStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> ELLStorage<ValueType>::maxNorm() const
+RealType<ValueType> ELLStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     if ( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
-        return NormType<ValueType>( 0 );
+        return RealType<ValueType>( 0 );
     }
 
     static LAMAKernel<ELLKernelTrait::absMaxVal<ValueType> > absMaxVal;

@@ -629,7 +629,7 @@ void CUDAUtils::binaryOpScalar(
 void CUDAUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    // const common::context::ContextType ctx = common::context::CUDA;
+    // const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
 }
@@ -638,7 +638,7 @@ template<typename ValueType>
 void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger, "registerV array UtilsKernel CUDA [" << flag
                     << "] --> ValueType = " << common::getScalarType<ValueType>() )
@@ -658,7 +658,7 @@ template<typename ValueType, typename SourceValueType>
 void CUDAUtils::RegistratorVO<ValueType, SourceValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    // const common::context::ContextType ctx = common::context::CUDA;
+    // const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "registerVO UtilsKernel CUDA [" << flag
                     << "] --> ValueType = " << common::getScalarType<ValueType>()
                     << ", SourceValueType = " << common::getScalarType<SourceValueType>() )

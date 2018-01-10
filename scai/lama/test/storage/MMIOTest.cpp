@@ -254,14 +254,14 @@ BOOST_AUTO_TEST_CASE( RectangularTest )
     const IndexType m   = 3;
     const IndexType n   = 5;
 
-    RealType vals[]  = { 1, 2, 3,
+    DefaultReal vals[]  = { 1, 2, 3,
                          4, 5, 6,
                          7, 8, 9,
                          10, 11, 12,
                          13, 14, 15 };
 
-    DenseStorage<RealType> denseOut;
-    DenseStorage<RealType> denseIn;
+    DenseStorage<DefaultReal> denseOut;
+    DenseStorage<DefaultReal> denseIn;
 
     denseOut.setRawDenseData( m, n, vals, 0.001 );
 
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE( RectangularTest )
     BOOST_CHECK_EQUAL( rc, 0 );
     BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 
-    RealType diff = denseIn.maxDiffNorm( denseOut );
+    DefaultReal diff = denseIn.maxDiffNorm( denseOut );
     BOOST_CHECK( diff < 0.0001 );
 }
 

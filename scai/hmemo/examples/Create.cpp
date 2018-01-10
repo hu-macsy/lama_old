@@ -43,8 +43,8 @@
 #include <iostream>
 #include <memory>
 
-using namespace std;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace hmemo;
 
 SCAI_LOG_DEF_LOGGER( logger, "CreateTest" )
 

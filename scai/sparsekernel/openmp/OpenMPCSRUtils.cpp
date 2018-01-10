@@ -401,9 +401,9 @@ void OpenMPCSRUtils::countNonZeros(
     const ValueType eps,
     const bool diagonalFlag )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType absEps = eps;
+    RealType absEps = eps;
 
     SCAI_REGION( "OpenMP.CSRUtils.countNonZeros" )
     SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
@@ -426,7 +426,7 @@ void OpenMPCSRUtils::countNonZeros(
                 countDiagonal = true;
             }
 
-            AbsType absVal = common::Math::abs( values[jj] );
+            RealType absVal = common::Math::abs( values[jj] );
 
             bool nonZero = absVal > absEps;
 
@@ -458,9 +458,9 @@ void OpenMPCSRUtils::compress(
     const ValueType eps,
     const bool diagonalFlag )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType absEps = eps;
+    RealType absEps = eps;
 
     SCAI_REGION( "OpenMP.CSR.compress" )
     SCAI_LOG_INFO( logger, "compress of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
@@ -485,7 +485,7 @@ void OpenMPCSRUtils::compress(
                 countDiagonal = true;
             }
 
-            AbsType absVal = common::Math::abs( values[jj] );
+            RealType absVal = common::Math::abs( values[jj] );
 
             bool nonZero = absVal > absEps;
 
@@ -1739,11 +1739,11 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
     const IndexType csrJA2[],
     const ValueType csrValues2[] )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     // No assumption about any sorting in a row
 
-    AbsType val = 0;
+    RealType val = 0;
 
     IndexType helpIndex = 0; // some kind of thread-safe global value for findCol
 
@@ -1759,7 +1759,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
             diff -= csrValues2[i2];
         }
 
-        AbsType absDiff = common::Math::abs( diff );
+        RealType absDiff = common::Math::abs( diff );
 
         if ( absDiff > val )
         {
@@ -1780,7 +1780,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
             continue; // already compare in first loop
         }
 
-        AbsType absDiff = common::Math::abs( csrValues2[i2] );
+        RealType absDiff = common::Math::abs( csrValues2[i2] );
 
         if ( absDiff > val )
         {
@@ -1804,9 +1804,9 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
 {
     // Note: the implementation assumes that rows are sorted according to column indexes
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType val = 0;
+    RealType val = 0;
 
     IndexType i2 = 0;
     IndexType i1 = 0;
@@ -1859,7 +1859,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
             }
         }
 
-        AbsType absDiff = common::Math::abs( diff );
+        RealType absDiff = common::Math::abs( diff );
 
         if ( absDiff > val )
         {
@@ -1883,7 +1883,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     const IndexType csrJA2[],
     const ValueType csrValues2[] )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     SCAI_LOG_INFO( logger,
                    "absMaxDiffVal<" << TypeTraits<ValueType>::id() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
@@ -1904,11 +1904,11 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
         absMaxDiffRow = OpenMPCSRUtils::absMaxDiffRowUnsorted<ValueType>;
     }
 
-    AbsType val = 0;
+    RealType val = 0;
 
     #pragma omp parallel
     {
-        AbsType threadVal = 0;
+        RealType threadVal = 0;
 
         #pragma omp for 
 
@@ -1919,7 +1919,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
             IndexType n1 = csrIA1[i + 1] - offs1;
             IndexType n2 = csrIA2[i + 1] - offs2;
 
-            AbsType maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
+            RealType maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
 
             if ( maxRow > threadVal )
             {
@@ -1947,7 +1947,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
 void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<CSRKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
@@ -1966,7 +1966,7 @@ template<typename ValueType>
 void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
@@ -1993,7 +1993,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPCSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );

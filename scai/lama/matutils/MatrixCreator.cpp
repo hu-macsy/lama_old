@@ -323,18 +323,18 @@ void MatrixCreator::buildPoisson(
 
     // create new local CSR data ( # local rows x # columns )
 
-    CSRStorage<RealType> localMatrix;
+    CSRStorage<DefaultReal> localMatrix;
 
     localMatrix.allocate( localSize, globalGrid.size() );
 
     hmemo::HArray<IndexType> csrIA;
     hmemo::HArray<IndexType> csrJA;
-    hmemo::HArray<RealType> csrValues;
+    hmemo::HArray<DefaultReal> csrValues;
 
     {
         hmemo::WriteOnlyAccess<IndexType> ia( csrIA, localSize + 1 );
         hmemo::WriteOnlyAccess<IndexType> ja( csrJA, myNNA );
-        hmemo::WriteOnlyAccess<RealType> values( csrValues, myNNA );
+        hmemo::WriteOnlyAccess<DefaultReal> values( csrValues, myNNA );
 
         ia[0] = 0;
 
@@ -376,7 +376,7 @@ void MatrixCreator::buildPoisson(
             for ( size_t k = 0; k < colIndexes.size(); ++k )
             {
                 ja[nnzCounter] = colIndexes[k];
-                values[nnzCounter] = static_cast<RealType>( colValues[k] );
+                values[nnzCounter] = static_cast<DefaultReal>( colValues[k] );
                 ++nnzCounter;
             }
 

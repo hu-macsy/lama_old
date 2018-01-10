@@ -544,7 +544,7 @@ void COOStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> COOStorage<ValueType>::l1Norm() const
+RealType<ValueType> COOStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     // asum over the full array mValues
@@ -554,7 +554,7 @@ NormType<ValueType> COOStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> COOStorage<ValueType>::l2Norm() const
+RealType<ValueType> COOStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     ValueType res = HArrayUtils::dotProduct( mValues, mValues, this->getContextPtr() );
@@ -564,7 +564,7 @@ NormType<ValueType> COOStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> COOStorage<ValueType>::maxNorm() const
+RealType<ValueType> COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     return HArrayUtils::reduce( mValues, common::BinaryOp::ABS_MAX, this->getContextPtr() );

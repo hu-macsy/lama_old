@@ -247,13 +247,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
         {
             ValueType res = applyUnary( op, values[i] );
 
-            typedef typename TypeTraits<ValueType>::AbsType AbsType;
+            typedef typename TypeTraits<ValueType>::RealType RealType;
 
-            AbsType diff = common::Math::abs( read[i] - res  );
+            RealType diff = common::Math::abs( read[i] - res  );
 
             // might happen that result on other devices are not exactly the same, give message
 
-            if ( diff != AbsType( 0 ) )
+            if ( diff != RealType( 0 ) )
             {
                 BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx
                                     << " is different from expected result " << res
@@ -263,14 +263,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
 
             // but they must be close, otherwise fail
 
-            if ( common::isNumeric( TypeTraits<ValueType>::stype ) && AbsType( res ) > 1 )
+            if ( common::isNumeric( TypeTraits<ValueType>::stype ) && RealType( res ) > 1 )
             {
                 // large numbers due to EXP function, so take relative error
 
-                diff /= AbsType( res );
+                diff /= RealType( res );
             }
 
-            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+            BOOST_CHECK( diff <= TypeTraits<RealType>::small() );
         }
     }
 }
@@ -329,13 +329,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
             ValueType res = applyBinary( x1, op, values2[i] );
 
-            typedef typename TypeTraits<ValueType>::AbsType AbsType;
+            typedef typename TypeTraits<ValueType>::RealType RealType;
 
-            AbsType diff = common::Math::abs( read[i] - res  );
+            RealType diff = common::Math::abs( read[i] - res  );
 
             // might happen that result on other devices are not exactly the same, give message
 
-            if ( diff <= TypeTraits<AbsType>::small() )
+            if ( diff <= TypeTraits<RealType>::small() )
             {
                 BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx
                                     << " is different from expected result " << res
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
             // but they must be close, otherwise fail
 
-            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+            BOOST_CHECK( diff <= TypeTraits<RealType>::small() );
         }
     }
 }
@@ -437,13 +437,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
         {
             ValueType res = applyBinary( scalar, op, values[i] );
 
-            typedef typename TypeTraits<ValueType>::AbsType AbsType;
+            typedef typename TypeTraits<ValueType>::RealType RealType;
 
             // might happen that result on other devices are not exactly the same
 
-            AbsType diff = common::Math::abs( read[i] - res  );
+            RealType diff = common::Math::abs( read[i] - res  );
 
-            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+            BOOST_CHECK( diff <= TypeTraits<RealType>::small() );
         }
     }
 }
@@ -481,15 +481,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
         {
             ValueType res = applyBinary( values[i], op, scalar );
 
-            typedef typename TypeTraits<ValueType>::AbsType AbsType;
+            typedef typename TypeTraits<ValueType>::RealType RealType;
 
             // might happen that result on other devices are not exactly the same
 
-            AbsType diff = common::Math::abs( read[i] - res  );
+            RealType diff = common::Math::abs( read[i] - res  );
 
             SCAI_LOG_TRACE( logger, values[i] << " " << op << " " << scalar << ", array[" << i << "] = " << read[i] << ", res = " << res )
 
-            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+            BOOST_CHECK( diff <= TypeTraits<RealType>::small() );
         }
     }
 }
@@ -583,13 +583,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
                 BOOST_CHECK( false );  // fail here
             }
 
-            typedef typename TypeTraits<ValueType>::AbsType AbsType;
+            typedef typename TypeTraits<ValueType>::RealType RealType;
 
-            AbsType diff = common::Math::abs( rValues3[pos3] - res  );
+            RealType diff = common::Math::abs( rValues3[pos3] - res  );
 
             SCAI_LOG_TRACE( logger, "res = " << res << ", computed " << rValues3[pos3] )
 
-            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+            BOOST_CHECK( diff <= TypeTraits<RealType>::small() );
  
             pos3++;
         }
@@ -660,15 +660,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
         ReadAccess<ValueType> rValues2( array2, host );  // read result array
         ReadAccess<ValueType> rValues3( array3, host );  // read result array
 
-        typedef typename TypeTraits<ValueType>::AbsType AbsType;
+        typedef typename TypeTraits<ValueType>::RealType RealType;
 
         for ( IndexType i = 0; i < nnz; ++i )
         {
             ValueType expectedValue = applyBinary( rValues1[i], op, rValues2[i] );
 
-            AbsType diff = common::Math::abs( expectedValue - rValues3[i] );
+            RealType diff = common::Math::abs( expectedValue - rValues3[i] );
 
-            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+            BOOST_CHECK( diff <= TypeTraits<RealType>::small() );
         }
     }
 }
@@ -973,11 +973,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     }
     else
     {
-        typedef typename TypeTraits<ValueType>::AbsType AbsType;
-        // AbsType asum = Math::abs( sum );
-        AbsType asum = sum;   // only real part for complex numbers
+        typedef typename TypeTraits<ValueType>::RealType RealType;
+        // RealType asum = Math::abs( sum );
+        RealType asum = sum;   // only real part for complex numbers
         // random numbers are between 0 and 1.0, so should sum up approximately to n/2
-        BOOST_CHECK( AbsType( asum - n / 2 )  < AbsType( n / 5 ) );
+        BOOST_CHECK( RealType( asum - n / 2 )  < RealType( n / 5 ) );
     }
   
     float fillRate = 0.1f;
@@ -999,7 +999,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType RealValueType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealValueType;
 
     ContextPtr loc = Context::getContextPtr();
 
@@ -1024,7 +1024,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortSparseTest, ValueType, array_types )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType RealValueType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealValueType;
 
     ContextPtr loc = Context::getContextPtr();
 
@@ -1081,7 +1081,7 @@ BOOST_AUTO_TEST_CASE( inversePermTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortValuesTest, ValueType, array_types )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType RealValueType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealValueType;
 
     ContextPtr loc = Context::getContextPtr();
 
@@ -1179,7 +1179,7 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
 
 BOOST_AUTO_TEST_CASE( mergeSortTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     ContextPtr loc = Context::getContextPtr();
 
@@ -1514,11 +1514,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_numeric_test
 
 /* --------------------------------------------------------------------- */
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_numeric_test_types )
-
-BOOST_AUTO_TEST_CASE( arrayPlusArrayAliasTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_numeric_test_types )
 {
-    typedef float ValueType;
     ContextPtr loc = Context::getContextPtr();
     ValueType sourceVals1[] = { 3, 1, 4, 2 };
     ValueType sourceVals2[] = { 2, -1, -1, -5 };
@@ -1610,7 +1607,7 @@ BOOST_AUTO_TEST_CASE( insertTest )
 {
     ContextPtr loc = Context::getContextPtr();
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType indexes[] = { 5, 7, 9, 1, 8 };
     IndexType pos[]     = { 0, 1, 2, 0, 3 };

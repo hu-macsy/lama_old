@@ -958,11 +958,11 @@ ComplexLongDouble SparseVector<ComplexLongDouble>::max() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::l1Norm() const
+RealType<ValueType> SparseVector<ValueType>::l1Norm() const
 {
     SCAI_REGION( "Vector.sparse.l1Norm" )
 
-    NormType<ValueType> localL1Norm = mNonZeroValues.l1Norm();
+    RealType<ValueType> localL1Norm = mNonZeroValues.l1Norm();
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
@@ -970,8 +970,8 @@ NormType<ValueType> SparseVector<ValueType>::l1Norm() const
     {
         // ToDo: replace ABS with ASUM, is different for complex numbers
 
-        NormType<ValueType> zeroNorm = common::applyUnary( common::UnaryOp::ABS, mZeroValue );
-        localL1Norm += zeroNorm * NormType<ValueType>( nZero );
+        RealType<ValueType> zeroNorm = common::applyUnary( common::UnaryOp::ABS, mZeroValue );
+        localL1Norm += zeroNorm * RealType<ValueType>( nZero );
     }
 
     return getDistribution().getCommunicator().sum( localL1Norm );
@@ -997,23 +997,23 @@ ValueType SparseVector<ValueType>::sum() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::l2Norm() const
+RealType<ValueType> SparseVector<ValueType>::l2Norm() const
 {
     SCAI_REGION( "Vector.sparse.l2Norm" )
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
-    NormType<ValueType> localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+    RealType<ValueType> localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
     if ( nZero > 0 )
     {
-        NormType<ValueType> zeroNorm = mZeroValue * Math::conj( mZeroValue ) * ValueType( nZero );
+        RealType<ValueType> zeroNorm = mZeroValue * Math::conj( mZeroValue ) * ValueType( nZero );
         localDotProduct += zeroNorm;
     }
  
-    NormType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    RealType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
     return Math::sqrt( globalDotProduct );
 }
@@ -1035,11 +1035,11 @@ IndexType SparseVector<IndexType>::l2Norm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::maxNorm() const
+RealType<ValueType> SparseVector<ValueType>::maxNorm() const
 {
     SCAI_REGION( "Vector.sparse.maxNorm" )
 
-    NormType<ValueType> localMaxNorm = mNonZeroValues.maxNorm();
+    RealType<ValueType> localMaxNorm = mNonZeroValues.maxNorm();
 
     // the ZERO element must also be considered if at least one element is zero
 
@@ -1053,7 +1053,7 @@ NormType<ValueType> SparseVector<ValueType>::maxNorm() const
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    NormType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
+    RealType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
@@ -1064,7 +1064,7 @@ NormType<ValueType> SparseVector<ValueType>::maxNorm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::maxDiffNorm( const Vector<ValueType>& other ) const
+RealType<ValueType> SparseVector<ValueType>::maxDiffNorm( const Vector<ValueType>& other ) const
 {
     SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "distribution mismatch for maxDiffNorm" )
 

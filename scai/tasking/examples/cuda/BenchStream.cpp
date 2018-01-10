@@ -74,7 +74,7 @@ int main( int argc, const char** argv )
 
     for ( int i = 0; i < N_USES; ++i )
     {
-        CUstream str = pool.reserveStream( CUDAStreamSyncToken::ComputeStream );
+        CUstream str = pool.reserveStream( StreamType::ComputeStream );
         pool.releaseStream( str );
     }
 
@@ -84,7 +84,7 @@ int main( int argc, const char** argv )
 
     for ( int i = 0; i < N_USES; ++i )
     {
-        CUDAStreamSyncToken( device, CUDAStreamSyncToken::ComputeStream );
+        CUDAStreamSyncToken( device, StreamType::ComputeStream );
     }
 
     double t3 =  Walltime::get() - t0;

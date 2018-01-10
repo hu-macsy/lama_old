@@ -41,7 +41,7 @@ using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 typedef Vector<ValueType> VectorType;
 typedef SolutionProxy<ValueType> ProxyType;
 

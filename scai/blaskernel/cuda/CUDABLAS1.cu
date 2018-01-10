@@ -471,7 +471,7 @@ template<typename ValueType>
 void CUDABLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register BLAS1 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
     KernelRegistry::set<BLASKernelTrait::sum<ValueType> >( CUDABLAS1::sum, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( CUDABLAS1::scal, ctx, flag );

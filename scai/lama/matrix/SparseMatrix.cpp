@@ -2013,13 +2013,13 @@ void SparseMatrix<ValueType>::matrixTimesScalar( const Matrix<ValueType>& A, Val
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::l1Norm() const
+RealType<ValueType> SparseMatrix<ValueType>::l1Norm() const
 {
     SCAI_REGION( "Mat.Sp.l1Norm" )
-    NormType<ValueType> myValue = mLocalData->l1Norm();
-    myValue += static_cast<NormType<ValueType>>( mHaloData->l1Norm() );
+    RealType<ValueType> myValue = mLocalData->l1Norm();
+    myValue += static_cast<RealType<ValueType>>( mHaloData->l1Norm() );
     const Communicator& comm = getRowDistribution().getCommunicator();
-    NormType<ValueType> allValue = comm.sum( myValue );
+    RealType<ValueType> allValue = comm.sum( myValue );
     SCAI_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
     return allValue;
 }
@@ -2027,15 +2027,15 @@ NormType<ValueType> SparseMatrix<ValueType>::l1Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::l2Norm() const
+RealType<ValueType> SparseMatrix<ValueType>::l2Norm() const
 {
     SCAI_REGION( "Mat.Sp.l2Norm" )
-    NormType<ValueType> tmp = mLocalData->l2Norm();
-    NormType<ValueType> myValue = tmp * tmp;
+    RealType<ValueType> tmp = mLocalData->l2Norm();
+    RealType<ValueType> myValue = tmp * tmp;
     tmp = mHaloData->l2Norm();
     myValue += tmp * tmp;
     const Communicator& comm = getRowDistribution().getCommunicator();
-    NormType<ValueType> allValue = comm.sum( myValue );
+    RealType<ValueType> allValue = comm.sum( myValue );
     // allValue = ::sqrt( allValue );
     allValue = common::Math::sqrt( allValue );
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
@@ -2043,12 +2043,12 @@ NormType<ValueType> SparseMatrix<ValueType>::l2Norm() const
 }
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::maxNorm() const
+RealType<ValueType> SparseMatrix<ValueType>::maxNorm() const
 {
     SCAI_REGION( "Mat.Sp.maxNorm" )
 
-    NormType<ValueType> myMax = mLocalData->maxNorm();
-    NormType<ValueType> myMaxHalo = mHaloData->maxNorm();
+    RealType<ValueType> myMax = mLocalData->maxNorm();
+    RealType<ValueType> myMaxHalo = mHaloData->maxNorm();
 
     if ( myMaxHalo > myMax )
     {
@@ -2057,7 +2057,7 @@ NormType<ValueType> SparseMatrix<ValueType>::maxNorm() const
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    NormType<ValueType> allMax = comm.max( myMax );
+    RealType<ValueType> allMax = comm.max( myMax );
 
     SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
 
@@ -2067,7 +2067,7 @@ NormType<ValueType> SparseMatrix<ValueType>::maxNorm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
+RealType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     // Implementation works only for same row distribution, replicated col distribution
     // and the same type

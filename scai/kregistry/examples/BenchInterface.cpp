@@ -41,7 +41,7 @@
 using namespace scai;
 using namespace scai::kregistry;
 
-using scai::common::context;
+using scai::common::ContextType;
 
 template<typename ValueType>
 static ValueType add( ValueType x )
@@ -71,10 +71,10 @@ static void setInterface()
 
     for ( int i = 0; i < 20; ++i )
     {
-        KernelRegistry::set( add<float>, add_names[i], context::Host, flag );
-        KernelRegistry::set( add<double>, add_names[i], context::Host, flag );
-        KernelRegistry::set( sub<float>, sub_names[i], context::Host, flag );
-        KernelRegistry::set( sub<double>, sub_names[i], context::Host, flag );
+        KernelRegistry::set( add<float>, add_names[i], ContextType::Host, flag );
+        KernelRegistry::set( add<double>, add_names[i], ContextType::Host, flag );
+        KernelRegistry::set( sub<float>, sub_names[i], ContextType::Host, flag );
+        KernelRegistry::set( sub<double>, sub_names[i], ContextType::Host, flag );
     }
 }
 
@@ -83,7 +83,7 @@ static void doIt1 ( double x )
     // Usual declaration, the functions are searched with each call
     KernelContextFunction< double (* ) ( double ) > add( "E+" );
     KernelContextFunction< double (* ) ( double ) > sub( "S-" );
-    x = add[context::Host]( sub[context::Host]( x ) );
+    x = add[ContextType::Host]( sub[ContextType::Host]( x ) );
 }
 
 static void doIt2 ( double x )
@@ -91,7 +91,7 @@ static void doIt2 ( double x )
     // static declaration, the functions are searched only in first call
     static KernelContextFunction< double (* ) ( double ) > add( "E+" );
     static KernelContextFunction< double (* ) ( double ) > sub( "S-" );
-    x = add[context::Host]( sub[context::Host]( x ) );
+    x = add[ContextType::Host]( sub[ContextType::Host]( x ) );
 }
 
 int main()

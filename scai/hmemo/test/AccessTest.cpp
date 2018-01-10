@@ -205,13 +205,13 @@ BOOST_AUTO_TEST_CASE( aliasTest )
 BOOST_AUTO_TEST_CASE( delayedReleaseTest )
 {
     ContextPtr testContext  = Context::getContextPtr();
-    ContextPtr hostContext  = Context::getContextPtr( Context::Host );
+    ContextPtr hostContext  = Context::getContextPtr( common::ContextType::Host );
 
     // host context: we use mock context
 
     if ( testContext.get() == hostContext.get() )
     {
-        testContext  = Context::getContextPtr( Context::UserContext, 1 );
+        testContext  = Context::getContextPtr( common::ContextType::UserContext, 1 );
     }
 
     SCAI_LOG_INFO( logger, "delayedReleaseTest, test context = " << *testContext )

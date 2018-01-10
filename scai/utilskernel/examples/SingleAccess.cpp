@@ -43,16 +43,16 @@ using namespace utilskernel;
 
 int main()
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
-    if ( ! Context::canCreate( Context::CUDA ) )
+    if ( ! Context::canCreate( common::ContextType::CUDA ) )
     {
         cout << "Example program skipped, no CUDA available." << endl;
         return 0;
     }
 
     ContextPtr host = Context::getHostPtr();
-    ContextPtr gpu  = Context::getContextPtr( Context::CUDA );
+    ContextPtr gpu  = Context::getContextPtr( common::ContextType::CUDA );
 
     const IndexType Nh = 50;
     const IndexType N = 2 * Nh;

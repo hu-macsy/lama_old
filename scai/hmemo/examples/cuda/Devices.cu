@@ -69,7 +69,7 @@ void sub( ContextPtr cudaContext )
 
 int main()
 {
-    if ( Context::canCreate( common::context::CUDA ) )
+    if ( Context::canCreate( common::ContextType::CUDA ) )
     {
         cout << "Factory can create CUDA context, registered" << endl;
     }
@@ -81,11 +81,11 @@ int main()
 
     for ( int deviceNr = 0; deviceNr < 8; ++ deviceNr )
     {
-        cout << "try to get " << common::context::CUDA << " context from factory" << endl;
+        cout << "try to get " << common::ContextType::CUDA << " context from factory" << endl;
 
         try
         {
-            ContextPtr cudaContext = Context::create( common::context::CUDA, deviceNr );
+            ContextPtr cudaContext = Context::create( common::ContextType::CUDA, deviceNr );
             cout << "cudaContext for device " << deviceNr << " = " << *cudaContext << endl;
             sub( cudaContext );
         }

@@ -82,6 +82,7 @@ using std::unique_ptr;
 using common::TypeTraits;
 using common::BinaryOp;
 using common::CompareOp;
+using common::ContextType;
 
 using sparsekernel::CSRKernelTrait;
 using sparsekernel::DIAKernelTrait;
@@ -361,7 +362,7 @@ void CSRStorage<ValueType>::setDIADataImpl(
     mNumColumns = numColumns;
 
     {
-        ContextPtr hostCtx = Context::getContextPtr( Context::Host );
+        ContextPtr hostCtx = Context::getContextPtr( ContextType::Host );
         ReadAccess<IndexType> rOffsets( offsets, hostCtx );
 
         if ( rOffsets[0] == 0 )
@@ -487,7 +488,7 @@ void CSRStorage<ValueType>::buildRowIndexes()
         return;
     }
 
-    if ( getContextPtr()->getType() != Context::Host )
+    if ( getContextPtr()->getType() != ContextType::Host )
     {
         SCAI_LOG_INFO( logger, "CSRStorage: build row indices is currently only implemented on host" )
     }
@@ -2433,7 +2434,7 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> CSRStorage<ValueType>::l1Norm() const
+RealType<ValueType> CSRStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     return HArrayUtils::asum( mValues, this->getContextPtr() );
@@ -2442,11 +2443,11 @@ NormType<ValueType> CSRStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> CSRStorage<ValueType>::l2Norm() const
+RealType<ValueType> CSRStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
-    NormType<ValueType> res = HArrayUtils::dotProduct( mValues, mValues, prefLoc );
+    RealType<ValueType> res = HArrayUtils::dotProduct( mValues, mValues, prefLoc );
     res = common::Math::sqrt( res );
     return res;
 }
@@ -2454,7 +2455,7 @@ NormType<ValueType> CSRStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> CSRStorage<ValueType>::maxNorm() const
+RealType<ValueType> CSRStorage<ValueType>::maxNorm() const
 {
     // no more checks needed here
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
@@ -2477,7 +2478,7 @@ NormType<ValueType> CSRStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+RealType<ValueType> CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_REGION( "Storage.CSR.maxDiffNorm" )
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
@@ -2504,7 +2505,7 @@ NormType<ValueType> CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<Valu
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& other ) const
+RealType<ValueType> CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& other ) const
 {
     // no more checks needed here
     SCAI_LOG_INFO( logger, *this << ": maxDiffNormImpl( " << other << " )" )

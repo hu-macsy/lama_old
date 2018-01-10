@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar4Test, ValueType, scai_array_test_typ
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_types )
 {
-    typedef RealType TargetValueType;
+    typedef DefaultReal TargetValueType;
 
     static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
 
@@ -691,7 +691,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_ty
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_types )
 {
-    typedef RealType TargetValueType;
+    typedef DefaultReal TargetValueType;
 
     static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
 
@@ -757,7 +757,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_ty
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_types )
 {
-    typedef RealType TargetValueType;
+    typedef DefaultReal TargetValueType;
 
     static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
 
@@ -822,7 +822,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_ty
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp4Test, SourceValueType, scai_array_test_types )
 {
-    typedef RealType TargetValueType;
+    typedef DefaultReal TargetValueType;
 
     static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
 

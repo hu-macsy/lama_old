@@ -59,7 +59,7 @@ using namespace scai;
 using namespace lama;
 using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {

@@ -49,6 +49,8 @@
 namespace scai
 {
 
+using common::ContextType;
+
 namespace hmemo
 {
 
@@ -56,8 +58,13 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( Context::logger, "Context" )
 
-Context::Context( ContextType type )
-    : mContextType( type ), mUseZeroCopy( false ), mEnabled( false ), mFile( NULL ), mLine( 0 )
+Context::Context( ContextType type ) : 
+
+    mContextType( type ), 
+    mUseZeroCopy( false ), 
+    mEnabled( false ), 
+    mFile( NULL ), 
+    mLine( 0 )
 {
     SCAI_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
 }
@@ -137,7 +144,7 @@ void Context::enableZeroCopy( bool flag ) const
 MemoryPtr Context::getHostMemoryPtr() const
 {
     // take the host memory of the memory factory
-    ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
+    ContextPtr hostContextPtr = Context::getContextPtr( common::ContextType::Host );
     return hostContextPtr->getMemoryPtr();
 }
 
@@ -178,12 +185,12 @@ ContextPtr Context::getContextPtr()
 
         if ( ctx_string == "CUDA" )
         {
-            return getContextPtr( common::context::CUDA );
+            return getContextPtr( common::ContextType::CUDA );
         }
 
         if ( ctx_string == "HOST" )
         {
-            return getContextPtr( common::context::Host );
+            return getContextPtr( common::ContextType::Host );
         }
 
         COMMON_THROWEXCEPTION( "SCAI_CONTEXT=" << ctx_string << ", unknown context type" )

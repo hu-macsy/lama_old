@@ -59,7 +59,7 @@ typedef void ( *VoidFunction )();
  *  where the function pointer might be NULL for unsupported context
  */
 
-class COMMON_DLL_IMPORTEXPORT _ContextFunction : public common::context
+class COMMON_DLL_IMPORTEXPORT _ContextFunction
 {
 public:
 
@@ -73,21 +73,21 @@ public:
 
     void assign( const _ContextFunction& other );
 
-    inline VoidFunction get( ContextType ctx ) const
+    inline VoidFunction get( common::ContextType ctx ) const
     {
-        return mContextFuncArray[ ctx ];
+        return mContextFuncArray[ static_cast<int>( ctx ) ];
     }
 
-    inline void set( ContextType ctx, VoidFunction fn )
+    inline void set( common::ContextType ctx, VoidFunction fn )
     {
-        mContextFuncArray[ ctx ] = fn;
+        mContextFuncArray[ static_cast<int>( ctx ) ] = fn;
     }
 
     inline bool isEmpty() const
     {
         bool status = true;
 
-        for ( IndexType i = 0; i < common::context::MaxContext; ++i )
+        for ( IndexType i = 0; i < static_cast<int>( common::ContextType::MaxContext ); ++i )
         {
             if ( mContextFuncArray[i] != NULL )
             {
@@ -101,19 +101,19 @@ public:
 
     std::string printIt() const;
 
-    common::context::ContextType validContext( ContextType preferedCtx ) const;
+    common::ContextType validContext( common::ContextType preferedCtx ) const;
 
-    ContextType validContext( const _ContextFunction& other, ContextType preferedCtx ) const;
+    common::ContextType validContext( const _ContextFunction& other, common::ContextType preferedCtx ) const;
 
-    ContextType validContext( const _ContextFunction& other1,
+    common::ContextType validContext( const _ContextFunction& other1,
                               const _ContextFunction& other2,
-                              ContextType preferedCtx ) const;
+                              common::ContextType preferedCtx ) const;
 
 protected:
 
     // array with function pointer for each context
 
-    VoidFunction mContextFuncArray[MaxContext];
+    VoidFunction mContextFuncArray[static_cast<int>( common::ContextType::MaxContext )];
 };
 
 /* --------------------------------------------------------------------------- *
@@ -139,16 +139,16 @@ public:
 
     // provide typed get
 
-    FunctionType get( ContextType ctx ) const
+    FunctionType get( common::ContextType ctx ) const
     {
-        return ( FunctionType ) mContextFuncArray[ ctx ];
+        return ( FunctionType ) mContextFuncArray[ static_cast<int>( ctx ) ];
     }
 
     // provide typed set
 
-    void set( ContextType ctx, FunctionType fn )
+    void set( common::ContextType ctx, FunctionType fn )
     {
-        mContextFuncArray[ ctx ] = ( VoidFunction ) fn;
+        mContextFuncArray[ static_cast<int>( ctx ) ] = ( VoidFunction ) fn;
     }
 
     using _ContextFunction::validContext;

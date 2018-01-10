@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     BOOST_CHECK_EQUAL( array.isValid( contextPtr ), true );
     BOOST_CHECK_EQUAL( array.capacity( contextPtr ), N );
 
-    if ( contextPtr->getType() == common::context::Host )
+    if ( contextPtr->getType() == common::ContextType::Host )
     {
         SCAI_LOG_INFO( logger, "constructorTest +++ on " << *contextPtr );
         // test the other constructors just on the Host
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE( resize1Test )
     {
         WriteOnlyAccess<IndexType> writeAccess( hArray, contextPtr, N );
 
-        if ( contextPtr->getType() == Context::Host )
+        if ( contextPtr->getType() == common::ContextType::Host )
         {
             for ( IndexType i = 0; i < N; ++i )
             {
@@ -598,7 +598,7 @@ BOOST_AUTO_TEST_CASE( moveTest )
         }
     };
 
-    typedef RealType ValueType;
+    typedef scai::DefaultReal ValueType;
 
     const IndexType N = 20;   // number of arrays
 

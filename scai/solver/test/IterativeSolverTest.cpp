@@ -299,8 +299,8 @@ BOOST_AUTO_TEST_CASE( SolveTest )
         solution = solutionInitValue;
         iterativeSolver.solve( solution, rhs );
         DenseVector<ValueType> diff( solution - exactSolution );
-        NormType<ValueType> realMaxNorm     = maxNorm( diff );
-        NormType<ValueType> expectedMaxNorm = 1E-4;
+        RealType<ValueType> realMaxNorm     = maxNorm( diff );
+        RealType<ValueType> expectedMaxNorm = 1E-4;
         SCAI_LOG_INFO( logger, "maxNorm of diff = ( solution - exactSolution ) = " << realMaxNorm );
         BOOST_CHECK_MESSAGE( realMaxNorm < expectedMaxNorm,
                              "Solver: " << iterativeSolver << " max norm = " << realMaxNorm << " >= " << expectedMaxNorm );

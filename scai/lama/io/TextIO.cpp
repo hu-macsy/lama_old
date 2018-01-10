@@ -339,8 +339,8 @@ void TextIO::readData(
     const IndexType nnz,
     const std::string& fileName )
 {
-    LArray<RealType> dIA;
-    LArray<RealType> dJA;
+    LArray<DefaultReal> dIA;
+    LArray<DefaultReal> dJA;
 
     IOStream inFile( fileName, std::ios::in );
 
@@ -355,8 +355,8 @@ void TextIO::readData(
 
     ContextPtr ctx = Context::getHostPtr();
 
-    HArrayUtils::setArrayImpl( ia, dIA );  // conversion from RealType to IndexType
-    HArrayUtils::setArrayImpl( ja, dJA );  // conversion from RealType to IndexType
+    HArrayUtils::setArrayImpl( ia, dIA );  // conversion from DefaultReal to IndexType
+    HArrayUtils::setArrayImpl( ja, dJA );  // conversion from DefaultReal to IndexType
 
     IndexType minRowIndex = HArrayUtils::reduce( ia, common::BinaryOp::MIN );
 
@@ -390,7 +390,7 @@ void TextIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexTy
     LArray<IndexType> ia;
     LArray<IndexType> ja;
 
-    readData<RealType>( ia, ja, NULL, numValues, fileName );
+    readData<DefaultReal>( ia, ja, NULL, numValues, fileName );
 
     numRows    = ia.max() + 1;
     numColumns = ja.max() + 1;

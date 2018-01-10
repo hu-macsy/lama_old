@@ -124,8 +124,8 @@ BOOST_AUTO_TEST_CASE( triangleInequalityTest )
 
         // Inequality test
 
-        NormType<ValueType> nz  = norm.apply( z );
-        NormType<ValueType> nxy = norm.apply( x ) + norm.apply( y );
+        RealType<ValueType> nz  = norm.apply( z );
+        RealType<ValueType> nxy = norm.apply( x ) + norm.apply( y );
 
         BOOST_CHECK( nz <= nxy );
     }

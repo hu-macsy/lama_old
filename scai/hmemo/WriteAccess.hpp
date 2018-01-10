@@ -237,7 +237,7 @@ WriteAccess<ValueType>::WriteAccess( HArray<ValueType>& array, const bool keep /
     : mArray( &array )
 {
     SCAI_ASSERT( !array.isConst(), "WriteAccess on const array not allowed: " << array )
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::ContextType::Host );
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer

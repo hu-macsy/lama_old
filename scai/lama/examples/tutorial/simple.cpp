@@ -43,7 +43,7 @@
 using namespace scai::lama;
 
 /** Take default real type for this example. */
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main()
 {

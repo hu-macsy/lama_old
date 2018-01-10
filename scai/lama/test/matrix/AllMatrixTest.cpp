@@ -207,8 +207,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( l1NormTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 8;
     const ValueType scale = 2;
-    const NormType<ValueType> expectedNorm = scale * ValueType( N );
-    const NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    const RealType<ValueType> expectedNorm = scale * ValueType( N );
+    const RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     Matrices<ValueType> allMatrices( context );    // is created by factory
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( l1NormTest, ValueType, scai_numeric_test_types )
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l1Norm for this matrix: " << matrix )
-        NormType<ValueType> l1Norm = matrix.l1Norm();
+        RealType<ValueType> l1Norm = matrix.l1Norm();
         BOOST_CHECK( common::Math::abs( expectedNorm - l1Norm ) <  eps );
     }
 }
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 8;
     const ValueType scale = 2;
-    const NormType<ValueType> expectedNorm = common::Math::sqrt( ValueType( N ) * scale * scale );
+    const RealType<ValueType> expectedNorm = common::Math::sqrt( ValueType( N ) * scale * scale );
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, scai_numeric_test_types )
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l2Norm for this matrix: " << matrix )
-        NormType<ValueType> l2Norm = matrix.l2Norm();
+        RealType<ValueType> l2Norm = matrix.l2Norm();
         BOOST_CHECK_CLOSE( expectedNorm, l2Norm, 0.001 );
     }
 }
@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxNormTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 8;
     const ValueType scale =  2;
-    const NormType<ValueType> expectedNorm = scale;
+    const RealType<ValueType> expectedNorm = scale;
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     Matrices<ValueType> allMatrices( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for maxNorm" )
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxNormTest, ValueType, scai_numeric_test_types )
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test maxNorm for this matrix: " << matrix )
-        NormType<ValueType> maxNorm = matrix.maxNorm();
+        RealType<ValueType> maxNorm = matrix.maxNorm();
         BOOST_CHECK_CLOSE( expectedNorm, maxNorm, 0.01 );
     }
 }
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 
                 matrix.redistribute( input.getRowDistributionPtr(), input.getColDistributionPtr() );
 
-                NormType<ValueType> diff = output.maxDiffNorm( matrix );
+                RealType<ValueType> diff = output.maxDiffNorm( matrix );
  
                 SCAI_LOG_DEBUG( logger, "diff = " << diff << ", matrix = " << matrix )
 
@@ -600,7 +600,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_numeric_test_types 
 
         matrix.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
-        NormType<ValueType> eps = 0.0001;
+        RealType<ValueType> eps = 0.0001;
 
         for ( size_t i = 0; i < testDistributions.size(); ++i )
         {
@@ -660,13 +660,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<RealType> csr( nRows, nCols );
+    CSRSparseMatrix<DefaultReal> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDistributions.size(); ++i )
     {
@@ -726,7 +726,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( IndexType dim = 0; dim < 2; ++dim )
     {
@@ -790,13 +790,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getColTest, ValueType, scai_numeric_test_types )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<RealType> csr( nRows, nCols );
+    CSRSparseMatrix<DefaultReal> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDistributions.size(); ++i )
     {
@@ -845,13 +845,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getTest, ValueType, scai_numeric_test_types )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<RealType> csr( nRows, nCols );
+    CSRSparseMatrix<DefaultReal> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
-    NormType<ValueType> eps = 0.0001;
+    RealType<ValueType> eps = 0.0001;
 
     for ( size_t rd = 0; rd < rowDistributions.size(); ++rd )
     {
@@ -882,7 +882,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getTest, ValueType, scai_numeric_test_types )
                         ValueType s1 = matrix.getValue( iRow, jCol );
                         ValueType s2 = csr.getValue( iRow, jCol );
 
-                        NormType<ValueType> diff = common::Math::abs( s1 - s2 );
+                        RealType<ValueType> diff = common::Math::abs( s1 - s2 );
 
                         BOOST_CHECK( diff < eps );
                     }
@@ -907,7 +907,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getSetTest, ValueType, scai_numeric_test_types )
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t rd = 0; rd < rowDistributions.size(); ++rd )
     {
@@ -958,7 +958,7 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType nRows = 15;
     const IndexType nCols = 8;
@@ -1006,7 +1006,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType nRows = 15;
     const IndexType nCols = 8;
@@ -1064,10 +1064,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_ty
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<RealType> csr( n, n );
+    CSRSparseMatrix<DefaultReal> csr( n, n );
     MatrixCreator::fillRandom( csr, 0.1f );
 
-    NormType<ValueType> eps = 0.0001;
+    RealType<ValueType> eps = 0.0001;
 
     TestDistributions distributions( n );
 
@@ -1145,7 +1145,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
     DistributionPtr rowDist( new NoDistribution( n ) );
     DistributionPtr colDist( new NoDistribution( m ) );
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t d1 = 0; d1 < distributions.size(); ++d1 )
     {

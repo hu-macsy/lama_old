@@ -97,24 +97,21 @@ void doTasking( int N )
 void doThreading( int N )
 {
     static int MAX_THREADS = 256;
-    using common::Thread;
     std::unique_ptr<int[]> arg( new int[N] );
-    std::unique_ptr<Thread*[]> threads( new Thread*[N] );
+    std::unique_ptr<std::thread[]> threads( new std::thread[N] );
 
     for ( int i = 0; i < N; ++i )
     {
         arg[i] = 1;
-        threads[i] = new Thread( &work, arg[i] );
+
+        threads[i] = std::thread( work, std::ref( arg[i] ) );
+
+        // if we have more than maximal number of threads we wait for previous ones
 
         if ( i > MAX_THREADS )
         {
-            threads[i - MAX_THREADS]->join();
+            threads[i - MAX_THREADS].join();
         }
-    }
-
-    for ( int i = 0; i < N; ++i )
-    {
-        delete threads[i];
     }
 }
 

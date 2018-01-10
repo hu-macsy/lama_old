@@ -160,16 +160,16 @@ private:
 
     // use scoped array instead of vector as no copy constructor is available
 
-    std::unique_ptr<common::Thread[]> mThreads;    // worker threads of this pool
+    std::unique_ptr<std::thread[]> mThreads;    // worker threads of this pool
     std::unique_ptr<ThreadData[]> mThreadArgs;     // arguments for each worker thread
 
     std::queue<std::shared_ptr<ThreadPoolTask> > mTaskQueue;
 
-    common::Thread::Condition mNotifyFinished;// notify about finished tasks
-    common::Thread::Condition mNotifyTask;// notify about new task
+    std::condition_variable_any mNotifyFinished;// notify about finished tasks
+    std::condition_variable_any mNotifyTask;// notify about new task
 
-    common::Thread::Mutex mTaskQueueMutex;// make access to taskqueue thread-safe
-    common::Thread::Mutex mNotifyFinishMutex;// used for wait on mNotifyFinished
+    std::mutex mTaskQueueMutex;      // make access to taskqueue thread-safe
+    std::mutex mNotifyFinishMutex;   // used for wait on mNotifyFinished
 
     enum WorkerState
     {

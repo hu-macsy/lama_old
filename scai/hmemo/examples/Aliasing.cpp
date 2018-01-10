@@ -69,7 +69,7 @@ void add ( Array& res, const Array& a, const Array& b )
 
 void add1 ( Array& a )
 {
-    ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::context::Host );
+    ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::ContextType::Host );
     IndexType n = a.size();
     SCAI_LOG_INFO( logger, "a = a + 1, n = " << n << ", on " << *gpuCtx )
     hmemo::WriteAccess<double> write( a, gpuCtx );

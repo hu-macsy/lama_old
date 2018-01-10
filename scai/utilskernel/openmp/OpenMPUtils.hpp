@@ -222,6 +222,12 @@ public:
     template<typename ValueType>
     static ValueType unscan( ValueType array[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::binarySearch */
+
+    static void binarySearch( IndexType outPos[],
+                              const IndexType indexes[], const IndexType m,
+                              const IndexType inPos[], const IndexType n );
+
     /** OpenMP implementation for UtilKernelTrait::sort */
 
     template<typename ValueType>
