@@ -1,5 +1,5 @@
 /**
- * @file examples/DemoMath.cpp
+ * @file AccessKind.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,37 +27,44 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Examples for using TypeTraits
- * @author Thomas Brandes
- * @date 25.01.2016
+ * @brief Implementation of operations on enum type AccessKind.
+ * @author Jiri Kraus
+ * @date 07.11.2011
  */
 
-#ifdef SCAI_COMPLEX_SUPPORTED
-#include <scai/common/Complex.hpp>
-#endif
+#include <scai/common/AccessKind.hpp>
 
-#include <scai/common/Math.hpp>
+#include <cstring>
 
-#include <iostream>
-
-using scai::common::Math;
-
-template<typename ValueType>
-void testRoutine( ValueType x )
+namespace scai
 {
-    ValueType absX = Math::abs( x );
-    std::cout << "abs ( " << x << " ) = " << absX << std::endl;
-    ValueType sqrtX = Math::sqrt( x );
-    std::cout << "sqrt ( " << x << " ) = " << sqrtX << std::endl;
-    ValueType conjX = Math::conj( x );
-    std::cout << "conj ( " << x << " ) = " << conjX << std::endl;
+
+namespace common
+{
+
+/* -----------------------------------------------------------------------------*/
+
+std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
+{
+    switch ( kind )
+    {
+        case AccessKind::Write :
+            stream << "Write";
+            break;
+
+        case AccessKind::Read :
+            stream << "Read";
+            break;
+
+        default:
+            stream << "AccessKind_" << static_cast<int>( kind );
+    }
+
+    return stream;
 }
 
-int main()
-{
-    testRoutine<float>( -1 );
-    testRoutine<double>( -1 );
-#ifdef SCAI_COMPLEX_SUPPORTED
-    testRoutine<scai::ComplexFloat>( scai::ComplexFloat( 2, -1 ) );
-#endif
-}
+/* -----------------------------------------------------------------------------*/
+
+} /* end namespace common */
+
+} /* end namespace scai */

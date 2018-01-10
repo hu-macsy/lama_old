@@ -56,14 +56,9 @@ namespace scai
 namespace common
 {
 
-Thread::Id Thread::getSelf()
-{
-    return std::this_thread::get_id();
-}
-
 // Map that defines mapping thread ids -> thread names (as strings)
 
-typedef map<Thread::Id, string> MapThreads;
+typedef map<std::thread::id, string> MapThreads;
 
 static MapThreads& getMapThreads()
 {
@@ -78,95 +73,13 @@ static MapThreads& getMapThreads()
     return *mapThreads;
 }
 
-Thread::Mutex::Mutex( bool isRecursive ) : mIsRecursive( isRecursive )
-{
-    // Only one of the member objects is allocated
-    if ( mIsRecursive )
-    {
-        mRecursiveMutex.reset( new std::recursive_mutex() );
-    }
-    else
-    {
-        mMutex.reset( new std::mutex() );
-    }
-}
-
-Thread::Condition::Condition() : std::condition_variable_any()
-{
-}
-
-Thread::Mutex::~Mutex()
-{
-}
-
-Thread::Condition::~Condition()
-{
-}
-
-void Thread::Mutex::lock()
-{
-    if ( mIsRecursive )
-    {
-        mRecursiveMutex->lock();
-    }
-    else
-    {
-        mMutex->lock();
-    }
-}
-
-void Thread::Mutex::unlock()
-{
-    if ( mIsRecursive )
-    {
-        mRecursiveMutex->unlock();
-    }
-    else
-    {
-        mMutex->unlock();
-    }
-}
-
-void Thread::Condition::notifyOne()
-{
-    std::condition_variable_any::notify_one();
-}
-
-void Thread::Condition::notifyAll()
-{
-    std::condition_variable_any::notify_all();
-}
-
-void Thread::Condition::wait( ScopedLock& lock )
-{
-    if ( lock.mMutex.mIsRecursive )
-    {
-        std::condition_variable_any::wait( *lock.mMutex.mRecursiveMutex );
-    }
-    else
-    {
-        std::condition_variable_any::wait( *lock.mMutex.mMutex );
-    }
-}
-
-Thread::ScopedLock::ScopedLock( Mutex& mutex ) :
-
-    mMutex( mutex )
-{
-    mMutex.lock();
-}
-
-Thread::ScopedLock::~ScopedLock( )
-{
-    mMutex.unlock();
-}
-
-Thread::Mutex map_mutex; // Make access to map thread safe
+std::mutex map_mutex; // Make access to map thread safe
 
 void Thread::defineCurrentThreadName( const char* name )
 {
-    ScopedLock lock( map_mutex );
-    Thread::Id id = getSelf();
+    std::unique_lock<std::mutex> lock( map_mutex );
+    std::thread::id id = std::this_thread::get_id();
+
 #ifdef LOCAL_DEBUG
     cout << "defineCurrentThreadName, id = " << id << ", name = " << name << endl;
 #endif
@@ -194,7 +107,7 @@ void Thread::defineCurrentThreadName( const char* name )
 
 const char* Thread::getThreadName( Thread::Id id )
 {
-    Thread::ScopedLock lock( map_mutex );
+    std::unique_lock<std::mutex> lock( map_mutex );
     MapThreads& mapThreads = getMapThreads();
     MapThreads::iterator it = mapThreads.find( id );
 
@@ -215,27 +128,7 @@ const char* Thread::getThreadName( Thread::Id id )
 
 const char* Thread::getCurrentThreadName()
 {
-    return getThreadName( getSelf() );
-}
-
-void Thread::start( ThreadFunction start_routine, void* arg )
-{
-    mThread = new std::thread( start_routine, arg );
-}
-
-void Thread::join()
-{
-    if ( mThread != NULL )
-    {
-        mThread->join();
-        delete mThread;
-        mThread = NULL;
-    }
-}
-
-Thread::~Thread()
-{
-    join();
+    return getThreadName( std::this_thread::get_id() );
 }
 
 } /* end namespace common */

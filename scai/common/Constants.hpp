@@ -86,15 +86,15 @@ inline ValueType getConstant( const Constants& c )
 template<typename ValueType>
 inline bool operator==( const ValueType& x, const Constants& c )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
     if ( Constants::ZERO == c )
     {
-        AbsType r = Math::real( x );
+        RealType r = Math::real( x );
 
         bool isRealZero = Math::abs( r ) <= TypeTraits<ValueType>::eps0();
 
-        if ( typeid( AbsType ) == typeid( ValueType ) )
+        if ( typeid( RealType ) == typeid( ValueType ) )
         {
             return isRealZero;
         }
@@ -102,7 +102,7 @@ inline bool operator==( const ValueType& x, const Constants& c )
         {
             // complex data, do not use operator <
 
-            AbsType i = Math::imag( x );
+            RealType i = Math::imag( x );
 
             bool isImagZero = Math::abs( i ) <= TypeTraits<ValueType>::eps0();
 
@@ -111,11 +111,11 @@ inline bool operator==( const ValueType& x, const Constants& c )
     }
     else
     {
-        AbsType r = Math::real( x );
+        RealType r = Math::real( x );
 
-        bool isRealOne = Math::abs( r - AbsType( 1 ) ) <= TypeTraits<ValueType>::eps1();
+        bool isRealOne = Math::abs( r - RealType( 1 ) ) <= TypeTraits<ValueType>::eps1();
 
-        if ( typeid( AbsType ) == typeid( ValueType ) )
+        if ( typeid( RealType ) == typeid( ValueType ) )
         {
             return isRealOne;
         }
@@ -123,7 +123,7 @@ inline bool operator==( const ValueType& x, const Constants& c )
         {
             // for complex type we have to assure that imaginary part is close to 0
 
-            AbsType i = Math::imag( x );
+            RealType i = Math::imag( x );
 
             bool isImagZero = Math::abs( i ) <= TypeTraits<ValueType>::eps0();
 

@@ -72,7 +72,6 @@ RUN 1 CriticalRegion.exe
 RUN 1 DemoComplex.exe
 RUN 1 DemoFactory.exe
 RUN 1 DemoFactory1.exe
-RUN 1 DemoFunction.exe
 RUN 1 DemoGrid.exe
 RUN 1 DemoMath.exe
 RUN 1 DemoPointer.exe

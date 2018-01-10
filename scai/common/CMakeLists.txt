@@ -62,9 +62,9 @@ include ( scai_function/listToString )
 # Possible choices for numeric types ( more than one can be selected )
 
 set ( NONE_COMPLEX_VALUES "float" "double" "long double" )
-set ( COMPLEX_VALUES      "ComplexFloat" "ComplexDouble" "ComplexLongDouble" )
+set ( COMPLEX_VALUES      "scai::ComplexFloat" "scai::ComplexDouble" "scai::ComplexLongDouble" )
 set ( TYPE_LIST_VALUES    ${NONE_COMPLEX_VALUES} ${COMPLEX_VALUES} )
-set ( LONG_DOUBLE_VALUES  "long double" "ComplexLongDouble" )
+set ( LONG_DOUBLE_VALUES  "long double" "scai::ComplexLongDouble" )
 
 ## define SCAI_HOST_TYPES_LIST ( might be configured )
 
@@ -109,9 +109,9 @@ scai_build_variable ( NAME      SCAI_INDEX_TYPE
                       DOCSTRING "IndexType" )
 
 # add IndexType for the array types, be careful about empty string
-concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
-concatString ( "IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
-concatString ( "IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
+concatString ( "scai::IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
+concatString ( "scai::IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
+concatString ( "scai::IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
 
 # SCAI_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
 
@@ -177,6 +177,7 @@ set ( COMMON_SOURCES
 
 set ( COMMON_CLASSES
 
+        AccessKind
         Printable
         ScalarType
         ContextType
@@ -212,7 +213,7 @@ endif ( ${USE_COMPLEX} )
 
 ## Boost used -> generate and add a boost check version file 
 
-if ( NOT CXX_SUPPORTS_C11 OR USE_BOOST_TEST )
+if ( USE_BOOST_TEST )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
     install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION "include/scai/${MODULE_NAME}" )
 endif ()

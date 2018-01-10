@@ -32,20 +32,20 @@
  * @date 19.06.2015
  */
 
-#include <scai/common/Thread.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/macros/assert.hpp>
 
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
-using scai::common::Thread;
+std::mutex barrierMutex;
+std::condition_variable_any barrierCondition;
 
-Thread::Mutex barrierMutex;
-Thread::Condition barrierCondition;
-
-Thread::Mutex printMutex;
+std::mutex printMutex;
 
 static const int N_THREADS = 15;
 
@@ -60,7 +60,7 @@ thread_local int threadArg;   // each thread stores here global its running argu
 static void barrier()
 {
     std::cout << "Thread " << threadArg << " before lock" << std::endl;
-    Thread::ScopedLock lock( barrierMutex );
+    std::unique_lock<std::mutex> lock( barrierMutex );
     std::cout << "Thread " << threadArg << " after lock" << std::endl;
     thread_cnt ++;
     std::cout << "Thread " << threadArg << " thread_cnt = " << thread_cnt << std::endl;
@@ -77,7 +77,7 @@ static void barrier()
         // Now all threads have reached
         thread_cnt = 0;
         std::cout << "Thread " << threadArg << " notifies all" << std::endl;
-        barrierCondition.notifyAll();
+        barrierCondition.notify_all();
     }
 }
 
@@ -87,7 +87,7 @@ static int sharedArray[ N_THREADS ];
 
 static void threadRoutine( int& arg )
 {
-    std::cout << "Thread " << scai::common::Thread::getSelf() << " runs, arg = " << arg << std::endl;
+    std::cout << "Thread " << std::this_thread::get_id() << " runs, arg = " << arg << std::endl;
     threadArg = arg;
     // sleep a little bit so if threadArg is not thread private it will be overwritten
     scai::common::Walltime::sleep( 100 );
@@ -104,20 +104,20 @@ static void threadRoutine( int& arg )
     int expected_sum = N_THREADS * ( N_THREADS - 1 ) / 2;
     SCAI_ASSERT_EQUAL( sum, expected_sum, "Wrong value after thread barrier" )
     {
-        Thread::ScopedLock lock( printMutex );
+        std::unique_lock<std::mutex> lock( printMutex );
         std::cout << "Thread " << arg << " has correct sum = " << sum << std::endl;
     }
 }
 
 int main( int, char** )
 {
-    Thread threads[N_THREADS];
+    std::thread threads[N_THREADS];
     int threadArgs[N_THREADS];
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
         threadArgs[i] = i;
-        threads[i].run( threadRoutine, threadArgs[i] );
+        threads[i] = std::thread( threadRoutine, std::ref( threadArgs[i] ) );
     }
 
     for ( int i = 0; i < N_THREADS; ++i )

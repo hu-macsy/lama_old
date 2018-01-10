@@ -46,8 +46,8 @@ using namespace common;
 
 BOOST_AUTO_TEST_SUITE( ThreadTest )
 
-Thread::Mutex barrierMutex;
-Thread::Condition barrierCondition;
+std::mutex barrierMutex;
+std::condition_variable_any barrierCondition;
 
 static const int NB_THREADS   = 16;
 
@@ -57,7 +57,7 @@ static int thread_cnt = 0;
 
 static void barrier()
 {
-    Thread::ScopedLock lock( barrierMutex );
+    std::unique_lock<std::mutex> lock( barrierMutex );
     thread_cnt ++;
 
     if ( thread_cnt != NB_THREADS )
@@ -69,7 +69,7 @@ static void barrier()
     {
         // Now all threads have reached
         thread_cnt = 0;
-        barrierCondition.notifyAll();
+        barrierCondition.notify_all();
     }
 }
 
@@ -98,16 +98,16 @@ BOOST_AUTO_TEST_CASE( barrierTest )
 {
     // Note: this test is actually meant to test condition variables.
     // A barrier is only an example use case for condition variables.
-    Thread threads[NB_THREADS];
+    std::thread threads[NB_THREADS];
     int sharedArray[NB_THREADS];
     BarrierArgs threadArgs[NB_THREADS];
 
     for ( int i = 0; i < NB_THREADS; ++i )
     {
-        auto & arg = threadArgs[i];
+        BarrierArgs& arg = threadArgs[i];
         arg.threadNum = i;
         arg.sharedArray = sharedArray;
-        threads[i].run( barrierRoutine, arg );
+        threads[i] = std::thread( barrierRoutine, std::ref( arg ) );
     }
 
     for ( int i = 0; i < NB_THREADS; ++i )
@@ -134,15 +134,15 @@ static const int C_THREADS   = 4;
 
 // Define routine that is executed by one thread
 
-Thread::RecursiveMutex critMutex;    // recursive mutex needed here
+std::recursive_mutex critMutex;    // recursive mutex needed here
 
 static void criticalRoutine( int& n )
 {
     std::ostringstream nstream;
     nstream << "Thread_" << n;
     Thread::defineCurrentThreadName( nstream.str().c_str() );
-    Thread::ScopedLock lock( critMutex );
-    Thread::ScopedLock lock1( critMutex );   // second lock by same thread is okay for recursive mutex
+    std::unique_lock<std::recursive_mutex> lock( critMutex );
+    std::unique_lock<std::recursive_mutex> lock1( critMutex );   // second lock by same thread is okay for recursive mutex
     Walltime::sleep( SLEEP_TIME * 1000 );
     BOOST_CHECK_EQUAL( nstream.str(), Thread::getCurrentThreadName() );
 }
@@ -150,14 +150,14 @@ static void criticalRoutine( int& n )
 BOOST_AUTO_TEST_CASE( criticalRegionTest )
 {
     // macro to give the current thread a name that appears in further logs
-    Thread threads[C_THREADS];
+    std::thread threads[C_THREADS];
     int threadArgs[C_THREADS];
     double time = Walltime::get();
 
     for ( int i = 0; i < C_THREADS; ++i )
     {
         threadArgs[i] = i;
-        threads[i].run( criticalRoutine, threadArgs[i] );
+        threads[i] = std::thread( criticalRoutine, std::ref( threadArgs[i] ) );
     }
 
     for ( int i = 0; i < C_THREADS; ++i )
@@ -180,14 +180,14 @@ static void runRoutine( int& )
 BOOST_AUTO_TEST_CASE( concurrentTest )
 {
     // macro to give the current thread a name that appears in further logs
-    Thread threads[C_THREADS];
+    std::thread threads[C_THREADS];
     int threadArgs[C_THREADS];
     double time = Walltime::get();
 
     for ( int i = 0; i < C_THREADS; ++i )
     {
         threadArgs[i] = i;
-        threads[i].run( runRoutine, threadArgs[i] );
+        threads[i] = std::thread( runRoutine, std::ref( threadArgs[i] ) );
     }
 
     for ( int i = 0; i < C_THREADS; ++i )

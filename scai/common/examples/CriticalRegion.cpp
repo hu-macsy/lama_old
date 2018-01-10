@@ -32,7 +32,6 @@
  * @date 19.06.2015
  */
 
-#include <scai/common/Thread.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>
@@ -40,23 +39,26 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 using namespace scai::common;
 
-Thread::RecursiveMutex threadRecursiveMutex;    // recursive threadRecursiveMutex needed here
+std::recursive_mutex threadRecursiveMutex;    // recursive threadRecursiveMutex needed here
 
 static const int SLEEP_TIME  = 2;
 static const int N_THREADS   = 4;
 
 // Define routine that is executed by one thread
 
-static void threadRoutine( int& )
+static void threadRoutine()
 {
-    Thread::Id self = Thread::getSelf();
+    std::thread::id self = std::this_thread::get_id();
     cout << "Thread " << self << " starts" << endl;
-    Thread::ScopedLock lock( threadRecursiveMutex );
-    Thread::ScopedLock lock1( threadRecursiveMutex );   // second lock by same thread is okay for recursive threadRecursiveMutex
+    std::unique_lock<std::recursive_mutex> lock( threadRecursiveMutex );
+    std::unique_lock<std::recursive_mutex> lock1( threadRecursiveMutex );   
+    // second lock by same thread is okay for recursive threadRecursiveMutex
     cout << "Thread " << self << " enters critical region" << endl;
     Walltime::sleep( SLEEP_TIME * 1000 );
     cout << "Thread " << self << " leaves critical region" << endl;
@@ -65,13 +67,14 @@ static void threadRoutine( int& )
 int main( int, char** )
 {
     // macro to give the current thread a name that appears in further logs
+
     double time = Walltime::get();
-    Thread threads[N_THREADS];
-    int arg = 0;  // not needed
+
+    std::thread threads[N_THREADS];
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
-        threads[i].run( threadRoutine, arg );
+        threads[i] = std::thread( threadRoutine );
     }
 
     for ( int i = 0; i < N_THREADS; ++i )

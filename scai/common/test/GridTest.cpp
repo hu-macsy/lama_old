@@ -37,6 +37,9 @@
 #include <scai/common/Grid.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
+using scai::IndexType;
+using scai::nIndex;
+
 using scai::common::Grid;
 using scai::common::Grid1D;
 using scai::common::Grid2D;

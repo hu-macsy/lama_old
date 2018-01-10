@@ -70,10 +70,10 @@ inline bool applyBinary( const ValueType& x1, const CompareOp op, const ValueTyp
 {
     // ToDo: throw exception if called with complex values
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType v1 = x1;
-    AbsType v2 = x2;
+    RealType v1 = x1;
+    RealType v2 = x2;
 
     switch ( op )
     {

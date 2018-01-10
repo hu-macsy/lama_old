@@ -1,5 +1,5 @@
 /**
- * @file examples/DemoMath.cpp
+ * @file AccessKind.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,37 +27,35 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Examples for using TypeTraits
- * @author Thomas Brandes
- * @date 25.01.2016
+ * @brief Definition of enum type for read and write access
+ * @author Jiri Kraus
+ * @date 22.02.2011
  */
 
-#ifdef SCAI_COMPLEX_SUPPORTED
-#include <scai/common/Complex.hpp>
-#endif
+#pragma once
 
-#include <scai/common/Math.hpp>
+// for dll_import
+#include <scai/common/config.hpp>
 
-#include <iostream>
+#include <ostream>
 
-using scai::common::Math;
-
-template<typename ValueType>
-void testRoutine( ValueType x )
+namespace scai
 {
-    ValueType absX = Math::abs( x );
-    std::cout << "abs ( " << x << " ) = " << absX << std::endl;
-    ValueType sqrtX = Math::sqrt( x );
-    std::cout << "sqrt ( " << x << " ) = " << sqrtX << std::endl;
-    ValueType conjX = Math::conj( x );
-    std::cout << "conj ( " << x << " ) = " << conjX << std::endl;
-}
 
-int main()
+namespace common
 {
-    testRoutine<float>( -1 );
-    testRoutine<double>( -1 );
-#ifdef SCAI_COMPLEX_SUPPORTED
-    testRoutine<scai::ComplexFloat>( scai::ComplexFloat( 2, -1 ) );
-#endif
-}
+
+/** Enumeration type for access kind, may be read or write */
+
+enum class AccessKind
+{
+    Read, //!<  read access to the array, can be multiple
+    Write, //!<  write access to the array, only one at a time
+    MaxAccessKind //!<  internal use for dimension of arrays
+};
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
+
+} /* end namespace common */
+
+} /* end namespace scai */

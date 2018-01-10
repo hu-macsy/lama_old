@@ -63,8 +63,6 @@ public:
 
     typedef std::thread::id Id;
 
-    static Id getSelf();
-
     /** Set a name for the current thread. */
 
     static void defineCurrentThreadName( const char* name );
@@ -77,144 +75,10 @@ public:
 
     static const char* getCurrentThreadName();
 
-    /** Own mutex class for synchronization of threads */
-
-    class COMMON_DLL_IMPORTEXPORT Mutex
-    {
-
-        friend class ScopedLock;  // allow access to the mutex
-
-    public:
-
-        /** Constructor creates and initalizes the mutex.
-         *
-         *  @param[in] isRecursive if true the mutex will be recursive
-         *
-         *  A recursive mutex might be locked by the same thread several times.
-         */
-
-        Mutex( bool isRecursive = false );
-
-        /** Destructor frees and releases the mutex. */
-
-        ~Mutex();
-
-        /** Lock the mutex when entering a critical section. */
-
-        void lock();
-
-        /** Unlocks the mutex when leaving a critical section. */
-
-        void unlock();
-
-        std::unique_ptr<std::mutex> mMutex;
-        std::unique_ptr<std::recursive_mutex> mRecursiveMutex;
-
-        bool mIsRecursive;  // false: mMutex != NULL, true: mRecursiveMutex != NULL
-
-    };
-
-    /** Add derived class which is a recursive mutex by default constructor. */
-
-    class COMMON_DLL_IMPORTEXPORT RecursiveMutex : public Mutex
-    {
-    public:
-
-        RecursiveMutex() : Mutex( true )
-        {
-        }
-
-        ~RecursiveMutex()
-        {
-        }
-    };
-
-    /** Locking of a mutex within a scope, unlock by destructor. */
-
-    class COMMON_DLL_IMPORTEXPORT ScopedLock
-    {
-
-        friend class Condition;  // allow access to the mutex
-
-    public:
-
-        ScopedLock( Mutex& mutex );
-
-        ~ScopedLock();
-
-        Mutex& mMutex;
-    };
-
-    /** Own condition class for synchronization of threads */
-
-    class COMMON_DLL_IMPORTEXPORT Condition : std::condition_variable_any
-    {
-    public:
-
-        /** Constructor creates and initalizes the mutex. */
-
-        Condition();
-
-        /** Destructor frees and releases the mutex. */
-
-        ~Condition();
-
-        /** Notifiy one thread waiting a the condition */
-
-        void notifyOne();
-
-        /** Notifiy all threds waiting on the condition. */
-
-        void notifyAll();
-
-        void wait( ScopedLock& lock );
-
-    };
-
-    /** Only supported signature, void* might be replaced by any pointer type. */
-
-    typedef void* ( *ThreadFunction ) ( void* );
-
-    Thread()
-    {
-    }
-
-    /** Constructor of a new thread that executes a void routine with one reference argument. */
-
-    template<typename T>
-    Thread( void ( *work ) ( T& ), T& arg )
-    {
-        run( work, arg );
-    }
-
-    /** Run can also be called after thread has been created. */
-
-    template<typename T>
-    void run( void ( *work ) ( T& ), T& arg )
-    {
-        void* parg = ( void* ) ( &arg );
-        ThreadFunction routine = ( ThreadFunction ) work;
-        start( routine, parg );
-    }
-
-    void start( ThreadFunction start_routine, void* arg );
-
-    void join();
-
-    Id getId()
-    {
-        return mId;
-    }
-
-    /** Destructor of thread, waits for its termination. */
-
-    ~Thread();
-
 private:
 
-    std::thread* mThread;  // contructed by start
+    Thread();
 
-    Id mId;
 };
 
 } /* end namespace common */
