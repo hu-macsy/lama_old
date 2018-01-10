@@ -46,9 +46,10 @@
 
 using std::shared_ptr;
 
-using namespace scai::hmemo;
-using namespace scai::dmemo;
-using namespace scai::common;
+using namespace scai;
+using namespace hmemo;
+using namespace dmemo;
+using namespace common;
 
 /* --------------------------------------------------------------------- */
 

@@ -45,6 +45,7 @@
 
 #include <scai/solver/test/TestMacros.hpp>
 
+using namespace scai;
 using namespace scai::solver;
 using namespace scai::hmemo;
 
@@ -170,10 +171,10 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
 {
     const IndexType N = 40;
-    scai::lama::CSRSparseMatrix<ValueType> coefficients;
-    scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
-    scai::lama::DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
-    scai::lama::DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
+    lama::CSRSparseMatrix<ValueType> coefficients;
+    lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
+    lama::DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
+    lama::DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
     CG<ValueType> cgsolver( "CriterionTestSolver" );
     cgsolver.setStoppingCriterion( mIterationCountCriterion2Ptr );
     cgsolver.initialize( coefficients );

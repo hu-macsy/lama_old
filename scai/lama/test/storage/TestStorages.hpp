@@ -38,13 +38,16 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
+namespace scai
+{
+
 template<typename ValueType>
 void getMatrix_7_4 ( IndexType& numRows,
                      IndexType& numColumns,
-                     scai::utilskernel::LArray<IndexType>& matrixRowSizes,
-                     scai::utilskernel::LArray<IndexType>& matrixJA,
-                     scai::utilskernel::LArray<ValueType>& matrixValues,
-                     scai::utilskernel::LArray<ValueType>& denseValues )
+                     utilskernel::LArray<IndexType>& matrixRowSizes,
+                     utilskernel::LArray<IndexType>& matrixJA,
+                     utilskernel::LArray<ValueType>& matrixValues,
+                     utilskernel::LArray<ValueType>& denseValues )
 {
     // Attention: ia array is not an offset array, it contains number of values in each row
     IndexType ia[] = { 2, 1, 2, 3, 2, 0, 2 };
@@ -75,18 +78,18 @@ void getMatrix_7_4 ( IndexType& numRows,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void setRandomData( scai::lama::MatrixStorage<ValueType>& storage, const IndexType numRows, const IndexType numColumns )
+void setRandomData( lama::MatrixStorage<ValueType>& storage, const IndexType numRows, const IndexType numColumns )
 {
-    scai::hmemo::HArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
+    hmemo::HArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
     float fillRate = 0.5f;
-    scai::utilskernel::HArrayUtils::setSparseRandom( values, fillRate, 1 );
+    utilskernel::HArrayUtils::setSparseRandom( values, fillRate, 1 );
     storage.setDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void setDenseData( scai::lama::MatrixStorage<ValueType>& storage )
+void setDenseData( lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 8;
     const IndexType numColumns = 2;
@@ -100,7 +103,7 @@ void setDenseData( scai::lama::MatrixStorage<ValueType>& storage )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void setDenseSquareData( scai::lama::MatrixStorage<ValueType>& storage )
+void setDenseSquareData( lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
@@ -115,7 +118,7 @@ void setDenseSquareData( scai::lama::MatrixStorage<ValueType>& storage )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void setDenseRandom( scai::lama::MatrixStorage<ValueType>& storage )
+void setDenseRandom( lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
@@ -136,7 +139,7 @@ void setDenseRandom( scai::lama::MatrixStorage<ValueType>& storage )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void setDenseHalo( scai::lama::MatrixStorage<ValueType>& storage )
+void setDenseHalo( lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
@@ -151,7 +154,7 @@ void setDenseHalo( scai::lama::MatrixStorage<ValueType>& storage )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void setSymDenseData( scai::lama::MatrixStorage<ValueType>& storage )
+void setSymDenseData( lama::MatrixStorage<ValueType>& storage )
 {
     /* Matrix:     1  2  0  5
      *             2  1  3  0
@@ -167,3 +170,4 @@ void setSymDenseData( scai::lama::MatrixStorage<ValueType>& storage )
     storage.setRawDenseData( numRows, numColumns, values, eps );
 }
 
+}

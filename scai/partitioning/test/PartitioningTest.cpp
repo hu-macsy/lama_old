@@ -70,10 +70,10 @@ BOOST_AUTO_TEST_CASE( partitionTest )
     {
         PartitioningPtr part( Partitioning::create( values[i] ) );
 
-        common::Stencil3D<RealType> stencil( 27 );
+        common::Stencil3D<DefaultReal> stencil( 27 );
         common::Grid3D grid( 20, 20, 20 );
-        StencilMatrix<RealType> stencilMatrix( grid, stencil );
-        CSRSparseMatrix<RealType> csrMatrix( stencilMatrix );
+        StencilMatrix<DefaultReal> stencilMatrix( grid, stencil );
+        CSRSparseMatrix<DefaultReal> csrMatrix( stencilMatrix );
 
         dmemo::DistributionPtr dist( part->partitionIt( comm, csrMatrix, weight ) );
 

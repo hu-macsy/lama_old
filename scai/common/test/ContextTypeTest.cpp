@@ -36,6 +36,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/ContextType.hpp>
+#include <scai/common/AccessKind.hpp>
 #include <sstream>
 
 using namespace scai;

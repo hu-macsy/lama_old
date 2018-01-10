@@ -43,10 +43,12 @@
 
 /** Test of swap method that is defined only for two storages of same format, type. */
 
+namespace scai
+{
+
 template<typename StorageType>
 void storageSwapTest()
 {
-    using namespace scai;
     using namespace hmemo;
     using namespace utilskernel;
     using namespace lama;
@@ -106,7 +108,7 @@ void copyStorageTest()
     BOOST_CHECK( fullThreshold != defaultThreshold );
     storage.setCompressThreshold( fullThreshold );
     setDenseHalo( storage );
-    const scai::lama::MatrixStorage<ValueType>& matrixStorage = storage;
+    const lama::MatrixStorage<ValueType>& matrixStorage = storage;
     StorageType copyStorage1( storage );          // default copy constructor
     StorageType copyStorage2( matrixStorage );    // own copy constructor
     StorageType copyStorage3;                     // default assignment operator
@@ -120,3 +122,4 @@ void copyStorageTest()
     BOOST_CHECK_EQUAL( copyStorage4.getCompressThreshold(), defaultThreshold );
 }
 
+}

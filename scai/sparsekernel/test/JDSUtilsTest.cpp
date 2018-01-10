@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( getValuePosRowTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
 

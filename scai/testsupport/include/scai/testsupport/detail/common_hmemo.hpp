@@ -50,15 +50,15 @@ namespace detail
  * the context used. Note that the naming is chosen such that
  * related environments are collected when sorted.
  */
-std::string adaptTestSuiteNameToEnv(const std::string & name, const scai::hmemo::Context & context)
+std::string adaptTestSuiteNameToEnv(const std::string & name, const hmemo::Context & context)
 {
     std::string prefix;
     switch (context.getType())
     {
-        case scai::common::context::Host:
+        case common::ContextType::Host:
             prefix = "~Host ";
             break;
-        case scai::common::context::CUDA:
+        case common::ContextType::CUDA:
             prefix = "~CUDA ";
             break;
         default:
@@ -69,7 +69,7 @@ std::string adaptTestSuiteNameToEnv(const std::string & name, const scai::hmemo:
     return prefix + name;
 }
 
-std::string suiteNameForFile(const std::string & name, const scai::hmemo::Context & context)
+std::string suiteNameForFile(const std::string & name, const hmemo::Context & context)
 {
     // TODO: Context
     std::stringstream filename;
@@ -77,10 +77,10 @@ std::string suiteNameForFile(const std::string & name, const scai::hmemo::Contex
 
     switch (context.getType())
     {
-        case scai::common::context::Host:
+        case common::ContextType::Host:
             filename << "_host";
             break;
-        case scai::common::context::CUDA:
+        case common::ContextType::CUDA:
             filename << "_cuda";
             break;
         default:

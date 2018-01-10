@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
     IndexType ia[]  = { 0,    2,    4,    6,    8,      11, 12 };
     IndexType ja[]  = { 1, 3, 0, 2, 1, 4, 0, 4, 3, 2, 5, 4 };
-    RealType vals[] = { 1, 3, 0, 2, 1, 4, 0, 4, 3, 2, 5, 4 };
+    DefaultReal vals[] = { 1, 3, 0, 2, 1, 4, 0, 4, 3, 2, 5, 4 };
 
     IndexType numRows = sizeof( ia ) / sizeof( IndexType ) - 1;
     IndexType numColumns = numRows;
@@ -76,9 +76,9 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
         return;
     }
 
-    CSRStorage<RealType> csrStorage;
+    CSRStorage<DefaultReal> csrStorage;
     csrStorage.setRawCSRData( numRows, numColumns, numValues, ia, ja, vals );
-    CSRSparseMatrix<RealType> csrMatrix( csrStorage );
+    CSRSparseMatrix<DefaultReal> csrMatrix( csrStorage );
 
     float weight = 1.0f;
 

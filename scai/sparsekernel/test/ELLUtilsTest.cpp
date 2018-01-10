@@ -77,7 +77,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
 
 BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
 
@@ -1387,7 +1387,7 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
 
 BOOST_AUTO_TEST_CASE( matrixAddTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
     ContextPtr testContext = ContextFix::testContext;
     LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
 

@@ -54,9 +54,10 @@
 
 #include <scai/logging.hpp>
 
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
+using namespace dmemo;
 
 using std::unique_ptr;
 
