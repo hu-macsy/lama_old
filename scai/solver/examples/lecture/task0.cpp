@@ -47,8 +47,9 @@
 
 #include <iostream>
 
-using namespace scai::lama;
-using namespace scai::solver;
+using namespace scai;
+using namespace lama;
+using namespace solver;
 
 typedef DefaultReal ValueType;
 

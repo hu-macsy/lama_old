@@ -145,12 +145,12 @@ public:
 
     bool hasMaxIter() const
     {
-        return getMaxIter() != nIndex;
+        return getMaxIter() != scai::nIndex;
     }
 
     /** Get the maximal number of iterations. */
 
-    IndexType getMaxIter() const;
+    scai::IndexType getMaxIter() const;
 
     scai::solver::LogLevel::LogLevel getLogLevel() const;
 
@@ -198,7 +198,7 @@ private:
 
     scai::dmemo::CommunicatorPtr      mComm;
 
-    IndexType mMaxIter;
+    scai::IndexType mMaxIter;
 
     scai::solver::LogLevel::LogLevel   mLogLevel;
 
@@ -325,13 +325,13 @@ LamaConfig::LamaConfig()
     getTolerance( mAbsoluteTolerance, "SCAI_ABS_TOL" );
     getTolerance( mDivergenceTolerance, "SCAI_DIV_TOL" );
 
-    mMaxIter = nIndex;
+    mMaxIter = scai::nIndex;
 
     scai::common::Settings::getEnvironment( mMaxIter, "SCAI_MAX_ITER" );
 
     // ValueType to be used for vector/matrix
 
-    mValueType = scai::common::TypeTraits<DefaultReal>::stype;
+    mValueType = scai::common::TypeTraits<scai::DefaultReal>::stype;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
@@ -351,7 +351,7 @@ LamaConfig::LamaConfig()
         }
     }
 
-    if ( mContext->getType() == scai::hmemo::Context::CUDA )
+    if ( mContext->getType() == scai::common::ContextType::CUDA )
     {
         mMatrixFormat = scai::lama::Format::ELL;
     }
@@ -378,7 +378,7 @@ LamaConfig::LamaConfig()
     {
         // check if solver is available
 
-        if ( !scai::solver::Solver<DefaultReal>::canCreate( val ) )
+        if ( !scai::solver::Solver<scai::DefaultReal>::canCreate( val ) )
         {
             CONFIG_ERROR( "solver " << val << " not available" )
         }
@@ -392,7 +392,7 @@ LamaConfig::LamaConfig()
 
     scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
 
-    if ( ! scai::lama::Norm<DefaultReal>::canCreate( mNorm ) )
+    if ( ! scai::lama::Norm<scai::DefaultReal>::canCreate( mNorm ) )
     {
         CONFIG_ERROR( "norm " << mNorm << " not available" )
     }
@@ -512,7 +512,7 @@ float LamaConfig::getWeight() const
     return mWeight;
 }
 
-IndexType LamaConfig::getMaxIter() const
+scai::IndexType LamaConfig::getMaxIter() const
 {
     return mMaxIter;
 }

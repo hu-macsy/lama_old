@@ -56,12 +56,13 @@
 
 #include <math.h>
 
-using namespace scai::lama;
-using scai::hmemo::ReadAccess;
-using scai::hmemo::WriteAccess;
-using scai::dmemo::Distributed;
-using scai::common::Math;
-using scai::common::UnaryOp;
+using namespace scai;
+using namespace lama;
+using hmemo::ReadAccess;
+using hmemo::WriteAccess;
+using dmemo::Distributed;
+using common::Math;
+using common::UnaryOp;
 
 
 typedef DefaultReal ValueType;

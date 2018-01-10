@@ -38,9 +38,10 @@
 
 #include <scai/kregistry/KernelContextFunction.hpp>
 
-using namespace scai::common;
-using namespace scai::kregistry;
-using namespace scai::sparsekernel;
+using namespace scai;
+using namespace common;
+using namespace kregistry;
+using namespace sparsekernel;
 
 /*
  * initialize array with a given value
@@ -132,7 +133,7 @@ static void multiplication()
     init( m, b, zero );
     // Get Function from Registry
     KernelTraitContextFunction<ELLKernelTrait::normalGEMV<ValueType> > gemv;
-    gemv[context::Host]( b, one, x, zero, b, m, max_nnz, sizes, ja, values );
+    gemv[ContextType::Host]( b, one, x, zero, b, m, max_nnz, sizes, ja, values );
     std::cout << "Vector b: ";
     print( m, b );
     // free memory

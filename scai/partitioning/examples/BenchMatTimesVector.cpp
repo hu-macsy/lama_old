@@ -60,7 +60,7 @@ using namespace partitioning;
 using namespace std;
 using scai::common::Walltime;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 static void bench( CSRSparseMatrix<ValueType>& mat )
 {

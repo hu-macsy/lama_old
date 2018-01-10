@@ -48,11 +48,12 @@
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
-using namespace scai::lama;
-using scai::hmemo::ReadAccess;
-using scai::hmemo::WriteAccess;
+using namespace scai;
+using namespace lama;
+using hmemo::ReadAccess;
+using hmemo::WriteAccess;
 
-typedef float ValueType;
+typedef DefaultReal ValueType;
 
 /*
 *defining a RGB struct to color the pixel

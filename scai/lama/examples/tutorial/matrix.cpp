@@ -43,9 +43,10 @@
 #include <iostream>
 #include <stdlib.h>
 
-using namespace scai::hmemo;
-using namespace scai::lama;
-using scai::utilskernel::LArray;
+using namespace scai;
+using namespace hmemo;
+using namespace lama;
+using utilskernel::LArray;
 
 //
 // EXAMPLE multiplication of a dense vector with a sparse matrix in CSR format.

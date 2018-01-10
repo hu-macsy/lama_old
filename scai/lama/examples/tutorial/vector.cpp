@@ -41,7 +41,8 @@
 #include <iostream>
 #include <stdlib.h>
 
-using namespace scai::lama;
+using namespace scai;
+using namespace lama;
 
 int main()
 

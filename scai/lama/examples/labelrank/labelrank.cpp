@@ -44,10 +44,13 @@
 #include <iomanip>
 
 using namespace std;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using scai::common::Walltime;
-using scai::common::UnaryOp;
+
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
+
+using common::Walltime;
+using common::UnaryOp;
 
 /** ValueType is the type used for matrix and vector elements. */
 

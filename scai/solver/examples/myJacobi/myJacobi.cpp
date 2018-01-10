@@ -46,9 +46,10 @@
 
 #include <cmath>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
 
 int main( int , char** )
 {

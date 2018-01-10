@@ -86,13 +86,13 @@ public:
         }
         else if ( "HOST" == val )
         {
-            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::Context::Host );
+            mContext = scai::hmemo::Context::getContextPtr( scai::common::ContextType::Host );
         }
         else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
         {
             // int device = mComm->getNodeRank();
             int device = 0;
-            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::Context::CUDA, device );
+            mContext = scai::hmemo::Context::getContextPtr( scai::common::ContextType::CUDA, device );
         }
         else if ( "SYNC" == val )
         {
@@ -117,7 +117,7 @@ public:
         if ( mMatrixFormat == "" )
         {
             // choose default format by context: Host -> CSR, CUDA -> ELL
-            if ( mContext->getType() == scai::hmemo::Context::CUDA )
+            if ( mContext->getType() == scai::common::ContextType::CUDA )
             {
                 return "ELL";
             }

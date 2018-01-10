@@ -47,8 +47,12 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
-using namespace std;
+using std::cout;
+using std::endl;
+using std::setw;
+using scai::IndexType;
 using scai::common::Walltime;
+using scai::common::ContextType;
 
 static bool verboseFlag = false;
 
@@ -71,7 +75,7 @@ static void bench( IndexType size, float fillRate )
     double timeHost = Walltime::get();
     c = a + b;
     timeHost = Walltime::get() - timeHost;
-    ContextPtr gpu = Context::getContextPtr( Context::CUDA );
+    ContextPtr gpu = Context::getContextPtr( ContextType::CUDA );
     a.setContextPtr( gpu );
     b.setContextPtr( gpu );
     CSRSparseMatrix<ValueType> c1( size, size );
@@ -120,7 +124,7 @@ static void bench( IndexType size, float fillRate )
 
 int main()
 {
-    if ( !Context::hasContext( Context::CUDA ) )
+    if ( !Context::hasContext( ContextType::CUDA ) )
     {
         cout << "This examples compares the Host and CUDA implementation. You build without CUDA, so it's skipped." << endl;
         return 0;

@@ -47,8 +47,9 @@
 
 #include <iostream>
 
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
 
 typedef DefaultReal ValueType;
 
