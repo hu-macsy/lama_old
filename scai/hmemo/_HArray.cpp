@@ -131,7 +131,17 @@ void _HArray::assign( const _HArray& other, ContextPtr context )
 
 _HArray& _HArray::operator=( _HArray&& other ) noexcept
 {
-    SCAI_ASSERT_EQ_DEBUG( mValueSize, other.mValueSize, "move assign must only be called for same value type" )
+    // Because of the noexcept keyword, we can not throw an exception here without possibly
+    // causing compiler warnings, so standard SCAI_ assertions are off the table. Since this
+    // method should not be possible to call for a user, we print an error directly and
+    // immediately terminate instead.
+#ifdef SCAI_ASSERT_LEVEL_DEBUG
+    if (mValueSize != other.mValueSize)
+    {
+        std::cerr << "INTERNAL ERROR: _HArray move constructor called for incompatible types." << std::endl;
+        std::terminate();
+    }
+#endif
 
     SCAI_LOG_DEBUG( logger, "_HArray move assign, other = " << other << ", this = " << *this );
 
