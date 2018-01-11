@@ -361,7 +361,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 
     if ( typedValues.getValueType() == csrValues.getValueType() )
     {
-        typedValues.swap( csrValues );
+        typedValues.swap( static_cast<HArray<ValueType>&>( csrValues ) );
     }
     else
     {

@@ -79,6 +79,10 @@ public:
 
     ~ContextDataManager();
 
+    ContextDataManager( ContextDataManager&& other ) noexcept;
+
+    ContextDataManager& operator=( ContextDataManager&& other );
+
     /** Get the context data for a given context. A new entry can be created.
      *  This routine does not any locks or handling of data allocation or transfers.
      */

@@ -1852,6 +1852,8 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     using namespace std::placeholders;
     using utilskernel::LArray;
 
+    using utilskernel::LArray;
+
     SCAI_REGION( "Mat.Sp.timesVector" )
 
     LArray<ValueType>& localResult = denseResult.getLocalValues();
