@@ -1844,19 +1844,22 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     DenseVector<ValueType>& denseResult,
-    const ValueType alphaValue,
+    const ValueType alpha,
     const DenseVector<ValueType>& denseX,
-    const ValueType betaValue,
+    const ValueType beta,
     const DenseVector<ValueType>& denseY ) const
 {
-    using namespace std;
     using namespace std::placeholders;
+    using utilskernel::LArray;
 
     SCAI_REGION( "Mat.Sp.timesVector" )
 
-    HArray<ValueType>& localResult = denseResult.getLocalValues();
-    const HArray<ValueType>& localY = denseY.getLocalValues();
-    const HArray<ValueType>& localX = denseX.getLocalValues();
+    LArray<ValueType>& localResult = denseResult.getLocalValues();
+ 
+    // be careful: denseY might be undefined if beta == 0
+
+    const LArray<ValueType>& localY = beta == common::Constants::ZERO ? localResult : denseY.getLocalValues();
+    const LArray<ValueType>& localX = denseX.getLocalValues();
 
     HArray<ValueType>& haloX = denseX.getHaloValues();
 
@@ -1887,8 +1890,8 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF =
-            // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, cref( localResult ) );
-            bind( matrixTimesVector, _1, _2, alphaValue, _3, ValueType( 1 ), _2 );
+            // bind( matrixTimesVector, _1, _2, alpha, _3, one, cref( localResult ) );
+            bind( matrixTimesVector, _1, _2, alpha, _3, ValueType( 1 ), _2 );
 
     if ( SyncKind::SYNCHRONOUS == _Matrix::getCommunicationKind() )
     {
@@ -1897,7 +1900,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
             const MatrixStorage<ValueType>* localMatrix,
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX ) > localF =
-                bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+                bind( matrixTimesVector, _1, _2, alpha, _3, beta, cref( localY ) );
 
         haloOperationSync( localResult, localX, haloX, localF, haloF );
     }
@@ -1908,7 +1911,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
             const MatrixStorage<ValueType>* localMatrix,
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX ) > localAsyncF =
-                bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+                bind( matrixTimesVectorAsync, _1, _2, alpha, _3, beta, cref( localY ) );
         haloOperationAsync( localResult, localX, haloX, localAsyncF, haloF );
     }
 }
@@ -1918,20 +1921,21 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
 template<typename ValueType>
 void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     DenseVector<ValueType>& denseResult,
-    const ValueType alphaValue,
+    const ValueType alpha,
     const DenseVector<ValueType>& denseX,
-    const ValueType betaValue,
+    const ValueType beta,
     const DenseVector<ValueType>& denseY ) const
 {
     using namespace std::placeholders;
+    using utilskernel::LArray;
 
-    SCAI_LOG_INFO( logger, "result = " << alphaValue << " * x * A + " << betaValue << " * y"
+    SCAI_LOG_INFO( logger, "result = " << alpha << " * x * A + " << beta << " * y"
                    ", x = " << denseX << ", y = " << denseY << ", A = " << *this )
 
-    HArray<ValueType>& localResult = denseResult.getLocalValues();
+    LArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    const HArray<ValueType>& localX = denseX.getLocalValues();
-    const HArray<ValueType>& localY = denseY.getLocalValues();
+    const LArray<ValueType>& localX = denseX.getLocalValues();
+    const LArray<ValueType>& localY = ( beta == common::Constants::ZERO ) ? localResult : denseY.getLocalValues();
 
     void ( MatrixStorage<ValueType>::*vectorTimesMatrix )(
         HArray<ValueType>& result,
@@ -1947,7 +1951,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX ) > localF =
-            bind( vectorTimesMatrix, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+            bind( vectorTimesMatrix, _1, _2, alpha, _3, beta, cref( localY ) );
 
     // haloF: localResult = alpha * haloX * haloMatrix
 
@@ -1956,7 +1960,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF =
-            bind( vectorTimesMatrix, _1, _2, alphaValue, _3, ValueType( 0 ), _2 );
+            bind( vectorTimesMatrix, _1, _2, alpha, _3, ValueType( 0 ), _2 );
 
     HArray<ValueType>& haloX = denseX.getHaloValues();  // reuse this array to keep halo values
 

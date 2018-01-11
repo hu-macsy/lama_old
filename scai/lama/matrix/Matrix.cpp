@@ -391,17 +391,19 @@ void Matrix<ValueType>::setColumn(
 template<typename ValueType>
 void Matrix<ValueType>::vectorTimesMatrixRepCols(
     DenseVector<ValueType>& denseResult,
-    const ValueType alphaValue,
+    const ValueType alpha,
     const DenseVector<ValueType>& denseX,
-    const ValueType betaValue,
+    const ValueType beta,
     const DenseVector<ValueType>& denseY ) const
 {
     SCAI_REGION( "Mat.vectorTimesMatrixRepCols" )
 
-    const hmemo::HArray<ValueType>& localY = denseY.getLocalValues();
-    const hmemo::HArray<ValueType>& localX = denseX.getLocalValues();
+    utilskernel::LArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    hmemo::HArray<ValueType>& localResult = denseResult.getLocalValues();
+    // be careful: denseY is undefined if beta == 0
+
+    const utilskernel::LArray<ValueType>& localY = beta == common::Constants::ZERO ? localResult : denseY.getLocalValues();
+    const utilskernel::LArray<ValueType>& localX = denseX.getLocalValues();
 
     const Distribution& colDist = this->getColDistribution();
 
@@ -417,11 +419,11 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
     if ( comm.getRank() == 0 )
     {
         // only one single processor adds beta * y
-        localData.vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
+        localData.vectorTimesMatrix( localResult, alpha, localX, beta, localY );
     }
     else
     {
-        localData.vectorTimesMatrix( localResult, alphaValue, localX, ValueType( 0 ), localY );
+        localData.vectorTimesMatrix( localResult, alpha, localX, ValueType( 0 ), localY );
     }
 
     if ( comm.getSize() >  1 )
