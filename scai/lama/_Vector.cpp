@@ -168,7 +168,7 @@ void _Vector::readFromSingleFile( const std::string& fileName, const Distributio
 
     const IndexType n = distribution->getBlockDistributionSize();
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), master only + redistribute" )
         readFromSingleFile( fileName );
@@ -277,7 +277,7 @@ void _Vector::readFromFile( const std::string& vectorFileName, const std::string
         {
             PartitionId root = 0;
 
-            IndexType numRows = nIndex;
+            IndexType numRows = invalidIndex;
 
             if ( comm->getRank() == root )
             {

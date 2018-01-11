@@ -584,7 +584,7 @@ private:
 
     /** Implementation of _Vector::readLocalFromFile */
 
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex );
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex );
 
     /** Implementation of _Vector::clearValues */
 

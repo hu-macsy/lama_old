@@ -526,7 +526,7 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
 
     const IndexType n = distribution->getBlockDistributionSize();
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         readFromSingleFile( fileName );
         redistribute( distribution, getColDistributionPtr() );
@@ -659,7 +659,7 @@ void _Matrix::resetRowDistributionByFirstColumn()
 
         hmemo::HArray<IndexType> myGlobalIndexes;
 
-        localMatrix.getFirstColumnIndexes( myGlobalIndexes );
+        localMatrix.getFirstColumnumIndexes( myGlobalIndexes );
 
         SCAI_LOG_DEBUG( logger, "first col indexes = " << myGlobalIndexes )
 
@@ -709,7 +709,7 @@ void _Matrix::readFromFile( const std::string& matrixFileName, const std::string
         {
             PartitionId root = 0;
 
-            IndexType numRows = nIndex;
+            IndexType numRows = invalidIndex;
 
             if ( comm->getRank() == root )
             {

@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 
         vector.setRandom( dist, 1 );
 
-        bool withDist = dist->getBlockDistributionSize() == nIndex;
+        bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
         if ( withDist )
         {
@@ -381,7 +381,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 
         vector.setSparseRandom( dist, 0, fillRate, 1 );
 
-        bool withDist = dist->getBlockDistributionSize() == nIndex;
+        bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
         if ( withDist )
         {
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 
         matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
 
-        bool withDist = rowDist->getBlockDistributionSize() == nIndex;
+        bool withDist = rowDist->getBlockDistributionSize() == invalidIndex;
 
         if ( withDist )
         {

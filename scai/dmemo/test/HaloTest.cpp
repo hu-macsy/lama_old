@@ -165,9 +165,9 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     }
 
     BOOST_CHECK_EQUAL( noReqIndexes, halo.getHaloSize() );
-    IndexType nIndexes = static_cast<IndexType>( requiredIndexes.size() );
+    IndexType numIndexes = static_cast<IndexType>( requiredIndexes.size() );
 
-    for ( IndexType i = 0; i < nIndexes; ++i )
+    for ( IndexType i = 0; i < numIndexes; ++i )
     {
         const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
         BOOST_CHECK( common::Utils::validIndex( haloIndex, halo.getHaloSize() ) );
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE( copyHaloTest )
         BOOST_CHECK_EQUAL( providesPlan1[p].partitionId, providesPlan2[p].partitionId );
     };
 
-    IndexType nIndexes = providesPlan1.totalQuantity();
+    IndexType numIndexes = providesPlan1.totalQuantity();
 
     BOOST_CHECK_EQUAL( halo1.getProvidesIndexes().size(), halo2.getProvidesIndexes().size() );
 
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( copyHaloTest )
         const ReadAccess<IndexType> providesIndexes1( halo1.getProvidesIndexes() );
         const ReadAccess<IndexType> providesIndexes2( halo2.getProvidesIndexes() );
 
-        for ( IndexType i = 0; i < nIndexes; ++i )
+        for ( IndexType i = 0; i < numIndexes; ++i )
         {
             BOOST_CHECK_EQUAL( providesIndexes1[i], providesIndexes2[i] );
         }
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE( copyHaloTest )
     halo.clear();  // -> halo1.clear()
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), halo1.getProvidesIndexes().size() );
-    BOOST_CHECK_EQUAL( nIndexes, halo2.getProvidesIndexes().size() );
+    BOOST_CHECK_EQUAL( numIndexes, halo2.getProvidesIndexes().size() );
 
     halo2.purge();
 

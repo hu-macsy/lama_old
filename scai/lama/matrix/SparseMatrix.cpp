@@ -1010,7 +1010,7 @@ void SparseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType
 
     IndexType jLocal = getColDistribution().global2local( globalColIndex );
 
-    if ( nIndex != jLocal )
+    if ( invalidIndex != jLocal )
     {
         // column belongs to local storage
 
@@ -1020,7 +1020,7 @@ void SparseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType
     {
         IndexType jHalo = mHalo.global2halo( globalColIndex );
 
-        if ( nIndex != jHalo )
+        if ( invalidIndex != jHalo )
         {
             // column belongs to halo storage
 
@@ -1135,7 +1135,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
 
     const IndexType localRowSize = getRowDistribution().getLocalSize();
 
-    if ( nIndex != jLocal )
+    if ( invalidIndex != jLocal )
     {
         mLocalData->getColumn( column, jLocal );
     }
@@ -1143,7 +1143,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
     {
         IndexType jHalo = mHalo.global2halo( globalColIndex );
 
-        if ( nIndex != jHalo )
+        if ( invalidIndex != jHalo )
         {
             mHaloData->getColumn( column, jHalo );
         }
@@ -1171,7 +1171,7 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 
     ReadAccess<ValueType> colAccess( column );
 
-    if ( nIndex != jLocal )
+    if ( invalidIndex != jLocal )
     {
         mLocalData->setColumn( column, jLocal, op );
     }
@@ -1179,7 +1179,7 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
     {
         IndexType jHalo = mHalo.global2halo( colIndex );
 
-        if ( nIndex != jHalo )
+        if ( invalidIndex != jHalo )
         {
             mHaloData->setColumn( column, jHalo,  op );
         }
@@ -2193,12 +2193,12 @@ ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 
     const IndexType iLocal = distributionRow.global2local( i );
 
-    if ( iLocal != nIndex )
+    if ( iLocal != invalidIndex )
     {
         SCAI_LOG_TRACE( logger, "row " << i << " is local " << iLocal )
         IndexType jLocal = distributionCol.global2local( j );
 
-        if ( nIndex != jLocal )
+        if ( invalidIndex != jLocal )
         {
             SCAI_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is local(" << iLocal << "," << jLocal << ")" )
             myValue = mLocalData->getValue( iLocal, jLocal );
@@ -2208,7 +2208,7 @@ ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
         {
             jLocal = mHalo.global2halo( j );
 
-            if ( nIndex != jLocal )
+            if ( invalidIndex != jLocal )
             {
                 SCAI_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is halo(" << iLocal << "," << jLocal << ")" )
                 myValue = mHaloData->getValue( iLocal, jLocal );
@@ -2236,7 +2236,7 @@ void SparseMatrix<ValueType>::setValue(
 
     const IndexType iLocal = distributionRow.global2local( i );
 
-    if ( iLocal == nIndex )
+    if ( iLocal == invalidIndex )
     {
         return; // this processor does not have the value
     }
@@ -2245,7 +2245,7 @@ void SparseMatrix<ValueType>::setValue(
 
     IndexType jLocal = distributionCol.global2local( j );
 
-    if ( nIndex != jLocal )
+    if ( invalidIndex != jLocal )
     {
         mLocalData->setValue( iLocal, jLocal, val, op );
     }
@@ -2253,7 +2253,7 @@ void SparseMatrix<ValueType>::setValue(
     {
         jLocal = mHalo.global2halo( j );
 
-        if ( nIndex != jLocal )
+        if ( invalidIndex != jLocal )
         {
             mHaloData->setValue( iLocal, jLocal, val, op );
         }

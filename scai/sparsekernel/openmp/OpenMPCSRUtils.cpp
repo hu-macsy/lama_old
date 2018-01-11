@@ -528,7 +528,7 @@ void OpenMPCSRUtils::scaleRows(
 
 IndexType OpenMPCSRUtils::getValuePos( const IndexType i, const IndexType j, const IndexType csrIA[], const IndexType csrJA[] )
 {
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
     {

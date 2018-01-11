@@ -238,7 +238,7 @@ void PETScIO::readArrayImpl(
 
     IndexType nEntries = n;
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         nEntries = size - first;
     }
@@ -281,7 +281,7 @@ void PETScIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
@@ -436,7 +436,7 @@ void PETScIO::readStorageImpl(
         csrValues.setSameValue( nnz, ValueType( 1 ) );
     }
 
-    if ( firstRow == 0 && nRows == nIndex )
+    if ( firstRow == 0 && nRows == invalidIndex )
     {
         storage.setCSRData( numRows, numCols, nnz, csrSizes, csrJA, csrValues );
     }

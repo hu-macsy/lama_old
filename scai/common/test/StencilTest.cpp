@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest2, ValueType, scai_array_test_types 
 
     BOOST_CHECK_EQUAL( 3, stencil.nPoints() );
 
-    IndexType width[4] = { nIndex, nIndex, nIndex, nIndex };
+    IndexType width[4] = { invalidIndex, invalidIndex, invalidIndex, invalidIndex };
 
     stencil.getWidth( width );
 

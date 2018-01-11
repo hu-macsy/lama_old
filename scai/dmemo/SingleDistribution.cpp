@@ -124,7 +124,7 @@ IndexType SingleDistribution::local2global( const IndexType localIndex ) const
 
 IndexType SingleDistribution::global2local( const IndexType globalIndex ) const
 {
-    IndexType localIndex = nIndex;
+    IndexType localIndex = invalidIndex;
 
     if ( mOwner == mCommunicator->getRank() )
     {

@@ -926,12 +926,12 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
         BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] );
     }
 
-    posArray[0] = posArray[1] = posArray[2] = nPartition;
+    posArray[0] = posArray[1] = posArray[2] = invalidPartition;
 
     comm->getGrid2Rank( posArray, procArray );
 
     BOOST_CHECK_EQUAL( comm->getRank(), posArray[1] * procArray[0] + posArray[0] );
-    BOOST_CHECK_EQUAL( nPartition, posArray[2] );
+    BOOST_CHECK_EQUAL( invalidPartition, posArray[2] );
 
     comm->factorize3( procArray, 1, 16, 1 );
 
@@ -944,7 +944,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
         BOOST_CHECK_EQUAL( comm->getSize(), procArray[1] );
     }
 
-    posArray[0] = posArray[1] = posArray[2] = nPartition;
+    posArray[0] = posArray[1] = posArray[2] = invalidPartition;
     comm->getGrid3Rank( posArray, procArray );
 
     BOOST_CHECK_EQUAL( comm->getRank(), posArray[2] * procArray[0] * procArray[1] + posArray[1] * procArray[0] + posArray[0] );

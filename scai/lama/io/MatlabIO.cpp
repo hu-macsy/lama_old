@@ -377,7 +377,7 @@ void MatlabIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
@@ -863,7 +863,7 @@ void MatlabIO::readStorageImpl(
 
     uint32_t nBytes = inFile.readDataElement( dataElement );
 
-    if ( firstRow == 0 && nRows == nIndex )
+    if ( firstRow == 0 && nRows == invalidIndex )
     {
         getStorage( storage, dataElement.get(), nBytes );
         SCAI_LOG_INFO( logger, "readStorage: " << storage )

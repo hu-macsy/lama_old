@@ -298,7 +298,7 @@ public:
      *  the distribution.
      */
 
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
+    virtual void getFirstColumnumIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
@@ -545,12 +545,12 @@ public:
      * @param[in] firstRow is the first row to read
      * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
      *
-     * Note: default argument for nRows is nIndex as the number of rows in full storage might not be known
+     * Note: default argument for nRows is invalidIndex as the number of rows in full storage might not be known
      */
     virtual void readFromFile(
         const std::string& fileName,
         const IndexType firstRow = 0,
-        const IndexType nRows = nIndex ) = 0;
+        const IndexType nRows = invalidIndex ) = 0;
 
     /**
      * @brief write the matrix storage to an output file
@@ -954,9 +954,9 @@ public:
         const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
-    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = nIndex );
+    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
 
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+    virtual void getFirstColumnumIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /******************************************************************
      *   invert                                                        *

@@ -212,13 +212,13 @@ GeneralDistribution::GeneralDistribution(
 
     const Communicator& comm = *mCommunicator;
 
-    const PartitionId nPartitions = comm.getSize();
+    const PartitionId numPartitions = comm.getSize();
 
-    if ( nPartitions == 1 )
+    if ( numPartitions == 1 )
     {
         // owners[i] == 0 for al i, mLocal2Global = { 0, 1, ..., globalSize - 1 }
 
-        SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( owners, 1 ), "illegal owners, #partitions = " << nPartitions )
+        SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( owners, 1 ), "illegal owners, #partitions = " << numPartitions )
 
         HArrayUtils::setOrder( mLocal2Global, nLocal );
 
@@ -255,7 +255,7 @@ GeneralDistribution::GeneralDistribution(
 
     {
         ReadAccess<IndexType> rSizes( sizes );
-        sendPlan.allocate( rSizes.get(), nPartitions );
+        sendPlan.allocate( rSizes.get(), numPartitions );
     }
 
     dmemo::CommunicationPlan recvPlan;
@@ -332,7 +332,7 @@ GeneralDistribution::~GeneralDistribution()
 bool GeneralDistribution::isLocal( const IndexType globalIndex ) const
 {
     IndexType pos = HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
-    return pos != nIndex;
+    return pos != invalidIndex;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -384,7 +384,7 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
 
     if ( !isBlocked )
     {
-        return nIndex;
+        return invalidIndex;
     }
 
     // Each processor has a contiguous part, but verify that it is in the same order
@@ -407,7 +407,7 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
 
     if ( !isBlocked )
     {
-        return nIndex;
+        return invalidIndex;
     }
 
     return localSize;
@@ -478,7 +478,7 @@ static void setOwners( HArray<PartitionId>& owners, const HArray<IndexType>& ind
 
     for ( IndexType i = 0; i < globalSize; ++i )
     {
-        wOwners[i] = nPartition;
+        wOwners[i] = invalidPartition;
     }
 
     for ( IndexType owner = 0; owner < nOwners; ++owner )

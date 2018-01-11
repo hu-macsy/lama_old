@@ -163,7 +163,7 @@ void MatrixMarketIO::writeMMHeader(
         outFile << "matrix ";
     }
 
-    if ( numValues == nIndex )
+    if ( numValues == invalidIndex )
     {
         outFile << "array ";
     }
@@ -201,9 +201,9 @@ void MatrixMarketIO::writeMMHeader(
 
     outFile << symmetry2str( symmetry ) << std::endl;
 
-    // array ( numValues == nIndex ) has no entry numValues, only coordinate
+    // array ( numValues == invalidIndex ) has no entry numValues, only coordinate
 
-    if ( numValues == nIndex )
+    if ( numValues == invalidIndex )
     {
         outFile << numRows << " " << numColumns << std::endl;
     }
@@ -381,7 +381,7 @@ void MatrixMarketIO::readMMHeader(
     }
     else
     {
-        numValues = nIndex;   // stands for array
+        numValues = invalidIndex;   // stands for array
     }
 
     if ( isVector && numColumns != 1 )
@@ -478,7 +478,7 @@ void MatrixMarketIO::writeArrayImpl(
     bool      isVector   = true;
     IndexType numRows    = array.size();
     IndexType numColumns = 1;
-    IndexType numValues  = nIndex;
+    IndexType numValues  = invalidIndex;
     Symmetry  symmetry   = GENERAL;
 
     writeMMHeader( outFile, isVector, numRows, numColumns, numValues, symmetry, dataType );
@@ -632,7 +632,7 @@ void MatrixMarketIO::readArrayImpl(
 
     IndexType nEntries = n;
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         nEntries = size - first;
     }
@@ -641,7 +641,7 @@ void MatrixMarketIO::readArrayImpl(
         SCAI_ASSERT_LE_ERROR( first + n, size, "array block size " << n << " invalid" )
     }
 
-    if ( numValues != nIndex )
+    if ( numValues != invalidIndex )
     {
         // so we have coordinate format
 
@@ -718,7 +718,7 @@ void MatrixMarketIO::readSparseImpl(
         SCAI_LOG_WARN( logger, "reading vector from mtx file, #columns = " << numColumns << ", ignored" )
     }
 
-    if ( numValues != nIndex )
+    if ( numValues != invalidIndex )
     {
         // so we have coordinate format
 
@@ -931,7 +931,7 @@ void MatrixMarketIO::writeDenseMatrix(
     bool      isVector   = false;
     IndexType numRows    = storage.getNumRows();
     IndexType numColumns = storage.getNumColumns();
-    IndexType numValues  = nIndex;
+    IndexType numValues  = invalidIndex;
     Symmetry  symmetry   = GENERAL;
 
     SCAI_LOG_INFO( logger, "write dense matrix " << numRows << " x " << numColumns )
@@ -1064,7 +1064,7 @@ void MatrixMarketIO::readStorageInfo(
 
     readMMHeader( inFile, numRows, numColumns, numValuesFile, mmType, isVector, symmetry );
 
-    if ( numValuesFile == nIndex )
+    if ( numValuesFile == invalidIndex )
     {
         numValues = numRows * numColumns;
     }
@@ -1194,7 +1194,7 @@ void MatrixMarketIO::readStorageImpl(
                        << ": contains complex data but read in non-complex storage " << storage )
     }
 
-    if ( numValuesFile == nIndex )
+    if ( numValuesFile == invalidIndex )
     {
         DenseStorage<ValueType> denseStorage( numRows, numColumns );
 
@@ -1202,7 +1202,7 @@ void MatrixMarketIO::readStorageImpl(
 
         readMMArray( inFile, data, numRows, numColumns, symmetry );
 
-        if ( firstRow == 0 && nRows == nIndex )
+        if ( firstRow == 0 && nRows == invalidIndex )
         {
             storage = denseStorage;
         }
@@ -1290,7 +1290,7 @@ void MatrixMarketIO::readStorageImpl(
 
     coo.swap( ia, ja, val );
 
-    if ( firstRow == 0 && nRows == nIndex )
+    if ( firstRow == 0 && nRows == invalidIndex )
     {
         storage = coo;
     }

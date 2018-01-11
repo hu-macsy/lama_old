@@ -1677,7 +1677,7 @@ ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
         const IndexType iLocal = getRowDistribution().global2local( i );
 
         PartitionId owner = 0;
-        IndexType  jLocal = nIndex;
+        IndexType  jLocal = invalidIndex;
 
         if ( colDist.getNumPartitions() == 1 )
         {
@@ -1690,7 +1690,7 @@ ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
             jLocal = colDist.getAnyLocalIndex( j, owner );
         }
 
-        SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
+        SCAI_ASSERT_ERROR( jLocal != invalidIndex, "non local column index" )
         SCAI_LOG_TRACE( logger,
                         "getting value for index(" << i << "," << j << ")" << " which is localy ( " << iLocal << "," << jLocal << " )" )
         myValue = mData[owner]->getValue( iLocal, jLocal );
@@ -1712,7 +1712,7 @@ void DenseMatrix<ValueType>::setValue(
 
     const IndexType iLocal = distributionRow.global2local( i );
 
-    if ( iLocal == nIndex )
+    if ( iLocal == invalidIndex )
     {
         return; // this processor does not have the value
     }
@@ -1721,7 +1721,7 @@ void DenseMatrix<ValueType>::setValue(
 
     PartitionId owner  = 0;
 
-    IndexType   jLocal = nIndex;
+    IndexType   jLocal = invalidIndex;
 
     if ( distributionCol.getNumPartitions() == 1 )
     {
@@ -1733,7 +1733,7 @@ void DenseMatrix<ValueType>::setValue(
         jLocal = distributionCol.getAnyLocalIndex( j, owner );
     }
 
-    SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
+    SCAI_ASSERT_ERROR( jLocal != invalidIndex, "non local column index" )
 
     mData[owner]->setValue( iLocal, jLocal, val, op );
 }

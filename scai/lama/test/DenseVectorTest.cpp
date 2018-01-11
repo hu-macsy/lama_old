@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
         catch ( common::Exception& e )
         {
             SCAI_LOG_INFO( logger, "scan unsupported for this distribution: " << *dist << ", no block distribution" )
-            BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), nIndex );
+            BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), invalidIndex );
         }
     }
 }
@@ -811,7 +811,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
             {
                 IndexType localIndex = target.getDistribution().global2local( i );
 
-                if ( localIndex != nIndex )
+                if ( localIndex != invalidIndex )
                 {
                     BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
                                          *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
@@ -887,7 +887,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
             {
                 IndexType localIndex = target.getDistribution().global2local( i );
 
-                if ( localIndex != nIndex )
+                if ( localIndex != invalidIndex )
                 {
                     BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
                                          *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]

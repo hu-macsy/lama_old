@@ -149,7 +149,7 @@ public:
 
     bool hasMaxIter() const
     {
-        return getMaxIter() != nIndex;
+        return getMaxIter() != invalidIndex;
     }
 
     /** Get the maximal number of iterations. */
@@ -328,7 +328,7 @@ LamaConfig::LamaConfig()
     getTolerance( mAbsoluteTolerance, "SCAI_ABS_TOL" );
     getTolerance( mDivergenceTolerance, "SCAI_DIV_TOL" );
 
-    mMaxIter = nIndex;
+    mMaxIter = invalidIndex;
 
     common::Settings::getEnvironment( mMaxIter, "SCAI_MAX_ITER" );
 

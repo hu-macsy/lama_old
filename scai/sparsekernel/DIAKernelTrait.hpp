@@ -54,7 +54,7 @@ struct DIAKernelTrait
          *  @param[in] j is the column of the element
          *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
          *  @param[in] numDiagonals number of stored diagonals
-         *  @returns  offset of element in values array, nIndex if not found
+         *  @returns  offset of element in values array, invalidIndex if not found
          */
 
         typedef IndexType ( *FuncType ) (

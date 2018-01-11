@@ -634,19 +634,19 @@ IndexType CUDASparseUtils::compress(
 
     // Create device ptr and help variables
 
-    thrust::transform( dense_ptr, dense_ptr + n, sequence, tmp.begin(), changeIndexWithZeroSize<ValueType>( eps, nIndex ) );
+    thrust::transform( dense_ptr, dense_ptr + n, sequence, tmp.begin(), changeIndexWithZeroSize<ValueType>( eps, invalidIndex ) );
 
     // transform array, replace in sequence all non-zero entries with -1
-    // e.g. sizes = [ 0, 2, 0, 1, 3 ], sequence = [ 0, 1, 2, 3, 4 ] -> [ nIndex, 1, nIndex, 3, 4 ]
+    // e.g. sizes = [ 0, 2, 0, 1, 3 ], sequence = [ 0, 1, 2, 3, 4 ] -> [ invalidIndex, 1, invalidIndex, 3, 4 ]
 
     thrust::device_ptr<IndexType> sparseIndexes_ptr( sparseIndexes );
 
-    // now compact all indexes with values not equal nIndex
+    // now compact all indexes with values not equal invalidIndex
 
     IndexType cnt = thrust::copy_if( tmp.begin(),
                                      tmp.end(),
                                      sparseIndexes_ptr,
-                                     notEqual( nIndex ) ) - sparseIndexes_ptr;
+                                     notEqual( invalidIndex ) ) - sparseIndexes_ptr;
 
     if ( sparseArray )
     {

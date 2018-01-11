@@ -565,7 +565,7 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
             utilskernel::LArray<IndexType> myGlobalIndexes1;
             utilskernel::LArray<IndexType> myGlobalIndexes2;
 
-            matrix.getLocalStorage().getFirstColumnIndexes( myGlobalIndexes1 );
+            matrix.getLocalStorage().getFirstColumnumIndexes( myGlobalIndexes1 );
             dist->getOwnedIndexes( myGlobalIndexes2 );
 
             BOOST_CHECK_EQUAL( myGlobalIndexes1.size(), myGlobalIndexes2.size() );

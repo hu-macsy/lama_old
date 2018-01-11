@@ -683,9 +683,9 @@ void DIAStorage<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
+void DIAStorage<ValueType>::getFirstColumnumIndexes( hmemo::HArray<IndexType>& ) const
 {
-    COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
+    COMMON_THROWEXCEPTION( "getFirstColumnumIndexes not possible for DENSE format" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -976,7 +976,7 @@ ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     ValueType val = 0;
 
-    if ( pos != nIndex )
+    if ( pos != invalidIndex )
     {
         SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumRows * mNumDiagonals, "illegal value position for ( " << i << ", " << j << " )" );
 
@@ -1009,7 +1009,7 @@ void DIAStorage<ValueType>::setValue( const IndexType i,
 
     IndexType pos = getValuePos[loc]( i, j, mNumRows, rOffset.get(), mNumDiagonals );
 
-    if ( pos == nIndex )
+    if ( pos == invalidIndex )
     {
         COMMON_THROWEXCEPTION( "DIA storage has no entry ( " << i << ", " << j << " ) " )
     }

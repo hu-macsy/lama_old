@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
 
-    IndexType nIndexes = 4;
+    IndexType numIndexes = 4;
 
     const IndexType sIndexes[] = { 2, 3, 1, 5 };
     const IndexType tIndexes[] = { 4, 2, 1, 0 };
@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     const ValueType eVals[] = { 6, 2, 4, 9, 3 };
 
-    LArray<IndexType> sourceIndexes( nIndexes, sIndexes );
-    LArray<IndexType> targetIndexes( nIndexes, tIndexes );
+    LArray<IndexType> sourceIndexes( numIndexes, sIndexes );
+    LArray<IndexType> targetIndexes( numIndexes, tIndexes );
 
     LArray<ValueType> sourceArray( nSource, sVals );
     LArray<ValueType> targetArray( nTarget, tVals );

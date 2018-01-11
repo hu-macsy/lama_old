@@ -973,7 +973,7 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     ValueType val = 0;
 
-    if ( pos != nIndex )
+    if ( pos != invalidIndex )
     {
         SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
 
@@ -1009,7 +1009,7 @@ void JDSStorage<ValueType>::setValue( const IndexType i,
 
     IndexType pos = getValuePos[loc]( i, j, mNumRows, dlg.get(), ilg.get(), perm.get(), ja.get() );
 
-    if ( pos == nIndex )
+    if ( pos == invalidIndex )
     {
         COMMON_THROWEXCEPTION( "ELL storage has no entry ( " << i << ", " << j << " ) " )
     }

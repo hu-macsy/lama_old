@@ -1716,7 +1716,7 @@ void HArrayUtils::mergeSortOptional(
         {
             // find the next minimal element
 
-            IndexType nextIndex = nIndex;
+            IndexType nextIndex = invalidIndex;
 
             for ( IndexType k = 0; k < nb; ++k )
             {
@@ -1725,7 +1725,7 @@ void HArrayUtils::mergeSortOptional(
                     continue;  // no more values in subarray k
                 }
 
-                if ( nextIndex == nIndex )
+                if ( nextIndex == invalidIndex )
                 {
                     nextIndex = k;
                 }
@@ -1739,7 +1739,7 @@ void HArrayUtils::mergeSortOptional(
                 }
             }
 
-            SCAI_ASSERT_NE_ERROR( nextIndex, nIndex, "no more elements found" )
+            SCAI_ASSERT_NE_ERROR( nextIndex, invalidIndex, "no more elements found" )
 
             IndexType& pos = wOffsets[nextIndex];
 
@@ -2056,7 +2056,7 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType>& i
         }
     }
 
-    return nIndex;
+    return invalidIndex;
 }
 
 /* --------------------------------------------------------------------------- */

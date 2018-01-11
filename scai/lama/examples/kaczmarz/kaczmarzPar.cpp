@@ -100,7 +100,7 @@ int main( int argc, const char* argv[] )
         {
             IndexType localI = rowDist.global2local( i );
 
-            if ( localI == nIndex )
+            if ( localI == invalidIndex )
             {
                 continue;
             }

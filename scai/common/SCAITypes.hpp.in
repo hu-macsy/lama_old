@@ -75,7 +75,7 @@ typedef ${SCAI_INDEX_TYPE} IndexType;
 /** Definition for a constant value that indicates a non-available index.
  */
 
-COMMON_DLL_IMPORTEXPORT extern const IndexType nIndex;
+COMMON_DLL_IMPORTEXPORT extern const IndexType invalidIndex;
 
 /** Data type that is used for numbering of partitions.
  *
@@ -86,7 +86,7 @@ typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-COMMON_DLL_IMPORTEXPORT extern const PartitionId nPartition;
+COMMON_DLL_IMPORTEXPORT extern const PartitionId invalidPartition;
 
 /** Data type long double to have it as one word. Otherwise certain macros
  *  might fail to work correctly.

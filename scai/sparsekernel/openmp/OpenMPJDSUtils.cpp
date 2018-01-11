@@ -188,7 +188,7 @@ IndexType OpenMPJDSUtils::getValuePos(
 
     IndexType k = 0;
 
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
     {
@@ -257,7 +257,7 @@ IndexType OpenMPJDSUtils::getValuePosRow(
 {
     SCAI_REGION( "OpenMP.JDSUtils.getValuePosRow" )
 
-    IndexType ii = nIndex;
+    IndexType ii = invalidIndex;
 
     // check the permutation of row i
 

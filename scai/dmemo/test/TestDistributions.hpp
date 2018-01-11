@@ -100,14 +100,14 @@ public:
 
         {
             PartitionId owner = 315;
-            PartitionId nPartitions = comm->getSize();
+            PartitionId numPartitions = comm->getSize();
 
             hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, globalSize );
 
             for ( IndexType i = 0; i < globalSize; ++i )
             {
                 owner = owner * 119 % 185;
-                wOwners[i] = owner % nPartitions;
+                wOwners[i] = owner % numPartitions;
             }
         }
 

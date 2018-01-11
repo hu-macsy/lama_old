@@ -68,7 +68,7 @@ IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j,
                                        const IndexType cooIA[], const IndexType cooJA[],
                                        const IndexType numValues )
 {
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     for ( IndexType k = 0; k < numValues; ++k )
     {

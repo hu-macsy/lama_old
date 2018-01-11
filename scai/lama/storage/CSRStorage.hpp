@@ -486,7 +486,7 @@ public:
 
     /** Own implementation to get global owners of the row */
 
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+    virtual void getFirstColumnumIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /**
      *   This routine builds compressed sparse column format data.

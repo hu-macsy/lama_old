@@ -1583,8 +1583,8 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
     //     -    -   3.0
 
     const IndexType ia[] = { 2, 2, 1 };
-    //  not this way: const IndexType ja[] = { 0, 2, 0, 1, 2, nIndex };
-    const IndexType ja[] = { 0, 0, 2, 2, 1, nIndex };
+    //  not this way: const IndexType ja[] = { 0, 2, 0, 1, 2, invalidIndex };
+    const IndexType ja[] = { 0, 0, 2, 2, 1, invalidIndex };
 
     const IndexType numRows = 3;
     const IndexType numValuesPerRow = 2;
@@ -1683,7 +1683,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types 
         const IndexType numValuesPerRow    = numValues    / numRows;
         const IndexType newNumValuesPerRow = newNumValues / numRows;
 
-        IndexType newNumValuesPerRow_calc = nIndex;
+        IndexType newNumValuesPerRow_calc = invalidIndex;
         HArray<ValueType> ellValues( numValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( numRows, valuesELLIa, testContext );
         HArray<IndexType> ellJa( numValues, valuesELLJa, testContext );

@@ -240,7 +240,7 @@ void GridDistribution::localize()
 
         for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
         {
-            mRank[ idim ] = nIndex;
+            mRank[ idim ] = invalidIndex;
             mLB[ idim ]   = 0;
             mUB[ idim ]   = 0;
 
@@ -349,7 +349,7 @@ IndexType GridDistribution::getBlockDistributionSize() const
     }
     else
     {
-        return nIndex;
+        return invalidIndex;
     }
 }
 
@@ -413,7 +413,7 @@ IndexType GridDistribution::global2local( const IndexType globalIndex ) const
     if ( !isLocal )
     {
         SCAI_LOG_DEBUG( logger, "globalIndex = " << globalIndex << " not local, dist = " << *this )
-        return nIndex;
+        return invalidIndex;
     }
 
     return mLocalGrid.linearPos( localGridPos );

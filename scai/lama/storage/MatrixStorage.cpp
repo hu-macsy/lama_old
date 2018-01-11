@@ -415,7 +415,7 @@ void MatrixStorage<ValueType>::buildCSCData(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
+void MatrixStorage<ValueType>::getFirstColumnumIndexes( hmemo::HArray<IndexType>& colIndexes ) const
 {
     utilskernel::LArray<IndexType> csrIA;
     utilskernel::LArray<IndexType> csrJA;

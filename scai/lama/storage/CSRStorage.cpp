@@ -796,7 +796,7 @@ ValueType CSRStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     ValueType val = 0;
 
-    if ( pos != nIndex )
+    if ( pos != invalidIndex )
     {
         SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
 
@@ -831,7 +831,7 @@ void CSRStorage<ValueType>::setValue( const IndexType i,
 
     IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get() );
 
-    if ( pos == nIndex )
+    if ( pos == invalidIndex )
     {
         COMMON_THROWEXCEPTION( "CSR storage has no entry ( " << i << ", " << j << " ) " )
     }
@@ -1402,7 +1402,7 @@ void CSRStorage<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
+void CSRStorage<ValueType>::getFirstColumnumIndexes( hmemo::HArray<IndexType>& colIndexes ) const
 {
     // gather: colIndexes[i] = csrJA[ csrIA[i] ]
     // Be careful: only legal if csrIA[i] < csrIA[i+1], at least one entry per row

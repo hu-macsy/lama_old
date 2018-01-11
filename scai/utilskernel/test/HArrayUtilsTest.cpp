@@ -1652,13 +1652,13 @@ BOOST_AUTO_TEST_CASE( findPosTest )
     HArray<IndexType> indexArray( n, index_values, loc );
 
     IndexType pos = HArrayUtils::findPosInSortedIndexes( indexArray, IndexType( 5 ) );
-    BOOST_CHECK_EQUAL( pos, nIndex );
+    BOOST_CHECK_EQUAL( pos, invalidIndex );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 12 );
-    BOOST_CHECK_EQUAL( pos, nIndex );
+    BOOST_CHECK_EQUAL( pos, invalidIndex );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 23 );
-    BOOST_CHECK_EQUAL( pos, nIndex );
+    BOOST_CHECK_EQUAL( pos, invalidIndex );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 0 );
     BOOST_CHECK_EQUAL( pos, IndexType( 0 ) );
@@ -1675,12 +1675,12 @@ BOOST_AUTO_TEST_CASE( findPosTest )
     BOOST_CHECK_EQUAL( pos, IndexType( 0 ) );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 19 );
-    BOOST_CHECK_EQUAL( pos, nIndex );
+    BOOST_CHECK_EQUAL( pos, invalidIndex );
 
     indexArray.clear();
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 0 );
-    BOOST_CHECK_EQUAL( pos, nIndex );
+    BOOST_CHECK_EQUAL( pos, invalidIndex );
 }
 
 /* --------------------------------------------------------------------- */

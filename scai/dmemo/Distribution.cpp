@@ -215,7 +215,7 @@ PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
 
 	IndexType localIndex = global2local( globalIndex );
 
-    if ( localIndex != nIndex )
+    if ( localIndex != invalidIndex )
     {
         SCAI_LOG_INFO( logger,
                        *this << ": owner of " << globalIndex << ", local index = " << localIndex )
@@ -606,7 +606,7 @@ void Distribution::replicateRagged(
         {
             ReadAccess<IndexType> rIndexesReceive( indexesReceive, commContext );
             ReadAccess<ValueType> rValuesReceive( valuesReceive, commContext );
-            IndexType size = nIndex;
+            IndexType size = invalidIndex;
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );
             SCAI_LOG_DEBUG( logger,
                             comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" )

@@ -76,7 +76,7 @@ IndexType OpenMPDIAUtils::getValuePos( const IndexType i,
                                        const IndexType diaOffsets[],
                                        const IndexType numDiagonals )
 {
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     for ( IndexType d = 0; d < numDiagonals; ++d )
     {

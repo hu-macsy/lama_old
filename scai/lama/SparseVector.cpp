@@ -532,7 +532,7 @@ static void getSplitValues(
     const IndexType n,
     const bool ascending )
 {
-    const PartitionId nPartitions = comm.getSize();
+    const PartitionId numPartitions = comm.getSize();
 
     if ( ascending )
     {
@@ -540,7 +540,7 @@ static void getSplitValues(
         ValueType maxV = n > 0 ? sortedValues[n - 1] : TypeTraits<ValueType>::getMin();
 
         splitValues[0]           = comm.min( minV );
-        splitValues[nPartitions] = comm.max( maxV );
+        splitValues[numPartitions] = comm.max( maxV );
     }
     else
     {
@@ -548,14 +548,14 @@ static void getSplitValues(
         ValueType minV = n > 0 ? sortedValues[n - 1] : TypeTraits<ValueType>::getMax();
 
         splitValues[0]           = comm.max( maxV );
-        splitValues[nPartitions] = comm.min( minV );
+        splitValues[numPartitions] = comm.min( minV );
     }
 
-    // fill intermediate values by uniform distribution of range splitValues[0] .. splitValues[nPartitions]
+    // fill intermediate values by uniform distribution of range splitValues[0] .. splitValues[numPartitions]
 
-    for ( PartitionId p = 1; p < nPartitions; ++p )
+    for ( PartitionId p = 1; p < numPartitions; ++p )
     {
-        splitValues[p] = splitValues[0] + ( splitValues[nPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( nPartitions );
+        splitValues[p] = splitValues[0] + ( splitValues[numPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( numPartitions );
     }
 }
 
@@ -734,7 +734,7 @@ IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileNam
     // ToDo: read block from sparse array
 
     SCAI_ASSERT_EQ_ERROR( 0, first, "block read not supported for sparse data" )
-    SCAI_ASSERT_EQ_ERROR( nIndex, n, "block read not supported for sparse data" )
+    SCAI_ASSERT_EQ_ERROR( invalidIndex, n, "block read not supported for sparse data" )
 
     return localN;
 }
@@ -779,13 +779,13 @@ ValueType SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " ) -> local : " << localIndex )
 
-    if ( localIndex != nIndex )
+    if ( localIndex != invalidIndex )
     {
         // we have here sparse data, so look for local index among the sparse indexes of non-zero values
 
         IndexType pos = HArrayUtils::findPosInSortedIndexes( mNonZeroIndexes, localIndex );
 
-        if ( pos != nIndex )
+        if ( pos != invalidIndex )
         {
             myValue = mNonZeroValues[pos];
         }
@@ -817,13 +817,13 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Value
 
     SCAI_LOG_TRACE( logger, *this << ": set @g " << globalIndex << " is @l " << localIndex << " : " << value )
 
-    if ( localIndex != nIndex )
+    if ( localIndex != invalidIndex )
     {
         // This partition is the owner, add it locally
 
         IndexType pos = HArrayUtils::findPosInSortedIndexes( mNonZeroIndexes, localIndex );
 
-        if ( pos != nIndex )
+        if ( pos != invalidIndex )
         {
             mNonZeroValues[pos] = value;
         }

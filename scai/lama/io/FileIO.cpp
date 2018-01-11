@@ -397,7 +397,7 @@ IndexType FileIO::getArraySize( const std::string& inFileName )
 
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
-    IndexType size = nIndex;
+    IndexType size = invalidIndex;
 
     fileIO->readArrayInfo( size, inFileName );
 
@@ -417,7 +417,7 @@ IndexType FileIO::getStorageSize( const std::string& fileName )
 
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
-    IndexType size = nIndex;
+    IndexType size = invalidIndex;
 
     IndexType numColumns = 0;   // dummy
     IndexType numValues = 0;    // dummy

@@ -279,7 +279,7 @@ int main( int argc, const char* argv[] )
 
             IndexType nb = m.getRowDistribution().getBlockDistributionSize();
 
-            if ( nb == nIndex )
+            if ( nb == invalidIndex )
             {
                 HOST_PRINT( myRank, "WARNING: matrix has no block distribution" )
             }

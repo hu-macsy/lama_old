@@ -145,7 +145,7 @@ public:
 
     bool hasMaxIter() const
     {
-        return getMaxIter() != scai::nIndex;
+        return getMaxIter() != scai::invalidIndex;
     }
 
     /** Get the maximal number of iterations. */
@@ -325,7 +325,7 @@ LamaConfig::LamaConfig()
     getTolerance( mAbsoluteTolerance, "SCAI_ABS_TOL" );
     getTolerance( mDivergenceTolerance, "SCAI_DIV_TOL" );
 
-    mMaxIter = scai::nIndex;
+    mMaxIter = scai::invalidIndex;
 
     scai::common::Settings::getEnvironment( mMaxIter, "SCAI_MAX_ITER" );
 

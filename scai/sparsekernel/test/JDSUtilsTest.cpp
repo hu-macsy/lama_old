@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
             SCAI_CONTEXT_ACCESS( loc );
             IndexType pos = getValuePos[loc]( i, j, numRows, rDlg.get(), rIlg.get(), rPerm.get(), rJa.get() );
 
-            if ( pos == nIndex )
+            if ( pos == invalidIndex )
             {
                 BOOST_CHECK_EQUAL( expectedValues[i][j], 0 );
             }

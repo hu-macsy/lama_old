@@ -340,7 +340,7 @@ void Matrix<ValueType>::setRow(
 
     IndexType localRowIndex = this->getRowDistribution().global2local( globalRowIndex );
 
-    if ( localRowIndex != nIndex )
+    if ( localRowIndex != invalidIndex )
     {
         this->setLocalRow( denseRow.getLocalValues(), localRowIndex, op );
     }

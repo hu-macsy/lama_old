@@ -632,13 +632,13 @@ private:
      *
      *  @param[in] fileName is the name of the input file containing the local vector data
      *  @param[in] first is index of first element to read
-     *  @param[in] size number of elements to read, if nIndex read up to maximal size
+     *  @param[in] size number of elements to read, if invalidIndex read up to maximal size
      *  @return    the size of the local vector read in
      *
      *  This routine is private as it allows a temporary inconsistency between the size of 
      *  the local vector data and the distribution.
      */
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex ) = 0;
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex ) = 0;
 
     /** In this version each processor reads from input file its local part. */
 

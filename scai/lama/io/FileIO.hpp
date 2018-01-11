@@ -189,7 +189,7 @@ public:
         _MatrixStorage& storage,
         const std::string& fileName,
         const IndexType offsetRow = 0,
-        const IndexType nRows = nIndex ) = 0;
+        const IndexType nRows = invalidIndex ) = 0;
 
     /** Read in the size of an array saved in a file
      *
@@ -217,7 +217,7 @@ public:
      *  @param[out] array    will contain the corresponding array values
      *  @param[in]  fileName name of the input file with array data
      *  @param[in]  offset   first entry to read
-     *  @param[in]  n        number of entries to read, nIndex stands for all remaining entries
+     *  @param[in]  n        number of entries to read, invalidIndex stands for all remaining entries
      *
      *  This method has exactly the same behavior as readArray but with the difference that only
      *  a part of the array is read.
@@ -226,7 +226,7 @@ public:
         hmemo::_HArray& array,
         const std::string& fileName,
         const IndexType offset = 0,
-        const IndexType n = nIndex ) = 0;
+        const IndexType n = invalidIndex ) = 0;
 
     virtual void readGridArray(
         hmemo::_HArray& array,
@@ -332,7 +332,7 @@ public:
      *  @param[in]  fileName is the name of the input file where the array is saved
      *  @param[in]  dataType specifies the type that has been used for the values in the input file
      *  @param[in]  first index of the first element to read, defaults to 0
-     *  @param[in]  n     number of elements, default is nIndex that stands for up to the end
+     *  @param[in]  n     number of elements, default is invalidIndex that stands for up to the end
      *
      *  \code
      *      LArray<double> data;
@@ -346,7 +346,7 @@ public:
         const std::string& fileName,
         const common::ScalarType dataType = common::ScalarType::INTERNAL,
         const IndexType first = 0,
-        const IndexType n = nIndex );
+        const IndexType n = invalidIndex );
 
     static void read(
         IndexType& size,

@@ -1282,7 +1282,7 @@ static IndexType _binarySearch( const IndexType indexes[], const IndexType n, co
         }
     }
 
-    return nIndex;
+    return invalidIndex;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1330,7 +1330,7 @@ void OpenMPUtils::setGatherSparse(
 
         // default value if value not availabe in sparse input array
 
-        ValueType2 sourceVal = k == nIndex ? sourceZeroValue : sourceNonZeroValues[k];
+        ValueType2 sourceVal = k == invalidIndex ? sourceZeroValue : sourceNonZeroValues[k];
 
         target[i] = applyBinary( target[i], op, static_cast<ValueType1>( sourceVal ) );
     }

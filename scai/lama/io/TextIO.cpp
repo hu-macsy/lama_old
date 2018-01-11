@@ -231,7 +231,7 @@ void TextIO::readArrayImpl(
 
     IndexType nEntries = n;
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         nEntries = size - first;
     }
@@ -294,7 +294,7 @@ void TextIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
@@ -457,7 +457,7 @@ void TextIO::readStorageImpl(
 
     COOStorage<ValueType> coo( nrows, ncols, ia, ja, val );
 
-    if ( firstRow == 0 && nRows == nIndex )
+    if ( firstRow == 0 && nRows == invalidIndex )
     {
         storage = coo;
     }

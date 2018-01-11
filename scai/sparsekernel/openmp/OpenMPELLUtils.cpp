@@ -266,7 +266,7 @@ IndexType OpenMPELLUtils::getValuePos(
     const IndexType ellSizes[],
     const IndexType ellJA[] )
 {
-    IndexType vPos = nIndex;
+    IndexType vPos = invalidIndex;
 
     for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {

@@ -136,7 +136,7 @@ public:
     /** Implementation of pure function Distribution::getBlockDistributionSize.
      *
      *  A cyclic distribution Cyclic( globalSize, chunkSize ) is a block distribution
-     *  iff chunkSize * nPartitions <= globalSize, i.e. each processor has maximal one chunk
+     *  iff chunkSize * numPartitions <= globalSize, i.e. each processor has maximal one chunk
      */
     virtual IndexType getBlockDistributionSize() const;
 

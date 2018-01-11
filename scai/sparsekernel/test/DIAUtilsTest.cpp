@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
                 ValueType x   = 0;
 
-                if ( pos != nIndex )
+                if ( pos != invalidIndex )
                 {
                     x = diaValues[ pos ];
                 }
