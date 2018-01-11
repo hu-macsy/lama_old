@@ -225,7 +225,7 @@ public:
         const ValueType alpha,
         const Vector<ValueType>& x,
         const ValueType beta,
-        const Vector<ValueType>& y,
+        const Vector<ValueType>* y,
         bool transposeFlag ) const;
 
     /**
@@ -523,14 +523,14 @@ protected:
         const ValueType alphaValue,
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
-        const DenseVector<ValueType>& denseY ) const = 0;
+        const DenseVector<ValueType>* denseY ) const = 0;
 
     virtual void vectorTimesMatrixImpl(
         DenseVector<ValueType>& denseResult,
         const ValueType alphaValue,
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
-        const DenseVector<ValueType>& denseY ) const = 0;
+        const DenseVector<ValueType>* denseY ) const = 0;
 
     virtual void setLocalRow( const hmemo::HArray<ValueType>& row,
                               const IndexType localRowIndex,
@@ -547,7 +547,7 @@ protected:
         const ValueType alphaValue,
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
-        const DenseVector<ValueType>& denseY ) const;
+        const DenseVector<ValueType>* denseY ) const;
 };
 
 /** 

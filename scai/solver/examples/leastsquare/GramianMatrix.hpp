@@ -77,14 +77,18 @@ public:
         const ValueType alpha,
         const DenseVector<ValueType>& x,
         const ValueType beta,
-        const DenseVector<ValueType>& y ) const
+        const DenseVector<ValueType>* y ) const
     {
         SCAI_LOG_INFO( logger, "matrixTimesVector, mA = " << mA )
 
         mAx    = mA * x;
         result = mAx * mA;  // same as mA' * mAx
         result *= alpha;
-        result += beta * y;
+
+        if ( y != nullptr )
+        {
+            result += beta * *y;
+        }
     }
 
     /** Provide the context where linear operator is executed */

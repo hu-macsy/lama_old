@@ -160,7 +160,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV<ValueType>
 
     SCAI_LOG_INFO( logger, "this = " << alpha << " * matrix * vector" )
 
-    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this, false );
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), nullptr, false );
 
     return *this;
 }
@@ -183,7 +183,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM<ValueType>
 
     SCAI_LOG_INFO( logger, "this = " << alpha << " * vector * matrix" )
 
-    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this, true );
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), nullptr, true );
 
     return *this;
 }
@@ -210,7 +210,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueTy
     const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1();
     const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
 
-    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY, false );
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, &vectorY, false );
 
     return *this;
 }
@@ -241,7 +241,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM_SV<ValueTy
     const Vector<ValueType>& vectorX = vectorTimesMatrixExp.getArg1();
     const Matrix<ValueType>& matrix = vectorTimesMatrixExp.getArg2();
     
-    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY, true );
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, &vectorY, true );
     
     return *this;
 }
