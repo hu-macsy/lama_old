@@ -338,22 +338,32 @@ MPICommunicator::~MPICommunicator()
 {
     SCAI_LOG_INFO( logger, *this << ": ~MPICommunicator" )
     int finalized = 0;
-    SCAI_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" )
+
+    MPI_Finalized( &finalized );
 
     if ( !finalized )
     {
         if ( !mExternInitialization )
         {
 #ifdef SCAI_COMPLEX_SUPPORTED
-            SCAI_MPICALL( logger, MPI_Type_free( &mComplexLongDoubleType ), "free MPI_Datatype for ComplexLongDouble" )
+            MPI_Type_free( &mComplexLongDoubleType );
             mComplexLongDoubleType = 0;
 #endif
 
             SCAI_LOG_INFO( logger, "call MPI_Finalize" )
-            SCAI_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )
+           
+            int status = MPI_Finalize();
+
+            if ( status != MPI_SUCCESS )
+            { 
+                char mpiErrorString[MPI_MAX_ERROR_STRING];
+                int resultlen = MPI_MAX_ERROR_STRING;
+                MPI_Error_string( status, mpiErrorString, &resultlen );
+                SCAI_LOG_ERROR( logger, "MPI_Finalize: error, status = " << status << ", " << mpiErrorString )
+            }
         }
         else
-        {
+        { 
             SCAI_LOG_INFO( logger, "ATTENTION: no call MPI_Finalize, was externally initialized" )
         }
     }

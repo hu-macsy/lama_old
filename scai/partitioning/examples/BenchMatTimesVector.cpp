@@ -115,14 +115,24 @@ int main( int argc, const char* argv[] )
 
     if ( argc < 3 )
     {
-        std::cout << "Please call: " << argv[0] << " matrixFileName [ BLOCK | METIS | .... ] " << std::endl;
+        std::cout << "Please call: " << argv[0] << " matrixFileName [ FILE <rowdist> <coldist> | BLOCK | CYCLIC | METIS | .... ] " << std::endl;
         return -1;
     }
 
     CSRSparseMatrix<ValueType> m;
+
     m.readFromFile( argv[1] );
 
-    if ( !Partitioning::canCreate( argv[2] ) )
+    if ( strcmp( argv[2], "FILE" ) == 0 )
+    {
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+        DistributionPtr rowDist = PartitionIO::readDistribution( argv[3], comm );
+        DistributionPtr colDist = PartitionIO::readDistribution( argv[4], comm );
+
+        m.redistribute( rowDist, colDist );
+    }
+    else if ( !Partitioning::canCreate( argv[2] ) )
     {
         std::cout << "ERROR: Partitioning kind = " << argv[2] << " not supported" << std::endl;
 
@@ -141,10 +151,12 @@ int main( int argc, const char* argv[] )
 
         return -1;
     }
+    else
+    {
+        PartitioningPtr thePartitioning( Partitioning::create( argv[2] ) );
 
-    PartitioningPtr thePartitioning( Partitioning::create( argv[2] ) );
-
-    thePartitioning->rectangularRedistribute( m, 1.0 );
+        thePartitioning->rectangularRedistribute( m, 1.0 );
+    }
 
     CommunicatorPtr comm = m.getRowDistribution().getCommunicatorPtr();
 

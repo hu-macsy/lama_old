@@ -65,6 +65,7 @@ scai_project (
 
         Partitioning
         BlockPartitioning
+        CyclicPartitioning
 
         ${METISPARTITIONING}
     )

@@ -79,11 +79,17 @@ int main( int narg, const char* argv[] )
     SCAI_ASSERT_GT_ERROR( np , 0, "Partitioning requires at least one processor" )
 
     std::string kind = "METIS";
-
-    PartitioningPtr partitioning( Partitioning::create( "METIS" ) );
+  
+    if ( narg > 3 )
+    {
+        kind = argv[3];
+    }
+ 
+    PartitioningPtr partitioning;
 
     if ( Partitioning::canCreate( kind ) )
     {
+        partitioning = Partitioning::create( kind );
     }
     else
     {
@@ -97,8 +103,8 @@ int main( int narg, const char* argv[] )
 
     partitioning->rectangularPartitioning( rowDist, colDist, csrMatrix, pWeights );
 
-    std::string rowDistFileName = "distRow.mtx";
-    std::string colDistFileName = "distCol.mtx";
+    std::string rowDistFileName = "row_" + kind + "_" + std::to_string( np ) + ".txt";
+    std::string colDistFileName = "col_" + kind + "_" + std::to_string( np ) + ".txt";
 
     FileIO::write( rowDist, rowDistFileName.c_str() );
     FileIO::write( colDist, colDistFileName.c_str() );
