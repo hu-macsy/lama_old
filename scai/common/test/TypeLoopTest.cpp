@@ -42,7 +42,7 @@
 #include <scai/common/Complex.hpp>
 
 #define TEST_TYPELOOP_LIST float, double, scai::ComplexFloat
-#define TEST_STRING "floatdoubleComplexFloat"
+#define TEST_STRING "floatdoublescai::ComplexFloat"
 #define TEST_N_TYPES 3
 #else
 #define TEST_TYPELOOP_LIST float, double
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( outputTest )
     std::stringstream s;
 #define TEST_TYPELOOP_OUTPUT( type ) s << #type;
     SCAI_COMMON_LOOP( TEST_TYPELOOP_OUTPUT, TEST_TYPELOOP_LIST )
-    BOOST_CHECK( TEST_STRING == s.str() );
+    BOOST_CHECK_EQUAL( TEST_STRING, s.str() );
 #undef TEST_TYPELOOP_OUTPUT
 }
 
