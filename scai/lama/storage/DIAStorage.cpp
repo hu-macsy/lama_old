@@ -683,9 +683,9 @@ void DIAStorage<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::getFirstColumnumIndexes( hmemo::HArray<IndexType>& ) const
+void DIAStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
 {
-    COMMON_THROWEXCEPTION( "getFirstColumnumIndexes not possible for DENSE format" )
+    COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
 }
 
 /* --------------------------------------------------------------------------- */

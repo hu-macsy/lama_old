@@ -40,9 +40,6 @@
 #include <scai/hmemo/Context.hpp>
 #include <scai/common/cuda/CUDACtx.hpp>
 
-// local library
-#include <scai/common/Thread.hpp>
-
 // CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>

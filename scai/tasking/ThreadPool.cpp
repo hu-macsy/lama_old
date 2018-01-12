@@ -47,7 +47,6 @@
 namespace scai
 {
 
-using common::Thread;
 using std::shared_ptr;
 using std::function;
 

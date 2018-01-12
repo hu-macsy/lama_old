@@ -48,7 +48,6 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Thread.hpp>
 #include <scai/common/macros/unused.hpp>
 
 // std

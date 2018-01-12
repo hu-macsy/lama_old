@@ -34,7 +34,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/common/Thread.hpp>
+#include <scai/common/thread.hpp>
 #include <scai/common/Walltime.hpp>
 
 #include <iostream>

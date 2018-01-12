@@ -38,7 +38,6 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/Thread.hpp>
 #include <scai/common/NonCopyable.hpp>
 
 // std

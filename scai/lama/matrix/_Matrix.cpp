@@ -659,7 +659,7 @@ void _Matrix::resetRowDistributionByFirstColumn()
 
         hmemo::HArray<IndexType> myGlobalIndexes;
 
-        localMatrix.getFirstColumnumIndexes( myGlobalIndexes );
+        localMatrix.getFirstColumnIndexes( myGlobalIndexes );
 
         SCAI_LOG_DEBUG( logger, "first col indexes = " << myGlobalIndexes )
 

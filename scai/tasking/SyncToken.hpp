@@ -41,9 +41,6 @@
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/Printable.hpp>
 
-// internal scai library
-#include <scai/common/Thread.hpp>
-
 #include <scai/logging.hpp>
 
 // std

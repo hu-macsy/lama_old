@@ -505,9 +505,9 @@ void DenseStorage<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorage<ValueType>::getFirstColumnumIndexes( hmemo::HArray<IndexType>& ) const
+void DenseStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
 {
-    COMMON_THROWEXCEPTION( "getFirstColumnumIndexes not possible for DENSE format" )
+    COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
 }
 
 /* --------------------------------------------------------------------------- */

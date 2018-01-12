@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         setNonSquareData( csrStorage );
 
         LArray<IndexType> firstColIndexes1;
-        csrStorage.getFirstColumnumIndexes( firstColIndexes1 );
+        csrStorage.getFirstColumnIndexes( firstColIndexes1 );
 
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageNonSquare_" + typeName) + fileSuffix;
@@ -476,7 +476,7 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         // We verify that the order of the column indexes has not changed
 
         LArray<IndexType> firstColIndexes2;
-        readStorage.getFirstColumnumIndexes( firstColIndexes2 );
+        readStorage.getFirstColumnIndexes( firstColIndexes2 );
 
         for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
         {
@@ -531,7 +531,7 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
         BOOST_CHECK( csrStorage.checkSymmetry() );
 
         LArray<IndexType> firstColIndexes1;
-        csrStorage.getFirstColumnumIndexes( firstColIndexes1 );
+        csrStorage.getFirstColumnIndexes( firstColIndexes1 );
 
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageSymmetric_" + typeName) + fileSuffix;

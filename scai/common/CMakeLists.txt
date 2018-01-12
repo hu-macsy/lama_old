@@ -185,7 +185,7 @@ set ( COMMON_CLASSES
         Settings
         Walltime
         LibModule
-        Thread
+        thread
         TypeTraits
 )
 

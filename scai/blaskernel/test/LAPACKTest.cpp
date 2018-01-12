@@ -87,9 +87,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
 
         for ( IndexType i = 0; i < n * n; ++i )
         {
-            typedef typename TypeTraits<ValueType>::RealType CompareType;
-            CompareType x1 = common::Math::abs( rA[i] );
-            CompareType x2 = common::Math::abs( bvalues[i] );
+            const auto x1 = common::Math::abs( rA[i] );
+            const auto x2 = common::Math::abs( bvalues[i] );
             BOOST_CHECK_CLOSE( x1, x2, 1 );
         }
     }

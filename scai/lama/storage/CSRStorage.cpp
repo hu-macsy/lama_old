@@ -1402,7 +1402,7 @@ void CSRStorage<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::getFirstColumnumIndexes( hmemo::HArray<IndexType>& colIndexes ) const
+void CSRStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
 {
     // gather: colIndexes[i] = csrJA[ csrIA[i] ]
     // Be careful: only legal if csrIA[i] < csrIA[i+1], at least one entry per row

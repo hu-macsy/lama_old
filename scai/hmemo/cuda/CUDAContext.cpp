@@ -55,7 +55,6 @@
 namespace scai
 {
 
-using common::Thread;
 using tasking::SyncToken;
 using tasking::StreamType;
 using tasking::CUDAStreamSyncToken;

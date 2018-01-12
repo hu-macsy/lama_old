@@ -592,7 +592,7 @@ bool OpenMPUtils::allCompare(
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            bool elem = applyBinary( array1[i], op, array2[i] );
+            bool elem = compare( array1[i], op, array2[i] );
             threadVal = threadVal && elem;
         }
 
@@ -624,7 +624,7 @@ bool OpenMPUtils::allCompareScalar(
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            bool elem = applyBinary( array[i], op, scalar );
+            bool elem = compare( array[i], op, scalar );
             threadVal = threadVal && elem;
         }
 
@@ -669,7 +669,7 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, const Co
 
     for ( IndexType i = 1; i < n; i++ )
     {
-        if ( !applyBinary( array[i - 1], op, array[i] ) )
+        if ( !compare( array[i - 1], op, array[i] ) )
         {
             sorted = false;
             break;
@@ -2171,7 +2171,7 @@ IndexType OpenMPUtils::allCompareSparse(
         {
             // entry at same position
 
-            allFlag = allFlag && applyBinary( values1[i1], op, values2[i2] );
+            allFlag = allFlag && compare( values1[i1], op, values2[i2] );
             ++i1;
             ++i2;
             ++n;
@@ -2180,7 +2180,7 @@ IndexType OpenMPUtils::allCompareSparse(
         {
             // entry only in array1
 
-            allFlag = allFlag && applyBinary( values1[i1], op, zero2 );
+            allFlag = allFlag && compare( values1[i1], op, zero2 );
             ++i1;
             ++n;
         }
@@ -2188,7 +2188,7 @@ IndexType OpenMPUtils::allCompareSparse(
         {
             // entry only in array2
 
-            allFlag = allFlag && applyBinary( zero1, op, values2[i2] );
+            allFlag = allFlag && compare( zero1, op, values2[i2] );
             ++i2;
             ++n;
         }
@@ -2196,14 +2196,14 @@ IndexType OpenMPUtils::allCompareSparse(
 
     while ( i1 < n1 )
     {
-        allFlag = allFlag && applyBinary( values1[i1], op, zero2 );
+        allFlag = allFlag && compare( values1[i1], op, zero2 );
         ++i1;
         ++n;
     }
 
     while ( i2 < n2 )
     {
-        allFlag = allFlag && applyBinary( zero1, op, values2[i2] );
+        allFlag = allFlag && compare( zero1, op, values2[i2] );
         ++i2;
         ++n;
     }

@@ -43,8 +43,6 @@
 // interal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/Thread.hpp>
-
 // std
 #include <string>
 #include <map>

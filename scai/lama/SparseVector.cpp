@@ -1088,7 +1088,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const ValueType v
     {
         // at least one entry has the ZERO value, so we compare it
 
-        localAll = localAll && common::applyBinary( mZeroValue, op, value );
+        localAll = localAll && common::compare( mZeroValue, op, value );
     }
 
     bool globalAll = getDistribution().getCommunicator().all( localAll );
@@ -1135,7 +1135,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const Vector<Valu
     {
         // at least at one position we use the zero values
     
-        localAll = localAll && common::applyBinary( mZeroValue, op, otherZero );
+        localAll = localAll && common::compare( mZeroValue, op, otherZero );
     }
 
     bool globalAll = getDistribution().getCommunicator().all( localAll );

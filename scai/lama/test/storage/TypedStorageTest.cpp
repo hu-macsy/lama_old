@@ -343,13 +343,13 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
                  ||  storage.getFormat() == Format::DIA  )
         {
             BOOST_CHECK_THROW(
-            { storage.getFirstColumnumIndexes( firstColIndexes1 ); },
+            { storage.getFirstColumnIndexes( firstColIndexes1 ); },
             common::Exception );
             continue;
         }
 
-        storage.getFirstColumnumIndexes( firstColIndexes1 );
-        storage.MatrixStorage<ValueType>::getFirstColumnumIndexes( firstColIndexes2 );
+        storage.getFirstColumnIndexes( firstColIndexes1 );
+        storage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
 
         BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
         BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );

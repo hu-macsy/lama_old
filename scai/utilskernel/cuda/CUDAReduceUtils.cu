@@ -174,9 +174,9 @@ ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, c
 
     typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    RealType absResult;
-    RealType absZero = zero;
-    const RealType* absArray = reinterpret_cast<const RealType*>( array );
+    RealType redResult;
+    RealType redZero = zero;
+    const RealType* redArray = reinterpret_cast<const RealType*>( array );
 
     switch ( op )
     {
@@ -186,13 +186,13 @@ ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, c
 
         case BinaryOp::MAX :
             // SCAI_ASSERT_EQ_ERROR( common::TypeTraits<RealType>::stype, common::TypeTraits<ValueType>::stype, "MAX not supported for complex" )
-            absResult = reduceMaxVal( absArray, n, absZero );
-            result = absResult;
+            redResult = reduceMaxVal( redArray, n, redZero );
+            result = redResult;
             break;
 
         case BinaryOp::MIN :
-            absResult = reduceMinVal( absArray, n, absZero );
-            result = absResult;
+            redResult = reduceMinVal( redArray, n, redZero );
+            result = redResult;
             break;
 
         case BinaryOp::ABS_MAX :
@@ -305,7 +305,7 @@ void isSortedKernel( bool* result, const IndexType numValues, const ValueType* v
 
     if ( i < numValues )
     {
-        result[i] = applyBinary( values[i], op, values[i + 1] );
+        result[i] = compare( values[i], op, values[i + 1] );
     }
 }
 

@@ -240,8 +240,8 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
 
     LArray<IndexType> firstColIndexes1;
     LArray<IndexType> firstColIndexes2;
-    csrStorage.getFirstColumnumIndexes( firstColIndexes1 );
-    csrStorage.MatrixStorage<ValueType>::getFirstColumnumIndexes( firstColIndexes2 );
+    csrStorage.getFirstColumnIndexes( firstColIndexes1 );
+    csrStorage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
 
     BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
     BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );

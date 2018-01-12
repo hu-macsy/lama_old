@@ -471,7 +471,7 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
         }
         else if ( formatTokens[i] == "#THREAD" )
         {
-            output << common::Thread::getCurrentThreadName();
+            output << common::thread::getCurrentThreadName();
         }
         else if ( formatTokens[i] == "#FILE" )
         {

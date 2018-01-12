@@ -35,10 +35,10 @@
 #include <scai/tasking/Task.hpp>
 
 #include <scai/common/Walltime.hpp>
-#include <scai/common/Thread.hpp>
 #include <scai/common/macros/throw.hpp>
 
 #include <memory>
+#include <thread>
 #include <functional>
 
 using namespace std;

@@ -298,7 +298,7 @@ public:
      *  the distribution.
      */
 
-    virtual void getFirstColumnumIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
@@ -956,7 +956,7 @@ public:
 
     virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
 
-    virtual void getFirstColumnumIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /******************************************************************
      *   invert                                                        *

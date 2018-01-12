@@ -1,5 +1,5 @@
 /**
- * @file Thread.cpp
+ * @file thread.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,13 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of methods for threads using C++11 standard
+ * @brief Implementation of methods for naming threads
  * @author Thomas Brandes
  * @date 10.06.2015
  */
 
 // hpp
-#include <scai/common/Thread.hpp>
+#include <scai/common/thread.hpp>
 
 // local library
 #include <scai/common/macros/system_call.hpp>
@@ -56,6 +56,9 @@ namespace scai
 namespace common
 {
 
+namespace thread
+{
+
 // Map that defines mapping thread ids -> thread names (as strings)
 
 typedef map<std::thread::id, string> MapThreads;
@@ -75,7 +78,7 @@ static MapThreads& getMapThreads()
 
 std::mutex map_mutex; // Make access to map thread safe
 
-void Thread::defineCurrentThreadName( const char* name )
+void defineCurrentThreadName( const char* name )
 {
     std::unique_lock<std::mutex> lock( map_mutex );
     std::thread::id id = std::this_thread::get_id();
@@ -84,12 +87,12 @@ void Thread::defineCurrentThreadName( const char* name )
     cout << "defineCurrentThreadName, id = " << id << ", name = " << name << endl;
 #endif
     MapThreads& mapThreads = getMapThreads();
-    map<Thread::Id, string>::iterator it = mapThreads.find( id );
+    map<Id, string>::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
         // name not defined yet
-        mapThreads.insert( std::pair<Thread::Id, string>( id, name ) );
+        mapThreads.insert( std::pair<Id, string>( id, name ) );
 #ifdef LOCAL_DEBUG
         cout << "Thread " << id << " defines name " << name << endl;
 #endif
@@ -105,7 +108,7 @@ void Thread::defineCurrentThreadName( const char* name )
     }
 }
 
-const char* Thread::getThreadName( Thread::Id id )
+const char* getThreadName( Id id )
 {
     std::unique_lock<std::mutex> lock( map_mutex );
     MapThreads& mapThreads = getMapThreads();
@@ -118,7 +121,7 @@ const char* Thread::getThreadName( Thread::Id id )
         ostringstream thread_name;
         thread_name << "thread_" << mapThreads.size();
         // Attention: This would not possible if mapThreads is not statically initialized
-        mapThreads.insert( std::pair<Thread::Id, string>( id, thread_name.str() ) );
+        mapThreads.insert( std::pair<Id, string>( id, thread_name.str() ) );
         it = mapThreads.find( id );
     }
 
@@ -126,10 +129,12 @@ const char* Thread::getThreadName( Thread::Id id )
     return it->second.c_str();
 }
 
-const char* Thread::getCurrentThreadName()
+const char* getCurrentThreadName()
 {
     return getThreadName( std::this_thread::get_id() );
 }
+
+} /* end namespace thread */
 
 } /* end namespace common */
 
