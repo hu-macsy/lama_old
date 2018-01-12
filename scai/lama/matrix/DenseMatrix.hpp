@@ -473,14 +473,14 @@ public:
         const ValueType alphaValue,
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
-        const DenseVector<ValueType>& denseY ) const;
+        const DenseVector<ValueType>* denseY ) const;
 
     void vectorTimesMatrixImpl(
         DenseVector<ValueType>& denseResult,
         const ValueType alphaValue,
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
-        const DenseVector<ValueType>& denseY ) const;
+        const DenseVector<ValueType>* denseY ) const;
 
     /* Implementation of pure method of class _Matrix. */
 

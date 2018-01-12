@@ -1759,11 +1759,14 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType alphaValue,
     const DenseVector<ValueType>& denseX,
     const ValueType betaValue,
-    const DenseVector<ValueType>& denseY ) const
+    const DenseVector<ValueType>* denseY ) const
 {
+    using utilskernel::LArray;
+
     SCAI_REGION( "Mat.Dense.timesVector" )
-    const HArray<ValueType>& localY = denseY.getLocalValues();
-    HArray<ValueType>& localResult = denseResult.getLocalValues();
+
+    LArray<ValueType>& localResult = denseResult.getLocalValues();
+    const LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
     ContextPtr localContext = mData[0]->getContextPtr();
     const Distribution& colDist = getColDistribution();
     const Communicator& comm = colDist.getCommunicator();
@@ -1774,17 +1777,17 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     // It makes no sense to prefetch denseX because, if a transfer is started
     // the halo update needs to wait for this transfer to finish
 
-    if ( betaValue != common::Constants::ZERO )
+    if ( denseY != nullptr )
     {
-        denseY.prefetch( localContext );
+        denseY->prefetch( localContext );
     }
 
-    const HArray<ValueType>& localX = denseX.getLocalValues();
+    const LArray<ValueType>& localX = denseX.getLocalValues();
 
     SCAI_LOG_INFO( logger,
                    comm << ": matrixTimesVector" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )
     SCAI_LOG_INFO( logger,
-                   "Aliasing: result = y : " << ( &denseResult == &denseY ) << ", local = " << ( &localResult == &localY ) )
+                   "Aliasing: result = y : " << ( &denseResult == denseY ) << ", local = " << ( &localResult == &localY ) )
 
     if ( n == 1 )
     {
@@ -1907,20 +1910,22 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
     const ValueType alphaValue,
     const DenseVector<ValueType>& denseX,
     const ValueType betaValue,
-    const DenseVector<ValueType>& denseY ) const
+    const DenseVector<ValueType>* denseY ) const
 {
+    using utilskernel::LArray;
+
     SCAI_REGION( "Mat.Dense.vectorTimesMatrix" )
 
-    const HArray<ValueType>& localY = denseY.getLocalValues();
+    LArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    HArray<ValueType>& localResult = denseResult.getLocalValues();
+    const LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
 
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getRowDistribution();
 
     const Communicator& comm = colDist.getCommunicator();
 
-    const HArray<ValueType>& localX = denseX.getLocalValues();
+    const LArray<ValueType>& localX = denseX.getLocalValues();
 
     PartitionId nParts = colDist.getNumPartitions();
 

@@ -359,7 +359,7 @@ public:
         const ValueType alpha,
         const DenseVector<ValueType>& x,
         const ValueType beta,
-        const DenseVector<ValueType>& y ) const;
+        const DenseVector<ValueType>* y ) const;
 
     /**
      * @brief Same as matrixTimesVector but with vectors result, x, and y of same value type.
@@ -369,7 +369,7 @@ public:
         const ValueType alpha,
         const DenseVector<ValueType>& x,
         const ValueType beta,
-        const DenseVector<ValueType>& y ) const;
+        const DenseVector<ValueType>* y ) const;
 
     /**
      * @brief Operation on distributed matrix with halo exchange, sync version

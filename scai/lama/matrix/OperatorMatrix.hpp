@@ -82,7 +82,7 @@ public:
         const ValueType alpha,
         const DenseVector<ValueType>& x,
         const ValueType beta,
-        const DenseVector<ValueType>& y ) const = 0;
+        const DenseVector<ValueType>* y ) const = 0;
 
     using Matrix<ValueType>::logger;
 
@@ -239,7 +239,7 @@ public:
     }
 
     virtual void vectorTimesMatrixImpl( DenseVector<ValueType>&, const ValueType, 
-                                        const DenseVector<ValueType>&, const ValueType, const DenseVector<ValueType>& ) const
+                                        const DenseVector<ValueType>&, const ValueType, const DenseVector<ValueType>* ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

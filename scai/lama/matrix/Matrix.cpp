@@ -179,7 +179,7 @@ void Matrix<ValueType>::matrixTimesVector(
     const ValueType alpha,
     const Vector<ValueType>& x,
     const ValueType beta,
-    const Vector<ValueType>& y,
+    const Vector<ValueType>* y,
     bool transposeFlag ) const
 {
     SCAI_REGION( "Mat.timesVector" )
@@ -188,7 +188,21 @@ void Matrix<ValueType>::matrixTimesVector(
                    "result = " << alpha << " * M<" << this->getValueType() << ","
                    << ( transposeFlag ? "transpose" : "normal" )
                    << ">[" << this->getNumRows() << " x " << this->getNumColumns() << "]"
-                   << " * x[" << x.size() << "] + " << beta << " * y[" << y.size() << "]" )
+                   << " * x[" << x.size() << "] + " << beta << " * y[]" )
+
+    if ( beta == common::Constants::ZERO )
+    {
+        if ( y != nullptr )
+        {
+            SCAI_LOG_INFO( logger, "this vector is ignored (beta == 0) : " << y )
+            matrixTimesVector( result, alpha, x, beta, nullptr, transposeFlag );
+            return;
+        }
+    }
+    else
+    {
+        SCAI_ASSERT_ERROR( y != nullptr, "vector y is null pointer, but beta != 0" )
+    }
 
     DistributionPtr sourceDist = transposeFlag ? getRowDistributionPtr() : getColDistributionPtr();
     DistributionPtr targetDist = transposeFlag ? getColDistributionPtr() : getRowDistributionPtr();
@@ -203,7 +217,7 @@ void Matrix<ValueType>::matrixTimesVector(
         needsTemporaryX = true;
     }
 
-    if ( beta != common::Constants::ZERO && &x == &y )
+    if ( &x == y ) 
     {
         SCAI_UNSUPPORTED( "z = alpha * A * x + beta * y: temporary needed for x due to alias with y" );
         needsTemporaryX = true;
@@ -231,15 +245,15 @@ void Matrix<ValueType>::matrixTimesVector(
 
     bool needsTemporaryY = false;
 
-    if ( beta != common::Constants::ZERO )
+    if ( y != nullptr )
     {
-        if ( y.getVectorKind() != VectorKind::DENSE )
+        if ( y->getVectorKind() != VectorKind::DENSE )
         {
             SCAI_UNSUPPORTED( "matrixTimesVector: temporary needed for y as it is sparse vector" );
             needsTemporaryY = true;
         }
     
-        if ( y.getDistribution() != *targetDist )
+        if ( y->getDistribution() != *targetDist )
         {
             SCAI_UNSUPPORTED( "matrixTimesVector: temporary needed for y as distribution does not match" );
             needsTemporaryY = true;
@@ -248,8 +262,8 @@ void Matrix<ValueType>::matrixTimesVector(
 
     if ( needsTemporaryY )
     {
-        DenseVector<ValueType> tmpY( y, targetDist );
-        matrixTimesVector( result, alpha, x, beta, tmpY, transposeFlag );
+        DenseVector<ValueType> tmpY( *y, targetDist );
+        matrixTimesVector( result, alpha, x, beta, &tmpY, transposeFlag );
         return;
     }
 
@@ -262,7 +276,7 @@ void Matrix<ValueType>::matrixTimesVector(
         return;
     }
 
-    if ( &result == &y && beta != common::Constants::ZERO )
+    if ( &result == y  )
     {
         SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
     }
@@ -274,7 +288,12 @@ void Matrix<ValueType>::matrixTimesVector(
     }
 
     const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
-    const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
+    const DenseVector<ValueType>* denseY = nullptr;   // optional
+
+    if ( y != nullptr )
+    {
+        denseY = static_cast<const DenseVector<ValueType>*>( y );
+    }
 
     DenseVector<ValueType>& denseResult = static_cast<DenseVector<ValueType>&>( result );
 
@@ -391,17 +410,19 @@ void Matrix<ValueType>::setColumn(
 template<typename ValueType>
 void Matrix<ValueType>::vectorTimesMatrixRepCols(
     DenseVector<ValueType>& denseResult,
-    const ValueType alphaValue,
+    const ValueType alpha,
     const DenseVector<ValueType>& denseX,
-    const ValueType betaValue,
-    const DenseVector<ValueType>& denseY ) const
+    const ValueType beta,
+    const DenseVector<ValueType>* denseY ) const
 {
     SCAI_REGION( "Mat.vectorTimesMatrixRepCols" )
 
-    const hmemo::HArray<ValueType>& localY = denseY.getLocalValues();
-    const hmemo::HArray<ValueType>& localX = denseX.getLocalValues();
+    utilskernel::LArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    hmemo::HArray<ValueType>& localResult = denseResult.getLocalValues();
+    // be careful: denseY is undefined if beta == 0
+
+    const utilskernel::LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
+    const utilskernel::LArray<ValueType>& localX = denseX.getLocalValues();
 
     const Distribution& colDist = this->getColDistribution();
 
@@ -417,11 +438,11 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
     if ( comm.getRank() == 0 )
     {
         // only one single processor adds beta * y
-        localData.vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
+        localData.vectorTimesMatrix( localResult, alpha, localX, beta, localY );
     }
     else
     {
-        localData.vectorTimesMatrix( localResult, alphaValue, localX, ValueType( 0 ), localY );
+        localData.vectorTimesMatrix( localResult, alpha, localX, ValueType( 0 ), localY );
     }
 
     if ( comm.getSize() >  1 )

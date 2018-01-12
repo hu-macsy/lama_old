@@ -1847,18 +1847,21 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType alpha,
     const DenseVector<ValueType>& denseX,
     const ValueType beta,
-    const DenseVector<ValueType>& denseY ) const
+    const DenseVector<ValueType>* denseY ) const
 {
-    using namespace std;
     using namespace std::placeholders;
+    using utilskernel::LArray;
 
     using utilskernel::LArray;
 
     SCAI_REGION( "Mat.Sp.timesVector" )
 
     LArray<ValueType>& localResult = denseResult.getLocalValues();
+ 
+    // be careful: denseY is optional, i.e. nullptr iff beta == 0
+
+    const LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
     const LArray<ValueType>& localX = denseX.getLocalValues();
-    const LArray<ValueType>& localY = ( beta == common::Constants::ZERO ) ? localResult : denseY.getLocalValues();
 
     HArray<ValueType>& haloX = denseX.getHaloValues();
 
@@ -1923,17 +1926,18 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     const ValueType alpha,
     const DenseVector<ValueType>& denseX,
     const ValueType beta,
-    const DenseVector<ValueType>& denseY ) const
+    const DenseVector<ValueType>* denseY ) const
 {
     using namespace std::placeholders;
+    using utilskernel::LArray;
 
     SCAI_LOG_INFO( logger, "result = " << alpha << " * x * A + " << beta << " * y"
-                   ", x = " << denseX << ", y = " << denseY << ", A = " << *this )
+                   ", x = " << denseX << ", A = " << *this )
 
-    HArray<ValueType>& localResult = denseResult.getLocalValues();
+    LArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    const HArray<ValueType>& localX = denseX.getLocalValues();
-    const HArray<ValueType>& localY = denseY.getLocalValues();
+    const LArray<ValueType>& localX = denseX.getLocalValues();
+    const LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
 
     void ( MatrixStorage<ValueType>::*vectorTimesMatrix )(
         HArray<ValueType>& result,

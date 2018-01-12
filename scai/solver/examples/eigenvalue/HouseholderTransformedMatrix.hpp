@@ -93,7 +93,7 @@ public:
         const ValueType alpha,
         const DenseVector<ValueType>& x,
         const ValueType beta,
-        const DenseVector<ValueType>& y ) const
+        const DenseVector<ValueType>* y ) const
     {
         SCAI_LOG_INFO( logger, "matrixTimesVector, mL = " << mL )
 
@@ -102,7 +102,11 @@ public:
         result -= mR.dotProduct( x ) * mS;
         result[0] = ValueType( 0 );
         result *= alpha;
-        result += beta * y;
+ 
+        if ( y != nullptr )
+        {
+            result += beta * *y;
+        }
     }
 
     /** This method must be provided so that solvers can decide about context of operations. */
