@@ -96,6 +96,11 @@ public:
     ReadAccess( const HArray<ValueType>& array );
 
     /**
+     * @brief Move constructor for ReadAccess.
+     */
+    ReadAccess( ReadAccess<ValueType> && other ) noexcept;
+
+    /**
      * @brief Releases the ReadAccess on the associated HArray.
      */
     virtual ~ReadAccess();
@@ -160,6 +165,40 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
+/**
+ * @brief Return a ReadAccess for the provided array.
+ *
+ * This method is just a convenience function which allows acquiring a ReadAccess without
+ * redundantly specifying the valuetype. See the example below for an idea of intended usage.
+ *
+ * @code{.cpp}
+ * const auto array = HArray<double>({ 2.0, 3.0 });
+ *
+ * // Call ReadAccess constructor, must redundantly specify type
+ * const ReadAccess<double> read1(array);
+ *
+ * // Call readAccess, type is deduced by compiler.
+ * const auto read2 = readAccess(array);
+ * @endcode
+ */
+template <typename ValueType>
+inline ReadAccess<ValueType> readAccess(const HArray<ValueType> & array)
+{
+    return ReadAccess<ValueType>(array);
+}
+
+/**
+ * @brief Return a ReadAccess on the given context for the provided array.
+ *
+ * Same as readAccess(const HArray<ValueType> &), but data is copied directly
+ * into memory provided by the given context.
+ */
+template <typename ValueType>
+inline ReadAccess<ValueType> readAccess(const HArray<ValueType> & array, ContextPtr context)
+{
+    return ReadAccess<ValueType>(array, context);
+}
+
 /* ---------------------------------------------------------------------------------*/
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ReadAccess<ValueType>::logger, "ReadAccess" )
@@ -185,6 +224,17 @@ ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array ) : mArray( &a
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
     mData = mArray->get( mContextDataIndex );
 }
+
+template <typename ValueType>
+ReadAccess<ValueType>::ReadAccess( ReadAccess && other ) noexcept
+    : mArray(other.mArray),
+      mData(other.mData),
+      mContextDataIndex( other.mContextDataIndex )
+{
+    other.mArray = nullptr;
+    other.mData = nullptr;
+}
+
 
 /* ---------------------------------------------------------------------------------*/
 

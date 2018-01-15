@@ -265,6 +265,38 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
     }
 }
 
+BOOST_AUTO_TEST_CASE( readAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    ReadAccess<int> read1(array);
+    const auto data = read1.get();
+    const auto size = read1.size();
+
+    ReadAccess<int> read2(std::move(read1));
+
+    BOOST_TEST(read2.get() == data);
+    BOOST_TEST(read2.size() == size);
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( read1.get(), scai::common::AssertException);
+}
+
+BOOST_AUTO_TEST_CASE( readAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ({ 2, 3, -5, 1 }, context);
+
+    const auto read = readAccess(array);
+
+    BOOST_TEST( read.size() == 4 );
+    BOOST_TEST( read[0] ==  2 );
+    BOOST_TEST( read[1] ==  3 );
+    BOOST_TEST( read[2] == -5 );
+    BOOST_TEST( read[3] ==  1 );
+}
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
