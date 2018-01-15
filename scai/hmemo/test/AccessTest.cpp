@@ -297,6 +297,20 @@ BOOST_AUTO_TEST_CASE( readAccessFunctionTest )
     BOOST_TEST( read[3] ==  1 );
 }
 
+BOOST_AUTO_TEST_CASE( readAccessFunctionGivesAccessForCorrectContext )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ({ 2, 3, -5, 1 }, context);
+
+    const auto expectedDataPointer = [&] () {
+        return ReadAccess<int>(array, context).get();
+    }();
+
+    auto read = readAccess(array, context);
+    BOOST_TEST(read.get() == expectedDataPointer);
+    BOOST_TEST(read.getMemory().getContextPtr() == context);
+}
+
 BOOST_AUTO_TEST_CASE( writeAccessMoveConstructorTest )
 {
     HArray<int> array { 2, 3, -1 };
@@ -329,6 +343,20 @@ BOOST_AUTO_TEST_CASE( writeAccessFunctionTest )
     BOOST_TEST( write[3] ==  1 );
 }
 
+BOOST_AUTO_TEST_CASE( writeAccessFunctionGivesAccessForCorrectContext )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ({ 2, 3, -5, 1 }, context);
+
+    const auto expectedDataPointer = [&] () {
+        return WriteAccess<int>(array, context).get();
+    }();
+
+    auto write = writeAccess(array, context);
+    BOOST_TEST(write.get() == expectedDataPointer);
+    BOOST_TEST(write.getMemory().getContextPtr() == context);
+}
+
 BOOST_AUTO_TEST_CASE( writeOnlyAccessMoveConstructorTest )
 {
     HArray<int> array { 2, 3, -1 };
@@ -359,6 +387,17 @@ BOOST_AUTO_TEST_CASE( writeOnlyAccessFunctionTest )
     BOOST_TEST( write[1] ==  3 );
     BOOST_TEST( write[2] == -5 );
     BOOST_TEST( write[3] ==  1 );
+}
+
+BOOST_AUTO_TEST_CASE( writeOnlyAccessFunctionGivesAccessForCorrectContext )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ({ 2, 3, -5, 1 }, context);
+
+    // For the writeOnlyAccess, we can not check that the pointer is the same
+    // like we did for ReadAccess and WriteAccess, because WriteOnly is permitted
+    // to allocate different memory, so we only verify that the context is correct.
+    BOOST_TEST(writeOnlyAccess(array, context).getMemory().getContextPtr() == context);
 }
 
 /* --------------------------------------------------------------------- */
