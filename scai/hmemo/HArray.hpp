@@ -43,6 +43,7 @@
 #include <scai/common/TypeTraits.hpp>
 
 #include <memory>
+#include <initializer_list>
 
 namespace scai
 {
@@ -174,6 +175,15 @@ public:
      * The new created object gets its resources from the passed array.
      */
     HArray( HArray<ValueType>&& other ) noexcept;
+
+    /**
+     * @brief Construct an instance of HArray from an initializer list.
+     *
+     * @param[in] init an initializer list of data
+     * @param[in] context the context for which to allocate memory to hold the data (optional)
+     *
+     */
+    HArray( std::initializer_list<ValueType> init, ContextPtr context = Context::getHostPtr() );
 
     /**
      * @brief Destructor, releases all used resources.
@@ -450,6 +460,17 @@ HArray<ValueType>::HArray( HArray<ValueType>&& other ) noexcept:
 
 {
     SCAI_LOG_DEBUG( logger, "move constructor of HArray, this = " << *this << ", other = " << other )
+}
+
+template <typename ValueType>
+HArray<ValueType>::HArray( std::initializer_list<ValueType> init, ContextPtr context )
+    : _HArray ( 0, sizeof( ValueType ) )
+{
+    touch( context );
+    // std::initializer_list actually guarantees that begin() returns a pointer (to const)
+    // to the data, so this should be safe!
+    const ValueType * data = init.begin();
+    _HArray::_setRawData( init.size(), data );
 }
 
 /* ---------------------------------------------------------------------------------*/
