@@ -219,6 +219,30 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
+/**
+ * @brief Obtain a WriteAccess to the given array.
+ *
+ * Analogous to readAccess(const HArray & array). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteAccess<ValueType> writeAccess(HArray<ValueType> & array)
+{
+    return WriteAccess<ValueType>(array);
+}
+
+/**
+ * @brief Obtain a WriteAccess for the supplied context to the given array.
+ *
+ * Analogous to readAccess(const HArray & array, ContextPtr). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteAccess<ValueType> writeAccess(HArray<ValueType> & array, ContextPtr context)
+{
+    return WriteAccess<ValueType>(array, context);
+}
+
 /* --------------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueType>::logger, "WriteAccess" )

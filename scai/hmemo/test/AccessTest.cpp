@@ -315,6 +315,20 @@ BOOST_AUTO_TEST_CASE( writeAccessMoveConstructorTest )
     BOOST_CHECK_THROW( write1.get(), scai::common::AssertException);
 }
 
+BOOST_AUTO_TEST_CASE( writeAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ({ 2, 3, -5, 1 }, context);
+
+    auto write = writeAccess(array);
+
+    BOOST_TEST( write.size() == 4 );
+    BOOST_TEST( write[0] ==  2 );
+    BOOST_TEST( write[1] ==  3 );
+    BOOST_TEST( write[2] == -5 );
+    BOOST_TEST( write[3] ==  1 );
+}
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
