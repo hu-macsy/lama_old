@@ -53,7 +53,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/Thread.hpp>
+#include <scai/common/thread.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Walltime.hpp>
 
@@ -63,7 +63,7 @@
 // Exceptions
 #include <scai/common/exception/AssertException.hpp>
 #include <scai/common/exception/Exception.hpp>
-#include <scai/common/exception/NotSupportedValueTypeException.hpp>
+#include <scai/common/exception/InvalidArgumentException.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 
 // Macros
