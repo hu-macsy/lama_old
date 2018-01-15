@@ -296,7 +296,8 @@ void TextIO::readSparseImpl(
 
     readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
+    ValueType zeroValue = 0;
+    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray, zeroValue );
 }
 
 /* --------------------------------------------------------------------------------- */

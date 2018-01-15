@@ -169,6 +169,15 @@ public:
     SparseVector( const SparseVector<ValueType>& other );
 
     /**
+     * @brief Override the default move constructor with appropriate version.
+     *
+     * @param[in] other the sparse vector from which data is moved
+     *
+     * The new created object gets its resources from the passed sparse vector.
+     */
+    SparseVector( SparseVector<ValueType>&& other ) noexcept;
+
+    /**
      * More general constructor that creates a deep copy of an arbitrary vector.
      *
      * The explicit specifier avoids implict conversions as the following example shows.
@@ -193,6 +202,14 @@ public:
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
     explicit SparseVector( const _Vector& other, dmemo::DistributionPtr distribution );
+
+    /** 
+     * @brief Construct a vector by a dense vector and zero element.
+     *
+     * @param[in] other       dense vector to take a copy from
+     * @param[in] zeroValue   value that becomes the zero element of the sparse vector.
+     */
+    explicit SparseVector( const DenseVector<ValueType>& other, const ValueType zeroValue );
 
     /**
      * @brief creates a distributed SparseVector with given local values.
@@ -350,6 +367,10 @@ public:
 
     SparseVector& operator=( const SparseVector<ValueType>& other );
 
+    /** Override the default move assignment operator. */
+
+    SparseVector& operator=( SparseVector<ValueType>&& other ) noexcept;
+
     /** Implementation of pure method _Vector::assign 
      *
      *  uses metaprogramming to call assignImpl with actual type and kind
@@ -418,6 +439,9 @@ public:
      * Implementation of pure method _Vector::setDenseValues.
      */
     virtual void setDenseValues( const hmemo::_HArray& values );
+
+    template<typename OtherValueType>
+    void setDenseValuesImpl( const hmemo::HArray<OtherValueType>& values );
 
     /**
      * Implementation of pure method _Vector::fillSparseData
@@ -643,6 +667,19 @@ void SparseVector<ValueType>::setSparseValues(
     // values at same index will be replaced
 
     fillSparseData( indexes, values, common::BinaryOp::COPY );
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+void SparseVector<ValueType>::setDenseValuesImpl( const hmemo::HArray<OtherValueType>& values )
+{
+    const IndexType size = getDistribution().getLocalSize();
+
+    SCAI_ASSERT_EQ_ERROR( size, values.size(), "size of local values does not match local size of vector" )
+
+    OtherValueType zero = static_cast<OtherValueType>( mZeroValue );
+
+    utilskernel::HArrayUtils::buildSparseArrayImpl( mNonZeroValues, mNonZeroIndexes, values, zero, getContextPtr() );
 }
 
 template<typename ValueType>

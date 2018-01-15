@@ -530,22 +530,25 @@ struct nonZero
 
     typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
+    const ValueType mZero;
     const RealType mEps;
 
-    nonZero( ValueType eps ) : mEps( Math::abs( eps ) )
+    nonZero( ValueType zero, ValueType eps ) :
+        mEps( Math::abs( eps ) ),
+        mZero( zero )
     {
     }
 
     __host__ __device__
     bool operator()( ValueType x )
     {
-        RealType absX = Math::abs( x );
+        RealType absX = Math::abs( x - mZero );
         return absX > mEps;
     }
 };
 
 template<typename ValueType>
-IndexType CUDASparseUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
+IndexType CUDASparseUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType zero, const ValueType eps )
 {
     SCAI_REGION( "CUDA.Utils.countNZ" )
 
@@ -557,7 +560,7 @@ IndexType CUDASparseUtils::countNonZeros( const ValueType denseArray[], const In
 
     IndexType nonZeros = thrust::transform_reduce( array_ptr,
                          array_ptr + n,
-                         nonZero<ValueType>( eps ),
+                         nonZero<ValueType>( eps, zero ),
                          0,
                          thrust::plus<IndexType>() );
     return nonZeros;
@@ -568,15 +571,17 @@ IndexType CUDASparseUtils::countNonZeros( const ValueType denseArray[], const In
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-struct changeIndexWithZeroSize
+struct invalidateZeros
 {
     typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
+    const ValueType mZero;
     const RealType mEps;
     const IndexType mZeroIndex;
 
-    changeIndexWithZeroSize( ValueType eps, IndexType zeroIndex ) :
+    invalidateZeros( ValueType zero, ValueType eps, IndexType zeroIndex ) :
 
+        mZero( zero ),
         mEps( eps ),
         mZeroIndex( zeroIndex )
     {
@@ -619,6 +624,7 @@ IndexType CUDASparseUtils::compress(
     IndexType sparseIndexes[],
     const SourceType denseArray[],
     const IndexType n,
+    const SourceType zero,
     const SourceType eps )
 {
     SCAI_REGION( "CUDA.Utils.compress" )
@@ -634,7 +640,7 @@ IndexType CUDASparseUtils::compress(
 
     // Create device ptr and help variables
 
-    thrust::transform( dense_ptr, dense_ptr + n, sequence, tmp.begin(), changeIndexWithZeroSize<ValueType>( eps, invalidIndex ) );
+    thrust::transform( dense_ptr, dense_ptr + n, sequence, tmp.begin(), invalidateZeros<ValueType>( zero, eps, invalidIndex ) );
 
     // transform array, replace in sequence all non-zero entries with -1
     // e.g. sizes = [ 0, 2, 0, 1, 3 ], sequence = [ 0, 1, 2, 3, 4 ] -> [ invalidIndex, 1, invalidIndex, 3, 4 ]

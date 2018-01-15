@@ -400,7 +400,8 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         if ( common::getScalarType<H>() == denseArray.getValueType() )
         {
             const hmemo::HArray<H>& typedDenseArray = reinterpret_cast<const hmemo::HArray<H>&>( denseArray );
-            HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, typedDenseArray, prefLoc );
+            H zero = 0;
+            HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, typedDenseArray, zero, prefLoc );
         }
         else
         {

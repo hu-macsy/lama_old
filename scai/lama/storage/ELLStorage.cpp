@@ -973,7 +973,10 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
 
     // count the number of non-zero rows to have a good value for allocation of rowIndexes
 
-    IndexType nonZeroRows = countNonZeros[loc]( ellIA.get(), mNumRows, 0 );
+    IndexType zero = 0;
+    IndexType eps  = 0;
+
+    IndexType nonZeroRows = countNonZeros[loc]( ellIA.get(), mNumRows, zero, eps );
 
     float usage = float( nonZeroRows ) / float( mNumRows );
 
@@ -986,7 +989,7 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
 
     WriteOnlyAccess<IndexType> rowIndexes( mRowIndexes, loc, nonZeroRows );
 
-    IndexType cnt = compress[loc]( NULL, rowIndexes.get(), ellIA.get(), mNumRows, 0 );
+    IndexType cnt = compress[loc]( NULL, rowIndexes.get(), ellIA.get(), mNumRows, zero, eps );
 
     SCAI_ASSERT_EQ_ERROR( cnt, nonZeroRows, "serious mismatch" );
 }

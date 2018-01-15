@@ -900,4 +900,44 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( moveTest )
+{
+    // Test of different reduction operations on sparse vector
+    // Note: it is sufficient to consider one value type
+
+    typedef DefaultReal ValueType;
+
+    IndexType n = 10;
+    ValueType rawValues[] = { 1, 5, 4, 3, 2, 0, 1, 5, 3, 4, 2 };
+
+    hmemo::HArray<ValueType> values( n, rawValues );
+
+    const ValueType* ptr0 = hmemo::ReadAccess<ValueType>( values ).get();
+
+    DenseVector<ValueType> xD( std::move( values ) );
+
+    const ValueType* ptr1 = hmemo::ReadAccess<ValueType>( xD.getLocalValues() ).get();
+
+    BOOST_CHECK_EQUAL( ptr0, ptr1 );  // that is great, all the same data used
+
+    ValueType s = xD.sum();
+
+    DenseVector<ValueType> xD1( std::move( xD ) );
+    
+    BOOST_CHECK_EQUAL( 0, xD.sum() );
+    BOOST_CHECK_EQUAL( s, xD1.sum() );
+
+    DenseVector<ValueType> xD2;
+    xD2 = std::move( xD1 );
+
+    BOOST_CHECK_EQUAL( 0, xD1.sum() );
+    BOOST_CHECK_EQUAL( s, xD2.sum() );
+
+    const ValueType* ptr2 = hmemo::ReadAccess<ValueType>( xD2.getLocalValues() ).get();
+
+    BOOST_CHECK_EQUAL( ptr1, ptr2 );  // that is great, all the same data used
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
