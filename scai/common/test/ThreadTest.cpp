@@ -73,14 +73,18 @@ static void barrier()
 
 /** Function that is that is executed by each thread */
 
-static void runRoutine( const int i )
+static void runRoutine( bool& okay, const int i )
 {
     std::string name = "Thread_" + std::to_string( i );
     thread::defineCurrentThreadName( name.c_str() );
-    barrier();
-    std::string name1 = getCurrentThreadName();
-    // BOOST_CHECK_EQUAL on separate threads can produce strange outputs
-    SCAI_ASSERT_EQ_ERROR( name, name1, "serious error" );
+    barrier();  // Barrier 1 : all threads have defined their name
+    std::string name1 = *getCurrentThreadName();
+    // BOOST_CHECK_EQUAL is not thread-safe
+    okay = name == name1;
+    barrier();  // Barrier 2 : checks are done
+    name = "NewName_" + std::to_string( i );
+    thread::defineCurrentThreadName( name.c_str() );
+    barrier();  // Barrier 3 : names are redefined
 }
 
 BOOST_AUTO_TEST_CASE( nameThreadTest )
@@ -88,24 +92,41 @@ BOOST_AUTO_TEST_CASE( nameThreadTest )
     // run a number of threads and give them names
 
     std::thread threads[N_THREADS];
+    bool results[N_THREADS];
+    std::shared_ptr<std::string> names[N_THREADS];
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
-        threads[i] = std::thread( runRoutine, i );
+        results[i] = false; 
+        threads[i] = std::thread( runRoutine, std::ref( results[i] ), i );
     }
 
-    barrier();
+    barrier();  
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
         std::string expected = "Thread_" + std::to_string( i );
-        std::string name = getThreadName( threads[i].get_id() );
+        names[i] = getThreadName( threads[i].get_id() );
+        BOOST_CHECK_EQUAL( expected, *names[i] );
+    }
+
+    barrier(); // checks done
+    barrier(); // thread names are now redefined
+
+    for ( int i = 0; i < N_THREADS; ++i )
+    {
+        std::string expected = "Thread_" + std::to_string( i );
+        BOOST_CHECK_EQUAL( expected, *names[i] );
+
+        expected = "NewName_" + std::to_string( i );
+        std::string name = *getThreadName( threads[i].get_id() );
         BOOST_CHECK_EQUAL( expected, name );
     }
 
     for ( int i = 0; i < N_THREADS; ++i )
     {
         threads[i].join();
+        BOOST_CHECK( results[i] );   // get correct results
     }
 }
 

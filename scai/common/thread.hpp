@@ -53,6 +53,8 @@ namespace common
 
 /** 
  * Namespace that provides some free functions to give threads a name.
+ *
+ * Note: query a name returns a shared pointer to a string to avoid race conditions
  */
 namespace thread
 {
@@ -64,11 +66,11 @@ namespace thread
 
     /** Query the name of a thread. */
 
-    const char* getThreadName( Id id );
+    std::shared_ptr<std::string> getThreadName( Id id );
 
     /** Query the name of the current thread. */
 
-    const char* getCurrentThreadName();
+    std::shared_ptr<std::string> getCurrentThreadName();
 
 } /* end namesapce thread */
 

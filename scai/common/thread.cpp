@@ -43,12 +43,11 @@
 #include <string>
 #include <iostream>
 #include <string.h>
+#include <unordered_map>
 
 // define LOCAL_DEBUG for debugging this source code
 
 #undef LOCAL_DEBUG
-
-using namespace std;
 
 namespace scai
 {
@@ -61,7 +60,8 @@ namespace thread
 
 // Map that defines mapping thread ids -> thread names (as strings)
 
-typedef map<std::thread::id, string> MapThreads;
+typedef std::shared_ptr<std::string> pString;
+typedef std::unordered_map<Id, pString> MapThreads;
 
 static MapThreads& getMapThreads()
 {
@@ -81,18 +81,18 @@ std::mutex map_mutex; // Make access to map thread safe
 void defineCurrentThreadName( const char* name )
 {
     std::unique_lock<std::mutex> lock( map_mutex );
-    std::thread::id id = std::this_thread::get_id();
+    Id id = std::this_thread::get_id();
 
 #ifdef LOCAL_DEBUG
     cout << "defineCurrentThreadName, id = " << id << ", name = " << name << endl;
 #endif
     MapThreads& mapThreads = getMapThreads();
-    map<Id, string>::iterator it = mapThreads.find( id );
+    auto it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
         // name not defined yet
-        mapThreads.insert( std::pair<Id, string>( id, name ) );
+        mapThreads.insert( std::pair<Id, pString>( id, pString( new std::string( name ) ) ) );
 #ifdef LOCAL_DEBUG
         cout << "Thread " << id << " defines name " << name << endl;
 #endif
@@ -102,34 +102,36 @@ void defineCurrentThreadName( const char* name )
         // already defined, but probably on purporse
         // cout << "Redefine Thread " << id << " = " << it->second << " as " << name << endl;
 #ifdef LOCAL_DEBUG
-        cout << "Thread " << id << " named " << it->second << ", renamed to " << name << endl;
+        cout << "Thread " << id << " named " << *it->second << ", renamed to " << name << endl;
 #endif
-        it->second = name;
+        it->second.reset( new std::string( name ) );
     }
 }
 
-const char* getThreadName( Id id )
+std::shared_ptr<std::string> getThreadName( Id id )
 {
     std::unique_lock<std::mutex> lock( map_mutex );
+
     MapThreads& mapThreads = getMapThreads();
+
     MapThreads::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
         // No name defined yet, give it one, use internal numbering
         // Tracing requires unique name
-        ostringstream thread_name;
-        thread_name << "thread_" << mapThreads.size();
+        pString str( new std::string( "thread_" + std::to_string( mapThreads.size() ) ) );
+
         // Attention: This would not possible if mapThreads is not statically initialized
-        mapThreads.insert( std::pair<Id, string>( id, thread_name.str() ) );
+        mapThreads.insert( std::pair<Id, pString>( id, str ) );
         it = mapThreads.find( id );
     }
 
     // return the defined name
-    return it->second.c_str();
+    return it->second;
 }
 
-const char* getCurrentThreadName()
+std::shared_ptr<std::string> getCurrentThreadName()
 {
     return getThreadName( std::this_thread::get_id() );
 }
