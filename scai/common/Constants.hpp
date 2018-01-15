@@ -37,6 +37,7 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/exception/InvalidArgumentException.hpp>
 
 #include <cmath>
 #include <limits>
@@ -81,54 +82,22 @@ inline ValueType getConstant( const Constants& c )
     return val;
 }
 
-/** Comparison against constant ZERO or ONE uses machine-specific EPS */
+/** Comparison against constant ZERO or ONE checks for exact equality */
 
 template<typename ValueType>
 inline bool operator==( const ValueType& x, const Constants& c )
 {
-    typedef typename TypeTraits<ValueType>::RealType RealType;
-
     if ( Constants::ZERO == c )
     {
-        RealType r = Math::real( x );
-
-        bool isRealZero = Math::abs( r ) <= TypeTraits<ValueType>::eps0();
-
-        if ( typeid( RealType ) == typeid( ValueType ) )
-        {
-            return isRealZero;
-        }
-        else
-        {
-            // complex data, do not use operator <
-
-            RealType i = Math::imag( x );
-
-            bool isImagZero = Math::abs( i ) <= TypeTraits<ValueType>::eps0();
-
-            return isRealZero && isImagZero;
-        }
+        return x == ValueType( 0 );
+    }
+    else if ( Constants::ONE == c )
+    {
+        return x == ValueType( 1 );
     }
     else
     {
-        RealType r = Math::real( x );
-
-        bool isRealOne = Math::abs( r - RealType( 1 ) ) <= TypeTraits<ValueType>::eps1();
-
-        if ( typeid( RealType ) == typeid( ValueType ) )
-        {
-            return isRealOne;
-        }
-        else
-        {
-            // for complex type we have to assure that imaginary part is close to 0
-
-            RealType i = Math::imag( x );
-
-            bool isImagZero = Math::abs( i ) <= TypeTraits<ValueType>::eps0();
-
-            return isRealOne && isImagZero;
-        }
+        SCAI_THROWEXCEPTION( InvalidArgumentException, "Unsupported constant" )
     }
 }
 

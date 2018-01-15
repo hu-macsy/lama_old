@@ -34,6 +34,10 @@
 
 scai_project(
 
+    HEADERS
+
+        InvalidArgumentException
+
     CLASSES
 
         AssertException
