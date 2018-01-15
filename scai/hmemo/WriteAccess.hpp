@@ -111,6 +111,11 @@ public:
     WriteAccess( HArray<ValueType>& array, const bool keep = true );
 
     /**
+     * @brief Move constructor for WriteAccess.
+     */
+    WriteAccess( WriteAccess<ValueType> && other ) noexcept;
+
+    /**
      * @brief Releases the WriteAccess on the associated HArray.
      */
     virtual ~WriteAccess();
@@ -241,6 +246,16 @@ WriteAccess<ValueType>::WriteAccess( HArray<ValueType>& array, const bool keep /
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer
+}
+
+template <typename ValueType>
+WriteAccess<ValueType>::WriteAccess( WriteAccess<ValueType> && other) noexcept
+    :   mArray(other.mArray),
+        mData(other.mData),
+        mContextDataIndex(other.mContextDataIndex)
+{
+    other.mArray = nullptr;
+    other.mData = nullptr;
 }
 
 /* --------------------------------------------------------------------------- */
