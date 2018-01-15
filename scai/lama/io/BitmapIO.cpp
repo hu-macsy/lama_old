@@ -362,7 +362,7 @@ void BitmapIO::readStorage(
     storage.clear();
 
     SCAI_ASSERT_EQ_ERROR( 0, offsetRow, "No chunk read for bitmap file" )
-    SCAI_ASSERT_EQ_ERROR( nIndex, nRows, "No chunk read for bitmap file" )
+    SCAI_ASSERT_EQ_ERROR( invalidIndex, nRows, "No chunk read for bitmap file" )
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
                          "Unsupported for bitmap file: read storage from " << inputFileName )
@@ -429,7 +429,7 @@ void BitmapIO::readArray( hmemo::_HArray& array, const std::string& inputFileNam
     array.clear();
 
     SCAI_ASSERT_EQ_ERROR( 0, offset, "chunk read not supported" )
-    SCAI_ASSERT_EQ_ERROR( n, nIndex, "chunk read not supported" )
+    SCAI_ASSERT_EQ_ERROR( n, invalidIndex, "chunk read not supported" )
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
                          "Unsupported for bitmap file: read array ( offset = " << offset << ", n = " << " ) from file " << inputFileName )

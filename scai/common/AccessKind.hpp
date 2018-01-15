@@ -1,5 +1,5 @@
 /**
- * @file IOException.cpp
+ * @file AccessKind.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,12 +27,17 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementaion of methods for class IOException.
- * @author Eric Schricker
- * @date 31.08.2015
+ * @brief Definition of enum type for read and write access
+ * @author Jiri Kraus
+ * @date 22.02.2011
  */
 
-#include <scai/common/exception/IOException.hpp>
+#pragma once
+
+// for dll_import
+#include <scai/common/config.hpp>
+
+#include <ostream>
 
 namespace scai
 {
@@ -40,28 +45,17 @@ namespace scai
 namespace common
 {
 
-IOException::IOException() :
-    mMessage( "IOException" )
-{
-}
+/** Enumeration type for access kind, may be read or write */
 
-IOException::IOException( const std::string& message ) :
-    mMessage( message )
+enum class AccessKind
 {
-    mMessage += "@IOException";
-}
+    Read, //!<  read access to the array, can be multiple
+    Write, //!<  write access to the array, only one at a time
+    MaxAccessKind //!<  internal use for dimension of arrays
+};
 
-IOException::~IOException() throw ()
-{
-}
-
-const char* IOException::what() const throw ()
-{
-    return mMessage.c_str();
-}
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const AccessKind& kind );
 
 } /* end namespace common */
 
 } /* end namespace scai */
-
-

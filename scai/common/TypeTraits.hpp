@@ -54,10 +54,10 @@ namespace common
  * @tparam T The type of any arithmetic value type used
  *
  * /code
- *  typedef ResultType AbsType;   // return type of function Math::abs( ValueType )
- *  AbsType eps0();               // closest value to 0
- *  AbsType eps1();               // closest value to 1
- *  AbsType small();              // accepted tolerance for comparisons of results
+ *  typedef ResultType RealType;   // return type of function Math::abs( ValueType )
+ *  RealType eps0();               // closest value to 0
+ *  RealType eps1();               // closest value to 1
+ *  RealType small();              // accepted tolerance for comparisons of results
  *  ValueType min();              // used as neutral element for max reduction
  *  ValueType max();              // used as neutral element for min reduction
  *  int precision();              // number of relevant digits if printed
@@ -90,7 +90,7 @@ class TypeTraits<int>
 {
 public:
 
-    typedef int AbsType;
+    typedef int RealType;
 
     static inline int eps1()
     {
@@ -137,7 +137,7 @@ class TypeTraits<char>
 {
 public:
 
-    typedef char AbsType;
+    typedef char RealType;
 
     static inline char eps1()
     {
@@ -183,7 +183,7 @@ template<>
 class TypeTraits<long>
 {
 public:
-    typedef long AbsType;
+    typedef long RealType;
 
     static inline long eps1()
     {
@@ -229,7 +229,7 @@ template<>
 class TypeTraits<unsigned int>
 {
 public:
-    typedef unsigned int AbsType;
+    typedef unsigned int RealType;
 
     static inline unsigned int eps1()
     {
@@ -275,7 +275,7 @@ template<>
 class TypeTraits<unsigned long>
 {
 public:
-    typedef unsigned long AbsType;
+    typedef unsigned long RealType;
 
     static inline unsigned long eps1()
     {
@@ -321,7 +321,7 @@ template<>
 class TypeTraits<long double>
 {
 public:
-    typedef long double AbsType;
+    typedef long double RealType;
 
     static inline long double eps1()
     {
@@ -367,7 +367,7 @@ template<>
 class TypeTraits<double>
 {
 public:
-    typedef double AbsType;
+    typedef double RealType;
 
     static inline double eps1()
     {
@@ -413,7 +413,7 @@ template<>
 class TypeTraits<float>
 {
 public:
-    typedef float AbsType;
+    typedef float RealType;
 
     static inline float eps1()
     {
@@ -460,7 +460,7 @@ template<>
 class TypeTraits<ComplexFloat>
 {
 public:
-    typedef float AbsType;
+    typedef float RealType;
 
     static inline float eps1()
     {
@@ -506,7 +506,7 @@ template<>
 class TypeTraits<ComplexDouble>
 {
 public:
-    typedef double AbsType;
+    typedef double RealType;
 
     static inline double eps1()
     {
@@ -552,7 +552,7 @@ template<>
 class TypeTraits<ComplexLongDouble>
 {
 public:
-    typedef long double AbsType;
+    typedef long double RealType;
 
     static inline LongDouble eps1()
     {
@@ -603,10 +603,10 @@ template<typename ValueType> inline ScalarType getScalarType()
 
 }  // namespace common
 
-/** Make type alias to have NormType<ValueType> as type used in norm computations. */
+/** Make type alias to have RealType<ValueType> as type used in norm computations. */
 
 template<typename ValueType>
-using NormType = typename scai::common::TypeTraits<ValueType>::AbsType;
+using RealType = typename scai::common::TypeTraits<ValueType>::RealType;
 
 }  // namespace scai
 

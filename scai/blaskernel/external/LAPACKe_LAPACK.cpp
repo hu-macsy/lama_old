@@ -254,7 +254,7 @@ template<typename ValueType>
 void LAPACKe_LAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_INFO( logger, "register lapack wrapper routines for Host at kernel registry" )
     KernelRegistry::set<BLASKernelTrait::getrf<ValueType> >( LAPACKe_LAPACK::getrf, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACKe_LAPACK::getri, ctx, flag );

@@ -232,7 +232,7 @@ public:
     /** This method translates a global index into a local index.
      *
      * @param[in] globalIndex with 0 <= globalIndex < getGlobalSize
-     * @return    localIndex with 0 <= localIndex < getLocalSize() if local, nIndex otherwise
+     * @return    localIndex with 0 <= localIndex < getLocalSize() if local, invalidIndex otherwise
      *
      * This method must be implemented by all base classes. It should throw
      * an exception if the argument is not in the valid range.
@@ -288,12 +288,12 @@ public:
     /** The following function verifies if the distribution is nothing else than a block
      *  or general block distribution.
      *
-     *  @returns the local size of the block distribution if it is one, nIndex if it is not
+     *  @returns the local size of the block distribution if it is one, invalidIndex if it is not
      *
-     *  Note: The call of this function might involve communication. It returns nIndex on all processors if it is nIndex on one.
+     *  Note: The call of this function might involve communication. It returns invalidIndex on all processors if it is invalidIndex on one.
      *  Note: If it is a block distribution, the distribution of a distributed vector/matrix can be easily reconstructed without a mapping file.
      *
-     *  getBlockDistributionSize() != nIndex iff isSorted( owners( {0, ..., globalSize-1 }, ascending = true )
+     *  getBlockDistributionSize() != invalidIndex iff isSorted( owners( {0, ..., globalSize-1 }, ascending = true )
      */
     virtual IndexType getBlockDistributionSize() const = 0;
 

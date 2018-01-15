@@ -765,7 +765,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
                 IndexType k   = i * numColumns + j;
 
-                if ( pos == nIndex )
+                if ( pos == invalidIndex )
                 {
                     BOOST_CHECK_EQUAL( rDense[ k ], zero );
                 }

@@ -334,7 +334,7 @@ void MetisPartitioning::rectangularPartitioning(
 
     for ( IndexType i = 0; i < nNodes; ++i )
     {
-        partition[i] = nIndex;
+        partition[i] = invalidIndex;
     }
 
     METIS_PartGraphRecursive( &nNodes, &ncon, &adjIA[0], &adjJA[0], &vwgt[0], NULL, NULL, &np,

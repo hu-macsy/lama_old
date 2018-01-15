@@ -72,19 +72,19 @@ void L2Norm<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-NormType<ValueType> L2Norm<ValueType>::apply( const ValueType& scalar ) const
+RealType<ValueType> L2Norm<ValueType>::apply( const ValueType& scalar ) const
 {
     return l2Norm( scalar );
 }
 
 template<typename ValueType>
-NormType<ValueType> L2Norm<ValueType>::apply( const Vector<ValueType>& vector ) const
+RealType<ValueType> L2Norm<ValueType>::apply( const Vector<ValueType>& vector ) const
 {
     return l2Norm( vector );
 }
 
 template<typename ValueType>
-NormType<ValueType> L2Norm<ValueType>::apply( const Matrix<ValueType>& matrix ) const
+RealType<ValueType> L2Norm<ValueType>::apply( const Matrix<ValueType>& matrix ) const
 {
     return l2Norm( matrix );
 }

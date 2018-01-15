@@ -34,12 +34,15 @@
 
 scai_project(
 
+    HEADERS
+
+        InvalidArgumentException
+        IOException
+
     CLASSES
 
         AssertException
         Exception
-        IOException
-        NotSupportedValueTypeException
         UnsupportedException
 
     ADD_PARENT_SCOPE

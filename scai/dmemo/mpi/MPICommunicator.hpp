@@ -48,7 +48,6 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Thread.hpp>
 #include <scai/common/macros/unused.hpp>
 
 // std
@@ -230,7 +229,7 @@ private:
 
     void initialize( int& argc, char** & argv );
 
-    const common::Thread::Id mMainThread;  // id of thread that calls constructor
+    const std::thread::id mMainThread;  // id of thread that calls constructor
 
     inline MPI_Comm selectMPIComm() const;
 

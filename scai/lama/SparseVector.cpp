@@ -532,7 +532,7 @@ static void getSplitValues(
     const IndexType n,
     const bool ascending )
 {
-    const PartitionId nPartitions = comm.getSize();
+    const PartitionId numPartitions = comm.getSize();
 
     if ( ascending )
     {
@@ -540,7 +540,7 @@ static void getSplitValues(
         ValueType maxV = n > 0 ? sortedValues[n - 1] : TypeTraits<ValueType>::getMin();
 
         splitValues[0]           = comm.min( minV );
-        splitValues[nPartitions] = comm.max( maxV );
+        splitValues[numPartitions] = comm.max( maxV );
     }
     else
     {
@@ -548,14 +548,14 @@ static void getSplitValues(
         ValueType minV = n > 0 ? sortedValues[n - 1] : TypeTraits<ValueType>::getMax();
 
         splitValues[0]           = comm.max( maxV );
-        splitValues[nPartitions] = comm.min( minV );
+        splitValues[numPartitions] = comm.min( minV );
     }
 
-    // fill intermediate values by uniform distribution of range splitValues[0] .. splitValues[nPartitions]
+    // fill intermediate values by uniform distribution of range splitValues[0] .. splitValues[numPartitions]
 
-    for ( PartitionId p = 1; p < nPartitions; ++p )
+    for ( PartitionId p = 1; p < numPartitions; ++p )
     {
-        splitValues[p] = splitValues[0] + ( splitValues[nPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( nPartitions );
+        splitValues[p] = splitValues[0] + ( splitValues[numPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( numPartitions );
     }
 }
 
@@ -734,7 +734,7 @@ IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileNam
     // ToDo: read block from sparse array
 
     SCAI_ASSERT_EQ_ERROR( 0, first, "block read not supported for sparse data" )
-    SCAI_ASSERT_EQ_ERROR( nIndex, n, "block read not supported for sparse data" )
+    SCAI_ASSERT_EQ_ERROR( invalidIndex, n, "block read not supported for sparse data" )
 
     return localN;
 }
@@ -779,13 +779,13 @@ ValueType SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " ) -> local : " << localIndex )
 
-    if ( localIndex != nIndex )
+    if ( localIndex != invalidIndex )
     {
         // we have here sparse data, so look for local index among the sparse indexes of non-zero values
 
         IndexType pos = HArrayUtils::findPosInSortedIndexes( mNonZeroIndexes, localIndex );
 
-        if ( pos != nIndex )
+        if ( pos != invalidIndex )
         {
             myValue = mNonZeroValues[pos];
         }
@@ -817,13 +817,13 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Value
 
     SCAI_LOG_TRACE( logger, *this << ": set @g " << globalIndex << " is @l " << localIndex << " : " << value )
 
-    if ( localIndex != nIndex )
+    if ( localIndex != invalidIndex )
     {
         // This partition is the owner, add it locally
 
         IndexType pos = HArrayUtils::findPosInSortedIndexes( mNonZeroIndexes, localIndex );
 
-        if ( pos != nIndex )
+        if ( pos != invalidIndex )
         {
             mNonZeroValues[pos] = value;
         }
@@ -958,11 +958,11 @@ ComplexLongDouble SparseVector<ComplexLongDouble>::max() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::l1Norm() const
+RealType<ValueType> SparseVector<ValueType>::l1Norm() const
 {
     SCAI_REGION( "Vector.sparse.l1Norm" )
 
-    NormType<ValueType> localL1Norm = mNonZeroValues.l1Norm();
+    RealType<ValueType> localL1Norm = mNonZeroValues.l1Norm();
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
@@ -970,8 +970,8 @@ NormType<ValueType> SparseVector<ValueType>::l1Norm() const
     {
         // ToDo: replace ABS with ASUM, is different for complex numbers
 
-        NormType<ValueType> zeroNorm = common::applyUnary( common::UnaryOp::ABS, mZeroValue );
-        localL1Norm += zeroNorm * NormType<ValueType>( nZero );
+        RealType<ValueType> zeroNorm = common::applyUnary( common::UnaryOp::ABS, mZeroValue );
+        localL1Norm += zeroNorm * RealType<ValueType>( nZero );
     }
 
     return getDistribution().getCommunicator().sum( localL1Norm );
@@ -997,23 +997,23 @@ ValueType SparseVector<ValueType>::sum() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::l2Norm() const
+RealType<ValueType> SparseVector<ValueType>::l2Norm() const
 {
     SCAI_REGION( "Vector.sparse.l2Norm" )
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
-    NormType<ValueType> localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+    RealType<ValueType> localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
     if ( nZero > 0 )
     {
-        NormType<ValueType> zeroNorm = mZeroValue * Math::conj( mZeroValue ) * ValueType( nZero );
+        RealType<ValueType> zeroNorm = mZeroValue * Math::conj( mZeroValue ) * ValueType( nZero );
         localDotProduct += zeroNorm;
     }
  
-    NormType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    RealType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
     return Math::sqrt( globalDotProduct );
 }
@@ -1035,11 +1035,11 @@ IndexType SparseVector<IndexType>::l2Norm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::maxNorm() const
+RealType<ValueType> SparseVector<ValueType>::maxNorm() const
 {
     SCAI_REGION( "Vector.sparse.maxNorm" )
 
-    NormType<ValueType> localMaxNorm = mNonZeroValues.maxNorm();
+    RealType<ValueType> localMaxNorm = mNonZeroValues.maxNorm();
 
     // the ZERO element must also be considered if at least one element is zero
 
@@ -1053,7 +1053,7 @@ NormType<ValueType> SparseVector<ValueType>::maxNorm() const
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    NormType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
+    RealType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
@@ -1064,7 +1064,7 @@ NormType<ValueType> SparseVector<ValueType>::maxNorm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseVector<ValueType>::maxDiffNorm( const Vector<ValueType>& other ) const
+RealType<ValueType> SparseVector<ValueType>::maxDiffNorm( const Vector<ValueType>& other ) const
 {
     SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "distribution mismatch for maxDiffNorm" )
 
@@ -1088,7 +1088,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const ValueType v
     {
         // at least one entry has the ZERO value, so we compare it
 
-        localAll = localAll && common::applyBinary( mZeroValue, op, value );
+        localAll = localAll && common::compare( mZeroValue, op, value );
     }
 
     bool globalAll = getDistribution().getCommunicator().all( localAll );
@@ -1135,7 +1135,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const Vector<Valu
     {
         // at least at one position we use the zero values
     
-        localAll = localAll && common::applyBinary( mZeroValue, op, otherZero );
+        localAll = localAll && common::compare( mZeroValue, op, otherZero );
     }
 
     bool globalAll = getDistribution().getCommunicator().all( localAll );

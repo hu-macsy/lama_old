@@ -68,8 +68,8 @@ void doit( int NITER, IndexType NSIZE, ContextPtr context )
 int main( int, char** )
 {
     using namespace std;
-    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
-    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( common::ContextType::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( common::ContextType::Host );
     static int ITER_VEC[]    = { 10000, 10000, 10000, 3000, 2000,  1000,   700,    500,    300,    200 };
     static IndexType N_VEC[] = {     1,    10,   100, 1000, 5000, 10000, 50000, 100000, 500000, 1000000 };
     int NCASES = sizeof( ITER_VEC ) / sizeof( int );

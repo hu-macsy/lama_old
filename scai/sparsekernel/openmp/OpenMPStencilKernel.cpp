@@ -1721,7 +1721,7 @@ void OpenMPStencilKernel::Registrator::registerKernels( kregistry::KernelRegistr
 {
     using kregistry::KernelRegistry; 
 
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
 
     SCAI_LOG_DEBUG( logger, "register StencilKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
 
@@ -1735,7 +1735,7 @@ void OpenMPStencilKernel::RegistratorV<ValueType>::registerKernels( kregistry::K
 {
     using kregistry::KernelRegistry;
 
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
 
     SCAI_LOG_DEBUG( logger,
                     "register StencilKernel OpenMP-routines for Host at kernel registry [" << flag 

@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, ValueType, test_types )
     ValueType v1 = u.getValue<ValueType>();
     ValueType v2 = ValueType( 2 ) / ValueType( 3 );
  
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     BOOST_CHECK( common::Math::abs( v1 - v2 ) < eps );
 }

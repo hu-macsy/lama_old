@@ -46,13 +46,14 @@
 
 #include <cmath>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
 
 int main( int , char** )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
     int dim = 3;
     int stencil = 7;
     int size = 100;

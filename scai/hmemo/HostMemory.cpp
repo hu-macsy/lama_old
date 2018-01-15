@@ -108,7 +108,7 @@ void* HostMemory::allocate( const size_t size ) const
     }
 
     // allocate must be thread-safe in case where multiple threads use LAMA arrays
-    common::Thread::ScopedLock lock( allocate_mutex );
+    std::unique_lock<std::recursive_mutex> lock( allocate_mutex );
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
     SCAI_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
@@ -120,7 +120,7 @@ void HostMemory::free( void* pointer, const size_t size ) const
     SCAI_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
     SCAI_ASSERT( mNumberOfAllocates >= 1, "Invalid free, because there are no open allocates." )
     ::free( pointer );
-    common::Thread::ScopedLock lock( allocate_mutex );
+    std::unique_lock<std::recursive_mutex> lock( allocate_mutex );
     mNumberOfAllocatedBytes -= size;
     mNumberOfAllocates--;
 }
@@ -155,7 +155,7 @@ MemoryPtr HostMemory::getIt()
     if ( !instancePtr.get() )
     {
         SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" )
-        ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+        ContextPtr contextPtr = Context::getContextPtr( common::ContextType::Host );
         std::shared_ptr<const HostContext> hostContextPtr = std::dynamic_pointer_cast<const HostContext>( contextPtr );
         SCAI_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
         instancePtr.reset( new HostMemory( hostContextPtr ) );

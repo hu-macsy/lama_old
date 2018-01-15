@@ -38,6 +38,7 @@
 #include <scai/logging.hpp>
 
 #include <iostream>
+#include <algorithm>
 
 using namespace scai;
 using namespace hmemo;
@@ -52,7 +53,7 @@ struct less_than_key
 
 int main()
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType N = 20;   // number of arrays
    

@@ -68,7 +68,7 @@ using namespace dmemo;
 using namespace lama;
 using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 #define HOST_PRINT( rank, msg )             \
     {                                           \
@@ -509,7 +509,7 @@ int main( int argc, const char* argv[] )
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
-                NormType<ValueType> maxDiff = compSolution.maxNorm();
+                RealType<ValueType> maxDiff = compSolution.maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else

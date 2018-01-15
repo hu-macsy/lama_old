@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE( local2GlobalTest )
             }
             else
             {
-                BOOST_CHECK_EQUAL( nIndex, dist->global2local( i ) );
+                BOOST_CHECK_EQUAL( invalidIndex, dist->global2local( i ) );
             }
         }
     }
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 {
     // Test of getBlockDistributionSize() can be done by computeOwners on all processor
-    // getBlockDistributionSize() != nIndex iff isAscending( owners( {0, ..., globalSize-1} ) )
+    // getBlockDistributionSize() != invalidIndex iff isAscending( owners( {0, ..., globalSize-1} ) )
 
     IndexType globalSizes[] = { 0, 1, 2, 3, 7, 16 };
 
@@ -363,7 +363,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
             if ( isSorted )
             {
-                if ( bs == nIndex )
+                if ( bs == invalidIndex )
                 {
                     // might happen for grid distributions
                     SCAI_LOG_WARN( logger, "Owners sorted, but not block distribution: " << *dist )
@@ -375,7 +375,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
             }
             else
             {
-                BOOST_CHECK_EQUAL( bs, nIndex );
+                BOOST_CHECK_EQUAL( bs, invalidIndex );
             }
         }
     }
@@ -459,7 +459,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
             }
         }
 
-        hmemo::HArray<IndexType> allValues( repN * globalN, nIndex );
+        hmemo::HArray<IndexType> allValues( repN * globalN, invalidIndex );
 
         // Now replicate the local values
 

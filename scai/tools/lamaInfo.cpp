@@ -58,8 +58,10 @@ using namespace std;
 
 void contextInfo()
 {
-    using namespace scai::hmemo;
-    vector<Context::ContextType> values;  // supported context types
+    using namespace scai;
+    using namespace hmemo;
+
+    vector<common::ContextType> values;  // supported context types
     Context::getCreateValues( values );
     cout << endl;
     cout << "Factory of Context: " << values.size() << " entries" << endl;
@@ -141,9 +143,10 @@ void vectorInfo()
 
 void normInfo()
 {
+    using namespace scai;
     using namespace scai::lama;
     vector<string> values;  // string is create type for the factory
-    Norm<RealType>::getCreateValues( values );
+    Norm<DefaultReal>::getCreateValues( values );
     cout << endl;
     cout << "Factory of Norm: " << values.size() << " entries" << endl;
     cout << "===========================" << endl;
@@ -152,7 +155,7 @@ void normInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
-        NormPtr<RealType> norm( Norm<RealType>::create( values[i] ) );
+        NormPtr<DefaultReal> norm( Norm<DefaultReal>::create( values[i] ) );
         cout << "      Norm: " << *norm << endl;
     }
 

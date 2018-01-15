@@ -35,6 +35,7 @@
 #pragma once
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/cuda/CUDACallable.hpp>
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 #include <scai/common/Complex.hpp>
@@ -59,19 +60,19 @@ struct Math
      */
 
     template<typename ValueType>
-    static inline typename TypeTraits<ValueType>::AbsType abs( const ValueType& x );
+    static inline typename TypeTraits<ValueType>::RealType abs( const ValueType& x );
 
     /*
      * Getter for the real part
      */
     template<typename ValueType>
-    static inline typename TypeTraits<ValueType>::AbsType real( const ValueType& x );
+    static inline typename TypeTraits<ValueType>::RealType real( const ValueType& x );
 
     /*
      * Getter for the imag part
      */
     template<typename ValueType>
-    static inline typename TypeTraits<ValueType>::AbsType imag( const ValueType& x );
+    static inline typename TypeTraits<ValueType>::RealType imag( const ValueType& x );
 
     /** Square root function for ValueType
      *
@@ -169,7 +170,7 @@ struct Math
      * arg function for ValueType, only used for complex
      */
     template<typename ValueType>
-    static inline typename TypeTraits<ValueType>::AbsType arg( const ValueType& x );
+    static inline typename TypeTraits<ValueType>::RealType arg( const ValueType& x );
 
     /*
      * atan2-function for ValueType

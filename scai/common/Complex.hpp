@@ -741,6 +741,12 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 
 } /* end namespace common */
 
+// define more convenient names
+
+typedef common::Complex<float> ComplexFloat;
+typedef common::Complex<double> ComplexDouble;
+typedef common::Complex<long double> ComplexLongDouble;
+
 } /* end namespace scai */
 
 #undef COMPLEX_SET_REAL
@@ -769,8 +775,3 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 #undef COMPLEX_OPERATOR_NONMEMBER_CUDA
 #undef COMPLEX_OPERATOR_NONMEMBER_NONCUDA
 
-// define more convenient names
-
-typedef scai::common::Complex<float> ComplexFloat;
-typedef scai::common::Complex<double> ComplexDouble;
-typedef scai::common::Complex<long double> ComplexLongDouble;

@@ -209,4 +209,4 @@ solver::SolverCreateKeyType MyJacobi<ValueType>::createValue()
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-template class MyJacobi<RealType>;
+template class MyJacobi<DefaultReal>;

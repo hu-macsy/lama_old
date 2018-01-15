@@ -64,8 +64,6 @@
  */
 namespace scai
 {
-}
-
 /** Data type that is used for indexing in LAMA.
  *
  *  Currently, it is still necessary that it is a signed data type.
@@ -74,15 +72,10 @@ namespace scai
  */
 typedef ${SCAI_INDEX_TYPE} IndexType;
 
-/** Data type long double to have it as one word. Otherwise certain macros
- *  might fail to work correctly.
- */
-typedef long double LongDouble;
-
 /** Definition for a constant value that indicates a non-available index.
  */
 
-COMMON_DLL_IMPORTEXPORT extern const IndexType nIndex;
+COMMON_DLL_IMPORTEXPORT extern const IndexType invalidIndex;
 
 /** Data type that is used for numbering of partitions.
  *
@@ -93,7 +86,14 @@ typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-COMMON_DLL_IMPORTEXPORT extern const PartitionId nPartition;
+COMMON_DLL_IMPORTEXPORT extern const PartitionId invalidPartition;
+
+/** Data type long double to have it as one word. Otherwise certain macros
+ *  might fail to work correctly.
+ */
+typedef long double LongDouble;
+
+}
 
 /*
  * Lists of all supported numeric types
@@ -155,10 +155,16 @@ COMMON_DLL_IMPORTEXPORT extern const PartitionId nPartition;
 
 #define SCAI_ALL_TYPES_LIST                SCAI_TYPELIST( SCAI_ALL_TYPES )
 
+namespace scai
+{
+
 /** Representation type for Scalar must be the numeric type with highest precision */
 
 typedef ${SCAI_SCALAR_REP_TYPE} ScalarRepType;
 
-/** RealType: taken for example programs, usually double, but can also be float or LongDouble  */
+/** Default real type taken for example and test programs, usually double, but can also be float 
+    or LongDouble if double is not in NUMERIC types list  */
 
-typedef scai::common::mepr::TypeListUtilsVLL<double, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::ValueType RealType;
+typedef scai::common::mepr::TypeListUtilsVLL<double, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::ValueType DefaultReal;
+ 
+}

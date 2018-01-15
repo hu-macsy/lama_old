@@ -183,13 +183,13 @@ ValueType OpenMPELLUtils::absMaxVal(
     const IndexType ellSizes[],
     const ValueType values[] )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType maxValue = 0;
+    RealType maxValue = 0;
 
     #pragma omp parallel
     {
-        AbsType threadVal = 0;
+        RealType threadVal = 0;
 
         #pragma omp for 
 
@@ -199,7 +199,7 @@ ValueType OpenMPELLUtils::absMaxVal(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
-                AbsType val = common::Math::abs( values[pos] );
+                RealType val = common::Math::abs( values[pos] );
 
                 if ( val > threadVal )
                 {
@@ -266,7 +266,7 @@ IndexType OpenMPELLUtils::getValuePos(
     const IndexType ellSizes[],
     const IndexType ellJA[] )
 {
-    IndexType vPos = nIndex;
+    IndexType vPos = invalidIndex;
 
     for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
@@ -1326,7 +1326,7 @@ void OpenMPELLUtils::sparseGEVM(
 void OpenMPELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
@@ -1340,7 +1340,7 @@ template<typename ValueType>
 void OpenMPELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<ELLKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
@@ -1362,7 +1362,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );

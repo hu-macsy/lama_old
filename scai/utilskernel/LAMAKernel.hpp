@@ -45,7 +45,7 @@ namespace utilskernel
 {
 
 /** Define class LAMAKernel that deals always with KernelTrait;
-    it also combines it with ContexPtr instead of context::ContextType
+    it also combines it with ContexPtr instead of ContextType
 */
 
 template<typename KernelTrait>
@@ -74,8 +74,8 @@ public:
     void getSupportedContext( hmemo::ContextPtr& context ) const
     {
         SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
-        common::context::ContextType defCtx = context->getType();
-        common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
+        common::ContextType defCtx = context->getType();
+        common::ContextType runCtx = kregistry::_ContextFunction::validContext( defCtx );
 
         if ( runCtx != defCtx )
         {
@@ -92,14 +92,14 @@ public:
     void getSupportedContext( hmemo::ContextPtr& context, const kregistry::_ContextFunction& other ) const
     {
         SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
-        common::context::ContextType defCtx = context->getType();
-        common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( other, defCtx );
+        common::ContextType defCtx = context->getType();
+        common::ContextType runCtx = kregistry::_ContextFunction::validContext( other, defCtx );
 
         if ( runCtx == defCtx )
         {
             // context is fine, this and other are supported
         }
-        else if ( runCtx == common::context::Host )
+        else if ( runCtx == common::ContextType::Host )
         {
             context = hmemo::Context::getHostPtr();  // do it on host
         }
@@ -113,14 +113,14 @@ public:
                               const kregistry::_ContextFunction& other2 ) const
     {
         SCAI_ASSERT_DEBUG( context.get(), "NULL context" );
-        common::context::ContextType defCtx = context->getType();
-        common::context::ContextType runCtx = kregistry::_ContextFunction::validContext( other1, other2, defCtx );
+        common::ContextType defCtx = context->getType();
+        common::ContextType runCtx = kregistry::_ContextFunction::validContext( other1, other2, defCtx );
 
         if ( runCtx == defCtx )
         {
             // context is fine, this and other are supported
         }
-        else if ( runCtx == common::context::Host )
+        else if ( runCtx == common::ContextType::Host )
         {
             context = hmemo::Context::getHostPtr();  // do it on host
         }

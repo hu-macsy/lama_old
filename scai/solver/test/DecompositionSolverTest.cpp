@@ -62,11 +62,13 @@
 
 #include <scai/common/TypeTraits.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
-using namespace scai::common;
+using namespace scai;
+
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
+using namespace dmemo;
+using namespace common;
 
 // ---------------------------------------------------------------------------------------------------------------
 

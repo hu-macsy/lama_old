@@ -51,6 +51,7 @@ using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 using namespace std;
+using scai::IndexType;
 using scai::common::Walltime;
 
 template<typename ValueType>

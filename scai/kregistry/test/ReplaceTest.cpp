@@ -66,15 +66,15 @@ struct UnaryOpTrait
 BOOST_AUTO_TEST_CASE( ReplaceTest )
 {
     // register unary operator for double
-    KernelRegistry::set<UnaryOpTrait<double> >( add1<double>, context::Host, KernelRegistry::KERNEL_ADD );
-    KernelRegistry::set<UnaryOpTrait<double> >( minus1<double>, context::Host, KernelRegistry::KERNEL_ADD );  // does not overwrite add1
+    KernelRegistry::set<UnaryOpTrait<double> >( add1<double>, ContextType::Host, KernelRegistry::KERNEL_ADD );
+    KernelRegistry::set<UnaryOpTrait<double> >( minus1<double>, ContextType::Host, KernelRegistry::KERNEL_ADD );  // does not overwrite add1
     // register unary operator for float
-    KernelRegistry::set<UnaryOpTrait<float> >( add1<float>, context::Host, KernelRegistry::KERNEL_ADD );
-    KernelRegistry::set<UnaryOpTrait<float> >( minus1<float>, context::Host, KernelRegistry::KERNEL_REPLACE );  // overrides add1
+    KernelRegistry::set<UnaryOpTrait<float> >( add1<float>, ContextType::Host, KernelRegistry::KERNEL_ADD );
+    KernelRegistry::set<UnaryOpTrait<float> >( minus1<float>, ContextType::Host, KernelRegistry::KERNEL_REPLACE );  // overrides add1
     KernelTraitContextFunction<UnaryOpTrait<float> > opFloat;
     KernelTraitContextFunction<UnaryOpTrait<double> > opDouble;
-    double xd = opDouble[ context::Host ]( 1.0 );
-    float  xf = opFloat [ context::Host ]( 1.0f );
+    double xd = opDouble[ ContextType::Host ]( 1.0 );
+    float  xf = opFloat [ ContextType::Host ]( 1.0f );
     BOOST_CHECK_EQUAL( 2.0, xd );
     BOOST_CHECK_EQUAL( 0.0, xf );
 }

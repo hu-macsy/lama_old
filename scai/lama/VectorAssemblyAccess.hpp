@@ -104,7 +104,7 @@ public:
 
         const IndexType localI = mVector.getDistribution().global2local( i );
 
-        if ( localI != nIndex )
+        if ( localI != invalidIndex )
         {
             mLocalIA.push_back( localI );
             mLocalValues.push_back( val );

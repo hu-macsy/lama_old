@@ -179,7 +179,7 @@ ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array, ContextPtr co
 template<typename ValueType>
 ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array ) : mArray( &array )
 {
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::ContextType::Host );
     SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id()
                     << "> : create for " << array << " @ " << *contextPtr )
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );

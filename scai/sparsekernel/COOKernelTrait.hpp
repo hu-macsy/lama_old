@@ -58,7 +58,7 @@ struct COOKernelTrait
          *  @param[in] j is the column of the element
          *  @param[in] cooIA is the COO ia array
          *  @param[in] cooJA is the COO ja array
-         *  @returns  offset of element in values array, nIndex if not found
+         *  @returns  offset of element in values array, invalidIndex if not found
          */
 
         typedef IndexType ( *FuncType ) (

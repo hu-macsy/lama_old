@@ -545,12 +545,12 @@ public:
      * @param[in] firstRow is the first row to read
      * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
      *
-     * Note: default argument for nRows is nIndex as the number of rows in full storage might not be known
+     * Note: default argument for nRows is invalidIndex as the number of rows in full storage might not be known
      */
     virtual void readFromFile(
         const std::string& fileName,
         const IndexType firstRow = 0,
-        const IndexType nRows = nIndex ) = 0;
+        const IndexType nRows = invalidIndex ) = 0;
 
     /**
      * @brief write the matrix storage to an output file
@@ -954,7 +954,7 @@ public:
         const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
-    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = nIndex );
+    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
 
     virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
@@ -1075,7 +1075,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual NormType<ValueType> l1Norm() const = 0;
+    virtual RealType<ValueType> l1Norm() const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -1084,14 +1084,14 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual NormType<ValueType> l2Norm() const = 0;
+    virtual RealType<ValueType> l2Norm() const = 0;
 
     /** Get the maximum norm of this matrix
      *
      *  @return maximal absolute value of matrix elements
      */
 
-    virtual NormType<ValueType> maxNorm() const = 0;
+    virtual RealType<ValueType> maxNorm() const = 0;
 
     /** Gets the maximal absolute element-wise difference between two matrices
      *
@@ -1102,7 +1102,7 @@ public:
      *        and computing maxNorm of it.
      */
 
-    virtual NormType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /******************************************************************
      *   Solver methods (e.g. Jacobi )                                 *

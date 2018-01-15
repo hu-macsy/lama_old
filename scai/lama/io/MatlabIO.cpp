@@ -377,7 +377,7 @@ void MatlabIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
@@ -391,9 +391,9 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 
     if ( isComplex ( array.getValueType() ) )
     {
-        typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+        typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-        HArray<AbsType> real;
+        HArray<RealType> real;
 
         utilskernel::HArrayUtils::setArray( real, array );
 
@@ -863,7 +863,7 @@ void MatlabIO::readStorageImpl(
 
     uint32_t nBytes = inFile.readDataElement( dataElement );
 
-    if ( firstRow == 0 && nRows == nIndex )
+    if ( firstRow == 0 && nRows == invalidIndex )
     {
         getStorage( storage, dataElement.get(), nBytes );
         SCAI_LOG_INFO( logger, "readStorage: " << storage )

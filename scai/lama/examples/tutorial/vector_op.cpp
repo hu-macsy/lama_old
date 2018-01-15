@@ -47,7 +47,7 @@ using namespace scai;
 using namespace lama;
 using utilskernel::LArray;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 void methods1()
 {

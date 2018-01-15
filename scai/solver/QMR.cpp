@@ -215,7 +215,7 @@ void QMR<ValueType>::iterate()
     ValueType theta1 = 0;  // not used in first iteration
     ValueType rho1;
 
-    const NormType<ValueType>& eps = runtime.mEps;
+    const RealType<ValueType>& eps = runtime.mEps;
 
     if ( this->getIterationCount() == 0 )
     {

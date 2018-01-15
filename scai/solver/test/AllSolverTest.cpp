@@ -45,6 +45,8 @@
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
+using scai::IndexType;
+
 using namespace scai::lama;
 using namespace scai::solver;
 

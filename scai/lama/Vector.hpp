@@ -204,7 +204,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual NormType<ValueType> l1Norm() const = 0;
+    virtual RealType<ValueType> l1Norm() const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -213,7 +213,7 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual NormType<ValueType> l2Norm() const = 0;
+    virtual RealType<ValueType> l2Norm() const = 0;
 
     /**
      * @brief Returns the max norm of this.
@@ -222,7 +222,7 @@ public:
      *
      * maxNorm computes the value of this with the largest magnitude.
      */
-    virtual NormType<ValueType> maxNorm() const = 0;
+    virtual RealType<ValueType> maxNorm() const = 0;
 
     /**
      * @brief Returns the max norm of the difference with another vector
@@ -236,7 +236,7 @@ public:
      *
      *  But it avoids the temporary vector wherever possible
      */
-    virtual NormType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const = 0;
+    virtual RealType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const = 0;
 
     /**
      * @brief Returns the global minimum value of this.

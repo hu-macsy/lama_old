@@ -59,11 +59,11 @@ public:
 
     virtual ~MaxNorm();
 
-    virtual NormType<ValueType> apply( const ValueType& scalar ) const;
+    virtual RealType<ValueType> apply( const ValueType& scalar ) const;
 
-    virtual NormType<ValueType> apply( const Vector<ValueType>& vector ) const;
+    virtual RealType<ValueType> apply( const Vector<ValueType>& vector ) const;
 
-    virtual NormType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
+    virtual RealType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
 
     /**
      *  Getter routine for key of this derived class used in Norm factory
@@ -81,20 +81,20 @@ public:
 };
 
 template<typename ValueType>
-inline NormType<ValueType> maxNorm( const ValueType& scalar )
+inline RealType<ValueType> maxNorm( const ValueType& scalar )
 {
     return common::Math::abs( scalar );
 }
 
 
 template<typename ValueType>
-inline NormType<ValueType> maxNorm( const Vector<ValueType>& vector )
+inline RealType<ValueType> maxNorm( const Vector<ValueType>& vector )
 {
     return vector.maxNorm();
 }
 
 template<typename ValueType>
-inline NormType<ValueType> maxNorm( const Matrix<ValueType>& matrix )
+inline RealType<ValueType> maxNorm( const Matrix<ValueType>& matrix )
 {
     return matrix.maxNorm();
 }

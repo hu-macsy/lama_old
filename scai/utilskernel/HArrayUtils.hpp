@@ -839,15 +839,21 @@ public:
      *
      *  @param[in] indexes is an array of sorted indexes
      *  @param[in] index is the value to be found in indexes array
-     *  @return position of index in indexes if found, nIndex otherwise
+     *  @return position of index in indexes if found, invalidIndex otherwise
      *
      *  \code
      *     HArray<IndexType> indexes ( 5, { 0, 5, 11, 18, 19 } );
      *     findPosInSortedIndexes( indexes, 5  ) -> 1
-     *     findPosInSortedIndexes( indexes, 31 ) -> nIndex
+     *     findPosInSortedIndexes( indexes, 31 ) -> invalidIndex
      *  \endcode
      */
     static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType index );
+
+    /** Find many indexes in an array of sorted indexes */
+
+    static void findPosInSortedIndexesV( hmemo::HArray<IndexType>& outPos,
+                                         const hmemo::HArray<IndexType>& indexes,
+                                         const hmemo::HArray<IndexType> inPos );
 
     /** Add two sparse arrays 
      *

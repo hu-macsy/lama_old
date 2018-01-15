@@ -318,7 +318,7 @@ void SAMGIO::readArrayImpl( HArray<ValueType>& array, const std::string& fileNam
 
     IndexType nEntries = n;
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         nEntries = size - first;
     }
@@ -380,7 +380,7 @@ void SAMGIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
@@ -568,7 +568,7 @@ void SAMGIO::readStorageImpl(
 
     IndexType numBlockRows = nRows;
 
-    if ( nRows == nIndex )
+    if ( nRows == invalidIndex )
     {
         numBlockRows = numRows - firstRow;
     }

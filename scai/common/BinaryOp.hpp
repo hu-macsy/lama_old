@@ -87,7 +87,7 @@ template <typename ValueType>
 CUDA_CALLABLE_MEMBER
 inline ValueType applyBinary( const ValueType& x1, const BinaryOp op, const ValueType& x2 )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     switch ( op )
     {
@@ -108,9 +108,9 @@ inline ValueType applyBinary( const ValueType& x1, const BinaryOp op, const Valu
         case BinaryOp::POW:
             return Math::pow( x1, x2 );
         case BinaryOp::MIN:
-            return Math::min( AbsType( x1 ), AbsType( x2 ) );
+            return Math::min( RealType( x1 ), RealType( x2 ) );
         case BinaryOp::MAX:
-            return Math::max( AbsType( x1 ), AbsType( x2 ) );
+            return Math::max( RealType( x1 ), RealType( x2 ) );
         case BinaryOp::ABS_MAX:
             return Math::max( Math::abs( x1 ), Math::abs( x2 ) );
         case BinaryOp::ABS_DIFF:

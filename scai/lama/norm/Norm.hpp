@@ -83,7 +83,7 @@ public:
      * @param[in] scalar    the Scalar to caluclate the norm for.
      * @return              the norm of scalar.
      */
-    NormType<ValueType> operator()( const ValueType& scalar ) const;
+    RealType<ValueType> operator()( const ValueType& scalar ) const;
 
     /**
      * @brief Calculates the norm of the passed Vector.
@@ -93,7 +93,7 @@ public:
      * @param[in] vector    the Vector to caluclate the norm for.
      * @return              the norm of vector.
      */
-    NormType<ValueType> operator()( const Vector<ValueType>& vector ) const;
+    RealType<ValueType> operator()( const Vector<ValueType>& vector ) const;
 
     /**
      * @brief Calculates the norm of the passed _Matrix.
@@ -103,7 +103,7 @@ public:
      * @param[in] matrix    the _Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
-    NormType<ValueType> operator()( const Matrix<ValueType>& matrix ) const;
+    RealType<ValueType> operator()( const Matrix<ValueType>& matrix ) const;
 
     /**
      * @brief Calculates the norm of the passed Scalar.
@@ -111,7 +111,7 @@ public:
      * @param[in] scalar    the Scalar to caluclate the norm for.
      * @return              the norm of scalar.
      */
-    virtual NormType<ValueType> apply( const ValueType& scalar ) const = 0;
+    virtual RealType<ValueType> apply( const ValueType& scalar ) const = 0;
 
     /**
      * @brief Calculates the norm of the passed Vector.
@@ -119,7 +119,7 @@ public:
      * @param[in] vector    the Vector to caluclate the norm for.
      * @return              the norm of vector.
      */
-    virtual NormType<ValueType> apply( const Vector<ValueType>& vector ) const = 0;
+    virtual RealType<ValueType> apply( const Vector<ValueType>& vector ) const = 0;
 
     /**
      * @brief Calculates the norm of the passed _Matrix.
@@ -127,7 +127,7 @@ public:
      * @param[in] matrix    the _Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
-    virtual NormType<ValueType> apply( const Matrix<ValueType>& matrix ) const = 0;
+    virtual RealType<ValueType> apply( const Matrix<ValueType>& matrix ) const = 0;
 };
 
 /** 

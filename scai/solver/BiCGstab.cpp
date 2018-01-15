@@ -202,9 +202,9 @@ void BiCGstab<ValueType>::iterate()
     ValueType& omega = runtime.mOmega;
     ValueType& rhoOld = runtime.mRhoOld;
     ValueType& rhoNew = runtime.mRhoNew;
-    const NormType<ValueType>& eps = runtime.mEps;
+    const RealType<ValueType>& eps = runtime.mEps;
 
-    NormType<ValueType>& resNorm = runtime.mResNorm;
+    RealType<ValueType>& resNorm = runtime.mResNorm;
 
     rhoNew = res0.dotProduct( res );
 
@@ -265,7 +265,7 @@ void BiCGstab<ValueType>::iterate()
         vecTT = vecT;
     }
 
-    NormType<ValueType> normTT2 = vecTT.dotProduct( vecTT );
+    RealType<ValueType> normTT2 = vecTT.dotProduct( vecTT );
 
     if ( resNorm < eps || normTT2 < eps ) //scalar is small
     {

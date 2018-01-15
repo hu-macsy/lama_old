@@ -36,6 +36,8 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 
+namespace scai
+{
 
 /************************************************************************************
  *
@@ -214,3 +216,5 @@ ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, con
 }
 
 #endif
+
+}

@@ -59,11 +59,11 @@ public:
 
     virtual ~L1Norm();
 
-    virtual NormType<ValueType> apply( const ValueType& scalar ) const;
+    virtual RealType<ValueType> apply( const ValueType& scalar ) const;
 
-    virtual NormType<ValueType> apply( const Vector<ValueType>& vector ) const;
+    virtual RealType<ValueType> apply( const Vector<ValueType>& vector ) const;
 
-    virtual NormType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
+    virtual RealType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
 
     static std::string createValue();
 
@@ -75,19 +75,19 @@ public:
 };
 
 template<typename ValueType>
-inline NormType<ValueType> l1Norm( const ValueType& scalar )
+inline RealType<ValueType> l1Norm( const ValueType& scalar )
 {
     return common::Math::abs( scalar );
 }
 
 template<typename ValueType>
-inline NormType<ValueType> l1Norm( const Vector<ValueType>& vector )
+inline RealType<ValueType> l1Norm( const Vector<ValueType>& vector )
 {
     return vector.l1Norm();
 }
 
 template<typename ValueType>
-inline NormType<ValueType> l1Norm( const Matrix<ValueType>& matrix )
+inline RealType<ValueType> l1Norm( const Matrix<ValueType>& matrix )
 {
     return matrix.l1Norm();
 }

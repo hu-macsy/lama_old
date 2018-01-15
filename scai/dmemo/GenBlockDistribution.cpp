@@ -225,7 +225,7 @@ PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
 
     if ( ! common::Utils::validIndex( globalIndex, mOffsets[last] ) )
     {
-        return nPartition; // out of range
+        return invalidPartition; // out of range
     }
 
     // binary search in the array mOffsets
@@ -277,7 +277,7 @@ IndexType GenBlockDistribution::local2global( const IndexType localIndex ) const
 
 IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) const
 {
-    IndexType localIndex = nIndex;   // default value if globalIndex is not local
+    IndexType localIndex = invalidIndex;   // default value if globalIndex is not local
 
     if ( globalIndex >= mLB && globalIndex < mUB )
     {

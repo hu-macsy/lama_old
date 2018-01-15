@@ -57,7 +57,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-typedef RealType ValueType;  // is double, only float if double not instantiated
+typedef scai::DefaultReal ValueType;  // is double, only float if double not instantiated
 
 using namespace scai;
 using namespace lama;

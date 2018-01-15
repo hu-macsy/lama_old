@@ -1,5 +1,5 @@
 /**
- * @file CUDALAPACK.hpp
+ * @file common/thread.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,62 +27,54 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of static class with CUDA implementations of LAPACK routines.
- * @author Lauretta Schubert
- * @date 06.07.2012
+ * @brief Definition of functions to name threads.
+ * @author Thomas Brandes
+ * @date 11.06.2015
  */
-
 #pragma once
 
 // for dll_import
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/blaskernel/cblas.hpp>
 
-// internal scai library
-#include <scai/common/SCAITypes.hpp>
+// C++11 features
 
-#include <scai/logging.hpp>
-
-#include <scai/kregistry/mepr/Registrator.hpp>
+#include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace scai
 {
 
-namespace blaskernel
+namespace common
 {
 
-/** Static class that provides CUDA implementaions for some LAPACK routines as specified in BLASKernelTrait.
+/** 
+ * Namespace that provides some free functions to give threads a name.
+ *
+ * Note: query a name returns a shared pointer to a string to avoid race conditions
  */
-
-class COMMON_DLL_IMPORTEXPORT CUDALAPACK
+namespace thread
 {
-private:
+    typedef std::thread::id Id;
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+    /** Set a name for the current thread. */
 
-    /** Routine that registers all methods at the kernel registry. */
+    void defineCurrentThreadName( const char* name );
 
-    template<typename ValueType>
-    struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
+    /** Query the name of a thread. */
 
-    /** Constructor for registration. */
+    std::shared_ptr<std::string> getThreadName( Id id );
 
-    CUDALAPACK();
+    /** Query the name of the current thread. */
 
-    /** Destructor for unregistration. */
+    std::shared_ptr<std::string> getCurrentThreadName();
 
-    ~CUDALAPACK();
+} /* end namesapce thread */
 
-    /** Static variable for registration at static initialization. */
-
-    static CUDALAPACK guard;
-};
-
-} /* end namespace blaskernel */
+} /* end namespace common */
 
 } /* end namespace scai */
+

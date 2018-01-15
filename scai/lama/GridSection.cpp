@@ -69,7 +69,7 @@ void GridSection<ValueType>::setDim( IndexType k, const Range& r )
    sec.isLocalized = false;
    sec.isRange     = r.mStride != 0;
 
-   if ( r.mUB == nIndex )
+   if ( r.mUB == invalidIndex )
    {
        sec.globalRange[1] = mGlobalGrid.size( k );
    }

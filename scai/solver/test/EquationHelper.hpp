@@ -38,6 +38,9 @@
 
 #include <scai/lama/DenseVector.hpp>
 
+namespace scai
+{
+
 class EquationHelper
 {
 public:
@@ -45,9 +48,9 @@ public:
     template<typename ValueType>
     struct EquationSystem
     {
-        scai::lama::CSRSparseMatrix<ValueType> coefficients;
-        scai::lama::DenseVector<ValueType> rhs;
-        scai::lama::DenseVector<ValueType> solution;
+        lama::CSRSparseMatrix<ValueType> coefficients;
+        lama::DenseVector<ValueType> rhs;
+        lama::DenseVector<ValueType> solution;
     };
 
     typedef EquationSystem<float> ( *ssystem )();
@@ -297,3 +300,4 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemD()
     return equationSystem;
 }
 
+}

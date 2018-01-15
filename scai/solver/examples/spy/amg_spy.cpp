@@ -45,7 +45,7 @@ using namespace scai::hmemo;
 using namespace scai::dmemo;
 using namespace scai::solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, char** argv )
 {

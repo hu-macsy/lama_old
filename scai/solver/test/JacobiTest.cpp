@@ -160,8 +160,8 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     diff.setContextPtr( context );
     diff.redistribute( coefficients.getColDistributionPtr() );
     L2Norm<ValueType> l2Norm;
-    NormType<ValueType> norm = l2Norm( diff );
-    NormType<ValueType> eps1 = 1e-1;
+    RealType<ValueType> norm = l2Norm( diff );
+    RealType<ValueType> eps1 = 1e-1;
     BOOST_CHECK( norm < eps1 );
     //bad omega
     //test for even iterations
@@ -188,8 +188,8 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     DenseVector<ValueType> diffAB( solutionA - solutionB );
     diffAB.setContextPtr( context );
     diffAB.redistribute( coefficients.getColDistributionPtr() );
-    NormType<ValueType> l2norm = l2Norm( diffAB );
-    NormType<ValueType> eps    = 1e-5;
+    RealType<ValueType> l2norm = l2Norm( diffAB );
+    RealType<ValueType> eps    = 1e-5;
     BOOST_CHECK( l2norm < eps );
 }
 

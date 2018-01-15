@@ -46,7 +46,7 @@ using namespace lama;
 
 typedef float real_t;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int narg, const char* argv[] )
 {

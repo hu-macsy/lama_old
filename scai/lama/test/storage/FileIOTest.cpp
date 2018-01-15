@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
 
-        NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+        RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
         // due to formatted output we might have lost some precision
 
@@ -717,7 +717,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         // Test the method readArray
 
-        NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+        RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
         {
             LArray<ValueType> inArray;
@@ -728,7 +728,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
             BOOST_REQUIRE_EQUAL( N, inArray.size() );
 
-            NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+            RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
             for ( IndexType i = 0; i < N; ++i )
             {
@@ -985,7 +985,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
         // Test the method readSparse
 
-        NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+        RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
         {
             IndexType         inN;
@@ -1032,7 +1032,7 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 {
     // DataType = Pattern : no I/O of the matrix values
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     std::vector<std::string> supportedSuffixes;
 

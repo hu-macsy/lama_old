@@ -54,7 +54,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MatrixAssemblyTest" );
 
 /** For the matrix tests here it is sufficient to take only one of the possible value types. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 /* ------------------------------------------------------------------------- */
 

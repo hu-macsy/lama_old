@@ -110,9 +110,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_numeric_test_types )
     DenseStorage<ValueType> dense;
     setDenseData( dense );
     const LArray<ValueType> denseData = dense.getData();
-    NormType<ValueType> expectedL1Norm = denseData.l1Norm();
-    NormType<ValueType> expectedL2Norm = denseData.l2Norm();
-    NormType<ValueType> expectedMaxNorm = denseData.maxNorm();
+    RealType<ValueType> expectedL1Norm = denseData.l1Norm();
+    RealType<ValueType> expectedL2Norm = denseData.l2Norm();
+    RealType<ValueType> expectedMaxNorm = denseData.maxNorm();
     TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
@@ -120,11 +120,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_numeric_test_types )
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         SCAI_LOG_DEBUG( logger, "normTest, storage = " << storage << " @ " << *storage.getContextPtr() )
         setDenseData( storage );
-        NormType<ValueType> maxNorm = storage.maxNorm();
+        RealType<ValueType> maxNorm = storage.maxNorm();
         BOOST_CHECK_CLOSE( expectedMaxNorm, maxNorm, 1 );
-        NormType<ValueType> l1Norm = storage.l1Norm();
+        RealType<ValueType> l1Norm = storage.l1Norm();
         BOOST_CHECK_CLOSE( expectedL1Norm, l1Norm, 1 );
-        NormType<ValueType> l2Norm = storage.l2Norm();
+        RealType<ValueType> l2Norm = storage.l2Norm();
         BOOST_CHECK_CLOSE( expectedL2Norm, l2Norm, 1 );
     }
 }
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_numeric_test_types 
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
             storage.setRow( row, i, common::BinaryOp::SUB );
         }
 
-        BOOST_CHECK( storage.maxNorm() < AbsType( 0.0001 ) );
+        BOOST_CHECK( storage.maxNorm() < RealType( 0.0001 ) );
     }
 }
 
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types
             storage.setColumn( column, j, common::BinaryOp::SUB );
         }
 
-        BOOST_CHECK( storage.maxNorm() < AbsType( 0.0001 ) );
+        BOOST_CHECK( storage.maxNorm() < RealType( 0.0001 ) );
     }
 }
 

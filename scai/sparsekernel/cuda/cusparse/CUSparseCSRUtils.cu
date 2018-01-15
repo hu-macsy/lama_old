@@ -423,7 +423,7 @@ void CUSparseCSRUtils::matrixMultiply(
 void CUSparseCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
@@ -433,7 +433,7 @@ template<typename ValueType>
 void CUSparseCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );

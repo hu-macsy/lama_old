@@ -76,7 +76,7 @@ static void printUsage( const char* prog_name )
 
 /** Get the value type used for this application.
  *
- *  Default value type is RealType( double ) but can be overwritten by
+ *  Default value type is DefaultReal( double ) but can be overwritten by
  *
  *   - environment variable SCAI_TYPE=float|double|LongDouble|ComplexFloat|ComplexDouble| ...
  *   - or command line argument --SCAI_TYPE=...
@@ -84,7 +84,7 @@ static void printUsage( const char* prog_name )
 
 static common::ScalarType getType()
 {
-    common::ScalarType type = common::TypeTraits<RealType>::stype;
+    common::ScalarType type = common::TypeTraits<DefaultReal>::stype;
 
     std::string val;
 

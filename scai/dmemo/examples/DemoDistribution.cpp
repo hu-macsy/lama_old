@@ -34,7 +34,8 @@
 
 #include <scai/dmemo.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 int main()
 {

@@ -71,7 +71,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest" );
 
 /** For the matrix tests here it is sufficient to take only one of the possible value types. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 /* ------------------------------------------------------------------------- */
 
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( columnDistributionTest )
     // Motivation: dedicated test to check that split/join of distributed column
     //             data works which is typique for dense matrices.
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     // In this method we just test that split/join of columns works fine
 
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( dense2SparseTest )
     // Motivation: dedicated test to check that split/join of distributed column
     //             data works which is typique for dense matrices.
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     // In this method we just test that split/join of columns works fine
 

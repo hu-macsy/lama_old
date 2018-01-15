@@ -56,7 +56,7 @@ using namespace scai::solver;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, char* argv[] )
 {
@@ -69,7 +69,7 @@ int main( int argc, char* argv[] )
     CSRSparseMatrix<ValueType> m( argv[1] );
     std::cout << "Read matrix m : " << m << std::endl;
     IndexType size = m.getNumRows();
-    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA, 0 );
+    ContextPtr cudaContext = Context::getContextPtr( common::ContextType::CUDA, 0 );
     m.setContextPtr( cudaContext );
     DenseVector<ValueType> rhs( size , 0 );
     WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );

@@ -39,9 +39,6 @@
 // base classes
 #include <scai/hmemo/Memory.hpp>
 
-// internal scai libraries
-#include <scai/common/Thread.hpp>
-
 // CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>

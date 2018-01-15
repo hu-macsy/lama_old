@@ -2053,7 +2053,7 @@ void CUDAJDSUtils::sparseGEVM(
 void CUDAJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
@@ -2063,7 +2063,7 @@ template<typename ValueType>
 void CUDAJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
@@ -2076,7 +2076,7 @@ template<typename ValueType, typename OtherValueType>
 void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );

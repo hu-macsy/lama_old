@@ -131,7 +131,7 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    COOSparseMatrix<RealType> C( 10000, 10000 );
+    COOSparseMatrix<DefaultReal> C( 10000, 10000 );
 
     MatrixCreator::fillRandom( C, 0.1 );
 

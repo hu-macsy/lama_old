@@ -67,7 +67,7 @@ class Range
 {
 public:
 
-    Range() : mLB( 0 ), mUB( nIndex ), mStride( 1 )
+    Range() : mLB( 0 ), mUB( invalidIndex ), mStride( 1 )
     {
     }
 

@@ -37,7 +37,7 @@
 using namespace scai;
 using utilskernel::LArray;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main()
 {

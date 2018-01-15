@@ -27,26 +27,23 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./tracing/examples/TraceThreads.cpp
+ * @brief Example of tracing with multiple threads
  * @author Thomas Brandes
  * @date 24.06.2015
  */
 
-#include <scai/common/Thread.hpp>
 #include <scai/tracing.hpp>
 #include <scai/logging.hpp>
 #include <scai/common/Walltime.hpp>
 
-using scai::common::Thread;
-
-void subA( int& )
+void subA()
 {
     SCAI_LOG_THREAD( "Thread1" )
     SCAI_REGION( "A" )
     scai::common::Walltime::sleep( 2000 );
 }
 
-void subB( int& )
+void subB()
 {
     SCAI_LOG_THREAD( "Thread2" )
     SCAI_REGION( "B" )
@@ -57,8 +54,7 @@ int main()
 {
     SCAI_LOG_THREAD( "master" )
     SCAI_REGION( "main" )
-    int dummy = 0;
-    Thread t1( subA, dummy );
-    Thread t2( subB, dummy );
+    std::thread t1( subA );
+    std::thread t2( subB );
 }
 

@@ -170,7 +170,7 @@ IndexType Halo::global2halo( const IndexType globalIndex ) const
 
     if ( elem == mGlobal2Halo.end() )
     {
-        return nIndex;
+        return invalidIndex;
     }
 
     return elem->second;

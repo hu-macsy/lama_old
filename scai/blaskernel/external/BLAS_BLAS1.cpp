@@ -310,7 +310,7 @@ template<typename ValueType>
 void BLAS_BLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     bool useBLAS = false;
     int level = 0;
     useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );

@@ -76,7 +76,7 @@ IndexType OpenMPDIAUtils::getValuePos( const IndexType i,
                                        const IndexType diaOffsets[],
                                        const IndexType numDiagonals )
 {
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     for ( IndexType d = 0; d < numDiagonals; ++d )
     {
@@ -100,13 +100,13 @@ ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType maxValue = 0;
+    RealType maxValue = 0;
 
     #pragma omp parallel
     {
-        AbsType threadVal = 0;
+        RealType threadVal = 0;
 
         #pragma omp for 
 
@@ -121,7 +121,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
                     continue;
                 }
 
-                const AbsType val = common::Math::abs( diaValues[i + d * numRows] );
+                const RealType val = common::Math::abs( diaValues[i + d * numRows] );
 
                 if ( val > threadVal )
                 {
@@ -158,9 +158,9 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
-    typedef typename common::TypeTraits<DIAValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<DIAValueType>::RealType RealType;
 
-    AbsType absEps = eps;
+    RealType absEps = eps;
 
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id()
@@ -265,8 +265,8 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
-    typedef typename common::TypeTraits<DIAValueType>::AbsType AbsType;
-    AbsType absEps = eps;
+    typedef typename common::TypeTraits<DIAValueType>::RealType RealType;
+    RealType absEps = eps;
 
     SCAI_LOG_INFO( logger,
                    "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " << numRows << " x " << numColumns
@@ -532,7 +532,7 @@ void OpenMPDIAUtils::jacobi(
 void OpenMPDIAUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<DIAKernelTrait::getValuePos>( getValuePos, ctx, flag );
 }
@@ -543,7 +543,7 @@ template<typename ValueType>
 void OpenMPDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<DIAKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
@@ -559,7 +559,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );

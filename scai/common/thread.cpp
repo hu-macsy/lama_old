@@ -1,5 +1,5 @@
 /**
- * @file Thread.cpp
+ * @file thread.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,13 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of methods for threads using C++11 standard
+ * @brief Implementation of methods for naming threads
  * @author Thomas Brandes
  * @date 10.06.2015
  */
 
 // hpp
-#include <scai/common/Thread.hpp>
+#include <scai/common/thread.hpp>
 
 // local library
 #include <scai/common/macros/system_call.hpp>
@@ -43,12 +43,11 @@
 #include <string>
 #include <iostream>
 #include <string.h>
+#include <unordered_map>
 
 // define LOCAL_DEBUG for debugging this source code
 
 #undef LOCAL_DEBUG
-
-using namespace std;
 
 namespace scai
 {
@@ -56,14 +55,13 @@ namespace scai
 namespace common
 {
 
-Thread::Id Thread::getSelf()
+namespace thread
 {
-    return std::this_thread::get_id();
-}
 
 // Map that defines mapping thread ids -> thread names (as strings)
 
-typedef map<Thread::Id, string> MapThreads;
+typedef std::shared_ptr<std::string> pString;
+typedef std::unordered_map<Id, pString> MapThreads;
 
 static MapThreads& getMapThreads()
 {
@@ -78,105 +76,23 @@ static MapThreads& getMapThreads()
     return *mapThreads;
 }
 
-Thread::Mutex::Mutex( bool isRecursive ) : mIsRecursive( isRecursive )
+std::mutex map_mutex; // Make access to map thread safe
+
+void defineCurrentThreadName( const char* name )
 {
-    // Only one of the member objects is allocated
-    if ( mIsRecursive )
-    {
-        mRecursiveMutex.reset( new std::recursive_mutex() );
-    }
-    else
-    {
-        mMutex.reset( new std::mutex() );
-    }
-}
+    std::unique_lock<std::mutex> lock( map_mutex );
+    Id id = std::this_thread::get_id();
 
-Thread::Condition::Condition() : std::condition_variable_any()
-{
-}
-
-Thread::Mutex::~Mutex()
-{
-}
-
-Thread::Condition::~Condition()
-{
-}
-
-void Thread::Mutex::lock()
-{
-    if ( mIsRecursive )
-    {
-        mRecursiveMutex->lock();
-    }
-    else
-    {
-        mMutex->lock();
-    }
-}
-
-void Thread::Mutex::unlock()
-{
-    if ( mIsRecursive )
-    {
-        mRecursiveMutex->unlock();
-    }
-    else
-    {
-        mMutex->unlock();
-    }
-}
-
-void Thread::Condition::notifyOne()
-{
-    std::condition_variable_any::notify_one();
-}
-
-void Thread::Condition::notifyAll()
-{
-    std::condition_variable_any::notify_all();
-}
-
-void Thread::Condition::wait( ScopedLock& lock )
-{
-    if ( lock.mMutex.mIsRecursive )
-    {
-        std::condition_variable_any::wait( *lock.mMutex.mRecursiveMutex );
-    }
-    else
-    {
-        std::condition_variable_any::wait( *lock.mMutex.mMutex );
-    }
-}
-
-Thread::ScopedLock::ScopedLock( Mutex& mutex ) :
-
-    mMutex( mutex )
-{
-    mMutex.lock();
-}
-
-Thread::ScopedLock::~ScopedLock( )
-{
-    mMutex.unlock();
-}
-
-Thread::Mutex map_mutex; // Make access to map thread safe
-
-void Thread::defineCurrentThreadName( const char* name )
-{
-    ScopedLock lock( map_mutex );
-    Thread::Id id = getSelf();
 #ifdef LOCAL_DEBUG
     cout << "defineCurrentThreadName, id = " << id << ", name = " << name << endl;
 #endif
     MapThreads& mapThreads = getMapThreads();
-    map<Thread::Id, string>::iterator it = mapThreads.find( id );
+    auto it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
         // name not defined yet
-        mapThreads.insert( std::pair<Thread::Id, string>( id, name ) );
+        mapThreads.insert( std::pair<Id, pString>( id, pString( new std::string( name ) ) ) );
 #ifdef LOCAL_DEBUG
         cout << "Thread " << id << " defines name " << name << endl;
 #endif
@@ -186,57 +102,41 @@ void Thread::defineCurrentThreadName( const char* name )
         // already defined, but probably on purporse
         // cout << "Redefine Thread " << id << " = " << it->second << " as " << name << endl;
 #ifdef LOCAL_DEBUG
-        cout << "Thread " << id << " named " << it->second << ", renamed to " << name << endl;
+        cout << "Thread " << id << " named " << *it->second << ", renamed to " << name << endl;
 #endif
-        it->second = name;
+        it->second.reset( new std::string( name ) );
     }
 }
 
-const char* Thread::getThreadName( Thread::Id id )
+std::shared_ptr<std::string> getThreadName( Id id )
 {
-    Thread::ScopedLock lock( map_mutex );
+    std::unique_lock<std::mutex> lock( map_mutex );
+
     MapThreads& mapThreads = getMapThreads();
+
     MapThreads::iterator it = mapThreads.find( id );
 
     if ( it == mapThreads.end() )
     {
         // No name defined yet, give it one, use internal numbering
         // Tracing requires unique name
-        ostringstream thread_name;
-        thread_name << "thread_" << mapThreads.size();
+        pString str( new std::string( "thread_" + std::to_string( mapThreads.size() ) ) );
+
         // Attention: This would not possible if mapThreads is not statically initialized
-        mapThreads.insert( std::pair<Thread::Id, string>( id, thread_name.str() ) );
+        mapThreads.insert( std::pair<Id, pString>( id, str ) );
         it = mapThreads.find( id );
     }
 
     // return the defined name
-    return it->second.c_str();
+    return it->second;
 }
 
-const char* Thread::getCurrentThreadName()
+std::shared_ptr<std::string> getCurrentThreadName()
 {
-    return getThreadName( getSelf() );
+    return getThreadName( std::this_thread::get_id() );
 }
 
-void Thread::start( ThreadFunction start_routine, void* arg )
-{
-    mThread = new std::thread( start_routine, arg );
-}
-
-void Thread::join()
-{
-    if ( mThread != NULL )
-    {
-        mThread->join();
-        delete mThread;
-        mThread = NULL;
-    }
-}
-
-Thread::~Thread()
-{
-    join();
-}
+} /* end namespace thread */
 
 } /* end namespace common */
 

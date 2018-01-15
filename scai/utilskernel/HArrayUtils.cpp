@@ -39,6 +39,7 @@
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/utilskernel/mepr/UtilsWrapper.hpp>
 
@@ -1404,7 +1405,7 @@ ValueType HArrayUtils::unscan(
     unscan.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
     WriteAccess<ValueType> wValues( array, loc );
-    ValueType first = unscan[loc]( wValues.get(), n );
+    ValueType first = unscan[loc]( wValues.get(), n - 1 );
 
     // One additional element will be removed from end
     wValues.resize( n - 1 );
@@ -1715,7 +1716,7 @@ void HArrayUtils::mergeSortOptional(
         {
             // find the next minimal element
 
-            IndexType nextIndex = nIndex;
+            IndexType nextIndex = invalidIndex;
 
             for ( IndexType k = 0; k < nb; ++k )
             {
@@ -1724,7 +1725,7 @@ void HArrayUtils::mergeSortOptional(
                     continue;  // no more values in subarray k
                 }
 
-                if ( nextIndex == nIndex )
+                if ( nextIndex == invalidIndex )
                 {
                     nextIndex = k;
                 }
@@ -1738,7 +1739,7 @@ void HArrayUtils::mergeSortOptional(
                 }
             }
 
-            SCAI_ASSERT_NE_ERROR( nextIndex, nIndex, "no more elements found" )
+            SCAI_ASSERT_NE_ERROR( nextIndex, invalidIndex, "no more elements found" )
 
             IndexType& pos = wOffsets[nextIndex];
 
@@ -1938,22 +1939,22 @@ IndexType HArrayUtils::insertSorted(
     const ValueType value, 
     hmemo::ContextPtr )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    if ( common::TypeTraits<ValueType>::stype != common::TypeTraits<AbsType>::stype )
+    if ( common::TypeTraits<ValueType>::stype != common::TypeTraits<RealType>::stype )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
         return 0;
     }
     else
     {
-        AbsType value1 = value;
+        RealType value1 = value;
 
         IndexType n = array.size();
  
-        HArray<AbsType>& array1 = reinterpret_cast<HArray<AbsType>&>( array );
+        HArray<RealType>& array1 = reinterpret_cast<HArray<RealType>&>( array );
 
-        WriteAccess<AbsType> wArray( array1 );
+        WriteAccess<RealType> wArray( array1 );
 
         wArray.resize( n + 1 );
 
@@ -2055,7 +2056,24 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType>& i
         }
     }
 
-    return nIndex;
+    return invalidIndex;
+}
+
+/* --------------------------------------------------------------------------- */
+
+void HArrayUtils::findPosInSortedIndexesV( hmemo::HArray<IndexType>& outPos,
+                                           const hmemo::HArray<IndexType>& indexes, 
+                                           const hmemo::HArray<IndexType> inPos )
+{
+    const IndexType n = inPos.size();
+    const IndexType m = indexes.size();
+
+    // Note: alias of outPos and inPos is safe !!
+
+    ReadAccess<IndexType> rIn( inPos );
+    ReadAccess<IndexType> rIndexes( indexes );
+    WriteOnlyAccess<IndexType> wOut( outPos, n );
+    OpenMPUtils::binarySearch( wOut.get(), rIndexes.get(), m, rIn.get(), n );
 }
 
 /* --------------------------------------------------------------------------- */

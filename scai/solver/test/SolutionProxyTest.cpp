@@ -37,11 +37,12 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/solver/SolutionProxy.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 typedef Vector<ValueType> VectorType;
 typedef SolutionProxy<ValueType> ProxyType;
 

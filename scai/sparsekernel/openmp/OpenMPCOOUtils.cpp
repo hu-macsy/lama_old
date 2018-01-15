@@ -68,7 +68,7 @@ IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j,
                                        const IndexType cooIA[], const IndexType cooJA[],
                                        const IndexType numValues )
 {
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     for ( IndexType k = 0; k < numValues; ++k )
     {
@@ -465,7 +465,7 @@ void OpenMPCOOUtils::jacobi(
 void OpenMPCOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<COOKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<COOKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
@@ -479,7 +479,7 @@ template<typename ValueType>
 void OpenMPCOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
@@ -491,7 +491,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPCOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );

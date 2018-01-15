@@ -59,8 +59,6 @@ BOOST_AUTO_TEST_SUITE( LAPACKTest )
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<float, double> test_types;
-
 SCAI_LOG_DEF_LOGGER( logger, "Test.LAPACKTest" )
 
 /* ------------------------------------------------------------------------- */
@@ -89,9 +87,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
 
         for ( IndexType i = 0; i < n * n; ++i )
         {
-            typedef typename TypeTraits<ValueType>::AbsType CompareType;
-            CompareType x1 = common::Math::abs( rA[i] );
-            CompareType x2 = common::Math::abs( bvalues[i] );
+            const auto x1 = common::Math::abs( rA[i] );
+            const auto x2 = common::Math::abs( bvalues[i] );
             BOOST_CHECK_CLOSE( x1, x2, 1 );
         }
     }
@@ -101,7 +98,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
 
 BOOST_AUTO_TEST_CASE( getrif2Test )
 {
-    typedef float ValueType;    // this routine checks correct pivoting and use of border
+    typedef DefaultReal ValueType;    // this routine checks correct pivoting and use of border
 
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
@@ -188,7 +185,7 @@ BOOST_AUTO_TEST_CASE( getrif2Test )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
@@ -259,7 +256,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;

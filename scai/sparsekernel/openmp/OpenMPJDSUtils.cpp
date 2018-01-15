@@ -188,7 +188,7 @@ IndexType OpenMPJDSUtils::getValuePos(
 
     IndexType k = 0;
 
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
     {
@@ -257,7 +257,7 @@ IndexType OpenMPJDSUtils::getValuePosRow(
 {
     SCAI_REGION( "OpenMP.JDSUtils.getValuePosRow" )
 
-    IndexType ii = nIndex;
+    IndexType ii = invalidIndex;
 
     // check the permutation of row i
 
@@ -812,7 +812,7 @@ void OpenMPJDSUtils::jacobiHalo(
 void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
@@ -825,7 +825,7 @@ template<typename ValueType>
 void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
@@ -838,7 +838,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
 
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )

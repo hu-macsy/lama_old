@@ -577,7 +577,7 @@ void CUDACOOUtils::setCSRData(
 void CUDACOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<COOKernelTrait::offsets2ia>( CUDACOOUtils::offsets2ia, ctx, flag );
     KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( CUDACOOUtils::setCSRData, ctx, flag );
@@ -587,7 +587,7 @@ template<typename ValueType>
 void CUDACOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, ctx, flag );
@@ -598,7 +598,7 @@ template<typename ValueType, typename OtherValueType>
 void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( CUDACOOUtils::setCSRData, ctx, flag );

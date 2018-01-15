@@ -66,27 +66,27 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil2D<RealType> stencil( 5 );
+    common::Stencil2D<DefaultReal> stencil( 5 );
 
     const IndexType N = 10;
 
     common::Grid2D grid( N, N );
 
-    StencilMatrix<RealType> stencilMatrix( grid, stencil );
+    StencilMatrix<DefaultReal> stencilMatrix( grid, stencil );
 
-    CSRSparseMatrix<RealType> csrMatrix1;
+    CSRSparseMatrix<DefaultReal> csrMatrix1;
 
     {
         SCAI_REGION( "main.buildPoisson" )
         MatrixCreator::buildPoisson( csrMatrix1, 2, 5, N, N, N );
     }
 
-    const CSRStorage<RealType>& s = csrMatrix1.getLocalStorage();
+    const CSRStorage<DefaultReal>& s = csrMatrix1.getLocalStorage();
 
     FileIO::write( s.getIA(), "ia.txt" );
     FileIO::write( s.getJA(), "ja.txt" );
 
-    CSRSparseMatrix<RealType> csrMatrix2;
+    CSRSparseMatrix<DefaultReal> csrMatrix2;
 
     {
         SCAI_REGION( "main.convertStencil" )

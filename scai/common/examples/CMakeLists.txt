@@ -37,10 +37,6 @@ include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 include ( scai_function/scai_example_directory )
 
-# ThreadTest example
-
-include ( Compiler/CheckC++11 )
-
 # example of a library module ( will be used by executable UseModule )
 # must be build SHARED regardless the SCAI_LIBRARY_TYPE is SHARED or STATIC
 
@@ -48,10 +44,8 @@ scai_add_example ( LIBRARY Module FILES Module.cpp DynRoutine.hpp )
 scai_add_example ( LIBRARY DummyModule FILES DummyModule.cpp )
 
 set ( EXECUTABLE_FILES ${EXECUTABLE_FILES} 
-          Barrier 
           BenchMath
           BenchPointers
-          CriticalRegion
           DemoFactory
           DemoFactory1
           DemoGrid

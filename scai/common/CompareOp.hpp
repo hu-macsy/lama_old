@@ -64,16 +64,23 @@ enum class CompareOp
     MAX_COMPARE_OP //!< for internal use only
 };
 
+/** 
+ * @brief function that compares two values corresponding to the specified operator.
+ *
+ * Note: this method should not be used for complex values (at runtime) but it is
+ *       provided in such a way that it can be compiled in other code to avoid template specializations.
+ */
 template <typename ValueType>
 CUDA_CALLABLE_MEMBER
-inline bool applyBinary( const ValueType& x1, const CompareOp op, const ValueType& x2 )
+inline bool compare( const ValueType& x1, const CompareOp op, const ValueType& x2 )
 {
-    // ToDo: throw exception if called with complex values
+    // just imagine here an assert that ValueType is not complex
+    // but you don't see it here as exceptions might not work on device code
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType v1 = x1;
-    AbsType v2 = x2;
+    RealType v1 = x1;
+    RealType v2 = x2;
 
     switch ( op )
     {

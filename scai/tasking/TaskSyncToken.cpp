@@ -32,10 +32,9 @@
  * @date 14.07.2015
  */
 
-// hpp
-#include <scai/tasking/TaskSyncToken.hpp>
-
 // internal scai libraries
+
+#include <scai/tasking/TaskSyncToken.hpp>
 #include <scai/common/macros/throw.hpp>
 
 #include <memory>

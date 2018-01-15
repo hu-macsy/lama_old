@@ -1195,7 +1195,7 @@ template<typename ValueType>
 void CUDASection::ArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register SectionKernel CUDA routines for GPU at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
 
@@ -1208,7 +1208,7 @@ template<typename ValueType, typename OtherValueType>
 void CUDASection::BinOpKernels<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger, "register SectionKernel CUDA-routines for GPUs at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )

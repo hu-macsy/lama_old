@@ -1677,7 +1677,7 @@ ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
         const IndexType iLocal = getRowDistribution().global2local( i );
 
         PartitionId owner = 0;
-        IndexType  jLocal = nIndex;
+        IndexType  jLocal = invalidIndex;
 
         if ( colDist.getNumPartitions() == 1 )
         {
@@ -1690,7 +1690,7 @@ ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
             jLocal = colDist.getAnyLocalIndex( j, owner );
         }
 
-        SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
+        SCAI_ASSERT_ERROR( jLocal != invalidIndex, "non local column index" )
         SCAI_LOG_TRACE( logger,
                         "getting value for index(" << i << "," << j << ")" << " which is localy ( " << iLocal << "," << jLocal << " )" )
         myValue = mData[owner]->getValue( iLocal, jLocal );
@@ -1712,7 +1712,7 @@ void DenseMatrix<ValueType>::setValue(
 
     const IndexType iLocal = distributionRow.global2local( i );
 
-    if ( iLocal == nIndex )
+    if ( iLocal == invalidIndex )
     {
         return; // this processor does not have the value
     }
@@ -1721,7 +1721,7 @@ void DenseMatrix<ValueType>::setValue(
 
     PartitionId owner  = 0;
 
-    IndexType   jLocal = nIndex;
+    IndexType   jLocal = invalidIndex;
 
     if ( distributionCol.getNumPartitions() == 1 )
     {
@@ -1733,7 +1733,7 @@ void DenseMatrix<ValueType>::setValue(
         jLocal = distributionCol.getAnyLocalIndex( j, owner );
     }
 
-    SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
+    SCAI_ASSERT_ERROR( jLocal != invalidIndex, "non local column index" )
 
     mData[owner]->setValue( iLocal, jLocal, val, op );
 }
@@ -2136,13 +2136,13 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::maxNorm() const
+RealType<ValueType> DenseMatrix<ValueType>::maxNorm() const
 {
-    NormType<ValueType> myMaxDiff = 0;
+    RealType<ValueType> myMaxDiff = 0;
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        NormType<ValueType> maxDiff = mData[i]->maxNorm();
+        RealType<ValueType> maxDiff = mData[i]->maxNorm();
 
         if ( maxDiff > myMaxDiff )
         {
@@ -2158,16 +2158,16 @@ NormType<ValueType> DenseMatrix<ValueType>::maxNorm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::l1Norm() const
+RealType<ValueType> DenseMatrix<ValueType>::l1Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    NormType<ValueType> mySum = 0;
+    RealType<ValueType> mySum = 0;
     IndexType n = mData.size();
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        mySum += static_cast<NormType<ValueType> >( mData[i]->l1Norm() );
+        mySum += static_cast<RealType<ValueType> >( mData[i]->l1Norm() );
     }
 
     return comm.sum( mySum );
@@ -2176,7 +2176,7 @@ NormType<ValueType> DenseMatrix<ValueType>::l1Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::l2Norm() const
+RealType<ValueType> DenseMatrix<ValueType>::l2Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
     ValueType mySum = static_cast<ValueType>( 0.0 );
@@ -2195,7 +2195,7 @@ NormType<ValueType> DenseMatrix<ValueType>::l2Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
+RealType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     if ( !( ( getNumColumns() == other.getNumColumns() ) && ( getNumRows() == other.getNumRows() ) ) )
     {
@@ -2228,13 +2228,13 @@ ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>&
     SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), other.getRowDistribution() )
     SCAI_ASSERT_EQUAL_ERROR( getColDistribution(), other.getColDistribution() )
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType myMaxDiff = 0;
+    RealType myMaxDiff = 0;
 
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {
-        AbsType maxDiff = mData[i]->maxDiffNorm( *other.mData[i] );
+        RealType maxDiff = mData[i]->maxDiffNorm( *other.mData[i] );
 
         if ( maxDiff > myMaxDiff )
         {

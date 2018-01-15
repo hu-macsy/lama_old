@@ -352,7 +352,7 @@ int main( int /*argc*/, char** /*argv[]*/ )
 {
     // we do all calculation in double precision
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     // read configuration parameter from file
     Configuration<ValueType> config( "Configuration.txt" );

@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( transposeTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     for ( int b1 = 0; b1 < 3; b1++ )
     {
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
 BOOST_AUTO_TEST_CASE( getTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType N1 = 6;
     const IndexType N2 = 8;

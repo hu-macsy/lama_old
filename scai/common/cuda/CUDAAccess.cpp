@@ -36,7 +36,6 @@
 #include <scai/common/cuda/CUDACtx.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/Thread.hpp>
 
 #include <iostream>
 

@@ -105,7 +105,7 @@ public:
 
         const IndexType localI = mMatrix.getRowDistribution().global2local( i );
 
-        if ( localI != nIndex )
+        if ( localI != invalidIndex )
         {
             mLocalIA.push_back( localI );
             mLocalJA.push_back( j );

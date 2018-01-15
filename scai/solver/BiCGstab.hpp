@@ -109,8 +109,8 @@ public:
         lama::DenseVector<ValueType> mVecST;
         lama::DenseVector<ValueType> mVecTT;
 
-        NormType<ValueType> mEps;      // used in comparison
-        NormType<ValueType> mResNorm;  // norm is always real
+        RealType<ValueType> mEps;      // used in comparison
+        RealType<ValueType> mResNorm;  // norm is always real
         ValueType mOmega;
         ValueType mAlpha;
         ValueType mBeta;

@@ -58,6 +58,6 @@ int main()
     testRoutine<float>( -1 );
     testRoutine<double>( -1 );
 #ifdef SCAI_COMPLEX_SUPPORTED
-    testRoutine<ComplexFloat>( ComplexFloat( 2, -1 ) );
+    testRoutine<scai::ComplexFloat>( scai::ComplexFloat( 2, -1 ) );
 #endif
 }

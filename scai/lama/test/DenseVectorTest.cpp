@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( consistencyTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 5;   // let it really small, this test is very inefficient
 
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
         catch ( common::Exception& e )
         {
             SCAI_LOG_INFO( logger, "scan unsupported for this distribution: " << *dist << ", no block distribution" )
-            BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), nIndex );
+            BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), invalidIndex );
         }
     }
 }
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 {
     // Note: it is sufficient to consider one matrix type and one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType nCols = 4;
     IndexType nRows = 5;
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
         {
             dmemo::DistributionPtr colDist = colDists[i];
 
-            CSRSparseMatrix<RealType> mat( rowDist, colDist );
+            CSRSparseMatrix<DefaultReal> mat( rowDist, colDist );
 
             DenseVector<ValueType> x( colDist, 3 );
             SCAI_LOG_INFO( logger, "linear algebra expression: alpha * _Matrix * Vector" );
@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
 BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 5;
 
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
 
 BOOST_AUTO_TEST_CASE( swapTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType n = 10;
 
@@ -443,7 +443,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
 BOOST_AUTO_TEST_CASE( assignTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType n = 10;
 
@@ -488,7 +488,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_te
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -574,7 +574,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         SCAI_LOG_DEBUG( logger, "Col distribution [ " << j << " ] = " << *colDists[j] )
     }
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -811,7 +811,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
             {
                 IndexType localIndex = target.getDistribution().global2local( i );
 
-                if ( localIndex != nIndex )
+                if ( localIndex != invalidIndex )
                 {
                     BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
                                          *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
@@ -887,7 +887,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
             {
                 IndexType localIndex = target.getDistribution().global2local( i );
 
-                if ( localIndex != nIndex )
+                if ( localIndex != invalidIndex )
                 {
                     BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
                                          *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]

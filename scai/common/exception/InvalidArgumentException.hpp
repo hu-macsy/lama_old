@@ -1,5 +1,5 @@
 /**
- * @file NotSupportedValueTypeException.cpp
+ * @file InvalidArgumentException.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,13 +27,17 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./NotSupportedValueTypeException.cpp
- * @author eschricker
- * @date 31.08.2015
+ * @brief Definition of exception class that is thrown when an illegal argument occurs
+ * @author Thomas Brandes
+ * @date 15.01.2018
  */
+#pragma once
 
-// hpp
-#include <scai/common/exception/NotSupportedValueTypeException.hpp>
+// base class
+#include <scai/common/exception/Exception.hpp>
+
+// std
+#include <string>
 
 namespace scai
 {
@@ -41,28 +45,37 @@ namespace scai
 namespace common
 {
 
-NotSupportedValueTypeException::NotSupportedValueTypeException() :
-    mMessage( "NotSupportedValueTypeException" )
+/** Derived exception class for an exception that is thrown if an invalid argument is used. */
+
+class COMMON_DLL_IMPORTEXPORT InvalidArgumentException : public Exception
 {
+public:
+
+    /**
+     * @brief This constructor creates an InvalidArgumentException with the passed message.
+     *
+     * @param[in] message  the message to assign to this.
+     */
+    inline InvalidArgumentException( const std::string& message );
+
+    /**
+     * @brief The destructor destroys this InvalidArgumentException.
+     */
+    inline virtual ~InvalidArgumentException() throw ();
+};
+
+InvalidArgumentException::InvalidArgumentException( const std::string& message ) :
+
+    Exception( message )
+{
+    mMessage += "@InvalidArgumentException";
 }
 
-NotSupportedValueTypeException::NotSupportedValueTypeException( const std::string& message ) :
-    mMessage( message )
+InvalidArgumentException::~InvalidArgumentException() throw ()
 {
-    mMessage += "@NotSupportedValueTypeException";
-}
-
-NotSupportedValueTypeException::~NotSupportedValueTypeException() throw ()
-{
-}
-
-const char* NotSupportedValueTypeException::what() const throw ()
-{
-    return mMessage.c_str();
 }
 
 } /* end namespace common */
 
 } /* end namespace scai */
-
 

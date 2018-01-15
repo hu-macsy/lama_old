@@ -264,9 +264,9 @@ SparseAssemblyStorage<ValueType>* SparseAssemblyStorage<ValueType>::newMatrixSto
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseAssemblyStorage<ValueType>::l1Norm() const
+RealType<ValueType> SparseAssemblyStorage<ValueType>::l1Norm() const
 {
-    NormType<ValueType> val = 0;
+    RealType<ValueType> val = 0;
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -282,15 +282,15 @@ NormType<ValueType> SparseAssemblyStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseAssemblyStorage<ValueType>::l2Norm() const
+RealType<ValueType> SparseAssemblyStorage<ValueType>::l2Norm() const
 {
-    NormType<ValueType> val = 0;
+    RealType<ValueType> val = 0;
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
         for ( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-            NormType<ValueType> tmp = Math::abs( mRows[i].values[jj] );
+            RealType<ValueType> tmp = Math::abs( mRows[i].values[jj] );
             val += tmp * tmp;
         }
     }
@@ -301,11 +301,11 @@ NormType<ValueType> SparseAssemblyStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseAssemblyStorage<ValueType>::maxNorm() const
+RealType<ValueType> SparseAssemblyStorage<ValueType>::maxNorm() const
 {
     // SparseAssemblyStorage not supported on GPUs
 
-    NormType<ValueType> maxval = 0;
+    RealType<ValueType> maxval = 0;
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -313,7 +313,7 @@ NormType<ValueType> SparseAssemblyStorage<ValueType>::maxNorm() const
 
         for ( size_t jj = 0; jj < values.size(); ++jj )
         {
-            NormType<ValueType> val = Math::abs( mRows[i].values[jj] );
+            RealType<ValueType> val = Math::abs( mRows[i].values[jj] );
 
             if ( val > maxval )
             {

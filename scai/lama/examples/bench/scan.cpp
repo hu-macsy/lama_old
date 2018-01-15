@@ -77,7 +77,7 @@ DenseVector<ValueType> computeGlobalPrefixSum( const DenseVector<ValueType>& inp
     //first, check that the input is some block distribution
     const IndexType localN = input.getDistributionPtr()->getBlockDistributionSize();
 
-    if ( localN == nIndex )
+    if ( localN == invalidIndex )
     {
         throw std::logic_error( "Global prefix sum only implemented for block distribution." );
     }

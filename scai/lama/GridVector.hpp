@@ -242,7 +242,7 @@ public:
      *
      *  This method reads the local part of a grid vector and tries to read also the shape.
      */
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex );
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex );
 };
 
 } /* end namespace lama */

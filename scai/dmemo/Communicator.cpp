@@ -689,26 +689,26 @@ void Communicator::computeOwners(
 {
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
-    IndexType nIndexes = requiredIndexes.size();
+    IndexType numIndexes = requiredIndexes.size();
 
-    hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, ctx, nIndexes );
+    hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, ctx, numIndexes );
     hmemo::ReadAccess<IndexType> rIndexes( requiredIndexes, ctx );
 
-    computeOwners( wOwners.get(), distribution, rIndexes.get(), nIndexes );
+    computeOwners( wOwners.get(), distribution, rIndexes.get(), numIndexes );
 }
 
 void Communicator::computeOwners(
     PartitionId owners[],
     const Distribution& distribution,
     const IndexType requiredIndexes[],
-    const IndexType nIndexes ) const
+    const IndexType numIndexes ) const
 {
     // Note: this routine is only supported on Host, may change in future releases
 
     PartitionId rank = getRank();
     PartitionId size = getSize();
 
-    SCAI_LOG_INFO( logger, "need owners for " << nIndexes << " global indexes" )
+    SCAI_LOG_INFO( logger, "need owners for " << numIndexes << " global indexes" )
 
     if ( distribution.getCommunicator() != *this )
     {
@@ -719,7 +719,7 @@ void Communicator::computeOwners(
 
     // Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
 
-    for ( IndexType i = 0; i < nIndexes; ++i )
+    for ( IndexType i = 0; i < numIndexes; ++i )
     {
         if ( distribution.isLocal( requiredIndexes[i] ) )
         {
@@ -728,11 +728,11 @@ void Communicator::computeOwners(
         else
         {
             nonLocal++;
-            owners[i] = nPartition;
+            owners[i] = invalidPartition;
         }
     }
 
-    SCAI_LOG_INFO( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
+    SCAI_LOG_INFO( logger, numIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
     IndexType receiveSize = max( nonLocal ); // --> pure method call
     SCAI_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
     // Allocate the maximal needed size for the communication buffers
@@ -748,9 +748,9 @@ void Communicator::computeOwners(
         WriteAccess<IndexType> ownersSend( ownersSendArray, contextPtr );
         nonLocal = 0; // reset, counted again
 
-        for ( IndexType i = 0; i < static_cast<IndexType>( nIndexes ); ++i )
+        for ( IndexType i = 0; i < static_cast<IndexType>( numIndexes ); ++i )
         {
-            if ( owners[i] == nPartition )
+            if ( owners[i] == invalidPartition )
             {
                 indexesSend[nonLocal++] = requiredIndexes[i];
             }
@@ -760,10 +760,10 @@ void Communicator::computeOwners(
 
         for ( IndexType i = 0; i < receiveSize; ++i )
         {
-            ownersSend[i] = nPartition;
+            ownersSend[i] = invalidPartition;
         }
     }
-    IndexType ownersSize = nIndex;
+    IndexType ownersSize = invalidIndex;
     IndexType currentSize = nonLocal;
     const int direction = 1; // send to right, recv from left
 
@@ -777,7 +777,7 @@ void Communicator::computeOwners(
                         *this << " shift: recv " << receiveSize << ", send " << currentSize << ", direction = " << direction )
         // --->   Pure method call
         currentSize = shift( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
-        SCAI_ASSERT_ERROR( ownersSize == nIndex || currentSize == ownersSize, "Communication corrupted." )
+        SCAI_ASSERT_ERROR( ownersSize == invalidIndex || currentSize == ownersSize, "Communication corrupted." )
         SCAI_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();
         IndexType* currentOwners = ownersSend.get();
@@ -789,7 +789,7 @@ void Communicator::computeOwners(
             SCAI_LOG_TRACE( logger,
                             "check global index " << indexes[i] << " with current owner " << currentOwners[i] << ", is local = " << distribution.isLocal( indexes[i] ) )
 
-            if ( currentOwners[i] == nIndex && distribution.isLocal( indexes[i] ) )
+            if ( currentOwners[i] == invalidIndex && distribution.isLocal( indexes[i] ) )
             {
                 SCAI_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] )
                 currentOwners[i] = rank;
@@ -834,9 +834,9 @@ void Communicator::computeOwners(
 
     IndexType nn = 0;
 
-    for ( IndexType i = 0; i < nIndexes; ++i )
+    for ( IndexType i = 0; i < numIndexes; ++i )
     {
-        if ( owners[i] == nPartition )
+        if ( owners[i] == invalidPartition )
         {
             owners[i] = ownersSend[nn++];
         }
@@ -960,7 +960,7 @@ void Communicator::maxlocDefault( ValueType& val, IndexType& location, const Par
 
     ValueType maxVal = max( val );
 
-    IndexType myMaxLocation = nIndex;
+    IndexType myMaxLocation = invalidIndex;
 
     if ( maxVal == val )
     {
@@ -977,7 +977,7 @@ void Communicator::maxlocDefault( ValueType& val, IndexType& location, const Par
 
         for ( PartitionId p = 0; p < getSize(); ++p )
         {
-            if ( allMaxLocations[p] != nIndex )
+            if ( allMaxLocations[p] != invalidIndex )
             {
                 location = allMaxLocations[p];
                 SCAI_LOG_DEBUG( logger, *this << ": maxlocDefault location = " << location << " @ " << p )
@@ -998,7 +998,7 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
 
     ValueType minVal = min( val );
 
-    IndexType myMinLocation = nIndex;   // undefined
+    IndexType myMinLocation = invalidIndex;   // undefined
 
     if ( minVal == val )
     {
@@ -1015,7 +1015,7 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
 
         for ( PartitionId p = 0; p < getSize(); ++p )
         {
-            if ( allMinLocations[p] != nIndex )
+            if ( allMinLocations[p] != invalidIndex )
             {
                 location = allMinLocations[p];
                 SCAI_LOG_DEBUG( logger, *this << ": minlocDefault location = " << location << " @ " << p )

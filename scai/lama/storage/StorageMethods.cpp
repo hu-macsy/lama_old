@@ -383,7 +383,7 @@ void StorageMethods<ValueType>::splitCSR(
             {
                 const IndexType jLocal = colDist.global2local( ja[jj] );
 
-                if ( jLocal != nIndex )
+                if ( jLocal != invalidIndex )
                 {
                     // local column index, will be used in local JA
 

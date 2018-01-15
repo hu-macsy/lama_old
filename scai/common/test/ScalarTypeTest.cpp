@@ -51,6 +51,11 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
         s << stype;
         BOOST_CHECK( s.str().length() > 0 );
         BOOST_CHECK_EQUAL( stype, str2ScalarType( s.str().c_str() ) );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+        // This test will fail as TypeTraits for Complex are not available
+
         size_t pos = s.str().find( "Complex" );
 
         if ( isComplex( stype ) )
@@ -61,6 +66,7 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
         {
             BOOST_CHECK( pos == std::string::npos );
         }
+#endif
     }
 
     BOOST_CHECK( typeSize( ScalarType::PATTERN ) == 0 );

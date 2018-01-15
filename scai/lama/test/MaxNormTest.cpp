@@ -40,8 +40,9 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
 
 extern bool base_test_case;
 extern std::string testcase;

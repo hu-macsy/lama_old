@@ -60,7 +60,7 @@ struct CSRKernelTrait
          *  @param[in] j is the column of the element
          *  @param[in] csrIA is the CSR offset array
          *  @param[in] csrJA is the CSR ja array
-         *  @returns  offset of element in values array, nIndex if not found
+         *  @returns  offset of element in values array, invalidIndex if not found
          */
 
         typedef IndexType ( *FuncType ) (

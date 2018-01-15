@@ -123,11 +123,11 @@ struct ScalarTypeHelper< TypeList<H, T> >
     {
         if ( stype == TypeTraits<H>::stype )
         {
-            // a type is complex if its AbsType is not the same
+            // a type is complex if its RealType is not the same
 
-            typedef typename TypeTraits<H>::AbsType AbsType;
+            typedef typename TypeTraits<H>::RealType RealType;
 
-            return typeid( H ) != typeid( AbsType );
+            return typeid( H ) != typeid( RealType );
         }
         else
         {

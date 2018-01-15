@@ -37,7 +37,8 @@
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/common/macros/assert.hpp>
 
-using namespace scai::hmemo;
+using namespace scai;
+using namespace hmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -84,7 +85,7 @@ void add ( Array& res, const Array& a, const Array& b )
 
 void add1 ( Array& a )
 {
-    ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::context::CUDA );
+    ContextPtr gpuCtx = hmemo::Context::getContextPtr( common::ContextType::CUDA );
     int n = a.size();
     SCAI_LOG_INFO( logger, "a = a + 1, n = " << n << ", on " << *gpuCtx )
     hmemo::WriteAccess<double> write( a, gpuCtx );

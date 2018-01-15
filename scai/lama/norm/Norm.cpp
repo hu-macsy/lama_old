@@ -54,19 +54,19 @@ Norm<ValueType>::~Norm()
 }
 
 template<typename ValueType>
-NormType<ValueType> Norm<ValueType>::operator()( const ValueType& scalar ) const
+RealType<ValueType> Norm<ValueType>::operator()( const ValueType& scalar ) const
 {
     return apply( scalar );
 }
 
 template<typename ValueType>
-NormType<ValueType> Norm<ValueType>::operator()( const Vector<ValueType>& vector ) const
+RealType<ValueType> Norm<ValueType>::operator()( const Vector<ValueType>& vector ) const
 {
     return apply( vector );
 }
 
 template<typename ValueType>
-NormType<ValueType> Norm<ValueType>::operator()( const Matrix<ValueType>& matrix ) const
+RealType<ValueType> Norm<ValueType>::operator()( const Matrix<ValueType>& matrix ) const
 {
     return apply( matrix );
 }

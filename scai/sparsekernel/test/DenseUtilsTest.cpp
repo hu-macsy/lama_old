@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<DenseKernelTrait::set<ValueType, RealType> > set;
+    static LAMAKernel<DenseKernelTrait::set<ValueType, DefaultReal> > set;
 
     ContextPtr loc = testContext;
 
@@ -403,11 +403,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
                                        6, 9, 1
                                      };
 
-    const RealType dense_values1[] = { 1, 1, 2,
-                                       2, 1, 1,
-                                       1, 1, 1,
-                                       2, 2, 2
-                                     };
+    const DefaultReal dense_values1[] = { 1, 1, 2,
+                                          2, 1, 1,
+                                          1, 1, 1,
+                                          2, 2, 2
+                                        };
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;
@@ -421,13 +421,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
         BinaryOp binOp = BinaryOp( op );
 
         HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
-        HArray<RealType> dense1( numRows * numColumns, dense_values1, testContext );
+        HArray<DefaultReal> dense1( numRows * numColumns, dense_values1, testContext );
 
         {
             SCAI_CONTEXT_ACCESS( loc );
 
             WriteAccess<ValueType> wDense( dense, loc );
-            ReadAccess<RealType> rDense1( dense1, loc );
+            ReadAccess<DefaultReal> rDense1( dense1, loc );
 
             set[loc]( wDense.get(), numRows, numColumns, rDense1.get(), binOp );
         }

@@ -88,8 +88,8 @@ ValueType cudaSum( HArray<ValueType>& array, ContextPtr cuda )
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
-    ContextPtr cuda = Context::getContextPtr( context::CUDA );
+    ContextPtr host = Context::getContextPtr( ContextType::Host );
+    ContextPtr cuda = Context::getContextPtr( ContextType::CUDA );
     HArray<float> array( cuda );
     initArray<float>( array, 128, 1.0 );
     //std::cout << "array : " << array << std::endl;
@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
 BOOST_AUTO_TEST_CASE( PrefetchTest )
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
-    ContextPtr cuda = Context::getContextPtr( context::CUDA );
+    ContextPtr host = Context::getContextPtr( ContextType::Host );
+    ContextPtr cuda = Context::getContextPtr( ContextType::CUDA );
     IndexType N = 128;
     HArray<float> array( cuda );
     initArray<float>( array, N, 1.0 );
@@ -123,8 +123,8 @@ BOOST_AUTO_TEST_CASE( PrefetchTest )
 
 BOOST_AUTO_TEST_CASE( CopyTest )
 {
-    ContextPtr host = Context::getContextPtr( context::Host );
-    ContextPtr cuda = Context::getContextPtr( context::CUDA );
+    ContextPtr host = Context::getContextPtr( ContextType::Host );
+    ContextPtr cuda = Context::getContextPtr( ContextType::CUDA );
     IndexType N = 128;
     HArray<float> array( cuda );
     initArray<float>( array, N, 1.0 );

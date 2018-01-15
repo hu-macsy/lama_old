@@ -865,7 +865,7 @@ ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     ValueType val = 0;
 
-    if ( pos != nIndex )
+    if ( pos != invalidIndex )
     {
         SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumRows * mNumValuesPerRow,
                                        "illegal value position for ( " << i << ", " << j << " )" );
@@ -894,7 +894,7 @@ void ELLStorage<ValueType>::setValue( const IndexType i,
     ContextPtr loc = this->getContextPtr();
     getValuePos.getSupportedContext( loc );
 
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     {
         SCAI_CONTEXT_ACCESS( loc )
@@ -906,7 +906,7 @@ void ELLStorage<ValueType>::setValue( const IndexType i,
 
     }
 
-    if ( pos == nIndex )
+    if ( pos == invalidIndex )
     {
         COMMON_THROWEXCEPTION( "ELL storage has no entry ( " << i << ", " << j << " ) " )
     }
@@ -1003,7 +1003,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     compressIA.getSupportedContext( loc, reduce );
 
-    IndexType newNumValuesPerRow = nIndex;
+    IndexType newNumValuesPerRow = invalidIndex;
 
     LArray<IndexType> newIAArray;
     {
@@ -1591,7 +1591,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     ContextPtr loc = this->getContextPtr();
     jacobi.getSupportedContext( loc );
 
-    if ( loc->getType() == Context::Host )
+    if ( loc->getType() == common::ContextType::Host )
     {
         // used later in OpenMP to generate a TaskSyncToken
         void ( ELLStorage::*jb )(
@@ -1724,7 +1724,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> ELLStorage<ValueType>::l1Norm() const
+RealType<ValueType> ELLStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
@@ -1744,7 +1744,7 @@ NormType<ValueType> ELLStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> ELLStorage<ValueType>::l2Norm() const
+RealType<ValueType> ELLStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
@@ -1764,13 +1764,13 @@ NormType<ValueType> ELLStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> ELLStorage<ValueType>::maxNorm() const
+RealType<ValueType> ELLStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     if ( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
-        return NormType<ValueType>( 0 );
+        return RealType<ValueType>( 0 );
     }
 
     static LAMAKernel<ELLKernelTrait::absMaxVal<ValueType> > absMaxVal;

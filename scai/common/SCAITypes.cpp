@@ -36,7 +36,11 @@
 
 #include <scai/common/SCAITypes.hpp>
 
-const IndexType nIndex = std::numeric_limits<IndexType>::max();
+namespace scai
+{
 
-const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
+const IndexType invalidIndex = std::numeric_limits<IndexType>::max();
 
+const PartitionId invalidPartition = std::numeric_limits<PartitionId>::max();
+
+}

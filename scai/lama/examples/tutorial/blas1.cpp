@@ -39,7 +39,7 @@
 // include necessary system headers
 #include <iostream>
 #include <time.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 // include general lama header
 #include <scai/lama.hpp>
@@ -69,7 +69,7 @@ int main()
     // Define the ValueType used for the vector
     // Change this type definition to double if your gpu supports that
     //
-    typedef RealType ScalarType;
+    typedef DefaultReal ScalarType;
     /////////////////////////////////////////////////
     ///////////// Scalar operations /////////////////
     /////////////////////////////////////////////////
@@ -122,13 +122,13 @@ int main()
     //
     hmemo::ContextPtr cudaContext;
 
-    if ( hmemo::Context::canCreate( hmemo::Context::CUDA ) )
+    if ( hmemo::Context::canCreate( common::ContextType::CUDA ) )
     {
-        cudaContext = hmemo::Context::getContextPtr( hmemo::Context::CUDA, 0 );
+        cudaContext = hmemo::Context::getContextPtr( common::ContextType::CUDA, 0 );
     }
     else
     {
-        cudaContext = hmemo::Context::getContextPtr( hmemo::Context::Host );
+        cudaContext = hmemo::Context::getContextPtr( common::ContextType::Host );
     }
 
     lama_vec1.setContextPtr( cudaContext );

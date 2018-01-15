@@ -167,9 +167,9 @@ void MINRES<ValueType>::Lanczos()
     DenseVector<ValueType>& vecVNew = runtime.mVecVNew;
 
     ValueType& alpha = runtime.mAlpha;
-    NormType<ValueType>& betaNew = runtime.mBetaNew;
-    NormType<ValueType>& beta = runtime.mBeta;
-    NormType<ValueType>& eps = runtime.mEps;
+    RealType<ValueType>& betaNew = runtime.mBetaNew;
+    RealType<ValueType>& beta = runtime.mBeta;
+    RealType<ValueType>& eps = runtime.mEps;
 
     beta = betaNew;
     vecVOld.swap( vecV );
@@ -200,10 +200,10 @@ void MINRES<ValueType>::applyGivensRotation()
     ValueType& sOld = runtime.mSOld;
     ValueType& sNew = runtime.mSNew;
     ValueType& alpha = runtime.mAlpha;
-    NormType<ValueType>& beta = runtime.mBeta;
-    NormType<ValueType>& betaNew = runtime.mBetaNew;
+    RealType<ValueType>& beta = runtime.mBeta;
+    RealType<ValueType>& betaNew = runtime.mBetaNew;
 
-    NormType<ValueType>& eps = runtime.mEps;
+    RealType<ValueType>& eps = runtime.mEps;
 
     //Old Givens-rotation
 
@@ -218,7 +218,7 @@ void MINRES<ValueType>::applyGivensRotation()
 
     //New Givens-rotation
 
-    NormType<ValueType> tau = common::Math::abs( rho3 ) + betaNew;
+    RealType<ValueType> tau = common::Math::abs( rho3 ) + betaNew;
 
     ValueType nu;
 

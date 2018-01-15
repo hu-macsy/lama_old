@@ -285,7 +285,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of all entries
      */
-    virtual NormType<ValueType> l1Norm( void ) const = 0;
+    virtual RealType<ValueType> l1Norm( void ) const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -294,14 +294,14 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual NormType<ValueType> l2Norm( void ) const = 0;
+    virtual RealType<ValueType> l2Norm( void ) const = 0;
 
     /**
      * @brief Returns the max norm of this matrix
      *
      * @return the maximal absolute value for elements of this matrix
      */
-    virtual NormType<ValueType> maxNorm( void ) const = 0;
+    virtual RealType<ValueType> maxNorm( void ) const = 0;
 
     /**
      * @brief Returns the max norm of ( this - other ).
@@ -313,7 +313,7 @@ public:
      * at the same position of the matrices. This method must be implemented by
      * derived classes.
      */
-    virtual NormType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const = 0;
+    virtual RealType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const = 0;
 
     /* ======================================================================= */
     /*     setter / getter for diagonal of a matrix                            */

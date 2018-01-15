@@ -443,7 +443,7 @@ static void getSplitValues(
     const IndexType n,
     const bool ascending )
 {
-    const PartitionId nPartitions = comm.getSize();
+    const PartitionId numPartitions = comm.getSize();
 
     if ( ascending )
     {
@@ -451,7 +451,7 @@ static void getSplitValues(
         ValueType maxV = n > 0 ? sortedValues[n - 1] : TypeTraits<ValueType>::getMin();
 
         splitValues[0]           = comm.min( minV );
-        splitValues[nPartitions] = comm.max( maxV );
+        splitValues[numPartitions] = comm.max( maxV );
     }
     else
     {
@@ -459,14 +459,14 @@ static void getSplitValues(
         ValueType minV = n > 0 ? sortedValues[n - 1] : TypeTraits<ValueType>::getMax();
 
         splitValues[0]           = comm.max( maxV );
-        splitValues[nPartitions] = comm.min( minV );
+        splitValues[numPartitions] = comm.min( minV );
     }
 
-    // fill intermediate values by uniform distribution of range splitValues[0] .. splitValues[nPartitions]
+    // fill intermediate values by uniform distribution of range splitValues[0] .. splitValues[numPartitions]
 
-    for ( PartitionId p = 1; p < nPartitions; ++p )
+    for ( PartitionId p = 1; p < numPartitions; ++p )
     {
-        splitValues[p] = splitValues[0] + ( splitValues[nPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( nPartitions );
+        splitValues[p] = splitValues[0] + ( splitValues[numPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( numPartitions );
     }
 }
 
@@ -499,7 +499,7 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
 
     IndexType blockSize = distribution.getBlockDistributionSize();
 
-    SCAI_ASSERT_NE_ERROR( blockSize, nIndex, "isSorted only possible on block distributed vectors" )
+    SCAI_ASSERT_NE_ERROR( blockSize, invalidIndex, "isSorted only possible on block distributed vectors" )
 
     const HArray<ValueType>& localValues = getLocalValues();
 
@@ -621,7 +621,7 @@ void DenseVector<ValueType>::sortImpl(
 
     IndexType blockSize = distribution.getBlockDistributionSize();
 
-    SCAI_ASSERT_NE_ERROR( blockSize, nIndex, "sort only possible on block distributed vectors" )
+    SCAI_ASSERT_NE_ERROR( blockSize, invalidIndex, "sort only possible on block distributed vectors" )
 
     // Now sort the local values
 
@@ -664,20 +664,20 @@ void DenseVector<ValueType>::sortImpl(
 
     // Determine the splitting values
 
-    PartitionId nPartitions = comm.getSize();
+    PartitionId numPartitions = comm.getSize();
 
-    std::unique_ptr<ValueType[]> splitValues( new ValueType[ nPartitions + 1 ] );
+    std::unique_ptr<ValueType[]> splitValues( new ValueType[ numPartitions + 1 ] );
 
     {
         ReadAccess<ValueType> rSortedValues( sortedValues );
         getSplitValues( splitValues.get(), comm, rSortedValues.get(), sortedValues.size(), ascending );
     }
 
-    std::unique_ptr<IndexType[]> quantities( new IndexType[ nPartitions ] );
+    std::unique_ptr<IndexType[]> quantities( new IndexType[ numPartitions ] );
 
     // Determine quantities for each processor
 
-    for ( PartitionId ip = 0; ip < nPartitions; ++ip )
+    for ( PartitionId ip = 0; ip < numPartitions; ++ip )
     {
         quantities[ip] = 0;
     }
@@ -694,7 +694,7 @@ void DenseVector<ValueType>::sortImpl(
                 while ( rValues[i] > splitValues[p + 1] )
                 {
                     p++;
-                    SCAI_ASSERT_LT_DEBUG( p, nPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
+                    SCAI_ASSERT_LT_DEBUG( p, numPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
                 }
             }
             else
@@ -702,7 +702,7 @@ void DenseVector<ValueType>::sortImpl(
                 while ( rValues[i] < splitValues[p + 1] )
                 {
                     p++;
-                    SCAI_ASSERT_LT_DEBUG( p, nPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
+                    SCAI_ASSERT_LT_DEBUG( p, numPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
                 }
             }
 
@@ -714,7 +714,7 @@ void DenseVector<ValueType>::sortImpl(
 
     dmemo::CommunicationPlan sendPlan;
 
-    sendPlan.allocate( quantities.get(), nPartitions );
+    sendPlan.allocate( quantities.get(), numPartitions );
 
     dmemo::CommunicationPlan recvPlan;
 
@@ -828,7 +828,7 @@ void DenseVector<ValueType>::scan()
 {
 	// first, check that the input is some block distribution
 
-    SCAI_ASSERT_NE_ERROR( getDistribution().getBlockDistributionSize(), nIndex,
+    SCAI_ASSERT_NE_ERROR( getDistribution().getBlockDistributionSize(), invalidIndex,
                           "scan only supported for block distribution" )
 
     const Communicator& comm = getDistribution().getCommunicator();
@@ -857,7 +857,7 @@ void DenseVector<ValueType>::scan( const DenseVector<ValueType>& other )
 {
     // first, check that the input is some block distribution
 
-    SCAI_ASSERT_NE_ERROR( other.getDistribution().getBlockDistributionSize(), nIndex,
+    SCAI_ASSERT_NE_ERROR( other.getDistribution().getBlockDistributionSize(), invalidIndex,
                           "scan only supported for block distribution" )
 
     // currently scan is only supported by in-place array operations
@@ -976,7 +976,7 @@ ValueType DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " ) -> local : " << localIndex )
 
-    if ( localIndex != nIndex )
+    if ( localIndex != invalidIndex )
     {
         myValue = mLocalValues[localIndex];
     }
@@ -1003,7 +1003,7 @@ void DenseVector<ValueType>::setValue( const IndexType globalIndex, const ValueT
 
     SCAI_LOG_TRACE( logger, *this << ": set @g " << globalIndex << " is @l " << localIndex << " : " << value )
 
-    if ( localIndex != nIndex )
+    if ( localIndex != invalidIndex )
     {
         mLocalValues[localIndex] = value;
     }
@@ -1032,9 +1032,9 @@ ValueType DenseVector<ValueType>::max() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseVector<ValueType>::l1Norm() const
+RealType<ValueType> DenseVector<ValueType>::l1Norm() const
 {
-    NormType<ValueType> localL1Norm = mLocalValues.l1Norm();
+    RealType<ValueType> localL1Norm = mLocalValues.l1Norm();
     return getDistribution().getCommunicator().sum( localL1Norm );
 }
 
@@ -1049,11 +1049,11 @@ ValueType DenseVector<ValueType>::sum() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseVector<ValueType>::l2Norm() const
+RealType<ValueType> DenseVector<ValueType>::l2Norm() const
 {
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
-    NormType<ValueType> localDotProduct = mLocalValues.dotProduct( mLocalValues );
-    NormType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    RealType<ValueType> localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    RealType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     return common::Math::sqrt( globalDotProduct );
 }
 
@@ -1070,11 +1070,11 @@ IndexType DenseVector<IndexType>::l2Norm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseVector<ValueType>::maxNorm() const
+RealType<ValueType> DenseVector<ValueType>::maxNorm() const
 {
-    NormType<ValueType> localMaxNorm = mLocalValues.maxNorm();
+    RealType<ValueType> localMaxNorm = mLocalValues.maxNorm();
     const Communicator& comm = getDistribution().getCommunicator();
-    NormType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
+    RealType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
                    << ", max norm global = " << globalMaxNorm )
@@ -1084,7 +1084,7 @@ NormType<ValueType> DenseVector<ValueType>::maxNorm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseVector<ValueType>::maxDiffNorm( const Vector<ValueType>& other ) const
+RealType<ValueType> DenseVector<ValueType>::maxDiffNorm( const Vector<ValueType>& other ) const
 {
     bool temporaryNeeded = false;
 
@@ -1111,11 +1111,11 @@ NormType<ValueType> DenseVector<ValueType>::maxDiffNorm( const Vector<ValueType>
 
     const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
 
-    NormType<ValueType> localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
+    RealType<ValueType> localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    NormType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
+    RealType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
@@ -1498,7 +1498,7 @@ void DenseVector<ValueType>::gather(
         for ( IndexType i = 0; i < sendIndexes.size(); ++i )
         {
             IndexType localIndex = sourceDistribution.global2local( wSendIndexes[i] );
-            SCAI_ASSERT_NE_DEBUG( localIndex, nIndex, "got required index " << wSendIndexes[i] << " but I'm not owner" )
+            SCAI_ASSERT_NE_DEBUG( localIndex, invalidIndex, "got required index " << wSendIndexes[i] << " but I'm not owner" )
             wSendIndexes[i] = localIndex;
         }
     }
@@ -1613,7 +1613,7 @@ void DenseVector<ValueType>::scatter(
         for ( IndexType i = 0; i < recvIndexes.size(); ++i )
         {
             IndexType localIndex = targetDistribution.global2local( wRecvIndexes[i] );
-            SCAI_ASSERT_NE_DEBUG( localIndex, nIndex, "got required index " << wRecvIndexes[i] << " but I'm not owner" )
+            SCAI_ASSERT_NE_DEBUG( localIndex, invalidIndex, "got required index " << wRecvIndexes[i] << " but I'm not owner" )
             wRecvIndexes[i] = localIndex;
         }
     }

@@ -52,7 +52,7 @@ using namespace dmemo;
 int main( int, char** ) 
 
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     // coefficients of the matrix A
 

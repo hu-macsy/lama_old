@@ -210,9 +210,9 @@ void CGS<ValueType>::iterate()
     ValueType alpha;
     ValueType beta;
 
-    const NormType<ValueType>& eps = runtime.mEps;
+    const RealType<ValueType>& eps = runtime.mEps;
 
-    NormType<ValueType>& normRes = runtime.mNormRes;
+    RealType<ValueType>& normRes = runtime.mNormRes;
 
     vecT = A * vecPT;
 

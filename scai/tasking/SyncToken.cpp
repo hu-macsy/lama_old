@@ -37,7 +37,6 @@
 
 // internal scai libraries
 
-#include <scai/common/Thread.hpp>
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>
 

@@ -185,7 +185,7 @@ struct CommandLineArguments
 
 /** Define the value type used in this example, take default real type. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -279,7 +279,7 @@ int main( int argc, const char* argv[] )
 
             IndexType nb = m.getRowDistribution().getBlockDistributionSize();
 
-            if ( nb == nIndex )
+            if ( nb == invalidIndex )
             {
                 HOST_PRINT( myRank, "WARNING: matrix has no block distribution" )
             }

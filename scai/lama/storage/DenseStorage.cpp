@@ -1007,7 +1007,7 @@ DenseStorage<ValueType>::~DenseStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseStorage<ValueType>::l1Norm() const
+RealType<ValueType> DenseStorage<ValueType>::l1Norm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1028,7 +1028,7 @@ NormType<ValueType> DenseStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseStorage<ValueType>::l2Norm() const
+RealType<ValueType> DenseStorage<ValueType>::l2Norm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1048,7 +1048,7 @@ NormType<ValueType> DenseStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseStorage<ValueType>::maxNorm() const
+RealType<ValueType> DenseStorage<ValueType>::maxNorm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1063,14 +1063,14 @@ NormType<ValueType> DenseStorage<ValueType>::maxNorm() const
     ReadAccess<ValueType> read1( mData, loc );
     SCAI_CONTEXT_ACCESS( loc )
     ValueType zero   = 0;
-    NormType<ValueType> maxval = reduce[loc]( read1.get(), n, zero, common::BinaryOp::ABS_MAX );
+    RealType<ValueType> maxval = reduce[loc]( read1.get(), n, zero, common::BinaryOp::ABS_MAX );
     return maxval;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+RealType<ValueType> DenseStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )

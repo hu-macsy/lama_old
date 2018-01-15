@@ -67,7 +67,7 @@ class LArray : public hmemo::HArray<ValueType>
 {
 public:
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     /** Help class to observe the further use of operator[] in LArray */
     class IndexProxy
@@ -400,19 +400,19 @@ public:
 
     /** Compute the sum of magnitudes, for complex numbers it is the sum of real and imag part */
 
-    AbsType l1Norm() const
+    RealType l1Norm() const
     {
         return HArrayUtils::asum( *this );
     }
 
-    AbsType l2Norm() const
+    RealType l2Norm() const
     {
         return HArrayUtils::nrm2( *this );
     }
 
     /** Build the max diff norm with another LAMA array */
 
-    AbsType maxDiffNorm( const hmemo::HArray<ValueType>& other ) const
+    RealType maxDiffNorm( const hmemo::HArray<ValueType>& other ) const
     {
         return HArrayUtils::absMaxDiffVal( *this, other );
     }

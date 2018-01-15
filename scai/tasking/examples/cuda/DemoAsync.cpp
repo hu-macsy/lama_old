@@ -39,7 +39,7 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/Thread.hpp>
+#include <scai/common/thread.hpp>
 
 #include <iostream>
 #include <functional>
@@ -92,7 +92,7 @@ float mySum( const float d_array[], const int n )
 
 void task( int nr, int device, int N )
 {
-    std::cout << Thread::getThreadName( Thread::getSelf() ) << ": running task " << nr << " on device " << device << std::endl;
+    std::cout << *thread::getCurrentThreadName() << ": running task " << nr << " on device " << device << std::endl;
     const float VAL = 2.0;
     CUDACtx ctx( device );
     CUDAAccess access( ctx );

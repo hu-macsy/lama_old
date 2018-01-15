@@ -63,7 +63,7 @@ GridVector<ValueType>::GridVector( const std::string& filename ) : DenseVector<V
     // currently each processor reads the file, no distributed IO
     // Problem: GridDistribution onto a single processor not supported yet
 
-    GridVector::readLocalFromFile( filename, 0, nIndex );
+    GridVector::readLocalFromFile( filename, 0, invalidIndex );
 }
 
 template<typename ValueType>
@@ -263,7 +263,7 @@ IndexType GridVector<ValueType>::readLocalFromFile( const std::string& fileName,
     swap( data, grid );
 
     SCAI_ASSERT_EQ_ERROR( 0, first, "block read not supported for sparse data" )
-    SCAI_ASSERT_EQ_ERROR( nIndex, n, "block read not supported for sparse data" )
+    SCAI_ASSERT_EQ_ERROR( invalidIndex, n, "block read not supported for sparse data" )
 
     return localN;
 }

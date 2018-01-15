@@ -47,11 +47,12 @@
 
 #include <iostream>
 
-using namespace scai::lama;
-using namespace scai::solver;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace lama;
+using namespace solver;
+using namespace hmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, char* argv[] )
 {

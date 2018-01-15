@@ -41,13 +41,14 @@
 #include <iostream>
 #include <stdlib.h>
 
-using namespace scai::lama;
+using namespace scai;
+using namespace lama;
 
 int main()
 
 {
     /** Take default real type for this example. */
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType singleValue = 2;
     //

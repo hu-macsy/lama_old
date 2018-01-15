@@ -136,8 +136,8 @@ private:
     const lama::NormPtr<ValueType> mNorm;
 
     ResidualCheck mCheckMode;
-    NormType<ValueType> mPrecision;
-    NormType<ValueType> mFirstNormResult;
+    RealType<ValueType> mPrecision;
+    RealType<ValueType> mFirstNormResult;
 };
 
 } /* end namespace solver */

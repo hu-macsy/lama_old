@@ -162,12 +162,12 @@ int TraceData::getCurrentRegionId( const char* regionName )
 
 TraceData::TraceData( const char* prefix, ThreadId threadId, bool mThreadEnabled, bool callTreeFlag ) :
     mThreadId( threadId ),
-    mRegionTable( mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL )
+    mRegionTable( mThreadEnabled ? common::thread::getThreadName( threadId )->c_str() : NULL )
 {
     // calltree table only allocated if needed
     if ( callTreeFlag )
     {
-        const char* threadName = mThreadEnabled ? common::Thread::getThreadName( threadId ) : NULL;
+        const char* threadName = mThreadEnabled ? common::thread::getThreadName( threadId )->c_str() : NULL;
         mCallTreeTable.reset( new CallTreeTable( prefix, threadName ) );
     }
 

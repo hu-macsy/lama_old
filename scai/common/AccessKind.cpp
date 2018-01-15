@@ -1,5 +1,5 @@
 /**
- * @file NotSupportedValueTypeException.hpp
+ * @file AccessKind.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,16 +27,14 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of derived exception class for unsupported values.
- * @author Eric Schricker
- * @date 12.11.2015
+ * @brief Implementation of operations on enum type AccessKind.
+ * @author Jiri Kraus
+ * @date 07.11.2011
  */
 
-// base class
-#include <scai/common/exception/Exception.hpp>
+#include <scai/common/AccessKind.hpp>
 
-// std
-#include <string>
+#include <cstring>
 
 namespace scai
 {
@@ -44,38 +42,29 @@ namespace scai
 namespace common
 {
 
-/** Derived exception class that is used to throw an exception in all cases
- *  where an illegal or unsupported value is used.
- */
+/* -----------------------------------------------------------------------------*/
 
-class COMMON_DLL_IMPORTEXPORT NotSupportedValueTypeException : public Exception
+std::ostream& operator<<( std::ostream& stream, const AccessKind& kind )
 {
-public:
-    /**
-     * @brief The default constructor creates an NotSupportedValueTypeException with no message.
-     */
-    NotSupportedValueTypeException( );
+    switch ( kind )
+    {
+        case AccessKind::Write :
+            stream << "Write";
+            break;
 
-    /**
-     * @brief This constructor creates an NotSupportedValueTypeException with the passed message.
-     *
-     * @param[in] message  the message to assign to this.
-     */
-    NotSupportedValueTypeException( const std::string& message );
+        case AccessKind::Read :
+            stream << "Read";
+            break;
 
-    /**
-     * @brief The destructor destroys this NotSupportedValueTypeException.
-     */
-    virtual ~NotSupportedValueTypeException() throw ();
+        default:
+            stream << "AccessKind_" << static_cast<int>( kind );
+    }
 
-    virtual const char* what() const throw();
+    return stream;
+}
 
-protected:
-
-    std::string mMessage;
-};
+/* -----------------------------------------------------------------------------*/
 
 } /* end namespace common */
 
 } /* end namespace scai */
-

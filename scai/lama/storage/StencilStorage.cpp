@@ -132,7 +132,7 @@ void StencilStorage<ValueType>::conj()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> StencilStorage<ValueType>::l1Norm() const
+RealType<ValueType> StencilStorage<ValueType>::l1Norm() const
 {
     COMMON_THROWEXCEPTION( "l1Norm unsupported" )
     return 0;
@@ -141,7 +141,7 @@ NormType<ValueType> StencilStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> StencilStorage<ValueType>::l2Norm() const
+RealType<ValueType> StencilStorage<ValueType>::l2Norm() const
 {
     COMMON_THROWEXCEPTION( "l2Norm unsupported" )
     return 0;
@@ -150,7 +150,7 @@ NormType<ValueType> StencilStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> StencilStorage<ValueType>::maxNorm() const
+RealType<ValueType> StencilStorage<ValueType>::maxNorm() const
 {
     COMMON_THROWEXCEPTION( "maxNorm unsupported" )
     return 0;

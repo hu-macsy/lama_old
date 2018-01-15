@@ -58,7 +58,7 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {

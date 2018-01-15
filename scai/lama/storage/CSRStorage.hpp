@@ -597,23 +597,23 @@ public:
 
     /** Implementation for MatrixStorage::l1Norm */
 
-    virtual NormType<ValueType> l1Norm() const;
+    virtual RealType<ValueType> l1Norm() const;
 
     /** Implementation for MatrixStorage::l2Norm */
 
-    virtual NormType<ValueType> l2Norm() const;
+    virtual RealType<ValueType> l2Norm() const;
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual NormType<ValueType> maxNorm() const;
+    virtual RealType<ValueType> maxNorm() const;
 
     /** Implementation for MatrixStorage::maxDiffNorm */
 
-    virtual NormType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /** Implementation of maxDiffNorm for CSR matrices */
 
-    virtual NormType<ValueType> maxDiffNormImpl( const CSRStorage<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNormImpl( const CSRStorage<ValueType>& other ) const;
 
     /** Implemenation of pure method of class MatrixStorage. */
 

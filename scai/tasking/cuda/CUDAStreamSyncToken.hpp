@@ -59,7 +59,7 @@ namespace tasking
 
 /** Class that sycnchronizes with a CUDA stream. */
 
-class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public SyncToken, public streamtype
+class COMMON_DLL_IMPORTEXPORT CUDAStreamSyncToken: public SyncToken
 
 {
 public:

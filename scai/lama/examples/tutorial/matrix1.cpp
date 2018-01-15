@@ -53,7 +53,7 @@ using namespace lama;
 
 /** Take default real type for this example. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 //
 // EXAMPLE multiplication of a dense vector with a sparse matrix in CSR format.

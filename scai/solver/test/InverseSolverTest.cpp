@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types 
     origin.matrixTimesMatrix( result, 1.0, inverse, 0.0, result );
 
 
-    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -159,8 +159,8 @@ BOOST_AUTO_TEST_CASE( SolveTest )
     solver->initialize( coefficients );
     solver->solve( solution, rhs );
     DenseVector<ValueType> diff( solution - exactSolution );
-    scai::NormType<ValueType> realMaxNorm = maxNorm( diff );
-    scai::NormType<ValueType> expectedMaxNorm = 1E-4;
+    scai::RealType<ValueType> realMaxNorm = maxNorm( diff );
+    scai::RealType<ValueType> expectedMaxNorm = 1E-4;
     SCAI_LOG_INFO( logger, "maxNorm of diff ( solution - exactSolution ) = " << realMaxNorm );
     BOOST_CHECK( realMaxNorm < expectedMaxNorm );
 }

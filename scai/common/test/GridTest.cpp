@@ -37,6 +37,9 @@
 #include <scai/common/Grid.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
+using scai::IndexType;
+using scai::invalidIndex;
+
 using scai::common::Grid;
 using scai::common::Grid1D;
 using scai::common::Grid2D;
@@ -110,8 +113,8 @@ BOOST_AUTO_TEST_CASE( validTest )
 
     // Define points with full size to avoid warning messages of overcautious compiler
 
-    IndexType p1[] = { 1, 2, 1, nIndex };
-    IndexType p2[] = { 1, 2, 2, nIndex };
+    IndexType p1[] = { 1, 2, 1, invalidIndex };
+    IndexType p2[] = { 1, 2, 2, invalidIndex };
 
     BOOST_CHECK( grid3.validPos( p1 ) );
     BOOST_CHECK( !grid3.validPos( p2 ) );
@@ -130,9 +133,9 @@ BOOST_AUTO_TEST_CASE( pos2Test )
 
     // Define points with full size to avoid warning messages of overcautious compiler
 
-    IndexType p1[] = { 3, 5, nIndex, nIndex };
-    IndexType p2[] = { 3, 6, nIndex, nIndex };
-    IndexType p3[] = { 4, 5, nIndex, nIndex };
+    IndexType p1[] = { 3, 5, invalidIndex, invalidIndex };
+    IndexType p2[] = { 3, 6, invalidIndex, invalidIndex };
+    IndexType p3[] = { 4, 5, invalidIndex, invalidIndex };
 
     BOOST_CHECK_EQUAL( grid.linearPos( p1), grid.linearPos( p1[0], p1[1] ) );
 
@@ -176,10 +179,10 @@ BOOST_AUTO_TEST_CASE( pos3Test )
 
     const IndexType n = grid.size();
 
-    IndexType p0[] = { 3, 1, 2, nIndex };
-    IndexType p1[] = { 3, 1, 3, nIndex };
-    IndexType p2[] = { 3, 2, 2, nIndex };
-    IndexType p3[] = { 4, 1, 2, nIndex };
+    IndexType p0[] = { 3, 1, 2, invalidIndex };
+    IndexType p1[] = { 3, 1, 3, invalidIndex };
+    IndexType p2[] = { 3, 2, 2, invalidIndex };
+    IndexType p3[] = { 4, 1, 2, invalidIndex };
 
     // verify linearPos( x, y, z ) == linearPos( { x, y, z } )
 

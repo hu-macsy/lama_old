@@ -39,6 +39,8 @@
 #include <scai/tracing/CallStack.hpp>
 #include <scai/tracing/CallTreeTable.hpp>
 
+#include <scai/common/thread.hpp>
+
 #include <memory>
 
 namespace scai
@@ -53,7 +55,7 @@ class TraceData
 {
 public:
 
-    typedef common::Thread::Id ThreadId;
+    typedef common::thread::Id ThreadId;
 
     /** Constructor of new thread record for tracing data.
      *

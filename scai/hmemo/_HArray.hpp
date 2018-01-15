@@ -352,7 +352,7 @@ protected:
     /** reserve of memory at a certain context/memory, i.e. pos is known 
      *
      *  @param[in] index must be legal index in the array on context data entries
-     *  @param[capacity] number of data entries for which memory has to be reserved
+     *  @param[in] capacity is number of data entries for which memory has to be reserved
      *
      *  Note: position in array is used instead of reference as array might be resized
      */
@@ -539,14 +539,14 @@ inline ContextDataIndex _HArray::acquireReadAccess( ContextPtr context ) const
     size_t allocSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
     size_t validSize = allocSize;                   // read access needs valid data in any case
 
-    return mContextDataManager.acquireAccess( context, common::context::Read, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, common::AccessKind::Read, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void _HArray::releaseReadAccess( ContextDataIndex index ) const
 {
-    mContextDataManager.releaseAccess( index, common::context::Read );
+    mContextDataManager.releaseAccess( index, common::AccessKind::Read );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -558,14 +558,14 @@ inline ContextDataIndex _HArray::acquireWriteAccess( ContextPtr context, bool ke
     size_t allocSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
 
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
-    return mContextDataManager.acquireAccess( context, common::context::Write, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, common::AccessKind::Write, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void _HArray::releaseWriteAccess( ContextDataIndex index )
 {
-    mContextDataManager.releaseAccess( index, common::context::Write );
+    mContextDataManager.releaseAccess( index, common::AccessKind::Write );
 }
 
 } /* end namespace hmemo */

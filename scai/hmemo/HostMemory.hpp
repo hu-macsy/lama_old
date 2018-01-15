@@ -43,9 +43,8 @@
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/Thread.hpp>
-
 #include <memory>
+#include <mutex>
 
 namespace scai
 {
@@ -100,7 +99,7 @@ private:
 
     mutable size_t mNumberOfAllocatedBytes;//!< variable counts allocated bytes
 
-    mutable common::Thread::RecursiveMutex allocate_mutex;// needed to make allocate/free thread-safe
+    mutable std::recursive_mutex allocate_mutex;// needed to make allocate/free thread-safe
 };
 
 } /* end namespace hmemo */

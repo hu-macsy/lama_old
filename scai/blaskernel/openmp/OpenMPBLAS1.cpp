@@ -573,7 +573,7 @@ template<typename ValueType>
 void OpenMPBLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
 
     SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS1 OpenMP-routines for Host at kernel registry: " <<
                     "T = " << common::TypeTraits<ValueType>::id() )

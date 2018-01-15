@@ -1010,7 +1010,7 @@ void SparseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType
 
     IndexType jLocal = getColDistribution().global2local( globalColIndex );
 
-    if ( nIndex != jLocal )
+    if ( invalidIndex != jLocal )
     {
         // column belongs to local storage
 
@@ -1020,7 +1020,7 @@ void SparseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType
     {
         IndexType jHalo = mHalo.global2halo( globalColIndex );
 
-        if ( nIndex != jHalo )
+        if ( invalidIndex != jHalo )
         {
             // column belongs to halo storage
 
@@ -1135,7 +1135,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
 
     const IndexType localRowSize = getRowDistribution().getLocalSize();
 
-    if ( nIndex != jLocal )
+    if ( invalidIndex != jLocal )
     {
         mLocalData->getColumn( column, jLocal );
     }
@@ -1143,7 +1143,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
     {
         IndexType jHalo = mHalo.global2halo( globalColIndex );
 
-        if ( nIndex != jHalo )
+        if ( invalidIndex != jHalo )
         {
             mHaloData->getColumn( column, jHalo );
         }
@@ -1171,7 +1171,7 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 
     ReadAccess<ValueType> colAccess( column );
 
-    if ( nIndex != jLocal )
+    if ( invalidIndex != jLocal )
     {
         mLocalData->setColumn( column, jLocal, op );
     }
@@ -1179,7 +1179,7 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
     {
         IndexType jHalo = mHalo.global2halo( colIndex );
 
-        if ( nIndex != jHalo )
+        if ( invalidIndex != jHalo )
         {
             mHaloData->setColumn( column, jHalo,  op );
         }
@@ -2017,13 +2017,13 @@ void SparseMatrix<ValueType>::matrixTimesScalar( const Matrix<ValueType>& A, Val
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::l1Norm() const
+RealType<ValueType> SparseMatrix<ValueType>::l1Norm() const
 {
     SCAI_REGION( "Mat.Sp.l1Norm" )
-    NormType<ValueType> myValue = mLocalData->l1Norm();
-    myValue += static_cast<NormType<ValueType>>( mHaloData->l1Norm() );
+    RealType<ValueType> myValue = mLocalData->l1Norm();
+    myValue += static_cast<RealType<ValueType>>( mHaloData->l1Norm() );
     const Communicator& comm = getRowDistribution().getCommunicator();
-    NormType<ValueType> allValue = comm.sum( myValue );
+    RealType<ValueType> allValue = comm.sum( myValue );
     SCAI_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
     return allValue;
 }
@@ -2031,15 +2031,15 @@ NormType<ValueType> SparseMatrix<ValueType>::l1Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::l2Norm() const
+RealType<ValueType> SparseMatrix<ValueType>::l2Norm() const
 {
     SCAI_REGION( "Mat.Sp.l2Norm" )
-    NormType<ValueType> tmp = mLocalData->l2Norm();
-    NormType<ValueType> myValue = tmp * tmp;
+    RealType<ValueType> tmp = mLocalData->l2Norm();
+    RealType<ValueType> myValue = tmp * tmp;
     tmp = mHaloData->l2Norm();
     myValue += tmp * tmp;
     const Communicator& comm = getRowDistribution().getCommunicator();
-    NormType<ValueType> allValue = comm.sum( myValue );
+    RealType<ValueType> allValue = comm.sum( myValue );
     // allValue = ::sqrt( allValue );
     allValue = common::Math::sqrt( allValue );
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
@@ -2047,12 +2047,12 @@ NormType<ValueType> SparseMatrix<ValueType>::l2Norm() const
 }
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::maxNorm() const
+RealType<ValueType> SparseMatrix<ValueType>::maxNorm() const
 {
     SCAI_REGION( "Mat.Sp.maxNorm" )
 
-    NormType<ValueType> myMax = mLocalData->maxNorm();
-    NormType<ValueType> myMaxHalo = mHaloData->maxNorm();
+    RealType<ValueType> myMax = mLocalData->maxNorm();
+    RealType<ValueType> myMaxHalo = mHaloData->maxNorm();
 
     if ( myMaxHalo > myMax )
     {
@@ -2061,7 +2061,7 @@ NormType<ValueType> SparseMatrix<ValueType>::maxNorm() const
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    NormType<ValueType> allMax = comm.max( myMax );
+    RealType<ValueType> allMax = comm.max( myMax );
 
     SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
 
@@ -2071,7 +2071,7 @@ NormType<ValueType> SparseMatrix<ValueType>::maxNorm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
+RealType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     // Implementation works only for same row distribution, replicated col distribution
     // and the same type
@@ -2197,12 +2197,12 @@ ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 
     const IndexType iLocal = distributionRow.global2local( i );
 
-    if ( iLocal != nIndex )
+    if ( iLocal != invalidIndex )
     {
         SCAI_LOG_TRACE( logger, "row " << i << " is local " << iLocal )
         IndexType jLocal = distributionCol.global2local( j );
 
-        if ( nIndex != jLocal )
+        if ( invalidIndex != jLocal )
         {
             SCAI_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is local(" << iLocal << "," << jLocal << ")" )
             myValue = mLocalData->getValue( iLocal, jLocal );
@@ -2212,7 +2212,7 @@ ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
         {
             jLocal = mHalo.global2halo( j );
 
-            if ( nIndex != jLocal )
+            if ( invalidIndex != jLocal )
             {
                 SCAI_LOG_TRACE( logger, "global(" << i << "," << j << ")" " is halo(" << iLocal << "," << jLocal << ")" )
                 myValue = mHaloData->getValue( iLocal, jLocal );
@@ -2240,7 +2240,7 @@ void SparseMatrix<ValueType>::setValue(
 
     const IndexType iLocal = distributionRow.global2local( i );
 
-    if ( iLocal == nIndex )
+    if ( iLocal == invalidIndex )
     {
         return; // this processor does not have the value
     }
@@ -2249,7 +2249,7 @@ void SparseMatrix<ValueType>::setValue(
 
     IndexType jLocal = distributionCol.global2local( j );
 
-    if ( nIndex != jLocal )
+    if ( invalidIndex != jLocal )
     {
         mLocalData->setValue( iLocal, jLocal, val, op );
     }
@@ -2257,7 +2257,7 @@ void SparseMatrix<ValueType>::setValue(
     {
         jLocal = mHalo.global2halo( j );
 
-        if ( nIndex != jLocal )
+        if ( invalidIndex != jLocal )
         {
             mHaloData->setValue( iLocal, jLocal, val, op );
         }
