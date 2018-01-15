@@ -45,7 +45,7 @@ namespace scai
 namespace common
 {
 
-/** Derived exception class for an exception that is thrown if any assertion fails. */
+/** Derived exception class for an exception that is thrown if an invalid argument is used. */
 
 class COMMON_DLL_IMPORTEXPORT InvalidArgumentException : public Exception
 {
@@ -56,12 +56,12 @@ public:
      *
      * @param[in] message  the message to assign to this.
      */
-    InvalidArgumentException( const std::string& message );
+    inline InvalidArgumentException( const std::string& message );
 
     /**
      * @brief The destructor destroys this InvalidArgumentException.
      */
-    virtual ~InvalidArgumentException() throw ();
+    inline virtual ~InvalidArgumentException() throw ();
 };
 
 InvalidArgumentException::InvalidArgumentException( const std::string& message ) :
