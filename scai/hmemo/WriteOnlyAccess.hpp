@@ -112,6 +112,10 @@ public:
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
+    WriteOnlyAccess ( WriteOnlyAccess<ValueType> && other)
+        : WriteAccess<ValueType>( std::move(other) )
+    { }
+
     ~WriteOnlyAccess()
     {
         SCAI_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )

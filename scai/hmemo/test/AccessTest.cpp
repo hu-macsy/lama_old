@@ -329,6 +329,24 @@ BOOST_AUTO_TEST_CASE( writeAccessFunctionTest )
     BOOST_TEST( write[3] ==  1 );
 }
 
+BOOST_AUTO_TEST_CASE( writeOnlyAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    WriteOnlyAccess<int> write1(array);
+    const auto data = write1.get();
+    const auto size = write1.size();
+
+    WriteOnlyAccess<int> write2(std::move(write1));
+
+    BOOST_TEST(write2.get() == data);
+    BOOST_TEST(write2.size() == size);
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( write1.get(), scai::common::AssertException);
+}
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
