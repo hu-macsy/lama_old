@@ -133,6 +133,30 @@ private:
     using WriteAccess<ValueType>::mContextDataIndex;
 };
 
+/**
+ * @brief Obtain a WriteOnlyAccess to the given array.
+ *
+ * Analogous to readAccess(const HArray & array). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteOnlyAccess<ValueType> writeOnlyAccess(HArray<ValueType> & array)
+{
+    return WriteOnlyAccess<ValueType>(array);
+}
+
+/**
+ * @brief Obtain a WriteOnlyAccess for the supplied context to the given array.
+ *
+ * Analogous to readAccess(const HArray & array, ContextPtr). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteOnlyAccess<ValueType> writeOnlyAccess(HArray<ValueType> & array, ContextPtr context)
+{
+    return WriteOnlyAccess<ValueType>(array, context);
+}
+
 } /* end namespace hmemo */
 
 } /* end namespace scai */
