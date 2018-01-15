@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test program for threads
+ * @brief Test program for naming of threads
  * @author Thomas Brandes
  * @date 30.03.2016
  */
@@ -35,23 +35,21 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/thread.hpp>
-#include <scai/common/Walltime.hpp>
+#include <scai/common/macros/assert.hpp>
 
 #include <iostream>
 #include <cstdlib>
-#include <vector>
 
 using namespace scai;
 using namespace common;
+using namespace thread;
 
 BOOST_AUTO_TEST_SUITE( ThreadTest )
 
+static const int N_THREADS   = 31;  // number of threads
+
 std::mutex barrierMutex;
 std::condition_variable_any barrierCondition;
-
-static const int NB_THREADS   = 16;
-
-// Define routine that is executed by one thread
 
 static int thread_cnt = 0;
 
@@ -60,7 +58,7 @@ static void barrier()
     std::unique_lock<std::mutex> lock( barrierMutex );
     thread_cnt ++;
 
-    if ( thread_cnt != NB_THREADS )
+    if ( thread_cnt != N_THREADS + 1 )
     {
         // Some others not at barrier so wait
         barrierCondition.wait( lock );
@@ -73,131 +71,42 @@ static void barrier()
     }
 }
 
-struct BarrierArgs
-{
-    int threadNum;
-    int * sharedArray;
-    int sumForThisThread;
-};
+/** Function that is that is executed by each thread */
 
-static void barrierRoutine( BarrierArgs& arg )
+static void runRoutine( const int i )
 {
-    arg.sharedArray[arg.threadNum] = arg.threadNum;
+    std::string name = "Thread_" + std::to_string( i );
+    thread::defineCurrentThreadName( name.c_str() );
     barrier();
-    int sum = 0;
-
-    for ( int i = 0; i < NB_THREADS; ++i )
-    {
-        sum += arg.sharedArray[i];
-    }
-
-    arg.sumForThisThread = sum;
+    std::string name1 = getCurrentThreadName();
+    // BOOST_CHECK_EQUAL on separate threads can produce strange outputs
+    SCAI_ASSERT_EQ_ERROR( name, name1, "serious error" );
 }
 
-BOOST_AUTO_TEST_CASE( barrierTest )
+BOOST_AUTO_TEST_CASE( nameThreadTest )
 {
-    // Note: this test is actually meant to test condition variables.
-    // A barrier is only an example use case for condition variables.
-    std::thread threads[NB_THREADS];
-    int sharedArray[NB_THREADS];
-    BarrierArgs threadArgs[NB_THREADS];
+    // run a number of threads and give them names
 
-    for ( int i = 0; i < NB_THREADS; ++i )
+    std::thread threads[N_THREADS];
+
+    for ( int i = 0; i < N_THREADS; ++i )
     {
-        BarrierArgs& arg = threadArgs[i];
-        arg.threadNum = i;
-        arg.sharedArray = sharedArray;
-        threads[i] = std::thread( barrierRoutine, std::ref( arg ) );
+        threads[i] = std::thread( runRoutine, i );
     }
 
-    for ( int i = 0; i < NB_THREADS; ++i )
+    barrier();
+
+    for ( int i = 0; i < N_THREADS; ++i )
+    {
+        std::string expected = "Thread_" + std::to_string( i );
+        std::string name = getThreadName( threads[i].get_id() );
+        BOOST_CHECK_EQUAL( expected, name );
+    }
+
+    for ( int i = 0; i < N_THREADS; ++i )
     {
         threads[i].join();
     }
-
-    for ( int i = 0; i < NB_THREADS; ++i )
-    {
-        const auto & arg = threadArgs[i];
-        const int expected_sum = NB_THREADS * ( NB_THREADS - 1 ) / 2;
-        const auto sum = arg.sumForThisThread;
-
-        BOOST_TEST_CONTEXT( " barrierTest for thread " << i << " " )
-        {
-            BOOST_CHECK_EQUAL( sum, expected_sum );
-        }
-    }
-
-}
-
-static const int SLEEP_TIME  = 1;  // in seconds
-static const int C_THREADS   = 4;
-
-// Define routine that is executed by one thread
-
-std::recursive_mutex critMutex;    // recursive mutex needed here
-
-static void criticalRoutine( int& n )
-{
-    std::ostringstream nstream;
-    nstream << "Thread_" << n;
-    Thread::defineCurrentThreadName( nstream.str().c_str() );
-    std::unique_lock<std::recursive_mutex> lock( critMutex );
-    std::unique_lock<std::recursive_mutex> lock1( critMutex );   // second lock by same thread is okay for recursive mutex
-    Walltime::sleep( SLEEP_TIME * 1000 );
-    BOOST_CHECK_EQUAL( nstream.str(), Thread::getCurrentThreadName() );
-}
-
-BOOST_AUTO_TEST_CASE( criticalRegionTest )
-{
-    // macro to give the current thread a name that appears in further logs
-    std::thread threads[C_THREADS];
-    int threadArgs[C_THREADS];
-    double time = Walltime::get();
-
-    for ( int i = 0; i < C_THREADS; ++i )
-    {
-        threadArgs[i] = i;
-        threads[i] = std::thread( criticalRoutine, std::ref( threadArgs[i] ) );
-    }
-
-    for ( int i = 0; i < C_THREADS; ++i )
-    {
-        threads[i].join();
-    }
-
-    time = Walltime::get() - time;
-    // If critical region is implemented correctly, time must be > ( #threds * sleep_time )
-    BOOST_CHECK( C_THREADS* SLEEP_TIME <= time );
-}
-
-// Define routine that is executed by one thread
-
-static void runRoutine( int& )
-{
-    Walltime::sleep( SLEEP_TIME * 1000 );
-}
-
-BOOST_AUTO_TEST_CASE( concurrentTest )
-{
-    // macro to give the current thread a name that appears in further logs
-    std::thread threads[C_THREADS];
-    int threadArgs[C_THREADS];
-    double time = Walltime::get();
-
-    for ( int i = 0; i < C_THREADS; ++i )
-    {
-        threadArgs[i] = i;
-        threads[i] = std::thread( runRoutine, std::ref( threadArgs[i] ) );
-    }
-
-    for ( int i = 0; i < C_THREADS; ++i )
-    {
-        threads[i].join();
-    }
-
-    time = Walltime::get() - time;
-    // If threads are implemented correctly, time must be ~ sleep_time
-    BOOST_CHECK_CLOSE( time, double( SLEEP_TIME ), 20 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

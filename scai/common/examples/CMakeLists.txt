@@ -44,10 +44,8 @@ scai_add_example ( LIBRARY Module FILES Module.cpp DynRoutine.hpp )
 scai_add_example ( LIBRARY DummyModule FILES DummyModule.cpp )
 
 set ( EXECUTABLE_FILES ${EXECUTABLE_FILES} 
-          Barrier 
           BenchMath
           BenchPointers
-          CriticalRegion
           DemoFactory
           DemoFactory1
           DemoGrid
