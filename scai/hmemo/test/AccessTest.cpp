@@ -516,6 +516,163 @@ BOOST_AUTO_TEST_CASE( hostWriteOnlyAccessFunctionTest )
 
 }
 
+BOOST_AUTO_TEST_CASE( hostReadAccessSTLCompatibilityTest )
+{
+    const auto array = HArray<int> { 5, 3, 1, 2 };
+    const std::vector<int> expectedElements { 5, 3, 1, 2 };
+
+    // Range-based for
+    {
+        std::vector<int> elements;
+        for (auto element : hostReadAccess(array))
+        {
+            elements.push_back(element);
+        }
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // copy, begin/end
+    {
+        std::vector<int> elements;
+        const auto access = hostReadAccess(array);
+        std::copy( access.begin(), access.end(), std::back_inserter(elements) );
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // copy, cbegin/cend
+    {
+        std::vector<int> elements;
+        const auto access = hostReadAccess(array);
+        std::copy( access.cbegin(), access.cend(), std::back_inserter(elements) );
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // is_heap, which requires a random access iterator (unlike copy which only requires an input iterator)
+    {
+        const auto access = hostReadAccess(array);
+
+        BOOST_TEST ( std::is_heap(access.begin(), access.end()) );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteAccessSTLCompatibilityTest )
+{
+    const auto array = HArray<int> { 5, 3, 1, 2 };
+    const std::vector<int> expectedElements { 5, 3, 1, 2 };
+
+    // Range-based for, read-only
+    {
+        auto mutableArray = array;
+        std::vector<int> elements;
+        for (auto element : hostWriteAccess(mutableArray))
+        {
+            elements.push_back(element);
+        }
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // Range-based for, write
+    {
+        auto mutableArray = array;
+        for (auto & element : hostWriteAccess(mutableArray))
+        {
+            element = 2;
+        }
+
+        const std::vector<int> expectedMutated { 2, 2, 2, 2 };
+        BOOST_TEST( hostWriteAccess(mutableArray) == expectedMutated, boost::test_tools::per_element() );
+    }
+
+    // copy, begin/end
+    {
+        auto mutableArray = array;
+        std::vector<int> elements;
+        const auto access = hostWriteAccess(mutableArray);
+        std::copy( access.begin(), access.end(), std::back_inserter(elements) );
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // copy, cbegin/cend
+    {
+        auto mutableArray = array;
+        std::vector<int> elements;
+        const auto access = hostWriteAccess(mutableArray);
+        std::copy( access.cbegin(), access.cend(), std::back_inserter(elements) );
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // is_heap, which requires a random access iterator (unlike copy which only requires an input iterator)
+    {
+        auto mutableArray = array;
+        const auto access = hostWriteAccess(mutableArray);
+
+        BOOST_TEST ( std::is_heap(access.begin(), access.end()) );
+    }
+
+    // copy into HostWriteAccess, begin/end
+    {
+        auto mutableArray = array;
+        auto access = hostWriteAccess(mutableArray);
+        std::copy(expectedElements.begin(), expectedElements.end(), access.begin());
+
+        BOOST_TEST( access == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // sort, requires random access
+    {
+        auto mutableArray = array;
+        auto access = hostWriteAccess(mutableArray);
+        std::sort( access.begin(), access.end() );
+
+        const std::vector<int> expectedSorted { 1, 2, 3, 5 };
+        BOOST_TEST ( access == expectedSorted, boost::test_tools::per_element() );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteOnlyAccessSTLCompatibilityTest )
+{
+    const auto array = HArray<int> { 5, 3, 1, 2 };
+    const std::vector<int> expectedElements { 5, 3, 1, 2 };
+
+    // Range-based for, write
+    {
+        auto mutableArray = array;
+        for (auto & element : hostWriteOnlyAccess(mutableArray, 3))
+        {
+            element = 2;
+        }
+
+        const std::vector<int> expectedMutated { 2, 2, 2 };
+        BOOST_TEST( hostReadAccess(mutableArray) == expectedMutated, boost::test_tools::per_element() );
+    }
+
+    // copy into HostWriteOnlyAccess, begin/end
+    {
+        auto mutableArray = array;
+        auto access = hostWriteOnlyAccess(mutableArray, 4);
+        std::copy(expectedElements.begin(), expectedElements.end(), access.begin());
+
+        BOOST_TEST( access == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // copy into followed by sort, requires random access
+    {
+        auto mutableArray = array;
+        auto access = hostWriteOnlyAccess(mutableArray, 4);
+        std::copy(expectedElements.begin(), expectedElements.end(), access.begin());
+        std::sort( access.begin(), access.end() );
+
+        const std::vector<int> expectedSorted { 1, 2, 3, 5 };
+        BOOST_TEST ( access == expectedSorted, boost::test_tools::per_element() );
+    }
+}
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
