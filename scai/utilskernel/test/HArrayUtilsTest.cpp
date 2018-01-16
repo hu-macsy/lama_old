@@ -1844,6 +1844,53 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( mergeSparseTest, ValueType, scai_array_test_types
     BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values ) );
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( mergeAndRetainMappingTest, ValueType, scai_array_test_types )
+{
+    const auto stype = scai::common::TypeTraits<ValueType>::stype;
+
+    // TODO: Rewrite this with initializer list
+    const ValueType xData[] { 2, 3, 6, 7, 8 };
+    const ValueType yData[] { 1, 4, 9 };
+    const auto x = HArray<ValueType>(5, xData);
+    const auto y = HArray<ValueType>(3, yData);
+
+    HArray<IndexType> mapping;
+    HArray<ValueType> result;
+
+    if (scai::common::isComplex(stype))
+    {
+        BOOST_CHECK_THROW( HArrayUtils::mergeAndRetainMapping(result, mapping, x, y), scai::common::AssertException);
+    }
+    else
+    {
+        // TODO: Test for more cases! Make sure to cover all branches.
+        HArrayUtils::mergeAndRetainMapping(result, mapping, x, y);
+
+        // TODO: Rewrite with free function hostReadAccess and harray initializer lists for comparison
+        const auto expectedResult = std::vector<ValueType> { 1, 2, 3, 4, 6, 7, 8, 9 };
+        const auto expectedMapping = std::vector<IndexType> { 1, 2, 4, 5, 6};
+
+        ReadAccess<ValueType> readResult(result);
+        BOOST_TEST( readResult.size() == 8 );
+        BOOST_TEST( readResult[0] == expectedResult[0] );
+        BOOST_TEST( readResult[1] == expectedResult[1] );
+        BOOST_TEST( readResult[2] == expectedResult[2] );
+        BOOST_TEST( readResult[3] == expectedResult[3] );
+        BOOST_TEST( readResult[4] == expectedResult[4] );
+        BOOST_TEST( readResult[5] == expectedResult[5] );
+        BOOST_TEST( readResult[6] == expectedResult[6] );
+        BOOST_TEST( readResult[7] == expectedResult[7] );
+
+        ReadAccess<IndexType> readMapping(mapping);
+        BOOST_TEST( readMapping.size() == 5 );
+        BOOST_TEST( readMapping[0] == expectedMapping[0] );
+        BOOST_TEST( readMapping[1] == expectedMapping[1] );
+        BOOST_TEST( readMapping[2] == expectedMapping[2] );
+        BOOST_TEST( readMapping[3] == expectedMapping[3] );
+        BOOST_TEST( readMapping[4] == expectedMapping[4] );
+    }
+}
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( complexText, ValueType, scai_numeric_test_types )

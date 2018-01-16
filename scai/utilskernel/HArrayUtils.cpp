@@ -55,6 +55,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/ScalarType.hpp>
 
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/macros/loop.hpp>
 
 // std
@@ -2315,6 +2316,74 @@ void HArrayUtils::mergeSparse(
     }
 }
 
+template <typename ValueType>
+void HArrayUtils::mergeAndRetainMapping(
+    hmemo::HArray<ValueType> & result,
+    hmemo::HArray<IndexType> & mapping,
+    const hmemo::HArray<ValueType> & x,
+    const hmemo::HArray<ValueType> & y,
+    const common::CompareOp comparator)
+{
+    const auto stype = common::TypeTraits<ValueType>::stype;
+
+    SCAI_ASSERT_ERROR(!common::isComplex(stype),
+                      "merge is not applicable to complex numbers. ValueType == " << stype);
+    SCAI_ASSERT_DEBUG(HArrayUtils::isSorted(x, comparator), "x must be sorted according to the specified comparator " << comparator);
+    SCAI_ASSERT_DEBUG(HArrayUtils::isSorted(y, comparator), "y must be sorted according to the specified comparator " << comparator);
+
+    using hmemo::ReadAccess;
+    using hmemo::WriteAccess;
+    using hmemo::WriteOnlyAccess;
+
+    ReadAccess<ValueType> rx(x);
+    ReadAccess<ValueType> ry(y);
+    WriteOnlyAccess<IndexType> wMapping(mapping, x.size());
+
+    auto & z = result;
+    WriteOnlyAccess<ValueType> wz(z);
+    wz.resize(rx.size() + ry.size());
+
+    IndexType xIndex = 0;
+    IndexType yIndex = 0;
+    IndexType zIndex = 0;
+
+    while ( xIndex < rx.size() && yIndex < ry.size() )
+    {
+        SCAI_ASSERT_DEBUG(zIndex < z.size(), "zIndex should never go out of bounds");
+
+        const auto xElement = rx[xIndex];
+        const auto yElement = ry[yIndex];
+
+        if (common::compare(xElement, comparator, yElement))
+        {
+            wMapping[xIndex] = zIndex;
+            wz[zIndex] = xElement;
+            ++xIndex;
+        }
+        else
+        {
+            wz[zIndex] = yElement;
+            ++yIndex;
+        }
+        ++zIndex;
+    }
+
+    while ( xIndex < rx.size() )
+    {
+        wMapping[xIndex] = zIndex;
+        wz[zIndex++] = rx[xIndex++];
+    }
+
+    while ( yIndex < ry.size() )
+    {
+        wz[zIndex++] = ry[yIndex++];
+    }
+
+    SCAI_ASSERT(xIndex == x.size(), "must have read all elements in x.");
+    SCAI_ASSERT(yIndex == y.size(), "must have read all elements in y.");
+    SCAI_ASSERT(zIndex == z.size(), "must have written to all elements in z.");
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -2617,6 +2686,12 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<ValueType>&,                            \
             const BinaryOp,                                             \
             hmemo::ContextPtr );                                        \
+    template void HArrayUtils::mergeAndRetainMapping(                   \
+        hmemo::HArray<ValueType> & result,                              \
+        hmemo::HArray<IndexType> & mapping,                             \
+        const hmemo::HArray<ValueType> & x,                             \
+        const hmemo::HArray<ValueType> & y,                             \
+        const common::CompareOp comparator = common::CompareOp::LT);    \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 
 SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )

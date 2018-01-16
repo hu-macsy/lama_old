@@ -963,6 +963,27 @@ public:
         const hmemo::HArray<RealType<ValueType> >& imagValues,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Merge two arrays and retain an index mapping from one of the arrays into the result array.
+     *
+     * Merge the two *sorted* arrays `x` and `y` into the array `result`, overwriting any data in `result`,
+     * and retain a mapping from the indexes of `x` into the indexes of `result`.
+     *
+     * Input arrays x and y must be sorted according to the specified comparator, and the
+     * result will also be sorted according to the same comparator.
+     *
+     *  @param[out] result, the resulting array after merging. Any data in the array will be overwritten. Size is x.size() + y.size().
+     *  @param[out] mapping, an array of indices such that result[mapping[i]] = x[i] for i = 0, .., x.size() - 1.
+     *  @param[in] x, a *sorted* array.
+     *  @param[in] y, a *sorted* array.
+     */
+    template <typename ValueType>
+    static void mergeAndRetainMapping(
+        hmemo::HArray<ValueType> & result,
+        hmemo::HArray<IndexType> & mapping,
+        const hmemo::HArray<ValueType> & x,
+        const hmemo::HArray<ValueType> & y,
+        const common::CompareOp comparator = common::CompareOp::LT);
+
 private:
 
     template<typename ValueType>
