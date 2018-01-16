@@ -41,6 +41,9 @@
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
+#include <scai/hmemo/HostReadAccess.hpp>
+#include <scai/hmemo/HostWriteAccess.hpp>
+#include <scai/hmemo/HostWriteOnlyAccess.hpp>
 
 #include <functional>
 
@@ -361,7 +364,7 @@ BOOST_AUTO_TEST_CASE( writeOnlyAccessMoveConstructorTest )
 {
     HArray<int> array { 2, 3, -1 };
 
-    WriteOnlyAccess<int> write1(array);
+    WriteOnlyAccess<int> write1(array, 4);
     const auto data = write1.get();
     const auto size = write1.size();
 
@@ -380,13 +383,21 @@ BOOST_AUTO_TEST_CASE( writeOnlyAccessFunctionTest )
     const auto context = Context::getContextPtr();
     HArray<int> array ({ 2, 3, -5, 1 }, context);
 
-    auto write = writeOnlyAccess(array);
+    {
+        auto write = writeOnlyAccess(array, 3);
+        BOOST_TEST(write.size() == 3);
+        write[0] =  4;
+        write[1] =  6;
+        write[2] = -3;
+    }
 
-    BOOST_TEST( write.size() == 4 );
-    BOOST_TEST( write[0] ==  2 );
-    BOOST_TEST( write[1] ==  3 );
-    BOOST_TEST( write[2] == -5 );
-    BOOST_TEST( write[3] ==  1 );
+    {
+        HostReadAccess<int> read(array);
+        BOOST_TEST( read.size() == 3 );
+        BOOST_TEST( read[0] ==  4 );
+        BOOST_TEST( read[1] ==  6 );
+        BOOST_TEST( read[2] == -3 );
+    }
 }
 
 BOOST_AUTO_TEST_CASE( writeOnlyAccessFunctionGivesAccessForCorrectContext )
@@ -397,7 +408,112 @@ BOOST_AUTO_TEST_CASE( writeOnlyAccessFunctionGivesAccessForCorrectContext )
     // For the writeOnlyAccess, we can not check that the pointer is the same
     // like we did for ReadAccess and WriteAccess, because WriteOnly is permitted
     // to allocate different memory, so we only verify that the context is correct.
-    BOOST_TEST(writeOnlyAccess(array, context).getMemory().getContextPtr() == context);
+    BOOST_TEST(writeOnlyAccess(array, context, 3).getMemory().getContextPtr() == context);
+}
+
+BOOST_AUTO_TEST_CASE( hostReadAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    HostReadAccess<int> read1(array);
+    const auto data = read1.get();
+    const auto size = read1.size();
+
+    HostReadAccess<int> read2(std::move(read1));
+
+    BOOST_TEST(read2.get() == data);
+    BOOST_TEST(read2.size() == size);
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( read1.get(), scai::common::AssertException);
+}
+
+BOOST_AUTO_TEST_CASE( hostReadAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ({ 2, 3, -5, 1 }, context);
+
+    const auto read = hostReadAccess(array);
+
+    BOOST_TEST( read.size() == 4 );
+    BOOST_TEST( read[0] ==  2 );
+    BOOST_TEST( read[1] ==  3 );
+    BOOST_TEST( read[2] == -5 );
+    BOOST_TEST( read[3] ==  1 );
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    HostWriteAccess<int> write1(array);
+    const auto data = write1.get();
+    const auto size = write1.size();
+
+    HostWriteAccess<int> write2(std::move(write1));
+
+    BOOST_TEST(write2.get() == data);
+    BOOST_TEST(write2.size() == size);
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( write1.get(), scai::common::AssertException);
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ({ 2, 3, -5, 1 }, context);
+
+    auto write = hostWriteAccess(array);
+
+    BOOST_TEST( write.size() == 4 );
+    BOOST_TEST( write[0] ==  2 );
+    BOOST_TEST( write[1] ==  3 );
+    BOOST_TEST( write[2] == -5 );
+    BOOST_TEST( write[3] ==  1 );
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteOnlyAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    HostWriteOnlyAccess<int> write1(array, 4);
+    const auto data = write1.get();
+    const auto size = write1.size();
+
+    HostWriteOnlyAccess<int> write2(std::move(write1));
+
+    BOOST_TEST(write2.get() == data);
+    BOOST_TEST(write2.size() == size);
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( write1.get(), scai::common::AssertException);
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteOnlyAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ({ 2, 3, -5, 1 }, context);
+
+    {
+        auto write = hostWriteOnlyAccess(array, 3);
+        BOOST_TEST(write.size() == 3);
+        write[0] =  4;
+        write[1] =  6;
+        write[2] = -3;
+    }
+
+    {
+        HostReadAccess<int> read(array);
+        BOOST_TEST( read.size() == 3 );
+        BOOST_TEST( read[0] ==  4 );
+        BOOST_TEST( read[1] ==  6 );
+        BOOST_TEST( read[2] == -3 );
+    }
+
 }
 
 /* --------------------------------------------------------------------- */

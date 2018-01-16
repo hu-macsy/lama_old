@@ -72,6 +72,9 @@ scai_project (
          ReadAccess
          WriteAccess
          WriteOnlyAccess
+         HostReadAccess
+         HostWriteAccess
+         HostWriteOnlyAccess
 )
 
 ## add subdirectories
