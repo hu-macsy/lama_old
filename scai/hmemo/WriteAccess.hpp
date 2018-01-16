@@ -123,9 +123,16 @@ public:
     /**
      * @brief Returns a pointer to the data of the wrapped HArray.
      *
-     * @return a pointer to the wrapped HArray.
+     * @return a pointer to the data of the wrapped HArray.
      */
     ValueType* get();
+
+    /**
+     * @brief Returns a pointer to the data of the wrapped HArray.
+     *
+     * @return a pointer to the data of the wrapped HArray.
+     */
+    const ValueType* get() const;
 
     /**
      * @brief Support implicit type conversion to pointer of the data.
@@ -328,6 +335,13 @@ void WriteAccess<ValueType>::getValue( ValueType& val, const IndexType pos ) con
 
 template<typename ValueType>
 ValueType* WriteAccess<ValueType>::get()
+{
+    SCAI_ASSERT( mArray, "illegal get(): access has already been released." )
+    return mData;    // mData might be NULL if size of array is 0
+}
+
+template<typename ValueType>
+const ValueType* WriteAccess<ValueType>::get() const
 {
     SCAI_ASSERT( mArray, "illegal get(): access has already been released." )
     return mData;    // mData might be NULL if size of array is 0
