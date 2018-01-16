@@ -1846,6 +1846,44 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( mergeSparseTest, ValueType, scai_array_test_types
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( complexText, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    typedef RealType<ValueType> real;
+
+    IndexType n = 5;   // number of values
+
+    const real real_values[] = { 1, 2, 3, 4, 4 };
+    const real imag_values[] = { 2, 5, 3, 1, 4 };
+
+    LArray<real> realArray( n, real_values, testContext );
+    LArray<real> imagArray( n, imag_values, testContext );
+
+    LArray<ValueType> complexArray;
+
+    HArrayUtils::buildComplex( complexArray, realArray, imagArray );
+
+    LArray<real> realArray1;
+    LArray<real> imagArray1;
+
+    HArrayUtils::selectComplexPart( realArray1, complexArray, common::ComplexSelection::REAL );
+    HArrayUtils::selectComplexPart( imagArray1, complexArray, common::ComplexSelection::IMAG );
+
+    BOOST_CHECK_EQUAL( 0, realArray1.maxDiffNorm( realArray ) );
+
+    if ( common::isComplex( common::TypeTraits<ValueType>::stype )  )
+    {
+        BOOST_CHECK_EQUAL( 0, imagArray1.maxDiffNorm( imagArray ) );
+    }
+    else
+    {
+        BOOST_CHECK_EQUAL( 0, imagArray1.l2Norm() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 
 /* --------------------------------------------------------------------- */

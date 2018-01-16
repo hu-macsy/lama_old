@@ -39,11 +39,16 @@ scai_project (
     HEADERS
 
         all
+
         Expression
+
+        VectorExpressions
+        UnaryVectorExpression
+        CastVectorExpression
+
         MatrixExpressions
         MatrixVectorExpressions
-        UnaryVectorExpression
-        VectorExpressions
+        CastMatrixExpression
 
     ADD_PARENT_SCOPE 
 )

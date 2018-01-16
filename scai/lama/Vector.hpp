@@ -36,6 +36,7 @@
 #include <scai/lama/_Vector.hpp>
 
 #include <scai/lama/expression/UnaryVectorExpression.hpp>
+#include <scai/lama/expression/CastVectorExpression.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 
@@ -53,7 +54,7 @@ namespace lama
  *
  * @tparam ValueType stands for the type of the entries in the distributed vector.
  *
- * Sparse and dense vector class derive from this abstract base class.
+ * Derived classes might support dense, sparse, and joined vectors.
  */
 template <typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Vector: public _Vector
@@ -130,18 +131,14 @@ public:
     virtual ValueType getValue( IndexType globalIndex ) const = 0;
 
     /**
-     * @brief Returns a copy of the value at the passed global index.
+     * @brief Provide operator() for getValue to make its use more convenient.
      *
      * @param[in] i    the global index to get the value at.
      * @return         a copy of the value at the passed global position.
      *
      * As this operator requires communication ins SPMD mode it can be very inefficient in some situations.
      */
-
-    ValueType operator()( const IndexType i ) const
-    {
-        return getValue( i );
-    }
+    ValueType operator()( const IndexType i ) const;
 
     /**
      *
@@ -155,18 +152,12 @@ public:
      *  Indexing of a distributed vector returns a proxy so that this operator can be used
      *  on lhs and rhs of an assignment.
      */
-    VectorElemProxy operator[]( const IndexType i )
-    {
-        return VectorElemProxy( *this, i );
-    }
+    VectorElemProxy operator[]( const IndexType i );
 
     /**
      *  Indexing of a const distributed vector returns directly the corresponding element.
      */
-    ValueType operator[]( const IndexType i ) const
-    {
-        return getValue( i );
-    }
+    ValueType operator[]( const IndexType i ) const;
 
     /** 
      * @brief Assignment 'vector *= value' to scale all elements of a vector. 
@@ -186,7 +177,10 @@ public:
      *
      * Note: the other vector can be any type, no temporary is created here
      */
-    Vector& operator*=( const _Vector& other );
+    Vector& operator*=( const Vector<ValueType>& other );
+
+    template<typename OtherValueType>
+    Vector& operator*=( const CastVectorExpression<ValueType, OtherValueType>& other );
 
     /**
      * @brief Elementwise division with another vector (same size), i.e. this[i] = this[i] / other[i]
@@ -195,7 +189,10 @@ public:
      *
      * Note: the other vector can be any type, no temporary is created here
      */
-    Vector& operator/=( const _Vector& other );
+    Vector& operator/=( const Vector<ValueType>& other );
+
+    template<typename OtherValueType>
+    Vector& operator/=( const CastVectorExpression<ValueType, OtherValueType>& other );
 
     /**
      * @brief Returns the L1 norm of this.
@@ -269,7 +266,7 @@ public:
      * @param[in] other   the vector to calculate the dot product with.
      * @return            the dot product of this and other
      */
-    virtual ValueType dotProduct( const _Vector& other ) const = 0;
+    virtual ValueType dotProduct( const Vector<ValueType>& other ) const = 0;
 
     /* =========================================================== */
     /*     this = <vector_expression>                              */
@@ -334,18 +331,23 @@ public:
 
     Vector<ValueType>& operator-=( const ValueType value );
 
-    /** @brief this = vector, supported also for mixed value types */
-
-    Vector<ValueType>& operator=( const _Vector& other );
     Vector<ValueType>& operator=( const Vector<ValueType>& other );
 
     /** @brief this += vector, supported also for mixed value types */
 
-    Vector<ValueType>& operator+=( const _Vector& other );
+    Vector<ValueType>& operator+=( const Vector<ValueType>& other );
 
-    /** @brief this -= vector, supported also for mixed value types */
+    template<typename OtherValueType>
+    Vector<ValueType>& operator+=( const CastVectorExpression<ValueType, OtherValueType>& exp );
 
-    Vector<ValueType>& operator-=( const _Vector& other );
+    /** @brief this -= vector, vector must have same value type */
+
+    Vector<ValueType>& operator-=( const Vector<ValueType>& other );
+
+    /** @brief this -= cast<ValueType>( vector )  */
+
+    template<typename OtherValueType>
+    Vector<ValueType>& operator-=( const CastVectorExpression<ValueType, OtherValueType>& exp );
 
     /** this +=  alpha * A * x */
 
@@ -374,6 +376,18 @@ public:
     /** this = unaryop( x ) */
 
     Vector<ValueType>& operator=( const UnaryVectorExpression<ValueType>& unaryVectorExp );
+
+    template<typename OtherValueType>
+    Vector<ValueType>& operator=( const CastVectorExpression<ValueType, OtherValueType>& exp );
+
+    /** this = real( x ) or this = imag( x ) */
+
+    template<common::ComplexSelection kind>
+    Vector<ValueType>& operator=( const SelectVectorExpression<RealType<ValueType>, kind>& exp );
+
+    /** this = cmplx( x, y ) */
+
+    Vector<ValueType>& operator=( const ComplexVectorExpression<RealType<ValueType> >& exp );
 
     /** Initialization of an allocated vector with one value, does not change size/distribution  */
   
@@ -461,6 +475,16 @@ public:
      *  \endcode
      */
     inline void binaryOp( const ValueType& alpha, const common::BinaryOp op, const Vector<ValueType>& x );
+
+    /** 
+     *  @brief This method selects the real or imaginay part of a complex vector.
+     */
+    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, common::ComplexSelection kind ) const = 0;
+
+    /** 
+     *  @brief This method builds a complex vector by two vectors, one contains the real parts ,the other the imaginary parts.
+     */
+    virtual void buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y ) = 0;
 
     /** @brief Method for binarOp with scalar as right operand (for convenience) 
      *
@@ -694,7 +718,7 @@ protected:
      *
      * Inherits size/distribution, context and content of the passed vector
      */
-    Vector( const _Vector& other );
+    explicit Vector( const _Vector& other );
 
     /** Override the default copy constructor */
 
@@ -722,6 +746,28 @@ using VectorPtr = std::shared_ptr<Vector<ValueType> >;
 */
 template<typename ValueType>
 using VectorPtr1 = std::unique_ptr<Vector<ValueType> >;
+
+/* ------------------------------------------------------------------------- */
+/*  Implementation of basic inline methods                                   */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType Vector<ValueType>::operator()( const IndexType i ) const
+{
+    return getValue( i );
+}
+
+template<typename ValueType>
+ValueType Vector<ValueType>::operator[]( const IndexType i ) const
+{
+    return getValue( i );
+}
+
+template<typename ValueType>
+typename Vector<ValueType>::VectorElemProxy Vector<ValueType>::operator[]( const IndexType i )
+{
+    return VectorElemProxy( *this, i );
+}
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods for VectorElemProxy                     */
@@ -781,13 +827,6 @@ void Vector<ValueType>::setSparseRawData(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator=( const _Vector& other )
-{
-    setVector( other, common::BinaryOp::COPY );
-    return *this;
-}
-
-template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Vector<ValueType>& other )
 {
     setVector( other, common::BinaryOp::COPY );
@@ -795,30 +834,85 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Vector<ValueType>& other 
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator+=( const _Vector& other )
+template<typename OtherValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const CastVectorExpression<ValueType, OtherValueType>& other )
+{
+    setVector( other.getArg(), common::BinaryOp::COPY );
+    return *this;
+}
+
+template<typename ValueType>
+template<common::ComplexSelection kind>
+Vector<ValueType>& Vector<ValueType>::operator=( const SelectVectorExpression<RealType<ValueType>, kind>& exp )
+{
+    exp.getArg().selectComplexPart( *this, kind );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const ComplexVectorExpression<RealType<ValueType> >& exp )
+{
+    buildComplex( exp.getRealArg(), exp.getImagArg() );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const Vector<ValueType>& other )
 {
     setVector( other, common::BinaryOp::ADD );
     return *this;
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator-=( const _Vector& other )
+template<typename OtherValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const CastVectorExpression<ValueType, OtherValueType>& other )
+{
+    setVector( other.getArg(), common::BinaryOp::ADD );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const Vector<ValueType>& other )
 {
     setVector( other, common::BinaryOp::SUB );
     return *this;
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator*=( const _Vector& other )
+template<typename OtherValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const CastVectorExpression<ValueType, OtherValueType>& other )
+{
+    setVector( other.getArg(), common::BinaryOp::SUB );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator*=( const Vector<ValueType>& other )
 {
     setVector( other, common::BinaryOp::MULT );
     return *this;
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator/=( const _Vector& other )
+template<typename OtherValueType>
+Vector<ValueType>& Vector<ValueType>::operator*=( const CastVectorExpression<ValueType, OtherValueType>& other )
+{
+    setVector( other.getArg(), common::BinaryOp::MULT );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator/=( const Vector<ValueType>& other )
 {
     setVector( other, common::BinaryOp::DIVIDE );
+    return *this;
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+Vector<ValueType>& Vector<ValueType>::operator/=( const CastVectorExpression<ValueType, OtherValueType>& other )
+{
+    setVector( other.getArg(), common::BinaryOp::DIVIDE );
     return *this;
 }
 
@@ -848,7 +942,7 @@ template<typename ValueType>
 template<common::BinaryOp op>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression<Vector<ValueType>, Vector<ValueType>, op>& exp )
 {
-    this->binaryOp( exp.getArg1(), exp.getArg2(), op, false );  
+    this->binaryOp( exp.getArg1(), op, exp.getArg2() );  
     return *this;
 }
 

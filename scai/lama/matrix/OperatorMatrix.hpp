@@ -75,15 +75,6 @@ public:
     {
     }
 
-    /** Linear mapping to be implemented: $result = alpha * this_matrix * x + beta * y$ */
-
-    virtual void matrixTimesVectorImpl(
-        DenseVector<ValueType>& result,
-        const ValueType alpha,
-        const DenseVector<ValueType>& x,
-        const ValueType beta,
-        const DenseVector<ValueType>* y ) const = 0;
-
     using Matrix<ValueType>::logger;
 
     virtual bool isConsistent() const
@@ -119,7 +110,7 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setDenseData(dmemo::DistributionPtr, dmemo::DistributionPtr, const hmemo::_HArray&, Scalar)
+    virtual void setDenseData(dmemo::DistributionPtr, dmemo::DistributionPtr, const hmemo::HArray<ValueType>&, ValueType )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

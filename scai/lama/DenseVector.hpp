@@ -534,6 +534,10 @@ public:
 
     void binaryOp( const Vector<ValueType>& x, common::BinaryOp op, const Vector<ValueType>& y );
 
+    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexSelection kind ) const;
+
+    virtual void buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y );
+
     /** Implementation of pure method Vector<ValueType>::binaryOpScalar for dense vector. */
 
     void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
@@ -609,7 +613,7 @@ public:
         const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
-    virtual ValueType dotProduct( const _Vector& other ) const;
+    virtual ValueType dotProduct( const Vector<ValueType>& other ) const;
 
     using _Vector::prefetch; // prefetch() with no arguments
 

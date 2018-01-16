@@ -88,13 +88,19 @@ public:
      *
      *  H L H * x = L * x - s' * x * r - r' * x * s
      */
-    virtual void matrixTimesVectorImpl(
+    virtual void matrixTimesVectorDense(
         DenseVector<ValueType>& result,
         const ValueType alpha,
         const DenseVector<ValueType>& x,
         const ValueType beta,
-        const DenseVector<ValueType>* y ) const
+        const DenseVector<ValueType>* y,
+        bool transposeFlag ) const
     {
+        if ( transposeFlag )
+        {
+            COMMON_THROWEXCEPTION( "transpose matrixTimesVector not supported" )
+        }
+
         SCAI_LOG_INFO( logger, "matrixTimesVector, mL = " << mL )
 
         result = mL * x;

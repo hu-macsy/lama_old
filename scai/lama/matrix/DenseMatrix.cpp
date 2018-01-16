@@ -310,8 +310,8 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setDenseData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
-    const _HArray& values,
-    const Scalar eps )
+    const HArray<ValueType>& values,
+    const ValueType eps )
 {
     DistributionPtr tmpReplicatedColDistribution = colDist;
     const IndexType n = rowDist->getLocalSize();
@@ -326,7 +326,7 @@ void DenseMatrix<ValueType>::setDenseData(
 
     _Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
     // due to temporary replicated col distribution, mData has only one entry
-    mData[0]->setDenseData( n, m, values, eps.getValue<ValueType>() );
+    mData[0]->setDenseData( n, m, values, eps );
     SCAI_LOG_INFO( logger,
                    "Dense matrix, row dist = " << *rowDist << " filled locally with " << ( n * m ) << " values, now split for col dist = " << *colDist );
 
@@ -1748,6 +1748,34 @@ void DenseMatrix<ValueType>::matrixTimesScalar( const Matrix<ValueType>& other, 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
         mData[i]->scale( alpha );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::matrixTimesVectorDense(
+    DenseVector<ValueType>& result,
+    const ValueType alpha,
+    const DenseVector<ValueType>& x,
+    const ValueType beta,
+    const DenseVector<ValueType>* y,
+    bool transposeFlag ) const
+{
+    if ( !transposeFlag )
+    {
+        matrixTimesVectorImpl( result, alpha, x, beta, y );
+    }
+    else if ( this->getColDistribution().getCommunicator().getSize() == 1 )
+    {
+        // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
+        // use routine provided by this CRTP
+
+        Matrix<ValueType>::vectorTimesMatrixRepCols( result, alpha, x, beta, y );
+    }
+    else
+    {
+        vectorTimesMatrixImpl( result, alpha, x, beta, y );
     }
 }
 

@@ -1456,7 +1456,7 @@ void SparseVector<ValueType>::vectorPlusScalar( const ValueType& alpha, const Ve
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
+ValueType SparseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) const
 {
     SCAI_REGION( "Vector.Sparse.dotP" )
 
@@ -1500,6 +1500,51 @@ ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
     SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
     return dotProduct;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexSelection kind ) const
+{
+    HArray<RealType<ValueType>> part;
+
+    HArrayUtils::selectComplexPart( part, getNonZeroValues(), kind );
+
+    RealType<ValueType> zero = kind == common::ComplexSelection::REAL ? common::Math::real( mZeroValue ) : common::Math::imag( mZeroValue );
+
+    x.setSameValue( getDistributionPtr(), zero );
+    x.fillSparseData( getNonZeroIndexes(), part, common::BinaryOp::COPY );
+}
+
+template<>
+void SparseVector<IndexType>::selectComplexPart( Vector<IndexType>& x, const common::ComplexSelection kind ) const
+{
+    if ( kind == common::ComplexSelection::REAL )
+    {
+        x = *this;
+    }
+    else
+    {
+        x.setSameValue( getDistributionPtr(), IndexType( 0 ) );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y )
+{
+    DenseVector<ValueType> x1( x );
+    DenseVector<ValueType> y1( y );
+    ValueType i = common::Complex<RealType<ValueType> >( 0, 1 );
+    vectorPlusVector( 1, x1, i, y1 );
+}
+
+template<>
+void SparseVector<IndexType>::buildComplex( const Vector<IndexType>& x, const Vector<IndexType>& )
+{
+    *this = x;
 }
 
 /* ------------------------------------------------------------------------- */

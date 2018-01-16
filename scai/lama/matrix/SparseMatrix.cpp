@@ -1842,6 +1842,34 @@ void SparseMatrix<ValueType>::haloOperationAsync(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::matrixTimesVectorDense(
+    DenseVector<ValueType>& result,
+    const ValueType alpha,
+    const DenseVector<ValueType>& x,
+    const ValueType beta,
+    const DenseVector<ValueType>* y,
+    bool transposeFlag ) const
+{
+    if ( !transposeFlag )
+    {
+        matrixTimesVectorImpl( result, alpha, x, beta, y );
+    }
+    else if ( this->getColDistribution().getCommunicator().getSize() == 1 )
+    {
+        // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
+        // use routine provided by this CRTP
+
+        Matrix<ValueType>::vectorTimesMatrixRepCols( result, alpha, x, beta, y );
+    }
+    else
+    {
+        vectorTimesMatrixImpl( result, alpha, x, beta, y );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     DenseVector<ValueType>& denseResult,
     const ValueType alpha,
@@ -2387,13 +2415,13 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::setDenseData(
     DistributionPtr rowDist,
     DistributionPtr colDist,
-    const _HArray& values,
-    const Scalar eps )
+    const HArray<ValueType>& values,
+    const ValueType eps )
 {
     _Matrix::setDistributedMatrix( rowDist, colDist );
     IndexType localNumRows = rowDist->getLocalSize();
     IndexType globalNumCols = colDist->getGlobalSize();
-    mLocalData->setDenseData( localNumRows, globalNumCols, values, eps.getValue<ValueType>() );
+    mLocalData->setDenseData( localNumRows, globalNumCols, values, eps );
 
     if ( !colDist->isReplicated() )
     {

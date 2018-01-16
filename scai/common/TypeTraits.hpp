@@ -122,6 +122,11 @@ public:
         return - std::numeric_limits<int>::max();
     }
 
+    static inline int imaginaryUnit()
+    {
+        return 0;
+    }
+
     static const ScalarType stype = ScalarType::INT;
 
     static inline const char* id()
@@ -167,6 +172,11 @@ public:
     static inline char getMin() // with C++11: use lowest instead
     {
         return static_cast<char> ( - std::numeric_limits<char>::max() );
+    }
+
+    static inline char imaginaryUnit()
+    {
+        return 0;
     }
 
     static const ScalarType stype = ScalarType::CHAR;
@@ -215,6 +225,11 @@ public:
         return - std::numeric_limits<long>::max();
     }
 
+    static inline long imaginaryUnit()
+    {
+        return 0;
+    }
+
     static const ScalarType stype = ScalarType::LONG;
 
     static inline const char* id()
@@ -257,6 +272,11 @@ public:
     }
 
     static inline unsigned int getMin() // with C++11: use lowest instead
+    {
+        return 0;
+    }
+
+    static inline unsigned int imaginaryUnit()
     {
         return 0;
     }
@@ -307,6 +327,11 @@ public:
         return 0;
     }
 
+    static inline unsigned long imaginaryUnit()
+    {
+        return 0;
+    }
+
     static const ScalarType stype = ScalarType::UNSIGNED_LONG;
 
     static inline const char* id()
@@ -351,6 +376,11 @@ public:
     static inline long double getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<long double>::max();
+    }
+
+    static inline long double imaginaryUnit()
+    {
+        return 0;
     }
 
     static const ScalarType stype = ScalarType::LONG_DOUBLE;
@@ -399,6 +429,11 @@ public:
         return - std::numeric_limits<double>::max();
     }
 
+    static inline double imaginaryUnit()
+    {
+        return 0;
+    }
+
     static const ScalarType stype = ScalarType::DOUBLE;
 
     static inline const char* id()
@@ -442,6 +477,11 @@ public:
     static inline float getMin() // with C++11: use lowest instead
     {
         return - std::numeric_limits<float>::max();
+    }
+
+    static inline float imaginaryUnit()
+    {
+        return 0;
     }
 
     static const ScalarType stype = ScalarType::FLOAT;
@@ -492,6 +532,11 @@ public:
         return 0;
     }
 
+    static inline ComplexFloat imaginaryUnit()
+    {
+        return ComplexFloat( 0, 1 );
+    }
+
     static const ScalarType stype = ScalarType::COMPLEX;
 
     static inline const char* id()
@@ -538,6 +583,11 @@ public:
         return 0;
     }
 
+    static inline ComplexDouble imaginaryUnit()
+    {
+        return ComplexDouble( 0, 1 );
+    }
+
     static const ScalarType stype = ScalarType::DOUBLE_COMPLEX;
 
     static inline const char* id()
@@ -582,6 +632,11 @@ public:
     static inline ComplexLongDouble getMin() // with C++11: use lowest instead
     {
         return 0;
+    }
+
+    static inline ComplexLongDouble imaginaryUnit()
+    {
+        return ComplexLongDouble( 0, 1 );
     }
 
     static const ScalarType stype = ScalarType::LONG_DOUBLE_COMPLEX;

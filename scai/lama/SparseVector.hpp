@@ -520,6 +520,10 @@ public:
 
     void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
 
+    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexSelection kind ) const;
+
+    virtual void buildComplex( const Vector<RealType<ValueType> >& realV, const Vector<RealType<ValueType> >& imagV );
+
     /** Implementation of pure method Vector<ValueType>::vectorPlusVector */
 
     virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta, const Vector<ValueType>& y );
@@ -537,9 +541,9 @@ public:
 
     virtual void vectorPlusScalar( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta );
 
-    /** Implementation of pure method _Vector::dotProduct */
+    /** Implementation of pure method Vector::dotProduct */
 
-    virtual ValueType dotProduct( const _Vector& other ) const;
+    virtual ValueType dotProduct( const Vector<ValueType>& other ) const;
 
     /** Implementation of pure method _Vector::setVector */
 

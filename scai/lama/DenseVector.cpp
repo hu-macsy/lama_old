@@ -1420,6 +1420,69 @@ void DenseVector<ValueType>::vectorPlusScalar( const ValueType& alpha, const Vec
     utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alpha, denseX.mLocalValues, beta, getContextPtr() );
 }
 
+/* ----------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexSelection kind ) const
+{
+    HArray<RealType<ValueType> > part;
+
+    utilskernel::HArrayUtils::selectComplexPart( part, getLocalValues(), kind );
+
+    x.assign( part, getDistributionPtr() );
+}
+
+template<>
+void DenseVector<IndexType>::selectComplexPart( Vector<IndexType>& x, const common::ComplexSelection kind ) const
+{
+    if ( kind == common::ComplexSelection::REAL )
+    {
+        x = *this;
+    }
+    else
+    {
+        x.setSameValue( getDistributionPtr(), IndexType( 0 ) );
+    }
+}
+
+/* ----------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y )
+{
+    SCAI_ASSERT_EQ_ERROR( x.getDistribution(), y.getDistribution(), "vectors must have same distribution" ) 
+
+    typedef RealType<ValueType> real;
+
+    if ( x.getVectorKind() != VectorKind::DENSE )
+    {
+        DenseVector<real> tmpX( x );
+        buildComplex( tmpX, y );
+    }
+    else if ( y.getVectorKind() != VectorKind::DENSE )
+    {
+        DenseVector<real> tmpY( y );
+        buildComplex( x, tmpY );
+    }
+    else
+    {
+        const DenseVector<real>& xD = static_cast<const DenseVector<real>&>( x );
+        const DenseVector<real>& yD = static_cast<const DenseVector<real>&>( y );
+
+        setDistributionPtr( x.getDistributionPtr() );
+        
+        utilskernel::HArrayUtils::buildComplex( mLocalValues, xD.getLocalValues(), yD.getLocalValues(), getContextPtr() );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<>
+void DenseVector<IndexType>::buildComplex( const Vector<IndexType>& x, const Vector<IndexType>& )
+{
+    *this = x;
+}
+
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1626,16 +1689,12 @@ void DenseVector<ValueType>::scatter(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseVector<ValueType>::dotProduct( const _Vector& other ) const
+ValueType DenseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) const
 {
     SCAI_REGION( "Vector.Dense.dotP" )
     SCAI_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
 
     // add other->getVectorKind() == VectorKind::DENSE, if sparse is also supported
-
-    SCAI_ASSERT_EQ_ERROR( getValueType(), other.getValueType(),
-                          "dotProduct not supported for different value types. "
-                          << *this << " x " << other )
 
     SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(),
                           "dotProduct not supported for vectors with different distributions. "

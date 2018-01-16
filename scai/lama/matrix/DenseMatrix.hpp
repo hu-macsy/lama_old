@@ -289,13 +289,13 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
-    /** Implementation of pure _Matrix::setDenseData */
+    /** Implementation of pure Matrix<ValueType>::setDenseData */
 
     virtual void setDenseData(
         dmemo::DistributionPtr rowDistribution,
         dmemo::DistributionPtr colDistribution,
-        const hmemo::_HArray& values,
-        const Scalar eps );
+        const hmemo::HArray<ValueType>& values,
+        const ValueType eps = ValueType( 0 ) );
 
     /** Implementation for pure method _Matrix::setCSRData. */
 
@@ -453,6 +453,17 @@ public:
     /* Implemenation of pure method Matrix<ValueType>::matrixTimesScalar */
 
     virtual void matrixTimesScalar( const Matrix<ValueType>& other, const ValueType alpha );
+
+    /**
+     * @brief Implementation of pure method Matrix<ValueType>::matrixTimesVectorDense
+     */
+    void matrixTimesVectorDense(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>* y,
+        bool transposeFlag ) const;
 
     /**
      *  @brief Provide method matrixTimesVector where all vectors are now dense

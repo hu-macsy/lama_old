@@ -254,20 +254,6 @@ public:
      */
     void setDiagonalProperty();
 
-    /** This method sets a matrix with the values owned by this partition in dense format
-     *
-     *  @param[in] rowDist distributon of rows for the matrix
-     *  @param[in] colDist distributon of columns for the matrix
-     *  @param[in] values contains all values of the owned rows in row-major order (C-style)
-     *  @param[in] eps    threshold value for non-zero elements
-     *
-     *  Note: only the row distribution decides which data is owned by this processor
-     *
-     *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
-     */
-    virtual void setDenseData( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const hmemo::_HArray& values, Scalar eps =
-                                   Scalar( 0 ) ) = 0;
-
     /** This method set a matrix with the values owned by this partition in CSR format
      *
      *  @param[in] rowDist distributon of rows for the matrix
@@ -291,42 +277,6 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::_HArray& values ) = 0;
 
-    /** This method set a matrix with the values owned by this partition in DIA format
-     *
-     *  @param[in] rowDist      distributon of rows for the matrix
-     *  @param[in] colDist      distributon of columns for the matrix
-     *  @param[in] numDiagonals number of stored diagonals
-     *  @param[in] offsets      offsets of the stored diagonals to the main diagonal
-     *  @param[in] values       contains the local matrix values for each diagonal
-     *
-     *  Note: only the row distribution decides which data is owned by this processor
-     *
-     *  - numDiagonals == offset.size() must be valid, stands for the number stored diagonals
-     */
-
-    virtual void setDIAData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const IndexType numDiagonals,
-        const hmemo::HArray<IndexType>& offsets,
-        const hmemo::_HArray& values ) = 0;
-
-    /** This method sets raw dense data in the same way as setDenseData but with raw value array */
-
-    template<typename ValueType>
-    void setRawDenseData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const ValueType* values,
-        const ValueType eps = 0 )
-    {
-        const IndexType n = rowDist->getLocalSize();
-        const IndexType m = colDist->getGlobalSize();
-        // use of HArrayRef instead of HArray avoids additional copying of values
-        const hmemo::HArrayRef<ValueType> valueArray( n * m, values );
-        setDenseData( rowDist, colDist, valueArray, Scalar( eps ) );
-    }
-
     /** This method sets raw CSR data in the same way as setCSRData but with raw value array */
 
     template<typename ValueType>
@@ -344,24 +294,6 @@ public:
         const hmemo::HArrayRef<IndexType> jaArray( numValues, ja );
         const hmemo::HArrayRef<ValueType> valueArray( numValues, values );
         setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
-    }
-
-    /** This method sets raw DIA data in the same way as setDIAData but with raw value array */
-
-    template<typename ValueType>
-    void setRawDIAData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const IndexType numDiagonals,
-        const IndexType* offsets,
-        const ValueType* values )
-    {
-        const IndexType numRows    = rowDist->getLocalSize();
-        //const IndexType numColumns = colDist->getGlobalSize();
-        // use of HArrayRef instead of HArray avoids additional copying of values
-        const hmemo::HArrayRef<IndexType> offsetArray( numDiagonals, offsets );
-        const hmemo::HArrayRef<ValueType> valueArray( numRows * numDiagonals, values );
-        setDIAData( rowDist, colDist, numDiagonals, offsetArray, valueArray );
     }
 
     /** Setting raw dense data for a replicated matrix, only for convenience. */
@@ -499,31 +431,6 @@ public:
      */
     double getSparsityRate() const;
 
-    /**
-     * @brief Concatenate multiple matrices horizontally/vertically to a new matrix.
-     *
-     * @param[in] rowDist   specifies the distribution of the rows for the concatenated matrix
-     * @param[in] colDist   specifies the distribution of the columns for the concatenated matrix
-     * @param[in] matrices  variable number of const references/pointers to the matrices
-     *
-     * The routine decides by its arguments how the matrices will be concatenated. As the size of 
-     * the result matrix is explicitly specified, the input matrices are row-wise filled up.
-     *
-     * This routine should also be able to deal with aliases, i.e. one ore more of the input matrices  might be
-     * the pointer to the result matrix.
-     */
-    virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const _Matrix*>& matrices );
-
-    /**
-     *   shorthand for cat( 0, { &m1, &m2 }, 2 )
-     */
-    virtual void vcat( const _Matrix& m1, const _Matrix& m2 );
-
-    /**
-     *   shorthand for cat( 1, { &m1, &m2 }, 2 )
-     */
-    virtual void hcat( const _Matrix& m1, const _Matrix& m2 );
-
     /** Getter routine for the local number of stored values. */
 
     virtual IndexType getLocalNumValues() const = 0;
@@ -620,17 +527,6 @@ public:
      * @brief Waits for a possibly running prefetch.
      */
     virtual void wait() const = 0;
-
-    /**
-     * @brief The assignment operator for matrix.
-     *
-     * @param[in] other   is the input matrix.
-     *
-     * The assignment operator will make a deep copy of the input matrix. Size and distributions
-     * are inherited, but there might be implicit conversions regarding storage format and/or
-     * value type of the matrix elements.
-     */
-    _Matrix& operator=( const _Matrix& other );
 
     /**
      * @brief Computes the inverse of a matrix.

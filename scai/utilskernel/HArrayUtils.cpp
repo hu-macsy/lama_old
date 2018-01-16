@@ -251,13 +251,13 @@ void HArrayUtils::sparseGather(
 
 template<typename TargetValueType, typename SourceValueType>
 void HArrayUtils::sparseGatherImpl(
-    hmemo::HArray<TargetValueType>& target,
+    HArray<TargetValueType>& target,
     const SourceValueType sourceZeroValue,
-    const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
-    const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
-    const hmemo::HArray<IndexType>& indexes,
+    const HArray<SourceValueType>& sourceNonZeroValues,
+    const HArray<IndexType>& sourceNonZeroIndexes,
+    const HArray<IndexType>& indexes,
     const BinaryOp op,
-    const hmemo::ContextPtr prefLoc )
+    const ContextPtr prefLoc )
 {
     SCAI_LOG_INFO( logger, "sparseGather<" << TypeTraits<TargetValueType>::id()
                             << ", " << TypeTraits<SourceValueType>::id() << ">" )
@@ -896,11 +896,11 @@ void HArrayUtils::arrayPlusArray(
 
 template<typename ValueType>
 void HArrayUtils::arrayPlusScalar(
-    hmemo::HArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const hmemo::HArray<ValueType>& x,
+    const HArray<ValueType>& x,
     const ValueType beta,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     // operation is result = alpha * x + b (elementwise)
     SCAI_LOG_INFO( logger, "result = " << alpha << " * x + " << beta << ", x = " << x
@@ -970,11 +970,11 @@ void HArrayUtils::arrayPlusScalar(
 
 template<typename ValueType>
 void HArrayUtils::arrayTimesArray(
-    hmemo::HArray<ValueType>& result,
+    HArray<ValueType>& result,
     const ValueType alpha,
-    const hmemo::HArray<ValueType>& x,
-    const hmemo::HArray<ValueType>& y,
-    hmemo::ContextPtr prefLoc )
+    const HArray<ValueType>& x,
+    const HArray<ValueType>& y,
+    ContextPtr prefLoc )
 {
     SCAI_ASSERT_EQUAL( x.size(), y.size(), "size mismatch" )
     const IndexType n = x.size();
@@ -1014,8 +1014,8 @@ void HArrayUtils::arrayTimesArray(
 
 template<typename ValueType>
 void HArrayUtils::unaryOp(
-    hmemo::HArray<ValueType>& result,
-    const hmemo::HArray<ValueType>& x,
+    HArray<ValueType>& result,
+    const HArray<ValueType>& x,
     const UnaryOp op,
     ContextPtr prefLoc )
 {
@@ -1051,9 +1051,9 @@ void HArrayUtils::unaryOp(
 
 template<typename ValueType>
 void HArrayUtils::binaryOp(
-    hmemo::HArray<ValueType>& result,
-    const hmemo::HArray<ValueType>& x,
-    const hmemo::HArray<ValueType>& y,
+    HArray<ValueType>& result,
+    const HArray<ValueType>& x,
+    const HArray<ValueType>& y,
     const BinaryOp op,
     ContextPtr prefLoc )
 {
@@ -1092,8 +1092,8 @@ void HArrayUtils::binaryOp(
 
 template<typename ValueType>
 void HArrayUtils::binaryOpScalar(
-    hmemo::HArray<ValueType>& result,
-    const hmemo::HArray<ValueType>& x,
+    HArray<ValueType>& result,
+    const HArray<ValueType>& x,
     const ValueType y,
     const BinaryOp op,
     const bool swapScalar,
@@ -1130,9 +1130,9 @@ void HArrayUtils::binaryOpScalar(
 /* --------------------------------------------------------------------------- */
 
 bool HArrayUtils::validIndexes(
-    const hmemo::HArray<IndexType>& array,
+    const HArray<IndexType>& array,
     const IndexType size,
-    const hmemo::ContextPtr prefLoc )
+    const ContextPtr prefLoc )
 {
     const IndexType n = array.size();
     static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
@@ -1156,9 +1156,9 @@ bool HArrayUtils::validIndexes(
 
 template<typename ValueType>
 bool HArrayUtils::isSorted(
-    const hmemo::HArray<ValueType>& array,
+    const HArray<ValueType>& array,
     const CompareOp op,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     const IndexType n = array.size();
     static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
@@ -1180,7 +1180,7 @@ bool HArrayUtils::isSorted(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo::ContextPtr prefLoc )
+void HArrayUtils::setOrder( HArray<IndexType>& array, IndexType n, ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     ContextPtr loc = prefLoc;
@@ -1199,7 +1199,7 @@ void HArrayUtils::setOrder( hmemo::HArray<IndexType>& array, IndexType n, hmemo:
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setSequence( hmemo::HArray<ValueType>& array, ValueType startValue, ValueType inc, IndexType n, hmemo::ContextPtr prefLoc )
+void HArrayUtils::setSequence( HArray<ValueType>& array, ValueType startValue, ValueType inc, IndexType n, ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::setSequence<ValueType> > setSequence;
     ContextPtr loc = prefLoc;
@@ -1217,9 +1217,9 @@ void HArrayUtils::setSequence( hmemo::HArray<ValueType>& array, ValueType startV
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::setRandom( hmemo::_HArray& array,
+void HArrayUtils::setRandom( _HArray& array,
                              const IndexType bound,
-                             const hmemo::ContextPtr prefLoc )
+                             const ContextPtr prefLoc )
 {
     // use meta-programming to call fillRandomImpl<ValueType> with the type of array
 
@@ -1228,10 +1228,10 @@ void HArrayUtils::setRandom( hmemo::_HArray& array,
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::setSparseRandom( hmemo::_HArray& array,
+void HArrayUtils::setSparseRandom( _HArray& array,
                                    const float fillRate,
                                    const IndexType bound,
-                                   const hmemo::ContextPtr prefLoc )
+                                   const ContextPtr prefLoc )
 {
     // use meta-programming to call fillRandomImpl<ValueType> with the type of array
 
@@ -1241,10 +1241,10 @@ void HArrayUtils::setSparseRandom( hmemo::_HArray& array,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::fillRandomImpl( hmemo::HArray<ValueType>& array,
+void HArrayUtils::fillRandomImpl( HArray<ValueType>& array,
                                   const IndexType bound,
                                   const float fillRate,
-                                  const hmemo::ContextPtr prefLoc )
+                                  const ContextPtr prefLoc )
 {
     ContextPtr loc = Context::getHostPtr();   // currently only available on host
 
@@ -1287,7 +1287,7 @@ void HArrayUtils::fillRandomImpl( hmemo::HArray<ValueType>& array,
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::randomSparseIndexes( hmemo::HArray<IndexType>& array, const IndexType n, const float probability )
+void HArrayUtils::randomSparseIndexes( HArray<IndexType>& array, const IndexType n, const float probability )
 {
     IndexType cnt = 0;
 
@@ -1310,8 +1310,8 @@ void HArrayUtils::randomSparseIndexes( hmemo::HArray<IndexType>& array, const In
 
 template<typename ValueType>
 ValueType HArrayUtils::scan1(
-    hmemo::HArray<ValueType>& array,
-    hmemo::ContextPtr prefLoc )
+    HArray<ValueType>& array,
+    ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -1347,10 +1347,10 @@ ValueType HArrayUtils::scan1(
 
 template<typename ValueType>
 ValueType HArrayUtils::scan(
-    hmemo::HArray<ValueType>& array,
+    HArray<ValueType>& array,
     const ValueType first,
     const bool exclusive,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -1382,8 +1382,8 @@ ValueType HArrayUtils::scan(
 
 template<typename ValueType>
 ValueType HArrayUtils::unscan(
-    hmemo::HArray<ValueType>& array,
-    hmemo::ContextPtr prefLoc )
+    HArray<ValueType>& array,
+    ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -1417,11 +1417,11 @@ ValueType HArrayUtils::unscan(
 
 template<typename ValueType>
 void HArrayUtils::sort(
-    hmemo::HArray<IndexType>* perm,
-    hmemo::HArray<ValueType>* outValues,
-    const hmemo::HArray<ValueType>& inValues,
+    HArray<IndexType>* perm,
+    HArray<ValueType>* outValues,
+    const HArray<ValueType>& inValues,
     const bool ascending,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     const IndexType n = inValues.size();
 
@@ -1476,10 +1476,10 @@ void HArrayUtils::sort(
 
 template<typename ValueType>
 void HArrayUtils::sortSparseEntries(
-    hmemo::HArray<IndexType>& indexes,
-    hmemo::HArray<ValueType>& values,
+    HArray<IndexType>& indexes,
+    HArray<ValueType>& values,
     const bool ascending,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     SCAI_ASSERT_EQ_ERROR( indexes.size(), values.size(), "keys and values must have same number of entries" )
 
@@ -1514,11 +1514,11 @@ void HArrayUtils::sortSparseEntries(
 
 template<typename BucketType>
 void HArrayUtils::bucketSort(
-    hmemo::HArray<IndexType>& offsets,
-    hmemo::HArray<IndexType>& perm,
-    const hmemo::HArray<BucketType>& array,
+    HArray<IndexType>& offsets,
+    HArray<IndexType>& perm,
+    const HArray<BucketType>& array,
     const BucketType nb,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -1564,10 +1564,10 @@ void HArrayUtils::bucketSort(
 
 template<typename BucketType>
 void HArrayUtils::bucketCount(
-    hmemo::HArray<IndexType>& bucketSizes,
-    const hmemo::HArray<BucketType>& array,
+    HArray<IndexType>& bucketSizes,
+    const HArray<BucketType>& array,
     const BucketType nb,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -1605,9 +1605,9 @@ void HArrayUtils::bucketCount(
 /* --------------------------------------------------------------------------- */
 
 void HArrayUtils::inversePerm(
-    hmemo::HArray<IndexType>& invPerm,
-    const hmemo::HArray<IndexType>& perm,
-    hmemo::ContextPtr prefLoc )
+    HArray<IndexType>& invPerm,
+    const HArray<IndexType>& perm,
+    ContextPtr prefLoc )
 {
     IndexType n = perm.size();
 
@@ -1651,32 +1651,32 @@ void HArrayUtils::inversePerm(
 
 template<typename ValueType>
 void HArrayUtils::mergeSort(
-    hmemo::HArray<ValueType>& values,
-    const hmemo::HArray<IndexType>& offsets,
+    HArray<ValueType>& values,
+    const HArray<IndexType>& offsets,
     bool ascending,
-    hmemo::ContextPtr ctx )
+    ContextPtr ctx )
 {
     mergeSortOptional( values, NULL, offsets, ascending, ctx );
 }
 
 template<typename ValueType>
 void HArrayUtils::mergeSort(
-    hmemo::HArray<ValueType>& values,
-    hmemo::HArray<IndexType>& perm,
-    const hmemo::HArray<IndexType>& offsets,
+    HArray<ValueType>& values,
+    HArray<IndexType>& perm,
+    const HArray<IndexType>& offsets,
     bool ascending,
-    hmemo::ContextPtr ctx )
+    ContextPtr ctx )
 {
     mergeSortOptional( values, &perm, offsets, ascending, ctx );
 }
 
 template<typename ValueType>
 void HArrayUtils::mergeSortOptional(
-    hmemo::HArray<ValueType>& values,
-    hmemo::HArray<IndexType>* perm,
-    const hmemo::HArray<IndexType>& offsets,
+    HArray<ValueType>& values,
+    HArray<IndexType>* perm,
+    const HArray<IndexType>& offsets,
     bool ascending,
-    hmemo::ContextPtr )
+    ContextPtr )
 {
     IndexType n  = values.size();       // number of values to sort
     IndexType nb = offsets.size() - 1;  // number of sorted subarray
@@ -1780,33 +1780,33 @@ void HArrayUtils::mergeSortOptional(
 
 template<>
 void HArrayUtils::mergeSortOptional(
-    hmemo::HArray<ComplexFloat>& ,
-    hmemo::HArray<IndexType>*,
-    const hmemo::HArray<IndexType>&,
+    HArray<ComplexFloat>& ,
+    HArray<IndexType>*,
+    const HArray<IndexType>&,
     bool,
-    hmemo::ContextPtr )
+    ContextPtr )
 {
     COMMON_THROWEXCEPTION( "unsupported" )
 }
 
 template<>
 void HArrayUtils::mergeSortOptional(
-    hmemo::HArray<ComplexDouble>& ,
-    hmemo::HArray<IndexType>*,
-    const hmemo::HArray<IndexType>&,
+    HArray<ComplexDouble>& ,
+    HArray<IndexType>*,
+    const HArray<IndexType>&,
     bool,
-    hmemo::ContextPtr )
+    ContextPtr )
 {
     COMMON_THROWEXCEPTION( "unsupported" )
 }
 
 template<>
 void HArrayUtils::mergeSortOptional(
-    hmemo::HArray<ComplexLongDouble>& ,
-    hmemo::HArray<IndexType>*,
-    const hmemo::HArray<IndexType>&,
+    HArray<ComplexLongDouble>& ,
+    HArray<IndexType>*,
+    const HArray<IndexType>&,
     bool,
-    hmemo::ContextPtr )
+    ContextPtr )
 {
     COMMON_THROWEXCEPTION( "unsupported" )
 }
@@ -1817,8 +1817,8 @@ void HArrayUtils::mergeSortOptional(
 
 template<typename ValueType>
 void HArrayUtils::elimDoubles(
-    hmemo::HArray<IndexType>& indexes,
-    hmemo::HArray<ValueType>& values,
+    HArray<IndexType>& indexes,
+    HArray<ValueType>& values,
     const common::BinaryOp op )
 {
     SCAI_ASSERT_EQ_ERROR( indexes.size(), values.size(), "serious size mismatch" )
@@ -1861,9 +1861,9 @@ void HArrayUtils::elimDoubles(
 
 template<typename ValueType>
 void HArrayUtils::buildSparseIndexes(
-    hmemo::HArray<IndexType>& sparseIndexes,
-    const hmemo::HArray<ValueType>& denseArray,
-    hmemo::ContextPtr prefLoc )
+    HArray<IndexType>& sparseIndexes,
+    const HArray<ValueType>& denseArray,
+    ContextPtr prefLoc )
 {
     const IndexType n = denseArray.size();
     static LAMAKernel<SparseKernelTrait::countNonZeros<ValueType> > countNonZeros;
@@ -1890,10 +1890,10 @@ void HArrayUtils::buildSparseIndexes(
 /* --------------------------------------------------------------------------- */
 
 void HArrayUtils::buildSparseArray(
-    hmemo::_HArray& sparseArray,
-    hmemo::HArray<IndexType>& sparseIndexes,
-    const hmemo::_HArray& denseArray,
-    hmemo::ContextPtr prefLoc )
+    _HArray& sparseArray,
+    HArray<IndexType>& sparseIndexes,
+    const _HArray& denseArray,
+    ContextPtr prefLoc )
 {
     mepr::UtilsWrapperTT< SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::
     buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
@@ -1903,10 +1903,10 @@ void HArrayUtils::buildSparseArray(
 
 template<typename TargetType, typename SourceType>
 void HArrayUtils::buildSparseArrayImpl(
-    hmemo::HArray<TargetType>& sparseArray,
-    hmemo::HArray<IndexType>& sparseIndexes,
-    const hmemo::HArray<SourceType>& denseArray,
-    hmemo::ContextPtr prefLoc )
+    HArray<TargetType>& sparseArray,
+    HArray<IndexType>& sparseIndexes,
+    const HArray<SourceType>& denseArray,
+    ContextPtr prefLoc )
 {
     const IndexType n = denseArray.size();
     static LAMAKernel<SparseKernelTrait::countNonZeros<SourceType> > countNonZeros;
@@ -1935,9 +1935,9 @@ void HArrayUtils::buildSparseArrayImpl(
 
 template<typename ValueType>
 IndexType HArrayUtils::insertSorted(
-    hmemo::HArray<ValueType>& array,
+    HArray<ValueType>& array,
     const ValueType value, 
-    hmemo::ContextPtr )
+    ContextPtr )
 {
     typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
@@ -1985,10 +1985,10 @@ IndexType HArrayUtils::insertSorted(
 
 template<typename ValueType>
 void HArrayUtils::insertAtPos(
-    hmemo::HArray<ValueType>& array,
+    HArray<ValueType>& array,
     const IndexType pos,
     const ValueType value,
-    hmemo::ContextPtr )
+    ContextPtr )
 {
     IndexType n = array.size();
 
@@ -2011,11 +2011,11 @@ void HArrayUtils::insertAtPos(
 /* --------------------------------------------------------------------------- */
 
 void HArrayUtils::buildDenseArray(
-    hmemo::_HArray& denseArray,
+    _HArray& denseArray,
     const IndexType denseN,
-    const hmemo::_HArray& sparseArray,
-    const hmemo::HArray<IndexType>& sparseIndexes,
-    hmemo::ContextPtr prefLoc )
+    const _HArray& sparseArray,
+    const HArray<IndexType>& sparseIndexes,
+    ContextPtr prefLoc )
 {
     const IndexType sparseN = sparseArray.size();
     SCAI_ASSERT_LE( sparseN, denseN, "sparse array cannot have more entries than dense array." )
@@ -2031,7 +2031,7 @@ void HArrayUtils::buildDenseArray(
 
 /* --------------------------------------------------------------------------- */
 
-IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType index )
+IndexType HArrayUtils::findPosInSortedIndexes( const HArray<IndexType>& indexes, const IndexType index )
 {
     ReadAccess<IndexType> rIndexes( indexes );
 
@@ -2061,9 +2061,9 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType>& i
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::findPosInSortedIndexesV( hmemo::HArray<IndexType>& outPos,
-                                           const hmemo::HArray<IndexType>& indexes, 
-                                           const hmemo::HArray<IndexType> inPos )
+void HArrayUtils::findPosInSortedIndexesV( HArray<IndexType>& outPos,
+                                           const HArray<IndexType>& indexes, 
+                                           const HArray<IndexType> inPos )
 {
     const IndexType n = inPos.size();
     const IndexType m = indexes.size();
@@ -2080,17 +2080,17 @@ void HArrayUtils::findPosInSortedIndexesV( hmemo::HArray<IndexType>& outPos,
 
 template<typename ValueType>
 void HArrayUtils::addSparse(
-    hmemo::HArray<IndexType>& resultIndexes,
-    hmemo::HArray<ValueType>& resultValues,
-    const hmemo::HArray<IndexType>& indexes1,
-    const hmemo::HArray<ValueType>& values1,
+    HArray<IndexType>& resultIndexes,
+    HArray<ValueType>& resultValues,
+    const HArray<IndexType>& indexes1,
+    const HArray<ValueType>& values1,
     const ValueType zero1,
     const ValueType alpha,
-    const hmemo::HArray<IndexType>& indexes2,
-    const hmemo::HArray<ValueType>& values2,
+    const HArray<IndexType>& indexes2,
+    const HArray<ValueType>& values2,
     const ValueType zero2,
     const ValueType beta,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
     static LAMAKernel<SparseKernelTrait::addSparse<ValueType> > addSparse;
@@ -2152,16 +2152,16 @@ void HArrayUtils::addSparse(
 
 template<typename ValueType>
 void HArrayUtils::binaryOpSparse(
-    hmemo::HArray<IndexType>& resultIndexes,
-    hmemo::HArray<ValueType>& resultValues,
-    const hmemo::HArray<IndexType>& indexes1,
-    const hmemo::HArray<ValueType>& values1,
+    HArray<IndexType>& resultIndexes,
+    HArray<ValueType>& resultValues,
+    const HArray<IndexType>& indexes1,
+    const HArray<ValueType>& values1,
     const ValueType zero1,
-    const hmemo::HArray<IndexType>& indexes2,
-    const hmemo::HArray<ValueType>& values2,
+    const HArray<IndexType>& indexes2,
+    const HArray<ValueType>& values2,
     const ValueType zero2,
     const BinaryOp op,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
     static LAMAKernel<SparseKernelTrait::binopSparse<ValueType> > binopSparse;
@@ -2217,14 +2217,14 @@ void HArrayUtils::binaryOpSparse(
 template<typename ValueType>
 IndexType HArrayUtils::allSparse(
     bool& allFlag,
-    const hmemo::HArray<IndexType>& indexes1,
-    const hmemo::HArray<ValueType>& values1,
+    const HArray<IndexType>& indexes1,
+    const HArray<ValueType>& values1,
     const ValueType zero1,
-    const hmemo::HArray<IndexType>& indexes2,
-    const hmemo::HArray<ValueType>& values2,
+    const HArray<IndexType>& indexes2,
+    const HArray<ValueType>& values2,
     const ValueType zero2,
     const CompareOp op,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     static LAMAKernel<SparseKernelTrait::allCompareSparse<ValueType> > allCompareSparse;
 
@@ -2260,14 +2260,14 @@ IndexType HArrayUtils::allSparse(
 
 template<typename ValueType>
 void HArrayUtils::mergeSparse(
-    hmemo::HArray<IndexType>& resultIndexes,
-    hmemo::HArray<ValueType>& resultValues,
-    const hmemo::HArray<IndexType>& indexes1,
-    const hmemo::HArray<ValueType>& values1,
-    const hmemo::HArray<IndexType>& indexes2,
-    const hmemo::HArray<ValueType>& values2,
+    HArray<IndexType>& resultIndexes,
+    HArray<ValueType>& resultValues,
+    const HArray<IndexType>& indexes1,
+    const HArray<ValueType>& values1,
+    const HArray<IndexType>& indexes2,
+    const HArray<ValueType>& values2,
     const BinaryOp op,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
     static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
     static LAMAKernel<SparseKernelTrait::mergeSparse<ValueType> > mergeSparse;
@@ -2310,6 +2310,65 @@ void HArrayUtils::mergeSparse(
 
         resultIndexes.resize( nMerged );
         resultValues.resize( nMerged );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::selectComplexPart(
+    HArray<RealType<ValueType> >& realValues,
+    const HArray<ValueType>& complexValues,
+    const common::ComplexSelection kind,
+    ContextPtr )
+{
+    // ToDo: define and use kernel routine for any device
+
+    IndexType n = complexValues.size();
+
+    ReadAccess<ValueType> rComplex( complexValues );
+    WriteOnlyAccess<RealType<ValueType> > wReal( realValues, n );
+
+    if ( kind == common::ComplexSelection::REAL )
+    {
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            wReal[i] = common::Math::real( rComplex[i] );
+        }
+    }
+    else
+    {
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            wReal[i] = common::Math::imag( rComplex[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::buildComplex(
+    HArray<ValueType>& complexValues,
+    const HArray<RealType<ValueType> >& realValues,
+    const HArray<RealType<ValueType> >& imagValues,
+    ContextPtr )
+{
+    // ToDo: define and use kernel routine for any context
+
+    SCAI_ASSERT_EQ_ERROR( realValues.size(), imagValues.size(), "serious size mismatch" )
+
+    IndexType n = realValues.size();
+
+    ReadAccess<RealType<ValueType> > rReal( realValues );
+    ReadAccess<RealType<ValueType> > rImag( imagValues );
+    WriteOnlyAccess<ValueType> wComplex( complexValues, n );
+
+    ValueType i = common::TypeTraits<ValueType>::imaginaryUnit();
+
+    for ( IndexType k = 0; k < n; ++k )
+    {
+        wComplex[k] = rReal[k] + i * rImag[k];
     }
 }
 
@@ -2591,8 +2650,23 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 
-// ToDo: template instantiation of bucketSort/bucketCount for PartitionId but only if PartitionId != IndexType
-// ToDo: template instantiation of bucketSort/bucketCount for PartitionId but only if PartitionId != IndexType
+#define HARRAYUTILS_SPECIFIER( ValueType )                        \
+    template void HArrayUtils::selectComplexPart(                 \
+            hmemo::HArray<RealType<ValueType> >&,                 \
+            const hmemo::HArray<ValueType>&,                      \
+            const common::ComplexSelection,                       \
+            hmemo::ContextPtr );                                  \
+    template void HArrayUtils::buildComplex(                      \
+            hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<RealType<ValueType> >&,           \
+            const hmemo::HArray<RealType<ValueType> >&,           \
+            hmemo::ContextPtr );                                  \
+
+// selectComplexPart uses Math::real and Math::imag that is not defined for IndexType
+
+SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
+
+#undef HARRAYUTILS_SPECIFIER
 
 template void HArrayUtils::bucketSort(
     hmemo::HArray<IndexType>& offsets,

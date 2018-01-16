@@ -227,14 +227,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_type
         sparseVector.redistribute( dist );
         denseVector.redistribute( dist );
 
-        v += denseVector;
-        v -= denseVector;
-        v += sparseVector;
-        v -= sparseVector;
-        v *= sparseVector;
-        v /= sparseVector;
-        v *= denseVector;
-        v /= denseVector;
+        v += cast<ValueType>( denseVector );
+        v -= cast<ValueType>( denseVector );
+        v += cast<ValueType>( sparseVector );
+        v -= cast<ValueType>( sparseVector );
+        v *= cast<ValueType>( sparseVector );
+        v /= cast<ValueType>( sparseVector );
+        v *= cast<ValueType>( denseVector );
+        v /= cast<ValueType>( denseVector );
 
         ValueType s = v.sum();
         ValueType expected = 4 * n;
@@ -244,14 +244,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_type
 
         BOOST_CHECK( common::Math::abs( s - expected )  < eps );
 
-        v = denseVector;
+        v = cast<ValueType>( denseVector );
         
         s = v.sum();
         expected= denseVector.sum();
 
         BOOST_CHECK( common::Math::abs( s - expected )  < eps );
 
-        v = sparseVector;
+        v = cast<ValueType>( sparseVector );
         
         s = v.sum();
         expected= sparseVector.sum();
