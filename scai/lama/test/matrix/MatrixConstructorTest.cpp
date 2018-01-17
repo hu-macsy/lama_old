@@ -262,9 +262,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
 
             otherMatrix.redistribute( dist, dist );
 
-            MatrixType matrix1( otherMatrix );  // copy constructor arbitrary matrix
+            MatrixType matrix1;
+            matrix1.assign( otherMatrix );   // no copy constructor for _Matrix
 
-            MatrixType matrix2( otherMatrix, dist, dist ); // same as before but with redist
+            MatrixType matrix2( matrix1, dist, dist );
 
             const StorageType& localStorage1 = matrix1.getLocalStorage();
             const StorageType& localStorage2 = matrix2.getLocalStorage();

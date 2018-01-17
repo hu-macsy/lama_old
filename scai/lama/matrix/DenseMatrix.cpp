@@ -72,32 +72,34 @@ namespace lama
 
 /* ========================================================================= */
 
+
+// Metaprogramming to translate assign( _Matrix ) to assignImpl( Matrix<ValueType> )
+
 template<typename ValueType, typename TList>
 struct DenseMatrixWrapper;
 
 template<typename ValueType>
 struct DenseMatrixWrapper<ValueType, common::mepr::NullType>
 {
-    static void assignDense( DenseMatrix<ValueType>&, const _Matrix& other )
+    static void assign( DenseMatrix<ValueType>&, const _Matrix& other )
     {
-        COMMON_THROWEXCEPTION( "type dense matrix not supported --> " << other )
+        COMMON_THROWEXCEPTION( "DenseMatrix::assing: type of other matrix not supported --> " << other )
     }
 };
 
 template<typename ValueType, typename H, typename T>
 struct DenseMatrixWrapper<ValueType, common::mepr::TypeList<H, T> >
 {
-    static void assignDense( DenseMatrix<ValueType>& obj, const _Matrix& other )
+    static void assign( DenseMatrix<ValueType>& obj, const _Matrix& other )
     {
         if ( other.getValueType() == common::getScalarType<H>() )
         {
-            obj.copyDenseMatrix( static_cast<const DenseMatrix<H>& >( other ) );
+            obj.assignImpl( static_cast<const Matrix<H>& >( other ) );
         }
         else
         {
-            DenseMatrixWrapper<ValueType, T>::assignDense( obj, other );
+            DenseMatrixWrapper<ValueType, T>::assign( obj, other );
         }
-
     }
 };
 
@@ -232,7 +234,7 @@ DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const _MatrixStorage& globalData )
+DenseMatrix<ValueType>::DenseMatrix( const MatrixStorage<ValueType>& globalData )
 {
     DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
     DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
@@ -264,7 +266,7 @@ DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other ) :
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const _Matrix& other, bool transposeFlag )
+DenseMatrix<ValueType>::DenseMatrix( const Matrix<ValueType>& other, bool transposeFlag )
 {
     SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other << ", transpse = " << transposeFlag )
 
@@ -651,6 +653,8 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
     }
 }
 
+/* ------------------------------------------------------------------ */
+
 template<typename ValueType>
 void DenseMatrix<ValueType>::assign( const _Matrix& other )
 {
@@ -660,26 +664,37 @@ void DenseMatrix<ValueType>::assign( const _Matrix& other )
     {
         SCAI_LOG_INFO( logger, "self assign, is skpped" )
     }
-    else if ( other.getMatrixKind() == MatrixKind::DENSE )
+    else 
     {
-        SCAI_LOG_INFO( logger, "copy dense matrix" )
-        DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignDense( *this, other );
-    }
-    else if ( other.getMatrixKind() == MatrixKind::SPARSE )
-    {
-        SCAI_LOG_INFO( logger, "copy sparse matrix" )
-        assignSparse( other );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Unsupported: assign " << other << " to " << *this )
+        DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assign( *this, other );
     }
 }
 
 /* ------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assignSparse( const _Matrix& other )
+template<typename OtherValueType>
+void DenseMatrix<ValueType>::assignImpl( const Matrix<OtherValueType>& other )
+{
+    if ( other.getMatrixKind() == MatrixKind::DENSE )
+    {
+        assignDense( static_cast<const DenseMatrix<OtherValueType>&>( other ) );
+    }
+    else if ( other.getMatrixKind() == MatrixKind::SPARSE )
+    {
+        assignSparse( static_cast<const SparseMatrix<OtherValueType>&>( other ) );
+    }
+    else
+    {
+        SCAI_THROWEXCEPTION( common::InvalidArgumentException, "Unsupported matrix kind, other = " << other )
+    }
+}
+
+/* ------------------------------------------------------------------ */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void DenseMatrix<ValueType>::assignSparse( const SparseMatrix<OtherValueType>& other )
 {
     // we need replicated column distribution to get this routine working
 
@@ -692,7 +707,8 @@ void DenseMatrix<ValueType>::assignSparse( const _Matrix& other )
         // SCAI_LOG_WARN( logger, "create temporary matrix with replicated columns: " << *tmpOther )
         // assignSparse( *tmpOther );
 
-        CSRSparseMatrix<ValueType> repOther( other, other.getRowDistributionPtr(), repColDist );
+        CSRSparseMatrix<ValueType> repOther( cast<ValueType>( other ) );
+        repOther.redistribute( other.getRowDistributionPtr(), repColDist );
 
         assignSparse( repOther );
 
@@ -708,6 +724,27 @@ void DenseMatrix<ValueType>::assignSparse( const _Matrix& other )
     mData[0].reset( new DenseStorage<ValueType>( other.getLocalStorage() ) );
 
     computeOwners();
+}
+
+/* ------------------------------------------------------------------ */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void DenseMatrix<ValueType>::assignDense( const DenseMatrix<OtherValueType>& other )
+{
+    // check for valid pointer, might be dynamic cast went wrong somewhere else
+    //SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
+    SCAI_LOG_INFO( logger, "assign dense, this = " << this << ", other = " << &other )
+    // inherit size and distributions
+    _Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
+    mData.resize( other.mData.size() );
+    IndexType n = static_cast<IndexType>( other.mData.size() );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        SCAI_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
+        mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
+    }
 }
 
 /* ------------------------------------------------------------------ */
@@ -2182,8 +2219,8 @@ void DenseMatrix<ValueType>::selectComplexPart( Matrix<RealType<ValueType> >& x,
 template<typename ValueType>
 void DenseMatrix<ValueType>::buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y )
 {
-    DenseMatrix<ValueType> x1( x );
-    DenseMatrix<ValueType> y1( y );
+    DenseMatrix<ValueType> x1( cast<ValueType>( x ) );
+    DenseMatrix<ValueType> y1( cast<ValueType>( y ) );
     ValueType i = common::TypeTraits<ValueType>::imaginaryUnit(); 
     matrixPlusMatrix( 1, x1, i, y1 );
 }

@@ -90,11 +90,11 @@ public:
 
     /** Override default constructor, make sure that deep copies are created. */
 
-    CSRSparseMatrix( const CSRSparseMatrix& other );
+    CSRSparseMatrix( const CSRSparseMatrix<ValueType>& other );
 
     /** Most general copy constrcuctor with possibility of transpose. */
 
-    CSRSparseMatrix( const _Matrix& other, bool transposeFlag = false );
+    CSRSparseMatrix( const Matrix<ValueType>& other, bool transposeFlag = false );
 
     /** Constructor of a sparse matrix by another input matrix with redistribution.
      *
@@ -102,13 +102,13 @@ public:
      * @param[in] rowDist   row distribution of the new matrix
      * @param[in] colDist   column distribution of the new matrix
      */
-    CSRSparseMatrix( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    CSRSparseMatrix( const Matrix<ValueType>& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
      *  @param[in] globalData  contains local rows of the distributed matrix
      */
-    explicit CSRSparseMatrix( const _MatrixStorage& globalData );
+    explicit CSRSparseMatrix( const MatrixStorage<ValueType>& globalData );
 
     /** Constructor of a sparse matrix by local storage.
      *
@@ -119,7 +119,7 @@ public:
      *  This constructor works also fine if localData is the full global matrix;
      *  in this case only local rows will be taken on this processor.
      */
-    CSRSparseMatrix( const _MatrixStorage& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    CSRSparseMatrix( const MatrixStorage<ValueType>& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Constructor of a replicated sparse matrix by reading the matrix
      *  data from a file.
@@ -139,6 +139,14 @@ public:
     explicit CSRSparseMatrix( const Expression_SMM<ValueType>& expression );
 
     explicit CSRSparseMatrix( const Expression_SM_SM<ValueType>& expression );
+
+    template<typename OtherValueType>
+    explicit CSRSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression );
+
+    explicit CSRSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression );
+
+    template<common::ComplexSelection kind, typename OtherValueType>
+    explicit CSRSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression );
 
     /** @brief Constructor of a CSR sparse matrix with distributed CSR storage data.
      *
@@ -264,6 +272,35 @@ public:
 
     static MatrixCreateKeyType createValue();
 };
+
+template<typename ValueType>
+template<common::ComplexSelection kind, typename OtherValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression )
+{
+    const Matrix<OtherValueType>& m = expression.getArg();
+    this->setContextPtr( m.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
+    Matrix<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression )
+{
+    const Matrix<RealType<ValueType> >& m = expression.getRealArg();
+    this->setContextPtr( m.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
+    Matrix<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression )
+{
+    const Matrix<OtherValueType>& m = expression.getArg();
+    this->setContextPtr( m.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
+    Matrix<ValueType>::operator=( expression );
+}
 
 template<typename ValueType>
 template<typename LocalValueType, typename HaloValueType>

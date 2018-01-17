@@ -122,9 +122,9 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const JDSSparseMatrix& other )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _Matrix& other, bool transposeFlag )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Matrix<ValueType>& other, bool transposeFlag ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     this->setContextPtr( other.getContextPtr() );
@@ -143,9 +143,9 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _Matrix& other, bool transpos
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Matrix<ValueType>& other, DistributionPtr rowDist, DistributionPtr colDist ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     this->setContextPtr( other.getContextPtr() );
@@ -158,9 +158,9 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _Matrix& other, DistributionP
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _MatrixStorage& globalData )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const MatrixStorage<ValueType>& globalData ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
@@ -172,11 +172,11 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _MatrixStorage& globalData )
 
 template<typename ValueType>
 JDSSparseMatrix<ValueType>::JDSSparseMatrix(
-    const _MatrixStorage& localData,
+    const MatrixStorage<ValueType>& localData,
     DistributionPtr rowDist,
-    DistributionPtr colDist )
+    DistributionPtr colDist ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     SparseMatrix<ValueType>::assign( localData, rowDist, colDist );
@@ -185,9 +185,9 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM<ValueType>& expression )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM<ValueType>& expression ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     const Matrix<ValueType>& master = expression.getArg2();
@@ -199,9 +199,9 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM<ValueType>& exp
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SMM<ValueType>& expression )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SMM<ValueType>& expression ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     const Matrix<ValueType>& master = expression.getArg1().getArg2();
