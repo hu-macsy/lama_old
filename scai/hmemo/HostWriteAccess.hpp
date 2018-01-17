@@ -33,6 +33,8 @@
  * @date 15.01.2018
  */
 
+#pragma once
+
 #include <scai/hmemo/WriteAccess.hpp>
 
 #include <iterator>
@@ -132,5 +134,3 @@ HostWriteAccess<ValueType> hostWriteAccess(HArray<ValueType> & array)
 }
 
 }
-
-#pragma once

@@ -33,6 +33,8 @@
  * @date 15.01.2018
  */
 
+#pragma once
+
 #include <scai/hmemo/ReadAccess.hpp>
 
 #include <iterator>
@@ -133,5 +135,3 @@ HostReadAccess<ValueType> hostReadAccess(const HArray<ValueType> & array)
 }
 
 }
-
-#pragma once
