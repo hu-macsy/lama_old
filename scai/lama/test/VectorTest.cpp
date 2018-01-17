@@ -589,6 +589,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
+{
+    // skip this test if ValueType is not complex as imag would return 0
+
+    if ( !common::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        return;
+    }
+
+    typedef RealType<ValueType> Real;
+
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 100;
+
+    TestVectors<ValueType> vectors;
+
+    dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        Vector<ValueType>& complexVector = *vectors[i];
+
+        float fillRate = 0.1f;
+
+        ValueType zero = 0;
+
+        IndexType bound = 2;
+
+        complexVector.setSparseRandom( vectorDist, zero, fillRate, bound );
+
+        DenseVector<Real> x( real ( complexVector ) );
+
+        DenseVector<Real> y;
+        y = imag( complexVector );
+
+        DenseVector<ValueType> z( complex( x, y ) );
+
+        Real diff = complexVector.maxDiffNorm( z );
+
+        BOOST_CHECK_EQUAL( diff, 0 );
+
+        DenseVector<Real> x1( cast<Real>( complexVector ) );
+
+        diff = x.maxDiffNorm( x1 );
+
+        BOOST_CHECK_EQUAL( diff, 0 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( assign_S_VV_Test, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 13;

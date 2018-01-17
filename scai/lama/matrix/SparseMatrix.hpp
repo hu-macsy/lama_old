@@ -562,6 +562,8 @@ public:
 
     virtual void resetDiagonalProperty();
 
+    /* Implementation of pure method _Matrix::newMatrix with covariant return type */
+
     SparseMatrix<ValueType>* newMatrix() const;
 
     /* Implementation of pure method _Matrix::copy with covariant return type */
@@ -672,6 +674,14 @@ protected:
         const SparseMatrix<ValueType>& B,
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
+
+    /** Implementation of pure method Matrix<ValueType>::selectComplexPart */
+
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexSelection kind ) const;
+
+    /** Implementation of pure method Matrix<ValueType>::buildComplex */
+
+    virtual void buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y );
 
 public:
 

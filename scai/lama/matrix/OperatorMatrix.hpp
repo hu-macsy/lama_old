@@ -234,18 +234,32 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
     virtual void matrixTimesScalar( const Matrix<ValueType>&, ValueType )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
     virtual void matrixPlusMatrix( const ValueType, const Matrix<ValueType>&, const ValueType, const Matrix<ValueType>&)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
     virtual void matrixTimesMatrix( Matrix<ValueType>&, ValueType, const Matrix<ValueType>&, ValueType, const Matrix<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >&, const common::ComplexSelection ) const
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
+
+    virtual void buildComplex( const Matrix<RealType<ValueType> >&, const Matrix<RealType<ValueType> >& )
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
+
     virtual IndexType getLocalNumValues() const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )

@@ -182,7 +182,7 @@ public:
      *     sub( vd );               // compile error to avoid implicit conversions
      * \endcode
      */
-    explicit SparseVector( const _Vector& other );
+    explicit SparseVector( const Vector<ValueType>& other );
 
     /**
      * @brief creates a redistributed copy of the passed vector
@@ -192,7 +192,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    explicit SparseVector( const _Vector& other, dmemo::DistributionPtr distribution );
+    explicit SparseVector( const Vector<ValueType>& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed SparseVector with given local values.
@@ -319,6 +319,28 @@ public:
      * @param[in] expression     x * A
      */
     explicit SparseVector( const Expression_VM<ValueType>& expression );
+
+    /**
+     *  @brief enable constructor for SparseVector<T>( complex( x, y ) );
+     */
+    inline explicit SparseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression );
+
+    /**
+     *  @brief enable constructor for SparseVector<T>( imag( x ) );
+     */
+    template<common::ComplexSelection kind, typename OtherValueType>
+    explicit SparseVector( const ComplexSelectionVectorExpression<OtherValueType, kind>& expression );
+
+    /**
+     *  @brief enable constructor for SparseVector<T>( cast<T>( x ) );
+     */
+    template<typename OtherValueType>
+    explicit SparseVector( const CastVectorExpression<ValueType, OtherValueType>& expression );
+
+    /**
+     *  @brief enable constructor for SparseVector<T>( sin( x ) );
+     */
+    inline explicit SparseVector( const UnaryVectorExpression<ValueType>& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -623,6 +645,44 @@ SparseVector<ValueType>::SparseVector(
 
 {
     setSparseValues( nnz, nonZeroIndexes, nonZeroValues, zeroValue );
+}
+
+template<typename ValueType>
+template<common::ComplexSelection kind, typename OtherValueType>
+SparseVector<ValueType>::SparseVector( const ComplexSelectionVectorExpression<OtherValueType, kind>& expression )
+{
+    const Vector<OtherValueType>& v = expression.getArg();
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+SparseVector<ValueType>::SparseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression )
+{
+    const Vector<RealType<ValueType>>& v = expression.getRealArg();
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+SparseVector<ValueType>::SparseVector( const CastVectorExpression<ValueType, OtherValueType>& expression )
+{
+    const Vector<OtherValueType>& v = expression.getArg();
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+SparseVector<ValueType>::SparseVector( const UnaryVectorExpression<ValueType>& expression )
+{
+    const Vector<ValueType>& v = expression.getArg();
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */

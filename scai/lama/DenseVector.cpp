@@ -192,7 +192,7 @@ void DenseVector<ValueType>::fillLinearValues( const ValueType startValue, const
 }
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const _Vector& other ) :
+DenseVector<ValueType>::DenseVector( const Vector<ValueType>& other ) :
 
     Vector<ValueType>( other )
 
@@ -202,7 +202,7 @@ DenseVector<ValueType>::DenseVector( const _Vector& other ) :
 }
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const _Vector& other, DistributionPtr distribution ) :
+DenseVector<ValueType>::DenseVector( const Vector<ValueType>& other, DistributionPtr distribution ) :
 
     Vector<ValueType>( other )
 

@@ -1572,6 +1572,35 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexSelection kind ) const
+{
+    if ( kind == common::ComplexSelection::REAL )
+    {
+        x = cast<RealType<ValueType>>( *this );
+    }
+    else
+    {
+        ValueType i = common::TypeTraits<ValueType>::imaginaryUnit();
+        std::unique_ptr<SparseMatrix<ValueType> > tmp( copy() );
+        *tmp  *= -i;    // imaginary part becomes real part
+        x = cast<RealType<ValueType>>( *tmp );
+    }
+}
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y )
+{
+    std::unique_ptr<SparseMatrix<ValueType> > tmpX( newMatrix() );
+    std::unique_ptr<SparseMatrix<ValueType> > tmpY( newMatrix() );
+    *tmpX = cast<ValueType>( x );
+    *tmpY = cast<ValueType>( y );
+    ValueType i = common::TypeTraits<ValueType>::imaginaryUnit();
+    matrixPlusMatrix( 1, *tmpX, i, *tmpY );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     const ValueType alpha,
     const SparseMatrix<ValueType>& A,

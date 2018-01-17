@@ -41,6 +41,7 @@
 #include <scai/common/TypeTraits.hpp>
 
 #include <memory>
+#include <type_traits>
 
 namespace scai
 {
@@ -382,12 +383,12 @@ public:
 
     /** this = real( x ) or this = imag( x ) */
 
-    template<common::ComplexSelection kind>
-    Vector<ValueType>& operator=( const SelectVectorExpression<RealType<ValueType>, kind>& exp );
+    template<common::ComplexSelection kind, typename OtherValueType>
+    Vector<ValueType>& operator=( const ComplexSelectionVectorExpression<OtherValueType, kind>& exp );
 
     /** this = cmplx( x, y ) */
 
-    Vector<ValueType>& operator=( const ComplexVectorExpression<RealType<ValueType> >& exp );
+    Vector<ValueType>& operator=( const ComplexBuildVectorExpression<RealType<ValueType> >& exp );
 
     /** Initialization of an allocated vector with one value, does not change size/distribution  */
   
@@ -842,15 +843,18 @@ Vector<ValueType>& Vector<ValueType>::operator=( const CastVectorExpression<Valu
 }
 
 template<typename ValueType>
-template<common::ComplexSelection kind>
-Vector<ValueType>& Vector<ValueType>::operator=( const SelectVectorExpression<RealType<ValueType>, kind>& exp )
+template<common::ComplexSelection kind, typename OtherValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const ComplexSelectionVectorExpression<OtherValueType, kind>& exp )
 {
+    // use a static assert to check for correct types of method selectComplexPart, otherwise strange error messages
+
+    static_assert( std::is_same<ValueType, RealType<OtherValueType> >::value, "wrong types for imag/real" );
     exp.getArg().selectComplexPart( *this, kind );
     return *this;
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator=( const ComplexVectorExpression<RealType<ValueType> >& exp )
+Vector<ValueType>& Vector<ValueType>::operator=( const ComplexBuildVectorExpression<RealType<ValueType> >& exp )
 {
     buildComplex( exp.getRealArg(), exp.getImagArg() );
     return *this;

@@ -653,6 +653,14 @@ protected:
         const ValueType beta,
         const DenseMatrix<ValueType>& B );
 
+    /** Implementation of pure method Matrix<ValueType>::selectComplexPart */
+
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexSelection kind ) const;
+
+    /** Implementation of pure method Matrix<ValueType>::buildComplex */
+
+    virtual void buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y );
+
 private:
 
     /** Allocate of storage for the column blocks. */

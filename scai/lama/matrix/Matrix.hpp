@@ -101,6 +101,15 @@ public:
     template<typename OtherValueType>
     Matrix<ValueType>& operator=( const CastMatrixExpression<ValueType, OtherValueType>& exp );
 
+    /** this = real( A ) or this = imag( A ) */
+
+    template<common::ComplexSelection kind, typename OtherValueType>
+    Matrix<ValueType>& operator=( const ComplexSelectionMatrixExpression<OtherValueType, kind>& exp );
+
+    /** this = cmplx( A, B ) */
+
+    Matrix<ValueType>& operator=( const ComplexBuildMatrixExpression<RealType<ValueType> >& exp );
+
     /**
      * @brief Assignment operator for alhpa * A
      *
@@ -618,6 +627,22 @@ protected:
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
         const DenseVector<ValueType>* denseY ) const;
+
+    /** 
+     *  @brief This method selects the real or imaginay part of a complex matrix
+     *
+     *  @param[out] x    is the matrix that will contain the real or imaginary part of this matrix
+     *  @param[in]  kind specifies which part (real or complex) is selected
+     */
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexSelection kind ) const = 0;
+
+    /** 
+     *  @brief This method builds this complex matrix by two matrices, one contains the real parts, the other the imaginary parts.
+     *
+     *  @param[in] x is the matrix containing the real parts
+     *  @param[in] y is the matrix containing the complex parts
+     */
+    virtual void buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y ) = 0;
 };
 
 /** 
@@ -651,6 +676,24 @@ template<typename OtherValueType>
 Matrix<ValueType>& Matrix<ValueType>::operator=( const CastMatrixExpression<ValueType, OtherValueType>& exp )
 {
     this->assign( exp.getArg() );
+    return *this;
+}
+
+template<typename ValueType>
+template<common::ComplexSelection kind, typename OtherValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const ComplexSelectionMatrixExpression<OtherValueType, kind>& exp )
+{
+    // use a static assert to check for correct types of method selectComplexPart, otherwise strange error messages
+
+    static_assert( std::is_same<ValueType, RealType<OtherValueType> >::value, "wrong types for imag/real" );
+    exp.getArg().selectComplexPart( *this, kind );
+    return *this;
+}
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const ComplexBuildMatrixExpression<RealType<ValueType> >& exp )
+{
+    buildComplex( exp.getRealArg(), exp.getImagArg() );
     return *this;
 }
 

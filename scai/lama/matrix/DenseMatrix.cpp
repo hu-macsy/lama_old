@@ -2164,6 +2164,33 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexSelection kind ) const
+{
+    if ( kind == common::ComplexSelection::REAL )
+    {
+        x = cast<RealType<ValueType>>( *this );
+    }
+    else
+    {
+        ValueType i = common::TypeTraits<ValueType>::imaginaryUnit();
+        DenseMatrix<ValueType> tmp( *this );
+        tmp *= -i;  // imaginary part becomes real part
+        x = cast<RealType<ValueType>>( tmp );
+    }
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y )
+{
+    DenseMatrix<ValueType> x1( x );
+    DenseMatrix<ValueType> y1( y );
+    ValueType i = common::TypeTraits<ValueType>::imaginaryUnit(); 
+    matrixPlusMatrix( 1, x1, i, y1 );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 RealType<ValueType> DenseMatrix<ValueType>::maxNorm() const
 {
     RealType<ValueType> myMaxDiff = 0;

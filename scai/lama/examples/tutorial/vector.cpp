@@ -34,11 +34,9 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/common/Complex.hpp>
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
-#include <scai/lama/expression/CastVectorExpression.hpp>
 
 #include <iostream>
 #include <stdlib.h>
@@ -50,25 +48,33 @@ int main()
 
 {
     /** Take default real type for this example. */
+    typedef DefaultReal ValueType;
 
-    typedef float ValueType;
+    ValueType singleValue = 2;
+    //
+    // Create a DenseVector out of a simple c array
+    //
+    const ValueType inputData[] = { 1.0, 2.0, 3.0, 4.0 };
 
-    typedef common::Complex<float> ComplexType;
+    DenseVector<ValueType> sequenceOfValues;
 
-    DenseVector<ValueType> x = linearValuesVector( 10, ValueType( 1 ), ValueType( 0.5 ) );
-    DenseVector<ValueType> y = linearValuesVector( 10, ValueType( 20 ), ValueType( -0.5 ) );
+    sequenceOfValues.setRawData( 4, inputData );
 
-    DenseVector<ComplexType> z;
-    z = cmplx( x, y );
+    // same: sequenceOfValues.setRange( 4, 1, 1 );
 
-    z.writeToFile( "z.txt" );
-
-    x = real( z );
-    y = imag( z );
-
-    x.writeToFile( "x.txt" );
-    y.writeToFile( "y.txt" );
-
+    //
+    // scale vector
+    //
+    sequenceOfValues = singleValue * sequenceOfValues;
+    //
+    // print vector to file vector.frm/.vec (SAMG format)
+    //
+    sequenceOfValues.writeToFile( "vector.frv" );
+    std::cout << "DenseVector is written to 'vector.frm/.vec'" << std::endl;
+    //
+    //  That's it.
+    //
+    std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
     return EXIT_SUCCESS;
 }
 

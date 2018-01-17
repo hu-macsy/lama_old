@@ -167,7 +167,7 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution, const Value
 }
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const _Vector& other ) : 
+SparseVector<ValueType>::SparseVector( const Vector<ValueType>& other ) : 
 
     Vector<ValueType>( other )
 
@@ -177,7 +177,7 @@ SparseVector<ValueType>::SparseVector( const _Vector& other ) :
 }
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const _Vector& other, DistributionPtr distribution ) : 
+SparseVector<ValueType>::SparseVector( const Vector<ValueType>& other, DistributionPtr distribution ) : 
 
     Vector<ValueType>( other )
 
@@ -1535,9 +1535,11 @@ void SparseVector<IndexType>::selectComplexPart( Vector<IndexType>& x, const com
 template<typename ValueType>
 void SparseVector<ValueType>::buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y )
 {
-    DenseVector<ValueType> x1( x );
-    DenseVector<ValueType> y1( y );
-    ValueType i = common::Complex<RealType<ValueType> >( 0, 1 );
+    // ToDo: provide more efficient solutions as this one with two temporary complex vectors
+
+    DenseVector<ValueType> x1( cast<ValueType>( x  ) );
+    DenseVector<ValueType> y1( cast<ValueType>( y  ) );
+    ValueType i = common::TypeTraits<ValueType>::imaginaryUnit();
     vectorPlusVector( 1, x1, i, y1 );
 }
 
@@ -1606,7 +1608,8 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
     {
         // Maybe not very efficient if other vector is dense
 
-        SparseVector<ValueType> tmpOther( other );
+        SparseVector<ValueType> tmpOther;
+        tmpOther.assign( other );
 
         if ( !swapArgs )
         {
