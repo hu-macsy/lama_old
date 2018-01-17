@@ -121,12 +121,12 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 BOOST_AUTO_TEST_CASE( initializerListConstructorTest )
 {
     const auto context = Context::getContextPtr();
-    const auto array = HArray<IndexType> ( { 5, 6, 2, 3, -5 }, context );
+    const auto array = HArray<int> ( { 5, 6, 2, 3, -5 }, context );
 
     BOOST_CHECK_EQUAL( array.size(), 5 );
     BOOST_CHECK_EQUAL( array.capacity(context), 5 );
 
-    ReadAccess<IndexType> rArray(array);
+    ReadAccess<int> rArray(array);
     BOOST_CHECK_EQUAL( rArray[0], 5 );
     BOOST_CHECK_EQUAL( rArray[1], 6 );
     BOOST_CHECK_EQUAL( rArray[2], 2 );
