@@ -469,7 +469,7 @@ HArray<ValueType>::HArray( std::initializer_list<ValueType> init, ContextPtr con
     touch( context );
     // std::initializer_list actually guarantees that begin() returns a pointer (to const)
     // to the data, so this should be safe!
-    const ValueType * data = init.begin();
+    const ValueType* data = init.begin();
     _HArray::_setRawData( init.size(), data );
 }
 

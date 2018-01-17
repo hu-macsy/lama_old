@@ -98,7 +98,7 @@ public:
     /**
      * @brief Move constructor for ReadAccess.
      */
-    ReadAccess( ReadAccess<ValueType> && other ) noexcept;
+    ReadAccess( ReadAccess<ValueType>&& other ) noexcept;
 
     /**
      * @brief Releases the ReadAccess on the associated HArray.
@@ -182,9 +182,9 @@ protected:
  * @endcode
  */
 template <typename ValueType>
-inline ReadAccess<ValueType> readAccess(const HArray<ValueType> & array)
+inline ReadAccess<ValueType> readAccess( const HArray<ValueType>& array )
 {
-    return ReadAccess<ValueType>(array);
+    return ReadAccess<ValueType>( array );
 }
 
 /**
@@ -194,9 +194,9 @@ inline ReadAccess<ValueType> readAccess(const HArray<ValueType> & array)
  * into memory provided by the given context.
  */
 template <typename ValueType>
-inline ReadAccess<ValueType> readAccess(const HArray<ValueType> & array, ContextPtr context)
+inline ReadAccess<ValueType> readAccess( const HArray<ValueType>& array, ContextPtr context )
 {
-    return ReadAccess<ValueType>(array, context);
+    return ReadAccess<ValueType>( array, context );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -226,9 +226,9 @@ ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array ) : mArray( &a
 }
 
 template <typename ValueType>
-ReadAccess<ValueType>::ReadAccess( ReadAccess && other ) noexcept
-    : mArray(other.mArray),
-      mData(other.mData),
+ReadAccess<ValueType>::ReadAccess( ReadAccess&& other ) noexcept
+    : mArray( other.mArray ),
+      mData( other.mData ),
       mContextDataIndex( other.mContextDataIndex )
 {
     other.mArray = nullptr;

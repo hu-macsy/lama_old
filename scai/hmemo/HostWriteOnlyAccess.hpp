@@ -69,8 +69,8 @@ public:
     // satisfy the concept as we offer only a read-only view.
     typedef ValueType                               value_type;
     typedef const ValueType&                        const_reference;
-    typedef ValueType *                             iterator;
-    typedef const ValueType *                       const_iterator;
+    typedef ValueType*                              iterator;
+    typedef const ValueType*                        const_iterator;
     typedef std::iterator_traits<const_iterator>    difference_type;
 
     /**
@@ -78,15 +78,15 @@ public:
      *
      * This is exactly equivalent to WriteOnlyAccess(array, context::getHostPtr(), newSize);
      */
-    explicit HostWriteOnlyAccess( HArray<ValueType> & array, IndexType newSize)
-        :   WriteOnlyAccess<ValueType>(array, Context::getHostPtr(), newSize)
+    explicit HostWriteOnlyAccess( HArray<ValueType>& array, IndexType newSize )
+        :   WriteOnlyAccess<ValueType>( array, Context::getHostPtr(), newSize )
     { }
 
     /**
      * @brief Move constructor for HostWriteOnlyAccess.
      */
-    HostWriteOnlyAccess( HostWriteOnlyAccess<ValueType> && other )
-        : WriteOnlyAccess<ValueType>( std::move(other) )
+    HostWriteOnlyAccess( HostWriteOnlyAccess<ValueType>&& other )
+        : WriteOnlyAccess<ValueType>( std::move( other ) )
     { }
 
     iterator begin()
@@ -126,9 +126,9 @@ public:
  * that a HostWriteOnlyAccess is returned instead of WriteOnlyAccess.
  */
 template <typename ValueType>
-HostWriteOnlyAccess<ValueType> hostWriteOnlyAccess(HArray<ValueType> & array, IndexType newSize)
+HostWriteOnlyAccess<ValueType> hostWriteOnlyAccess( HArray<ValueType>& array, IndexType newSize )
 {
-    return HostWriteOnlyAccess<ValueType>(array, newSize);
+    return HostWriteOnlyAccess<ValueType>( array, newSize );
 }
 
 }

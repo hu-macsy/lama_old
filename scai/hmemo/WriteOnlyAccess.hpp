@@ -112,8 +112,8 @@ public:
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
-    WriteOnlyAccess ( WriteOnlyAccess<ValueType> && other)
-        : WriteAccess<ValueType>( std::move(other) )
+    WriteOnlyAccess ( WriteOnlyAccess<ValueType>&& other )
+        : WriteAccess<ValueType>( std::move( other ) )
     { }
 
     ~WriteOnlyAccess()
@@ -140,9 +140,9 @@ private:
  * motivation and intended usage of this function.
  */
 template <typename ValueType>
-WriteOnlyAccess<ValueType> writeOnlyAccess(HArray<ValueType> & array, IndexType newSize)
+WriteOnlyAccess<ValueType> writeOnlyAccess( HArray<ValueType>& array, IndexType newSize )
 {
-    return WriteOnlyAccess<ValueType>(array, newSize);
+    return WriteOnlyAccess<ValueType>( array, newSize );
 }
 
 /**
@@ -152,9 +152,9 @@ WriteOnlyAccess<ValueType> writeOnlyAccess(HArray<ValueType> & array, IndexType 
  * motivation and intended usage of this function.
  */
 template <typename ValueType>
-WriteOnlyAccess<ValueType> writeOnlyAccess(HArray<ValueType> & array, ContextPtr context, IndexType newSize)
+WriteOnlyAccess<ValueType> writeOnlyAccess( HArray<ValueType>& array, ContextPtr context, IndexType newSize )
 {
-    return WriteOnlyAccess<ValueType>(array, context, newSize);
+    return WriteOnlyAccess<ValueType>( array, context, newSize );
 }
 
 } /* end namespace hmemo */

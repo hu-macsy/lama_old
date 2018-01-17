@@ -81,7 +81,7 @@ public:
     // satisfy the concept as we offer only a read-only view.
     typedef ValueType                               value_type;
     typedef const ValueType&                        const_reference;
-    typedef const ValueType *                       const_iterator;
+    typedef const ValueType*                        const_iterator;
     typedef std::iterator_traits<const_iterator>    difference_type;
 
     /**
@@ -89,15 +89,15 @@ public:
      *
      * This is exactly equivalent to ReadAccess(array, context::getHostPtr());
      */
-    explicit HostReadAccess( const HArray<ValueType> & array)
-        :   ReadAccess<ValueType>(array, Context::getHostPtr())
+    explicit HostReadAccess( const HArray<ValueType>& array )
+        :   ReadAccess<ValueType>( array, Context::getHostPtr() )
     { }
 
     /**
      * @brief Move constructor for HostReadAccess.
      */
-    HostReadAccess( HostReadAccess<ValueType> && other )
-        : ReadAccess<ValueType>( std::move(other) )
+    HostReadAccess( HostReadAccess<ValueType>&& other )
+        : ReadAccess<ValueType>( std::move( other ) )
     { }
 
     const_iterator begin() const
@@ -127,9 +127,9 @@ public:
  * that a HostReadAccess is returned instead of ReadAccess.
  */
 template <typename ValueType>
-HostReadAccess<ValueType> hostReadAccess(const HArray<ValueType> & array)
+HostReadAccess<ValueType> hostReadAccess( const HArray<ValueType>& array )
 {
-    return HostReadAccess<ValueType>(array);
+    return HostReadAccess<ValueType>( array );
 }
 
 }

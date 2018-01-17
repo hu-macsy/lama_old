@@ -113,7 +113,7 @@ public:
     /**
      * @brief Move constructor for WriteAccess.
      */
-    WriteAccess( WriteAccess<ValueType> && other ) noexcept;
+    WriteAccess( WriteAccess<ValueType>&& other ) noexcept;
 
     /**
      * @brief Releases the WriteAccess on the associated HArray.
@@ -233,9 +233,9 @@ protected:
  * motivation and intended usage of this function.
  */
 template <typename ValueType>
-WriteAccess<ValueType> writeAccess(HArray<ValueType> & array)
+WriteAccess<ValueType> writeAccess( HArray<ValueType>& array )
 {
-    return WriteAccess<ValueType>(array);
+    return WriteAccess<ValueType>( array );
 }
 
 /**
@@ -245,9 +245,9 @@ WriteAccess<ValueType> writeAccess(HArray<ValueType> & array)
  * motivation and intended usage of this function.
  */
 template <typename ValueType>
-WriteAccess<ValueType> writeAccess(HArray<ValueType> & array, ContextPtr context)
+WriteAccess<ValueType> writeAccess( HArray<ValueType>& array, ContextPtr context )
 {
-    return WriteAccess<ValueType>(array, context);
+    return WriteAccess<ValueType>( array, context );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -280,10 +280,10 @@ WriteAccess<ValueType>::WriteAccess( HArray<ValueType>& array, const bool keep /
 }
 
 template <typename ValueType>
-WriteAccess<ValueType>::WriteAccess( WriteAccess<ValueType> && other) noexcept
-    :   mArray(other.mArray),
-        mData(other.mData),
-        mContextDataIndex(other.mContextDataIndex)
+WriteAccess<ValueType>::WriteAccess( WriteAccess<ValueType>&& other ) noexcept
+    :   mArray( other.mArray ),
+        mData( other.mData ),
+        mContextDataIndex( other.mContextDataIndex )
 {
     other.mArray = nullptr;
     other.mData = nullptr;
