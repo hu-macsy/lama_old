@@ -963,26 +963,31 @@ public:
         const hmemo::HArray<RealType<ValueType> >& imagValues,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Merge two arrays and retain an index mapping from one of the arrays into the result array.
+    /** Merge two arrays and retain index maps from the original arrays into the result array.
      *
      * Merge the two *sorted* arrays `x` and `y` into the array `result`, overwriting any data in `result`,
-     * and retain a mapping from the indexes of `x` into the indexes of `result`.
+     * and retain two separate maps from the indexes of `x` and `y` into the indexes of `result`.
      *
-     * Input arrays x and y must be sorted according to the specified comparator, and the
+     * The input arrays x and y must be sorted according to the specified comparator, and the
      * result will also be sorted according to the same comparator.
      *
      *  @param[out] result, the resulting array after merging. Any data in the array will be overwritten. Size is x.size() + y.size().
-     *  @param[out] mapping, an array of indices such that result[mapping[i]] = x[i] for i = 0, .., x.size() - 1.
+     *  @param[out] xMap, an array of indices such that result[xMap[i]] = x[i] for i = 0, .., x.size() - 1.
+     *  @param[out] yMap, an array of indices such that result[yMap[i]] = y[i] for i = 0, .., y.size() - 1.
      *  @param[in] x, a *sorted* array.
      *  @param[in] y, a *sorted* array.
+     *  @param[in] comparator, the operator to use for the comparison (optional).
+        @param[in] prefLoc, preferred context for computations.
      */
     template <typename ValueType>
-    static void mergeAndRetainMapping(
+    static void mergeAndMap(
         hmemo::HArray<ValueType> & result,
-        hmemo::HArray<IndexType> & mapping,
+        hmemo::HArray<IndexType> & xMap,
+        hmemo::HArray<IndexType> & yMap,
         const hmemo::HArray<ValueType> & x,
         const hmemo::HArray<ValueType> & y,
-        const common::CompareOp comparator = common::CompareOp::LT);
+        const common::CompareOp comparator = common::CompareOp::LT,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:
 

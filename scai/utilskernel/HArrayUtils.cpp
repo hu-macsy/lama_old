@@ -2317,13 +2317,18 @@ void HArrayUtils::mergeSparse(
 }
 
 template <typename ValueType>
-void HArrayUtils::mergeAndRetainMapping(
+void HArrayUtils::mergeAndMap(
     hmemo::HArray<ValueType> & result,
-    hmemo::HArray<IndexType> & mapping,
+    hmemo::HArray<IndexType> & xMap,
+    hmemo::HArray<IndexType> & yMap,
     const hmemo::HArray<ValueType> & x,
     const hmemo::HArray<ValueType> & y,
-    const common::CompareOp comparator)
+    const common::CompareOp comparator,
+    hmemo::ContextPtr prefLoc )
 {
+    // Currently we do all operations on the host, so ignore prefLoc
+    (void) prefLoc;
+
     const auto stype = common::TypeTraits<ValueType>::stype;
 
     SCAI_ASSERT_ERROR(!common::isComplex(stype),
@@ -2337,11 +2342,12 @@ void HArrayUtils::mergeAndRetainMapping(
 
     ReadAccess<ValueType> rx(x);
     ReadAccess<ValueType> ry(y);
-    WriteOnlyAccess<IndexType> wMapping(mapping, x.size());
+    WriteOnlyAccess<IndexType> wxMap(xMap, x.size());
+    WriteOnlyAccess<IndexType> wyMap(yMap, y.size());
 
     auto & z = result;
-    WriteOnlyAccess<ValueType> wz(z);
-    wz.resize(rx.size() + ry.size());
+    const auto zSize = rx.size() + ry.size();
+    WriteOnlyAccess<ValueType> wz(z, zSize);
 
     IndexType xIndex = 0;
     IndexType yIndex = 0;
@@ -2351,17 +2357,18 @@ void HArrayUtils::mergeAndRetainMapping(
     {
         SCAI_ASSERT_DEBUG(zIndex < z.size(), "zIndex should never go out of bounds");
 
-        const auto xElement = rx[xIndex];
-        const auto yElement = ry[yIndex];
+        const auto & xElement = rx[xIndex];
+        const auto & yElement = ry[yIndex];
 
         if (common::compare(xElement, comparator, yElement))
         {
-            wMapping[xIndex] = zIndex;
+            wxMap[xIndex] = zIndex;
             wz[zIndex] = xElement;
             ++xIndex;
         }
         else
         {
+            wyMap[yIndex] = zIndex;
             wz[zIndex] = yElement;
             ++yIndex;
         }
@@ -2370,12 +2377,13 @@ void HArrayUtils::mergeAndRetainMapping(
 
     while ( xIndex < rx.size() )
     {
-        wMapping[xIndex] = zIndex;
+        wxMap[xIndex] = zIndex;
         wz[zIndex++] = rx[xIndex++];
     }
 
     while ( yIndex < ry.size() )
     {
+        wyMap[yIndex] = zIndex;
         wz[zIndex++] = ry[yIndex++];
     }
 
@@ -2686,12 +2694,14 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<ValueType>&,                            \
             const BinaryOp,                                             \
             hmemo::ContextPtr );                                        \
-    template void HArrayUtils::mergeAndRetainMapping(                   \
+    template void HArrayUtils::mergeAndMap(                             \
         hmemo::HArray<ValueType> & result,                              \
-        hmemo::HArray<IndexType> & mapping,                             \
+        hmemo::HArray<IndexType> & xMap,                                \
+        hmemo::HArray<IndexType> & yMap,                                \
         const hmemo::HArray<ValueType> & x,                             \
         const hmemo::HArray<ValueType> & y,                             \
-        const common::CompareOp comparator = common::CompareOp::LT);    \
+        const common::CompareOp comparator,                             \
+        hmemo::ContextPtr prefLoc );                                    \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 
 SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )

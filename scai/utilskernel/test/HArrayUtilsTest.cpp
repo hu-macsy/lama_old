@@ -1854,24 +1854,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( mergeAndRetainMappingTest, ValueType, scai_array_
     const auto x = HArray<ValueType>(5, xData);
     const auto y = HArray<ValueType>(3, yData);
 
-    HArray<IndexType> mapping;
+    HArray<IndexType> xMap;
+    HArray<IndexType> yMap;
     HArray<ValueType> result;
 
     if (scai::common::isComplex(stype))
     {
-        BOOST_CHECK_THROW( HArrayUtils::mergeAndRetainMapping(result, mapping, x, y), scai::common::AssertException);
+        BOOST_CHECK_THROW( HArrayUtils::mergeAndMap(result, xMap, yMap, x, y), scai::common::AssertException);
     }
     else
     {
         // TODO: Test for more cases! Make sure to cover all branches.
-        HArrayUtils::mergeAndRetainMapping(result, mapping, x, y);
+        HArrayUtils::mergeAndMap(result, xMap, yMap, x, y);
 
         // TODO: Rewrite with free function hostReadAccess and harray initializer lists for comparison
         const auto expectedResult = std::vector<ValueType> { 1, 2, 3, 4, 6, 7, 8, 9 };
-        const auto expectedMapping = std::vector<IndexType> { 1, 2, 4, 5, 6};
+        const auto expectedXMap = std::vector<IndexType> { 1, 2, 4, 5, 6};
+        const auto expectedYMap = std::vector<IndexType> { 0, 3, 7 };
 
         ReadAccess<ValueType> readResult(result);
-        BOOST_TEST( readResult.size() == 8 );
+        BOOST_TEST( readResult.size() == expectedResult.size() );
         BOOST_TEST( readResult[0] == expectedResult[0] );
         BOOST_TEST( readResult[1] == expectedResult[1] );
         BOOST_TEST( readResult[2] == expectedResult[2] );
@@ -1881,13 +1883,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( mergeAndRetainMappingTest, ValueType, scai_array_
         BOOST_TEST( readResult[6] == expectedResult[6] );
         BOOST_TEST( readResult[7] == expectedResult[7] );
 
-        ReadAccess<IndexType> readMapping(mapping);
-        BOOST_TEST( readMapping.size() == 5 );
-        BOOST_TEST( readMapping[0] == expectedMapping[0] );
-        BOOST_TEST( readMapping[1] == expectedMapping[1] );
-        BOOST_TEST( readMapping[2] == expectedMapping[2] );
-        BOOST_TEST( readMapping[3] == expectedMapping[3] );
-        BOOST_TEST( readMapping[4] == expectedMapping[4] );
+        ReadAccess<IndexType> readXMap(xMap);
+        BOOST_TEST( readXMap.size() == expectedXMap.size() );
+        BOOST_TEST( readXMap[0] == expectedXMap[0] );
+        BOOST_TEST( readXMap[1] == expectedXMap[1] );
+        BOOST_TEST( readXMap[2] == expectedXMap[2] );
+        BOOST_TEST( readXMap[3] == expectedXMap[3] );
+        BOOST_TEST( readXMap[4] == expectedXMap[4] );
+
+        ReadAccess<IndexType> readYMap(yMap);
+        BOOST_TEST( readYMap.size() == expectedYMap.size() );
+        BOOST_TEST( readYMap[0] == expectedYMap[0] );
+        BOOST_TEST( readYMap[1] == expectedYMap[1] );
+        BOOST_TEST( readYMap[2] == expectedYMap[2] );
     }
 }
 
