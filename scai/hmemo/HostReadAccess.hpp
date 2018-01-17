@@ -43,6 +43,33 @@ namespace scai
 namespace hmemo
 {
 
+/**
+ * @brief  Acquire a ReadAccess on the host context.
+ *
+ * HostReadAccess is exactly equivalent to ReadAccess, except that it can only
+ * acquire a ReadAccess to the Host context. This guarantees that the data pointer
+ * resides in host memory, which enables us to provide some functionality which we
+ * could not safely do if the memory were allowed to reside anywhere else.
+ * In particular, `begin`/`cbegin` and `end`/`cend` methods are provided
+ * for interoperability with the C++ standard library.
+ *
+ * This enables users to more easily use HArray with algorithms from the STL,
+ * as well as enabling features such as range-based for loops when iterating over
+ * arrays. An example is shown below.
+ *
+ * \code{.cpp}
+ * HArray<int> array { 3, 2, 4 };
+ * for ( auto element : hostReadAccess(array) )
+ * {
+ *     std::cout << element << ", ";
+ * }
+ *
+ * const auto access = hostReadAccess(array);
+ * std::cout << "Array is sorted: " << std::is_sorted(access.begin(), access.end()) << std::endl;
+ * \endcode
+ *
+ */
+
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT HostReadAccess: public ReadAccess<ValueType>
 {
@@ -55,10 +82,18 @@ public:
     typedef const ValueType *                       const_iterator;
     typedef std::iterator_traits<const_iterator>    difference_type;
 
+    /**
+     * @brief Obtain read access to the given array on the host context.
+     *
+     * This is exactly equivalent to ReadAccess(array, context::getHostPtr());
+     */
     explicit HostReadAccess( const HArray<ValueType> & array)
         :   ReadAccess<ValueType>(array, Context::getHostPtr())
     { }
 
+    /**
+     * @brief Move constructor for HostReadAccess.
+     */
     HostReadAccess( HostReadAccess<ValueType> && other )
         : ReadAccess<ValueType>( std::move(other) )
     { }
@@ -83,6 +118,12 @@ public:
     }
 };
 
+/**
+ * @Return Return a HostReadAccess for the provided array.
+ *
+ * This is exactly equivalent to readAccess(const HArray<ValueType> & array), except
+ * that a HostReadAccess is returned instead of ReadAccess.
+ */
 template <typename ValueType>
 HostReadAccess<ValueType> hostReadAccess(const HArray<ValueType> & array)
 {

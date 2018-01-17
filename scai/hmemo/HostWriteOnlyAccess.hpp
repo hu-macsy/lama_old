@@ -43,6 +43,21 @@ namespace scai
 namespace hmemo
 {
 
+/**
+ * @brief  Acquire a WriteOnlyAccess on the host context.
+ *
+ * HostWriteOnlyAccess is exactly equivalent to WriteOnlyAccess, except that it can only
+ * acquire a WriteOnlyAccess to the Host context. This guarantees that the data pointer
+ * resides in host memory, which enables us to provide some functionality which we
+ * could not safely do if the memory were allowed to reside anywhere else.
+ * In particular, `begin`/`cbegin` and `end`/`cend` methods are provided
+ * for interoperability with the C++ standard library.
+ *
+ * This enables users to more easily use HArray with algorithms from the STL,
+ * as well as enabling features such as range-based for loops when iterating over
+ * arrays. See the documentation for HostReadAccess for more information.
+ */
+
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT HostWriteOnlyAccess: public WriteOnlyAccess<ValueType>
 {
@@ -56,10 +71,18 @@ public:
     typedef const ValueType *                       const_iterator;
     typedef std::iterator_traits<const_iterator>    difference_type;
 
+    /**
+     * @brief Obtain write only access to the given array on the host context.
+     *
+     * This is exactly equivalent to WriteOnlyAccess(array, context::getHostPtr(), newSize);
+     */
     explicit HostWriteOnlyAccess( HArray<ValueType> & array, IndexType newSize)
         :   WriteOnlyAccess<ValueType>(array, Context::getHostPtr(), newSize)
     { }
 
+    /**
+     * @brief Move constructor for HostWriteOnlyAccess.
+     */
     HostWriteOnlyAccess( HostWriteOnlyAccess<ValueType> && other )
         : WriteOnlyAccess<ValueType>( std::move(other) )
     { }
@@ -94,6 +117,12 @@ public:
     }
 };
 
+/**
+ * @Return Return a HostWriteOnlyAccess for the provided array.
+ *
+ * This is exactly equivalent to writeOnlyAccess(const HArray<ValueType> & array, IndexType newSize), except
+ * that a HostWriteOnlyAccess is returned instead of WriteOnlyAccess.
+ */
 template <typename ValueType>
 HostWriteOnlyAccess<ValueType> hostWriteOnlyAccess(HArray<ValueType> & array, IndexType newSize)
 {

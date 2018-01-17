@@ -43,6 +43,21 @@ namespace scai
 namespace hmemo
 {
 
+/**
+ * @brief  Acquire a WriteAccess on the host context.
+ *
+ * HostWriteAccess is exactly equivalent to WriteAccess, except that it can only
+ * acquire a WriteAccess to the Host context. This guarantees that the data pointer
+ * resides in host memory, which enables us to provide some functionality which we
+ * could not safely do if the memory were allowed to reside anywhere else.
+ * In particular, `begin`/`cbegin` and `end`/`cend` methods are provided
+ * for interoperability with the C++ standard library.
+ *
+ * This enables users to more easily use HArray with algorithms from the STL,
+ * as well as enabling features such as range-based for loops when iterating over
+ * arrays. See the documentation for HostReadAccess for more information.
+ */
+
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT HostWriteAccess: public WriteAccess<ValueType>
 {
@@ -56,10 +71,18 @@ public:
     typedef const ValueType *                       const_iterator;
     typedef std::iterator_traits<const_iterator>    difference_type;
 
+    /**
+     * @brief Obtain write access to the given array on the host context.
+     *
+     * This is exactly equivalent to WriteAccess(array, context::getHostPtr());
+     */
     explicit HostWriteAccess( HArray<ValueType> & array)
         :   WriteAccess<ValueType>(array, Context::getHostPtr(), true)
     { }
 
+    /**
+     * @brief Move constructor for HostWriteAccess.
+     */
     HostWriteAccess( HostWriteAccess<ValueType> && other )
         : WriteAccess<ValueType>( std::move(other) )
     { }
@@ -94,6 +117,12 @@ public:
     }
 };
 
+/**
+ * @Return Return a HostWriteAccess for the provided array.
+ *
+ * This is exactly equivalent to writeAccess(const HArray<ValueType> & array), except
+ * that a HostWriteAccess is returned instead of WriteAccess.
+ */
 template <typename ValueType>
 HostWriteAccess<ValueType> hostWriteAccess(HArray<ValueType> & array)
 {
