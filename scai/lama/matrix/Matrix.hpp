@@ -628,6 +628,8 @@ protected:
         const ValueType betaValue,
         const DenseVector<ValueType>* denseY ) const;
 
+public:
+
     /** 
      *  @brief This method selects the real or imaginay part of a complex matrix
      *

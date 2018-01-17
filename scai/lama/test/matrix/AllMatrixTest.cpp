@@ -43,6 +43,7 @@
 #include <scai/hmemo/HArrayRef.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/dmemo/test/TestDistributions.hpp>
 
@@ -1122,6 +1123,52 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
 
             BOOST_CHECK( matrix.maxDiffNorm( csr2 ) < eps );
         }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
+{
+    // skip this test if ValueType is not complex as imag would return 0
+
+    if ( !common::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        return;
+    }
+
+    typedef RealType<ValueType> Real;
+
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    const IndexType n = 100;
+
+    Matrices<ValueType> allMatrices( context );    // is created by factory
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    for ( size_t i = 0; i < allMatrices.size(); ++i )
+    {
+        Matrix<ValueType>& complexMatrix = *allMatrices[i];
+
+        float fillRate = 0.1f;
+
+        complexMatrix.allocate( dist, dist );
+        MatrixCreator::fillRandom( complexMatrix, fillRate  );
+
+        DenseMatrix<Real> x;
+        x = real ( complexMatrix );
+
+        DenseMatrix<Real> y;
+        y = imag( complexMatrix );
+
+        DenseMatrix<ValueType> z;
+        z =  complex( x, y );
+
+        Real diff = complexMatrix.maxDiffNorm( z );
+
+        BOOST_CHECK_EQUAL( diff, 0 );
     }
 }
 
