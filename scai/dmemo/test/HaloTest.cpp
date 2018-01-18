@@ -34,6 +34,8 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
+#include <boost/test/data/test_case.hpp>
+#include <boost/test/data/monomorphic.hpp>
 
 #include <scai/common/SCAITypes.hpp>
 
@@ -50,6 +52,7 @@
 #include <scai/hmemo/HostReadAccess.hpp>
 
 #include <map>
+
 
 using namespace scai;
 using namespace dmemo;
@@ -215,7 +218,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
 
 // Helper struct to simplify building expected values
 // on multiple processors
-struct BuildFromProvidedOwnersResult
+struct HaloExpectedResult
 {
     std::vector<IndexType> providedIndexes;
     std::vector<IndexType> requiredIndexes;
@@ -224,7 +227,7 @@ struct BuildFromProvidedOwnersResult
     std::map<IndexType, IndexType> global2halo;
 };
 
-void checkHaloAgainstExpected(const Halo & halo, const BuildFromProvidedOwnersResult & expected)
+void checkHaloAgainstExpected(const Halo & halo, const HaloExpectedResult & expected)
 {
     const auto expectedProvidedPlan = CommunicationPlan( expected.providedQuantities.data(), expected.providedQuantities.size() );
     const auto expectedRequiredPlan = CommunicationPlan( expected.requiredQuantities.data(), expected.requiredQuantities.size() );
@@ -246,8 +249,39 @@ void checkHaloAgainstExpected(const Halo & halo, const BuildFromProvidedOwnersRe
     }
 };
 
-BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
+struct BuildFromProvidedOwnersData
 {
+    DistributionPtr distribution;
+    HArray<PartitionId> ownersOfProvided;
+    HaloExpectedResult expectedResult;
+
+    // Name is used to figure out which piece of test data resulted in a failure
+    std::string testCaseName;
+
+    BuildFromProvidedOwnersData( DistributionPtr dist,
+                                 HArray<PartitionId> ownersOfProvided,
+                                 HaloExpectedResult expected,
+                                 std::string testCaseName)
+        :   distribution(std::move(dist)),
+            ownersOfProvided(std::move(ownersOfProvided)),
+            expectedResult(std::move(expected)),
+            testCaseName(std::move(testCaseName))
+    { }
+};
+
+std::ostream& operator <<( std::ostream& o, const BuildFromProvidedOwnersData & data)
+{
+    o << data.testCaseName << std::endl;
+    return o;
+}
+
+std::vector< BuildFromProvidedOwnersData > buildFromProvidedOwnersTestData()
+{
+    const auto comm = Communicator::getCommunicatorPtr();
+    const auto rank = comm->getRank();
+
+    std::vector< BuildFromProvidedOwnersData > testData;
+
     if ( comm->getSize() == 1)
     {
         const auto dist = DistributionPtr ( new CyclicDistribution(3, 1, comm) );
@@ -256,16 +290,14 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         const auto ownersOfProvided = HArray<PartitionId> { 0, 0, 0 };
 
         // Expected
-        BuildFromProvidedOwnersResult expected;
+        HaloExpectedResult expected;
         expected.providedIndexes = std::vector<IndexType>( { 0, 1, 2 } );
         expected.providedQuantities = std::vector<IndexType>( { 3 } );
         expected.requiredIndexes = std::vector<IndexType>( { 0, 1, 2 } );
         expected.requiredQuantities = std::vector<IndexType>( { 3 } );
         expected.global2halo = { { 0, 0 }, { 1, 1 }, { 2, 2 } };
 
-        Halo halo;
-        HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
-        checkHaloAgainstExpected(halo, expected);
+        testData.push_back( BuildFromProvidedOwnersData( dist, ownersOfProvided, expected, "TestCase1" ) );
     }
     else if ( comm->getSize() == 2 )
     {
@@ -281,7 +313,7 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         }
 
         // Set up expected data for each rank
-        BuildFromProvidedOwnersResult expected;
+        HaloExpectedResult expected;
         if (rank == 0)
         {
             expected.providedIndexes = { 2, 0, 1 };
@@ -299,9 +331,7 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
             expected.global2halo = { { 0, 0 }, { 2, 1 }, { 3, 2 } };
         }
 
-        Halo halo;
-        HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
-        checkHaloAgainstExpected(halo, expected);
+        testData.push_back( BuildFromProvidedOwnersData( dist, ownersOfProvided, expected, "TestCase2" ) );
     }
     else if ( comm->getSize() == 3 )
     {
@@ -317,7 +347,7 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         }
 
         // Set up expected data for each rank
-        BuildFromProvidedOwnersResult expected;
+        HaloExpectedResult expected;
         if ( rank == 0 )
         {
             expected.providedIndexes = { 3, 2, 0, 1 };
@@ -343,14 +373,21 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
             expected.global2halo = { { 0, 0 }, { 3, 1 }, { 7, 2 } };
         }
 
-        Halo halo;
-        HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
-        checkHaloAgainstExpected(halo, expected);
+        testData.push_back( BuildFromProvidedOwnersData( dist, ownersOfProvided, expected, "TestCase3" ) );
     }
     else
     {
         BOOST_TEST_MESSAGE( "No test data for communicator size " << comm->getSize() );
     }
+
+    return testData;
+}
+
+BOOST_DATA_TEST_CASE( buildFromProvidedOwners, boost::unit_test::data::make(buildFromProvidedOwnersTestData()), data)
+{
+    Halo halo;
+    HaloBuilder::buildFromProvidedOwners(*data.distribution, data.ownersOfProvided, halo);
+    checkHaloAgainstExpected(halo, data.expectedResult);
 }
 
 BOOST_AUTO_TEST_CASE( buildFromProvidedOwners_empty )
@@ -358,7 +395,7 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners_empty )
     const auto dist = DistributionPtr ( new CyclicDistribution(10, 1, comm) );
     const auto ownersOfProvided = HArray<PartitionId> { };
 
-    BuildFromProvidedOwnersResult expected;
+    HaloExpectedResult expected;
     expected.providedIndexes = {};
     expected.providedQuantities = std::vector<IndexType>( comm->getSize(), 0 );
     expected.requiredIndexes = expected.providedIndexes;
