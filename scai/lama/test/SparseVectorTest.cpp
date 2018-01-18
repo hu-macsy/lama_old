@@ -507,21 +507,28 @@ BOOST_AUTO_TEST_CASE( compressTest )
     ValueType rawValues[] = { 2, 2, 1, 1, 1, 0, 0, 0, 0, 0 } ;
 
     DenseVector<ValueType> xD( hmemo::HArray<ValueType>( n, rawValues ) );
-    SparseVector<ValueType> xS( xD, ValueType( 0 ) );
 
-    BOOST_CHECK_EQUAL( 5, xS.getNonZeroIndexes().size() );
-    BOOST_CHECK_EQUAL( 5, xS.getNonZeroValues().size() );
+    // Case 1: check constructor conversion: dense -> sparse
 
-    xS = SparseVector<ValueType>( xD, ValueType( 1 ) );
+    SparseVector<ValueType> xS0( xD, ValueType( 0 ) );
 
-    BOOST_CHECK_EQUAL( n - 3, xS.getNonZeroIndexes().size() );
-    BOOST_CHECK_EQUAL( n - 3, xS.getNonZeroValues().size() );
+    BOOST_CHECK_EQUAL( 5, xS0.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( 5, xS0.getNonZeroValues().size() );
 
-    xS = SparseVector<ValueType>( n, ValueType ( 2 ) );
-    xS = xD;
+    // Case 2: same, but different zero element
 
-    BOOST_CHECK_EQUAL( n - 2, xS.getNonZeroIndexes().size() );
-    BOOST_CHECK_EQUAL( n - 2, xS.getNonZeroValues().size() );
+    SparseVector<ValueType> xS1( xD, ValueType( 1 ) );
+
+    BOOST_CHECK_EQUAL( n - 3, xS1.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( n - 3, xS2.getNonZeroValues().size() );
+
+    // Case 3: conversion from denso to sparse in assignment, should keep zero element
+
+    SparseVector<ValueType> xS2( n, ValueType ( 2 ) );
+    xS2 = xD;
+
+    BOOST_CHECK_EQUAL( n - 2, xS2.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( n - 2, xS2.getNonZeroValues().size() );
 }
 
 /* --------------------------------------------------------------------- */

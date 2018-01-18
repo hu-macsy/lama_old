@@ -222,7 +222,7 @@ public:
      */
     explicit DenseVector( const hmemo::_HArray& localValues );
 
-    DenseVector( hmemo::HArray<ValueType> localValues );
+    explicit DenseVector( hmemo::HArray<ValueType> localValues );
 
     /**
      * @brief This constructor creates a vector with the size and values stored

@@ -1356,7 +1356,7 @@ void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, 
 
     if ( op == common::BinaryOp::DIVIDE && yZero == common::Constants::ZERO )
     {
-        SCAI_ASSERT_EQ_ERROR( resultIndexes.size(), getDistribution().getLocalSize(), "zero divide" )
+        SCAI_ASSERT_ERROR( resultIndexes.size() == getDistribution().getLocalSize(), "Sparse vector in division has zero elements: " << y )
         mZeroValue = xZero;
     }
     else
