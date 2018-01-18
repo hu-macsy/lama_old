@@ -189,24 +189,6 @@ public:
 
     ELLSparseMatrix& operator=( const ELLSparseMatrix& matrix );
 
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
-
-    /*
-     ELLSparseMatrix& operator=( const _Matrix& matrix );
-
-     ELLSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
-
-     ELLSparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
-
-     ELLSparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
-
-     ELLSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-     ELLSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-     */
-
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
     virtual const StorageType& getLocalStorage() const;
@@ -275,7 +257,10 @@ public:
 
 template<typename ValueType>
 template<common::ComplexSelection kind, typename OtherValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<OtherValueType>& m = expression.getArg();
     this->setContextPtr( m.getContextPtr() );
@@ -284,7 +269,10 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ComplexSelectionMatrixExpress
 }
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<RealType<ValueType> >& m = expression.getRealArg();
     this->setContextPtr( m.getContextPtr() );
@@ -294,7 +282,10 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ComplexBuildMatrixExpression<
 
 template<typename ValueType>
 template<typename OtherValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<OtherValueType>& m = expression.getArg();
     this->setContextPtr( m.getContextPtr() );

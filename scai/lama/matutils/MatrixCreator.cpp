@@ -433,28 +433,25 @@ void MatrixCreator::buildPoisson3D(
 
 /* ------------------------------------------------------------------------- */
 
-void MatrixCreator::fillRandom( _Matrix& matrix, float density )
+void MatrixCreator::randomCSRPattern( 
+    std::vector<IndexType>& csrIA, 
+    std::vector<IndexType>& csrJA, 
+    const IndexType numRows, 
+    const IndexType numCols, 
+    float density )
 {
-    // Shape and distribution of matrix is not changed
-    const dmemo::Distribution& dist = matrix.getRowDistribution();
+    const IndexType expectedEntries = static_cast<IndexType>( numRows * numCols * density + 30.0 );
 
-    const IndexType localRowSize = dist.getLocalSize();
-
-    const IndexType colSize = matrix.getNumColumns();
-    const IndexType expectedEntries = static_cast<IndexType>( localRowSize * colSize * density + 30.0 );
-
-    std::vector<IndexType> csrIA( localRowSize + 1 );
-    std::vector<IndexType> csrJA;   // take here a vector, more convenient for push_back
-
+    csrIA.resize( numRows + 1 );
     csrJA.reserve( expectedEntries );
 
     IndexType numValues = 0;
 
     csrIA[0] = numValues;
 
-    for ( IndexType i = 0; i < localRowSize; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType j = 0; j < colSize; ++j )
+        for ( IndexType j = 0; j < numCols; ++j )
         {
             // density determines the true ratio of random bool value
 
@@ -469,33 +466,81 @@ void MatrixCreator::fillRandom( _Matrix& matrix, float density )
 
         csrIA[i + 1] = numValues;
     }
+}
+
+template<typename ValueType>
+void MatrixCreator::fillRandomImpl( Matrix<ValueType>& matrix, float density )
+{
+    const IndexType localRowSize = matrix.getRowDistribution().getLocalSize();
+    const IndexType colSize      = matrix.getColDistribution().getGlobalSize();
+
+    std::vector<IndexType> csrIA;
+    std::vector<IndexType> csrJA;   
+
+    randomCSRPattern( csrIA, csrJA, localRowSize, colSize, density );
+
+    SCAI_LOG_INFO( logger, "generated csrIA( size = " << csrIA.size() << " ), csrJA( size = " << csrJA.size() << " )" )
+ 
+    IndexType numValues = csrJA.size();    
 
     // now we draw the non-zero values
 
-    std::unique_ptr<hmemo::_HArray> csrValues( hmemo::_HArray::create( matrix.getValueType() ) );
+    hmemo::HArray<ValueType> values( numValues );
 
-    hmemo::_HArray& values = *csrValues;
-
-    // draw the non-zero values, now with fill rate 1.0f
-
-    values.resize( numValues );
     utilskernel::HArrayUtils::setRandom( values, 1 );
 
-    // some tricky stuff to avoid an additional copy
-
-    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( matrix.getLocalStorage() );
+    // ToDo: use move operations when available
 
     hmemo::HArrayRef<IndexType> ia( csrIA );
     hmemo::HArrayRef<IndexType> ja( csrJA );
 
-    localMatrix.setCSRData( localRowSize, colSize, numValues, ia, ja, *csrValues );
-
-    SCAI_LOG_DEBUG( logger, "local random part: " << localMatrix )
+    CSRStorage<ValueType> localStorage( localRowSize, colSize, numValues, ia, ja, values );
 
     // The new matrix data has the same row distribution as the input
     // matrix, also take over the original column distribution to build halo
 
-    matrix.assign( localMatrix, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() );
+    matrix.assign( localStorage, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() );
+
+    SCAI_LOG_INFO( logger, "matrix: " << matrix )
+}
+
+/* ------------------------------------------------------------------------- */
+
+// Metaprogramming to translate assign( _Matrix ) to assignImpl( Matrix<ValueType> )
+
+template<typename TList>
+struct RandomWrapper;
+
+template<>
+struct RandomWrapper<common::mepr::NullType>
+{
+    static void fillRandom( _Matrix& matrix, float )
+    {
+        COMMON_THROWEXCEPTION( "Unsupported matrix value type: --> " << matrix )
+    }
+};
+
+template<typename H, typename T>
+struct RandomWrapper<common::mepr::TypeList<H, T> >
+{
+    static void fillRandom( _Matrix& matrix, float density )
+    {
+        if ( matrix.getValueType() == common::getScalarType<H>() )
+        {
+            MatrixCreator::fillRandomImpl( static_cast<Matrix<H>& >( matrix ), density );
+        }
+        else
+        {
+            RandomWrapper<T>::fillRandom( matrix, density );
+        }
+    }
+};
+
+void MatrixCreator::fillRandom( _Matrix& matrix, float density )
+{
+    // use meta programming to call the version
+
+    RandomWrapper<SCAI_NUMERIC_TYPES_HOST_LIST>::fillRandom( matrix, density );
 }
 
 /* ------------------------------------------------------------------------- */

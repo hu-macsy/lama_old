@@ -69,6 +69,11 @@ public:
 
     static void fillRandom( _Matrix& matrix, float density );
 
+    /** Typed version of fill random, called via meta-programming */
+
+    template<typename ValueType>
+    static void fillRandomImpl( Matrix<ValueType>& matrix, float density );
+
     /** Builds a block distributed matrix with random values from scratch.
      *
      *  param[out] matrix will be new defined as required
@@ -196,6 +201,11 @@ public:
                                  const IndexType nRepeatCol );
 
 private:
+
+    /** Help routine that generates a random sparsity pattern */
+
+    static void randomCSRPattern( std::vector<IndexType>& csrIA, std::vector<IndexType>& csrJA,
+                                  const IndexType numRows, const IndexType numColums, float density );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

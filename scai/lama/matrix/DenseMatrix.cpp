@@ -696,18 +696,16 @@ template<typename ValueType>
 template<typename OtherValueType>
 void DenseMatrix<ValueType>::assignSparse( const SparseMatrix<OtherValueType>& other )
 {
+    SCAI_LOG_INFO( logger, "assignSparse: other = " << other )
+
     // we need replicated column distribution to get this routine working
 
     if ( !other.getColDistribution().isReplicated() )
     {
         DistributionPtr repColDist( new NoDistribution( other.getNumColumns() ) );
 
-        // std::unique_ptr<Matrix> tmpOther( other.copy() );
-        // tmpOther->redistribute( other.getRowDistributionPtr(), repColDist );
-        // SCAI_LOG_WARN( logger, "create temporary matrix with replicated columns: " << *tmpOther )
-        // assignSparse( *tmpOther );
-
         CSRSparseMatrix<ValueType> repOther( cast<ValueType>( other ) );
+
         repOther.redistribute( other.getRowDistributionPtr(), repColDist );
 
         assignSparse( repOther );
@@ -720,6 +718,7 @@ void DenseMatrix<ValueType>::assignSparse( const SparseMatrix<OtherValueType>& o
     // replicated columns in sparse matrix, so we can assign local data
 
     _Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
+
     mData.resize( 1 );
     mData[0].reset( new DenseStorage<ValueType>( other.getLocalStorage() ) );
 

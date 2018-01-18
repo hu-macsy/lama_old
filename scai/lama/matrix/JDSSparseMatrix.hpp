@@ -189,24 +189,6 @@ public:
 
     JDSSparseMatrix& operator=( const JDSSparseMatrix& matrix );
 
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
-
-    /*
-     JDSSparseMatrix& operator=( const _Matrix& matrix );
-
-     JDSSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
-
-     JDSSparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
-
-     JDSSparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
-
-     JDSSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-     JDSSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-     */
-
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
     virtual const StorageType& getLocalStorage() const;
@@ -275,7 +257,10 @@ public:
 
 template<typename ValueType>
 template<common::ComplexSelection kind, typename OtherValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<OtherValueType>& m = expression.getArg();
     this->setContextPtr( m.getContextPtr() );
@@ -284,7 +269,10 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const ComplexSelectionMatrixExpress
 }
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<RealType<ValueType> >& m = expression.getRealArg();
     this->setContextPtr( m.getContextPtr() );
@@ -294,7 +282,10 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const ComplexBuildMatrixExpression<
 
 template<typename ValueType>
 template<typename OtherValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<OtherValueType>& m = expression.getArg();
     this->setContextPtr( m.getContextPtr() );

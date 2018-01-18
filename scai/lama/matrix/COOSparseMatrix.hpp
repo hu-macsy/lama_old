@@ -189,24 +189,6 @@ public:
 
     COOSparseMatrix& operator=( const COOSparseMatrix& matrix );
 
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
-
-    /*
-     COOSparseMatrix& operator=( const _Matrix& matrix );
-
-     COOSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
-
-     COOSparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
-
-     COOSparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
-
-     COOSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-     COOSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-     */
-
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
     virtual const StorageType& getLocalStorage() const;
@@ -275,7 +257,10 @@ public:
 
 template<typename ValueType>
 template<common::ComplexSelection kind, typename OtherValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<OtherValueType>& m = expression.getArg();
     this->setContextPtr( m.getContextPtr() );
@@ -284,7 +269,10 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const ComplexSelectionMatrixExpress
 }
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<RealType<ValueType> >& m = expression.getRealArg();
     this->setContextPtr( m.getContextPtr() );
@@ -294,7 +282,10 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const ComplexBuildMatrixExpression<
 
 template<typename ValueType>
 template<typename OtherValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
 {
     const Matrix<OtherValueType>& m = expression.getArg();
     this->setContextPtr( m.getContextPtr() );
