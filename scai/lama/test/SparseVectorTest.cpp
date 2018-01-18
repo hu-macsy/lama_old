@@ -520,7 +520,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
     SparseVector<ValueType> xS1( xD, ValueType( 1 ) );
 
     BOOST_CHECK_EQUAL( n - 3, xS1.getNonZeroIndexes().size() );
-    BOOST_CHECK_EQUAL( n - 3, xS2.getNonZeroValues().size() );
+    BOOST_CHECK_EQUAL( n - 3, xS1.getNonZeroValues().size() );
 
     // Case 3: conversion from denso to sparse in assignment, should keep zero element
 
