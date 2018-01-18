@@ -112,6 +112,10 @@ public:
         SCAI_LOG_DEBUG( logger, "WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">: " << *mArray )
     }
 
+    WriteOnlyAccess ( WriteOnlyAccess<ValueType>&& other )
+        : WriteAccess<ValueType>( std::move( other ) )
+    { }
+
     ~WriteOnlyAccess()
     {
         SCAI_LOG_DEBUG( WriteAccess<ValueType>::logger, "~WriteOnlyAccess<" << common::TypeTraits<ValueType>::id() << ">" )
@@ -128,6 +132,30 @@ private:
     using WriteAccess<ValueType>::mArray;
     using WriteAccess<ValueType>::mContextDataIndex;
 };
+
+/**
+ * @brief Obtain a WriteOnlyAccess to the given array.
+ *
+ * Analogous to readAccess(const HArray & array). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteOnlyAccess<ValueType> writeOnlyAccess( HArray<ValueType>& array, IndexType newSize )
+{
+    return WriteOnlyAccess<ValueType>( array, newSize );
+}
+
+/**
+ * @brief Obtain a WriteOnlyAccess for the supplied context to the given array.
+ *
+ * Analogous to readAccess(const HArray & array, ContextPtr). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteOnlyAccess<ValueType> writeOnlyAccess( HArray<ValueType>& array, ContextPtr context, IndexType newSize )
+{
+    return WriteOnlyAccess<ValueType>( array, context, newSize );
+}
 
 } /* end namespace hmemo */
 
