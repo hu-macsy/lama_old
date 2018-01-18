@@ -47,6 +47,10 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
+#include <scai/hmemo/HostReadAccess.hpp>
+
+#include <map>
+
 using namespace scai;
 using namespace dmemo;
 using namespace hmemo;
@@ -177,25 +181,6 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     }
 }
 
-template <typename T>
-std::vector<T> hArrayToVector(const HArray<T> array)
-{
-    std::vector<T> v;
-    v.reserve(array.size());
-    ReadAccess<T> rAccess(array);
-    for (IndexType i = 0; i < rAccess.size(); ++i)
-    {
-        v.push_back(rAccess[i]);
-    }
-    return v;
-}
-
-template <typename T>
-HArray<T> hArrayFromVector(const std::vector<T> array)
-{
-    return HArray<T> ( array.size(), array.data() );
-}
-
 // TODO: Move to dmemo testsupport...?
 #define CHECK_COMMUNICATION_PLANS_EQUAL(plan1, plan2)                       \
     BOOST_TEST_CONTEXT(" CommunicationPlan instances do not match ")        \
@@ -236,21 +221,29 @@ struct BuildFromProvidedOwnersResult
     std::vector<IndexType> requiredIndexes;
     std::vector<IndexType> providedQuantities;
     std::vector<IndexType> requiredQuantities;
+    std::map<IndexType, IndexType> global2halo;
 };
 
 void checkHaloAgainstExpected(const Halo & halo, const BuildFromProvidedOwnersResult & expected)
 {
-    const auto providedIndexes = hArrayToVector(halo.getProvidesIndexes());
-    const auto requiredIndexes = hArrayToVector(halo.getRequiredIndexes());
-
     const auto expectedProvidedPlan = CommunicationPlan( expected.providedQuantities.data(), expected.providedQuantities.size() );
     const auto expectedRequiredPlan = CommunicationPlan( expected.requiredQuantities.data(), expected.requiredQuantities.size() );
 
     CHECK_COMMUNICATION_PLANS_EQUAL(expectedProvidedPlan, halo.getProvidesPlan());
     CHECK_COMMUNICATION_PLANS_EQUAL(expectedRequiredPlan, halo.getRequiredPlan());
 
-    BOOST_TEST(providedIndexes == expected.providedIndexes, boost::test_tools::per_element());
-    BOOST_TEST(requiredIndexes == expected.requiredIndexes, boost::test_tools::per_element());
+    BOOST_TEST(hostReadAccess(halo.getProvidesIndexes()) == expected.providedIndexes, boost::test_tools::per_element());
+    BOOST_TEST(hostReadAccess(halo.getRequiredIndexes()) == expected.requiredIndexes, boost::test_tools::per_element());
+
+    BOOST_TEST_CONTEXT(" for global2halo comparison")
+    {
+        for ( auto keyValue : expected.global2halo )
+        {
+            const auto globalIndex = keyValue.first;
+            const auto haloIndex = keyValue.second;
+            BOOST_TEST ( halo.global2halo(globalIndex) == haloIndex );
+        }
+    }
 };
 
 BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
@@ -260,7 +253,7 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         const auto dist = DistributionPtr ( new CyclicDistribution(3, 1, comm) );
 
         // Input
-        HArray<PartitionId> ownersOfProvided = hArrayFromVector<PartitionId>( { 0, 0, 0 } );
+        const auto ownersOfProvided = HArray<PartitionId> { 0, 0, 0 };
 
         // Expected
         BuildFromProvidedOwnersResult expected;
@@ -268,15 +261,11 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         expected.providedQuantities = std::vector<IndexType>( { 3 } );
         expected.requiredIndexes = std::vector<IndexType>( { 0, 1, 2 } );
         expected.requiredQuantities = std::vector<IndexType>( { 3 } );
+        expected.global2halo = { { 0, 0 }, { 1, 1 }, { 2, 2 } };
 
         Halo halo;
         HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
         checkHaloAgainstExpected(halo, expected);
-
-        // Check global -> local mapping for required indexes
-        BOOST_TEST( halo.global2halo( 0 ) == 0 );
-        BOOST_TEST( halo.global2halo( 1 ) == 1 );
-        BOOST_TEST( halo.global2halo( 2 ) == 2 );
     }
     else if ( comm->getSize() == 2 )
     {
@@ -287,8 +276,8 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         // Set up input data for each rank
         switch ( rank )
         {
-            case 0: ownersOfProvided = hArrayFromVector<PartitionId>( { 1, 1, 0 } ); break;
-            case 1: ownersOfProvided = hArrayFromVector<PartitionId>( { 0, 1 } ); break;
+            case 0: ownersOfProvided = { 1, 1, 0 }; break;
+            case 1: ownersOfProvided = { 0, 1 }; break;
         }
 
         // Set up expected data for each rank
@@ -299,6 +288,7 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
             expected.requiredIndexes = { 4, 1 };
             expected.providedQuantities = { 1, 2 };
             expected.requiredQuantities = { 1, 1 };
+            expected.global2halo = { { 4, 0 }, { 1, 1 } };
         }
         else if (rank == 1)
         {
@@ -306,24 +296,12 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
             expected.requiredIndexes = { 0, 2, 3 };
             expected.providedQuantities = { 1, 1 };
             expected.requiredQuantities = { 2, 1 };
+            expected.global2halo = { { 0, 0 }, { 2, 1 }, { 3, 2 } };
         }
 
         Halo halo;
         HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
         checkHaloAgainstExpected(halo, expected);
-
-        // Check global -> local mapping for required indexes
-        if (rank == 0)
-        {
-            BOOST_TEST( halo.global2halo(4) == 0 );
-            BOOST_TEST( halo.global2halo(1) == 1 );
-        }
-        else if ( rank == 1 )
-        {
-            BOOST_TEST( halo.global2halo(0) == 0 );
-            BOOST_TEST( halo.global2halo(2) == 1 );
-            BOOST_TEST( halo.global2halo(3) == 2 );
-        }
     }
     else if ( comm->getSize() == 3 )
     {
@@ -333,9 +311,9 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
         // Set up input data for each rank
         switch ( rank )
         {
-            case 0: ownersOfProvided = hArrayFromVector<PartitionId>( { 2, 2, 1, 0 } ); break;
-            case 1: ownersOfProvided = hArrayFromVector<PartitionId>( { 0, 1, 2 } ); break;
-            case 2: ownersOfProvided = hArrayFromVector<PartitionId>( { 1, 0, 0 } ); break;
+            case 0: ownersOfProvided = { 2, 2, 1, 0 }; break;
+            case 1: ownersOfProvided = { 0, 1, 2 }; break;
+            case 2: ownersOfProvided = { 1, 0, 0 }; break;
         }
 
         // Set up expected data for each rank
@@ -346,6 +324,7 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
             expected.requiredIndexes = { 9, 1, 5, 8 };
             expected.providedQuantities = { 1, 1, 2 };
             expected.requiredQuantities = { 1, 1, 2 };
+            expected.global2halo = { { 9, 0 }, { 1, 1 }, { 5, 2 }, { 8, 3 } };
         }
         else if ( rank == 1 )
         {
@@ -353,6 +332,7 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
             expected.requiredIndexes = { 6, 4, 2 };
             expected.providedQuantities = { 1, 1, 1 };
             expected.requiredQuantities = { 1, 1, 1 };
+            expected.global2halo = { { 6, 0 }, { 4, 1 }, { 2, 2 } };
         }
         else if ( rank == 2 )
         {
@@ -360,32 +340,12 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
             expected.requiredIndexes = { 0, 3, 7 };
             expected.providedQuantities = { 2, 1, 0 };
             expected.requiredQuantities = { 2, 1, 0 };
+            expected.global2halo = { { 0, 0 }, { 3, 1 }, { 7, 2 } };
         }
 
         Halo halo;
         HaloBuilder::buildFromProvidedOwners(*dist, ownersOfProvided, halo);
         checkHaloAgainstExpected(halo, expected);
-
-        // Check global -> local mapping for required indexes
-        if ( rank == 0 )
-        {
-            BOOST_TEST( halo.global2halo( 9 ) == 0 );
-            BOOST_TEST( halo.global2halo( 1 ) == 1 );
-            BOOST_TEST( halo.global2halo( 5 ) == 2 );
-            BOOST_TEST( halo.global2halo( 8 ) == 3 );
-        }
-        else if ( rank == 1 )
-        {
-            BOOST_TEST( halo.global2halo( 6 ) == 0 );
-            BOOST_TEST( halo.global2halo( 4 ) == 1 );
-            BOOST_TEST( halo.global2halo( 2 ) == 2 );
-        }
-        else if ( rank == 2 )
-        {
-            BOOST_TEST( halo.global2halo( 0 ) == 0 );
-            BOOST_TEST( halo.global2halo( 3 ) == 1 );
-            BOOST_TEST( halo.global2halo( 7 ) == 2 );
-        }
     }
     else
     {
@@ -396,10 +356,10 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners )
 BOOST_AUTO_TEST_CASE( buildFromProvidedOwners_empty )
 {
     const auto dist = DistributionPtr ( new CyclicDistribution(10, 1, comm) );
-    const auto ownersOfProvided = hArrayFromVector<PartitionId>( { } );
+    const auto ownersOfProvided = HArray<PartitionId> { };
 
     BuildFromProvidedOwnersResult expected;
-    expected.providedIndexes = std::vector<IndexType>();
+    expected.providedIndexes = {};
     expected.providedQuantities = std::vector<IndexType>( comm->getSize(), 0 );
     expected.requiredIndexes = expected.providedIndexes;
     expected.requiredQuantities = expected.providedQuantities;
