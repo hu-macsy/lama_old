@@ -185,32 +185,37 @@ static void createRequiredGlobal2LocalMapping(std::map<IndexType, IndexType> & m
 }
 
 static void globalizeProvidedIndexes(HArray<IndexType> & globalProvidedIndexes,
-                                     const HArray<IndexType> localProvidedIndexes,
-                                     const Distribution & dist)
+                                     const HArray<IndexType> & haloProvidedIndexes,
+                                     const HArray<IndexType> & halo2global)
 {
-    const auto size = localProvidedIndexes.size();
+    const auto size = haloProvidedIndexes.size();
 
-    ReadAccess<IndexType> rLocalProvidedIndexes(localProvidedIndexes);
+    ReadAccess<IndexType> rHaloProvidedIndexes(haloProvidedIndexes);
+    ReadAccess<IndexType> rHalo2global(halo2global);
     WriteAccess<IndexType> wGlobalProvidedIndexes(globalProvidedIndexes);
     wGlobalProvidedIndexes.resize(size);
 
     for (IndexType i = 0; i < size; ++i)
     {
-        const auto localIndex = rLocalProvidedIndexes[i];
-        const auto globalIndex = dist.local2global(localIndex);
+        const auto haloIndex = rHaloProvidedIndexes[i];
+        SCAI_ASSERT_VALID_INDEX( haloIndex, halo2global.size(), "Provided index is out-of-bounds with respect to halo2global.");
+        const auto globalIndex = rHalo2global[haloIndex];
         wGlobalProvidedIndexes[i] = globalIndex;
     }
 }
 
-void HaloBuilder::buildFromProvidedOwners( const Distribution & distribution, const HArray<PartitionId> & ownersOfProvided, Halo & halo )
+void HaloBuilder::buildFromProvidedOwners( const Communicator& comm,
+                                           const HArray<IndexType>& halo2global,
+                                           const HArray<PartitionId>& ownersOfProvided,
+                                           Halo& halo )
 {
+    SCAI_ASSERT_EQUAL_ERROR(halo2global.size(), ownersOfProvided.size());
     SCAI_REGION( "HaloBuilder.buildFromProvidedOwners" )
     halo.clear();
 
     // TODO: Make context an argument (with default to Host/default context)
     const auto contextPtr = Context::getContextPtr();
-    const auto & comm = distribution.getCommunicator();
-    const auto nPartitions = distribution.getNumPartitions();
+    const auto nPartitions = comm.getSize();
 
     auto & requiredPlan = halo.mRequiredPlan;
     auto & providedPlan = halo.mProvidesPlan;
@@ -231,7 +236,7 @@ void HaloBuilder::buildFromProvidedOwners( const Distribution & distribution, co
     requiredIndexes.resize(requiredPlan.totalQuantity());
 
     HArray<IndexType> globalProvidedIndexes(providedIndexes.size());
-    globalizeProvidedIndexes(globalProvidedIndexes, providedIndexes, distribution);
+    globalizeProvidedIndexes(globalProvidedIndexes, providedIndexes, halo2global);
 
     comm.exchangeByPlan(requiredIndexes, requiredPlan, globalProvidedIndexes, providedPlan);
 
