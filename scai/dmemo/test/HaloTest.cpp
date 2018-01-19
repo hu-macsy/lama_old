@@ -254,20 +254,10 @@ struct BuildFromProvidedOwnersData
 {
     HArray<IndexType>   halo2global;
     HArray<PartitionId> ownersOfProvided;
-    HaloExpectedResult  expectedResult;
+    HaloExpectedResult  expected;
 
     // Name is used to figure out which piece of test data resulted in a failure
     std::string testCaseName;
-
-    BuildFromProvidedOwnersData( HArray<IndexType> halo2global,
-                                 HArray<PartitionId> ownersOfProvided,
-                                 HaloExpectedResult expected,
-                                 std::string testCaseName)
-        :   halo2global(std::move(halo2global)),
-            ownersOfProvided(std::move(ownersOfProvided)),
-            expectedResult(std::move(expected)),
-            testCaseName(std::move(testCaseName))
-    { }
 };
 
 std::ostream& operator <<( std::ostream& o, const BuildFromProvidedOwnersData & data)
@@ -285,97 +275,82 @@ std::vector< BuildFromProvidedOwnersData > buildFromProvidedOwnersTestData()
 
     if ( comm->getSize() == 1)
     {
-        const auto dist = DistributionPtr ( new CyclicDistribution(3, 1, comm) );
-
-        // Input
-        const auto halo2global = HArray<IndexType> { 0, 1, 2 };
-        const auto ownersOfProvided = HArray<PartitionId> { 0, 0, 0 };
-
-        // Expected
-        HaloExpectedResult expected;
-        expected.providedIndexes = std::vector<IndexType>( { 0, 1, 2 } );
-        expected.providedQuantities = std::vector<IndexType>( { 3 } );
-        expected.requiredIndexes = std::vector<IndexType>( { 0, 1, 2 } );
-        expected.requiredQuantities = std::vector<IndexType>( { 3 } );
-        expected.global2halo = { { 0, 0 }, { 1, 1 }, { 2, 2 } };
-
-        testData.push_back( BuildFromProvidedOwnersData( halo2global, ownersOfProvided, expected, "TestCase1" ) );
+        auto data = BuildFromProvidedOwnersData();
+        data.testCaseName = "TestCase1";
+        data.halo2global = { 0, 1, 2 };
+        data.ownersOfProvided = { 0, 0, 0 };
+        data.expected.providedIndexes = { 0, 1, 2 };
+        data.expected.providedQuantities = { 3 };
+        data.expected.requiredIndexes = { 0, 1, 2 };
+        data.expected.requiredQuantities = { 3 };
+        data.expected.global2halo = { { 0, 0 }, { 1, 1 }, { 2, 2 } };
+        testData.push_back( data );
     }
     else if ( comm->getSize() == 2 )
     {
-        HArray<IndexType> halo2global;
-        HArray<PartitionId> ownersOfProvided;
+        auto data = BuildFromProvidedOwnersData();
+        data.testCaseName = "TestCase2";
 
-        // Set up input data for each rank
-        switch ( rank )
-        {
-            case 0: halo2global = { 0, 2, 4 }; ownersOfProvided = { 1, 1, 0 }; break;
-            case 1: halo2global = { 1, 3 }; ownersOfProvided = { 0, 1 }; break;
-        }
-
-        // Set up expected data for each rank
-        HaloExpectedResult expected;
-        if (rank == 0)
-        {
-            expected.providedIndexes = { 2, 0, 1 };
-            expected.requiredIndexes = { 4, 1 };
-            expected.providedQuantities = { 1, 2 };
-            expected.requiredQuantities = { 1, 1 };
-            expected.global2halo = { { 4, 0 }, { 1, 1 } };
-        }
-        else if (rank == 1)
-        {
-            expected.providedIndexes = { 0, 1 };
-            expected.requiredIndexes = { 0, 2, 3 };
-            expected.providedQuantities = { 1, 1 };
-            expected.requiredQuantities = { 2, 1 };
-            expected.global2halo = { { 0, 0 }, { 2, 1 }, { 3, 2 } };
-        }
-
-        testData.push_back( BuildFromProvidedOwnersData( halo2global, ownersOfProvided, expected, "TestCase2" ) );
-    }
-    else if ( comm->getSize() == 3 )
-    {
-        const auto dist = DistributionPtr ( new CyclicDistribution(10, 1, comm) );
-        HArray<IndexType> halo2global;
-        HArray<PartitionId> ownersOfProvided;
-
-        // Set up input data for each rank
-        switch ( rank )
-        {
-            case 0: halo2global = { 0, 3, 6, 9}; ownersOfProvided = { 2, 2, 1, 0 }; break;
-            case 1: halo2global = { 1, 4, 7 };   ownersOfProvided = { 0, 1, 2 };    break;
-            case 2: halo2global = { 2, 5, 8 };   ownersOfProvided = { 1, 0, 0 };    break;
-        }
-
-        // Set up expected data for each rank
-        HaloExpectedResult expected;
         if ( rank == 0 )
         {
-            expected.providedIndexes = { 3, 2, 0, 1 };
-            expected.requiredIndexes = { 9, 1, 5, 8 };
-            expected.providedQuantities = { 1, 1, 2 };
-            expected.requiredQuantities = { 1, 1, 2 };
-            expected.global2halo = { { 9, 0 }, { 1, 1 }, { 5, 2 }, { 8, 3 } };
+            data.halo2global = { 0, 2, 4 };
+            data.ownersOfProvided = { 1, 1, 0 };
+            data.expected.providedIndexes = { 2, 0, 1 };
+            data.expected.requiredIndexes = { 4, 1 };
+            data.expected.providedQuantities = { 1, 2 };
+            data.expected.requiredQuantities = { 1, 1 };
+            data.expected.global2halo = { { 4, 0 }, { 1, 1 } };
         }
         else if ( rank == 1 )
         {
-            expected.providedIndexes = { 0, 1, 2 };
-            expected.requiredIndexes = { 6, 4, 2 };
-            expected.providedQuantities = { 1, 1, 1 };
-            expected.requiredQuantities = { 1, 1, 1 };
-            expected.global2halo = { { 6, 0 }, { 4, 1 }, { 2, 2 } };
+            data.halo2global = { 1, 3 };
+            data.ownersOfProvided = { 0, 1 };
+            data.expected.providedIndexes = { 0, 1 };
+            data.expected.requiredIndexes = { 0, 2, 3 };
+            data.expected.providedQuantities = { 1, 1 };
+            data.expected.requiredQuantities = { 2, 1 };
+            data.expected.global2halo = { { 0, 0 }, { 2, 1 }, { 3, 2 } };
+        }
+
+        testData.push_back( data );
+    }
+    else if ( comm->getSize() == 3 )
+    {
+        auto data = BuildFromProvidedOwnersData();
+        data.testCaseName = "TestCase3";
+
+        if ( rank == 0 )
+        {
+            data.halo2global = { 0, 3, 6, 9};
+            data.ownersOfProvided = { 2, 2, 1, 0 };
+            data.expected.providedIndexes = { 3, 2, 0, 1 };
+            data.expected.requiredIndexes = { 9, 1, 5, 8 };
+            data.expected.providedQuantities = { 1, 1, 2 };
+            data.expected.requiredQuantities = { 1, 1, 2 };
+            data.expected.global2halo = { { 9, 0 }, { 1, 1 }, { 5, 2 }, { 8, 3 } };
+        }
+        else if ( rank == 1 )
+        {
+            data.halo2global = { 1, 4, 7 };
+            data.ownersOfProvided = { 0, 1, 2 };
+            data.expected.providedIndexes = { 0, 1, 2 };
+            data.expected.requiredIndexes = { 6, 4, 2 };
+            data.expected.providedQuantities = { 1, 1, 1 };
+            data.expected.requiredQuantities = { 1, 1, 1 };
+            data.expected.global2halo = { { 6, 0 }, { 4, 1 }, { 2, 2 } };
         }
         else if ( rank == 2 )
         {
-            expected.providedIndexes = { 1, 2, 0 };
-            expected.requiredIndexes = { 0, 3, 7 };
-            expected.providedQuantities = { 2, 1, 0 };
-            expected.requiredQuantities = { 2, 1, 0 };
-            expected.global2halo = { { 0, 0 }, { 3, 1 }, { 7, 2 } };
+            data.halo2global = { 2, 5, 8 };
+            data.ownersOfProvided = { 1, 0, 0 };
+            data.expected.providedIndexes = { 1, 2, 0 };
+            data.expected.requiredIndexes = { 0, 3, 7 };
+            data.expected.providedQuantities = { 2, 1, 0 };
+            data.expected.requiredQuantities = { 2, 1, 0 };
+            data.expected.global2halo = { { 0, 0 }, { 3, 1 }, { 7, 2 } };
         }
 
-        testData.push_back( BuildFromProvidedOwnersData( halo2global, ownersOfProvided, expected, "TestCase3" ) );
+        testData.push_back( data );
     }
     else
     {
@@ -390,7 +365,7 @@ BOOST_DATA_TEST_CASE( buildFromProvidedOwners, boost::unit_test::data::make(buil
     const auto comm = Communicator::getCommunicatorPtr();
     Halo halo;
     HaloBuilder::buildFromProvidedOwners(*comm, data.halo2global, data.ownersOfProvided, halo);
-    checkHaloAgainstExpected(halo, data.expectedResult);
+    checkHaloAgainstExpected(halo, data.expected);
 }
 
 BOOST_AUTO_TEST_CASE( buildFromProvidedOwners_empty )
