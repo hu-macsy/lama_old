@@ -463,4 +463,74 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( moveTest )
+{
+    // Test of different reduction operations on sparse vector
+    // Note: it is sufficient to consider one value type
+
+    typedef DefaultReal ValueType;
+
+    IndexType n = 10;
+
+    IndexType nnz = 3;
+    IndexType rawNonZeroIndexes[] = { 0, 5, 6 };
+    ValueType rawNonZeroValues[] = { 5, -6, 7 };
+    ValueType zero = 1;
+
+    SparseVector<ValueType> xS( n, nnz, rawNonZeroIndexes, rawNonZeroValues, zero );
+
+    SparseVector<ValueType> xS1( std::move( xS ) );
+
+    BOOST_CHECK_EQUAL( 0, xS.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( 0, xS.getNonZeroValues().size() );
+
+    BOOST_CHECK_EQUAL( nnz, xS1.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( nnz, xS1.getNonZeroValues().size() );
+
+    SparseVector<ValueType> xS2( n, zero );
+    xS2 = std::move( xS1 );
+
+    BOOST_CHECK_EQUAL( nnz, xS2.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( nnz, xS2.getNonZeroValues().size() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( compressTest )
+{   
+    // Test of different reduction operations on sparse vector
+    // Note: it is sufficient to consider one value type
+
+    typedef DefaultReal ValueType;
+
+    IndexType n = 10;
+    ValueType rawValues[] = { 2, 2, 1, 1, 1, 0, 0, 0, 0, 0 } ;
+
+    DenseVector<ValueType> xD( hmemo::HArray<ValueType>( n, rawValues ) );
+
+    // Case 1: check constructor conversion: dense -> sparse
+
+    SparseVector<ValueType> xS0( xD, ValueType( 0 ) );
+
+    BOOST_CHECK_EQUAL( 5, xS0.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( 5, xS0.getNonZeroValues().size() );
+
+    // Case 2: same, but different zero element
+
+    SparseVector<ValueType> xS1( xD, ValueType( 1 ) );
+
+    BOOST_CHECK_EQUAL( n - 3, xS1.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( n - 3, xS1.getNonZeroValues().size() );
+
+    // Case 3: conversion from denso to sparse in assignment, should keep zero element
+
+    SparseVector<ValueType> xS2( n, ValueType ( 2 ) );
+    xS2 = xD;
+
+    BOOST_CHECK_EQUAL( n - 2, xS2.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( n - 2, xS2.getNonZeroValues().size() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

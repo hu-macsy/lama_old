@@ -266,6 +266,20 @@ DenseVector<ValueType>::DenseVector( const _HArray& values ) :
 
 /* ------------------------------------------------------------------------- */
 
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( HArray<ValueType> values ) :
+
+    Vector<ValueType>( DistributionPtr( new NoDistribution( values.size() ) ) ),
+    mLocalValues( std::move( values ) )
+
+{
+    SCAI_LOG_DEBUG( logger, "DenseVector<" << common::TypeTraits<ValueType>::id()
+                             << ">( moved HArray<" << values.getValueType() 
+                             << ">, size = " << values.size() << " )" )
+}
+
+/* ------------------------------------------------------------------------- */
+
 /*
  * Constructors with Expressions as arguments
  */
@@ -399,7 +413,19 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const DenseVector<Val
     SCAI_LOG_INFO( logger, "DenseVector<" << TypeTraits<ValueType>::id() << "> = " <<
                    "DenseVector<" << TypeTraits<ValueType>::id() << ">" )
 
-    assign( other );
+    setDistributionPtr( other.getDistributionPtr() );
+    mLocalValues = other.mLocalValues;
+
+    return *this;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+DenseVector<ValueType>& DenseVector<ValueType>::operator=( DenseVector<ValueType>&& other ) noexcept
+{
+    setDistributionPtr( other.getDistributionPtr() );
+    mLocalValues = std::move( other.mLocalValues );
     return *this;
 }
 
@@ -2128,6 +2154,21 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other ) :
     SCAI_LOG_INFO( logger,
                    "Copy of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
     mLocalValues = other.getLocalValues();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( DenseVector<ValueType>&& other ) noexcept :
+
+    Vector<ValueType>( other )
+
+{
+    SCAI_LOG_INFO( logger,
+                   "move of vector of global size " << size() << ", local size " << getDistribution().getLocalSize() )
+
+    mLocalValues = std::move( other.mLocalValues );
+    other.allocate( 0 );
 }
 
 /* ========================================================================= */

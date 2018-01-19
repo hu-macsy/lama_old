@@ -1790,7 +1790,7 @@ void OpenMPUtils::sortInPlace(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
+IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType zero, ValueType eps )
 {
     typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
@@ -1804,7 +1804,7 @@ IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexT
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        RealType absVal = common::Math::abs( denseArray[i] );
+        RealType absVal = common::Math::abs( denseArray[i] - zero );
 
         if ( absVal > absEps )
         {
@@ -1825,6 +1825,7 @@ IndexType OpenMPUtils::compress(
     IndexType sparseIndexes[],
     const SourceType denseArray[],
     const IndexType n,
+    const SourceType zero,
     const SourceType eps )
 {
     typedef typename common::TypeTraits<SourceType>::RealType RealType;
@@ -1839,7 +1840,7 @@ IndexType OpenMPUtils::compress(
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        RealType sourceVal = common::Math::abs( denseArray[i] );
+        RealType sourceVal = common::Math::abs( denseArray[i] - zero );
 
         if ( sourceVal > absEps )
         {

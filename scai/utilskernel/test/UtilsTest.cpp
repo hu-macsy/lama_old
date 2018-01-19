@@ -327,13 +327,20 @@ BOOST_AUTO_TEST_CASE( countNonZerosTest )
 
     // count valid array
     {
-        const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
+        const IndexType values[] = { 3, 0, 2, 0, 0, 2, 0, 4 };
         const IndexType n = sizeof( values ) / sizeof( IndexType );
         HArray<IndexType> sizes( n, values, testContext );
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        IndexType count = countNonZeros[loc]( rSizes.get(), n, 0 );
-        BOOST_CHECK_EQUAL( IndexType( 4 ), count );
+
+        IndexType zero = 0;
+        IndexType eps  = 0;
+        BOOST_CHECK_EQUAL( IndexType( 4 ), countNonZeros[loc]( rSizes.get(), n, zero, eps ) );
+
+        zero = 2;
+        BOOST_CHECK_EQUAL( IndexType( 6 ), countNonZeros[loc]( rSizes.get(), n, zero, eps ) );
+        eps  = 1;  //  1 - 3 are also considered to be zero
+        BOOST_CHECK_EQUAL( IndexType( 5 ), countNonZeros[loc]( rSizes.get(), n, zero, eps ) );
     }
 
     // count empty array
@@ -341,8 +348,9 @@ BOOST_AUTO_TEST_CASE( countNonZerosTest )
         HArray<IndexType> sizes;
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        IndexType count = countNonZeros[loc]( rSizes.get(), sizes.size(), 0 );
-        BOOST_CHECK_EQUAL( IndexType( 0 ), count );
+        IndexType zero = 1;
+        IndexType eps  = 0;
+        BOOST_CHECK_EQUAL( IndexType( 0 ), countNonZeros[loc]( rSizes.get(), 0, zero, eps ) );
     }
 }
 
@@ -369,7 +377,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
         ReadAccess<IndexType> rArray( denseArray, loc );
         WriteAccess<IndexType> wSparseIndexes( sparseIndexes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        IndexType cnt = compress[loc]( NULL, wSparseIndexes.get(), rArray.get(), nDense, 0 );
+        IndexType cnt = compress[loc]( NULL, wSparseIndexes.get(), rArray.get(), nDense, 0, 0 );
 
         BOOST_REQUIRE_EQUAL( nSparse, cnt );
     }

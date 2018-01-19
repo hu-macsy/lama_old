@@ -169,7 +169,8 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution, const Value
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const _Vector& other ) : 
 
-    Vector<ValueType>( other )
+    Vector<ValueType>( other ), 
+    mZeroValue( 0 )
 
 {
     allocate( getDistributionPtr() );
@@ -179,11 +180,35 @@ SparseVector<ValueType>::SparseVector( const _Vector& other ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const _Vector& other, DistributionPtr distribution ) : 
 
-    Vector<ValueType>( other )
+    Vector<ValueType>( other ),
+    mZeroValue( 0 )
 
 {
     assign( other );
     redistribute( distribution );
+}
+
+template<typename ValueType>
+SparseVector<ValueType>::SparseVector( const DenseVector<ValueType>& other, const ValueType zeroValue ) :
+
+    Vector<ValueType>( other ),
+    mZeroValue( zeroValue )
+
+{
+    setDenseValuesImpl( other.getLocalValues() );
+}
+
+template<typename ValueType>
+SparseVector<ValueType>::SparseVector( SparseVector<ValueType>&& other ) noexcept :
+
+    Vector<ValueType>( other )
+
+{
+    mZeroValue = other.mZeroValue;
+    mNonZeroIndexes = std::move( other.mNonZeroIndexes );
+    mNonZeroValues  = std::move( other.mNonZeroValues );
+
+    // Note: other vector remains as a constant 'zero' vector
 }
 
 /* ------------------------------------------------------------------------- */
@@ -263,7 +288,7 @@ void SparseVector<ValueType>::assignImpl( const DenseVector<OtherValueType>& oth
                         << "denseVector<" << common::TypeTraits<OtherValueType>::id() )
 
     allocate( other.getDistributionPtr() );
-    setDenseValues( other.getLocalValues() );
+    setDenseValuesImpl( other.getLocalValues() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -472,6 +497,22 @@ SparseVector<ValueType>& SparseVector<ValueType>::operator=( const SparseVector<
                    "SparseVector<" << TypeTraits<ValueType>::id() << ">" )
 
     assign( other );
+    return *this;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SparseVector<ValueType>& SparseVector<ValueType>::operator=( SparseVector<ValueType>&& other ) noexcept
+{
+    // Note: we do not inherit the context from the other one
+
+    setDistributionPtr( other.getDistributionPtr() );
+
+    mZeroValue = other.mZeroValue;
+    mNonZeroIndexes = std::move( other.mNonZeroIndexes );
+    mNonZeroValues  = std::move( other.mNonZeroValues );
+
     return *this;
 }
 
@@ -1309,9 +1350,20 @@ void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, 
     HArrayUtils::binaryOpSparse( resultIndexes, resultValues,
                                  xIndexes, xValues, xZero,
                                  yIndexes, yValues, yZero, op, getContextPtr() );
+    
+    // apply binary for zero values, but be careful:
+    //   if operation is illegal here, it might be still valid if there are no zero elements
 
-    mZeroValue = common::applyBinary( xZero, op, yZero);
-     
+    if ( op == common::BinaryOp::DIVIDE && yZero == common::Constants::ZERO )
+    {
+        SCAI_ASSERT_ERROR( resultIndexes.size() == getDistribution().getLocalSize(), "Sparse vector in division has zero elements: " << y )
+        mZeroValue = xZero;
+    }
+    else
+    {
+        mZeroValue = common::applyBinary( xZero, op, yZero);
+    }
+
     // Note: entries in non-zero values that are now ZERO are not removed
 
     swapSparseValues( resultIndexes, resultValues );
@@ -1562,6 +1614,8 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
         // Maybe not very efficient if other vector is dense
 
         SparseVector<ValueType> tmpOther( other );
+
+        SCAI_LOG_DEBUG( logger, "binary op, converted other = " << other << " -> " << tmpOther )
 
         if ( !swapArgs )
         {

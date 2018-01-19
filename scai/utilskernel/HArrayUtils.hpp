@@ -778,6 +778,7 @@ public:
         hmemo::HArray<TargetType>& sparseArray,
         hmemo::HArray<IndexType>& sparseIndexes,
         const hmemo::HArray<SourceType>& denseArray,
+        const SourceType zeroValue,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build sparse indexes only, useful if sparseArray is not really needed */
