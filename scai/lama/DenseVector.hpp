@@ -213,6 +213,8 @@ public:
      */
     explicit DenseVector( const hmemo::_HArray& localValues );
 
+    explicit DenseVector( hmemo::HArray<ValueType> localValues );
+
     /**
      * @brief This constructor creates a vector with the size and values stored
      *        in the file with the given filename.
@@ -365,6 +367,16 @@ public:
     /** Override the default assignment operator.  */
 
     DenseVector& operator=( const DenseVector<ValueType>& other );
+
+    /**
+     * @brief Move assignment operator for dense vector.
+     *
+     * @param[in] other the dense vector to move
+     * @return reference to this array for further assignments
+     *
+     * The other dense vector will be a zero vector afterwards.
+     */
+    DenseVector<ValueType>& operator=( DenseVector<ValueType>&& other ) noexcept;
 
     // All other assignment operators are inherited from class Vector, but using is required
 

@@ -118,6 +118,31 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     }
 }
 
+BOOST_AUTO_TEST_CASE( initializerListConstructorTest )
+{
+    const auto context = Context::getContextPtr();
+    const auto array = HArray<int> ( { 5, 6, 2, 3, -5 }, context );
+
+    BOOST_CHECK_EQUAL( array.size(), 5 );
+    BOOST_CHECK_EQUAL( array.capacity( context ), 5 );
+
+    ReadAccess<int> rArray( array );
+    BOOST_CHECK_EQUAL( rArray[0], 5 );
+    BOOST_CHECK_EQUAL( rArray[1], 6 );
+    BOOST_CHECK_EQUAL( rArray[2], 2 );
+    BOOST_CHECK_EQUAL( rArray[3], 3 );
+    BOOST_CHECK_EQUAL( rArray[4], -5 );
+}
+
+BOOST_AUTO_TEST_CASE( emptyInitializerListConstructorTest )
+{
+    const auto context = Context::getContextPtr();
+    const auto array = HArray<IndexType> ( {  }, context );
+
+    BOOST_CHECK_EQUAL( array.size(), 0 );
+    BOOST_CHECK_EQUAL( array.capacity( context ), 0 );
+}
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( moveConstructorTest )
@@ -146,7 +171,7 @@ BOOST_AUTO_TEST_CASE( moveConstructorTest )
 
     BOOST_CHECK( !array.isValid( contextPtr ) );
     BOOST_CHECK( marray.isValid( contextPtr ) );
-   
+
     // verify that the moved array uses still the same pointer
 
     {
@@ -183,7 +208,7 @@ BOOST_AUTO_TEST_CASE( moveAssignmentTest )
     // in contrary to the move constructor the data of marray must be freed
 
     marray = std::move( array );
- 
+
     BOOST_CHECK_EQUAL( marray.size(), N );
     BOOST_CHECK_EQUAL( array.size(), 0 );
 

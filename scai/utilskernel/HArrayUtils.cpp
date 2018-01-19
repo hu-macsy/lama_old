@@ -1882,9 +1882,10 @@ void HArrayUtils::buildSparseIndexes(
     ValueType eps = TypeTraits<ValueType>::eps1();
     ReadAccess<ValueType> rDenseArray( denseArray, loc );
     // we count the non-zeros at first to have sizes for sparse data
-    IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, eps );
+    ValueType zero = 0;
+    IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, zero, eps );
     WriteOnlyAccess<IndexType> wSparseIndexes( sparseIndexes, loc, sparseN );
-    sparseN = compress[loc]( NULL, wSparseIndexes.get(), rDenseArray.get(), n, eps );
+    sparseN = compress[loc]( NULL, wSparseIndexes.get(), rDenseArray.get(), n, zero, eps );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1925,10 +1926,10 @@ void HArrayUtils::buildSparseArrayImpl(
     SourceType eps = TypeTraits<SourceType>::eps1();
     ReadAccess<SourceType> rDenseArray( denseArray, loc );
     // we count the non-zeros at first to have sizes for sparse data
-    IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, eps );
+    IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, zeroValue, eps );
     WriteOnlyAccess<TargetType> wSparseArray( sparseArray, loc, sparseN );
     WriteOnlyAccess<IndexType> wSparseIndexes( sparseIndexes, loc, sparseN );
-    sparseN = compress[loc]( wSparseArray.get(), wSparseIndexes.get(), rDenseArray.get(), n, eps );
+    sparseN = compress[loc]( wSparseArray.get(), wSparseIndexes.get(), rDenseArray.get(), n, zeroValue, eps );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2413,6 +2414,7 @@ void HArrayUtils::buildComplex(
             hmemo::HArray<TargetType>&,                                              \
             hmemo::HArray<IndexType>&,                                               \
             const hmemo::HArray<SourceType>&,                                        \
+            const SourceType,                                                        \
             hmemo::ContextPtr );
 
 /** Makro for the instantiation of routines with one template argument for the value type. */

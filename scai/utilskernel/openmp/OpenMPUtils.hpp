@@ -301,7 +301,7 @@ private:
     /** OpenMP implementation of UtilsKernelTrait::countNonZeros */
 
     template<typename ValueType>
-    static IndexType countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps );
+    static IndexType countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType zero, const ValueType eps );
 
     /** OpenMP implementation of UtilsKernelTrait::compress */
 
@@ -311,6 +311,7 @@ private:
         IndexType sparseIndexes[],
         const SourceType denseArray[],
         const IndexType n,
+        const SourceType zero,
         const SourceType eps );
 
     /** OpenMP implementation of SparseKernelTrait::countAddSparse */

@@ -108,7 +108,11 @@ public:
     /** CUDA implementation of UtilKernelTrait::countNonZeros */
 
     template<typename ValueType>
-    static IndexType countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps );
+    static IndexType countNonZeros( 
+        const ValueType denseArray[], 
+        const IndexType n, 
+        const ValueType zero, 
+        ValueType eps );
 
     /** CUDA implementation of UtilKernelTrait::compress */
 
@@ -118,6 +122,7 @@ public:
         IndexType sparseIndexes[],
         const SourceValueType denseArray[],
         const IndexType n,
+        const SourceValueType zero,
         const SourceValueType eps );
 
 private:

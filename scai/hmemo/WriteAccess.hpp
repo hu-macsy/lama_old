@@ -111,6 +111,11 @@ public:
     WriteAccess( HArray<ValueType>& array, const bool keep = true );
 
     /**
+     * @brief Move constructor for WriteAccess.
+     */
+    WriteAccess( WriteAccess<ValueType>&& other ) noexcept;
+
+    /**
      * @brief Releases the WriteAccess on the associated HArray.
      */
     virtual ~WriteAccess();
@@ -118,9 +123,16 @@ public:
     /**
      * @brief Returns a pointer to the data of the wrapped HArray.
      *
-     * @return a pointer to the wrapped HArray.
+     * @return a pointer to the data of the wrapped HArray.
      */
     ValueType* get();
+
+    /**
+     * @brief Returns a pointer to the data of the wrapped HArray.
+     *
+     * @return a pointer to the data of the wrapped HArray.
+     */
+    const ValueType* get() const;
 
     /**
      * @brief Support implicit type conversion to pointer of the data.
@@ -214,6 +226,30 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
+/**
+ * @brief Obtain a WriteAccess to the given array.
+ *
+ * Analogous to readAccess(const HArray & array). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteAccess<ValueType> writeAccess( HArray<ValueType>& array )
+{
+    return WriteAccess<ValueType>( array );
+}
+
+/**
+ * @brief Obtain a WriteAccess for the supplied context to the given array.
+ *
+ * Analogous to readAccess(const HArray & array, ContextPtr). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteAccess<ValueType> writeAccess( HArray<ValueType>& array, ContextPtr context )
+{
+    return WriteAccess<ValueType>( array, context );
+}
+
 /* --------------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueType>::logger, "WriteAccess" )
@@ -241,6 +277,16 @@ WriteAccess<ValueType>::WriteAccess( HArray<ValueType>& array, const bool keep /
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer
+}
+
+template <typename ValueType>
+WriteAccess<ValueType>::WriteAccess( WriteAccess<ValueType>&& other ) noexcept
+    :   mArray( other.mArray ),
+        mData( other.mData ),
+        mContextDataIndex( other.mContextDataIndex )
+{
+    other.mArray = nullptr;
+    other.mData = nullptr;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -289,6 +335,13 @@ void WriteAccess<ValueType>::getValue( ValueType& val, const IndexType pos ) con
 
 template<typename ValueType>
 ValueType* WriteAccess<ValueType>::get()
+{
+    SCAI_ASSERT( mArray, "illegal get(): access has already been released." )
+    return mData;    // mData might be NULL if size of array is 0
+}
+
+template<typename ValueType>
+const ValueType* WriteAccess<ValueType>::get() const
 {
     SCAI_ASSERT( mArray, "illegal get(): access has already been released." )
     return mData;    // mData might be NULL if size of array is 0
