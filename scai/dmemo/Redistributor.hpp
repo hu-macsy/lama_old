@@ -80,6 +80,25 @@ public:
 
     Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution );
 
+    /**
+     * Build a Redistributor by a source distribution and a list of owners.
+     *
+     * By supplying the new owners instead of the target distribution, the expensive operation
+     * of computing owners for elements can be avoided. The target distribution is instead built
+     * as part of the construction of the Redistributor.
+     *
+     * This is only useful in some cases - for example when integrating with external redistribution software,
+     * which might output exactly such a list of new owners. In these cases, the necessary communication required
+     * to create a Redistributor may sometimes be significantly reduced.
+     *
+     * @param[in] newOwnersOfLocalElements A map from local elements in `sourceDistribution` to the partition indices (with respect to the communicator)
+     *                                     of their new owners. In particular, `newOwnersOfLocalElements[i]` corresponds to the new owner of the element
+     *                                     with local index `i` in `sourceDistribution`. Every partitition ID must be in the range [0, N) where N is the
+     *                                     number of partitions in the communicator.
+     * @param[in] sourceDistribution       The source distribution from which to redistribute elements.
+     */
+    Redistributor( const scai::hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution );
+
     /** Getter needed for distributions */
 
     DistributionPtr getTargetDistributionPtr() const;

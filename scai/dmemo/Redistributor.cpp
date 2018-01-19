@@ -34,16 +34,25 @@
 
 // hpp
 #include <scai/dmemo/Redistributor.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 // local library
 #include <scai/dmemo/HaloBuilder.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
+#include <scai/hmemo/HostReadAccess.hpp>
+#include <scai/hmemo/HostWriteAccess.hpp>
+#include <scai/hmemo/HostWriteOnlyAccess.hpp>
 
 #include <memory>
+#include <algorithm>
 
 using namespace scai::hmemo;
+
+using scai::utilskernel::HArrayUtils;
+using scai::dmemo::GeneralDistribution;
 
 namespace scai
 {
@@ -158,6 +167,108 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 
     // all info needed for redistribution is now available
     SCAI_LOG_INFO( logger, "constructed " << *this )
+}
+
+// Partitions local indexes of the source distribution into "keep"
+// and "exchange", based on the new owner of each individual index.
+static void partitionLocalIndexes(HArray<IndexType> & keepLocalIndexes,
+                                  HArray<IndexType> & exchangeLocalIndexes,
+                                  const HArray<PartitionId> & newOwnersOfLocalElements,
+                                  const Distribution & sourceDist)
+{
+    SCAI_ASSERT_EQ_DEBUG(newOwnersOfLocalElements.size(), sourceDist.getLocalSize(), "sourceDist and newOwners must have same size");
+    const auto rank = sourceDist.getCommunicator().getRank();
+    const auto numPartitions = sourceDist.getCommunicator().getSize();
+    const auto sourceNumLocal = sourceDist.getLocalSize();
+
+    const auto rNewOwners = hostReadAccess(newOwnersOfLocalElements);
+    auto wKeep = hostWriteOnlyAccess(keepLocalIndexes, sourceNumLocal);
+    auto wExchange = hostWriteOnlyAccess(exchangeLocalIndexes, sourceNumLocal);
+
+    IndexType numKeep = 0;
+    IndexType numExchange = 0;
+
+    for (IndexType localSourceIndex = 0; localSourceIndex < sourceDist.getLocalSize(); ++localSourceIndex)
+    {
+        const auto newOwner = rNewOwners[localSourceIndex];
+        SCAI_ASSERT_VALID_INDEX( newOwner, numPartitions, "owner index out of range" );
+
+        if ( rank == newOwner )
+        {
+            wKeep[numKeep++] = localSourceIndex;
+        }
+        else
+        {
+            wExchange[numExchange++] = localSourceIndex;
+        }
+    }
+
+    wKeep.resize(numKeep);
+    wExchange.resize(numExchange);
+}
+
+template <typename ValueType>
+static HArray<ValueType> selectIndexes( const HArray<ValueType> & source, const HArray<IndexType> & indexes )
+{
+    HArray<ValueType> result;
+    HArrayUtils::gather( result, source, indexes, common::BinaryOp::COPY );
+    return result;
+}
+
+// TODO: Make this a method of Distribution (with name local2global)? (can give default impl, but
+// allow subclasses to override it for a more efficient implementation)
+static void local2globalInto(HArray<IndexType> & indexes, const Distribution & dist)
+{
+    for (auto & x : hostWriteAccess(indexes))
+    {
+        x = dist.local2global(x);
+    }
+}
+
+static HArray<IndexType> local2global( const HArray<IndexType> & localIndexes, const Distribution & dist )
+{
+    auto result = localIndexes;
+    local2globalInto( result, dist );
+    return result;
+}
+
+Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution )
+    :   mSourceDistribution(sourceDistribution)
+{
+    const auto & sourceDist = *sourceDistribution;
+    const auto sourceNumLocal = sourceDistribution->getLocalSize();
+
+    SCAI_ASSERT_EQ_ERROR( sourceNumLocal, newOwnersOfLocalElements.size(),
+                          "Array of owners must have size equal to number of local values in source distribution." );
+
+    HArray<IndexType> providedSourceIndexes;
+    partitionLocalIndexes( mKeepSourceIndexes, providedSourceIndexes, newOwnersOfLocalElements, *sourceDistribution );
+
+    const auto globalKeepIndexes = local2global (mKeepSourceIndexes, sourceDist );
+    const auto globalProvidedIndexes = local2global( providedSourceIndexes, sourceDist );
+    const auto newOwnersOfProvided = selectIndexes( newOwnersOfLocalElements, providedSourceIndexes );
+
+    // We only put the exchange indexes into the Halo, as this might work considerably better when
+    // most elements are kept (present both in source and target dist). This means that the Halo is working
+    // with the index set given by our exchange indexes rather than local indexes of the source distribution
+    HaloBuilder::buildFromProvidedOwners( sourceDistribution->getCommunicator(), globalProvidedIndexes, newOwnersOfProvided, mHalo );
+
+    HArray<IndexType> sortedRequiredIndexes;
+    HArray<IndexType> sortPermutation;
+    HArrayUtils::sort( &sortPermutation, &sortedRequiredIndexes, mHalo.getRequiredIndexes(), true );
+
+    HArray<IndexType> targetGlobalIndexes;
+    HArray<IndexType> mapFromExchangeToTarget;
+    HArrayUtils::mergeAndMap( targetGlobalIndexes, mapFromExchangeToTarget, mKeepTargetIndexes, sortedRequiredIndexes, globalKeepIndexes );
+
+    // Repurpose the storage of sortedRequiredIndexes (same size and type as inversePerm) to further additional memory allocation
+    auto inversePerm = std::move( sortedRequiredIndexes );
+    HArrayUtils::inversePerm(inversePerm, sortPermutation);
+    mExchangeSourceIndexes = selectIndexes( providedSourceIndexes, mHalo.getProvidesIndexes() );
+    mExchangeTargetIndexes = selectIndexes( mapFromExchangeToTarget, inversePerm );
+    mTargetDistribution = DistributionPtr ( new GeneralDistribution( sourceDistribution->getGlobalSize(),
+                                                                     targetGlobalIndexes,
+                                                                     sourceDistribution->getCommunicatorPtr() ) );
 }
 
 /* -------------------------------------------------------------------------- */
