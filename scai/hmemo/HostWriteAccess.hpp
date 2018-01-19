@@ -120,7 +120,7 @@ public:
 };
 
 /**
- * @Return Return a HostWriteAccess for the provided array.
+ * @return Return a HostWriteAccess for the provided array.
  *
  * This is exactly equivalent to writeAccess(const HArray<ValueType> & array), except
  * that a HostWriteAccess is returned instead of WriteAccess.

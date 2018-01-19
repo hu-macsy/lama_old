@@ -8,30 +8,33 @@ initializes a right hand side and solves this equation system with the LAMA
 provided CG solver.
 
 First we need to include the headers for the types and operations we are going to
-use later. **lama.hpp** needs to be included. Always make sure it is included
-first.
+use later. ``lama.hpp`` needs to be included. Always make sure it is included
+first. At the beginning of the main program we verify that there is at least one
+command line argument.
 
 .. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 36-61
+   :lines: 36-63
 
-Next we are reading the input matrix from the file provided via a command line
-argument. The CSRSparseMatrix provides a constructor to read from a matrix
-market file for this.
+Next we read the input matrix from the file provided via a command line
+argument. All Matrix classes provide a constructor that reads 
+the matrix data from a file. If only the file name is specified, the suffix
+is used to determine which file format is used. Most likely we use files that have the
+suffix ``.mtx`` that stands for the Matrix Market file format.
 
 .. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 63-65
+   :lines: 64-67
 
-Then we create our right hand side and our solution vector of appropriate
+For the solver example we create our right hand side and our solution vector of appropriate
 size. To verify the correctness of the solution we are
 calculating a right hand side from the exact solution. LAMA uses operator
-overloading and proxy objects to support and easy to use and simple interface
-to BLAS functionality, that we are using to calculate the vector **rhs**.
+overloading to suppport matrix-vector multiplicatioan that is
+used here to construct the vector ``rhs``.
 
 .. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 66-76
+   :lines: 68-77
 
 Now we have created a system of linear equations. To solve it we want to use
 the CG solver provided by LAMA and so we start with creating an object of type
@@ -49,33 +52,37 @@ ResidualThreshold takes three arguments:
  
 3. If the threshold should check of an absolute or a relative residual reduction.
  
-After we have created the ResidualThreshold object we need to pass it to our
+After we have created the ResidualThreshold object we pass it to our
 solver object cgSolver.
 
 .. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 77-82
+   :lines: 78-83
 
-Finally we need to initialize our solver with the system matrix and solve the
+Finally we initialize our solver with the system matrix and solve the
 system.
 
 .. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 83-86
+   :lines: 84-88
 
 Because we know the exact solution we can calculate the error and the L2-Norm of
 the error.
 
 .. literalinclude:: ../../../solver/examples/lecture/task0.cpp 
    :language: c++
-   :lines: 87-90
+   :lines: 89-93
 
 Task 0 and an example input matrix can be found in
-**<project-root>/examples/lecture**.
+``${SCAI_ROOT}/share/examples/scai-solver-*/lecture`` or downloaded here.
 
 :download:`Download source file Task 0 <../../../solver/examples/lecture/task0.cpp>`
 
 :download:`Download input matrix <../../../solver/examples/lecture/gr_30_30.mtx>`
+
+**Exercise**: Download a symmetric positive definite matrix
+from Matrix Market [http://math.nist.gov/MatrixMarket/searchtool.html] and
+use it as input file for the solver program presented here.
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"

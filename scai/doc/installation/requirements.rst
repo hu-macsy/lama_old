@@ -135,6 +135,12 @@ Nevertheless we encountered different problems, and here are some general advice
   (e.g. g++ 5.3 ) using the boost functionality. In these cases, we strongly recommend to build a Boost installation with 
   the corresponding C++ compiler.
 
+.. code-block:: bash
+
+   tar xvfz boost_1_59_0.tar.gz 
+   cd boost_1_59_0
+   bootstrap.sh --prefix=$BOOST_ROOT --with-libraries=test
+   ./b2
 
 - CUDA
 

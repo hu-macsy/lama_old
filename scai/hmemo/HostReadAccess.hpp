@@ -121,7 +121,7 @@ public:
 };
 
 /**
- * @Return Return a HostReadAccess for the provided array.
+ * @return Return a HostReadAccess for the provided array.
  *
  * This is exactly equivalent to readAccess(const HArray<ValueType> & array), except
  * that a HostReadAccess is returned instead of ReadAccess.

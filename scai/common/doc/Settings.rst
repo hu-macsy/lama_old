@@ -138,6 +138,7 @@ SCAI_UNSUPPORTED           string  IGNORE, WARN, or ERROR
 SCAI_CONTEXT               string  specifies default context, e.g. Host, CUDA
 SCAI_DEVICE                int     default device when getting a context
 SCAI_THREADPOOL_SIZE       int     number of threads for asynchronous execuctions on CPU, default is 1
+SCAI_ASYNCHRONOUS          int     0 (synchron), 1 (asynchron communication), or 2 (asynchron local computations) for certain routines
 SCAI_CUDA_USE_CUSPARSE     bool    default true, uses cuSparse library instead of own kernels
 SCAI_CUDA_USE_SHARED_MEM   bool    default true, uses cuSparse library instead of own kernels
 SCAI_CUDA_USE_TEXTURE      bool    default true, uses cuSparse library instead of own kernels

@@ -65,10 +65,11 @@ public:
      * @brief This constructor creates an UnaryExpression for the given type.
      *
      * @param arg is the operand of the expression
+     * @param op  specifies the unary operation that is used in the expression
      */
-    UnaryExpression( const ArgType& arg, const common::UnaryOp type ) :
+    UnaryExpression( const ArgType& arg, const common::UnaryOp op ) :
 
-        mOp( type ),
+        mOp( op ),
         mArg( arg )
 
     {

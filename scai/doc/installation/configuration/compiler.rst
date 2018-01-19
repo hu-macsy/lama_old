@@ -23,7 +23,8 @@ On Linux systems, the use of the |GNU| C++ compiler or the |Intel| C++ compiler 
 
 LAMA exploits OpenMP parallelization for the use of multiple cores of one CPU and/or for multiple CPUs sharing a global address space. Therefore a C++ compiler supporting OpenMP is strongly recommended, but not mandatory.
 
-Furthermore, a C++ compiler supporting C++11 is helpful. In this case, LAMA can be built without any installation of the Boost package. We internally check whether all needed C++11 features are supported and build with or without ``-std=c++11``. You can disable C++11 support at configuration time by passing ``-DCXX_SUPPORTS_C11=0`` to the cmake call.
+Furthermore, a C++ compiler supporting the C++11 standard is required. Most compilers will use the flag
+``-std=c++11`` that enables the corresponding C++11 features.
 
 Selection of Compiler for the Configuration
 -------------------------------------------

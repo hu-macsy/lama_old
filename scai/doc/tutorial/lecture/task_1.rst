@@ -5,10 +5,8 @@ Task 1: Setup a system of linear equations
 
 Linear algebra requires working with objects like scalars, vectors and matrices.
 LAMA includes classes, which represent those objects and offers the possibility
-to handle with different SparseMatrixFormats ( e.g. CSR, ELL, JDS). This task
-should introduce the classes CSRSparseMatrix and DenseVector that have been
-already used in task 0 a little bit closer. Additionally the 
-SparseAssemblyStorage and some supporting classes are introduced.
+to handle with different sparse matrix formats ( e.g. CSR, ELL, JDS). This task
+introduces some possibilities to setup such matrices and vectors.
 
 Setting up a CSRSparseMatrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -18,46 +16,92 @@ the classes CSRSparseMatrix, ELLSparseMatrix and JDSSparseMatrix. During this
 tutorial we will focus on the widely used CSR format.
 
 Lets get started with a good practice: the first essential step is to know how
-to create those objects. This Tutorial introduces two possibilities to declare
-those objects:
+to create those objects. 
 
-a) To create a CSRSparseMatrix LAMA supports the fileformat \*.mtx from the
-Matrix Market [http://math.nist.gov/MatrixMarket/searchtool.html]. This is the
-most easiest way to commit data into a Matrix. Download a symetric positive
-definite matrix from Matrix Market and create a CSRSparseMatrix from that.
+The first possibility and probably the most easiest way to create a matrix is
+to read it from file. This possibility has already been shown in the previous
+task. 
 
-b) If you decide to create a Matrix with your own data you can use a 
-SparseAssemblyStorage for this. A SparseAssemblyStorage offers a efficient
-possibility to assemble your data in a storage without knowing the quantity of
-elements or the order of them. The assembled data can be committed to all
-supported sparse matrix formats. To do so you should create an object of type 
-SparseAssemblyStorage and fill this storage with elements by using the
-set-method. Take care that the SparseMatrix is symetric positive definite so
-that the later to implement CG Iterative Solver works. We propose the
-discretization of a Possion Equation. To create a CSRSparseMatrix from the 
-SparseAssemblyStorage just call the appropriate constructor.
+.. code-block:: c++
 
+    CSRSparseMatrix<ValueType> matrix ( <filename> );
+
+If you want to create a matrix with your own data you should use a 
+``MatrixAssemblyAccess`` for this. Such an access offers an efficient
+possibility to assemble your data without knowing the quantity of
+elements or the order of them. With the release of the access,
+the assembled data is converted to the required sparse matrix format.
+As we will see later, this approach works also for distributed matrices.
+During the access elements are inserted by using the
+push method. 
+
+.. code-block:: c++
+
+    CSRSparseMatrix<ValueType> matrix( numRows, numColumns );
+    
+    MatrixAssemblyAccess mAccess( matrix );
+    for ( ... )
+    {
+        mAccess.push( rowPos, colPos, value );
+    }
+    mAccess.release();   // now the assembled data is converted to the CSR format
+
+**Exercise**: Write some code that fills the matrix with data.
+Take care that the matrix becomes symmetric positive definite so
+that it can be used for an CG Iterative Solver works. We propose the
+discretization of a Possion Equation.
 
 Setting the right hand side and the solution vector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the first part of this task has introduced how sparse matrices are handled in
-LAMA. For systems of linear equations it is necessary to create vectors as well.
-LAMA provides the class DenseVector for this.
-
-Coming back to practice: We have created a filled CSRSparseMatrix. For our
-equation system we still need a righthandside-vector and a solution-vector.
+In the first part of this task we set up the matrix. Now we will do the same for (dense) vectors.
+For our equation system we need a righthandside-vector and a solution-vector.
 Now, your exercise is to create two objects of type DenseVector and fill them
-with elements. To fill a DenseVector with data, you have to use a 
-WriteAccess. The Constructor of this WriteAccess expects a LAMA-Array.
-You can receive it from your vectors by calling getLocalValues(). With a 
-WriteAccess it is very simple to set your data using the overloaded
-operator[]. The access to data was implemented by the programming technique RAII
-(Ressource Acquisition is initialization). This technique is used to assure the
-consistency of data across multiple contexts. The concept of a context is
-introduced later in this tutorial when it comes to GPU computing. To assure the
-consistency we follow the multiple reader single writer idiom, therefore it is 
-possible to have multiple ReadAcess, but just one WriteAccess at a time.
+with elements. 
+
+In contrary to a matrix, a dense vector might be initialized
+with a value (as shown in the previous task).
+To fill a DenseVector with other data, you can use a VectorAssemblyAccess. 
+
+.. code-block:: c++
+
+    DenseVector<ValueType> vector( size, ValueType( 0 ) );
+    
+    VectorAssemblyAccess vAccess( vector );
+    for ( ... )
+    {
+        vAccess.push( pos, value );
+    }
+    vAccess.release();   // now the assembled data is filled in the dense vector.
+
+Example Data
+^^^^^^^^^^^^
+
+For the exercise you might use the following matrix and rhs data:
+
+.. math::
+
+    matrix = 
+  \left(\begin{matrix} 
+    1  & 0 & 0 & 0 & 0 & 0 & 0  \\
+    -s & (1+2s) & -s & 0 & 0 & 0 & 0 \\
+    0  & -s & (1+2s) & -s & 0 & 0 & 0 \\
+    0  & 0 & -s & (1+2s) & -s & 0 & 0 \\
+    0  & 0 & 0 & -s & (1+2s) & -s & 0 \\
+    0  & 0 & 0 & 0 & -s & (1+2s) & -s \\
+    0  & 0 & 0 & 0  & 0 & 0 & 1 \\
+    \end{matrix}\right) 
+    \;
+    rhs = 
+  \left(\begin{matrix} Tleft \\
+    0 \\
+    0 \\
+    0 \\
+    0 \\
+    0 \\
+    Tright \end{matrix}\right)    
+
+A good choice for the value s is 0.5.
 
 .. csv-table:: 
    :header: "previous", "Solution", "next"
