@@ -1907,6 +1907,7 @@ void HArrayUtils::buildSparseArrayImpl(
     HArray<TargetType>& sparseArray,
     HArray<IndexType>& sparseIndexes,
     const HArray<SourceType>& denseArray,
+    const SourceType zeroValue,
     ContextPtr prefLoc )
 {
     const IndexType n = denseArray.size();
