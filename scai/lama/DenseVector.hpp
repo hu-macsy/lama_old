@@ -166,6 +166,11 @@ public:
     DenseVector( const DenseVector<ValueType>& other );
 
     /**
+     * Override the default move constructor with own implementation.
+     */
+    DenseVector( DenseVector<ValueType>&& other ) noexcept;
+
+    /**
      * More general constructor that creates a deep copy of an arbitrary vector( same type )
      *
      * The explicit specifier avoids implict conversions as the following example shows.
