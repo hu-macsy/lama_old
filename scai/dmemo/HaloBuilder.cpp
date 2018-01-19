@@ -35,6 +35,7 @@
 // hpp
 #include <scai/dmemo/HaloBuilder.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/hmemo/HostReadAccess.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
@@ -44,6 +45,8 @@
 #include <vector>
 
 using namespace scai::hmemo;
+
+using scai::utilskernel::HArrayUtils;
 
 namespace scai
 {
@@ -173,35 +176,23 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     }
 }
 
-static void createRequiredGlobal2LocalMapping(std::map<IndexType, IndexType> & map, const HArray<IndexType> & requiredIndexes)
+static void createRequiredGlobal2HaloMapping(std::map<IndexType, IndexType> & map, const HArray<IndexType> & requiredIndexes)
 {
     ReadAccess<IndexType> rRequiredIndexes(requiredIndexes);
     for (IndexType i = 0; i < rRequiredIndexes.size(); ++i)
     {
         const auto globalIndex = rRequiredIndexes[i];
-        const auto localIndex = i;
-        map[globalIndex] = localIndex;
+        const auto haloIndex = i;
+        map[globalIndex] = haloIndex;
     }
 }
 
-static void globalizeProvidedIndexes(HArray<IndexType> & globalProvidedIndexes,
-                                     const HArray<IndexType> & haloProvidedIndexes,
-                                     const HArray<IndexType> & halo2global)
+static HArray<IndexType> globalizeProvidedIndexes(const HArray<IndexType> & haloProvidedIndexes,
+                                                  const HArray<IndexType> & halo2global)
 {
-    const auto size = haloProvidedIndexes.size();
-
-    ReadAccess<IndexType> rHaloProvidedIndexes(haloProvidedIndexes);
-    ReadAccess<IndexType> rHalo2global(halo2global);
-    WriteAccess<IndexType> wGlobalProvidedIndexes(globalProvidedIndexes);
-    wGlobalProvidedIndexes.resize(size);
-
-    for (IndexType i = 0; i < size; ++i)
-    {
-        const auto haloIndex = rHaloProvidedIndexes[i];
-        SCAI_ASSERT_VALID_INDEX( haloIndex, halo2global.size(), "Provided index is out-of-bounds with respect to halo2global.");
-        const auto globalIndex = rHalo2global[haloIndex];
-        wGlobalProvidedIndexes[i] = globalIndex;
-    }
+    HArray<IndexType> globalProvidedIndexes;
+    HArrayUtils::gather(globalProvidedIndexes, halo2global, haloProvidedIndexes, common::BinaryOp::COPY);
+    return globalProvidedIndexes;
 }
 
 void HaloBuilder::buildFromProvidedOwners( const Communicator& comm,
@@ -215,32 +206,30 @@ void HaloBuilder::buildFromProvidedOwners( const Communicator& comm,
 
     // TODO: Make context an argument (with default to Host/default context)
     const auto contextPtr = Context::getContextPtr();
-    const auto nPartitions = comm.getSize();
+    const auto numPartitions = comm.getSize();
 
     auto & requiredPlan = halo.mRequiredPlan;
     auto & providedPlan = halo.mProvidesPlan;
     auto & requiredIndexes = halo.mRequiredIndexes;
     auto & providedIndexes = halo.mProvidesIndexes;
 
-    hmemo::HArray<IndexType> offsets(nPartitions + 1, contextPtr);
+    hmemo::HArray<IndexType> offsets(numPartitions + 1, contextPtr);
     providedIndexes.resize(ownersOfProvided.size());
 
-    scai::utilskernel::HArrayUtils::bucketSort(offsets, providedIndexes, ownersOfProvided, nPartitions, contextPtr);
+    HArrayUtils::bucketSort(offsets, providedIndexes, ownersOfProvided, numPartitions, contextPtr);
 
     {
-        ReadAccess<IndexType> rOffsets(offsets);
-        providedPlan.allocateByOffsets(rOffsets.get(), nPartitions);
+        const auto rOffsets = hostReadAccess(offsets);
+        providedPlan.allocateByOffsets(rOffsets.get(), numPartitions);
     }
 
     requiredPlan.allocateTranspose(providedPlan, comm);
     requiredIndexes.resize(requiredPlan.totalQuantity());
 
-    HArray<IndexType> globalProvidedIndexes(providedIndexes.size());
-    globalizeProvidedIndexes(globalProvidedIndexes, providedIndexes, halo2global);
-
+    const auto globalProvidedIndexes = globalizeProvidedIndexes(providedIndexes, halo2global);
     comm.exchangeByPlan(requiredIndexes, requiredPlan, globalProvidedIndexes, providedPlan);
 
-    createRequiredGlobal2LocalMapping(halo.mGlobal2Halo, requiredIndexes);
+    createRequiredGlobal2HaloMapping(halo.mGlobal2Halo, requiredIndexes);
 }
 
 } /* end namespace dmemo */
