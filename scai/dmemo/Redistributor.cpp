@@ -62,6 +62,49 @@ using std::unique_ptr;
 namespace dmemo
 {
 
+static void partitionKeepAndRequired( HArray<IndexType> & keepSourceIndexes,
+                                      HArray<IndexType> & keepTargetIndexes,
+                                      HArray<IndexType> & globalRequiredIndexes,
+                                      const Distribution & sourceDist,
+                                      const Distribution & targetDist )
+{
+    const auto sourceNumLocal = sourceDist.getLocalSize();
+    const auto targetNumLocal = targetDist.getLocalSize();
+
+    // Determine the maximum sizes that keep/required can have. We allocate
+    // for this size, and then later resize the arrays to their actual values.
+    const auto maxKeepSize = std::min( sourceNumLocal, targetNumLocal );
+    const auto maxRequiredSize = targetNumLocal;
+
+    auto wKeepSource = hostWriteOnlyAccess( keepSourceIndexes, maxKeepSize );
+    auto wKeepTarget = hostWriteOnlyAccess( keepTargetIndexes, maxKeepSize );
+    auto wRequired = hostWriteOnlyAccess( globalRequiredIndexes, maxRequiredSize );
+
+    IndexType numKeep = 0;
+    IndexType numRequired = 0;
+
+    for ( IndexType localTargetIndex = 0; localTargetIndex < targetDist.getLocalSize(); ++localTargetIndex )
+    {
+        const auto globalIndex = targetDist.local2global( localTargetIndex );
+        const auto localSourceIndex = sourceDist.global2local(globalIndex);
+
+        if ( localSourceIndex != invalidIndex )
+        {
+            wKeepSource[numKeep] = localSourceIndex;
+            wKeepTarget[numKeep++] = localTargetIndex;
+        }
+        else
+        {
+            wRequired[numRequired++] = globalIndex;
+        }
+    }
+
+    wKeepSource.resize( numKeep );
+    wKeepTarget.resize( numKeep );
+    wRequired.resize( numRequired );
+}
+
+
 SCAI_LOG_DEF_LOGGER( Redistributor::logger, "Redistributor" )
 
 Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution )
@@ -71,93 +114,33 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "NULL pointer for source distribution" )
     SCAI_ASSERT_ERROR( targetDistribution, "NULL pointer for target distribution" )
-    // Dereference distribution pointers, avoids checks for validity
+
     const Distribution& sourceDist = *sourceDistribution;
     const Distribution& targetDist = *targetDistribution;
-    SCAI_ASSERT_EQ_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize(), "serious size mismatch" )
-    SCAI_ASSERT_EQ_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator(), "redistribute only with same communicator" )
-    SCAI_LOG_INFO( logger,
-                   sourceDist.getCommunicator()
-                    << ": build redistributor " << targetDist << " <- "
-                    << sourceDist << ", have " << getSourceLocalSize()
-                    << " source values and " << getTargetLocalSize() << " target values" )
-    // localSourceIndexes, localTargetIndexes are used for local permutation
-    // we do not know the exact sizes now so we take maximal value
-    WriteOnlyAccess<IndexType> keepSourceIndexes( mKeepSourceIndexes, getSourceLocalSize() );
-    WriteOnlyAccess<IndexType> keepTargetIndexes( mKeepTargetIndexes, getTargetLocalSize() );
-    std::vector<IndexType> requiredIndexes;
-    IndexType numLocalValues = 0; // count number of local copies from source to target
+    SCAI_ASSERT_EQ_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize(), "source and target distributions must have the same global size" );
+    SCAI_ASSERT_EQ_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator(), "source and target distributions must have the same communicator" );
 
-    for ( IndexType i = 0; i < getTargetLocalSize(); i++ )
-    {
-        IndexType globalIndex = targetDist.local2global( i );
+    HArray<IndexType> globalRequiredIndexes;
+    partitionKeepAndRequired( mKeepSourceIndexes, mKeepTargetIndexes, globalRequiredIndexes, sourceDist, targetDist);
+    SCAI_ASSERT_EQ_ERROR( mKeepSourceIndexes.size(), mKeepTargetIndexes.size(), "keep indexes size mismatch");
+    const auto numLocalValues = mKeepSourceIndexes.size();
 
-        if ( sourceDist.isLocal( globalIndex ) )
-        {
-            IndexType sourceLocalIndex = sourceDist.global2local( globalIndex );
-            SCAI_LOG_TRACE( logger,
-                            "target local index " << i << " is global " << globalIndex << ", is source local index " << sourceLocalIndex )
-            //  so globalIndex is local in both distributions
-            keepTargetIndexes[numLocalValues] = i; // where to scatter in target
-            keepSourceIndexes[numLocalValues] = sourceLocalIndex;
-            numLocalValues++;
-        }
-        else
-        {
-            SCAI_LOG_TRACE( logger, "target local index " << i << " is global " << globalIndex << ", is remote" )
-            // needed from other processor
-            requiredIndexes.push_back( globalIndex );
-        }
-    }
+    HaloBuilder::build( sourceDist, globalRequiredIndexes, mHalo );
+    mExchangeSourceIndexes = mHalo.getProvidesIndexes();
 
-    // Adapt sizes of arrays with local indexes
-    keepSourceIndexes.resize( numLocalValues );
-    keepTargetIndexes.resize( numLocalValues );
-    SCAI_LOG_DEBUG( logger,
-                    sourceDist.getCommunicator() << ": target dist has local " << getTargetLocalSize()
-                                                 << " vals, " << numLocalValues << " are local, "
-                                                 << requiredIndexes.size() << " are remote." )
-    // Halo is only for exchange of non-local values
-    HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-    HaloBuilder::build( sourceDist, arrRequiredIndexes, mHalo );
-    // Set in the source index vector the values to provide for other processors
-    const Halo& halo = mHalo;
-    SCAI_LOG_INFO( logger,
-                   sourceDist.getCommunicator() << ": halo source has " << halo.getProvidesPlan().totalQuantity() << " indexes, " << "halo target has " << halo.getRequiredPlan().totalQuantity() << " indexes" )
-    const CommunicationPlan& providesPlan = halo.getProvidesPlan();
     ContextPtr contextPtr = Context::getHostPtr();
-    WriteAccess<IndexType> exchangeSourceIndexes( mExchangeSourceIndexes, contextPtr );
     WriteAccess<IndexType> exchangeTargetIndexes( mExchangeTargetIndexes, contextPtr );
-    ReadAccess<IndexType> haloProvidesIndexes( halo.getProvidesIndexes(), contextPtr );
-    exchangeSourceIndexes.resize( providesPlan.totalQuantity() );
-    IndexType offset = 0; // runs through halo source indexes
 
-    for ( PartitionId i = 0; i < providesPlan.size(); i++ )
-    {
-        IndexType n = providesPlan[i].quantity;
-
-        const IndexType* pindexes = haloProvidesIndexes.get() + providesPlan[i].offset;
-
-        for ( IndexType j = 0; j < n; j++ )
-        {
-            SCAI_LOG_TRACE( logger, "halo source index[" << offset << "] = " << pindexes[j] )
-            exchangeSourceIndexes[offset++] = pindexes[j];
-        }
-    }
-
-    SCAI_LOG_INFO( logger, "have set " << offset << " halo source indexes" )
-    // In contrary to Halo schedules we have here the situation that each non-local
-    // index of source should be required by some other processor.
-    SCAI_ASSERT_EQ_ERROR( offset, exchangeSourceIndexes.size(), "serious mismatch" )
-    SCAI_ASSERT_EQ_ERROR( numLocalValues + offset, getSourceLocalSize(), "serious mismatch" )
     // Now add the indexes where to scatter the halo into destination
-    IndexType haloSize = halo.getHaloSize();
+    IndexType haloSize = mHalo.getHaloSize();
     SCAI_ASSERT_ERROR( numLocalValues + haloSize == getTargetLocalSize(), "size mismatch" )
     exchangeTargetIndexes.resize( haloSize );
 
+    const auto rGlobalRequiredIndexes = hostReadAccess( globalRequiredIndexes );
+
     for ( IndexType i = 0; i < haloSize; i++ )
     {
-        IndexType globalIndex = requiredIndexes[i];
+        IndexType globalIndex = rGlobalRequiredIndexes[i];
         IndexType localIndex = targetDist.global2local( globalIndex );
         IndexType haloIndex = mHalo.global2halo( globalIndex );
         SCAI_LOG_TRACE( logger,
