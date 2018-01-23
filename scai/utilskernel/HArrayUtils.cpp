@@ -2321,7 +2321,7 @@ template<typename ValueType>
 void HArrayUtils::selectComplexPart(
     HArray<RealType<ValueType> >& realValues,
     const HArray<ValueType>& complexValues,
-    const common::ComplexSelection kind,
+    const common::ComplexPart kind,
     ContextPtr )
 {
     // ToDo: define and use kernel routine for any device
@@ -2331,7 +2331,7 @@ void HArrayUtils::selectComplexPart(
     ReadAccess<ValueType> rComplex( complexValues );
     WriteOnlyAccess<RealType<ValueType> > wReal( realValues, n );
 
-    if ( kind == common::ComplexSelection::REAL )
+    if ( kind == common::ComplexPart::REAL )
     {
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -2657,7 +2657,7 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
     template void HArrayUtils::selectComplexPart(                 \
             hmemo::HArray<RealType<ValueType> >&,                 \
             const hmemo::HArray<ValueType>&,                      \
-            const common::ComplexSelection,                       \
+            const common::ComplexPart,                            \
             hmemo::ContextPtr );                                  \
     template void HArrayUtils::buildComplex(                      \
             hmemo::HArray<ValueType>&,                            \

@@ -45,10 +45,12 @@ scai_project (
         VectorExpressions
         UnaryVectorExpression
         CastVectorExpression
+        ComplexVectorExpression
 
         MatrixExpressions
         MatrixVectorExpressions
         CastMatrixExpression
+        ComplexMatrixExpression
 
     ADD_PARENT_SCOPE 
 )

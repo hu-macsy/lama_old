@@ -82,12 +82,12 @@ enum class ScalarType
     UNKNOWN
 }; 
 
-/** Simple enun class for the two kind of selections for a complex value */
+/** Simple enun class for the two parts of a complex value */
 
-enum class ComplexSelection
+enum class ComplexPart
 {
-    REAL,   // select real part of a complex number
-    IMAG    // select imaginary part of a complex number
+    REAL,   // real part of a complex number
+    IMAG    // imaginary part of a complex number
 };
 
 /** Query an enum value whether it is complex or not. */

@@ -166,7 +166,9 @@ public:
     DenseVector( const DenseVector<ValueType>& other );
 
     /**
-     * Override the default move constructor with own implementation.
+     * @brief Move constructor that reuses allocated resources from input vector instead of deep copy.
+     *
+     * The attribute noexcept is mandatory to make the use of dense vectors possible in C++ container classes.
      */
     DenseVector( DenseVector<ValueType>&& other ) noexcept;
 
@@ -327,8 +329,8 @@ public:
     /**
      *  @brief enable constructor for DenseVector<T>( imag( x ) );
      */
-    template<common::ComplexSelection kind, typename OtherValueType>
-    explicit DenseVector( const ComplexSelectionVectorExpression<OtherValueType, kind>& expression );
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit DenseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression );
 
     /**
      *  @brief enable constructor for DenseVector<T>( cast<T>( x ) );
@@ -577,7 +579,11 @@ public:
 
     void binaryOp( const Vector<ValueType>& x, common::BinaryOp op, const Vector<ValueType>& y );
 
-    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexSelection kind ) const;
+    /** Implementation of pure method Vector<ValueType>::selectComplexPart for dense vector. */
+
+    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexPart kind ) const;
+
+    /** Implementation of pure method Vector<ValueType>::buildComplex for dense vector. */
 
     virtual void buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y );
 
@@ -767,8 +773,8 @@ DenseVector<ValueType> linearValuesVector(
 }
 
 template<typename ValueType>
-template<common::ComplexSelection kind, typename OtherValueType>
-DenseVector<ValueType>::DenseVector( const ComplexSelectionVectorExpression<OtherValueType, kind>& expression ) 
+template<common::ComplexPart kind, typename OtherValueType>
+DenseVector<ValueType>::DenseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression ) 
 {
     const Vector<OtherValueType>& v = expression.getArg(); 
     this->setContextPtr( v.getContextPtr()  );

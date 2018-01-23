@@ -1852,13 +1852,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( complexText, ValueType, scai_numeric_test_types )
 
     typedef RealType<ValueType> real;
 
-    IndexType n = 5;   // number of values
-
-    const real real_values[] = { 1, 2, 3, 4, 4 };
-    const real imag_values[] = { 2, 5, 3, 1, 4 };
-
-    LArray<real> realArray( n, real_values, testContext );
-    LArray<real> imagArray( n, imag_values, testContext );
+    HArray<real> realArray( { 1, 2, 3, 4, 4 }, testContext );
+    HArray<real> imagArray( { 2, 5, 3, 1, 4 }, testContext );
 
     LArray<ValueType> complexArray;
 
@@ -1867,8 +1862,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( complexText, ValueType, scai_numeric_test_types )
     LArray<real> realArray1;
     LArray<real> imagArray1;
 
-    HArrayUtils::selectComplexPart( realArray1, complexArray, common::ComplexSelection::REAL );
-    HArrayUtils::selectComplexPart( imagArray1, complexArray, common::ComplexSelection::IMAG );
+    HArrayUtils::selectComplexPart( realArray1, complexArray, common::ComplexPart::REAL );
+    HArrayUtils::selectComplexPart( imagArray1, complexArray, common::ComplexPart::IMAG );
 
     BOOST_CHECK_EQUAL( 0, realArray1.maxDiffNorm( realArray ) );
 

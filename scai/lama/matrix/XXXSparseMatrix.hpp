@@ -145,8 +145,8 @@ public:
 
     explicit XXXSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression );
 
-    template<common::ComplexSelection kind, typename OtherValueType>
-    explicit XXXSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression );
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit XXXSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression );
 
     /** @brief Constructor of a XXX sparse matrix with distributed XXX storage data.
      *
@@ -256,8 +256,8 @@ public:
 };
 
 template<typename ValueType>
-template<common::ComplexSelection kind, typename OtherValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression ) :
+template<common::ComplexPart kind, typename OtherValueType>
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression ) :
 
    SparseMatrix<ValueType>( createStorage() )
 

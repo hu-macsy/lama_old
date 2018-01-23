@@ -2200,9 +2200,9 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexSelection kind ) const
+void DenseMatrix<ValueType>::selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexPart kind ) const
 {
-    if ( kind == common::ComplexSelection::REAL )
+    if ( kind == common::ComplexPart::REAL )
     {
         x = cast<RealType<ValueType>>( *this );
     }

@@ -145,8 +145,8 @@ public:
 
     explicit DIASparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression );
 
-    template<common::ComplexSelection kind, typename OtherValueType>
-    explicit DIASparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression );
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit DIASparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression );
 
     /** @brief Constructor of a DIA sparse matrix with distributed DIA storage data.
      *
@@ -256,8 +256,8 @@ public:
 };
 
 template<typename ValueType>
-template<common::ComplexSelection kind, typename OtherValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression ) :
+template<common::ComplexPart kind, typename OtherValueType>
+DIASparseMatrix<ValueType>::DIASparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression ) :
 
    SparseMatrix<ValueType>( createStorage() )
 

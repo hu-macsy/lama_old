@@ -37,6 +37,7 @@
 
 #include <scai/lama/expression/UnaryVectorExpression.hpp>
 #include <scai/lama/expression/CastVectorExpression.hpp>
+#include <scai/lama/expression/ComplexVectorExpression.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 
@@ -383,8 +384,8 @@ public:
 
     /** this = real( x ) or this = imag( x ) */
 
-    template<common::ComplexSelection kind, typename OtherValueType>
-    Vector<ValueType>& operator=( const ComplexSelectionVectorExpression<OtherValueType, kind>& exp );
+    template<common::ComplexPart kind, typename OtherValueType>
+    Vector<ValueType>& operator=( const ComplexPartVectorExpression<OtherValueType, kind>& exp );
 
     /** this = cmplx( x, y ) */
 
@@ -479,11 +480,24 @@ public:
 
     /** 
      *  @brief This method selects the real or imaginay part of a complex vector.
+     *
+     *  @param[out] x    is the vector that will contain either the real or imaginary part of this vector
+     *  @param[in]  part specifies whether real or imaginary part is selected
      */
-    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, common::ComplexSelection kind ) const = 0;
+    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, common::ComplexPart part ) const = 0;
 
     /** 
      *  @brief This method builds a complex vector by two vectors, one contains the real parts ,the other the imaginary parts.
+     * 
+     *  @param[in] x vector that is taken for the real parts
+     *  @param[in] y vector that is taken for the imaginary parts
+     *
+     *  Like for other binary operations of vectors the input vectors must have same distribution. This
+     *  result vector inherits the distributioon from the input vectors.
+     *
+     *  Note: this operations is not yet supported if one vector is just a scalar, i.e. the real or imaginary 
+     *        part is the same for all elements. As workaround you might use a sparse vector with the corresponding 
+     *        zero element and no non-zero values.
      */
     virtual void buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y ) = 0;
 
@@ -843,12 +857,14 @@ Vector<ValueType>& Vector<ValueType>::operator=( const CastVectorExpression<Valu
 }
 
 template<typename ValueType>
-template<common::ComplexSelection kind, typename OtherValueType>
-Vector<ValueType>& Vector<ValueType>::operator=( const ComplexSelectionVectorExpression<OtherValueType, kind>& exp )
+template<common::ComplexPart kind, typename OtherValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const ComplexPartVectorExpression<OtherValueType, kind>& exp )
 {
     // use a static assert to check for correct types of method selectComplexPart, otherwise strange error messages
 
-    static_assert( std::is_same<ValueType, RealType<OtherValueType> >::value, "wrong types for imag/real" );
+    static_assert( std::is_same<ValueType, RealType<OtherValueType> >::value, 
+                   "realVector = real/imag( complexVector ), value type of realVector is not real type of complexVector" );
+
     exp.getArg().selectComplexPart( *this, kind );
     return *this;
 }

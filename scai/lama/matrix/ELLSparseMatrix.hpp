@@ -145,8 +145,8 @@ public:
 
     explicit ELLSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression );
 
-    template<common::ComplexSelection kind, typename OtherValueType>
-    explicit ELLSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression );
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit ELLSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression );
 
     /** @brief Constructor of a ELL sparse matrix with distributed ELL storage data.
      *
@@ -256,8 +256,8 @@ public:
 };
 
 template<typename ValueType>
-template<common::ComplexSelection kind, typename OtherValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression ) :
+template<common::ComplexPart kind, typename OtherValueType>
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression ) :
 
    SparseMatrix<ValueType>( createStorage() )
 

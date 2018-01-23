@@ -1572,9 +1572,9 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexSelection kind ) const
+void SparseMatrix<ValueType>::selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexPart kind ) const
 {
-    if ( kind == common::ComplexSelection::REAL )
+    if ( kind == common::ComplexPart::REAL )
     {
         x = cast<RealType<ValueType>>( *this );
     }

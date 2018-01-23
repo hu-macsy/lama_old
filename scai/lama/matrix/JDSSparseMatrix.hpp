@@ -145,8 +145,8 @@ public:
 
     explicit JDSSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression );
 
-    template<common::ComplexSelection kind, typename OtherValueType>
-    explicit JDSSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression );
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit JDSSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression );
 
     /** @brief Constructor of a JDS sparse matrix with distributed JDS storage data.
      *
@@ -256,8 +256,8 @@ public:
 };
 
 template<typename ValueType>
-template<common::ComplexSelection kind, typename OtherValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression ) :
+template<common::ComplexPart kind, typename OtherValueType>
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression ) :
 
    SparseMatrix<ValueType>( createStorage() )
 

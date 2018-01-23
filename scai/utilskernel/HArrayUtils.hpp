@@ -938,7 +938,7 @@ public:
 
     /** Select real or imaginary part for an array of (complex) values 
      *
-     *  @param[out] realValues gets same size as complexValues, will contain real or complex parts
+     *  @param[out] realValues gets same size as complexValues, will contain real or imaginary parts
      *  @param[in]  complexValues input array with complex values
      *  @param[in]  kind specifies whether to select real or imaginary part 
      *  @param[in]  prefLoc location where selection should be done if possible
@@ -947,7 +947,7 @@ public:
     static void selectComplexPart(
         hmemo::HArray<RealType<ValueType> >& realValues,
         const hmemo::HArray<ValueType>& complexValues,
-        const common::ComplexSelection kind,
+        const common::ComplexPart kind,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build complex array by combining two real array, one for real and one for imag part

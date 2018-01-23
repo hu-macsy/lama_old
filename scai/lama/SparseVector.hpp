@@ -345,8 +345,8 @@ public:
     /**
      *  @brief enable constructor for SparseVector<T>( imag( x ) );
      */
-    template<common::ComplexSelection kind, typename OtherValueType>
-    explicit SparseVector( const ComplexSelectionVectorExpression<OtherValueType, kind>& expression );
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit SparseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression );
 
     /**
      *  @brief enable constructor for SparseVector<T>( cast<T>( x ) );
@@ -566,9 +566,13 @@ public:
 
     void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
 
-    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexSelection kind ) const;
+    /** Implementation of pure method Vector<ValueType>::selectComplexPart for sparse vector. */
 
-    virtual void buildComplex( const Vector<RealType<ValueType> >& realV, const Vector<RealType<ValueType> >& imagV );
+    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexPart part ) const;
+
+    /** Implementation of pure method Vector<ValueType>::buildComplex for sparse vector. */
+
+    virtual void buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y );
 
     /** Implementation of pure method Vector<ValueType>::vectorPlusVector */
 
@@ -672,8 +676,8 @@ SparseVector<ValueType>::SparseVector(
 }
 
 template<typename ValueType>
-template<common::ComplexSelection kind, typename OtherValueType>
-SparseVector<ValueType>::SparseVector( const ComplexSelectionVectorExpression<OtherValueType, kind>& expression )
+template<common::ComplexPart kind, typename OtherValueType>
+SparseVector<ValueType>::SparseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression )
 {
     const Vector<OtherValueType>& v = expression.getArg();
     this->setContextPtr( v.getContextPtr()  );

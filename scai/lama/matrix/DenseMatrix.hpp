@@ -667,7 +667,7 @@ protected:
 
     /** Implementation of pure method Matrix<ValueType>::selectComplexPart */
 
-    virtual void selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexSelection kind ) const;
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexPart kind ) const;
 
     /** Implementation of pure method Matrix<ValueType>::buildComplex */
 

@@ -250,7 +250,7 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
 
-    virtual void selectComplexPart( Matrix<RealType<ValueType> >&, const common::ComplexSelection ) const
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >&, const common::ComplexPart ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

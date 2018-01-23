@@ -145,8 +145,8 @@ public:
 
     explicit CSRSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression );
 
-    template<common::ComplexSelection kind, typename OtherValueType>
-    explicit CSRSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression );
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit CSRSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression );
 
     /** @brief Constructor of a CSR sparse matrix with distributed CSR storage data.
      *
@@ -256,8 +256,8 @@ public:
 };
 
 template<typename ValueType>
-template<common::ComplexSelection kind, typename OtherValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( const ComplexSelectionMatrixExpression<OtherValueType, kind>& expression ) :
+template<common::ComplexPart kind, typename OtherValueType>
+CSRSparseMatrix<ValueType>::CSRSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression ) :
 
    SparseMatrix<ValueType>( createStorage() )
 

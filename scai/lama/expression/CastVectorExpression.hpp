@@ -47,7 +47,7 @@ class Vector;
 /* ============================================================================ */
 
 /** Class that is used for symbolic expressions to cast vectors from one
- *  type to ther type.
+ *  type to other type.
  *
  *  @tparam TargetType is the value type after conversion
  *  @tparam SourceType is the value type before conversion
@@ -94,86 +94,6 @@ template<typename TargetType, typename SourceType>
 CastVectorExpression<TargetType, SourceType> cast( const Vector<SourceType>& v )
 {
     return CastVectorExpression<TargetType, SourceType>( v );
-}
-
-/* ============================================================================= */
-/*    ComplexSelectionVectorExpression, e.g. imag( DenseVector<ComplexFloat> x ) */
-/* ============================================================================= */
-
-/** 
- *  Expression to select real or imaginary part of a vector
- *
- *  @tparam ValueType is the type of the (complex) vector that is selected
- *  @tparam kind      is either REAL or IMAG correspodinng to the selected part
- */
-template<typename ValueType, common::ComplexSelection kind>
-class ComplexSelectionVectorExpression
-{
-public:
-
-    ComplexSelectionVectorExpression( const Vector<ValueType>& arg ) :  mArg( arg )
-    {
-    }
-
-    inline const Vector<ValueType>& getArg() const
-    {
-        return mArg;
-    }
-
-private:
-
-    const Vector<ValueType>& mArg;   // reference to the function argument
-};
-
-template<typename ValueType>
-ComplexSelectionVectorExpression<ValueType, common::ComplexSelection::REAL> real( const Vector<ValueType>& v )
-{
-    return ComplexSelectionVectorExpression<ValueType, common::ComplexSelection::REAL>( v );
-}
-
-template<typename ValueType>
-ComplexSelectionVectorExpression<ValueType, common::ComplexSelection::IMAG> imag( const Vector<ValueType>& v )
-{
-    return ComplexSelectionVectorExpression<ValueType, common::ComplexSelection::IMAG>( v );
-}
-
-/** A complex vector expression is very close to a binary expression that stands for x + y * i.
- *  In contrary to other binary operations we have a new result type so it is handled here on its own
- */
-template<typename ValueType>
-class ComplexBuildVectorExpression
-{
-public:
-
-    ComplexBuildVectorExpression( const Vector<ValueType>& x, const Vector<ValueType>& y ) :  
-
-        mReal( x ),
-        mImag( y )
-    {
-    }
-
-    inline const Vector<ValueType>& getRealArg() const
-    {
-        return mReal;
-    }
-
-    inline const Vector<ValueType>& getImagArg() const
-    {
-        return mImag;
-    }
-
-private:
-
-    const Vector<ValueType>& mReal;
-    const Vector<ValueType>& mImag;
-};
-
-/** Method to build symbolic expression for complex( x, y ), stands for elementwise x + i * y  */
-
-template<typename ValueType>
-ComplexBuildVectorExpression<ValueType> complex( const Vector<ValueType>& x, const Vector<ValueType>& y )
-{
-    return ComplexBuildVectorExpression<ValueType>( x, y );
 }
 
 } /* end namespace lama */

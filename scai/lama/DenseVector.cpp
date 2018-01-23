@@ -1449,19 +1449,19 @@ void DenseVector<ValueType>::vectorPlusScalar( const ValueType& alpha, const Vec
 /* ----------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexSelection kind ) const
+void DenseVector<ValueType>::selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexPart part ) const
 {
-    HArray<RealType<ValueType> > part;
+    HArray<RealType<ValueType> > localX;
 
-    utilskernel::HArrayUtils::selectComplexPart( part, getLocalValues(), kind );
+    utilskernel::HArrayUtils::selectComplexPart( localX, getLocalValues(), part );
 
-    x.assign( part, getDistributionPtr() );
+    x.assign( localX, getDistributionPtr() );
 }
 
 template<>
-void DenseVector<IndexType>::selectComplexPart( Vector<IndexType>& x, const common::ComplexSelection kind ) const
+void DenseVector<IndexType>::selectComplexPart( Vector<IndexType>& x, const common::ComplexPart kind ) const
 {
-    if ( kind == common::ComplexSelection::REAL )
+    if ( kind == common::ComplexPart::REAL )
     {
         x = *this;
     }

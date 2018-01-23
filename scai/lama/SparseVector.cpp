@@ -1557,22 +1557,26 @@ ValueType SparseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexSelection kind ) const
+void SparseVector<ValueType>::selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexPart part ) const
 {
-    HArray<RealType<ValueType>> part;
+    HArray<RealType<ValueType>> localX;
 
-    HArrayUtils::selectComplexPart( part, getNonZeroValues(), kind );
+    HArrayUtils::selectComplexPart( localX, getNonZeroValues(), part );
 
-    RealType<ValueType> zero = kind == common::ComplexSelection::REAL ? common::Math::real( mZeroValue ) : common::Math::imag( mZeroValue );
+    RealType<ValueType> zero = part == common::ComplexPart::REAL ? common::Math::real( mZeroValue ) : common::Math::imag( mZeroValue );
+
+    // now call virtual methods to set the sparse data to any vector
 
     x.setSameValue( getDistributionPtr(), zero );
-    x.fillSparseData( getNonZeroIndexes(), part, common::BinaryOp::COPY );
+    x.fillSparseData( getNonZeroIndexes(), localX, common::BinaryOp::COPY );
 }
 
+// template specializaton needed for IndexType, as Math::real and Math::imag are not supported for it
+
 template<>
-void SparseVector<IndexType>::selectComplexPart( Vector<IndexType>& x, const common::ComplexSelection kind ) const
+void SparseVector<IndexType>::selectComplexPart( Vector<IndexType>& x, const common::ComplexPart part ) const
 {
-    if ( kind == common::ComplexSelection::REAL )
+    if ( part == common::ComplexPart::REAL )
     {
         x = *this;
     }
