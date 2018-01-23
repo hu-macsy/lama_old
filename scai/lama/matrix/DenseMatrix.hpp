@@ -135,18 +135,18 @@ public:
      */
     DenseMatrix( const DenseMatrix<ValueType>& other );
 
-    /** Constructs a dense matrix from any other matrix that can be of a different type.
+    /** Constructs a dense matrix from any other matrix that can be of any format but same type
      *
      *  @param[in] other   input matrix.
      *  @param[in] transposeFlag if true the input matrix will be transposed
      */
-    DenseMatrix( const _Matrix& other, bool transposeFlag = false );
+    DenseMatrix( const Matrix<ValueType>& other, bool transposeFlag = false );
 
     /** Constructor of a (replicated) dense matrix by global storage.
      *
      *  @param[in] globalData  contains the matrix storage
      */
-    explicit DenseMatrix( const _MatrixStorage& globalData );
+    explicit DenseMatrix( const MatrixStorage<ValueType>& globalData );
 
     /** Constructs a dense matrix from any other matrix with new distributions.
      *
@@ -238,6 +238,14 @@ public:
      */
     DenseMatrix( const Expression_SM<ValueType>& expression );
 
+    template<typename OtherValueType>
+    DenseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression )
+    {
+        const Matrix<OtherValueType>& m = expression.getArg();
+        this->setContextPtr( m.getContextPtr() );
+        Matrix<ValueType>::operator=( expression );
+    }
+
     /** Constructor of a replicated dense matrix by reading the matrix
      *  data from a file.
      *
@@ -289,13 +297,13 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
-    /** Implementation of pure _Matrix::setDenseData */
+    /** Implementation of pure Matrix<ValueType>::setDenseData */
 
     virtual void setDenseData(
         dmemo::DistributionPtr rowDistribution,
         dmemo::DistributionPtr colDistribution,
-        const hmemo::_HArray& values,
-        const Scalar eps );
+        const hmemo::HArray<ValueType>& values,
+        const ValueType eps = ValueType( 0 ) );
 
     /** Implementation for pure method _Matrix::setCSRData. */
 
@@ -374,11 +382,15 @@ public:
 
     /** Method that assigns a sparse matrix, specialization of assign( const _Matrix& ) */
 
-    void assignSparse( const _Matrix& other );
+    template<typename OtherValueType>
+    void assignSparse( const SparseMatrix<OtherValueType>& other );
 
     /* Implementation of pure method of class _Matrix. */
 
     virtual void assign( const _MatrixStorage& storage );
+
+    template<typename OtherValueType>
+    void assignImpl( const Matrix<OtherValueType>& other );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -453,6 +465,17 @@ public:
     /* Implemenation of pure method Matrix<ValueType>::matrixTimesScalar */
 
     virtual void matrixTimesScalar( const Matrix<ValueType>& other, const ValueType alpha );
+
+    /**
+     * @brief Implementation of pure method Matrix<ValueType>::matrixTimesVectorDense
+     */
+    void matrixTimesVectorDense(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>* y,
+        bool transposeFlag ) const;
 
     /**
      *  @brief Provide method matrixTimesVector where all vectors are now dense
@@ -624,7 +647,7 @@ public:
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 
     template<typename otherT>
-    void copyDenseMatrix( const DenseMatrix<otherT>& other );
+    void assignDense( const DenseMatrix<otherT>& other );
 
     /** Optimized implementation for dense vectors as diagonal. */
 
@@ -641,6 +664,14 @@ protected:
         const DenseMatrix<ValueType>& A,
         const ValueType beta,
         const DenseMatrix<ValueType>& B );
+
+    /** Implementation of pure method Matrix<ValueType>::selectComplexPart */
+
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexPart kind ) const;
+
+    /** Implementation of pure method Matrix<ValueType>::buildComplex */
+
+    virtual void buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y );
 
 private:
 
@@ -722,25 +753,6 @@ public:
 };
 
 /*  template methods implementations */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>& other )
-{
-    // check for valid pointer, might be dynamic cast went wrong somewhere else
-    //SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
-    SCAI_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
-    // inherit size and distributions
-    _Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
-    mData.resize( other.mData.size() );
-    IndexType n = static_cast<IndexType>( other.mData.size() );
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        SCAI_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
-        mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
-    }
-}
 
 template<typename ValueType>
 template<typename OtherValueType>

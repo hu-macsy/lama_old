@@ -297,23 +297,9 @@ void Matrix<ValueType>::matrixTimesVector(
 
     DenseVector<ValueType>& denseResult = static_cast<DenseVector<ValueType>&>( result );
 
-    // Now call the typed version implemented by derived class
+    // Now call the version with dense vector implemented by derived class
 
-    if ( !transposeFlag )
-    {
-        matrixTimesVectorImpl( denseResult, alpha, denseX, beta, denseY );
-    }
-    else if ( this->getColDistribution().getCommunicator().getSize() == 1 )
-    {
-        // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
-        // use routine provided by this CRTP
-
-        this->vectorTimesMatrixRepCols( denseResult, alpha, denseX, beta, denseY );
-    }
-    else
-    {
-        this->vectorTimesMatrixImpl( denseResult, alpha, denseX, beta, denseY );
-    }
+    matrixTimesVectorDense( denseResult, alpha, denseX, beta, denseY, transposeFlag );
 }
 
 /* ========================================================================= */
@@ -490,6 +476,13 @@ RealType<ValueType> Matrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& oth
 }
 
 /* ========================================================================= */
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Matrix<ValueType>& other )
+{
+    this->assign( other );
+    return *this;
+}
 
 template<typename ValueType>
 Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM_SM<ValueType>& exp )

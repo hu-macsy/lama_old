@@ -191,7 +191,7 @@ public:
      *     sub( vd );               // compile error to avoid implicit conversions
      * \endcode
      */
-    explicit SparseVector( const _Vector& other );
+    explicit SparseVector( const Vector<ValueType>& other );
 
     /**
      * @brief creates a redistributed copy of the passed vector
@@ -201,7 +201,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    explicit SparseVector( const _Vector& other, dmemo::DistributionPtr distribution );
+    explicit SparseVector( const Vector<ValueType>& other, dmemo::DistributionPtr distribution );
 
     /** 
      * @brief Construct a vector by a dense vector and zero element.
@@ -336,6 +336,28 @@ public:
      * @param[in] expression     x * A
      */
     explicit SparseVector( const Expression_VM<ValueType>& expression );
+
+    /**
+     *  @brief enable constructor for SparseVector<T>( complex( x, y ) );
+     */
+    inline explicit SparseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression );
+
+    /**
+     *  @brief enable constructor for SparseVector<T>( imag( x ) );
+     */
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit SparseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression );
+
+    /**
+     *  @brief enable constructor for SparseVector<T>( cast<T>( x ) );
+     */
+    template<typename OtherValueType>
+    explicit SparseVector( const CastVectorExpression<ValueType, OtherValueType>& expression );
+
+    /**
+     *  @brief enable constructor for SparseVector<T>( sin( x ) );
+     */
+    inline explicit SparseVector( const UnaryVectorExpression<ValueType>& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -544,6 +566,14 @@ public:
 
     void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
 
+    /** Implementation of pure method Vector<ValueType>::selectComplexPart for sparse vector. */
+
+    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexPart part ) const;
+
+    /** Implementation of pure method Vector<ValueType>::buildComplex for sparse vector. */
+
+    virtual void buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y );
+
     /** Implementation of pure method Vector<ValueType>::vectorPlusVector */
 
     virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta, const Vector<ValueType>& y );
@@ -561,9 +591,9 @@ public:
 
     virtual void vectorPlusScalar( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta );
 
-    /** Implementation of pure method _Vector::dotProduct */
+    /** Implementation of pure method Vector::dotProduct */
 
-    virtual ValueType dotProduct( const _Vector& other ) const;
+    virtual ValueType dotProduct( const Vector<ValueType>& other ) const;
 
     /** Implementation of pure method _Vector::setVector */
 
@@ -643,6 +673,44 @@ SparseVector<ValueType>::SparseVector(
 
 {
     setSparseValues( nnz, nonZeroIndexes, nonZeroValues, zeroValue );
+}
+
+template<typename ValueType>
+template<common::ComplexPart kind, typename OtherValueType>
+SparseVector<ValueType>::SparseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression )
+{
+    const Vector<OtherValueType>& v = expression.getArg();
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+SparseVector<ValueType>::SparseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression )
+{
+    const Vector<RealType<ValueType>>& v = expression.getRealArg();
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+SparseVector<ValueType>::SparseVector( const CastVectorExpression<ValueType, OtherValueType>& expression )
+{
+    const Vector<OtherValueType>& v = expression.getArg();
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+SparseVector<ValueType>::SparseVector( const UnaryVectorExpression<ValueType>& expression )
+{
+    const Vector<ValueType>& v = expression.getArg();
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */

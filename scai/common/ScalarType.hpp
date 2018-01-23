@@ -82,6 +82,14 @@ enum class ScalarType
     UNKNOWN
 }; 
 
+/** Simple enun class for the two parts of a complex value */
+
+enum class ComplexPart
+{
+    REAL,   // real part of a complex number
+    IMAG    // imaginary part of a complex number
+};
+
 /** Query an enum value whether it is complex or not. */
 
 COMMON_DLL_IMPORTEXPORT bool isComplex( const ScalarType stype );

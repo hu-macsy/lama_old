@@ -166,29 +166,27 @@ public:
     DenseVector( const DenseVector<ValueType>& other );
 
     /**
-     * @brief Override the default move constructor with appropriate version.
+     * @brief Move constructor that reuses allocated resources from input vector instead of deep copy.
      *
-     * @param[in] other the dense vector from which data is moved
-     *
-     * The new created object gets its resources from the passed dense vector.
+     * The attribute noexcept is mandatory to make the use of dense vectors possible in C++ container classes.
      */
     DenseVector( DenseVector<ValueType>&& other ) noexcept;
 
     /**
-     * More general constructor that creates a deep copy of an arbitrary vector.
+     * More general constructor that creates a deep copy of an arbitrary vector( same type )
      *
      * The explicit specifier avoids implict conversions as the following example shows.
      *
      * \code
      *     subroutine sub( const DenseVector<float>& v );
      *     ...
-     *     DenseVector<float> vf;
-     *     DenseVector<double> vd;
-     *     sub( vf );               // that is okay
-     *     sub( vd );               // compile error to avoid implicit conversions
+     *     DenseVector<float> dV;
+     *     SparseVector<float> sV;
+     *     sub( dV );               // that is okay
+     *     sub( sV );               // compile error to avoid implicit conversions
      * \endcode
      */
-    explicit DenseVector( const _Vector& other );
+    explicit DenseVector( const Vector<ValueType>& other );
 
     /**
      * @brief creates a redistributed copy of the passed vector
@@ -198,7 +196,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    DenseVector( const _Vector& other, dmemo::DistributionPtr distribution );
+    DenseVector( const Vector<ValueType>& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
@@ -236,6 +234,10 @@ public:
      * Note: Only the first processor will read the matrix file.
      */
     explicit DenseVector( const std::string& filename );
+
+    /* ================================================================ */
+    /*    expression constuctors                                        */
+    /* ================================================================ */
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x.
@@ -318,6 +320,28 @@ public:
      * @param[in] expression     x * A
      */
     explicit DenseVector( const Expression_VM<ValueType>& expression );
+
+    /**
+     *  @brief enable constructor for DenseVector<T>( complex( x, y ) );
+     */
+    inline explicit DenseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression );
+
+    /**
+     *  @brief enable constructor for DenseVector<T>( imag( x ) );
+     */
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit DenseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression );
+
+    /**
+     *  @brief enable constructor for DenseVector<T>( cast<T>( x ) );
+     */
+    template<typename OtherValueType>
+    explicit DenseVector( const CastVectorExpression<ValueType, OtherValueType>& expression );
+
+    /**
+     *  @brief enable constructor for DenseVector<T>( sin( x ) );
+     */
+    inline explicit DenseVector( const UnaryVectorExpression<ValueType>& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -555,6 +579,14 @@ public:
 
     void binaryOp( const Vector<ValueType>& x, common::BinaryOp op, const Vector<ValueType>& y );
 
+    /** Implementation of pure method Vector<ValueType>::selectComplexPart for dense vector. */
+
+    virtual void selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexPart kind ) const;
+
+    /** Implementation of pure method Vector<ValueType>::buildComplex for dense vector. */
+
+    virtual void buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y );
+
     /** Implementation of pure method Vector<ValueType>::binaryOpScalar for dense vector. */
 
     void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
@@ -630,7 +662,7 @@ public:
         const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
-    virtual ValueType dotProduct( const _Vector& other ) const;
+    virtual ValueType dotProduct( const Vector<ValueType>& other ) const;
 
     using _Vector::prefetch; // prefetch() with no arguments
 
@@ -738,6 +770,44 @@ DenseVector<ValueType> linearValuesVector(
     result.allocate( distribution );
     result.fillLinearValues( startValue, inc );
     return result;
+}
+
+template<typename ValueType>
+template<common::ComplexPart kind, typename OtherValueType>
+DenseVector<ValueType>::DenseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression ) 
+{
+    const Vector<OtherValueType>& v = expression.getArg(); 
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression )
+{
+    const Vector<RealType<ValueType>>& v = expression.getRealArg(); 
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+DenseVector<ValueType>::DenseVector( const CastVectorExpression<ValueType, OtherValueType>& expression )
+{
+    const Vector<OtherValueType>& v = expression.getArg(); 
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const UnaryVectorExpression<ValueType>& expression )
+{
+    const Vector<ValueType>& v = expression.getArg(); 
+    this->setContextPtr( v.getContextPtr()  );
+    this->allocate( v.getDistributionPtr() );
+    Vector<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */

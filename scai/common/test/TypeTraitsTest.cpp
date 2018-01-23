@@ -216,4 +216,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_numeric_test_types )
 
 /* -----------------------------------------------------------------------------*/
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( ImaginaryTest, ValueType, scai_numeric_test_types )
+{
+    ValueType imagUnit = TypeTraits<ValueType>::imaginaryUnit();
+
+    ValueType imagSquare = imagUnit * imagUnit;
+   
+    ScalarType stype = TypeTraits<ValueType>::stype;
+
+    if ( isComplex( stype ) )
+    {
+        ValueType expected = -1;
+        BOOST_CHECK_EQUAL( expected, imagSquare );
+    }
+    else
+    {
+        ValueType expected = 0;
+        BOOST_CHECK_EQUAL( expected, imagSquare );
+    }
+}
+
+/* -----------------------------------------------------------------------------*/
+
 BOOST_AUTO_TEST_SUITE_END();

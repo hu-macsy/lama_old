@@ -216,7 +216,8 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     diagonals.insert( diagonals.begin(), mySize,      1.0 ); // add secondary diagonal
     diagonals.insert( diagonals.begin(), size,       -1.0 ); // insert main diagonal before secondary diagonal
 
-    C.setRawDIAData( dist, dist, numDiagonals, &offsets[0], &diagonals[0] );
+    // C.setRawDIAData( dist, dist, numDiagonals, &offsets[0], &diagonals[0] );
+
     C.setContextPtr( ctx );
     HOST_PRINT( comm, "Matrix C finished\n" );
 }

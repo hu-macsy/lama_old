@@ -122,9 +122,9 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const XXXSparseMatrix& other )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const _Matrix& other, bool transposeFlag )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Matrix<ValueType>& other, bool transposeFlag ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     this->setContextPtr( other.getContextPtr() );
@@ -143,9 +143,9 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const _Matrix& other, bool transpos
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const _Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Matrix<ValueType>& other, DistributionPtr rowDist, DistributionPtr colDist ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     this->setContextPtr( other.getContextPtr() );
@@ -158,9 +158,9 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const _Matrix& other, DistributionP
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const _MatrixStorage& globalData )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const MatrixStorage<ValueType>& globalData ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
@@ -172,11 +172,11 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const _MatrixStorage& globalData )
 
 template<typename ValueType>
 XXXSparseMatrix<ValueType>::XXXSparseMatrix(
-    const _MatrixStorage& localData,
+    const MatrixStorage<ValueType>& localData,
     DistributionPtr rowDist,
-    DistributionPtr colDist )
+    DistributionPtr colDist ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     SparseMatrix<ValueType>::assign( localData, rowDist, colDist );
@@ -185,9 +185,9 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM<ValueType>& expression )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM<ValueType>& expression ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     const Matrix<ValueType>& master = expression.getArg2();
@@ -199,9 +199,9 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM<ValueType>& exp
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SMM<ValueType>& expression )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SMM<ValueType>& expression ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage() )
 
 {
     const Matrix<ValueType>& master = expression.getArg1().getArg2();

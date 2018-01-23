@@ -90,11 +90,11 @@ public:
 
     /** Override default constructor, make sure that deep copies are created. */
 
-    COOSparseMatrix( const COOSparseMatrix& other );
+    COOSparseMatrix( const COOSparseMatrix<ValueType>& other );
 
     /** Most general copy constrcuctor with possibility of transpose. */
 
-    COOSparseMatrix( const _Matrix& other, bool transposeFlag = false );
+    COOSparseMatrix( const Matrix<ValueType>& other, bool transposeFlag = false );
 
     /** Constructor of a sparse matrix by another input matrix with redistribution.
      *
@@ -102,13 +102,13 @@ public:
      * @param[in] rowDist   row distribution of the new matrix
      * @param[in] colDist   column distribution of the new matrix
      */
-    COOSparseMatrix( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    COOSparseMatrix( const Matrix<ValueType>& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
      *  @param[in] globalData  contains local rows of the distributed matrix
      */
-    explicit COOSparseMatrix( const _MatrixStorage& globalData );
+    explicit COOSparseMatrix( const MatrixStorage<ValueType>& globalData );
 
     /** Constructor of a sparse matrix by local storage.
      *
@@ -119,7 +119,7 @@ public:
      *  This constructor works also fine if localData is the full global matrix;
      *  in this case only local rows will be taken on this processor.
      */
-    COOSparseMatrix( const _MatrixStorage& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    COOSparseMatrix( const MatrixStorage<ValueType>& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Constructor of a replicated sparse matrix by reading the matrix
      *  data from a file.
@@ -139,6 +139,14 @@ public:
     explicit COOSparseMatrix( const Expression_SMM<ValueType>& expression );
 
     explicit COOSparseMatrix( const Expression_SM_SM<ValueType>& expression );
+
+    template<typename OtherValueType>
+    explicit COOSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression );
+
+    explicit COOSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression );
+
+    template<common::ComplexPart kind, typename OtherValueType>
+    explicit COOSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression );
 
     /** @brief Constructor of a COO sparse matrix with distributed COO storage data.
      *
@@ -180,24 +188,6 @@ public:
     /** Override the default assignment operator that would not make deep copies. */
 
     COOSparseMatrix& operator=( const COOSparseMatrix& matrix );
-
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
-
-    /*
-     COOSparseMatrix& operator=( const _Matrix& matrix );
-
-     COOSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
-
-     COOSparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
-
-     COOSparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
-
-     COOSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-     COOSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-     */
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
@@ -264,6 +254,44 @@ public:
 
     static MatrixCreateKeyType createValue();
 };
+
+template<typename ValueType>
+template<common::ComplexPart kind, typename OtherValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
+{
+    const Matrix<OtherValueType>& m = expression.getArg();
+    this->setContextPtr( m.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
+    Matrix<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
+{
+    const Matrix<RealType<ValueType> >& m = expression.getRealArg();
+    this->setContextPtr( m.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
+    Matrix<ValueType>::operator=( expression );
+}
+
+template<typename ValueType>
+template<typename OtherValueType>
+COOSparseMatrix<ValueType>::COOSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression ) :
+
+   SparseMatrix<ValueType>( createStorage() )
+
+{
+    const Matrix<OtherValueType>& m = expression.getArg();
+    this->setContextPtr( m.getContextPtr() );
+    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
+    Matrix<ValueType>::operator=( expression );
+}
 
 template<typename ValueType>
 template<typename LocalValueType, typename HaloValueType>

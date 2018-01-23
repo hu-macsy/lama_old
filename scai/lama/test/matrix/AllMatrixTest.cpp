@@ -43,6 +43,7 @@
 #include <scai/hmemo/HArrayRef.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/dmemo/test/TestDistributions.hpp>
 
@@ -75,6 +76,7 @@ void initMatrix( _Matrix& matrix, const char* rowDistKind, const char* colDistKi
                                          0, 0, 9, 4, 0,
                                          2, 5, 0, 3, 8
                                        };
+
     hmemo::HArrayRef<ValueType> data( numRows * numColumns, values );
     DenseStorage<ValueType> denseStorage( data, numRows, numColumns );
     matrix.assign( denseStorage );
@@ -98,8 +100,8 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     _Matrices allMatrices;    // is created by factory
     size_t nFormats = static_cast<size_t>( Format::UNDEFINED );
     size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_NUMERIC_TYPES_HOST );
-    nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
     nFormats--;   // STENCIL_STORAGE not used for a matrix
+    nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
     SCAI_LOG_INFO( logger, "Test all matrices of factory to be empty, #matrices = " << allMatrices.size() )
     BOOST_CHECK_EQUAL( nTypes * nFormats, allMatrices.size() );
 
@@ -682,7 +684,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
             {
                 Matrix<ValueType>& matrix = *allMatrices[s];
 
-                matrix = csr;
+                matrix = cast<ValueType>( csr );  // convert DefaultReal->ValueType
 
                 matrix.redistribute( rowDist, colDist );
 
@@ -812,7 +814,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getColTest, ValueType, scai_numeric_test_types )
             {
                 Matrix<ValueType>& matrix = *allMatrices[s];
 
-                matrix = csr;
+                matrix = cast<ValueType>( csr );
 
                 matrix.redistribute( rowDist, colDist );
 
@@ -867,7 +869,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getTest, ValueType, scai_numeric_test_types )
             {
                 Matrix<ValueType>& matrix = *allMatrices[s];
 
-                matrix = csr;
+                matrix = cast<ValueType>( csr );
 
                 matrix.redistribute( rowDist, colDist );
 
@@ -1002,62 +1004,6 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( setDIADataTest )
-{
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-
-    typedef DefaultReal ValueType;
-
-    const IndexType nRows = 15;
-    const IndexType nCols = 8;
-
-    std::srand( 1311 );
-
-    DIASparseMatrix<ValueType> dia( nRows, nCols );
-    MatrixCreator::fillRandom( dia, 0.1f );
-
-    dmemo::DistributionPtr colDist( new NoDistribution( nCols ) );
-
-    TestDistributions testDistributions( nRows );
-
-    for ( size_t i = 0; i < testDistributions.size(); ++i )
-    {
-        DistributionPtr dist = testDistributions[i];
-
-        dia.redistribute( dist, dia.getColDistributionPtr() );
-
-        DIAStorage<ValueType> localDIA = dia.getLocalStorage();
-
-        SCAI_LOG_INFO( logger, "Local DIAData: " << localDIA )
-
-        const IndexType numDiagonals = localDIA.getNumDiagonals();
-        const hmemo::HArray<IndexType>& offsets = localDIA.getOffsets();
-        const hmemo::HArray<ValueType>& values = localDIA.getValues();
-
-        // now we have local DIA data to set
-
-        _Matrices allMatrices( context );    // is created by factory
-
-        for ( size_t k = 0; k < allMatrices.size(); ++k )
-        {
-            _Matrix& mat = *allMatrices[ k ];
-
-            if ( mat.getMatrixKind() != MatrixKind::DENSE )
-            {
-                continue;
-            }
-
-            SCAI_LOG_INFO( logger, "setDIAData for this mat: " << mat )
-
-            mat.setDIAData( dist, colDist, numDiagonals, offsets, values );
-
-            BOOST_CHECK( mat.isConsistent() );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 15;   // only square matrices here
@@ -1098,7 +1044,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_ty
             {
                 Matrix<ValueType>& matrix = *allMatrices[s];
 
-                matrix = csr;
+                matrix = cast<ValueType>( csr );
 
                 std::unique_ptr<Matrix<ValueType> > matrix1( matrix.copy() );
 
@@ -1177,6 +1123,52 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
 
             BOOST_CHECK( matrix.maxDiffNorm( csr2 ) < eps );
         }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
+{
+    // skip this test if ValueType is not complex as imag would return 0
+
+    if ( !common::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        return;
+    }
+
+    typedef RealType<ValueType> Real;
+
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    const IndexType n = 100;
+
+    Matrices<ValueType> allMatrices( context );    // is created by factory
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    for ( size_t i = 0; i < allMatrices.size(); ++i )
+    {
+        Matrix<ValueType>& complexMatrix = *allMatrices[i];
+
+        float fillRate = 0.1f;
+
+        complexMatrix.allocate( dist, dist );
+        MatrixCreator::fillRandom( complexMatrix, fillRate  );
+
+        DenseMatrix<Real> x;
+        x = real ( complexMatrix );
+
+        DenseMatrix<Real> y;
+        y = imag( complexMatrix );
+
+        DenseMatrix<ValueType> z;
+        z =  complex( x, y );
+
+        Real diff = complexMatrix.maxDiffNorm( z );
+
+        BOOST_CHECK_EQUAL( diff, 0 );
     }
 }
 

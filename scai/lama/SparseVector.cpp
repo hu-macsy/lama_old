@@ -167,7 +167,7 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution, const Value
 }
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const _Vector& other ) : 
+SparseVector<ValueType>::SparseVector( const Vector<ValueType>& other ) : 
 
     Vector<ValueType>( other ), 
     mZeroValue( 0 )
@@ -178,7 +178,7 @@ SparseVector<ValueType>::SparseVector( const _Vector& other ) :
 }
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const _Vector& other, DistributionPtr distribution ) : 
+SparseVector<ValueType>::SparseVector( const Vector<ValueType>& other, DistributionPtr distribution ) : 
 
     Vector<ValueType>( other ),
     mZeroValue( 0 )
@@ -1508,7 +1508,7 @@ void SparseVector<ValueType>::vectorPlusScalar( const ValueType& alpha, const Ve
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
+ValueType SparseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) const
 {
     SCAI_REGION( "Vector.Sparse.dotP" )
 
@@ -1552,6 +1552,57 @@ ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
     SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
     return dotProduct;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::selectComplexPart( Vector<RealType<ValueType> >& x, const common::ComplexPart part ) const
+{
+    HArray<RealType<ValueType>> localX;
+
+    HArrayUtils::selectComplexPart( localX, getNonZeroValues(), part );
+
+    RealType<ValueType> zero = part == common::ComplexPart::REAL ? common::Math::real( mZeroValue ) : common::Math::imag( mZeroValue );
+
+    // now call virtual methods to set the sparse data to any vector
+
+    x.setSameValue( getDistributionPtr(), zero );
+    x.fillSparseData( getNonZeroIndexes(), localX, common::BinaryOp::COPY );
+}
+
+// template specializaton needed for IndexType, as Math::real and Math::imag are not supported for it
+
+template<>
+void SparseVector<IndexType>::selectComplexPart( Vector<IndexType>& x, const common::ComplexPart part ) const
+{
+    if ( part == common::ComplexPart::REAL )
+    {
+        x = *this;
+    }
+    else
+    {
+        x.setSameValue( getDistributionPtr(), IndexType( 0 ) );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::buildComplex( const Vector<RealType<ValueType> >& x, const Vector<RealType<ValueType> >& y )
+{
+    // ToDo: provide more efficient solutions as this one with two temporary complex vectors
+
+    DenseVector<ValueType> x1( cast<ValueType>( x  ) );
+    DenseVector<ValueType> y1( cast<ValueType>( y  ) );
+    ValueType i = common::TypeTraits<ValueType>::imaginaryUnit();
+    vectorPlusVector( 1, x1, i, y1 );
+}
+
+template<>
+void SparseVector<IndexType>::buildComplex( const Vector<IndexType>& x, const Vector<IndexType>& )
+{
+    *this = x;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1613,7 +1664,8 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
     {
         // Maybe not very efficient if other vector is dense
 
-        SparseVector<ValueType> tmpOther( other );
+        SparseVector<ValueType> tmpOther;
+        tmpOther.assign( other );
 
         SCAI_LOG_DEBUG( logger, "binary op, converted other = " << other << " -> " << tmpOther )
 

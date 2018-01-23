@@ -72,13 +72,16 @@ public:
     /** 
      *  Implementation of the linear operator
      */
-    virtual void matrixTimesVectorImpl(
+    virtual void matrixTimesVectorDense(
         DenseVector<ValueType>& result,
         const ValueType alpha,
         const DenseVector<ValueType>& x,
         const ValueType beta,
-        const DenseVector<ValueType>* y ) const
+        const DenseVector<ValueType>* y,
+        bool ) const
     {
+        // Note: transpose flag does not matter as marix is symmetric
+
         SCAI_LOG_INFO( logger, "matrixTimesVector, mA = " << mA )
 
         mAx    = mA * x;

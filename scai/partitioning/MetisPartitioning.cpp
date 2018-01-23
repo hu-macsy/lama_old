@@ -260,7 +260,9 @@ void MetisPartitioning::rectangularPartitioning(
     DistributionPtr rowDist( new NoDistribution( matrix.getNumRows() ) );
     DistributionPtr colDist( new NoDistribution( matrix.getNumColumns() ) );
 
-    CSRSparseMatrix<double> csrMatrix( matrix, rowDist, colDist );
+    CSRSparseMatrix<double> csrMatrix;
+    csrMatrix.assign( matrix ),
+    csrMatrix.redistribute( rowDist, colDist );
     CSRStorage<double>& storage = csrMatrix.getLocalStorage();
     CSRStorage<double> storageT;
     storageT.assignTranspose( storage );

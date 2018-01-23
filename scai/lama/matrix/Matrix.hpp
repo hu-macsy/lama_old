@@ -34,6 +34,8 @@
 #pragma once
 
 #include <scai/lama/matrix/_Matrix.hpp>
+#include <scai/lama/expression/CastMatrixExpression.hpp>
+#include <scai/lama/expression/ComplexMatrixExpression.hpp>
 
 namespace scai
 {
@@ -78,9 +80,36 @@ public:
 
     virtual const MatrixStorage<ValueType>& getLocalStorage( void ) const = 0;
 
-    // Important: pass assign operator so it can also be used here
+    /**
+     * @brief The assignment operator for matrix.
+     *
+     * @param[in] other   is the input matrix.
+     *
+     * The assignment operator will make a deep copy of the input matrix. Size and distributions
+     * are inherited, but there might be implicit conversions regarding storage format.
+     */
+    Matrix<ValueType>& operator=( const Matrix<ValueType>& other );
 
-    using _Matrix::operator=;
+    /**
+     * @brief The assignment operator with explicit type conversion.
+     *
+     * \code
+     *     Matrix<float>& fM = ...
+     *     const Matrix<double>& dM = ...
+     *     fM = cast<float>( dM );
+     * \endcode
+     */
+    template<typename OtherValueType>
+    Matrix<ValueType>& operator=( const CastMatrixExpression<ValueType, OtherValueType>& exp );
+
+    /** this = real( A ) or this = imag( A ) */
+
+    template<common::ComplexPart kind, typename OtherValueType>
+    Matrix<ValueType>& operator=( const ComplexPartMatrixExpression<OtherValueType, kind>& exp );
+
+    /** this = cmplx( A, B ) */
+
+    Matrix<ValueType>& operator=( const ComplexBuildMatrixExpression<RealType<ValueType> >& exp );
 
     /**
      * @brief Assignment operator for alhpa * A
@@ -220,13 +249,34 @@ public:
      * This method computes result = alpha * this * x + beta * y. If
      * result == x or result == y new storage is allocated to store the result.
      */
-    void matrixTimesVector(
+    virtual void matrixTimesVector(
         Vector<ValueType>& result,
         const ValueType alpha,
         const Vector<ValueType>& x,
         const ValueType beta,
         const Vector<ValueType>* y,
         bool transposeFlag ) const;
+
+    /**
+     *  @brief Special case of matrixTimesVector but with all vectors are dense 
+     *
+     * @param[out] result        dense vector that stores the result
+     * @param[in]  alpha         scaling factor for matrix * vector
+     * @param[in]  x             dense vector that is used for multiplication
+     * @param[in]  beta          scaling factor for additional summand
+     * @param[in]  y             additional summand ( beta = 0 if not available )
+     * @param[in]  transposeFlag if set the adjoint linear transformation is taken
+     *
+     * This virtual method must be overridden by all derived classes that have no
+     * own version of matrixTimesVector.
+     */
+    virtual void matrixTimesVectorDense(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>* y,
+        bool transposeFlag ) const = 0;
 
     /**
      * @brief Computes this = alpha * A.
@@ -314,6 +364,52 @@ public:
      * derived classes.
      */
     virtual RealType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const = 0;
+
+    /* ======================================================================= */
+    /*     General methods for setting a matrix                                */
+    /* ======================================================================= */
+
+    /** This method sets a matrix with the values owned by this partition in dense format
+     *
+     *  @param[in] rowDist distributon of rows for the matrix
+     *  @param[in] colDist distributon of columns for the matrix
+     *  @param[in] values contains all values of the owned rows in row-major order (C-style)
+     *  @param[in] eps    threshold value for non-zero elements
+     *
+     *  Note: only the row distribution decides which data is owned by this processor
+     *
+     *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
+     */
+    virtual void setDenseData( 
+        dmemo::DistributionPtr rowDist, 
+        dmemo::DistributionPtr colDist, 
+        const hmemo::HArray<ValueType>& values, 
+        ValueType eps = 0 ) = 0;
+
+    /** This method sets raw dense data in the same way as setDenseData but with raw value array */
+
+    void setRawDenseData(
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
+        const ValueType* values,
+        const ValueType eps = 0 )
+    {
+        const IndexType n = rowDist->getLocalSize();
+        const IndexType m = colDist->getGlobalSize();
+        // use of HArrayRef instead of HArray avoids additional copying of values
+        const hmemo::HArrayRef<ValueType> valueArray( n * m, values );
+        setDenseData( rowDist, colDist, valueArray, eps );
+    }
+
+    /** Setting raw dense data for a replicated matrix, only for convenience. */
+
+    void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values, const ValueType eps = 0 )
+    {
+        setRawDenseData( dmemo::DistributionPtr( new dmemo::NoDistribution( n ) ),
+                         dmemo::DistributionPtr( new dmemo::NoDistribution( m ) ),
+                         values,
+                         eps );
+    }
 
     /* ======================================================================= */
     /*     setter / getter for diagonal of a matrix                            */
@@ -516,22 +612,6 @@ protected:
 
     Matrix( const Matrix<ValueType>& other );
 
-    /** typed version of matrixTimesVector must be implemented by derived classes */
-
-    virtual void matrixTimesVectorImpl(
-        DenseVector<ValueType>& denseResult,
-        const ValueType alphaValue,
-        const DenseVector<ValueType>& denseX,
-        const ValueType betaValue,
-        const DenseVector<ValueType>* denseY ) const = 0;
-
-    virtual void vectorTimesMatrixImpl(
-        DenseVector<ValueType>& denseResult,
-        const ValueType alphaValue,
-        const DenseVector<ValueType>& denseX,
-        const ValueType betaValue,
-        const DenseVector<ValueType>* denseY ) const = 0;
-
     virtual void setLocalRow( const hmemo::HArray<ValueType>& row,
                               const IndexType localRowIndex,
                               const common::BinaryOp op  ) = 0;
@@ -548,6 +628,24 @@ protected:
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
         const DenseVector<ValueType>* denseY ) const;
+
+public:
+
+    /** 
+     *  @brief This method selects the real or imaginay part of a complex matrix
+     *
+     *  @param[out] x    is the matrix that will contain the real or imaginary part of this matrix
+     *  @param[in]  kind specifies which part (real or complex) is selected
+     */
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexPart kind ) const = 0;
+
+    /** 
+     *  @brief This method builds this complex matrix by two matrices, one contains the real parts, the other the imaginary parts.
+     *
+     *  @param[in] x is the matrix containing the real parts
+     *  @param[in] y is the matrix containing the complex parts
+     */
+    virtual void buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y ) = 0;
 };
 
 /** 
@@ -571,6 +669,38 @@ using MatrixPtr = std::shared_ptr<Matrix<ValueType> >;
 */
 template<typename ValueType>
 using MatrixPtr1 = std::unique_ptr<Matrix<ValueType> >;
+
+/* ======================================================================================= */
+/*     Implementation of inline methods                                                    */
+/* ======================================================================================= */
+
+template<typename ValueType>
+template<typename OtherValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const CastMatrixExpression<ValueType, OtherValueType>& exp )
+{
+    this->assign( exp.getArg() );
+    return *this;
+}
+
+template<typename ValueType>
+template<common::ComplexPart kind, typename OtherValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const ComplexPartMatrixExpression<OtherValueType, kind>& exp )
+{
+    // use a static assert to check for correct types of method selectComplexPart, otherwise strange error messages
+
+    static_assert( std::is_same<ValueType, RealType<OtherValueType> >::value,
+                   "realMatrix = real|imag( complexMatrix ), value type of realMatrix is not real type of complexMatrix" );
+
+    exp.getArg().selectComplexPart( *this, kind );
+    return *this;
+}
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const ComplexBuildMatrixExpression<RealType<ValueType> >& exp )
+{
+    buildComplex( exp.getRealArg(), exp.getImagArg() );
+    return *this;
+}
 
 } /* end namespace lama */
 

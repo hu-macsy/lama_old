@@ -227,14 +227,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_type
         sparseVector.redistribute( dist );
         denseVector.redistribute( dist );
 
-        v += denseVector;
-        v -= denseVector;
-        v += sparseVector;
-        v -= sparseVector;
-        v *= sparseVector;
-        v /= sparseVector;
-        v *= denseVector;
-        v /= denseVector;
+        v += cast<ValueType>( denseVector );
+        v -= cast<ValueType>( denseVector );
+        v += cast<ValueType>( sparseVector );
+        v -= cast<ValueType>( sparseVector );
+        v *= cast<ValueType>( sparseVector );
+        v /= cast<ValueType>( sparseVector );
+        v *= cast<ValueType>( denseVector );
+        v /= cast<ValueType>( denseVector );
 
         ValueType s = v.sum();
         ValueType expected = 4 * n;
@@ -244,14 +244,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_type
 
         BOOST_CHECK( common::Math::abs( s - expected )  < eps );
 
-        v = denseVector;
+        v = cast<ValueType>( denseVector );
         
         s = v.sum();
         expected= denseVector.sum();
 
         BOOST_CHECK( common::Math::abs( s - expected )  < eps );
 
-        v = sparseVector;
+        v = cast<ValueType>( sparseVector );
         
         s = v.sum();
         expected= sparseVector.sum();
@@ -584,6 +584,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
         v1 -= v2;
 
         BOOST_CHECK( diff < eps );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
+{
+    // skip this test if ValueType is not complex as imag would return 0
+
+    if ( !common::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        return;
+    }
+
+    typedef RealType<ValueType> Real;
+
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 100;
+
+    TestVectors<ValueType> vectors;
+
+    dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        Vector<ValueType>& complexVector = *vectors[i];
+
+        float fillRate = 0.1f;
+
+        ValueType zero = 0;
+
+        IndexType bound = 2;
+
+        complexVector.setSparseRandom( vectorDist, zero, fillRate, bound );
+
+        DenseVector<Real> x( real ( complexVector ) );
+
+        DenseVector<Real> y;
+        y = imag( complexVector );
+
+        DenseVector<ValueType> z( complex( x, y ) );
+
+        Real diff = complexVector.maxDiffNorm( z );
+
+        BOOST_CHECK_EQUAL( diff, 0 );
+
+        DenseVector<Real> x1( cast<Real>( complexVector ) );
+
+        diff = x.maxDiffNorm( x1 );
+
+        BOOST_CHECK_EQUAL( diff, 0 );
     }
 }
 
