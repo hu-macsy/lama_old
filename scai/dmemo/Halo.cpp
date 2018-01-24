@@ -35,6 +35,8 @@
 // hpp
 #include <scai/dmemo/Halo.hpp>
 
+#include <scai/hmemo/HostReadAccess.hpp>
+
 namespace scai
 {
 
@@ -88,6 +90,21 @@ Halo& Halo::operator=( const Halo& other )
     }
 
     return *this;
+}
+
+void Halo::reverse()
+{
+    std::swap( mRequiredPlan, mProvidesPlan );
+    std::swap( mRequiredIndexes, mProvidesIndexes );
+
+    mGlobal2Halo.clear();
+
+    const auto read = hostReadAccess( mRequiredIndexes );
+    for (IndexType haloIndex = 0; haloIndex < read.size(); ++haloIndex)
+    {
+        const auto globalIndex = read[haloIndex];
+        mGlobal2Halo[globalIndex] = haloIndex;
+    }
 }
 
 /* ---------------------------------------------------------------------- */

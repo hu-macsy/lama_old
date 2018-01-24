@@ -117,6 +117,8 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    void reverse();
+
 protected:
 
     inline void setGlobal2Halo( IndexType globalIndex, IndexType haloIndex );

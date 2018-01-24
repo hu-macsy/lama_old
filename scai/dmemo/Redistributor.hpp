@@ -374,6 +374,14 @@ public:
     }
     ;
 
+    /** Reverse the Redistributor.
+     *
+     * Has the same effect as redistributing with Redistributor( source, target ), except
+     * that the reverse operation can be performed significantly cheaper than constructing
+     * a new Redistributor in this way.
+     */
+    void reverse();
+
 private:
 
     hmemo::HArray<IndexType> initializeFromNewOwners( const scai::hmemo::HArray< scai::PartitionId > & newOwnersOfLocalElements,

@@ -230,6 +230,15 @@ DistributionPtr Redistributor::getTargetDistributionPtr() const
     return mTargetDistribution;
 }
 
+void Redistributor::reverse()
+{
+    mHalo.reverse();
+    std::swap( mSourceDistribution, mTargetDistribution );
+    std::swap( mKeepSourceIndexes, mKeepTargetIndexes );
+    std::swap( mExchangeSourceIndexes, mExchangeTargetIndexes );
+    std::swap( mRequiredPlan, mProvidesPlan );
+}
+
 /* -------------------------------------------------------------------------- */
 
 void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexType haloTargetSizes[] ) const
