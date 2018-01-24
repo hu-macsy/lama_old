@@ -150,6 +150,9 @@ public:
 
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
+    /** Implementation of pure method Distribution::hasAnyAddressing */
+    virtual bool hasAnyAddressing() const;
+
     /** Implementation of pure method Distribution::enableAnyAddressing */
 
     virtual void enableAnyAddressing() const;

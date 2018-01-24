@@ -328,6 +328,11 @@ IndexType GenBlockDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
+bool GenBlockDistribution::hasAnyAddressing() const
+{
+    return true;
+}
+
 void GenBlockDistribution::enableAnyAddressing() const
 {
     // done, here we have closed formulas

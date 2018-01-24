@@ -297,6 +297,13 @@ public:
      */
     virtual IndexType getBlockDistributionSize() const = 0;
 
+    /**
+     * Determine whether the distribution has AnyAddressing.
+     *
+     * See the documentation for enableAnyAddressing for more information.
+     */
+    virtual bool hasAnyAddressing() const = 0;
+
     /** 
      * @brief This method sets up local data structures in such a way that afterwards on each 
      *        partition/processor it is possible to get any owner/local index for any global index

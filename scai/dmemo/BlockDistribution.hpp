@@ -134,6 +134,9 @@ public:
     }
 
     /** Implementation of pure method Distribution::enableAnyAddressing */
+    virtual bool hasAnyAddressing() const;
+
+    /** Implementation of pure method Distribution::enableAnyAddressing */
 
     virtual void enableAnyAddressing() const;
 

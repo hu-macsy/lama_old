@@ -456,6 +456,11 @@ void GridDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexe
 
 /* ---------------------------------------------------------------------- */
 
+bool GridDistribution::hasAnyAddressing() const
+{
+    return true;
+}
+
 void GridDistribution::enableAnyAddressing() const
 {
     // nothing to do, we have closed formulas

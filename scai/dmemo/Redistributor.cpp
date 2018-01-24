@@ -138,18 +138,21 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" )
     SCAI_ASSERT_ERROR( targetDistribution, "target distribution is not allowed to be null" )
+    SCAI_ASSERT_EQ_ERROR( sourceDistribution->getCommunicator(), targetDistribution->getCommunicator(),
+                          "source and target distributions must have the same communicator" );
 
     HArray<PartitionId> targetOwners;
-    HArray<PartitionId> sourceGlobalIndexes;
 
-    sourceDistribution->getOwnedIndexes( sourceGlobalIndexes );
+    const auto commSize = sourceDistribution->getCommunicator().getSize();
 
-    const bool isGeneral = dynamic_cast<const GeneralDistribution *>( targetDistribution.get() );
-
-    // TODO: Introduce a new method in Distribution which determines whether or not
-    // it has "any addressing" ( which means that computing the owners of a given set
-    // of indexes is inexpensive )
-    if ( isGeneral && targetDistribution->getCommunicator().getSize() > 2 )
+    if ( targetDistribution->hasAnyAddressing() || commSize <= 2 )
+    {
+        // Computing owners is cheap, so do so directly
+        HArray<PartitionId> sourceGlobalIndexes;
+        sourceDistribution->getOwnedIndexes( sourceGlobalIndexes );
+        targetDistribution->computeOwners( targetOwners, sourceGlobalIndexes );
+    }
+    else
     {
         // Building the necessary data structures for a Redistributor usually relies
         // on determining where to send the data. For some distributions, computing owners is cheap,
@@ -189,10 +192,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
         intermediateToSource.redistribute( ownersInSource, ownersInIntermediate );
         targetOwners = std::move ( ownersInSource );
     }
-    else
-    {
-        targetDistribution->computeOwners( targetOwners, sourceGlobalIndexes );
-    }
+
 
     const auto targetGlobalIndexes = initializeFromNewOwners( targetOwners, *sourceDistribution );
 

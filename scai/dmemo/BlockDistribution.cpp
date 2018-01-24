@@ -212,6 +212,11 @@ void BlockDistribution::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------- */
 
+bool BlockDistribution::hasAnyAddressing() const
+{
+    return true;
+}
+
 void BlockDistribution::enableAnyAddressing() const
 {
     // done, here we have closed formulas
