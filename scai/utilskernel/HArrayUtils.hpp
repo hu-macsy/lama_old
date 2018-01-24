@@ -987,7 +987,7 @@ public:
         const hmemo::HArray<ValueType> & x,
         const hmemo::HArray<ValueType> & y,
         const common::CompareOp comparator = common::CompareOp::LT,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+        hmemo::ContextPtr prefLoc = hmemo::Context::getContextPtr() );
 
 private:
 
