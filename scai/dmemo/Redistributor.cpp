@@ -62,99 +62,18 @@ using std::unique_ptr;
 namespace dmemo
 {
 
-static void partitionKeepAndRequired( HArray<IndexType> & keepSourceIndexes,
-                                      HArray<IndexType> & keepTargetIndexes,
-                                      HArray<IndexType> & globalRequiredIndexes,
-                                      const Distribution & sourceDist,
-                                      const Distribution & targetDist )
-{
-    const auto sourceNumLocal = sourceDist.getLocalSize();
-    const auto targetNumLocal = targetDist.getLocalSize();
-
-    // Determine the maximum sizes that keep/required can have. We allocate
-    // for this size, and then later resize the arrays to their actual values.
-    const auto maxKeepSize = std::min( sourceNumLocal, targetNumLocal );
-    const auto maxRequiredSize = targetNumLocal;
-
-    auto wKeepSource = hostWriteOnlyAccess( keepSourceIndexes, maxKeepSize );
-    auto wKeepTarget = hostWriteOnlyAccess( keepTargetIndexes, maxKeepSize );
-    auto wRequired = hostWriteOnlyAccess( globalRequiredIndexes, maxRequiredSize );
-
-    IndexType numKeep = 0;
-    IndexType numRequired = 0;
-
-    for ( IndexType localTargetIndex = 0; localTargetIndex < targetDist.getLocalSize(); ++localTargetIndex )
-    {
-        const auto globalIndex = targetDist.local2global( localTargetIndex );
-        const auto localSourceIndex = sourceDist.global2local(globalIndex);
-
-        if ( localSourceIndex != invalidIndex )
-        {
-            wKeepSource[numKeep] = localSourceIndex;
-            wKeepTarget[numKeep++] = localTargetIndex;
-        }
-        else
-        {
-            wRequired[numRequired++] = globalIndex;
-        }
-    }
-
-    wKeepSource.resize( numKeep );
-    wKeepTarget.resize( numKeep );
-    wRequired.resize( numRequired );
-}
-
-
 SCAI_LOG_DEF_LOGGER( Redistributor::logger, "Redistributor" )
 
-Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution )
-
-    : mSourceDistribution( sourceDistribution ), mTargetDistribution( targetDistribution )
-
+static HArray<IndexType> ownedGlobalIndexesForDist( const Distribution & dist )
 {
-    SCAI_ASSERT_ERROR( sourceDistribution, "NULL pointer for source distribution" )
-    SCAI_ASSERT_ERROR( targetDistribution, "NULL pointer for target distribution" )
-
-    const Distribution& sourceDist = *sourceDistribution;
-    const Distribution& targetDist = *targetDistribution;
-    SCAI_ASSERT_EQ_ERROR( sourceDist.getGlobalSize(), targetDist.getGlobalSize(), "source and target distributions must have the same global size" );
-    SCAI_ASSERT_EQ_ERROR( sourceDist.getCommunicator(), targetDist.getCommunicator(), "source and target distributions must have the same communicator" );
-
-    HArray<IndexType> globalRequiredIndexes;
-    partitionKeepAndRequired( mKeepSourceIndexes, mKeepTargetIndexes, globalRequiredIndexes, sourceDist, targetDist);
-    SCAI_ASSERT_EQ_ERROR( mKeepSourceIndexes.size(), mKeepTargetIndexes.size(), "keep indexes size mismatch");
-    const auto numLocalValues = mKeepSourceIndexes.size();
-
-    HaloBuilder::build( sourceDist, globalRequiredIndexes, mHalo );
-    mExchangeSourceIndexes = mHalo.getProvidesIndexes();
-
-    ContextPtr contextPtr = Context::getHostPtr();
-    WriteAccess<IndexType> exchangeTargetIndexes( mExchangeTargetIndexes, contextPtr );
-
-    // Now add the indexes where to scatter the halo into destination
-    IndexType haloSize = mHalo.getHaloSize();
-    SCAI_ASSERT_ERROR( numLocalValues + haloSize == getTargetLocalSize(), "size mismatch" )
-    exchangeTargetIndexes.resize( haloSize );
-
-    const auto rGlobalRequiredIndexes = hostReadAccess( globalRequiredIndexes );
-
-    for ( IndexType i = 0; i < haloSize; i++ )
-    {
-        IndexType globalIndex = rGlobalRequiredIndexes[i];
-        IndexType localIndex = targetDist.global2local( globalIndex );
-        IndexType haloIndex = mHalo.global2halo( globalIndex );
-        SCAI_LOG_TRACE( logger,
-                        "saved mapping for target dist: local = " << localIndex << ", global = " << globalIndex << ", halo = " << haloIndex )
-        exchangeTargetIndexes[haloIndex] = localIndex;
-    }
-
-    // all info needed for redistribution is now available
-    SCAI_LOG_INFO( logger, "constructed " << *this )
+    HArray<IndexType> indexes;
+    dist.getOwnedIndexes(indexes);
+    return indexes;
 }
 
 // Partitions local indexes of the source distribution into "keep"
 // and "exchange", based on the new owner of each individual index.
-static void partitionLocalIndexes(HArray<IndexType> & keepLocalIndexes,
+static void partitionSourceIndexes(HArray<IndexType> & keepLocalIndexes,
                                   HArray<IndexType> & exchangeLocalIndexes,
                                   const HArray<PartitionId> & newOwnersOfLocalElements,
                                   const Distribution & sourceDist)
@@ -198,34 +117,65 @@ static HArray<ValueType> selectIndexes( const HArray<ValueType> & source, const 
     return result;
 }
 
-// TODO: Make this a method of Distribution (with name local2global)? (can give default impl, but
-// allow subclasses to override it for a more efficient implementation)
-static void local2globalInto(HArray<IndexType> & indexes, const Distribution & dist)
-{
-    for (auto & x : hostWriteAccess(indexes))
-    {
-        x = dist.local2global(x);
-    }
-}
-
 static HArray<IndexType> local2global( const HArray<IndexType> & localIndexes, const Distribution & dist )
 {
-    auto result = localIndexes;
-    local2globalInto( result, dist );
-    return result;
+    HArray<IndexType> globalIndexes;
+
+    auto wGlobal = hostWriteOnlyAccess(globalIndexes, localIndexes.size());
+    auto rLocal = hostReadAccess(localIndexes);
+
+    std::transform( rLocal.begin(), rLocal.end(), wGlobal.begin(),
+                    [&dist] ( IndexType localIndex ) { return dist.local2global( localIndex ); });
+
+    return globalIndexes;
 }
+
+Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution )
+
+    : mSourceDistribution( sourceDistribution ), mTargetDistribution( targetDistribution )
+
+{
+    SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" )
+    SCAI_ASSERT_ERROR( targetDistribution, "target distribution is not allowed to be null" )
+
+    HArray<PartitionId> targetOwners;
+    HArray<PartitionId> sourceGlobalIndexes;
+
+    sourceDistribution->getOwnedIndexes( sourceGlobalIndexes );
+    targetDistribution->computeOwners( targetOwners, sourceGlobalIndexes );
+
+    const auto targetGlobalIndexes = initializeFromNewOwners( targetOwners, *sourceDistribution );
+
+    SCAI_ASSERT_DEBUG(
+        HArrayUtils::all ( targetGlobalIndexes, common::CompareOp::EQ, ownedGlobalIndexesForDist(*targetDistribution) ),
+        "Internal error: mismatch between expected global indexes and target distribution" );
+}
+
+
 
 Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution )
     :   mSourceDistribution(sourceDistribution)
 {
-    const auto & sourceDist = *sourceDistribution;
-    const auto sourceNumLocal = sourceDistribution->getLocalSize();
+    SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" );
+    SCAI_ASSERT_EQ_ERROR( newOwnersOfLocalElements.size(), sourceDistribution->getLocalSize(),
+                          "size of new owners must be equal to local size of distribution" );
+
+    const auto targetGlobalIndexes = initializeFromNewOwners( newOwnersOfLocalElements, *sourceDistribution );
+    mTargetDistribution = DistributionPtr ( new GeneralDistribution( sourceDistribution->getGlobalSize(),
+                                                                     targetGlobalIndexes,
+                                                                     sourceDistribution->getCommunicatorPtr() ) );
+}
+
+// Note: returns global target indexes
+HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<PartitionId> & newOwnersOfLocalElements, const Distribution & sourceDist )
+{
+    const auto sourceNumLocal = sourceDist.getLocalSize();
 
     SCAI_ASSERT_EQ_ERROR( sourceNumLocal, newOwnersOfLocalElements.size(),
                           "Array of owners must have size equal to number of local values in source distribution." );
 
     HArray<IndexType> providedSourceIndexes;
-    partitionLocalIndexes( mKeepSourceIndexes, providedSourceIndexes, newOwnersOfLocalElements, *sourceDistribution );
+    partitionSourceIndexes( mKeepSourceIndexes, providedSourceIndexes, newOwnersOfLocalElements, sourceDist );
 
     const auto globalKeepIndexes = local2global (mKeepSourceIndexes, sourceDist );
     const auto globalProvidedIndexes = local2global( providedSourceIndexes, sourceDist );
@@ -234,7 +184,7 @@ Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwner
     // We only put the exchange indexes into the Halo, as this might work considerably better when
     // most elements are kept (present both in source and target dist). This means that the Halo is working
     // with the index set given by our exchange indexes rather than local indexes of the source distribution
-    HaloBuilder::buildFromProvidedOwners( sourceDistribution->getCommunicator(), globalProvidedIndexes, newOwnersOfProvided, mHalo );
+    HaloBuilder::buildFromProvidedOwners( sourceDist.getCommunicator(), globalProvidedIndexes, newOwnersOfProvided, mHalo );
 
     HArray<IndexType> sortedRequiredIndexes;
     HArray<IndexType> sortPermutation;
@@ -249,9 +199,8 @@ Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwner
     HArrayUtils::inversePerm(inversePerm, sortPermutation);
     mExchangeSourceIndexes = selectIndexes( providedSourceIndexes, mHalo.getProvidesIndexes() );
     mExchangeTargetIndexes = selectIndexes( mapFromExchangeToTarget, inversePerm );
-    mTargetDistribution = DistributionPtr ( new GeneralDistribution( sourceDistribution->getGlobalSize(),
-                                                                     targetGlobalIndexes,
-                                                                     sourceDistribution->getCommunicatorPtr() ) );
+
+    return targetGlobalIndexes;
 }
 
 /* -------------------------------------------------------------------------- */

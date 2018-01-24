@@ -376,6 +376,9 @@ public:
 
 private:
 
+    hmemo::HArray<IndexType> initializeFromNewOwners( const scai::hmemo::HArray< scai::PartitionId > & newOwnersOfLocalElements,
+                                                      const Distribution& sourceDist );
+
     virtual void writeAt( std::ostream& stream ) const;
 
     IndexType getNumLocalValues() const
