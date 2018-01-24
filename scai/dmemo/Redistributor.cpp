@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Implementation of methods for Redistributor class.
- * @author Thomas Brandes
+ * @author Thomas Brandes, Andreas Longva
  * @date 08.10.2011
  */
 
@@ -39,6 +39,7 @@
 // local library
 #include <scai/dmemo/HaloBuilder.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
@@ -142,7 +143,56 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     HArray<PartitionId> sourceGlobalIndexes;
 
     sourceDistribution->getOwnedIndexes( sourceGlobalIndexes );
-    targetDistribution->computeOwners( targetOwners, sourceGlobalIndexes );
+
+    const bool isGeneral = dynamic_cast<const GeneralDistribution *>( targetDistribution.get() );
+
+    // TODO: Introduce a new method in Distribution which determines whether or not
+    // it has "any addressing" ( which means that computing the owners of a given set
+    // of indexes is inexpensive )
+    if ( isGeneral && targetDistribution->getCommunicator().getSize() > 2 )
+    {
+        // Building the necessary data structures for a Redistributor usually relies
+        // on determining where to send the data. For some distributions, computing owners is cheap,
+        // whereas for others (such as general distributions), this is an expensive process.
+        // In the case that computing owners directly is expensive, we can recover them in
+        // an asymptotically speaking far cheaper way by going through an intermediate
+        // distribution for which we *can* compute the owners cheaply (e.g. block, cyclic, ...).
+        //
+        // The approach below is attributed to Moritz von Looz-Corswarem, who
+        // pointed out the optimization opportunity to us, and provided source code and experimental
+        // results to show its efficacy. The code below is loosely based on his original code.
+
+        const auto globalSize = sourceDistribution->getGlobalSize();
+        const auto comm = sourceDistribution->getCommunicatorPtr();
+        const auto rank = comm->getRank();
+        const auto intermediateDist = std::make_shared<BlockDistribution>( globalSize, comm );
+
+        Redistributor targetToIntermediate( intermediateDist, targetDistribution );
+
+        // Note: source to intermediate first, then reverse
+        Redistributor intermediateToSource( intermediateDist, sourceDistribution );
+        intermediateToSource.reverse();
+
+        // In order to find out what the owners in target of the source global indexes are,
+        // we work our way backwards from target. We know that all local elements in target
+        // have owner equal to the rank, and since redistribution does not change the
+        // associated global index of the elements, we can simply redistribute the owners
+        // (which start out as all identical to rank) through the intermediate distribution
+        // and finally to the source in order to recover the desired new owner for
+        // each local source index.
+        HArray<PartitionId> ownersInTarget( targetDistribution->getLocalSize(), rank );
+        HArray<PartitionId> ownersInIntermediate;
+        targetToIntermediate.redistribute( ownersInIntermediate, ownersInTarget );
+
+        // Reuse storage in order to possibly avoid allocation (depending on relative sizes)
+        auto ownersInSource = std::move( ownersInTarget );
+        intermediateToSource.redistribute( ownersInSource, ownersInIntermediate );
+        targetOwners = std::move ( ownersInSource );
+    }
+    else
+    {
+        targetDistribution->computeOwners( targetOwners, sourceGlobalIndexes );
+    }
 
     const auto targetGlobalIndexes = initializeFromNewOwners( targetOwners, *sourceDistribution );
 
