@@ -170,6 +170,11 @@ void SingleDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
 
 /* ---------------------------------------------------------------------- */
 
+bool SingleDistribution::hasAnyAddressing() const
+{
+    return true;
+}
+
 void SingleDistribution::enableAnyAddressing() const
 {
     // nothing to do, there are simple formulas to compute it

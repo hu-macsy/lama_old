@@ -103,6 +103,9 @@ public:
 
     static inline const char* getId();
 
+    /** Implementation of pure method Distribution::hasAnyAddressing */
+    virtual bool hasAnyAddressing() const;
+
     /** Implementation of pure method Distribution::enableAnyAddressing */
 
     virtual void enableAnyAddressing() const;

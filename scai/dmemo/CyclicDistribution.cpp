@@ -292,6 +292,11 @@ IndexType CyclicDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
+bool CyclicDistribution::hasAnyAddressing() const
+{
+    return true;
+}
+
 void CyclicDistribution::enableAnyAddressing() const
 {
     // nothing to do as we can compute owners, local indexes by closed formulas

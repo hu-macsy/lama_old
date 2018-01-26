@@ -32,8 +32,9 @@
 	 * @date 22.01.2016
 	 */
 
-	#include <boost/test/unit_test.hpp>
-	#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -47,8 +48,12 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/mepr/ScalarTypeHelper.hpp>
 
+#include <scai/hmemo/HostReadAccess.hpp>
+
 #include <typeinfo>
 #include <memory>
+
+namespace boostdata = boost::unit_test::data;
 
 using std::unique_ptr;
 
@@ -1844,6 +1849,38 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( mergeSparseTest, ValueType, scai_array_test_types
     BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values ) );
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( mergeAndMapTest, ValueType, scai_array_test_types )
+{
+    using boost::test_tools::per_element;
+    const auto context = Context::getContextPtr();
+    const auto stype = scai::common::TypeTraits<ValueType>::stype;
+
+    const auto x = HArray<ValueType> { 2, 3, 6, 7, 8 };
+    const auto y = HArray<ValueType> { 1, 4, 9 };
+
+    HArray<IndexType> xMap;
+    HArray<IndexType> yMap;
+    HArray<ValueType> result;
+
+    if (scai::common::isComplex(stype))
+    {
+        BOOST_CHECK_THROW( HArrayUtils::mergeAndMap(result, xMap, yMap, x, y, common::CompareOp::LT, context),
+                           scai::common::AssertException);
+    }
+    else
+    {
+        HArrayUtils::mergeAndMap(result, xMap, yMap, x, y);
+
+        const auto expectedResult = std::vector<ValueType> { 1, 2, 3, 4, 6, 7, 8, 9 };
+        const auto expectedXMap = std::vector<IndexType> { 1, 2, 4, 5, 6};
+        const auto expectedYMap = std::vector<IndexType> { 0, 3, 7 };
+
+        BOOST_TEST( expectedResult == hostReadAccess( result ), per_element() );
+        BOOST_TEST( expectedXMap == hostReadAccess( xMap ), per_element() );
+        BOOST_TEST( expectedYMap == hostReadAccess( yMap ), per_element() );
+    }
+}
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( complexText, ValueType, scai_numeric_test_types )
@@ -1876,6 +1913,71 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( complexText, ValueType, scai_numeric_test_types )
         BOOST_CHECK_EQUAL( 0, imagArray1.l2Norm() );
     }
 }
+
+struct MergeAndMapInput
+{
+    HArray<int> x;
+    HArray<int> y;
+    MergeAndMapInput(HArray<int> x, HArray<int> y) : x(x), y(y) { }
+};
+
+std::ostream & operator << ( std::ostream & o, const MergeAndMapInput & input)
+{
+    o << "x: [ ";
+    for ( auto x : hostReadAccess( input.x ) ) { o << x << " "; }
+    o << "], y: [ ";
+    for ( auto y : hostReadAccess( input.y ) ) { o << y << " "; }
+    o << "]";
+    return o;
+}
+
+std::vector< MergeAndMapInput > mergeAndMapTestData()
+{
+    using std::make_pair;
+
+    return {
+        MergeAndMapInput( { }, { } ),
+        MergeAndMapInput( { 0 }, { } ),
+        MergeAndMapInput( { }, { 0 } ),
+        MergeAndMapInput( { 0 }, { 0 } ),
+        MergeAndMapInput( { 1, 5, 8 }, { 0, 2, 3 } ),
+        MergeAndMapInput( { 0, 2, 5 }, { 2, 2, 3, 8, 9 } ),
+        MergeAndMapInput( { 7, 8, 9 }, { -5, 0, 5 } )
+    };
+}
+
+BOOST_DATA_TEST_CASE(
+    mergeAndMapSortsResult,
+    boostdata::make( mergeAndMapTestData() ),
+    data)
+{
+    using boost::test_tools::per_element;
+
+    const auto context = Context::getContextPtr();
+    const auto x = data.x;
+    const auto y = data.y;
+
+    HArray<int> result;
+    HArray<IndexType> xMap;
+    HArray<IndexType> yMap;
+
+    HArrayUtils::mergeAndMap(result, xMap, yMap, x, y, common::CompareOp::LE, context);
+
+    const auto read = hostReadAccess(result);
+    BOOST_TEST( std::is_sorted( read.begin(), read.end() ) );
+
+    HArray<int> xFromXMap;
+    HArray<int> yFromYMap;
+
+    HArrayUtils::gather( xFromXMap, result, xMap, common::BinaryOp::COPY );
+    HArrayUtils::gather( yFromYMap, result, yMap, common::BinaryOp::COPY );
+
+    BOOST_TEST( hostReadAccess(xFromXMap) == hostReadAccess(x), per_element() );
+    BOOST_TEST( hostReadAccess(yFromYMap) == hostReadAccess(y), per_element() );
+
+}
+
+
 
 /* --------------------------------------------------------------------- */
 

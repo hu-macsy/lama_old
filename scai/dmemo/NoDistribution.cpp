@@ -100,6 +100,11 @@ IndexType NoDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
+bool NoDistribution::hasAnyAddressing() const
+{
+    return true;
+}
+
 void NoDistribution::enableAnyAddressing() const
 {
 }

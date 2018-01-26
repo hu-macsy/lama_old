@@ -35,6 +35,8 @@
 // hpp
 #include <scai/dmemo/Halo.hpp>
 
+#include <scai/hmemo/HostReadAccess.hpp>
+
 namespace scai
 {
 

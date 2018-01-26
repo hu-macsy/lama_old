@@ -548,6 +548,11 @@ void GeneralDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInd
 
 /* ---------------------------------------------------------------------- */
 
+bool GeneralDistribution::hasAnyAddressing() const
+{
+    return mAllOwners.size() > 0;
+}
+
 void GeneralDistribution::enableAnyAddressing() const
 {
     if ( mAllOwners.size() > 0 ) 

@@ -42,7 +42,11 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
+#include <scai/hmemo/HostReadAccess.hpp>
+
 #include <memory>
+#include <algorithm>
+#include <numeric>
 
 using std::shared_ptr;
 
@@ -169,6 +173,139 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     std::ostringstream out;
     out << r ;
     BOOST_CHECK( out.str().length() >  0 );
+}
+
+BOOST_AUTO_TEST_CASE( redistributorConstructorFromNewLocalOwnersTest )
+{
+    using boost::test_tools::per_element;
+
+    // Helper struct to make assigning test data for individual processors simpler
+    struct ExpectedResult
+    {
+        std::vector<IndexType> keepSourceIndexes;
+        std::vector<IndexType> keepTargetIndexes;
+        std::vector<IndexType> exchangeSourceIndexes;
+        std::vector<IndexType> exchangeTargetIndexes;
+        std::vector<IndexType> local2global;
+    };
+
+    const auto checkRedistributorAgainstExpected = [] (const Redistributor & redist, const ExpectedResult & expected)
+    {
+        BOOST_TEST( hostReadAccess( redist.getKeepSourceIndexes() ) == expected.keepSourceIndexes, per_element() );
+        BOOST_TEST( hostReadAccess( redist.getKeepTargetIndexes() ) == expected.keepTargetIndexes, per_element() );
+        BOOST_TEST( hostReadAccess( redist.getExchangeSourceIndexes() ) == expected.exchangeSourceIndexes, per_element() );
+        BOOST_TEST( hostReadAccess( redist.getExchangeTargetIndexes() ) == expected.exchangeTargetIndexes, per_element() );
+
+        const auto sourceDist = redist.getSourceDistributionPtr();
+        const auto targetDist = redist.getTargetDistributionPtr();
+
+        // Collect local2global from target distribution
+        auto local2global = std::vector<IndexType>( targetDist->getLocalSize() );
+        std::iota( local2global.begin(), local2global.end(), 0 );
+        std::transform( local2global.cbegin(), local2global.cend(), local2global.begin(),
+                        [targetDist] (IndexType localIndex) { return targetDist->local2global(localIndex); } );
+        BOOST_TEST( local2global == expected.local2global, per_element() );
+        BOOST_TEST( targetDist->getGlobalSize() == sourceDist->getGlobalSize() );
+    };
+
+    const auto comm = Communicator::getCommunicatorPtr();
+    const auto rank = comm->getRank();
+    const auto numPartitions = comm->getSize();
+    auto expected = ExpectedResult();
+
+    if ( numPartitions == 1 )
+    {
+         const auto sourceDist = DistributionPtr ( new CyclicDistribution( 4, 1, comm) );
+         const auto newOwnersOfLocal = HArray<IndexType> { 0, 0, 0, 0 };
+
+         expected.keepSourceIndexes = { 0, 1, 2, 3 };
+         expected.keepTargetIndexes = { 0, 1, 2, 3 };
+         expected.exchangeSourceIndexes = { };
+         expected.exchangeTargetIndexes = { };
+         expected.local2global = { 0, 1, 2, 3 };
+
+         const auto redist = Redistributor( newOwnersOfLocal, sourceDist );
+         checkRedistributorAgainstExpected( redist, expected );
+    }
+    else if ( numPartitions == 2 )
+    {
+        const auto sourceDist = DistributionPtr ( new CyclicDistribution( 8, 1, comm ) );
+
+        HArray<IndexType> newOwnersOfLocal;
+
+        // Input data
+        switch ( rank )
+        {
+            case 0: newOwnersOfLocal = { 1, 0, 1, 1 }; break;
+            case 1: newOwnersOfLocal = { 1, 0, 0, 1 }; break;
+        }
+
+        // Expected data
+        if ( rank == 0 )
+        {
+            expected.keepSourceIndexes = { 1 };
+            expected.keepTargetIndexes = { 0 };
+            expected.exchangeSourceIndexes = { 0, 2, 3 };
+            expected.exchangeTargetIndexes = { 1, 2 };
+            expected.local2global = { 2, 3, 5 };
+        }
+        else if ( rank == 1 )
+        {
+            expected.keepSourceIndexes = { 0, 3 };
+            expected.keepTargetIndexes = { 1, 4 };
+            expected.exchangeSourceIndexes = { 1, 2 };
+            expected.exchangeTargetIndexes = { 0, 2, 3 };
+            expected.local2global = { 0, 1, 4, 6, 7 };
+        }
+
+        const auto redist = Redistributor( newOwnersOfLocal, sourceDist );
+        checkRedistributorAgainstExpected( redist, expected );
+    }
+    else if ( numPartitions == 3 )
+    {
+        const auto sourceDist = DistributionPtr ( new CyclicDistribution( 13, 1, comm ) );
+
+        HArray<IndexType> newOwnersOfLocal;
+
+        switch ( rank )
+        {
+            case 0: newOwnersOfLocal = { 2, 0, 1, 0, 2}; break;
+            case 1: newOwnersOfLocal = { 2, 2, 2, 0 }; break;
+            case 2: newOwnersOfLocal = { 2, 2, 0, 1 }; break;
+        }
+
+        if ( rank == 0 )
+        {
+            expected.keepSourceIndexes = { 1, 3 };
+            expected.keepTargetIndexes = { 0, 2 };
+            expected.exchangeSourceIndexes = { 2, 0, 4 };
+            expected.exchangeTargetIndexes = { 3, 1 };
+            expected.local2global = { 3, 8, 9, 10 };
+        }
+        else if ( rank == 1 )
+        {
+            expected.keepSourceIndexes = { };
+            expected.keepTargetIndexes = { };
+            expected.exchangeSourceIndexes = { 3, 0, 1, 2 };
+            expected.exchangeTargetIndexes = { 0, 1 };
+            expected.local2global = { 6, 11 };
+        }
+        else if ( rank == 2 )
+        {
+            expected.keepSourceIndexes = { 0, 1 };
+            expected.keepTargetIndexes = { 2, 4 };
+            expected.exchangeSourceIndexes = { 2, 3 };
+            expected.exchangeTargetIndexes = { 0, 6, 1, 3, 5 };
+            expected.local2global = { 0, 1, 2, 4, 5, 7, 12 };
+        }
+
+        const auto redist = Redistributor( newOwnersOfLocal, sourceDist );
+        checkRedistributorAgainstExpected( redist, expected );
+    }
+    else
+    {
+        BOOST_TEST_MESSAGE("No test data for " << numPartitions << " partitions.");
+    }
 }
 
 /* --------------------------------------------------------------------- */
