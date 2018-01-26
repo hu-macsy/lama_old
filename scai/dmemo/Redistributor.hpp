@@ -406,11 +406,11 @@ private:
     hmemo::HArray<IndexType> mKeepTargetIndexes;
 
     // local indices in source/target, sorted according to the send/receive plans
-    // (currently represented by mHalo provided/required plans)
     hmemo::HArray<IndexType> mExchangeSourceIndexes;
     hmemo::HArray<IndexType> mExchangeTargetIndexes;
 
-    Halo mHalo; // Halo structure for exchanging non-local values
+    CommunicationPlan mExchangeSendPlan;
+    CommunicationPlan mExchangeReceivePlan;
 
     mutable std::unique_ptr<CommunicationPlan> mProvidesPlan;
     mutable std::unique_ptr<CommunicationPlan> mRequiredPlan;
@@ -589,7 +589,7 @@ void Redistributor::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hm
     const Communicator& comm = mSourceDistribution->getCommunicator();
     // use asynchronous communication to avoid deadlocks
     std::unique_ptr<tasking::SyncToken> token (
-        comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo, mHalo.getProvidesPlan() ) );
+        comm.exchangeByPlanAsync( targetHalo, mExchangeReceivePlan, sourceHalo, mExchangeSendPlan ) );
     token->wait();
     // synchronization is done implicitly
 }
@@ -605,8 +605,8 @@ void Redistributor::exchangeHaloN(
     SCAI_REGION( "Redistributor.exchangeHaloN" )
     const Communicator& comm = mSourceDistribution->getCommunicator();
     // Communication plans are built by multiplication with n
-    CommunicationPlan requiredN( mHalo.getRequiredPlan(), n );
-    CommunicationPlan providesN( mHalo.getProvidesPlan(), n );
+    CommunicationPlan requiredN( mExchangeReceivePlan, n );
+    CommunicationPlan providesN( mExchangeSendPlan, n );
     SCAI_LOG_DEBUG( logger, "requiredN ( n = " << n << "): " << requiredN )
     SCAI_LOG_DEBUG( logger, "providesN ( n = " << n << "): " << providesN )
     // use asynchronous communication to avoid deadlocks

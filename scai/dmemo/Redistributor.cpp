@@ -234,11 +234,14 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
     // We only put the exchange indexes into the Halo, as this might work considerably better when
     // most elements are kept (present both in source and target dist). This means that the Halo is working
     // with the index set given by our exchange indexes rather than local indexes of the source distribution
-    HaloBuilder::buildFromProvidedOwners( sourceDist.getCommunicator(), globalProvidedIndexes, newOwnersOfProvided, mHalo );
+    Halo exchangeHalo;
+    HaloBuilder::buildFromProvidedOwners( sourceDist.getCommunicator(), globalProvidedIndexes, newOwnersOfProvided, exchangeHalo );
+    mExchangeReceivePlan = exchangeHalo.getRequiredPlan();
+    mExchangeSendPlan = exchangeHalo.getProvidesPlan();
 
     HArray<IndexType> sortedRequiredIndexes;
     HArray<IndexType> sortPermutation;
-    HArrayUtils::sort( &sortPermutation, &sortedRequiredIndexes, mHalo.getRequiredIndexes(), true );
+    HArrayUtils::sort( &sortPermutation, &sortedRequiredIndexes, exchangeHalo.getRequiredIndexes(), true );
 
     HArray<IndexType> targetGlobalIndexes;
     HArray<IndexType> mapFromExchangeToTarget;
@@ -247,7 +250,7 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
     // Repurpose the storage of sortedRequiredIndexes (same size and type as inversePerm) to further additional memory allocation
     auto inversePerm = std::move( sortedRequiredIndexes );
     HArrayUtils::inversePerm(inversePerm, sortPermutation);
-    mExchangeSourceIndexes = selectIndexes( providedSourceIndexes, mHalo.getProvidesIndexes() );
+    mExchangeSourceIndexes = selectIndexes( providedSourceIndexes, exchangeHalo.getProvidesIndexes() );
     mExchangeTargetIndexes = selectIndexes( mapFromExchangeToTarget, inversePerm );
 
     return targetGlobalIndexes;
@@ -282,7 +285,7 @@ DistributionPtr Redistributor::getTargetDistributionPtr() const
 
 void Redistributor::reverse()
 {
-    mHalo.reverse();
+    std::swap( mExchangeReceivePlan, mExchangeSendPlan );
     std::swap( mSourceDistribution, mTargetDistribution );
     std::swap( mKeepSourceIndexes, mKeepTargetIndexes );
     std::swap( mExchangeSourceIndexes, mExchangeTargetIndexes );
@@ -293,8 +296,8 @@ void Redistributor::reverse()
 
 void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexType haloTargetSizes[] ) const
 {
-    const IndexType numProvides = mHalo.getProvidesPlan().totalQuantity();
-    const IndexType numRequired = mHalo.getRequiredPlan().totalQuantity();
+    const IndexType numProvides = mExchangeSendPlan.totalQuantity();
+    const IndexType numRequired = mExchangeReceivePlan.totalQuantity();
     // calculate number of provided and required values by summing up the corresponding quantities
     unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
     unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
@@ -315,8 +318,8 @@ void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexT
         SCAI_LOG_DEBUG( logger, "required[" << i << "] = " << size )
     }
 
-    mProvidesPlan.reset( new CommunicationPlan( mHalo.getProvidesPlan(), provideQuantities.get() ) );
-    mRequiredPlan.reset( new CommunicationPlan( mHalo.getRequiredPlan(), requiredQuantities.get() ) );
+    mProvidesPlan.reset( new CommunicationPlan( mExchangeSendPlan, provideQuantities.get() ) );
+    mRequiredPlan.reset( new CommunicationPlan( mExchangeReceivePlan, requiredQuantities.get() ) );
     SCAI_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
     SCAI_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
 }
@@ -327,8 +330,8 @@ void Redistributor::buildRowPlans(
     const HArray<IndexType>& targetSizes,
     const HArray<IndexType>& sourceSizes ) const
 {
-    const IndexType numProvides = mHalo.getProvidesPlan().totalQuantity();
-    const IndexType numRequired = mHalo.getRequiredPlan().totalQuantity();
+    const IndexType numProvides = mExchangeSendPlan.totalQuantity();
+    const IndexType numRequired = mExchangeReceivePlan.totalQuantity();
     // calculate number of provided and required values by summing up the corresponding quantities
     unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
     unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
@@ -356,8 +359,8 @@ void Redistributor::buildRowPlans(
             SCAI_LOG_DEBUG( logger, "required[" << i << "] = " << size )
         }
     }
-    mProvidesPlan.reset( new CommunicationPlan( mHalo.getProvidesPlan(), provideQuantities.get() ) );
-    mRequiredPlan.reset( new CommunicationPlan( mHalo.getRequiredPlan(), requiredQuantities.get() ) );
+    mProvidesPlan.reset( new CommunicationPlan( mExchangeSendPlan, provideQuantities.get() ) );
+    mRequiredPlan.reset( new CommunicationPlan( mExchangeReceivePlan, requiredQuantities.get() ) );
     SCAI_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
     SCAI_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
 }
