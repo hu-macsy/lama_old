@@ -28,19 +28,9 @@ So the full command for compiling and linking your example program simple.cpp lo
 
 .. code-block:: bash
 
-    g++ -o simple simple.cpp -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama 
-
-for a C++11 capable compiler:
-
-.. code-block:: bash
-
     g++ -std=c++11 -o simple simple.cpp -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama 
 
-for a non C++11 capable compiler with a boost installation not in the system path:
-
-.. code-block:: bash
-
-    g++ -o simple simple.cpp -I${SCAI_ROOT}/include -I${BOOST_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama
+Note: your C++ compiler must support C++11 features that are enabled by the flag ``-std=c++11``
 
 You may get DSO link-errors like:
 
@@ -72,7 +62,7 @@ You can set up a cmake configuration file ``CMakeLists.txt`` with the following 
    include_directories( ${SCAI_INCLUDE_DIRS} )
    set ( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SCAI_CXX_FLAGS} )
    add_executable ( simple simple.cpp )
-   target_link_libraries( labelrank ${SCAI_LIBRARIES} )
+   target_link_libraries( simple ${SCAI_LIBRARIES} )
 
 The find_package command will search the package SCAI that defines the following variables:
 
@@ -165,6 +155,16 @@ You can set the variable explicitly with the default value
 
     export SCAI_LOG=WARN
     
+You might also get a warning that the TRACE environment variable is not set.
+
+.. code-block:: bash
+
+    <date>, <time> TraceConfig @ thread_0 ( TraceConfig -> TraceConfig.cpp::206 ) WARN SCAI_TRACE not set, tracing is disabled. Enable by SCAI_TRACE=time|ct[:vt][:thread]
+
+.. code-block:: bash
+
+    export SCAI_TRACE=OFF
+
 For other useful environment variables see :doc:`here <environmentVariables>`.
 
 Now the output should be as follows

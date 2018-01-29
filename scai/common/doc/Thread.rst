@@ -3,16 +3,8 @@
 Thread
 ======
 
-For threading we use an own class. In a previous version we used the thread class of boost 
-that caused a lot of problems during installation as differnt libraries are
-needed for differnt Boost versions. The thread class provided by the
-common library uses either pThreads or the
-std::thread class of C++11.
+Whenever threads are used in LAMA, we use the std::thread class of the C++11 standard.
+The same is true for related classes like ``mutex``, ``recursive_mutex``, 
+``condition_variable_any``, and ``unique_lock``. Previous releases provided a 
+LAMA specific thread class, either based on pThreads or Boost thread library.
 
- * ThreadId used for logging
- * Thread-private variables for tracing
- * condtion, mutex for the implementations of a thread pool
- * threads that run one fucntion for asynchronous exections
-
-The thread class provived by the common library contains only a subset of the C++11 standard.
-The functionality is mainly needed for the SCAI tasking library. 

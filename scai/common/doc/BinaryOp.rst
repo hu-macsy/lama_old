@@ -41,14 +41,14 @@ The following enumeration type specifies the different kind of compare operators
 might be used.
 
 =========  =================================
-Name       Operation
+name       operation
 =========  =================================
-LE         x <= y
-LT         x < y
-GE         x >= y
-GT         x > y
-EQ         x == y
-NE         x != y
+``LE``     x <= y
+``LT``     x < y
+``GE``     x >= y
+``GT``     x > y
+``EQ``     x == y
+``NE``     x != y
 =========  =================================
 
 .. code-block:: c++
