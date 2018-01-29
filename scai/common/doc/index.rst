@@ -75,7 +75,6 @@ Name                         Description
    Exception
    Assertion
    SmartPointers
-   Function
    Settings
    OpenMP
    TypeList

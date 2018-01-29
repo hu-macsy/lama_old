@@ -31,7 +31,7 @@ Here is a summary of the major changes compared to the old release LAMA 2.1.
    syntax.
  * Type conversions for matrices and vector are still possible but must be called explicitly by a cast function.
  * The LAMA internal types IndexType and PartitionId are now in the namespace scai.
- * The move semantic of C++11 can be used to avoid deep copies of data structures when setting up LAMA
+ * The move semantics of C++11 can be used to avoid deep copies of data structures when setting up LAMA
    data structures. This optimizes the code not only for speed but also for need of memory.
  * GPI support (implementation of GASPI standard) has been dropped.
  * MIC support (i.e. support of Xeon Phi Knights Corner in accelerator mode) has been dropped
@@ -211,8 +211,8 @@ Simliar other examples are:
 
 .. code-block:: c++
 
-    common::binary::BinaryOp op = common::binary::COPY;
-    common::BinaryOp op = common::BinaryOp::COPY;  
+    common::binary::BinaryOp op = common::binary::COPY;       // old version
+    common::BinaryOp op = common::BinaryOp::COPY;             // new version
 
 Shared and Unique Pointers
 --------------------------
@@ -229,6 +229,8 @@ classes like vector).
 
 .. code-block:: c++
 
+    // Example of using smart pointers in the old version
+
     #include <scai/common/unique_ptr.hpp>
     #include <scai/common/shared_ptr.hpp>
 
@@ -242,16 +244,18 @@ The changes required for the new LAMA version are rather straightforward.
 
 .. code-block:: c++
 
+    //  Same example but now using the smart pointers of C++11
+
     #include <memory>
 
     std::unique_ptr<lama::Vector> vyyPtr( vX.newVector() );
     std::shared_ptr<lama::Vector> vzzPtr( vZ.newVector() );
     std::unique_ptr<double[]> mG( new double[10] );
 
-The use of  the pointer variables itself does not require any changes.
+The use of the pointer variables itself does not require any changes.
 
-Move Semantic
--------------
+Move Semantics
+--------------
 
 Here is a typical LAMA code of how to set up a CSR sparse matrix with raw data.
 
@@ -276,7 +280,21 @@ By using the move semantics of C++11, it is possible to avoid these copy steps a
     CSRSparseMatrix<ValueType> csrMatrix( std::move( csrStorage ) );
 
 Please note that the move operations leave the heterogeneous arrays ``csrIA``, ``csrJA``, and ``csrValues``
-as well as the CSR storage ``csrStorage`` as empty containers.
+as well as the CSR storage ``csrStorage`` as undefined containers and should not be used
+afterwards (even if internally they are equivalent to 
+containers that have been created by the default constructor, i.e. they are zero-sized and empty).
+
+Actually the code might have also been written as follows:
+
+.. code-block:: c++
+
+    CSRSparseMatrix<ValueType> csrMatrix( 
+        CSRStorage<ValueType> csrStorage ( 
+            numRows, 
+            numColumns, 
+            HArray<IndexType> csrIA( numRows + 1, rawIA );
+            HArray<IndexType> csrJA( numValues, rawJA );
+            HArray<ValueType> csrValues( numValues, rawValues ) ) );
 
 By using the move operations the code becomes faster and it might be helpful to avoid running out of memory.
 
@@ -285,10 +303,29 @@ AssemblyAccess
 
 The class SparseAssemblyStorage supported in former LAMA releases is no more available.
 
-Instead of this you shoud use the class	MatrixAssemblyAccess that has a similiar functionality
+Instead of this you should use the class MatrixAssemblyAccess that has a similiar functionality
 but works also well for distributed matrix data.
 
-The class VectorAssemblyAccess has a similiar functionaly fot distributed vectors.
+The class VectorAssemblyAccess has a similiar functionaly for distributed vectors.
+
+HostReadAccess
+--------------
+
+There's also some new types such as HostReadAccess which lets you use STL iterators with HArrays by 
+acquiring host-only read/write/writeonly accesses, which lets you do things like:
+
+.. code-block:: c++
+
+   // std::initializer_list support makes it easier to write tests/short examples
+   HArray<int> { 3, 1, 2 };
+
+   const auto read = hostReadAccess(array);
+   const auto array_is_sorted = std::is_sorted(read.begin(), read.end());
+
+   for ( auto x : hostReadAccess(array) )
+   {
+       std::cout << x << std::endl;
+   }
 
 Tutorial/Lecture
 -----------------
