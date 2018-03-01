@@ -386,7 +386,8 @@ void MatrixCreator::buildPoisson(
 
     localMatrix.swap( csrIA, csrJA, csrValues );
     SCAI_LOG_DEBUG( logger, "replace owned data with " << localMatrix )
-    matrix.assign( localMatrix, gridDistribution, gridDistribution );     // builds also halo
+    matrix.assignLocal( localMatrix, gridDistribution );   
+    matrix.redistribute( gridDistribution, gridDistribution );     // builds also halo
 
     // but now the local part of matrixA should have the diagonal property as global column // indexes have been localized
     // is not for each storage format the case
@@ -471,6 +472,8 @@ void MatrixCreator::randomCSRPattern(
 template<typename ValueType>
 void MatrixCreator::fillRandomImpl( Matrix<ValueType>& matrix, float density )
 {
+    dmemo::DistributionPtr saveColDist = matrix.getColDistributionPtr();
+
     const IndexType localRowSize = matrix.getRowDistribution().getLocalSize();
     const IndexType colSize      = matrix.getColDistribution().getGlobalSize();
 
@@ -494,12 +497,15 @@ void MatrixCreator::fillRandomImpl( Matrix<ValueType>& matrix, float density )
     hmemo::HArrayRef<IndexType> ia( csrIA );
     hmemo::HArrayRef<IndexType> ja( csrJA );
 
-    CSRStorage<ValueType> localStorage( localRowSize, colSize, numValues, ia, ja, values );
+    CSRStorage<ValueType> localStorage( localRowSize, colSize, ia, ja, values );
 
-    // The new matrix data has the same row distribution as the input
-    // matrix, also take over the original column distribution to build halo
+    // The new matrix data has the same row distribution as the input matrix
 
-    matrix.assign( localStorage, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() );
+    matrix.assignLocal( localStorage, matrix.getRowDistributionPtr() );
+
+    // take over the original column distribution to build halo
+
+    matrix.redistribute( matrix.getRowDistributionPtr(), saveColDist );
 
     SCAI_LOG_INFO( logger, "matrix: " << matrix )
 }
@@ -621,8 +627,7 @@ static void replicateStorageDiag(
         SCAI_ASSERT_EQUAL( offset, nRepeat * nValues, "size mismatch" );
     }
 
-    out.setCSRData( nRows * nRepeat, nCols * nRepeat, nValues * nRepeat,
-                    outIA, outJA, outValues );
+    out.setCSRData( nRows * nRepeat, nCols * nRepeat, outIA, outJA, outValues );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -696,8 +701,7 @@ static void replicateStorage(
         SCAI_ASSERT_EQUAL( offset, nRepeat * nValues, "serious offset/size mismatch" )
     }
 
-    out.setCSRData( nRows * nRepeatRow, nCols * nRepeatCol, nValues * nRepeat,
-                    outIA, outJA, outValues );
+    out.setCSRData( nRows * nRepeatRow, nCols * nRepeatCol, outIA, outJA, outValues );
 }
 
 /* ------------------------------------------------------------------------- */

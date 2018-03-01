@@ -37,6 +37,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
 
 namespace scai
 {
@@ -83,7 +84,7 @@ void setRandomData( lama::MatrixStorage<ValueType>& storage, const IndexType num
     hmemo::HArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
     float fillRate = 0.5f;
     utilskernel::HArrayUtils::setSparseRandom( values, fillRate, 1 );
-    storage.setDenseData( numRows, numColumns, values );
+    storage.assign( lama::DenseStorage<ValueType>( numRows, numColumns, std::move( values ) ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -96,8 +97,7 @@ void setDenseData( lama::MatrixStorage<ValueType>& storage )
     static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -110,8 +110,7 @@ void setDenseSquareData( lama::MatrixStorage<ValueType>& storage )
     // just make sure that number of entries in values matches the matrix size
     static ValueType values[] = { 10, 0, 0, 4, 3, 10, 0, 0, 0, 0, -9.3f, 4, 1, 5, 0, 13 };
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
     // Note: diagonal does not contain any zeros
 }
 
@@ -131,9 +130,8 @@ void setDenseRandom( lama::MatrixStorage<ValueType>& storage )
     };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
     // Note: diagonal property of sparse matrices will be set due to square matrix
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -146,9 +144,8 @@ void setDenseHalo( lama::MatrixStorage<ValueType>& storage )
     static ValueType values[] = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
     // Note: diagonal property of sparse matrices will be set due to square matrix
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -166,8 +163,7 @@ void setSymDenseData( lama::MatrixStorage<ValueType>& storage )
     static ValueType values[] = { 1, 2, 0, 5, 2, 1, 3, 0, 0, 3, 1, 4, 5, 0, 4, 2 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 }

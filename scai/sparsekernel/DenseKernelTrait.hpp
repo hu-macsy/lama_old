@@ -101,7 +101,7 @@ struct DenseKernelTrait
         }
     };
 
-    template <typename DenseValueType, typename CSRValueType>
+    template <typename CSRValueType, typename DenseValueType>
     struct getCSRValues
     {
         /** Convesion of dense matrix to CSR storage format
@@ -206,7 +206,7 @@ struct DenseKernelTrait
         }
     };
 
-    template<typename DenseValueType, typename OtherValueType>
+    template<typename ValueType>
     struct scaleRows
     {
         /** Scale rows of the matrix individually.
@@ -218,10 +218,10 @@ struct DenseKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            DenseValueType denseValues[],
+            ValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
-            const OtherValueType rowValues[] );
+            const ValueType rowValues[] );
 
         static const char* getId()
         {

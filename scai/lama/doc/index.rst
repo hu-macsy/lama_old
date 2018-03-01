@@ -75,11 +75,11 @@ Example
 
 .. code-block:: c++
 
-   #include <scai/hmemo.hpp>
-   #include <scai/dmemo.hpp>
    #include <scai/lama.hpp>
+   #include <scai/dmemo/BlockDistribution.hpp>
 
-   using namespace scai::lama;
+   using namespace scai;
+   using namespace lama;
 
    int main()
    {
@@ -87,18 +87,22 @@ Example
 
       IndexType size = 30;
 
-      dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
-      dmemo::DistribtionPtr dist( new dmemo::BlockDistribution( size, comm ) );
+      auto comm = dmemo::Communicator::getCommunicatorPtr();
 
-      hmemo::ContextPtr cudaCtx = hmemo::Context::getContextPtr( common::Context::CUDA, 0 );
+      auto cudaCtx = hmemo::Context::getContextPtr( common::ContextType::CUDA, 0 );
 
-      DenseVector<ValueType> x( size, 1.0, cudaCtx );
-      CSRSparseMatrix<ValueType> csrMatrix( "gr_30_30.mtx" );
-      csrMatrix.redistribute( dist );
-      csrMatrix.setContext( cudaCtx );
+      auto csrMatrix = read<CSRSparseMatrix<ValueType>>( "gr_30_30.mtx", cudaCtx );
 
-      DenseVector<ValueType> result( csrMatrix * vector ); // calculation takes place with CUDA (possibly distributed)
-      result.writeToFile( "resultVec.mtx", File::MATRIX_MARKET );
+      SCAI_ASSERT_EQ_ERROR( csrMatrix.getNumRows(), csrMatrix.getNumColumns(), "input matrix not square" )
+
+      auto dist = std::make_shared<dmemo::BlockDistribution>( csrMatrix.getNumRows(), comm );
+
+      csrMatrix.redistribute( dist, dist );
+      auto vector = fill<DenseVector<ValueType>>( dist, 1.0, cudaCtx );
+
+      auto result = eval<DenseVector<ValueType>>( csrMatrix * vector );
+
+      result.writeToFile( "result.mtx" );
    }
 
 .. *****************

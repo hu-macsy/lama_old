@@ -99,13 +99,13 @@ public:
 
     struct TFQMRRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        lama::DenseVector<ValueType> mVecD;
-        lama::DenseVector<ValueType> mInitialR;
-        lama::DenseVector<ValueType> mVecVEven;
-        lama::DenseVector<ValueType> mVecVOdd;
-        lama::DenseVector<ValueType> mVecVT;
-        lama::DenseVector<ValueType> mVecW;
-        lama::DenseVector<ValueType> mVecZ;
+        std::unique_ptr<lama::Vector<ValueType>> mVecD;
+        std::unique_ptr<lama::Vector<ValueType>> mInitialR;
+        std::unique_ptr<lama::Vector<ValueType>> mVecVEven;
+        std::unique_ptr<lama::Vector<ValueType>> mVecVOdd;
+        std::unique_ptr<lama::Vector<ValueType>> mVecVT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecW;
+        std::unique_ptr<lama::Vector<ValueType>> mVecZ;
 
         RealType<ValueType> mEps;
         ValueType mAlpha;
@@ -124,7 +124,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class

@@ -156,6 +156,37 @@ void HArrayUtils::setArrayImpl(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void HArrayUtils::appendArray(
+    hmemo::HArray<ValueType>& array1,
+    const hmemo::HArray<ValueType>& array2,
+    hmemo::ContextPtr context )
+{
+    const IndexType n1 = array1.size();
+    const IndexType n2 = array2.size();
+
+    static LAMAKernel<UtilKernelTrait::set<ValueType, ValueType> > set;
+
+    ContextPtr loc = context;
+
+    if ( !loc )
+    {
+        loc = array1.getValidContext();
+    }
+
+    set.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wArray1( array1, loc );
+    wArray1.resize( n1 + n2 );
+    ReadAccess<ValueType> rArray2( array2, loc );
+
+    set[loc]( wArray1.get() + n1, rArray2.get(), n2, common::BinaryOp::COPY );
+}
+
+/* --------------------------------------------------------------------------- */
+
 void HArrayUtils::setArraySection(
     _HArray& target,
     const IndexType targetOffset,
@@ -493,19 +524,33 @@ void HArrayUtils::setScalar(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setVal(
-    _HArray& target,
-    const IndexType index,
-    const ValueType val )
+void HArrayUtils::setSameValue(
+    HArray<ValueType>& target,
+    const IndexType n,
+    const ValueType value,
+    ContextPtr ctx )
 {
-    SCAI_ASSERT_DEBUG( index < target.size(), "index = " << index << " out of range for target = " << target );
-    mepr::UtilsWrapperT< ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setValImpl( target, index, val );
+    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
+
+    ContextPtr loc = ctx;
+
+    if ( loc == ContextPtr() )
+    {
+        // default location: where we have valid copy of the data
+        loc = target.getValidContext();
+    }
+
+    setVal.getSupportedContext( loc );
+
+    WriteOnlyAccess<ValueType> wTarget( target, loc, n );
+    SCAI_CONTEXT_ACCESS( loc )
+    setVal[loc]( wTarget.get(), n, value, common::BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setValImpl(
+void HArrayUtils::setVal(
     HArray<ValueType>& target,
     const IndexType index,
     const ValueType val,
@@ -539,17 +584,6 @@ void HArrayUtils::setValImpl(
 
 template<typename ValueType>
 ValueType HArrayUtils::getVal(
-    const _HArray& array,
-    const IndexType index )
-{
-    ValueType val = mepr::UtilsWrapperT< ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::getValImpl( array, index );
-    return val;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-ValueType HArrayUtils::getValImpl(
     const HArray<ValueType>& array,
     const IndexType index )
 {
@@ -1891,7 +1925,7 @@ void HArrayUtils::buildSparseIndexes(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::buildSparseArray(
+void HArrayUtils::buildSparseArrayZero(
     _HArray& sparseArray,
     HArray<IndexType>& sparseIndexes,
     const _HArray& denseArray,
@@ -1929,9 +1963,11 @@ void HArrayUtils::buildSparseArrayImpl(
     ReadAccess<SourceType> rDenseArray( denseArray, loc );
     // we count the non-zeros at first to have sizes for sparse data
     IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, zeroValue, eps );
+    SCAI_LOG_DEBUG( logger, "counted nonZeros for zero = " << zeroValue << ", dense " << n << " is now " << sparseN )
     WriteOnlyAccess<TargetType> wSparseArray( sparseArray, loc, sparseN );
     WriteOnlyAccess<IndexType> wSparseIndexes( sparseIndexes, loc, sparseN );
-    sparseN = compress[loc]( wSparseArray.get(), wSparseIndexes.get(), rDenseArray.get(), n, zeroValue, eps );
+    IndexType sparseN1 = compress[loc]( wSparseArray.get(), wSparseIndexes.get(), rDenseArray.get(), n, zeroValue, eps );
+    SCAI_ASSERT_EQ_ERROR( sparseN, sparseN1, "zero = " << zeroValue << ", counted nonzeros does not match with compessed size" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2013,23 +2049,29 @@ void HArrayUtils::insertAtPos(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
 void HArrayUtils::buildDenseArray(
-    _HArray& denseArray,
+    HArray<ValueType>& denseArray,
     const IndexType denseN,
-    const _HArray& sparseArray,
+    const HArray<ValueType>& sparseArray,
     const HArray<IndexType>& sparseIndexes,
+    const ValueType zero,
     ContextPtr prefLoc )
 {
+    SCAI_LOG_INFO( logger, "buildDenseArray<" << common::TypeTraits<ValueType>::id() << ">, N = " << denseN 
+                             << ", zero = " << zero << ", nnz = " << sparseArray.size() )
+
     const IndexType sparseN = sparseArray.size();
-    SCAI_ASSERT_LE( sparseN, denseN, "sparse array cannot have more entries than dense array." )
-    SCAI_ASSERT( HArrayUtils::validIndexes( sparseIndexes, denseN, prefLoc ),
-                 "Illegal index for sparse indexes, dense array size = " << denseN );
-    // use of existent HArray utilities, even if we have two write accesses for denseArray
-    denseArray.clear();
-    denseArray.resize( denseN );
-    HArrayUtils::assignScalar( denseArray, 0.0, BinaryOp::COPY, prefLoc );
+
+    SCAI_ASSERT_LE_ERROR( sparseN, denseN, "sparse array cannot have more entries than dense array." )
+
+    SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( sparseIndexes, denseN, prefLoc ),
+                       "Illegal index for sparse indexes, dense array size = " << denseN );
+
+    setSameValue( denseArray, denseN, zero, prefLoc );
+
     bool unique = true;
-    HArrayUtils::scatter( denseArray, sparseIndexes, unique, sparseArray, BinaryOp::COPY, prefLoc );
+    HArrayUtils::scatterImpl( denseArray, sparseIndexes, unique, sparseArray, BinaryOp::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2498,10 +2540,6 @@ void HArrayUtils::buildComplex(
 /** Makro for the instantiation of routines with one template argument for the value type. */
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                              \
-    template void HArrayUtils::setVal<ValueType>(                       \
-            hmemo::_HArray&,                                            \
-            const IndexType,                                            \
-            const ValueType );                                          \
     template void HArrayUtils::sparseGather<ValueType>(                 \
             hmemo::_HArray&,                                            \
             const ValueType,                                            \
@@ -2510,15 +2548,12 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<IndexType>&,                            \
             const BinaryOp,                                             \
             const hmemo::ContextPtr );                                  \
-    template void HArrayUtils::setValImpl<ValueType>(                   \
+    template void HArrayUtils::setVal<ValueType>(                       \
             hmemo::HArray<ValueType>&,                                  \
             const IndexType,                                            \
             const ValueType,                                            \
             const BinaryOp );                                           \
     template ValueType HArrayUtils::getVal<ValueType>(                  \
-            const hmemo::_HArray&,                                      \
-            const IndexType );                                          \
-    template ValueType HArrayUtils::getValImpl<ValueType>(              \
             const hmemo::HArray<ValueType>&,                            \
             const IndexType );                                          \
     template void HArrayUtils::assignScalar<ValueType>(                 \
@@ -2531,6 +2566,15 @@ void HArrayUtils::buildComplex(
             const ValueType,                                            \
             const BinaryOp,                                             \
             hmemo::ContextPtr);                                         \
+    template void HArrayUtils::setSameValue<ValueType>(                 \
+            hmemo::HArray<ValueType>&,                                  \
+            const IndexType,                                            \
+            const ValueType,                                            \
+            hmemo::ContextPtr);                                         \
+    template void HArrayUtils::appendArray<ValueType>(                  \
+            hmemo::HArray<ValueType>&,                                  \
+            const hmemo::HArray<ValueType>&,                            \
+            hmemo::ContextPtr );                                        \
     template ValueType HArrayUtils::reduce<ValueType>(                  \
             const hmemo::HArray<ValueType>&,                            \
             const BinaryOp,                                             \
@@ -2651,6 +2695,13 @@ void HArrayUtils::buildComplex(
             hmemo::HArray<ValueType>& array,                            \
             const IndexType pos,                                        \
             const ValueType val,                                        \
+            hmemo::ContextPtr );                                        \
+    template void HArrayUtils::buildDenseArray(                         \
+            hmemo::HArray<ValueType>&,                                  \
+            const IndexType,                                            \
+            const hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<IndexType>&,                            \
+            const ValueType,                                            \
             hmemo::ContextPtr );                                        \
     template void HArrayUtils::addSparse(                               \
             hmemo::HArray<IndexType>&,                                  \

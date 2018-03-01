@@ -43,8 +43,8 @@ namespace solver
 
 CommonLogger::CommonLogger(
     const std::string& id,
-    LogLevel::LogLevel level,
-    LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+    LogLevel level,
+    LoggerWriteBehaviour writeBehaviour,
     bool ignoreRank )
     : SolverLogger( id, level, writeBehaviour, ignoreRank )
 {
@@ -52,8 +52,8 @@ CommonLogger::CommonLogger(
 
 CommonLogger::CommonLogger(
     const std::string& id,
-    LogLevel::LogLevel level,
-    LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+    LogLevel level,
+    LoggerWriteBehaviour writeBehaviour,
     std::shared_ptr<Timer> timer,
     bool ignoreRank )
     : SolverLogger( id, level, writeBehaviour, timer, ignoreRank )
@@ -62,8 +62,8 @@ CommonLogger::CommonLogger(
 
 CommonLogger::CommonLogger(
     const std::string& id,
-    LogLevel::LogLevel level,
-    LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+    LogLevel level,
+    LoggerWriteBehaviour writeBehaviour,
     const std::string& logFileName,
     std::shared_ptr<Timer> timer,
     bool ignoreRank )

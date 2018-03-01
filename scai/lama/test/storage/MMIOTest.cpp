@@ -255,15 +255,15 @@ BOOST_AUTO_TEST_CASE( RectangularTest )
     const IndexType n   = 5;
 
     DefaultReal vals[]  = { 1, 2, 3,
-                         4, 5, 6,
-                         7, 8, 9,
-                         10, 11, 12,
-                         13, 14, 15 };
+                            4, 5, 6,
+                            7, 8, 9,
+                            10, 11, 12,
+                            13, 14, 15 };
 
     DenseStorage<DefaultReal> denseOut;
     DenseStorage<DefaultReal> denseIn;
 
-    denseOut.setRawDenseData( m, n, vals, 0.001 );
+    denseOut.setRawDenseData( m, n, vals );
 
     const auto fileName = uniquePath(GlobalTempDir::getPath(), "dense") + ".mtx";
 

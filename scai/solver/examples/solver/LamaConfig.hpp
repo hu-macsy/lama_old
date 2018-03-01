@@ -152,7 +152,7 @@ public:
 
     scai::IndexType getMaxIter() const;
 
-    scai::solver::LogLevel::LogLevel getLogLevel() const;
+    scai::solver::LogLevel getLogLevel() const;
 
     scai::lama::SyncKind getCommunicationKind() const
     {
@@ -200,7 +200,7 @@ private:
 
     scai::IndexType mMaxIter;
 
-    scai::solver::LogLevel::LogLevel   mLogLevel;
+    scai::solver::LogLevel mLogLevel;
 
     bool mUseMetis;
 
@@ -283,7 +283,7 @@ LamaConfig::LamaConfig()
     {
         if ( isSet )
         {
-            mCommunicationKind = scai::lama::SyncKind::ASYNCHRONOUS;
+            mCommunicationKind = scai::lama::SyncKind::ASYNC_LOCAL;
         }
     }
 
@@ -403,7 +403,7 @@ LamaConfig::LamaConfig()
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_SOLVER_LOG" ) )
     {
-        scai::solver::LogLevel::LogLevel level = scai::solver::str2LogLevel( val.c_str() );
+        scai::solver::LogLevel level = scai::solver::str2LogLevel( val.c_str() );
 
         if ( level == scai::solver::LogLevel::UNKNOWN )
         {
@@ -492,7 +492,7 @@ scai::common::ScalarType LamaConfig::getValueType() const
     return mValueType;
 }
 
-scai::solver::LogLevel::LogLevel LamaConfig::getLogLevel() const
+scai::solver::LogLevel LamaConfig::getLogLevel() const
 {
     return mLogLevel;
 }
@@ -545,14 +545,14 @@ static std::string getLogLevels()
 {
     std::ostringstream levelNames;
 
-    for ( int i = 0; i < scai::solver::LogLevel::UNKNOWN; ++i )
+    for ( int i = 0; i < static_cast<int>( scai::solver::LogLevel::UNKNOWN ); ++i )
     {
         if ( i > 0 )
         {
             levelNames << "|";
         }
 
-        levelNames << scai::solver::LogLevel::LogLevel( i );
+        levelNames << scai::solver::LogLevel( i );
     }
 
     return levelNames.str();

@@ -40,7 +40,7 @@
 // base classes
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/IterativeSolver.hpp>
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 // logging
 #include <scai/logging/Logger.hpp>
@@ -98,16 +98,22 @@ public:
      */
     virtual BiCGstab<ValueType>* copy();
 
+    /** 
+     *  @brief Runtime variables for BiCGstab solver.
+     *
+     *  Note: due to polymorphism we use unique pointers for temporary vectors
+     *        (will be DenseVector in most cases).
+     */
     struct BiCGstabRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        lama::DenseVector<ValueType> mRes0;
-        lama::DenseVector<ValueType> mVecV;
-        lama::DenseVector<ValueType> mVecP;
-        lama::DenseVector<ValueType> mVecS;
-        lama::DenseVector<ValueType> mVecT;
-        lama::DenseVector<ValueType> mVecPT;
-        lama::DenseVector<ValueType> mVecST;
-        lama::DenseVector<ValueType> mVecTT;
+        std::unique_ptr<lama::Vector<ValueType>> mRes0;
+        std::unique_ptr<lama::Vector<ValueType>> mVecV;
+        std::unique_ptr<lama::Vector<ValueType>> mVecP;
+        std::unique_ptr<lama::Vector<ValueType>> mVecS;
+        std::unique_ptr<lama::Vector<ValueType>> mVecT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecPT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecST;
+        std::unique_ptr<lama::Vector<ValueType>> mVecTT;
 
         RealType<ValueType> mEps;      // used in comparison
         RealType<ValueType> mResNorm;  // norm is always real
@@ -126,7 +132,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class

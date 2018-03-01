@@ -94,12 +94,12 @@ public:
 
     struct MINRESRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        lama::DenseVector<ValueType> mVecV;
-        lama::DenseVector<ValueType> mVecVOld;
-        lama::DenseVector<ValueType> mVecVNew;
-        lama::DenseVector<ValueType> mVecP;
-        lama::DenseVector<ValueType> mVecPOld;
-        lama::DenseVector<ValueType> mVecPNew;
+        std::unique_ptr<lama::Vector<ValueType>> mVecV;
+        std::unique_ptr<lama::Vector<ValueType>> mVecVOld;
+        std::unique_ptr<lama::Vector<ValueType>> mVecVNew;
+        std::unique_ptr<lama::Vector<ValueType>> mVecP;
+        std::unique_ptr<lama::Vector<ValueType>> mVecPOld;
+        std::unique_ptr<lama::Vector<ValueType>> mVecPNew;
 
         ValueType mAlpha;
         RealType<ValueType> mBetaNew;
@@ -121,7 +121,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class

@@ -38,6 +38,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -239,7 +240,7 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     struct getRow
     {
         /** Returns a row of the matrix as dense vector
@@ -254,7 +255,7 @@ struct ELLKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            OtherValueType row[],
+            ValueType row[],
             const IndexType i,
             const IndexType numRows,
             const IndexType numColumns,
@@ -367,6 +368,7 @@ struct ELLKernelTrait
          *  @param y is additional input vector to add
          *  @param numRows is number of elements for all vectors and rows of matrix
          *  @param ellIA, ellJA, csrValues are arrays of ELL storage
+         *  @param op specifies an operation implicitly applied to the matrix storage
          */
 
         typedef void ( *FuncType ) (
@@ -376,10 +378,12 @@ struct ELLKernelTrait
             const ValueType beta,
             const ValueType y[],
             const IndexType numRows,
+            const IndexType numColumns,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ValueType ellValues[] );
+            const ValueType ellValues[],
+            const common::MatrixOp op );
 
         static const char* getId()
         {
@@ -413,59 +417,12 @@ struct ELLKernelTrait
             const IndexType rowIndexes[],
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ValueType ellValues[] );
+            const ValueType ellValues[],
+            const common::MatrixOp op );
 
         static const char* getId()
         {
             return "ELL.sparseGEMV";
-        }
-    };
-
-    template<typename ValueType>
-    struct normalGEVM
-    {
-        /** Matrix vector multiplication for ELL format */
-
-        typedef void ( *FuncType ) (
-            ValueType result[],
-            const ValueType alpha,
-            const ValueType x[],
-            const ValueType beta,
-            const ValueType y[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const IndexType numValuesPerRow,
-            const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[] );
-
-        static const char* getId()
-        {
-            return "ELL.normalGEVM";
-        }
-    };
-
-    template<typename ValueType>
-    struct sparseGEVM
-    {
-        /** Matrix vector multiplication for ELL format, sparse rows */
-
-        typedef void ( *FuncType ) (
-            ValueType result[],
-            const ValueType alpha,
-            const ValueType x[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const IndexType numValuesPerRow,
-            const IndexType numNonZeroRows,
-            const IndexType rowIndexes[],
-            const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[] );
-
-        static const char* getId()
-        {
-            return "ELL.sparseGEVM";
         }
     };
 
@@ -489,19 +446,19 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ValueType, typename OtherValueType>
-    struct scaleValue
+    template<typename ValueType>
+    struct scaleRows
     {
         typedef void ( *FuncType ) (
+            ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
-            ValueType ellValues[],
-            const OtherValueType values[] );
+            const ValueType values[] );
 
         static const char* getId()
         {
-            return "ELL.scaleValue";
+            return "ELL.scaleRows";
         }
     };
 

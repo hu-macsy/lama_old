@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file solver/examples/lecture/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,16 +27,16 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
- # @author Jan Ecker
- # @date 02.12.2015
+ # @brief CMake configuration file for examples of LAMA lecture.
+ # @author Thomas Brandes
+ # @date 02.12.2017
 ###
 
 include ( scai_macro/scai_add_example )
 include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 
-set ( EXECUTABLES task0 task1a task1b task2 task2a task3 task4 )
+set ( EXECUTABLES task0 task1 task2 task3 task4 task4a )
 
 if    ( CUDA_FOUND AND USE_CUDA )
     set ( EXECUTABLES ${EXECUTABLES} task5 )

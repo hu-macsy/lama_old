@@ -173,7 +173,8 @@ int main( int argc, const char* argv[] )
 
         MatrixPtr<ValueType> matrixPtr( lamaconf.getMatrix<ValueType>() );
         Matrix<ValueType>& matrix = *matrixPtr;
-        DenseVector<ValueType> rhs( matrixPtr->getRowDistributionPtr() );
+
+        DenseVector<ValueType> rhs( matrixPtr->getRowDistributionPtr(), 0 );
         DenseVector<ValueType> solution;
 
         CSRSparseMatrix<ValueType> inMatrix;  // matrix read fromfile
@@ -250,7 +251,7 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                DenseVector<ValueType> x( inMatrix.getColDistributionPtr(), ValueType( 1 ) );
+                auto x = fill<DenseVector<ValueType>>( inMatrix.getColDistributionPtr(), ValueType( 1 ) );
 
                 rhs = inMatrix * x;
 

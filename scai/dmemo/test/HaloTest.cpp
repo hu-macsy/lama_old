@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Test routines for the class Halo.
- * @author Thomas Brandes
+ * @author Thomas Brandes, Andreas Longva
  * @date 24.07.2016
  */
 
@@ -183,6 +183,16 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
         const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
         BOOST_CHECK( common::Utils::validIndex( haloIndex, halo.getHaloSize() ) );
     }
+
+    for ( IndexType i = 0; i < 10; ++i )
+    {
+        const IndexType haloIndex = halo.global2halo( i );
+
+        if ( std::find( requiredIndexes.begin(), requiredIndexes.end(), i ) == requiredIndexes.end() )
+        {
+            BOOST_CHECK_EQUAL( haloIndex, invalidIndex );
+        }
+    }
 }
 
 // TODO: Move to dmemo testsupport...?
@@ -228,24 +238,24 @@ struct HaloExpectedResult
     std::map<IndexType, IndexType> global2halo;
 };
 
-void checkHaloAgainstExpected(const Halo & halo, const HaloExpectedResult & expected)
+void checkHaloAgainstExpected( const Halo& halo, const HaloExpectedResult& expected )
 {
     const auto expectedProvidedPlan = CommunicationPlan( expected.providedQuantities.data(), expected.providedQuantities.size() );
     const auto expectedRequiredPlan = CommunicationPlan( expected.requiredQuantities.data(), expected.requiredQuantities.size() );
 
-    CHECK_COMMUNICATION_PLANS_EQUAL(expectedProvidedPlan, halo.getProvidesPlan());
-    CHECK_COMMUNICATION_PLANS_EQUAL(expectedRequiredPlan, halo.getRequiredPlan());
+    CHECK_COMMUNICATION_PLANS_EQUAL( expectedProvidedPlan, halo.getProvidesPlan() );
+    CHECK_COMMUNICATION_PLANS_EQUAL( expectedRequiredPlan, halo.getRequiredPlan() );
 
-    BOOST_TEST(hostReadAccess(halo.getProvidesIndexes()) == expected.providedIndexes, boost::test_tools::per_element());
-    BOOST_TEST(hostReadAccess(halo.getRequiredIndexes()) == expected.requiredIndexes, boost::test_tools::per_element());
+    BOOST_TEST( hostReadAccess( halo.getProvidesIndexes() ) == expected.providedIndexes, boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( halo.getRequiredIndexes() ) == expected.requiredIndexes, boost::test_tools::per_element() );
 
-    BOOST_TEST_CONTEXT(" for global2halo comparison")
+    BOOST_TEST_CONTEXT( " for global2halo comparison" )
     {
         for ( auto keyValue : expected.global2halo )
         {
             const auto globalIndex = keyValue.first;
             const auto haloIndex = keyValue.second;
-            BOOST_TEST ( halo.global2halo(globalIndex) == haloIndex );
+            BOOST_TEST ( halo.global2halo( globalIndex ) == haloIndex );
         }
     }
 };
@@ -260,7 +270,7 @@ struct BuildFromProvidedOwnersData
     std::string testCaseName;
 };
 
-std::ostream& operator <<( std::ostream& o, const BuildFromProvidedOwnersData & data)
+std::ostream& operator <<( std::ostream& o, const BuildFromProvidedOwnersData& data )
 {
     o << data.testCaseName << std::endl;
     return o;
@@ -273,7 +283,7 @@ std::vector< BuildFromProvidedOwnersData > buildFromProvidedOwnersTestData()
 
     std::vector< BuildFromProvidedOwnersData > testData;
 
-    if ( comm->getSize() == 1)
+    if ( comm->getSize() == 1 )
     {
         auto data = BuildFromProvidedOwnersData();
         data.testCaseName = "TestCase1";
@@ -360,12 +370,12 @@ std::vector< BuildFromProvidedOwnersData > buildFromProvidedOwnersTestData()
     return testData;
 }
 
-BOOST_DATA_TEST_CASE( buildFromProvidedOwners, boost::unit_test::data::make(buildFromProvidedOwnersTestData()), data)
+BOOST_DATA_TEST_CASE( buildFromProvidedOwners, boost::unit_test::data::make( buildFromProvidedOwnersTestData() ), data )
 {
     const auto comm = Communicator::getCommunicatorPtr();
     Halo halo;
-    HaloBuilder::buildFromProvidedOwners(*comm, data.halo2global, data.ownersOfProvided, halo);
-    checkHaloAgainstExpected(halo, data.expected);
+    HaloBuilder::buildFromProvidedOwners( *comm, data.halo2global, data.ownersOfProvided, halo );
+    checkHaloAgainstExpected( halo, data.expected );
 }
 
 BOOST_AUTO_TEST_CASE( buildFromProvidedOwners_empty )
@@ -381,8 +391,8 @@ BOOST_AUTO_TEST_CASE( buildFromProvidedOwners_empty )
     expected.requiredQuantities = expected.providedQuantities;
 
     Halo halo;
-    HaloBuilder::buildFromProvidedOwners(*comm, halo2global, ownersOfProvided, halo);
-    checkHaloAgainstExpected(halo, expected);
+    HaloBuilder::buildFromProvidedOwners( *comm, halo2global, ownersOfProvided, halo );
+    checkHaloAgainstExpected( halo, expected );
 }
 
 /* --------------------------------------------------------------------- */

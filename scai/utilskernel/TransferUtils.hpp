@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of a class that handles redistribution of matrices and vectors
+ * @brief Transer of elements in heterogeneuous arrays via indirect addressing (gather/scatter)
  * @author Thomas Brandes
  * @date 08.10.2011
  */
@@ -57,41 +57,57 @@ namespace utilskernel
 /** Static class of transfer routines of HArray data
  *
  */
-template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT TransferUtils: public scai::common::Printable
 {
 public:
 
-    static void gatherV(
-        hmemo::HArray<ValueType>& targetArray,
-        const hmemo::HArray<ValueType>& sourceArray,
-        const hmemo::HArray<IndexType>& sourceOffsets,
-        const hmemo::HArray<IndexType>& sourceIndexes );
-
+    /** 
+     *  @brief Gather of rows in a dense matrix, each row has n entries
+     *
+     *  @param[out] targetArray will contain the gathered rows, n * sourceIndexes.size()
+     *  @param[in]  sourceArray contains all rows
+     *  @param[in]  sourceIndexes specfies the selected rows 
+     *  @param[in]  n is number of entries in one row
+     */
+    template<typename ValueType>
     static void gatherN(
         hmemo::HArray<ValueType>& targetArray,
         const hmemo::HArray<ValueType>& sourceArray,
         const hmemo::HArray<IndexType>& sourceIndexes,
         const IndexType n );
 
+    template<typename ValueType>
     static void scatterN(
         hmemo::HArray<ValueType>& targetArray,
         const hmemo::HArray<IndexType>& targetIndexes,
         const hmemo::HArray<ValueType>& sourceArray,
         const IndexType n );
 
+    /**
+     *  Gather but an individual size for each row
+     */
+    template<typename ValueType>
+    static void gatherV(
+        hmemo::HArray<ValueType>& targetArray,
+        const hmemo::HArray<ValueType>& sourceArray,
+        const hmemo::HArray<IndexType>& sourceOffsets,
+        const hmemo::HArray<IndexType>& sourceIndexes );
+
+    template<typename ValueType>
     static void scatterV(
         hmemo::HArray<ValueType>& targetArray,
         const hmemo::HArray<IndexType>& targetOffsets,
         const hmemo::HArray<IndexType>& targetIndexes,
         const hmemo::HArray<ValueType>& sourceArray );
 
+    template<typename ValueType>
     static void copy(
         hmemo::HArray<ValueType>& targetArray,
         const hmemo::HArray<IndexType>& targetIndexes,
         const hmemo::HArray<ValueType>& sourceArray,
         const hmemo::HArray<IndexType>& sourceIndexes );
 
+    template<typename ValueType>
     static void copyN(
         hmemo::HArray<ValueType>& targetArray,
         const hmemo::HArray<IndexType>& targetIndexes,
@@ -99,6 +115,7 @@ public:
         const hmemo::HArray<IndexType>& sourceIndexes,
         IndexType n );
 
+    template<typename ValueType>
     static void copyV(
         hmemo::HArray<ValueType>& targetArray,
         const hmemo::HArray<IndexType>& targetOffsets,
@@ -111,7 +128,7 @@ public:
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TransferUtils<ValueType>::gatherN(
+void TransferUtils::gatherN(
 
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<ValueType>& sourceArray,
@@ -139,7 +156,7 @@ void TransferUtils<ValueType>::gatherN(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TransferUtils<ValueType>::gatherV(
+void TransferUtils::gatherV(
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<ValueType>& sourceArray,
     const hmemo::HArray<IndexType>& sourceOffsets,
@@ -179,7 +196,7 @@ void TransferUtils<ValueType>::gatherV(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TransferUtils<ValueType>::scatterN(
+void TransferUtils::scatterN(
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<IndexType>& targetIndexes,
     const hmemo::HArray<ValueType>& sourceArray,
@@ -206,7 +223,7 @@ void TransferUtils<ValueType>::scatterN(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TransferUtils<ValueType>::scatterV(
+void TransferUtils::scatterV(
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<IndexType>& targetOffsets,
     const hmemo::HArray<IndexType>& targetIndexes,
@@ -237,7 +254,7 @@ void TransferUtils<ValueType>::scatterV(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TransferUtils<ValueType>::copy(
+void TransferUtils::copy(
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<IndexType>& targetIndexes,
     const hmemo::HArray<ValueType>& sourceArray,
@@ -263,7 +280,7 @@ void TransferUtils<ValueType>::copy(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TransferUtils<ValueType>::copyN(
+void TransferUtils::copyN(
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<IndexType>& targetIndexes,
     const hmemo::HArray<ValueType>& sourceArray,
@@ -295,7 +312,7 @@ void TransferUtils<ValueType>::copyN(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TransferUtils<ValueType>::copyV(
+void TransferUtils::copyV(
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<IndexType>& targetOffsets,
     const hmemo::HArray<IndexType>& targetIndexes,

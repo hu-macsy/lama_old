@@ -21,7 +21,7 @@ values.
 
 .. code-block:: c++
 
-   DenseVector<ValueType> rhs = linearValuesVector( size, ValueType( 1 ), ValueType( 1 ) );
+   auto rhs = linearDenseVector<ValueType>( size, 1, 1 );
 
 If ``ValueType`` is a complex type, the corresponding real type is used for the
 representation of the residual norm. This is necessary as the comparison of complex
@@ -29,13 +29,17 @@ number is not defined.
 
 .. code-block:: c++
 
-    RealType<ValueType> eps = 0.00001;
-    RealType<ValueType> rnorm = norm( r );
+    // RealType<ValueType> rnorm = norm( r );
+    // RealType<ValueType> eps = 0.00001;
+
+    auto rnorm = nomr( r );
+    decltype( rnorm ) eps = 0.00001;
     ...
     for ( ... ; rnorm > eps ... )
     ....
 
 .. csv-table::
+
    :header: "back to this Task", "Index", "next Task"
    :widths: 330, 340, 330
 

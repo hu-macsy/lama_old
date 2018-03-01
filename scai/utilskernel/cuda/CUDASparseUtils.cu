@@ -44,6 +44,7 @@
 #include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/Math.hpp>
@@ -453,6 +454,18 @@ void scatter_add_kernel( ValueType* out, const IndexType* indexes, const SourceV
 
 template<typename ValueType, typename SourceValueType>
 __global__
+void scatter_add1_kernel( ValueType* out, const IndexType* indexes, const SourceValueType* in, const IndexType n )
+{   
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    
+    if ( i < n )
+    {   
+        common::CUDAUtils::atomicAdd( &out[indexes[i]], static_cast<ValueType>( in[i] ) );
+    }
+}
+
+template<typename ValueType, typename SourceValueType>
+__global__
 void scatter_sub_kernel( ValueType out[], const IndexType indexes[], const SourceValueType in[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -460,6 +473,18 @@ void scatter_sub_kernel( ValueType out[], const IndexType indexes[], const Sourc
     if ( i < n )
     {
         out[indexes[i]] -= static_cast<ValueType>( in[i] );
+    }
+}
+
+template<typename ValueType, typename SourceValueType>
+__global__
+void scatter_sub1_kernel( ValueType out[], const IndexType indexes[], const SourceValueType in[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        common::CUDAUtils::atomicAdd( &out[indexes[i]], -static_cast<ValueType>( in[i] ) );
     }
 }
 
@@ -475,6 +500,8 @@ void scatter_op_kernel( ValueType* out, const IndexType* indexes, const SourceVa
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType1, typename ValueType2>
 void CUDASparseUtils::setScatter(
     ValueType1 out[],
@@ -487,7 +514,8 @@ void CUDASparseUtils::setScatter(
     SCAI_REGION( "CUDA.Utils.setScatter" )
 
     SCAI_LOG_INFO( logger,
-                   "setScatter<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
+                   "setScatter<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() 
+                   << ">( ..., n = " << n << "), op = " << op << ", unique = " << unique )
 
     if ( n > 0 )
     {
@@ -498,15 +526,31 @@ void CUDASparseUtils::setScatter(
 
         if ( op == BinaryOp::COPY )
         {
+            // unique does not matter, result can depend on race conditions
+
             scatter_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
         }
         else if ( op == BinaryOp::ADD )
         {
-            scatter_add_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+            if ( unique )
+            {
+                scatter_add_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+            }
+            else
+            {
+                scatter_add1_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+            }
         }
         else if ( op == BinaryOp::SUB )
         {
-            scatter_sub_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+            if ( unique )
+            {
+                scatter_sub_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+            }
+            else
+            {
+                scatter_sub1_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+            }
         }
         else if ( unique )
         {
@@ -534,8 +578,8 @@ struct nonZero
     const RealType mEps;
 
     nonZero( ValueType zero, ValueType eps ) :
-        mEps( Math::abs( eps ) ),
-        mZero( zero )
+        mZero( zero ),
+        mEps( Math::abs( eps ) )
     {
     }
 
@@ -560,7 +604,7 @@ IndexType CUDASparseUtils::countNonZeros( const ValueType denseArray[], const In
 
     IndexType nonZeros = thrust::transform_reduce( array_ptr,
                          array_ptr + n,
-                         nonZero<ValueType>( eps, zero ),
+                         nonZero<ValueType>( zero, eps ),
                          0,
                          thrust::plus<IndexType>() );
     return nonZeros;
@@ -590,9 +634,9 @@ struct invalidateZeros
     __host__ __device__
     IndexType operator()( const ValueType& value, const IndexType& index )
     {
-        RealType tmp = common::Math::abs( value );
+        RealType tmp = common::Math::abs( value - mZero );
 
-        if ( tmp > mEps )
+        if ( tmp > mEps )       // true -> value is considered as non-zero
         {
             return index;
         }

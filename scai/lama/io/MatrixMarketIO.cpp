@@ -650,7 +650,7 @@ void MatrixMarketIO::readArrayImpl(
 
         readVectorCoordinates( indexes, values, inFile, numValues, isVector, mmType );
  
-        HArrayUtils::buildDenseArray( array, size, values, indexes );
+        HArrayUtils::buildDenseArray( array, size, values, indexes, ValueType( 0 ) );
     }
     else
     {
@@ -730,7 +730,8 @@ void MatrixMarketIO::readSparseImpl(
 
         HArray<ValueType> denseArray;
         inFile.readFormatted( denseArray, size );
-        HArrayUtils::buildSparseArray( values, indexes, denseArray );
+        ValueType zero = 0;
+        HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray, zero );
     }
 
     if ( inFile.eof() )
@@ -968,18 +969,20 @@ void MatrixMarketIO::writeStorageImpl(
 
     SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
-    COOStorage<ValueType> coo( storage );
+    auto coo = convert<COOStorage<ValueType>>( storage );   // converts (any) storage to COO format
 
-    int numRows = coo.getNumRows();
-    int numCols = coo.getNumColumns();
+    IndexType numRows = coo.getNumRows();
+    IndexType numCols = coo.getNumColumns();
 
-    // define empty array that will be swapped with the COOStorage
+    // define arrays that will contain the COO daa
 
-    LArray<IndexType> cooIA;
-    LArray<IndexType> cooJA;
-    LArray<ValueType> cooValues;
+    LArray<IndexType> cooIA;       // = coo.getIA()
+    LArray<IndexType> cooJA;       // = coo.getJA()
+    LArray<ValueType> cooValues;   // = coo.getValues
 
-    coo.swap( cooIA, cooJA, cooValues );
+    // use splitUp to avoid copies of the data 
+
+    coo.splitUp( numRows, numCols, cooIA, cooJA, cooValues );
 
     Symmetry symFlag = checkSymmetry( cooIA, cooJA, cooValues );
 
@@ -1196,11 +1199,11 @@ void MatrixMarketIO::readStorageImpl(
 
     if ( numValuesFile == invalidIndex )
     {
-        DenseStorage<ValueType> denseStorage( numRows, numColumns );
-
-        HArray<ValueType>& data = denseStorage.getData();
+        HArray<ValueType> data;
 
         readMMArray( inFile, data, numRows, numColumns, symmetry );
+
+        DenseStorage<ValueType> denseStorage( numRows, numColumns, std::move( data ) );
 
         if ( firstRow == 0 && nRows == invalidIndex )
         {
@@ -1286,9 +1289,7 @@ void MatrixMarketIO::readStorageImpl(
 
     // take the COO arrays and build a COO storage that takes ownership of the data
 
-    COOStorage<ValueType> coo( numRows, numColumns );
-
-    coo.swap( ia, ja, val );
+    COOStorage<ValueType> coo( numRows, numColumns, std::move( ia ), std::move( ja ), std::move( val ) );
 
     if ( firstRow == 0 && nRows == invalidIndex )
     {

@@ -91,10 +91,10 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NormTest" )
 
 BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
 {
-    scai::lama::DenseVector<ValueType> x( 4, 1.0 );
-    ValueType s = 3.0;
+    auto x = fill<DenseVector<ValueType>>( 4, 1.0 );
 
-    scai::lama::DenseVector<ValueType> tmp( s * x );
+    ValueType s = 3;
+    auto tmp = eval<DenseVector<ValueType>>( s * x );
 
     Norms<ValueType> allNorms;
 
@@ -112,9 +112,9 @@ BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
 
 BOOST_AUTO_TEST_CASE( triangleInequalityTest )
 {
-    scai::lama::DenseVector<ValueType> x( 2, 2.0 );
-    scai::lama::DenseVector<ValueType> y( 2, 2.0 );
-    scai::lama::DenseVector<ValueType> z( x + y );
+    auto x = fill<DenseVector<ValueType>>( 2, 2.0 );
+    auto y = fill<DenseVector<ValueType>>( 2, 2.0 );
+    auto z = eval<DenseVector<ValueType>>( x + y );
 
     Norms<ValueType> allNorms;
 
@@ -124,8 +124,8 @@ BOOST_AUTO_TEST_CASE( triangleInequalityTest )
 
         // Inequality test
 
-        RealType<ValueType> nz  = norm.apply( z );
-        RealType<ValueType> nxy = norm.apply( x ) + norm.apply( y );
+        auto nz  = norm.apply( z );
+        auto nxy = norm.apply( x ) + norm.apply( y );
 
         BOOST_CHECK( nz <= nxy );
     }
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE( triangleInequalityTest )
 
 BOOST_AUTO_TEST_CASE( zeroVectorTest )
 {
-    scai::lama::DenseVector<ValueType> x( 4, 0.0 );
+    auto x = fill<DenseVector<ValueType>>( 4, 0.0 );
 
     Norms<ValueType> allNorms;
 
@@ -153,9 +153,7 @@ BOOST_AUTO_TEST_CASE( zeroVectorTest )
 
 BOOST_AUTO_TEST_CASE( zeroMatrixTest )
 {
-    scai::lama::DenseMatrix<ValueType> m( 3, 4 );
-
-    m.getLocalStorage().setZero();
+    auto m = zero<DenseMatrix<ValueType>>( 3, 4 );
 
     Norms<ValueType> allNorms;
 

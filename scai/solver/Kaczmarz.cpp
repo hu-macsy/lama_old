@@ -36,7 +36,7 @@
 #include <scai/solver/Kaczmarz.hpp>
 
 // internal scai libraries
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>

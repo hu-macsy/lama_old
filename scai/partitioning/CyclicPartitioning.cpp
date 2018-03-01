@@ -82,21 +82,6 @@ void CyclicPartitioning::writeAt( std::ostream& stream ) const
     stream << "CyclicPartitioning";
 }
 
-DistributionPtr CyclicPartitioning::partitionIt( const CommunicatorPtr comm, const _Matrix& matrix, float ) const
-{
-    IndexType globalSize = matrix.getRowDistribution().getGlobalSize();
-
-    // Cyclic partitioning : just create a 'cyclic' block distribution
-
-    IndexType np = comm->getSize();
-
-    // Each processor should get roughly 10 chunks
-
-    IndexType nb = getCyclicBlockSize( globalSize, np );
-
-    return DistributionPtr( new CyclicDistribution( globalSize, nb, comm ) );
-}
-
 /* ---------------------------------------------------------------------------------*/
 
 void CyclicPartitioning::rectangularPartitioning( 
@@ -137,6 +122,40 @@ void CyclicPartitioning::rectangularPartitioning(
         IndexType globalJ = colDist.local2global( j );
         IndexType globalChunk = globalJ / nbCols;
         wColMapping[j] = globalChunk % npart;
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void CyclicPartitioning::squarePartitioning(
+    HArray<PartitionId>& newLocalOwners,
+    const _Matrix& matrix,
+    const HArray<float>& processorWeights ) const
+{
+    IndexType npart = processorWeights.size();
+ 
+    SCAI_ASSERT_EQ_ERROR( matrix.getNumRows(), matrix.getNumColumns(), "square partitioning only for square matrices" )
+
+    IndexType n = matrix.getNumRows();
+
+    IndexType nb = getCyclicBlockSize( n, npart );
+
+    // weights cannot be taken into account for cyclic distributions
+
+    const Distribution& dist = matrix.getRowDistribution();
+
+    IndexType nLocal = dist.getLocalSize();
+
+    HArray<IndexType> ownedIndexes;
+    dist.getOwnedIndexes( ownedIndexes );   
+
+    WriteOnlyAccess<PartitionId> wMapping( newLocalOwners, nLocal );
+    ReadAccess<IndexType> rOwners( ownedIndexes );
+
+    for ( IndexType i = 0; i < nLocal; ++i )
+    {
+        IndexType globalChunk = rOwners[i] / nb;
+        wMapping[i] = globalChunk % npart;
     }
 }
 

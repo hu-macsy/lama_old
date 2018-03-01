@@ -75,7 +75,8 @@ public:
     /**
      *  Encapsulate matrices explicilty.
      *
-     *  @param A  is matrix that is used in all operations alpha * A * x
+     *  @param A        is matrix that is used in all operations alpha * A * x
+     *  @param conjFlag if true and A has complex value type, it builds conjugate transpose
      *
      *  Builds explicitly the matrix AT as AT = transpose(A) or AT = conjTranspose(A)
      */

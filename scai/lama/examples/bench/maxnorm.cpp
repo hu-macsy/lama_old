@@ -57,10 +57,8 @@ using scai::common::Walltime;
 template<typename ValueType>
 static void bench( IndexType size )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    DistributionPtr dist( new BlockDistribution( size, comm ) );
-    DenseVector<ValueType> x( dist );
-    x = ValueType( 7 );
+    auto dist = std::make_shared<BlockDistribution>( size );
+    DenseVector<ValueType> x( dist, 7 );
     double tmpTime = Walltime::get();
     x.maxNorm();
     tmpTime = Walltime::get() - tmpTime;

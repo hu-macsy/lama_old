@@ -56,9 +56,9 @@ endif ()
 
 ### Define some general variables used for identifaction 
 
-set ( SCAI_VERSION_NAME   "Barrancas Blancas" )
-set ( SCAI_COPYRIGHT_YEAR 2017 )
-set ( SCAI_VERSION        2.2.0 )
+set ( SCAI_VERSION_NAME   "Chimborazo" )
+set ( SCAI_COPYRIGHT_YEAR 2018 )
+set ( SCAI_VERSION        3.0.0 )
 set ( SCAI_LIBRARY_PREFIX "scai" )             # more unique names for all SCAI module libraries
 
 ### Extend CMake module path for SCAI/LAMA specific extensions

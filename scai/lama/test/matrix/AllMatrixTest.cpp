@@ -57,6 +57,7 @@
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/storage/COOUtils.hpp>
 
 #include <scai/logging.hpp>
 
@@ -78,7 +79,7 @@ void initMatrix( _Matrix& matrix, const char* rowDistKind, const char* colDistKi
                                        };
 
     hmemo::HArrayRef<ValueType> data( numRows * numColumns, values );
-    DenseStorage<ValueType> denseStorage( data, numRows, numColumns );
+    DenseStorage<ValueType> denseStorage( numRows, numColumns, data );
     matrix.assign( denseStorage );
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     // get the distributions from the factory
@@ -101,7 +102,6 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     size_t nFormats = static_cast<size_t>( Format::UNDEFINED );
     size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_NUMERIC_TYPES_HOST );
     nFormats--;   // STENCIL_STORAGE not used for a matrix
-    nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
     SCAI_LOG_INFO( logger, "Test all matrices of factory to be empty, #matrices = " << allMatrices.size() )
     BOOST_CHECK_EQUAL( nTypes * nFormats, allMatrices.size() );
 
@@ -289,11 +289,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 
     std::srand( 10113 );  // same random numbers on each processor
 
-    CSRSparseMatrix<ValueType> input( M, N);
+    auto input = zero<CSRSparseMatrix<ValueType>>( M, N);
+
     MatrixCreator::fillRandom( input, 0.5f );
 
-    DenseVector<ValueType> scaleY( M );
-    scaleY.fillLinearValues( 1, 1 );
+    auto scaleY = linearDenseVector<ValueType>( M, 1, 1 );
 
     CSRSparseMatrix<ValueType> output( input );
     output.scaleRows( scaleY );
@@ -662,7 +662,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<DefaultReal> csr( nRows, nCols );
+    auto csr = zero<CSRSparseMatrix<DefaultReal>>( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -719,7 +719,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<ValueType> csr( nRows, nCols );
+    auto csr = zero<CSRSparseMatrix<ValueType>>( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     common::BinaryOp reduceOp = common::BinaryOp::ADD;
@@ -792,7 +792,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getColTest, ValueType, scai_numeric_test_types )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<DefaultReal> csr( nRows, nCols );
+    auto csr = zero<CSRSparseMatrix<DefaultReal>>( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -847,7 +847,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getTest, ValueType, scai_numeric_test_types )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<DefaultReal> csr( nRows, nCols );
+    auto csr = zero<CSRSparseMatrix<DefaultReal>>( nRows, nCols );
+
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -882,7 +883,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getTest, ValueType, scai_numeric_test_types )
                     for ( IndexType jCol = 0; jCol < matrix.getNumColumns(); ++jCol )
                     {
                         ValueType s1 = matrix.getValue( iRow, jCol );
-                        ValueType s2 = csr.getValue( iRow, jCol );
+                        ValueType s2 = static_cast<ValueType>( csr.getValue( iRow, jCol ) );
 
                         RealType<ValueType> diff = common::Math::abs( s1 - s2 );
 
@@ -903,7 +904,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getSetTest, ValueType, scai_numeric_test_types )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<ValueType> csr( nRows, nCols );
+    auto csr = zero<CSRSparseMatrix<ValueType>>( nRows, nCols );
+
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -956,61 +958,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getSetTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( setCSRDataTest )
-{
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-
-    typedef DefaultReal ValueType;
-
-    const IndexType nRows = 15;
-    const IndexType nCols = 8;
-
-    std::srand( 1311 );
-
-    CSRSparseMatrix<ValueType> csr( nRows, nCols );
-    MatrixCreator::fillRandom( csr, 0.1f );
-
-    dmemo::DistributionPtr colDist( new NoDistribution( nCols ) );
-
-    TestDistributions testDistributions( nRows );
-
-    for ( size_t i = 0; i < testDistributions.size(); ++i )
-    {
-        DistributionPtr dist = testDistributions[i];
-
-        csr.redistribute( dist, csr.getColDistributionPtr() );
-
-        CSRStorage<ValueType> localCSR = csr.getLocalStorage();
-
-        const hmemo::HArray<IndexType>& ia = localCSR.getIA();
-        const hmemo::HArray<IndexType>& ja = localCSR.getJA();
-        const hmemo::HArray<ValueType>& values = localCSR.getValues();
-        const IndexType numValues = localCSR.getNumValues();
-
-        // now we have local CSR data to set
-
-        _Matrices allMatrices( context );    // is created by factory
-
-        for ( size_t k = 0; k < allMatrices.size(); ++k )
-        {
-            _Matrix& mat = *allMatrices[ k ];
-
-            mat.setCSRData( dist, colDist, numValues, ia, ja, values );
-
-            BOOST_CHECK( mat.isConsistent() );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 15;   // only square matrices here
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<DefaultReal> csr( n, n );
+    auto csr = zero<CSRSparseMatrix<DefaultReal>>( n, n );
+
     MatrixCreator::fillRandom( csr, 0.1f );
 
     RealType<ValueType> eps = 0.0001;
@@ -1068,6 +1023,71 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_ty
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( disassembleTest )
+{
+    typedef DefaultReal ValueType;      // assemble/dissamble is not value-type specific
+
+    using namespace hmemo;
+
+    ContextPtr context = Context::getContextPtr();  // test context
+
+    const IndexType m =  8;  
+    const IndexType n = 15; 
+
+    HArray<IndexType> ia(     { 0, 2, 2, 4, 6 } );
+    HArray<IndexType> ja(     { 2, 3, 9, 5, 1 } );
+    HArray<ValueType> values( { 2, 3, 1, 4, 5 } );
+
+    COOStorage<ValueType> inputCOO( m , n, ia, ja, values );
+
+    TestDistributions rowDists( m );
+    TestDistributions colDists( n );
+
+    // Disassemble test for each matrix type with all kind of row and column distributions
+
+    for ( size_t d1 = 0; d1 < rowDists.size(); ++d1 )
+    {
+        DistributionPtr rowDist = rowDists[d1];
+
+        for ( size_t d2 = 0; d2 < colDists.size(); ++d2 )
+        {
+            DistributionPtr colDist = colDists[d2];
+
+            Matrices<ValueType> allMatrices( context );    // is created by factory
+
+            for ( size_t s = 0; s < allMatrices.size(); ++s )
+            {
+                Matrix<ValueType>& matrix = *allMatrices[s];
+
+                matrix.assignDistribute( inputCOO, rowDist, colDist);
+
+                SCAI_LOG_DEBUG( logger, "Disassemble this matrix: " << matrix )
+
+                MatrixAssembly<ValueType> assembly( rowDist->getCommunicatorPtr() );
+
+                matrix.disassemble( assembly );
+
+                COOStorage<ValueType> coo = assembly.buildGlobalCOO( m, n );
+            
+                HArray<IndexType> cooIA = coo.getIA();
+                HArray<IndexType> cooJA = coo.getJA();
+                HArray<ValueType> cooValues = coo.getValues();
+
+                BOOST_CHECK_EQUAL( cooIA.size(), cooJA.size() );
+                BOOST_CHECK_EQUAL( cooIA.size(), cooValues.size() );
+
+                COOUtils::sort( cooIA, cooJA, cooValues );
+
+                BOOST_TEST( hostReadAccess( cooIA ) == hostReadAccess( ia ), boost::test_tools::per_element() );
+                BOOST_TEST( hostReadAccess( cooJA ) == hostReadAccess( ja ), boost::test_tools::per_element() );
+                BOOST_TEST( hostReadAccess( cooValues ) == hostReadAccess( values ), boost::test_tools::per_element() );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 15; 
@@ -1077,7 +1097,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
 
     common::Math::srandom( 1711 );  // all processors draw same replicated matrix
 
-    CSRSparseMatrix<ValueType> csr( n, m );
+    auto csr = zero<CSRSparseMatrix<ValueType>>( n, m );
+
     MatrixCreator::fillRandom( csr, 0.1f );
 
     CSRSparseMatrix<ValueType> csr2;

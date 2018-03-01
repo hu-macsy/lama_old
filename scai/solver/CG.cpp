@@ -36,7 +36,7 @@
 #include <scai/solver/CG.hpp>
 
 // internal scai libraries
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -57,7 +57,6 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CG<ValueType>::logge
 
 using lama::Matrix;
 using lama::Vector;
-using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -110,16 +109,17 @@ CG<ValueType>::~CG()
 /* ========================================================================= */
 
 template<typename ValueType>
-void CG<ValueType>::CGRuntime::initialize( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx )
+void CG<ValueType>::CGRuntime::initialize()
 {
+    SCAI_ASSERT_ERROR( mCoefficients, "initialize of CGRuntime, but no coefficients set" )
+
     mPScalar = ValueType( 0 );
 
-    mP.setContextPtr( ctx );
-    mP.allocate( dist );
-    mQ.setContextPtr( ctx );
-    mQ.allocate( dist );
-    mZ.setContextPtr( ctx );
-    mZ.allocate( dist );
+    // allocate runtime vectors p, q, z with target space + context of matrix
+
+    mP.reset( mCoefficients->newTargetVector() );
+    mQ.reset( mCoefficients->newTargetVector() );
+    mZ.reset( mCoefficients->newTargetVector() );
 }
 
 template<typename ValueType>
@@ -129,12 +129,7 @@ void CG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 
     IterativeSolver<ValueType>::initialize( coefficients );
 
-    // allocate runtime vectors p, q, z with target space + context of matrix
-
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    hmemo::ContextPtr ctx = coefficients.getContextPtr();
-
-    getRuntime().initialize( dist, ctx );
+    getRuntime().initialize();
 }
 
 /* ========================================================================= */
@@ -155,14 +150,14 @@ void CG<ValueType>::iterate()
         this->getResidual();
     }
 
-    DenseVector<ValueType>& residual = runtime.mResidual;
+    Vector<ValueType>& residual = *runtime.mResidual;
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;  // coefficient matrix is pointer
 
-    DenseVector<ValueType>& x = runtime.mSolution.getReference();  // will be updated
-    DenseVector<ValueType>& p = runtime.mP;
-    DenseVector<ValueType>& q = runtime.mQ;
-    DenseVector<ValueType>& z = runtime.mZ;
+    Vector<ValueType>& x = runtime.mSolution.getReference();  // will be updated
+    Vector<ValueType>& p = *runtime.mP;
+    Vector<ValueType>& q = *runtime.mQ;
+    Vector<ValueType>& z = *runtime.mZ;
 
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
@@ -282,12 +277,5 @@ void CG<ValueType>::writeAt( std::ostream& stream ) const
 SCAI_COMMON_INST_CLASS( CG, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
-
-// add the register guard might be needed for some compilers
-
-/*
-template solver::Solver::Register<solver::CG>::RegisterGuard
-         solver::Solver::Register<solver::CG>::registerGuard;
-*/
 
 } /* end namespace scai */

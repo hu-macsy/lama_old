@@ -92,9 +92,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, scai_numeric_test_typ
 
     Jacobi<ValueType> jacobi( "IterationCountTest Jacobi" );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
+
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
-    DenseVector<ValueType> solution( 3, 1.0 );
+
+    auto solution = fill<DenseVector<ValueType>>( 3, 1.0 );
+
     CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( maxIterations ) );
     jacobi.initialize( coefficients );
     jacobi.setStoppingCriterion( criterion );

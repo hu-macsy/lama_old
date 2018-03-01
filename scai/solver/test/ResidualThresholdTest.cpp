@@ -172,9 +172,7 @@ BOOST_AUTO_TEST_CASE( NormPtrTest )
 
     // Check if this norm is really a L2Norm.
 
-    DenseVector<ValueType> v( 2 );
-    v[0] = 3;
-    v[1] = 4;
+    DenseVector<ValueType> v( HArray<ValueType>( { 3, 4 } ) );
 
     RealType<ValueType> computed = norm->apply( v );
     RealType<ValueType> expected = 5;
@@ -195,9 +193,11 @@ void testIsSatisfied( ResidualCheck checkMode )
     Jacobi<ValueType> solver( "ResidualThresholdTest Jacobi", ( ValueType ) 1.0 );
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
-    DenseVector<ValueType> solution( n, ValueType( 0 ) );
 
-    NormPtr<ValueType> l2Norm( new L2Norm<ValueType>() );
+    auto solution = fill<DenseVector<ValueType>>( n, 0 );
+
+    auto l2Norm = std::make_shared<L2Norm<ValueType>>();
+
     RealType<ValueType> eps = 1e-5;
     CriterionPtr<ValueType> residualThreshold( new ResidualThreshold<ValueType>( l2Norm, eps, checkMode ) );
     solver.setStoppingCriterion( residualThreshold );
@@ -206,7 +206,8 @@ void testIsSatisfied( ResidualCheck checkMode )
 
     BOOST_CHECK( residualThreshold->isSatisfied( solver ) );
 
-    DenseVector<ValueType> residual( coefficients * solution - rhs );
+    const auto residual = eval<DenseVector<ValueType>>( coefficients * solution - rhs );
+
     RealType<ValueType> error = ( *l2Norm )( residual );
 
     SCAI_LOG_INFO( logger, "solver = " << solver << ", error = " << error )

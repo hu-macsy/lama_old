@@ -44,6 +44,9 @@
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
+
+#include <scai/lama/storage/DenseStorage.hpp>
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
@@ -86,19 +89,15 @@ BOOST_AUTO_TEST_CASE( localConstructorTest )
         SCAI_LOG_DEBUG( logger, *comm << ": localConstructorTest " << i << " of " << storages.size() 
                                 << ", storage = " << *storage )
 
-        dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( storage->getNumRows(), comm ) );
+        PartitionId np = comm->getSize();
 
-        SparseMatrix<ValueType> matrix( storage, rowDist );  // local constructor
+        auto rowDist = std::make_shared<dmemo::BlockDistribution>( storage->getNumRows() * np, comm );
+
+        SparseMatrix<ValueType> matrix( rowDist, storage );  // local constructor
 
         BOOST_CHECK_EQUAL( matrix.getContextPtr(), storage->getContextPtr() );
 
         BOOST_CHECK( matrix.isConsistent() );
-
-        if ( rowDist->getGlobalSize() > 0 )
-        {
-            // be careful: all processors must call it or all not
-            BOOST_CHECK( matrix.getMemoryUsage() > 0 );
-        }
 
         BOOST_CHECK_EQUAL( matrix.getNumRows(), rowDist->getGlobalSize() );
         BOOST_CHECK_EQUAL( matrix.getNumColumns(), storage->getNumColumns() );
@@ -121,98 +120,11 @@ typedef boost::mpl::list < CSRSparseMatrix<ValueType>,
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SwapLocalStorageTest, _MatrixType, SparseMatrixTypes )
-{
-    typedef typename _MatrixType::StorageType StorageType;
-
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
-
-    const IndexType n = 100;  // size of the square matrix
-
-    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( n, comm ) );
-    dmemo::DistributionPtr colDist( new dmemo::BlockDistribution( n, comm ) );
-
-    _MatrixType matrix( rowDist, colDist );
-
-    MatrixCreator::fillRandom( matrix, 0.2f );
-
-    // only row block distributed
-
-    const StorageType& haloStorage = matrix.getHaloStorage();
-
-    StorageType storage;
-
-    storage.allocate( matrix.getRowDistribution().getLocalSize(), matrix.getColDistribution().getLocalSize() );
-
-    matrix.swapLocalStorage( storage );
-
-    BOOST_CHECK( storage.getNumValues() > 0 );
-
-    storage.scale( 2 );
-
-    matrix.swapLocalStorage( storage );
-
-    // halo must not have been changed
-
-    BOOST_CHECK_EQUAL( &haloStorage, &matrix.getHaloStorage() );
-
-    BOOST_CHECK_EQUAL( IndexType( 0 ), storage.getNumValues() );
-
-    storage.clear(); // resizes to 0 x 0
-
-    BOOST_CHECK_THROW(
-    {
-        matrix.swapLocalStorage( storage );
-    }, common::Exception );
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( FlatCopyTest, _MatrixType, SparseMatrixTypes )
-{
-    typedef typename _MatrixType::StorageType StorageType;
-
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
-
-    const IndexType n = 100;  // size of the square matrix
-
-    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( n, comm ) );
-    dmemo::DistributionPtr colDist( new dmemo::BlockDistribution( n, comm ) );
-
-    _MatrixType matrix( rowDist, colDist );
-
-    MatrixCreator::fillRandom( matrix, 0.2f );
-
-    // only row block distributed
-
-    StorageType storage;
-    storage.allocate( matrix.getRowDistribution().getLocalSize(), matrix.getColDistribution().getLocalSize() );
-
-    matrix.swapLocalStorage( storage );
-
-    BOOST_CHECK( storage.getNumValues() > 0 );
-
-    storage.scale( 2 );
-
-    matrix.swapLocalStorage( storage );
-
-    BOOST_CHECK_EQUAL( IndexType( 0 ), storage.getNumValues() );
-
-    storage.clear(); // resizes to 0 x 0
-
-    BOOST_CHECK_THROW(
-    {
-        matrix.swapLocalStorage( storage );
-    }, common::Exception );
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, _MatrixType, SparseMatrixTypes )
+BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, SparseMatrixTypes )
 {
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
-    typedef typename _MatrixType::StorageType StorageType;
+    typedef typename MatrixType::StorageType StorageType;
 
     const IndexType numRows = 4;
     const IndexType numCols = 7;
@@ -225,14 +137,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, _MatrixType, SparseMatrixTyp
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( numRows, numCols, denseData );
+    // wrap the (2D) array denseData as a dense storage
 
-    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( numRows, comm ) );
-    dmemo::DistributionPtr colDist( new dmemo::BlockDistribution( numCols, comm ) );
+    DenseStorage<ValueType> denseStorage( numRows, numCols, std::move( denseData ) );
 
-    _MatrixType matrix1( globalStorage );
-    matrix1.redistribute( rowDist, colDist );
+    auto rowDist = std::make_shared<dmemo::BlockDistribution>( numRows, comm );
+    auto colDist = std::make_shared<dmemo::BlockDistribution>( numCols, comm );
+
+    auto matrix1 = distribute<MatrixType>( denseStorage, rowDist, colDist );
 
     SCAI_LOG_INFO( logger, "Test copy constructor SparseMatrix( matrix1 ), with matrix1 = " << matrix1 )
 

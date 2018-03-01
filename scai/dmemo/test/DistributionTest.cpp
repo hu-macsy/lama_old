@@ -148,6 +148,42 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( global2LocalVTest )
+{
+    TestDistributions allDist( 17 );
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        DistributionPtr dist = allDist[i];
+
+        const Communicator& comm = dist->getCommunicator();
+
+        SCAI_LOG_INFO( logger, comm << ": global2LocalTest, dist = " << *dist )
+
+        hmemo::HArray<IndexType> globalIndexes;
+        utilskernel::HArrayUtils::setOrder( globalIndexes, dist->getGlobalSize() );
+
+        hmemo::HArray<IndexType> localIndexes;
+        dist->global2localV( localIndexes, globalIndexes );
+
+        auto rLocal = hostReadAccess( localIndexes );
+
+        IndexType countLocal = 0;
+
+        for ( IndexType i = 0; i < dist->getGlobalSize(); ++i )
+        {
+            if ( rLocal[i] != invalidIndex )
+            {
+                countLocal++;
+            }
+        }
+ 
+        BOOST_CHECK_EQUAL( countLocal, dist->getLocalSize() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 {
     TestDistributions allDist( 17 );
@@ -195,7 +231,7 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
         // own counter array to check for good local indexes on each partition
 
         std::unique_ptr<IndexType[]> counts( new IndexType[nP] );
- 
+
         for ( IndexType iP = 0; iP < nP; ++iP )
         {
             counts[iP] = 0;
@@ -237,8 +273,8 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
             PartitionId owner = dist->getAnyOwner( globalIndex );
             IndexType localIndex1 = dist->getAnyLocalIndex( globalIndex, owner );
             IndexType localIndex2 = perm[ globalIndex ] - offsets[owner];
-            SCAI_LOG_TRACE( logger, "Global index = " << globalIndex << ", owner = " << owner 
-                               << ", local1 = " << localIndex1 << ", local2 = " << localIndex2 )
+            SCAI_LOG_TRACE( logger, "Global index = " << globalIndex << ", owner = " << owner
+                            << ", local1 = " << localIndex1 << ", local2 = " << localIndex2 )
             BOOST_CHECK_EQUAL( localIndex1, localIndex2 );
         }
 
@@ -262,7 +298,7 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
                 IndexType globalIndex1 = dist->getAnyGlobalIndex( localIndex, iP );
                 IndexType globalIndex2 = perm[localIndex + offset];
                 SCAI_LOG_TRACE( logger, "iP = " << iP << ", local index = " << localIndex
-                                    << ", global1 = " << globalIndex1 << ", global2 = " << globalIndex2 )
+                                << ", global1 = " << globalIndex1 << ", global2 = " << globalIndex2 )
                 BOOST_CHECK_EQUAL( globalIndex1, globalIndex2 );
             }
         }

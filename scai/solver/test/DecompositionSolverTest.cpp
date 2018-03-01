@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
                                };
     const ValueType rhsValues[] = { 39.0, 43.0, 6.0, 13.0 };
     const ValueType solValues[] = { 1.0, 2.0, -2.0, 3.0 };
-    const IndexType numRows = 4;
+    const IndexType size = 4;
     const IndexType nnz = 15;
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -127,19 +127,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
         return;   // DecompositionSolver not yet parallel
     }
 
-    DistributionPtr dist( new BlockDistribution( numRows, comm ) );
 
-    ContextPtr context = Context::getContextPtr();
+    auto local  = convertRawCSR<CSRStorage<ValueType>>( size, size, nnz, ia, ja, values );
+    auto dist   = std::make_shared<BlockDistribution>( size );
 
-    CSRSparseMatrix<ValueType> matrix;
-    matrix.setRawCSRData( dist, dist, nnz, ia, ja, values );
-    matrix.setContextPtr( context );
+    auto matrix = distribute<CSRSparseMatrix<ValueType>>( local, dist, dist );
 
-    DenseVector<ValueType> rhs( context );
-    rhs.setRawData( numRows, rhsValues );
-    DenseVector<ValueType> solution( numRows, 0.0, context );
+    DenseVector<ValueType> rhs( HArrayRef<ValueType>( size, rhsValues ) );
     rhs.redistribute( dist );
-    solution.redistribute( dist );
+    auto solution = fill<DenseVector<ValueType>>( dist, 0 );
 
     DecompositionSolver<ValueType> solver( "DecompositionSolver" );
     solver.initialize( matrix );
@@ -149,7 +145,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
         ContextPtr host = Context::getHostPtr();
         ReadAccess<ValueType> rSol( solution.getLocalValues(), host );
 
-        for ( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < size; ++i )
         {
             ValueType x = rSol[i] - solValues[i];
             BOOST_CHECK_SMALL( Math::real( x ), TypeTraits<ValueType>::small() );

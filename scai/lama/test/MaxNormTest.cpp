@@ -59,20 +59,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, scai_numeric_test_
 {
     IndexType n = 4;
     ValueType val = 5.0;
-    DenseVector<ValueType> vec( n, val );
+
+    auto vec = fill<DenseVector<ValueType>>( n, val );
+
     MaxNorm<ValueType> maxnorm;
-    ValueType expected = 5.0;
+    ValueType expected = val;
     BOOST_CHECK_EQUAL( expected, maxnorm( vec ) );
     BOOST_CHECK_EQUAL( vec.maxNorm(), maxnorm( vec ) );
-    WriteAccess<ValueType> hwa( vec.getLocalValues() );
-    hwa[0] = 1.0;
-    hwa[1] = -2.0;
-    hwa[2] = 3.0;
-    hwa[3] = -4.5;
-    hwa.release();
+
+    DenseVector<ValueType> vec2( HArray<ValueType>( { 1.0, -2.0, 3.0, -4.5 } ) );
     expected = 4.5;
-    BOOST_CHECK_EQUAL( expected, maxnorm( vec ) );
-    BOOST_CHECK_EQUAL( vec.maxNorm(), maxnorm( vec ) );
+    BOOST_CHECK_EQUAL( expected, maxnorm( vec2 ) );
+    BOOST_CHECK_EQUAL( vec2.maxNorm(), maxnorm( vec2 ) );
 }
 
 /* --------------------------------------------------------------------- */

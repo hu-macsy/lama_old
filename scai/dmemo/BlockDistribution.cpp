@@ -236,7 +236,7 @@ IndexType BlockDistribution::getAnyLocalSize( const PartitionId rank ) const
     // Attention:  lb = 14 > ub = 12 might be possible
 
     if ( lb < ub )
-    { 
+    {
         return ub - lb;
     }
     else
@@ -254,7 +254,7 @@ PartitionId BlockDistribution::getAnyOwner( const IndexType globalIndex ) const
 IndexType BlockDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, mGlobalSize, "global index out of range" )
- 
+
     if ( owner == invalidIndex )
     {
         return globalIndex % mBlockSize;

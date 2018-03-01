@@ -42,7 +42,7 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -62,7 +62,6 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, BiCGstab<ValueType>:
 
 using lama::Matrix;
 using lama::Vector;
-using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -133,26 +132,14 @@ void BiCGstab<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 
     // get runtime vectors with same row distribution / context / type as cofficients matrix
 
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    hmemo::ContextPtr      ctx  = coefficients.getContextPtr();
-
-    runtime.mRes0.setContextPtr( ctx );
-    runtime.mVecV.setContextPtr( ctx );
-    runtime.mVecP.setContextPtr( ctx );
-    runtime.mVecS.setContextPtr( ctx );
-    runtime.mVecT.setContextPtr( ctx );
-    runtime.mVecPT.setContextPtr( ctx );
-    runtime.mVecST.setContextPtr( ctx );
-    runtime.mVecTT.setContextPtr( ctx );
-
-    runtime.mRes0.allocate( dist );
-    runtime.mVecV.allocate( dist );
-    runtime.mVecP.allocate( dist );
-    runtime.mVecS.allocate( dist );
-    runtime.mVecT.allocate( dist );
-    runtime.mVecPT.allocate( dist );
-    runtime.mVecST.allocate( dist );
-    runtime.mVecTT.allocate( dist );
+    runtime.mRes0.reset( coefficients.newTargetVector() );
+    runtime.mVecV.reset( coefficients.newTargetVector() );
+    runtime.mVecP.reset( coefficients.newTargetVector() );
+    runtime.mVecS.reset( coefficients.newTargetVector() );
+    runtime.mVecT.reset( coefficients.newTargetVector() );
+    runtime.mVecPT.reset( coefficients.newTargetVector() );
+    runtime.mVecST.reset( coefficients.newTargetVector() );
+    runtime.mVecTT.reset( coefficients.newTargetVector() );
 }
 
 /* ========================================================================= */
@@ -160,7 +147,7 @@ void BiCGstab<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 /* ========================================================================= */
 
 template<typename ValueType>
-void BiCGstab<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
+void BiCGstab<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -170,9 +157,10 @@ void BiCGstab<ValueType>::solveInit( DenseVector<ValueType>& solution, const Den
 
     this->getResidual();
 
-    runtime.mRes0 = runtime.mResidual;
-    runtime.mVecV.setSameValue( rhs.getDistributionPtr(), 0 );
-    runtime.mVecP.setSameValue( rhs.getDistributionPtr(), 0 );
+    *runtime.mRes0 = *runtime.mResidual;    // deep copy of the residual
+
+    runtime.mVecV.reset( rhs.newVector() );
+    runtime.mVecP.reset( rhs.newVector() );
 }
 
 /* ========================================================================= */
@@ -185,17 +173,17 @@ void BiCGstab<ValueType>::iterate()
     BiCGstabRuntime& runtime    = getRuntime();
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
-    const Vector<ValueType>& res0 = runtime.mRes0;
+    const Vector<ValueType>& res0 = *runtime.mRes0;
 
-    DenseVector<ValueType>& res = runtime.mResidual;
-    DenseVector<ValueType>& vecV = runtime.mVecV;
-    DenseVector<ValueType>& vecP = runtime.mVecP;
-    DenseVector<ValueType>& vecS = runtime.mVecS;
-    DenseVector<ValueType>& vecT = runtime.mVecT;
+    Vector<ValueType>& res = *runtime.mResidual;
+    Vector<ValueType>& vecV = *runtime.mVecV;
+    Vector<ValueType>& vecP = *runtime.mVecP;
+    Vector<ValueType>& vecS = *runtime.mVecS;
+    Vector<ValueType>& vecT = *runtime.mVecT;
     Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
-    DenseVector<ValueType>& vecPT = runtime.mVecPT;
-    DenseVector<ValueType>& vecST = runtime.mVecST;
-    DenseVector<ValueType>& vecTT = runtime.mVecTT;
+    Vector<ValueType>& vecPT = *runtime.mVecPT;
+    Vector<ValueType>& vecST = *runtime.mVecST;
+    Vector<ValueType>& vecTT = *runtime.mVecTT;
 
     ValueType& alpha = runtime.mAlpha;
     ValueType& beta = runtime.mBeta;

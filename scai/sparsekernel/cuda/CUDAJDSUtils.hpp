@@ -43,6 +43,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -60,20 +61,20 @@ public:
 
     /** CUDA implementation of JDSKernelTrait::scaleRows */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static void scaleRows(
         ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        const OtherValueType rowValues[] );
+        const ValueType rowValues[] );
 
     /** CUDA implementation of JDSKernelTrait::getRow */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static void getRow(
-        OtherValueType row[],
+        ValueType row[],
         const IndexType i,
         const IndexType numColumns,
         const IndexType numRows,
@@ -195,29 +196,14 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
-        const IndexType perm[],
-        const IndexType jdsILG[],
-        const IndexType ndlg,
-        const IndexType jdsDLG[],
-        const IndexType jdsJA[],
-        const ValueType jdsValues[] );
-
-    /** Implementation for JDSKernelTrait::normalGEVM with CUDA on GPU */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
         const IndexType numColumns,
         const IndexType perm[],
         const IndexType jdsILG[],
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[] );
+        const ValueType jdsValues[],
+        const common::MatrixOp op );
 
     /** Implementation for JDSKernelTrait::sparseGEMV with CUDA on GPU */
 
@@ -232,22 +218,8 @@ public:
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[] );
-
-    /** Implementation for JDSKernelTrait::sparseGEVM with CUDA on GPU */
-
-    template<typename ValueType>
-    static void sparseGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const IndexType numRows,
-        const IndexType perm[],
-        const IndexType jdsILG[],
-        const IndexType ndlg,
-        const IndexType jdsDLG[],
-        const IndexType jdsJA[],
-        const ValueType jdsValues[] );
+        const ValueType jdsValues[],
+        const common::MatrixOp op );
 
 private:
 

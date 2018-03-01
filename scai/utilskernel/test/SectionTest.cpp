@@ -53,10 +53,6 @@ using common::BinaryOp;
 
 /* --------------------------------------------------------------------- */
 
-extern ContextPtr testContext;
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_SUITE( SectionTest )
 
 /* --------------------------------------------------------------------- */
@@ -69,7 +65,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign0Test, ValueType, scai_array_test_types )
 {
     static LAMAKernel<SectionKernelTrait::assign<ValueType> > assign;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assign.getSupportedContext( loc );
 
@@ -115,7 +112,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign1Test, ValueType, scai_array_test_types )
 {
     static LAMAKernel<SectionKernelTrait::assign<ValueType> > assign;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assign.getSupportedContext( loc );
 
@@ -174,7 +172,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign2Test, ValueType, scai_array_test_types )
 {
     static LAMAKernel<SectionKernelTrait::assign<ValueType> > assign;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assign.getSupportedContext( loc );
 
@@ -236,7 +235,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign3Test, ValueType, scai_array_test_types )
 {
     static LAMAKernel<SectionKernelTrait::assign<ValueType> > assign;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assign.getSupportedContext( loc );
 
@@ -294,7 +294,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign4Test, ValueType, scai_array_test_types )
 {
     static LAMAKernel<SectionKernelTrait::assign<ValueType> > assign;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assign.getSupportedContext( loc );
 
@@ -353,7 +354,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar0Test, ValueType, scai_array_test_typ
 {
     static LAMAKernel<SectionKernelTrait::assignScalar<ValueType> > assignScalar;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assignScalar.getSupportedContext( loc );
 
@@ -396,7 +398,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar1Test, ValueType, scai_array_test_typ
 {
     static LAMAKernel<SectionKernelTrait::assignScalar<ValueType> > assignScalar;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assignScalar.getSupportedContext( loc );
 
@@ -452,7 +455,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar2Test, ValueType, scai_array_test_typ
 {
     static LAMAKernel<SectionKernelTrait::assignScalar<ValueType> > assignScalar;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assignScalar.getSupportedContext( loc );
 
@@ -514,7 +518,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar3Test, ValueType, scai_array_test_typ
 {
     static LAMAKernel<SectionKernelTrait::assignScalar<ValueType> > assignScalar;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assignScalar.getSupportedContext( loc );
 
@@ -568,7 +573,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar4Test, ValueType, scai_array_test_typ
 {
     static LAMAKernel<SectionKernelTrait::assignScalar<ValueType> > assignScalar;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     assignScalar.getSupportedContext( loc );
 
@@ -632,7 +638,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_ty
 
     static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     unaryOp.getSupportedContext( loc );
 
@@ -695,7 +702,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_ty
 
     static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     unaryOp.getSupportedContext( loc );
 
@@ -761,7 +769,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_ty
 
     static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     unaryOp.getSupportedContext( loc );
 
@@ -826,7 +835,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp4Test, SourceValueType, scai_array_test_ty
 
     static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     unaryOp.getSupportedContext( loc );
 
@@ -890,7 +900,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp1Test, ValueType, scai_numeric_test_types 
 {
     static LAMAKernel<SectionKernelTrait::UnaryOp<ValueType> > UnaryOp;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     UnaryOp.getSupportedContext( loc );
 
@@ -941,7 +952,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp2Test, ValueType, scai_numeric_test_types 
 {
     static LAMAKernel<SectionKernelTrait::UnaryOp<ValueType> > UnaryOp;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     UnaryOp.getSupportedContext( loc );
 
@@ -997,7 +1009,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp3Test, ValueType, scai_numeric_test_types 
 {
     static LAMAKernel<SectionKernelTrait::UnaryOp<ValueType> > UnaryOp;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     UnaryOp.getSupportedContext( loc );
 
@@ -1047,7 +1060,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp4Test, ValueType, scai_numeric_test_types 
 {
     static LAMAKernel<SectionKernelTrait::UnaryOp<ValueType> > UnaryOp;
 
-    ContextPtr loc = testContext;
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
 
     UnaryOp.getSupportedContext( loc );
 

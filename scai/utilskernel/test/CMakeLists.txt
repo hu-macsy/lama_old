@@ -32,6 +32,20 @@
  # @date 18.07.2017
 ###
 
+
+set ( TEST_SOURCES 
+          UtilsKernelTest
+          HArrayUtilsTest
+          SectionTest
+          UtilsTest
+          LArrayTest
+          TransferUtilsTest
+    )
+
+if ( FFTW_FOUND AND USE_FFTW )
+    set ( TEST_SOURCES ${TEST_SOURCES} FFTTest )
+endif ()
+
 scai_project ( 
 
     CLASSES
@@ -42,12 +56,7 @@ scai_project (
 
     SOURCES
 
-        UtilsKernelTest
-        HArrayUtilsTest
-        SectionTest
-        UtilsTest
-        LArrayTest
-        TransferUtilsTest
+        ${TEST_SOURCES}
 )
 
 scai_test ( EXECUTABLE utilskernelTest 

@@ -31,7 +31,7 @@
  * @since 1.0.0
  */
 
-#include <scai/solver/examples/leastsquare/GramianMatrix.hpp>
+#include <scai/lama/matrix/GramianMatrix.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
@@ -73,24 +73,20 @@ int main( int, char** )
     IndexType numRows = 5;
     IndexType numColumns = 4;
 
-    CSRSparseMatrix<ValueType> m;
-
     hmemo::HArrayRef<ValueType> data( numRows * numColumns, rawA );
 
-    DistributionPtr rowDist( new NoDistribution( numRows ) );
-    DistributionPtr colDist( new NoDistribution( numColumns ) );
-
-    m.setDenseData( rowDist, colDist, data, 0.0 );
+    DenseMatrix<ValueType> m( DenseStorage<ValueType>( numRows, numColumns, std::move( data ) ) );
 
     GramianMatrix<ValueType> mTm( m );
 
     DenseVector<ValueType> b;
     b.setRawData( numRows, rawB );
 
-    DenseVector<ValueType> b1( b * m );
+    auto b1 = eval<DenseVector<ValueType>>( transpose( m ) * b );
+    auto x0 = fill<DenseVector<ValueType>>( numColumns, 0 );
 
-    DenseVector<ValueType> x0( colDist, 0 );
     DenseVector<ValueType> bestX;
+
     bestX.setRawData( numColumns, rawX );
 
     // definie stopping criteria
@@ -117,8 +113,8 @@ int main( int, char** )
 
     solver.solve( x0, b1 );
 
-    DenseVector<ValueType> computedRes( m * x0 - b );
-    DenseVector<ValueType> expectedRes( m * bestX - b );
+    const auto computedRes = eval<DenseVector<ValueType>>( m * x0 - b );
+    const auto expectedRes = eval<DenseVector<ValueType>>( m * bestX - b );
 
     std::cout << "residual norm of computed x : " << computedRes.l2Norm() << std::endl;
     std::cout << "residual norm of expected x : " << expectedRes.l2Norm() << std::endl;

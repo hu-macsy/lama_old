@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( joinTest, ValueType, scai_numeric_test_types )
 
     for ( IndexType rank = 0; rank < size; ++rank )
     {
-        ValueType expectedVal= static_cast<ValueType>( rank );
+        ValueType expectedVal = static_cast<ValueType>( rank );
 
         for ( IndexType k = 0; k <= rank; ++k )
         {
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( joinTest, ValueType, scai_numeric_test_types )
             pos++;
         }
     }
- 
+
     BOOST_CHECK_EQUAL( pos, expectedSize );
 }
 
@@ -691,6 +691,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
     RealType globalMin = comm->min( localMin );
 
     BOOST_CHECK( Math::abs( globalMin ) <= Math::abs( localMin ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    ValueType i = common::TypeTraits<ValueType>::imaginaryUnit();
+
+    ValueType rank = static_cast<ValueType>( comm->getRank() );
+    ValueType size = static_cast<ValueType>( comm->getSize() );
+
+    ValueType val = ( rank + 1 ) + rank * i;
+
+    ValueType expected = size * ( size + 1 ) / 2 + size * ( size - 1 ) / 2 * i;
+
+    ValueType sum = comm->sum( val );
+
+    SCAI_LOG_DEBUG( logger, "sumTest<" << common::TypeTraits<ValueType>::id() << ">: comm = "
+                    << *comm << ", val = " << val << ", sum = " << sum << ", expected = " << expected )
+
+    BOOST_CHECK_EQUAL( expected, sum );
 }
 
 /* --------------------------------------------------------------------- */

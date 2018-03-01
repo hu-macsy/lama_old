@@ -534,7 +534,8 @@ void MatlabIO::writeSparseImpl(
     // sparse unsupported for this file format, write it dense
 
     HArray<ValueType> denseArray;
-    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    ValueType zero = 0;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
     writeArrayImpl( denseArray, fileName );
 }
 
@@ -563,7 +564,7 @@ void MatlabIO::writeStorageImpl(
 
         denseStorage.assignTranspose( storage );   // MATLAB stores it column-wise
 
-        HArray<ValueType>& array = denseStorage.getData();
+        const HArray<ValueType>& array = denseStorage.getValues();
 
         common::Grid2D grid( numRows, numCols );
 
@@ -837,8 +838,8 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
 
         // MATLAB stores it columnwise, so we transpose the data
 
-        storage.setDenseData( dims[1], dims[0], values );
-        storage.assignTranspose( storage );
+        DenseStorage<ValueType> denseStorage( dims[1], dims[0], std::move( values ) );
+        storage.assignTranspose( denseStorage );
     }
 
     SCAI_ASSERT_EQ_ERROR( offset, nBytes, "mismatch read bytes and size bytes, maybe COMPLEX" )

@@ -213,7 +213,7 @@ PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
 
     IndexType owner = 0;
 
-	IndexType localIndex = global2local( globalIndex );
+    IndexType localIndex = global2local( globalIndex );
 
     if ( localIndex != invalidIndex )
     {
@@ -279,15 +279,22 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::global2local( hmemo::HArray<IndexType>& ia ) const
+void Distribution::global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
 {
-    IndexType nnz = ia.size();
+    SCAI_REGION( "Distribution.global2localV" )
 
-    WriteAccess<IndexType> wIA( ia );
+    // fallback implementation calls global2local for each array element
+
+    IndexType nnz = globalIndexes.size();
+
+    ReadAccess<IndexType> rGlobal( globalIndexes );
+    WriteOnlyAccess<IndexType> wLocal( localIndexes, nnz );
+
+    #pragma omp parallel for
 
     for ( IndexType i = 0; i < nnz; ++i )
     {
-        wIA[i] = global2local( wIA[i] );
+        wLocal[i] = global2local( rGlobal[i] );
     }
 }
 
@@ -301,6 +308,7 @@ void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexT
 
     {
         WriteOnlyAccess<IndexType> wOwners( owners, n );
+
         for ( IndexType i = 0; i < getGlobalSize(); ++i )
         {
             wOwners[i] = getAnyOwner( i );

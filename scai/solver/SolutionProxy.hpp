@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 namespace scai
 {
@@ -73,7 +73,7 @@ public:
      *
      * @param[in] solution   The pointer to the vector which the proxy will wrap.
      */
-    SolutionProxy( lama::DenseVector<ValueType>* solution );
+    SolutionProxy( lama::Vector<ValueType>* solution );
 
     /**
      * @brief SolutionProxy destructor.
@@ -87,7 +87,7 @@ public:
      *
      * @return constant reference to the underlying vector.
      */
-    const lama::DenseVector<ValueType>& getConstReference() const;
+    const lama::Vector<ValueType>& getConstReference() const;
 
     /**
      * @brief Associates the given Vector Pointer with this SolutionProxy.
@@ -96,7 +96,7 @@ public:
      *
      * @param[in] newVector the Vector to which the SolutionProxy shall point to.
      */
-    void operator=( lama::DenseVector<ValueType>* newVector );
+    void operator=( lama::Vector<ValueType>* newVector );
 
     /**
      * @brief Determines if the proxy is dirty and the residual needs to be
@@ -118,14 +118,14 @@ public:
      *
      * @return Reference to the underlying vector.
      */
-    lama::DenseVector<ValueType>& getReference();
+    lama::Vector<ValueType>& getReference();
 
 private:
 
     /**
      * @brief The underlying solution vector.
      */
-    lama::DenseVector<ValueType>* mSolution;
+    lama::Vector<ValueType>* mSolution;
 
     /**
      * @brief Flag which determines, if the Proxy is dirty or not.

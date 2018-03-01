@@ -11,7 +11,8 @@ ParMetis comes with a full Metis installation, so you also can use it.
 
   <a href="http://glaros.dtc.umn.edu/gkhome/views/metis" target="_blank">Metis</a>
 
-If your Metis installation is not in the default path define the METIS_ROOT in the cmake call with -DMETIS_ROOT=<path_to_metis> or define the environment variables METIS_INCLUDE_PATH and METIS_LIBRARY_PATH with:
+If your Metis installation is not in the default path define the METIS_ROOT in the cmake call with -DMETIS_ROOT=<path_to_metis> 
+or define the environment variables METIS_INCLUDE_PATH and METIS_LIBRARY_PATH as follows:
 
 .. code-block:: bash
 

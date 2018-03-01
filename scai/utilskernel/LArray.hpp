@@ -87,14 +87,14 @@ public:
 
         operator ValueType() const
         {
-            return HArrayUtils::getVal<ValueType>( mArray, mIndex );
+            return HArrayUtils::getVal( mArray, mIndex );
         }
 
         /** indexed value proxy can be assigned a value */
 
         IndexProxy& operator= ( ValueType val )
         {
-            HArrayUtils::setVal( mArray, mIndex, val );
+            HArrayUtils::setVal( mArray, mIndex, val, common::BinaryOp::COPY );
             return *this;
         }
 
@@ -103,7 +103,7 @@ public:
         IndexProxy& operator= ( const IndexProxy& other )
         {
             ValueType tmp = HArrayUtils::getVal<ValueType>( other.mArray, other.mIndex );
-            HArrayUtils::setVal( mArray, mIndex, tmp );
+            HArrayUtils::setVal( mArray, mIndex, tmp, common::BinaryOp::COPY );
             return *this;
         }
 

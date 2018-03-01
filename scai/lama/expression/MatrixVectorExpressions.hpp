@@ -50,6 +50,12 @@ namespace lama
 /*  Expressions return 'Scalar * matrix * Vector'                            */
 /* ------------------------------------------------------------------------- */
 
+template<typename ValueType>
+inline OpMatrix<ValueType> transpose( const Matrix<ValueType>& matrix )
+{
+    return OpMatrix<ValueType>( matrix, common::MatrixOp::TRANSPOSE );
+}
+
 /**
  * @brief This times operator creates an expression that represents the product
  *        of a matrix and a Vector.
@@ -66,41 +72,16 @@ namespace lama
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Matrix<ValueType>& matrix, const Vector<ValueType>& vector )
 {
-    return Expression_SMV<ValueType>( Scalar( 1 ), Expression_MV<ValueType>( matrix, vector ) );
+    return Expression_SMV<ValueType>( Scalar( 1 ), 
+                                      Expression_MV<ValueType>( OpMatrix<ValueType>( matrix, common::MatrixOp::NORMAL ), 
+                                                                vector ) );
 }
 
 template<typename ValueType>
-inline Expression_SVM<ValueType> operator*( const Vector<ValueType>& vector, const Matrix<ValueType>& matrix )
+inline Expression_SMV<ValueType> operator*( const OpMatrix<ValueType>& opMatrix, const Vector<ValueType>& vector )
 {
-    return Expression_SVM<ValueType>( Scalar( 1 ), Expression_VM<ValueType>( vector, matrix ) );
-}
-
-/**
- * @brief This plus operator creates an expression that represents a * A * x, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] scalar  The scalar.
- * @param[in] exp     The Expression A*x
- * @return            The expression representing this product.
- */
-template<typename ValueType>
-inline Expression_SMV<ValueType> operator*( const Scalar& scalar, const Expression_MV<ValueType>& exp )
-{
-    return Expression_SMV<ValueType>( scalar, exp );
-}
-
-/**
- * @brief This plus operator creates an expression that represents a * x * A, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] scalar  The scalar.
- * @param[in] exp     The Expression x*A
- * @return            The expression representing this product.
- */
-template<typename ValueType>
-inline Expression_SVM<ValueType> operator*( const Scalar& scalar, const Expression_VM<ValueType>& exp )
-{
-    return Expression_SVM<ValueType>( scalar, exp );
+    return Expression_SMV<ValueType>( Scalar( 1 ), 
+                                      Expression_MV<ValueType>( opMatrix, vector ) );
 }
 
 /**
@@ -114,21 +95,19 @@ inline Expression_SVM<ValueType> operator*( const Scalar& scalar, const Expressi
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Matrix<ValueType>& matrix, const Expression_SV<ValueType>& exp )
 {
-    return Expression_SMV<ValueType>( exp.getArg1(), Expression_MV<ValueType>( matrix, exp.getArg2() ) );
+    return Expression_SMV<ValueType>( 
+               exp.getArg1(), 
+               Expression_MV<ValueType>( 
+                   OpMatrix<ValueType>( matrix, common::MatrixOp::NORMAL ), 
+                   exp.getArg2() ) );
 }
 
-/**
- * @brief This times operator creates an expression that represents the product
- *        of a Vector, scalar and M .
- *
- * @param[in] exp     The expression a*x
- * @param[in] matrix  The matrix.
- * @return            The expression representing this product.
- */
 template<typename ValueType>
-inline Expression_SVM<ValueType> operator*( const Expression_SV<ValueType>& exp, const Matrix<ValueType>& matrix )
+inline Expression_SMV<ValueType> operator*( const OpMatrix<ValueType>& opMatrix, const Expression_SV<ValueType>& exp )
 {
-    return Expression_SVM<ValueType>( exp.getArg1(), Expression_VM<ValueType>( exp.getArg2(), matrix ) );
+    return Expression_SMV<ValueType>( 
+               exp.getArg1(), 
+               Expression_MV<ValueType>( opMatrix, exp.getArg2() ) );
 }
 
 /**
@@ -142,13 +121,8 @@ inline Expression_SVM<ValueType> operator*( const Expression_SV<ValueType>& exp,
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Expression_SM<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SMV<ValueType>( exp.getArg1(), Expression_MV<ValueType>( exp.getArg2(), vector ) );
-}
-
-template<typename ValueType>
-inline Expression_SVM<ValueType> operator*( const Vector<ValueType>& vector, const Expression_SM<ValueType>& exp )
-{
-    return Expression_SVM<ValueType>( exp.getArg1(), Expression_VM<ValueType>( vector, exp.getArg2() ) );
+    return Expression_SMV<ValueType>( exp.getArg1(), 
+                                      Expression_MV<ValueType>( exp.getArg2(), vector ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -170,20 +144,6 @@ inline Expression_SMV_SV<ValueType> operator-( const Expression_SMV<ValueType>& 
 }
 
 /**
- * @brief This minus operator creates an expression that represents a * x * A + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression a * x * A.
- * @return            The expression representing this sum.
- */
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator-( const Expression_SVM<ValueType>& exp, const Vector<ValueType>& vector )
-{
-    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( -1 ), vector ) );
-}
-
-/**
  * @brief This minus operator creates an expression that represents a * A * x + b * y, where
  *        x and y are vectors, A is a matrix and a and b are scalars
  *
@@ -196,21 +156,6 @@ inline Expression_SMV_SV<ValueType> operator-( const Vector<ValueType>& vector, 
 {
     Expression_SMV<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
     return Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
-}
-
-/**
- * @brief This minus operator creates an expression that represents a * x * A + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression x * A .
- * @return            The expression representing this sum.
- */
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator-( const Vector<ValueType>& vector, const Expression_SVM<ValueType>& exp )
-{
-    Expression_SVM<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
-    return Expression_SVM_SV<ValueType>( minusExp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
 }
 
 /**
@@ -228,20 +173,6 @@ inline Expression_SMV_SV<ValueType> operator+( const Vector<ValueType>& vector, 
 }
 
 /**
- * @brief This plus operator creates an expression that represents a * x * A + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression x * A.
- * @return            The expression representing this addition.
- */
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator+( const Vector<ValueType>& vector, const Expression_SVM<ValueType>& exp )
-{
-    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
-}
-
-/**
  * @brief This plus operator creates an expression that represents a * A * x + b * y, where
  *        x and y are vectors, A is a matrix and a and b are scalars
  *
@@ -253,20 +184,6 @@ template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator+( const Expression_SMV<ValueType>& exp, const Vector<ValueType>& vector )
 {
     return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
-}
-
-/**
- * @brief This plus operator creates an expression that represents a * x * A + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] vector  The input vector y.
- * @param[in] exp     The expression a * y * A.
- * @return            The expression representing this addition.
- */
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator+( const Expression_SVM<ValueType>& exp, const Vector<ValueType>& vector )
-{
-    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -286,21 +203,6 @@ inline Expression_SMV_SV<ValueType> operator-( const Expression_SMV<ValueType>& 
 {
     Expression_SV<ValueType> minusExp2( -exp2.getArg1(), exp2.getArg2() );
     return Expression_SMV_SV<ValueType>( exp1, minusExp2 );
-}
-
-/**
- * @brief This minus operator creates an expression that represents a * x * A + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] exp1    The expression a*x*A
- * @param[in] exp2    The expression b*y
- * @return            The expression representing this sum.
- */
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator-( const Expression_SVM<ValueType>& exp1, const Expression_SV<ValueType>& exp2 )
-{
-    Expression_SV<ValueType> minusExp2( -exp2.getArg1(), exp2.getArg2() );
-    return Expression_SVM_SV<ValueType>( exp1, minusExp2 );
 }
 
 /**
@@ -329,32 +231,6 @@ inline Expression_SMV_SV<ValueType> operator+( const Expression_SMV<ValueType>& 
     return Expression_SMV_SV<ValueType>( exp1, exp2 );
 }
 
-/**
- * @brief This minus operator creates an expression that represents a * x * A + b * y, where
- *        x and y are vectors, A is a matrix and a and b are scalars
- *
- * @param[in] exp2    The expression a*x
- * @param[in] exp1    The expression b*y*A
- * @return            The expression representing this sum.
- */
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator-( Expression_SV<ValueType>& exp1, const Expression_SVM<ValueType>& exp2 )
-{
-    return Expression_SVM_SV<ValueType>( Expression_SVM<ValueType>( -exp2.getArg1(), exp2.getArg2() ), exp1 );
-}
-
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator+( const Expression_SV<ValueType>& exp1, const Expression_SVM<ValueType>& exp2 )
-{
-    return Expression_SVM_SV<ValueType>( exp2, exp1 );
-}
-
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator+( const Expression_SVM<ValueType>& exp1, const Expression_SV<ValueType>& exp2 )
-{
-    return Expression_SVM_SV<ValueType>( exp1, exp2 );
-}
-
 /* ------------------------------------------------------------------------- */
 /*   scaling of matrix-vector operations                                     */
 /* ------------------------------------------------------------------------- */
@@ -366,21 +242,9 @@ inline Expression_SMV<ValueType> operator*( const Expression_SMV<ValueType>& exp
 }
 
 template<typename ValueType>
-inline Expression_SVM<ValueType> operator*( const Expression_SVM<ValueType>& exp, const Scalar alpha )
-{
-    return Expression_SVM<ValueType>( exp.getArg1() * alpha, exp.getArg2() );
-}
-
-template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator*( const Expression_SMV_SV<ValueType>& exp, const Scalar alpha )
 {
     return Expression_SMV_SV<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
-}
-
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator*( const Expression_SVM_SV<ValueType>& exp, const Scalar alpha )
-{
-    return Expression_SVM_SV<ValueType>( exp.getArg1() * alpha , exp.getArg2() * alpha );
 }
 
 template<typename ValueType>
@@ -390,21 +254,9 @@ inline Expression_SMV<ValueType> operator*( const Scalar alpha, const Expression
 }
 
 template<typename ValueType>
-inline Expression_SVM<ValueType> operator*( const Scalar alpha, const Expression_SVM<ValueType>& exp )
-{
-    return Expression_SVM<ValueType>( alpha * exp.getArg1(), exp.getArg2() );
-}
-
-template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator*( const Scalar alpha, const Expression_SMV_SV<ValueType>& exp )
 {
     return Expression_SMV_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
-}
-
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator*( const Scalar alpha, const Expression_SVM_SV<ValueType>& exp )
-{
-    return Expression_SVM_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
 }
 
 template<typename ValueType>
@@ -414,21 +266,9 @@ inline Expression_SMV<ValueType> operator/( const Expression_SMV<ValueType>& exp
 }
 
 template<typename ValueType>
-inline Expression_SVM<ValueType> operator/( const Expression_SVM<ValueType>& exp, const Scalar alpha )
-{
-    return Expression_SVM<ValueType>( exp.getArg1() / alpha, exp.getArg2() );
-}
-
-template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator/( const Expression_SMV_SV<ValueType>& exp, const Scalar alpha )
 {
     return Expression_SMV_SV<ValueType>( exp.getArg1() / alpha, exp.getArg2() / alpha );
-}
-
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator/( const Expression_SVM_SV<ValueType>& exp, const Scalar alpha )
-{
-    return Expression_SVM_SV<ValueType>( exp.getArg1() / alpha , exp.getArg2() / alpha );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -442,19 +282,7 @@ inline Expression_SMV<ValueType> operator-( const Expression_SMV<ValueType>& exp
 }
 
 template<typename ValueType>
-inline Expression_SVM<ValueType> operator-( const Expression_SVM<ValueType>& exp )
-{
-    return Expression_SVM<ValueType>( -exp.getArg1(), exp.getArg2() );
-}
-
-template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator-( const Expression_SMV_SV<ValueType>& exp )
-{
-    return Expression_SMV_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
-}
-
-template<typename ValueType>
-inline Expression_SVM_SV<ValueType> operator-( const Expression_SVM_SV<ValueType>& exp )
 {
     return Expression_SMV_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
 }

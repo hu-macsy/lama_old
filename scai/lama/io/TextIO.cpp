@@ -176,7 +176,8 @@ void TextIO::writeSparseImpl(
     if ( true )
     {
         HArray<ValueType> denseArray;
-        utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+        ValueType zero = 0;
+        utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
         writeArrayImpl( denseArray, fileName );
     }
     else
@@ -309,11 +310,16 @@ void TextIO::writeStorageImpl(
 {
     SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
 
-    COOStorage<ValueType> coo( storage );
+    auto coo = convert<COOStorage<ValueType>>( storage );
 
-    HArray<IndexType> cooIA = coo.getIA();
-    HArray<IndexType> cooJA = coo.getJA();
-    HArray<ValueType> cooValues = coo.getValues();
+    IndexType numRows;
+    IndexType numCols;
+
+    HArray<IndexType> cooIA;
+    HArray<IndexType> cooJA;
+    HArray<ValueType> cooValues;
+
+    coo.splitUp( numRows, numCols, cooIA, cooJA, cooValues );
 
     IOStream outFile( fileName, std::ios::out );
 

@@ -42,6 +42,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/kregistry/mepr/Registrator.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -70,22 +71,8 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[] );
-
-    /** Implementation for DIAKernelTrait::normalGEVM with CUDA on GPUs */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const IndexType diaOffsets[],
-        const ValueType diaValues[] );
+        const ValueType diaValues[],
+        const common::MatrixOp op );
 
 private:
 

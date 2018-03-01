@@ -259,19 +259,6 @@ protected:
 
     static MPI_Datatype mComplexLongDoubleType;
 
-    static MPI_Op mMaxComplexFloat;
-    static MPI_Op mMaxComplexDouble;
-    static MPI_Op mMaxComplexLongDouble;
-
-    template<typename ValueType>
-    static void max_operator( void* in, void* out, int* count, MPI_Datatype* dtype );
-
-    static MPI_Op mMinComplexFloat;
-    static MPI_Op mMinComplexDouble;
-    static MPI_Op mMinComplexLongDouble;
-
-    template<typename ValueType>
-    static void min_operator( void* in, void* out, int* count, MPI_Datatype* dtype );
 #endif
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
@@ -329,7 +316,7 @@ inline MPI_Datatype MPICommunicator::getMPIType( common::ScalarType stype )
             return MPI_DOUBLE_COMPLEX;
         case common::ScalarType::LONG_DOUBLE_COMPLEX :
             return mComplexLongDoubleType;
-#endif 
+#endif
         case common::ScalarType::CHAR                :
             return MPI_CHAR;
         case common::ScalarType::UNSIGNED_INT        :
@@ -396,19 +383,12 @@ inline MPI_Op MPICommunicator::getMPISum( common::ScalarType stype )
 
 inline MPI_Op MPICommunicator::getMPIMax( common::ScalarType stype )
 {
-    switch ( stype )
+    if ( common::isComplex( stype ) )
     {
-#ifdef SCAI_COMPLEX_SUPPORTED
-        case common::ScalarType::COMPLEX             :
-            return mMaxComplexFloat;
-        case common::ScalarType::DOUBLE_COMPLEX      :
-            return mMaxComplexDouble;
-        case common::ScalarType::LONG_DOUBLE_COMPLEX :
-            return mMaxComplexLongDouble;
-#endif
-        default:
-            return MPI_MAX;
+        COMMON_THROWEXCEPTION( "max for complex types unsupported" )
     }
+
+    return MPI_MAX;
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -417,19 +397,12 @@ inline MPI_Op MPICommunicator::getMPIMax( common::ScalarType stype )
 
 inline MPI_Op MPICommunicator::getMPIMin( common::ScalarType stype )
 {
-    switch ( stype )
+    if ( common::isComplex( stype ) )
     {
-#ifdef SCAI_COMPLEX_SUPPORTED
-        case common::ScalarType::COMPLEX             :
-            return mMinComplexFloat;
-        case common::ScalarType::DOUBLE_COMPLEX      :
-            return mMinComplexDouble;
-        case common::ScalarType::LONG_DOUBLE_COMPLEX :
-            return mMinComplexLongDouble;
-#endif
-        default:
-            return MPI_MIN;
+        COMMON_THROWEXCEPTION( "max for complex types unsupported" )
     }
+
+    return MPI_MIN;
 }
 
 } /* end namespace dmemo */

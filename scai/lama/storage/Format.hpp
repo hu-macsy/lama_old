@@ -57,8 +57,7 @@ enum class Format
     JDS,      //!< Jagged Diagonal Storage
     COO,      //!< Coordinate list
     STENCIL,  //!< stencil pattern
-    ASSEMBLY, //!<  _Matrix storage used for assembling of values
-    UNDEFINED //!<  Default value
+    UNDEFINED //!< Default value
 };
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Format& storageFormat );

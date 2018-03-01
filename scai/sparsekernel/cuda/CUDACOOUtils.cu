@@ -176,6 +176,52 @@ __global__ void cooGevmKernel_alpha_one(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType, bool useTexture>
+static inline void launchGEMV(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType numValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[],  
+    common::MatrixOp op,
+    cudaStream_t stream )
+{
+    IndexType blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numValues, dimBlock.x );
+
+    if ( alpha == common::Constants::ONE )
+    {
+        if ( common::isTranspose( op ) )
+        {
+            cooGevmKernel_alpha_one<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
+            ( result, x, numValues, cooIA, cooJA, cooValues );
+        }
+        else
+        {
+            cooGemvKernel_alpha_one<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
+            ( result, x, numValues, cooIA, cooJA, cooValues );
+        }
+    }
+    else
+    {
+        if ( common::isTranspose( op ) )
+        {
+            cooGevmKernel<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
+            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        }
+        else
+        {
+            cooGemvKernel<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
+            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void CUDACOOUtils::normalGEMV(
     ValueType result[],
@@ -184,15 +230,21 @@ void CUDACOOUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType numColumns,
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[] )
+    const ValueType cooValues[],
+    const common::MatrixOp op )
 {
     SCAI_REGION( "CUDA.COO.normalGEMV" )
+
+    const IndexType nResult = common::isTranspose( op ) ? numColumns : numRows;
+
     SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">, "
-                   << "result[ " << numRows << "] = " << alpha
+                   << "result[ " << nResult << "] = " << alpha
                    << " COO( #vals = " << numValues << " ) * x + " << beta << " * y" )
+
     SCAI_CHECK_CUDA_ACCESS
     cudaStream_t stream = 0;
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
@@ -203,37 +255,30 @@ void CUDACOOUtils::normalGEMV(
         SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
     }
 
-    bool useTexture = CUDASettings::useTexture();
-    IndexType blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numValues, dimBlock.x );
-
     // set result = beta * y, not needed if beta == 1 and y == result
 
     if ( beta == scai::common::Constants::ONE && result == y )
     {
-        SCAI_LOG_DEBUG( logger, "normalGEMV is sparse, no init of result needed" )
+        SCAI_LOG_DEBUG( logger, "normalGEMV is inc, no init of result needed" )
     }
     else
     {
         SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
+
         // setScale also deals with y undefined for beta == 0
 
-        CUDAUtils::binaryOpScalar( result, y, beta, numRows, common::BinaryOp::MULT, false );
+        CUDAUtils::binaryOpScalar( result, y, beta, nResult, common::BinaryOp::MULT, false );
     }
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
 
     if ( numValues == 0 )
     {
         return;
     }
 
-    blockSize = CUDASettings::getBlockSize( numValues );
-    dimBlock = dim3( blockSize, 1, 1 );
-    dimGrid = makeGrid( numValues, dimBlock.x );
+    bool useTexture = CUDASettings::useTexture();
+
     SCAI_LOG_INFO( logger, "Start cooGemvKernel<" << TypeTraits<ValueType>::id()
-                   << "> <<< blockSize = " << blockSize << ", stream = " << stream
+                   << "> <<< stream = " << stream
                    << ", alpha = " << alpha
                    << ", useTexture = " << useTexture << ">>>" )
 
@@ -241,143 +286,17 @@ void CUDACOOUtils::normalGEMV(
     {
         vectorBindTexture( x );
 
-        if ( alpha == scai::common::Constants::ONE )
-        {
-            cooGemvKernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock>>>
-            ( result, x, numValues, cooIA, cooJA, cooValues );
-        }
-        else
-        {
-            cooGemvKernel<ValueType, true> <<< dimGrid, dimBlock>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
-        }
+        launchGEMV<ValueType, true>( result, alpha, x, numValues, cooIA, cooJA, cooValues, op, stream );
     }
     else
     {
-        if ( alpha == scai::common::Constants::ONE )
-        {
-            cooGemvKernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock>>>
-            ( result, x, numValues, cooIA, cooJA, cooValues );
-        }
-        else
-        {
-            cooGemvKernel<ValueType, false> <<< dimGrid, dimBlock>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
-        }
+        launchGEMV<ValueType, false>( result, alpha, x, numValues, cooIA, cooJA, cooValues, op, stream );
     }
 
     if ( !syncToken )
     {
         // synchronization now, unbind texture if it has been used
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gemvKernel FAILED" )
-
-        if ( useTexture )
-        {
-            vectorUnbindTexture( x );
-        }
-    }
-    else
-    {
-        // synchronization at SyncToken, delay unbind
-        if ( useTexture )
-        {
-            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( std::bind( unbind, x ) );
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CUDACOOUtils::normalGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType numValues,
-    const IndexType cooIA[],
-    const IndexType cooJA[],
-    const ValueType cooValues[] )
-{
-    SCAI_REGION( "CUDA.COO.normalGEVM" )
-    SCAI_LOG_INFO( logger, "normalGEVM, #rows = " << numRows << ", #vals = " << numValues )
-    SCAI_CHECK_CUDA_ACCESS
-    cudaStream_t stream = 0;
-    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        stream = syncToken->getCUDAStream();
-        SCAI_LOG_INFO( logger, "asyncronous execution on stream " << stream );
-    }
-
-    bool useTexture = CUDASettings::useTexture();
-    IndexType blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numValues, dimBlock.x );
-
-    // set result = beta * y, not needed if beta == 1 and y == result
-
-    if ( beta == scai::common::Constants::ONE && result == y )
-    {
-        SCAI_LOG_DEBUG( logger, "normalGEVM is sparse, no init of result needed" )
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
-        CUDAUtils::binaryOpScalar( result, y, beta, numRows, common::BinaryOp::MULT, false );
-    }
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGevmKernel FAILED" )
-
-    if ( numValues == 0 )
-    {
-        return;
-    }
-
-    blockSize = CUDASettings::getBlockSize( numValues );
-    dimBlock = dim3( blockSize, 1, 1 );
-    dimGrid = makeGrid( numValues, dimBlock.x );
-    SCAI_LOG_INFO( logger, "Start cooGevmKernel<" << TypeTraits<ValueType>::id()
-                   << "> <<< blockSize = " << blockSize << ", stream = " << stream
-                   << ", useTexture = " << useTexture << ">>>" )
-
-    if ( useTexture )
-    {
-        vectorBindTexture( x );
-
-        if ( alpha == scai::common::Constants::ONE )
-        {
-            cooGevmKernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock>>>
-            ( result, x, numValues, cooIA, cooJA, cooValues );
-        }
-        else
-        {
-            cooGevmKernel<ValueType, true> <<< dimGrid, dimBlock>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
-        }
-    }
-    else
-    {
-        if ( alpha == scai::common::Constants::ONE )
-        {
-            cooGevmKernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock>>>
-            ( result, x, numValues, cooIA, cooJA, cooValues );
-        }
-        else
-        {
-            cooGevmKernel<ValueType, false> <<< dimGrid, dimBlock>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
-        }
-    }
-
-    if ( !syncToken )
-    {
-        // synchronization now, unbind texture if it has been used
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: gevmKernel FAILED" )
 
         if ( useTexture )
         {
@@ -591,7 +510,6 @@ void CUDACOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( CUDACOOUtils::normalGEVM, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

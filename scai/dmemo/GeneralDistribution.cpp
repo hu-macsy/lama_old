@@ -46,6 +46,8 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 
+#include <scai/tracing.hpp>
+
 // std
 #include <algorithm>
 #include <functional>
@@ -70,13 +72,13 @@ const char GeneralDistribution::theCreateValue[] = "GENERAL";
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
     const HArray<IndexType>& myIndexes,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
     Distribution( globalSize, communicator )
 
 {
-    SCAI_LOG_INFO( logger, "GeneralDistribution( size = " << globalSize 
-                            << ", myIndexes = " << myIndexes.size() << ", comm = " << *communicator )
+    SCAI_LOG_INFO( logger, "GeneralDistribution( size = " << globalSize
+                   << ", myIndexes = " << myIndexes.size() << ", comm = " << *communicator )
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
@@ -86,7 +88,7 @@ GeneralDistribution::GeneralDistribution(
 
     // Note: the constructor is completely local, but make some consistency check now
 
-    IndexType nLocal = myIndexes.size(); 
+    IndexType nLocal = myIndexes.size();
 
     SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
 }
@@ -249,7 +251,7 @@ GeneralDistribution::GeneralDistribution(
         HArrayUtils::gather( sortedIndexes, currentIndexes, perm, common::BinaryOp::COPY );
     }
 
-    // make communication plans for sending data and receiving to exchange 
+    // make communication plans for sending data and receiving to exchange
 
     dmemo::CommunicationPlan sendPlan;
 
@@ -280,44 +282,6 @@ GeneralDistribution::GeneralDistribution(
     // Note: actually it would be sufficient to have a mergesort
 
     HArrayUtils::sort( NULL, &mLocal2Global, myNewIndexes, true );
-}
-
-/* ---------------------------------------------------------------------- */
-
-GeneralDistribution::GeneralDistribution( const Distribution& other ) :
-
-    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
-
-{
-    SCAI_LOG_INFO( logger, "GeneralDistribution( copy = " << other << " ) " )
-
-    // just get form the other distribution the owned indexes, and it is done
-
-    other.getOwnedIndexes( mLocal2Global );
-
-    SCAI_ASSERT_EQ_DEBUG( mLocal2Global.size(), other.getLocalSize(), 
-                          "serious mismatch in other dist = " << other )
-}
-
-/* ---------------------------------------------------------------------- */
-
-GeneralDistribution::GeneralDistribution( const GeneralDistribution& other ) :
-
-    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
-
-{
-    SCAI_LOG_INFO( logger, "GeneralDistribution( copy = " << other << " ) " )
-
-    mLocal2Global = other.mLocal2Global;
-}
-
-/* ---------------------------------------------------------------------- */
-
-GeneralDistribution::GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator ) :
-
-    Distribution( globalSize, communicator )
-{
-    SCAI_LOG_INFO( logger, "GeneralDistribuiton constructor only for derived classes" )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -356,6 +320,17 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
     // do a binary search in the array of global indexes for entries owned by this partition
 
     return HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GeneralDistribution::global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
+{
+    SCAI_REGION( "Distribution.General.global2localV" )
+
+    // do a binary search in the array of global indexes for entries owned by this partition
+
+    HArrayUtils::findPosInSortedIndexesV( localIndexes, mLocal2Global, globalIndexes );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -555,7 +530,7 @@ bool GeneralDistribution::hasAnyAddressing() const
 
 void GeneralDistribution::enableAnyAddressing() const
 {
-    if ( mAllOwners.size() > 0 ) 
+    if ( mAllOwners.size() > 0 )
     {
         // already computed, but just verify correct sizes
 
@@ -570,7 +545,7 @@ void GeneralDistribution::enableAnyAddressing() const
     // compute mAllOwners
 
     HArray<IndexType> indexes;   // will contain all column indexes to get all owners
-  
+
     HArrayUtils::setOrder( indexes, mGlobalSize );
 
     Distribution::computeOwners( mAllOwners, indexes );

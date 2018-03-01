@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     LArray<IndexType> csrIA( numRows + 1, ia );
     LArray<IndexType> csrJA( numValues, ja );
     LArray<ValueType> csrValues( numValues, values );
-    CSRStorage<ValueType> csrStorage( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    CSRStorage<ValueType> csrStorage( numRows, numColumns, csrIA, csrJA, csrValues, context );
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
@@ -98,8 +98,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
             BOOST_CHECK_EQUAL( values[i], csrValues[i] );
         }
     }
-    // copy constructor on all available locations
-    CSRStorage<ValueType> csrStorageCopy( csrStorage, context );
+
+    // copy constructor
+
+    CSRStorage<ValueType> csrStorageCopy( csrStorage );
     BOOST_REQUIRE_EQUAL( numRows, csrStorageCopy.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorageCopy.getNumValues() );
@@ -122,6 +124,150 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
             BOOST_CHECK_EQUAL( values[i], csrValues[i] );
         }
     }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+static inline const ValueType* getPointer( const HArray<ValueType>& a, ContextPtr ctx )
+{
+    ReadAccess<ValueType> rA( a, ctx );
+    return rA.get();
+}
+
+BOOST_AUTO_TEST_CASE( moveConstructorTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+    const IndexType numValues  = 4;
+
+    HArray<IndexType> csrIA( { 0, 1, 2, 4 } );
+    HArray<IndexType> csrJA( { 0, 1, 2, 2 } );
+    HArray<ValueType> csrValues( { 5, 5, 3, 2 } );
+
+    const IndexType* ptrIA = getPointer( csrIA, context );
+    const IndexType* ptrJA = getPointer( csrJA, context );
+    const ValueType* ptrValues = getPointer( csrValues, context );
+
+    SCAI_LOG_INFO( logger, "call moveConstructor with csr arrays" )
+
+    CSRStorage<ValueType> csrStorage( numRows, numColumns, std::move( csrIA ), csrJA, std::move( csrValues ) );
+
+    BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
+    BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
+    BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
+    BOOST_CHECK( csrStorage.hasDiagonalProperty() );
+
+    // verify that move was okay
+
+    BOOST_CHECK_EQUAL( ptrIA, getPointer( csrStorage.getIA(), context ) );
+    BOOST_CHECK( ptrJA != getPointer( csrStorage.getJA(), context ) );
+    ptrJA = getPointer( csrStorage.getJA(), context );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( csrStorage.getValues(), context ) );
+
+    BOOST_CHECK_EQUAL( csrIA.size(), 0 );
+    BOOST_CHECK_EQUAL( csrJA.size(), numValues );
+    BOOST_CHECK_EQUAL( csrValues.size(), 0 );
+
+    SCAI_LOG_INFO( logger, "call moveConstructor of CSRStorage" )
+
+    CSRStorage<ValueType> csrStorage1( std::move( csrStorage ) );
+
+    // verify that move was okay
+
+    BOOST_CHECK_EQUAL( ptrIA, getPointer( csrStorage1.getIA(), context ) );
+    BOOST_CHECK_EQUAL( ptrJA, getPointer( csrStorage1.getJA(), context ) );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( csrStorage1.getValues(), context ) );
+
+    BOOST_CHECK_EQUAL( csrStorage.getIA().size(), 0 );
+    BOOST_CHECK_EQUAL( csrStorage.getJA().size(), 0 );
+    BOOST_CHECK_EQUAL( csrStorage.getValues().size(), 0 );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( moveAssignTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+
+    HArray<IndexType> csrIA( { 0, 1, 2, 4 } );
+    HArray<IndexType> csrJA( { 0, 1, 2, 2 } );
+    HArray<ValueType> csrValues( { 5, 5, 3, 2 } );
+
+    const IndexType numValues = csrJA.size();
+
+    CSRStorage<ValueType> csrStorage( numRows, numColumns, csrIA, csrJA, csrValues );
+
+    const IndexType* ptrIA = getPointer( csrStorage.getIA(), context );
+    const IndexType* ptrJA = getPointer( csrStorage.getJA(), context );
+    const ValueType* ptrValues = getPointer( csrStorage.getValues(), context );
+
+    CSRStorage<ValueType> csrStorage1;
+    csrStorage1 = std::move( csrStorage );
+
+    BOOST_CHECK_EQUAL( csrStorage1.getNumRows(), numRows );
+    BOOST_CHECK_EQUAL( csrStorage1.getNumColumns(), numColumns );
+    BOOST_CHECK_EQUAL( csrStorage1.getNumValues(), numValues );
+
+    // verify that move was okay
+
+    BOOST_CHECK_EQUAL( ptrIA, getPointer( csrStorage1.getIA(), context ) );
+    BOOST_CHECK_EQUAL( ptrJA, getPointer( csrStorage1.getJA(), context ) );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( csrStorage1.getValues(), context ) );
+
+    BOOST_CHECK_EQUAL( csrStorage.getIA().size(), 0 );
+    BOOST_CHECK_EQUAL( csrStorage.getJA().size(), 0 );
+    BOOST_CHECK_EQUAL( csrStorage.getValues().size(), 0 );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( splitUpTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows   = 3;
+    const IndexType numColumns = 3;
+
+    HArray<IndexType> csrIA( { 0, 1, 2, 4 } );
+    HArray<IndexType> csrJA( { 0, 1, 2, 2 } );
+    HArray<ValueType> csrValues( { 5, 5, 3, 2 } );
+
+    const IndexType* ptrIA = getPointer( csrIA, context );
+    const IndexType* ptrJA = getPointer( csrJA, context );
+    const ValueType* ptrValues = getPointer( csrValues, context );
+
+    CSRStorage<ValueType> csrStorage( numRows, numColumns, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
+
+    IndexType outNumRows;
+    IndexType outNumColumns;
+    HArray<IndexType> outIA;
+    HArray<IndexType> outJA;
+    HArray<ValueType> outValues;
+
+    csrStorage.splitUp( outNumRows, outNumColumns, outIA, outJA, outValues );
+
+    BOOST_CHECK_EQUAL( outNumRows, numRows );
+    BOOST_CHECK_EQUAL( outNumColumns, numColumns );
+
+    BOOST_CHECK_EQUAL( ptrIA, getPointer( outIA, context ) );
+    BOOST_CHECK_EQUAL( ptrJA, getPointer( outJA, context ) );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( outValues, context ) );
+
+    BOOST_CHECK_EQUAL( csrStorage.getIA().size(), 0 );
+    BOOST_CHECK_EQUAL( csrStorage.getJA().size(), 0 );
+    BOOST_CHECK_EQUAL( csrStorage.getValues().size(), 0 );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -154,21 +300,13 @@ BOOST_AUTO_TEST_CASE( compressTest )
     LArray<IndexType> csrIA( numRows + 1, ia );
     LArray<IndexType> csrJA( numValues, ja );
     LArray<ValueType> csrValues( numValues, values );
-    CSRStorage<ValueType> csr( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    CSRStorage<ValueType> csr;
+    csr.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
     csr.setContextPtr( context );
     BOOST_CHECK_EQUAL( numValues, csr.getNumValues() );
     csr.compress();
     // one zero element (not diagonal) is removed by compress
     BOOST_CHECK_EQUAL( numValues - 1, csr.getNumValues() );
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
-{
-    SCAI_LOG_INFO( logger, "swapTest for CSRStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-    // use template storage test
-    storageSwapTest<CSRStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

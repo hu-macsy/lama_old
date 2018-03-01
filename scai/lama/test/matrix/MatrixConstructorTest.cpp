@@ -48,6 +48,7 @@
 #include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 
@@ -62,7 +63,7 @@ using scai::testsupport::GlobalTempDir;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( _MatrixConstructorTest )
+BOOST_AUTO_TEST_SUITE( MatrixConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
@@ -77,11 +78,11 @@ typedef DefaultReal ValueType;
 /** Define a list of all matrix types. */
 
 typedef boost::mpl::list < CSRSparseMatrix<ValueType>,
-        DIASparseMatrix<ValueType>,
-        COOSparseMatrix<ValueType>,
-        JDSSparseMatrix<ValueType>,
-        ELLSparseMatrix<ValueType>,
-        DenseMatrix<ValueType>
+                           DIASparseMatrix<ValueType>,
+                           COOSparseMatrix<ValueType>,
+                           JDSSparseMatrix<ValueType>,
+                           ELLSparseMatrix<ValueType>,
+                           DenseMatrix<ValueType>
         > MatrixTypes;
 
 /* ------------------------------------------------------------------------- */
@@ -119,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sizeConstructorTest, MatrixType, MatrixTypes )
     const IndexType numRows = 13;
     const IndexType numCols = 17;
 
-    MatrixType matrix( numRows, numCols );
+    auto matrix = zero<MatrixType>( numRows, numCols );
 
     // check correct sizes, distributions
 
@@ -159,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( distConstructorTest, MatrixType, MatrixTypes )
             dmemo::DistributionPtr rowDist = rowDists[irow];
             dmemo::DistributionPtr colDist = colDists[icol];
 
-            MatrixType matrix( rowDist, colDist );
+            auto matrix = zero<MatrixType>( rowDist, colDist );
 
             SCAI_LOG_INFO( logger, "Matrix constructed with distributions: " << matrix )
 
@@ -193,8 +194,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storageConstructorTest, MatrixType, MatrixTypes )
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( numRows, numCols, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
 
     dmemo::TestDistributions rowDists( numRows );
     dmemo::TestDistributions colDists( numCols );
@@ -209,9 +209,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storageConstructorTest, MatrixType, MatrixTypes )
             dmemo::DistributionPtr colDist = colDists[icol];
 
             MatrixType matrix( globalStorage );
-            MatrixType matrix1( matrix, rowDist, colDist );
-            MatrixType matrix2_tmp( matrix, rowDist, repColDist );
-            MatrixType matrix2( matrix2_tmp.getLocalStorage(), rowDist, colDist );
+
+            BOOST_CHECK_EQUAL( numRows, matrix.getNumRows() );
+            BOOST_CHECK_EQUAL( numCols, matrix.getNumColumns() );
+
+            auto matrix1     = distribute<MatrixType>( matrix, rowDist, colDist );
+            auto matrix2_tmp = distribute<MatrixType>( matrix, rowDist, repColDist );
+
+            MatrixType matrix2( rowDist, matrix2_tmp.getLocalStorage() );
+            matrix2.redistribute( rowDist, colDist );
 
             const StorageType& localStorage1 = matrix1.getLocalStorage();
             const StorageType& localStorage2 = matrix2.getLocalStorage();
@@ -242,9 +248,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-
-    globalStorage.setDenseData( n, n, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( n, n, std::move( denseData ) ) );
 
     dmemo::TestDistributions dists( n );
 
@@ -262,10 +266,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
 
             otherMatrix.redistribute( dist, dist );
 
-            MatrixType matrix1;
-            matrix1.assign( otherMatrix );   // no copy constructor for _Matrix
-
-            MatrixType matrix2( matrix1, dist, dist );
+            auto matrix1 = convert<MatrixType>( otherMatrix );
+            auto matrix2 = distribute<MatrixType>( matrix1, dist, dist );
 
             const StorageType& localStorage1 = matrix1.getLocalStorage();
             const StorageType& localStorage2 = matrix2.getLocalStorage();
@@ -278,6 +280,78 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
             // ToDo: not yet available for all types
             // MatrixType matrix3( otherMatrix, true );  // transpose
         }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( moveConstructorTest, MatrixType, MatrixTypes )
+{
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    typedef typename MatrixType::StorageType StorageType;
+
+    const IndexType n = 11;
+
+    float fillRate = 0.2;
+
+    hmemo::HArray<ValueType> denseData( n * n, ValueType( 0 ), ctx );
+
+    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
+
+    const DenseStorage<ValueType> denseStorage( n, n, std::move( denseData ) );
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        auto globalStorage = convert<StorageType>( denseStorage );   // convert dense format
+
+        MatrixType matrix1( std::move( globalStorage ) );
+
+        SCAI_LOG_DEBUG( logger, "Test move functional for this matrix: " << matrix1 )
+
+        BOOST_CHECK_EQUAL( matrix1.getNumRows(), n );
+        BOOST_CHECK_EQUAL( matrix1.getNumColumns(), n );
+
+        // Verify that NOT copy assignment has been used.
+
+        BOOST_CHECK_EQUAL( globalStorage.getNumRows(), 0 );      
+        BOOST_CHECK_EQUAL( globalStorage.getNumColumns(), 0 );   
+
+        // We have a replicated matrix1, save its distribution
+
+        auto repDist = matrix1.getRowDistributionPtr();   // save replicated distribution for later
+
+        auto dist = dists[i];
+
+        matrix1.redistribute( dist, dist );
+
+        MatrixType matrix2( std::move( matrix1 ) );
+
+        BOOST_CHECK_EQUAL( matrix2.getNumRows(), n );
+        BOOST_CHECK_EQUAL( matrix2.getNumColumns(), n );
+
+        BOOST_CHECK_EQUAL( matrix1.getNumRows(), 0 );
+        BOOST_CHECK_EQUAL( matrix1.getNumColumns(), 0 );
+
+        MatrixType matrix3;
+
+        matrix3 = std::move( matrix2 );
+
+        BOOST_CHECK_EQUAL( matrix3.getNumRows(), n );
+        BOOST_CHECK_EQUAL( matrix3.getNumColumns(), n );
+
+        BOOST_CHECK_EQUAL( matrix2.getNumRows(), 0 );
+        BOOST_CHECK_EQUAL( matrix2.getNumColumns(), 0 );
+
+        matrix3.redistribute( repDist, repDist );
+
+        const StorageType& newGlobalStorage = matrix3.getLocalStorage();
+
+        BOOST_CHECK_EQUAL( ValueType( 0 ), newGlobalStorage.maxDiffNorm( denseStorage ) );
     }
 }
 
@@ -296,8 +370,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
     common::Math::srandom( 1317 );  // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( numRows, numCols, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
 
     dmemo::TestDistributions rowDists( numRows );
     dmemo::TestDistributions colDists( numCols );
@@ -342,8 +415,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpTest, MatrixType, MatrixTypes )
     common::Math::srandom( 1317 );  // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( numRows, numCols, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
 
     dmemo::TestDistributions rowDists( numRows );
     dmemo::TestDistributions colDists( numCols );
@@ -390,8 +462,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
     common::Math::srandom( 1317 );  // makes sure that all processors generate same data
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 10 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( numRows, numCols, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
 
     dmemo::TestDistributions rowDists( numRows );
     dmemo::TestDistributions colDists( numCols );
@@ -412,11 +483,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
 
             MatrixType matrix1( globalStorage );
             matrix1.redistribute( rowDist, colDist );
-            bool transposeFlag = true;
 
             SCAI_LOG_INFO( logger, "transposeConstructorTest with matrix1 = " << matrix1 )
 
-            MatrixType matrix2( matrix1, transposeFlag );
+            MatrixType matrix2;
+            matrix2.assignTranspose( matrix1 );
 
             const StorageType& localStorage1 = matrix1.getLocalStorage();
             const StorageType& localStorage2 = matrix2.getLocalStorage();
@@ -444,8 +515,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( virtualConstructorTest, MatrixType, MatrixTypes )
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( numRows, numCols, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
 
     dmemo::TestDistributions dists( numRows );
 
@@ -460,18 +530,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( virtualConstructorTest, MatrixType, MatrixTypes )
 
         std::unique_ptr<MatrixType> newMatrix( matrix.newMatrix() );
 
+        const StorageType& localStorage = matrix.getLocalStorage();
+
         const StorageType& newLocalStorage = newMatrix->getLocalStorage();
 
-        BOOST_CHECK_EQUAL( IndexType( 0 ), newLocalStorage.getNumRows() );
-        BOOST_CHECK_EQUAL( IndexType( 0 ), newLocalStorage.getNumColumns() );
+        BOOST_CHECK_EQUAL( localStorage.getNumRows(), newLocalStorage.getNumRows() );
+        BOOST_CHECK_EQUAL( localStorage.getNumColumns(), newLocalStorage.getNumColumns() );
+
+        BOOST_CHECK_EQUAL( localStorage.maxNorm(), localStorage.maxDiffNorm( newLocalStorage ) );
 
         std::unique_ptr<MatrixType > copyMatrix( matrix.copy() );
 
-        const StorageType& localStorage = matrix.getLocalStorage();
         const StorageType& copyLocalStorage = copyMatrix->getLocalStorage();
 
         BOOST_CHECK_EQUAL( localStorage.getNumRows(), copyLocalStorage.getNumRows() );
-        BOOST_CHECK_EQUAL( copyLocalStorage.getNumColumns(), copyLocalStorage.getNumColumns() );
+        BOOST_CHECK_EQUAL( localStorage.getNumColumns(), copyLocalStorage.getNumColumns() );
 
         BOOST_CHECK_EQUAL( ValueType( 0 ), localStorage.maxDiffNorm( copyLocalStorage ) );
     }
@@ -494,8 +567,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( numRows, numCols, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
+
     dmemo::TestDistributions dists( numRows );
     dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( numCols ) );
 
@@ -514,8 +587,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
         ValueType mult = 2;
 
-        MatrixType matrix2( mult * matrix1 );
-        MatrixType matrix3( matrix2 - matrix1 );
+        auto matrix2 = eval<MatrixType>( mult * matrix1 );
+        auto matrix3 = eval<MatrixType>( matrix2 - matrix1 );
 
         // Note: matrix3 = 2 * matrix1 - matrix1 = matrix1, so matrix1 and matrix3 must be equal
 
@@ -543,8 +616,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
     float fillRate = 0.2;
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( n, n, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( n, n, std::move( denseData ) ) );
+
     dmemo::TestDistributions dists( n );
     dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( n ) );
 
@@ -564,7 +637,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
 
         matrix1.redistribute( dist, repColDist );     // only row distribution
 
-        MatrixType matrix2( matrix1 * unity );
+        auto matrix2 = eval<MatrixType>( matrix1 * unity );
 
         const StorageType& localStorage1 = matrix1.getLocalStorage();
         const StorageType& localStorage2 = matrix2.getLocalStorage();
@@ -597,8 +670,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
-    StorageType globalStorage;
-    globalStorage.setDenseData( numRows, numCols, denseData );
+    auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
 
     if ( comm->getRank() == 0 )
     {
@@ -612,7 +684,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
 
     // comm->synchronize();
 
-    MatrixType matrix1( fileName );
+    auto matrix1 = read<MatrixType>( fileName );
 
     BOOST_CHECK( matrix1.isConsistent() );
     BOOST_CHECK_EQUAL( numRows, matrix1.getNumRows() );
@@ -633,6 +705,53 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
     {
         int rc = FileIO::removeFile( fileName );
         BOOST_CHECK_EQUAL( 0, rc );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( diagConstructorTest, MatrixType, MatrixTypes )
+{
+    const IndexType size = 15;
+
+    // set up an array with 'all' diagonal values
+
+    hmemo::HArray<ValueType> diagonalArray;
+    utilskernel::HArrayUtils::setSequence( diagonalArray, ValueType( 1 ), ValueType( 0.5 ), size );
+
+    dmemo::TestDistributions dists( size );
+
+    auto noDist = std::make_shared<dmemo::NoDistribution>( size );
+
+    for ( size_t k = 0; k < dists.size(); ++k )
+    {
+        dmemo::DistributionPtr dist = dists[k];
+
+        auto diagonalVector = distribute<DenseVector<ValueType>>( diagonalArray, dist );
+
+        auto matrix = lama::diagonal<MatrixType>( diagonalVector );
+
+        SCAI_LOG_DEBUG( logger, "diagonal matrix = " << matrix << ", check for correctness" )
+
+        // check correct distribution
+
+        BOOST_CHECK_EQUAL( *dist, matrix.getRowDistribution() );
+        BOOST_CHECK_EQUAL( *dist, matrix.getColDistribution() );
+
+        // auto repMatrix = distribute<MatrixType>( matrix, noDist, noDist );
+
+        auto repMatrix = distribute<CSRSparseMatrix<ValueType>>( matrix, noDist, noDist );
+
+        hmemo::HArray<ValueType> diagonalM;
+        repMatrix.getLocalStorage().getDiagonal( diagonalM );
+
+        BOOST_TEST( hostReadAccess( diagonalArray ) == hostReadAccess( diagonalM ), boost::test_tools::per_element() );
+
+        // set the matrix diagonal to zero in the matrix and it must be a full zero matrix
+
+        matrix.setDiagonal( 0 );
+
+        BOOST_CHECK_EQUAL( 0, matrix.maxNorm() );
     }
 }
 

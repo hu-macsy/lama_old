@@ -156,7 +156,7 @@ public:
 
     IndexType getMaxIter() const;
 
-    solver::LogLevel::LogLevel getLogLevel() const;
+    solver::LogLevel getLogLevel() const;
 
     lama::SyncKind getCommunicationKind() const
     {
@@ -204,7 +204,7 @@ private:
 
     IndexType mMaxIter;
 
-    solver::LogLevel::LogLevel   mLogLevel;
+    solver::LogLevel   mLogLevel;
 
     bool mUseMetis;
 
@@ -406,7 +406,7 @@ LamaConfig::LamaConfig()
 
     if ( common::Settings::getEnvironment( val, "SCAI_SOLVER_LOG" ) )
     {
-        solver::LogLevel::LogLevel level = solver::str2LogLevel( val.c_str() );
+        solver::LogLevel level = solver::str2LogLevel( val.c_str() );
 
         if ( level == solver::LogLevel::UNKNOWN )
         {
@@ -495,7 +495,7 @@ common::ScalarType LamaConfig::getValueType() const
     return mValueType;
 }
 
-solver::LogLevel::LogLevel LamaConfig::getLogLevel() const
+solver::LogLevel LamaConfig::getLogLevel() const
 {
     return mLogLevel;
 }
@@ -557,7 +557,7 @@ static std::string getLogLevels()
             levelNames << "|";
         }
 
-        levelNames << solver::LogLevel::LogLevel( i );
+        levelNames << solver::LogLevel( i );
     }
 
     return levelNames.str();

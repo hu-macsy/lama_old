@@ -194,17 +194,21 @@ SyncKind _Matrix::getDefaultSyncKind()
 {
     static bool computed = false;
 
-    static SyncKind syncKind = SyncKind::ASYNCHRONOUS;
+    static SyncKind syncKind = SyncKind::ASYNC_COMM;
 
     if ( !computed )
     {
-        bool isAsync = true;
+        int kind = 1;
 
-        common::Settings::getEnvironment( isAsync, "SCAI_ASYNCHRONOUS" );
+        common::Settings::getEnvironment( kind, "SCAI_ASYNCHRONOUS" );
 
-        if ( !isAsync )
+        if ( kind == 0 )
         {
             syncKind = SyncKind::SYNCHRONOUS;
+        }
+        else if ( kind == 2 )
+        {
+            syncKind = SyncKind::ASYNC_LOCAL;
         }
     }
 
@@ -218,29 +222,25 @@ void _Matrix::setDefaultKind()
 
 /* ---------------------------------------------------------------------------------*/
 
-void _Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalIndexes ) const
-{
-    getLocalStorage().buildCSRGraph( ia, ja, vwgt, globalIndexes );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-IndexType _Matrix::getCSRGraphSize() const
-{
-    // Currently only supported if column distribution is replicated
-    SCAI_ASSERT_EQ_ERROR( getNumColumns(), getLocalStorage().getNumColumns(), "getCSRGraphSize only for replicated column distribution" )
-    // diagonal elements will not be used
-    return getLocalNumValues() - getDistribution().getLocalSize();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void _Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
     SCAI_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )
     SCAI_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowed" )
     setDistributionPtr( rowDistribution );
     mColDistribution = colDistribution;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _Matrix::moveImpl( _Matrix&& other )
+{
+    auto nullSize = std::make_shared<NoDistribution>( 0 );
+
+    setDistributionPtr( other.getRowDistributionPtr() );
+    mColDistribution = other.mColDistribution;
+
+    other.setDistributionPtr( nullSize );
+    other.mColDistribution = nullSize;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -425,7 +425,7 @@ void _Matrix::readFromSingleFile( const std::string& fileName )
 
     SCAI_LOG_DEBUG( logger, *comm << ": assign local storage " << localMatrix );
 
-    assign( localMatrix, rowDist, colDist );
+    assignLocal( localMatrix, rowDist );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -448,8 +448,6 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
         redistribute( distribution, getColDistributionPtr() );
         return;
     }
-
-    const Communicator& comm = distribution->getCommunicator();
 
     IndexType first = 0;
 
@@ -479,11 +477,9 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
         COMMON_THROWEXCEPTION( "readFromSingleFile failed." )
     }
 
-    IndexType numColumns = comm.max( localMatrix.getNumColumns() );
+    // ToDo: what happens if num columns is not same
 
-    DistributionPtr colDist( new NoDistribution( numColumns ) );
-
-    assign( localMatrix, distribution, colDist );
+    assignLocal( localMatrix, distribution );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -530,13 +526,11 @@ void _Matrix::readFromPartitionedFile( const std::string& myPartitionFileName )
 
     IndexType numColumns = comm->max( localMatrix.getNumColumns() );
 
-    // for consistency we have to set the number of columns in each stroage
+    // for consistency we have to reset the number of columns in each stroage
 
-    localMatrix.setDimension( localSize, numColumns );
+    localMatrix.resetNumColumns( numColumns );
 
-    DistributionPtr colDist( new NoDistribution( numColumns ) );
-
-    assign( localMatrix, rowDist, colDist );
+    assignLocal( localMatrix, rowDist );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -705,6 +699,40 @@ void _Matrix::redistribute( const dmemo::Redistributor& redistributor )
     {
         COMMON_THROWEXCEPTION( "redistribute: no new column distribution" )
     }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _Matrix::checkLocalStorageSizes( const _MatrixStorage& localStorage, const Distribution& rowDist )
+{
+    // make some 'global' checks to verify correct sizes on all processors
+
+    const Communicator& comm = rowDist.getCommunicator();
+
+    IndexType maxColumns = comm.max( localStorage.getNumColumns() );
+
+    bool okay = true;
+
+    if ( localStorage.getNumRows() != rowDist.getLocalSize() )
+    {
+        SCAI_LOG_ERROR( logger, comm << ": #rows of local storage " << localStorage.getNumRows()
+                                << " does not match local size of row dist = " << rowDist )
+        okay = false;
+    }
+
+    if ( localStorage.getNumColumns() != maxColumns )
+    {
+        SCAI_LOG_ERROR( logger, comm << ": #columns of local storage " << localStorage.getNumColumns()
+                               << " must be same on all processors ( max = " << maxColumns << " )" )
+        okay = false;
+    }
+
+    okay = comm.all( okay );
+
+    if ( !okay )
+    { 
+        COMMON_THROWEXCEPTION( "Constructor of sparse matrix by local storages failed" )
+    } 
 }
 
 /* ---------------------------------------------------------------------------------*/

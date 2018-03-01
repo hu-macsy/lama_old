@@ -93,58 +93,24 @@ public:
     using Vector<ValueType>::getValueType;
     using Vector<ValueType>::binaryOp;
 
-    /** Default constructor, creates zero-sized replicated vector */
-
-    SparseVector();
+    /** Default constructor, creates zero-sized vector
+     *
+     *  @param[in] context  optional, the context to use for this vector.
+     */
+    SparseVector( hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /** Construct a sparse vector of a certain size, all elements are zero */
 
-    explicit SparseVector( const IndexType n );
-
-    /** Construct a sparse vector of a certain size, all elements are zero, with a certain context */
-
-    SparseVector( const IndexType n, hmemo::ContextPtr context );
+    SparseVector( const IndexType n, const ValueType zero = 0, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
-     * @brief creates a not initialized distributed SparseVector of the passed global size.
-     *
-     * @param[in] context  the context to use for the new vector.
-     */
-
-    explicit SparseVector( hmemo::ContextPtr context );
-
-    /**
-     * @brief creates a not initialized distributed SparseVector of the passed global size.
+     * @brief creates a distributed SparseVector of the passed global size.
      *
      * @param[in] distribution  the distribution to use for the new vector.
+     * @param[in] zero          is the value for all elements
+     * @param[in] context       the context to use for the new vector.
      */
-    explicit SparseVector( dmemo::DistributionPtr distribution );
-
-    /**
-     * @brief creates a not initialized distributed SparseVector of the passed global size.
-     *
-     * @param[in] distribution  the distribution to use for the new vector.
-     * @param[in] context  the context to use for the new vector.
-     */
-    SparseVector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
-
-    /**
-     * @brief creates a replicated SparseVector of the passed size with value as its ZERO element
-     *
-     * @param[in] size  the size of the new SparseVector.
-     * @param[in] value the value becomes ZERO element of the sparse vector, i.e. all elements have this values
-     * @param[in] context specifies optionally the context where dense vector should reside
-     */
-    SparseVector( const IndexType size, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
-
-    /**
-     * @brief creates a distributed SparseVector of the passed global size initialized to the passed value.
-     *
-     * @param[in] distribution  the distribution to use for the new vector.
-     * @param[in] value         the value to assign to all elements of the new DenseVector.
-     * @param[in] context   specifies optionally the context where dense vector should reside
-     */
-    SparseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    SparseVector( dmemo::DistributionPtr distribution, const ValueType zero = 0, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
      * @brief Constrcutor of sparse vector with raw arrays.
@@ -157,7 +123,7 @@ public:
         const IndexType nonZeroIndexes[],
         const OtherValueType nonZeroValues[],
         const OtherValueType zeroValue = OtherValueType( 0 ),
-        hmemo::ContextPtr context = hmemo::ContextPtr() );
+        hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
      * Override the default copy constructor to guarantee a deep copy.
@@ -177,32 +143,6 @@ public:
      */
     SparseVector( SparseVector<ValueType>&& other ) noexcept;
 
-    /**
-     * More general constructor that creates a deep copy of an arbitrary vector.
-     *
-     * The explicit specifier avoids implict conversions as the following example shows.
-     *
-     * \code
-     *     subroutine sub( const SparseVector<float>& v );
-     *     ...
-     *     SparseVector<float> vf;
-     *     SparseVector<double> vd;
-     *     sub( vf );               // that is okay
-     *     sub( vd );               // compile error to avoid implicit conversions
-     * \endcode
-     */
-    explicit SparseVector( const Vector<ValueType>& other );
-
-    /**
-     * @brief creates a redistributed copy of the passed vector
-     *
-     * @param[in] other         the vector to take a copy from
-     * @param[in] distribution  the distribution to use for the new vector.
-     *
-     * Must be valid: other.size() == distribution.getGlobalSize()
-     */
-    explicit SparseVector( const Vector<ValueType>& other, dmemo::DistributionPtr distribution );
-
     /** 
      * @brief Construct a vector by a dense vector and zero element.
      *
@@ -214,155 +154,43 @@ public:
     /**
      * @brief creates a distributed SparseVector with given local values.
      *
-     * @param[in] distribution  the distribution of the vector
-     * @param[in] indexes       local indexes this processor has nonz-zeros values for
-     * @param[in] values        values belonging to the corresponding entries
-     * @param[in] zero          is the zero value
+     * @param[in] distribution   the distribution of the vector
+     * @param[in] nonZeroindexes local indexes this processor has nonz-zeros values for
+     * @param[in] nonZeroValues  values belonging to the corresponding entries
+     * @param[in] zero           is the zero value
      *
      * While indexes and values might have individual values on each processor, the zero value
      * must be exactly the same on all processors
      */
     SparseVector( 
         dmemo::DistributionPtr distribution,
-        const hmemo::HArray<IndexType>& indexes, 
-        const hmemo::_HArray& values, 
-        const ValueType zero = ValueType( 0 ) );
+        hmemo::HArray<IndexType> indexes, 
+        hmemo::HArray<ValueType> values, 
+        const ValueType zero = ValueType( 0 ),
+        hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
-    /**
-     * @brief creates a distributed SparseVector with given local values.
-     *
-     * @param[in] distribution  the distribution of the vector
-     * @param[in] localValues   local values
-     *
-     * This constructor is only available to be more conform with DenseVector.
-     * The zero value is assumed to be 0. Only non-zero entries are stored explicitly.
-     */
-    SparseVector( dmemo::DistributionPtr distribution, const hmemo::_HArray& localValues );
+    /** @brief Short form of SparseVector( dist, indexes, values,  ) if dist is replicated */
 
-    /** @brief Short form of SparseVector( dist, localValues ) if dist is replicated */
-
-    explicit SparseVector( const hmemo::_HArray& localValues );
-
-    /**
-     * @brief This constructor creates a vector with the size and values stored
-     *        in the file with the given filename.
-     *
-     * @param[in] filename  the name of the file to read the Vector from.
-     *
-     * The distribution of the vector is CYCLIC(n) where n is the size of
-     * the vector. So only the first processor will hold all values.
-     *
-     * Note: Only the first processor will read the matrix file.
-     */
-    explicit SparseVector( const std::string& filename );
-
-    /**
-     * @brief creates a SparseVector with the Expression alpha * x.
-     *
-     * @param[in] expression    alpha * x
-     */
-    explicit SparseVector( const Expression_SV<ValueType>& expression );
-
-    /**
-     * @brief creates a SparseVector with the Expression alpha + x.
-     *
-     * @param[in] expression    alpha * x + beta
-     */
-    explicit SparseVector( const Expression_SV_S<ValueType>& expression );
-
-    /**
-     *  @brief creates a SparseVector with the Expression alpha * x * Y.
-     *
-     * @param[in] expression    x * y
-     */
-
-    explicit SparseVector( const Expression_VV<ValueType>& expression );
-
-    /**
-     *  @brief creates a SparseVector with the Expression alpha * x * Y.
-     *
-     * @param[in] expression    alpha * x * y
-     */
-
-    explicit SparseVector( const Expression_SVV<ValueType>& expression );
-
-    /**
-     * @brief creates a SparseVector with the Expression alpha * x + beta * y.
-     *
-     * @param[in] expression  is alpha * x + beta * y
-     */
-    explicit SparseVector( const Expression_SV_SV<ValueType>& expression );
-
-    /* --------------------------------------------------------------------- */
-
-    /**
-     * @brief creates a SparseVector with the Expression alpha * A * x + beta * y.
-     *
-     * @param[in] expression     alpha * A * x + beta * y
-     */
-    explicit SparseVector( const Expression_SMV_SV<ValueType>& expression );
-
-    /**
-     * @brief creates a SparseVector with the Expression alpha * x * A + beta * y.
-     *
-     * @param[in] expression     alpha * x * A + beta * y
-     */
-    explicit SparseVector( const Expression_SVM_SV<ValueType>& expression );
-
-    /**
-     * @brief creates a SparseVector with the Expression alpha * A * x.
-     *
-     * @param[in] expression     alpha * A * x
-     */
-    explicit SparseVector( const Expression_SMV<ValueType>& expression );
-
-    /**
-     * @brief creates a SparseVector with the Expression alpha * x * A.
-     *
-     * @param[in] expression     alpha * x * A
-     */
-    explicit SparseVector( const Expression_SVM<ValueType>& expression );
-
-    /**
-     * @brief creates a SparseVector with the Expression A * x.
-     *
-     * @param[in] expression     A * x
-     */
-    explicit SparseVector( const Expression_MV<ValueType>& expression );
-
-    /**
-     * @brief creates a SparseVector with the Expression x * A.
-     *
-     * @param[in] expression     x * A
-     */
-    explicit SparseVector( const Expression_VM<ValueType>& expression );
-
-    /**
-     *  @brief enable constructor for SparseVector<T>( complex( x, y ) );
-     */
-    inline explicit SparseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression );
-
-    /**
-     *  @brief enable constructor for SparseVector<T>( imag( x ) );
-     */
-    template<common::ComplexPart kind, typename OtherValueType>
-    explicit SparseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression );
-
-    /**
-     *  @brief enable constructor for SparseVector<T>( cast<T>( x ) );
-     */
-    template<typename OtherValueType>
-    explicit SparseVector( const CastVectorExpression<ValueType, OtherValueType>& expression );
-
-    /**
-     *  @brief enable constructor for SparseVector<T>( sin( x ) );
-     */
-    inline explicit SparseVector( const UnaryVectorExpression<ValueType>& expression );
+    SparseVector( 
+        const IndexType n,
+        hmemo::HArray<IndexType> indexes, 
+        hmemo::HArray<ValueType> values, 
+        const ValueType zero = ValueType( 0 ),
+        hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
      * @brief releases all allocated resources.
      */
     virtual ~SparseVector();
+
+    /* ==================================================================== */
+    /*   split up member variables                                          */
+    /* ==================================================================== */
+
+    void splitUp( dmemo::DistributionPtr& dist,
+                  hmemo::HArray<IndexType>& nonZeroIndexes,
+                  hmemo::HArray<ValueType>& nonZeroValues,
+                  ValueType& zero );
 
     /** Implementation of pure method _Vector::getVectorKind() */
 
@@ -400,14 +228,13 @@ public:
     virtual void assign( const _Vector& other );
 
     template<typename OtherValueType>
-    void assignImpl( const SparseVector<OtherValueType>& other );
+    void assignImpl( const Vector<OtherValueType>& other );
 
     template<typename OtherValueType>
-    void assignImpl( const DenseVector<OtherValueType>& other );
+    void assignSparse( const SparseVector<OtherValueType>& other );
 
-    /** Implemenation of pure method Vector<ValueType>::concatenate */
-
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors );
+    template<typename OtherValueType>
+    void assignDense( const DenseVector<OtherValueType>& other );
 
     /**
      * Implementation of _Vector::fillRandom for sparse vectors.
@@ -462,6 +289,9 @@ public:
      */
     virtual void setDenseValues( const hmemo::_HArray& values );
 
+    /**
+     *  Typed version of setDenseValues, i.e. _HArray is now HArray<OtherValueType>
+     */
     template<typename OtherValueType>
     void setDenseValuesImpl( const hmemo::HArray<OtherValueType>& values );
 
@@ -675,44 +505,6 @@ SparseVector<ValueType>::SparseVector(
     setSparseValues( nnz, nonZeroIndexes, nonZeroValues, zeroValue );
 }
 
-template<typename ValueType>
-template<common::ComplexPart kind, typename OtherValueType>
-SparseVector<ValueType>::SparseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression )
-{
-    const Vector<OtherValueType>& v = expression.getArg();
-    this->setContextPtr( v.getContextPtr()  );
-    this->allocate( v.getDistributionPtr() );
-    Vector<ValueType>::operator=( expression );
-}
-
-template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression )
-{
-    const Vector<RealType<ValueType>>& v = expression.getRealArg();
-    this->setContextPtr( v.getContextPtr()  );
-    this->allocate( v.getDistributionPtr() );
-    Vector<ValueType>::operator=( expression );
-}
-
-template<typename ValueType>
-template<typename OtherValueType>
-SparseVector<ValueType>::SparseVector( const CastVectorExpression<ValueType, OtherValueType>& expression )
-{
-    const Vector<OtherValueType>& v = expression.getArg();
-    this->setContextPtr( v.getContextPtr()  );
-    this->allocate( v.getDistributionPtr() );
-    Vector<ValueType>::operator=( expression );
-}
-
-template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const UnaryVectorExpression<ValueType>& expression )
-{
-    const Vector<ValueType>& v = expression.getArg();
-    this->setContextPtr( v.getContextPtr()  );
-    this->allocate( v.getDistributionPtr() );
-    Vector<ValueType>::operator=( expression );
-}
-
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
 /* ------------------------------------------------------------------------- */
@@ -735,19 +527,6 @@ void SparseVector<ValueType>::setSparseValues(
     // values at same index will be replaced
 
     fillSparseData( indexes, values, common::BinaryOp::COPY );
-}
-
-template<typename ValueType>
-template<typename OtherValueType>
-void SparseVector<ValueType>::setDenseValuesImpl( const hmemo::HArray<OtherValueType>& values )
-{
-    const IndexType size = getDistribution().getLocalSize();
-
-    SCAI_ASSERT_EQ_ERROR( size, values.size(), "size of local values does not match local size of vector" )
-
-    OtherValueType zero = static_cast<OtherValueType>( mZeroValue );
-
-    utilskernel::HArrayUtils::buildSparseArrayImpl( mNonZeroValues, mNonZeroIndexes, values, zero, getContextPtr() );
 }
 
 template<typename ValueType>

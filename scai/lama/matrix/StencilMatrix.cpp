@@ -63,23 +63,13 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, StencilMatrix<ValueT
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-StencilMatrix<ValueType>::StencilMatrix()
-
-    : SparseMatrix<ValueType>()
+StencilMatrix<ValueType>::StencilMatrix() : SparseMatrix<ValueType>()
 
 {
     SCAI_LOG_INFO( logger, "create default stencil matrix" )
 
-    std::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>() );
-    std::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
-
-    haloData->allocate( localData->getNumRows(), 0 );
-
-    DistributionPtr dist( new NoDistribution( localData->getNumRows() ) );
-
-    Halo halo;
-
-    this->set( localData, haloData, halo, dist, dist );
+    mLocalData.reset( new StencilStorage<ValueType>() );
+    mHaloData.reset( new CSRStorage<ValueType>() );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -87,28 +77,26 @@ StencilMatrix<ValueType>::StencilMatrix()
 template<typename ValueType>
 void StencilMatrix<ValueType>::define( const common::Grid& grid, const Stencil<ValueType>& stencil )
 {
+    const IndexType N = grid.size();   // shape of matrix is N x N
+
+    _Matrix::setReplicatedMatrix( grid.size(), grid.size() );
+
     SCAI_LOG_INFO( logger, "create stencil matrix, grid = " << grid << ", stencil = " << stencil )
 
-    std::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>( grid, stencil ) );
-    std::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
-
-    haloData->allocate( localData->getNumRows(), 0 );
-
-    DistributionPtr dist( new NoDistribution( localData->getNumRows() ) );
-
-    Halo halo;
-
-    this->set( localData, haloData, halo, dist, dist );
+    mLocalData.reset( new StencilStorage<ValueType>( grid, stencil ) );
+    mHaloData.reset( new CSRStorage<ValueType>() );
+    mHaloData->allocate( N, 0 );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil<ValueType>& stencil )
+StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil<ValueType>& stencil ) : 
 
-    : SparseMatrix<ValueType>()
+    SparseMatrix<ValueType>()
 
 {
+    // own method needed as halo storage will be of CSR format
     define( grid, stencil );
 }
 

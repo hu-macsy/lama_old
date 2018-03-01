@@ -1,8 +1,8 @@
 /**
- * @file solver/examples/lecture/task1a.cpp
+ * @file SCAITypes.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,46 +27,12 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/examples/lecture/task1a.cpp
- * @author Thomas Brandes
- * @date 15.05.2013
+ * @brief Configuration of found fftw3 library types
+ * @author Lauretta Schubert
+ * @date 03.11.2016
  */
+#pragma once
 
-//Solution of task 1a:
+#define SCAI_NUMERIC_TYPES_FFTW3 double
 
-#include <scai/lama.hpp>
-
-#include <scai/lama/storage/SparseAssemblyStorage.hpp>
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/DenseVector.hpp>
-
-using namespace scai;
-using namespace lama;
-using namespace hmemo;
-
-typedef DefaultReal ValueType;
-
-int main( int argc, char* argv[] )
-{
-    if ( argc < 2 )
-    {
-        std::cerr << "No input file specified" << std::endl;
-        exit( -1 );
-    }
-
-    //Read a sparse matrix from the passed input file
-    CSRSparseMatrix<ValueType> m( argv[1] );
-    IndexType size = m.getNumRows();
-    DenseVector<ValueType> rhs( size , 0.0 );
-    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
-
-    for ( IndexType i = 0; i < size; ++i )
-    {
-        hwarhs[i] = i + 1.0;
-    }
-
-    hwarhs.release();
-    DenseVector<ValueType> solution( size , 0.0 );
-    return 0;
-}
-
+#define SCAI_NUMERIC_TYPES_FFTW3_LIST SCAI_TYPELIST( SCAI_NUMERIC_TYPES_FFTW3 )

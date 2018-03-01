@@ -54,7 +54,7 @@ SCAI_LOG_DEF_LOGGER( CommunicationPlan::logger, "CommunicationPlan" )
 /* ------------------------------------------------------------------------- */
 
 CommunicationPlan::CommunicationPlan()
-    : mAllocated( false ), mCompressed(true), mQuantity( 0 )
+    : mAllocated( false ), mCompressed( true ), mQuantity( 0 )
 {
     SCAI_LOG_INFO( logger, "Communication plan constructed, not allocated" )
 }
@@ -411,7 +411,7 @@ void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const Par
             newEntry.offset = 0;
 
             mEntries.push_back( newEntry );
-        
+
             mQuantity += entry.quantity;
         }
     }

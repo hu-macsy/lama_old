@@ -50,7 +50,7 @@ scai_project (
         SparseMatrix
         StencilMatrix
 
-        MatrixAssemblyAccess
+        MatrixAssembly
 
     HEADERS 
  
@@ -58,6 +58,9 @@ scai_project (
         MatrixKind 
         SyncKind 
         OperatorMatrix
+        MatrixWithT
+        GramianMatrix
+        HybridMatrix
 
     ADD_PARENT_SCOPE
 )

@@ -70,9 +70,14 @@ template<typename ValueType>
 class SparseVector;
 
 /**
- * @brief The template DenseVector represents a distributed 1D Vector with elements of type ValueType.
+ * @brief The template class DenseVector represents a distributed 1D Vector with elements of type ValueType.
  *
  * @tparam ValueType the value type for the vector values.
+ *
+ * In contrarary to a sparse vector a dense vector has allocated memory for each entry. If the vector
+ * is distributed on multiple processors, each processor has allocated only memory for its local part, 
+ * i.e. for the elements that are owned by it.
+ *
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseVector:
@@ -88,10 +93,11 @@ public:
     using _Vector::getContextPtr;
     using _Vector::getContext;
     using _Vector::readFromFile;
-    using _Vector::setDistributionPtr;
     using _Vector::getDistributionPtr;
     using _Vector::size;
     using _Vector::assign;
+    using _Vector::prefetch; // prefetch() with no arguments
+
 
     using Vector<ValueType>::operator=;
     using Vector<ValueType>::getValueType;
@@ -99,53 +105,23 @@ public:
 
     /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
 
-    DenseVector();
+    explicit DenseVector( hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
-     * @brief creates a not initialized distributed DenseVector of the passed global size.
-     *
-     * @param[in] context  the context to use for the new vector.
-     */
-    explicit DenseVector( hmemo::ContextPtr context );
-
-    /**
-     * @brief creates a not initialized replicated DenseVector of the passed global size.
-     *
-     * @param[in] size  is the global size of the vector
-     */
-    explicit DenseVector( const IndexType size );
-
-    /**
-     * @brief creates a not initialized distributed DenseVector of the passed global size.
-     *
-     * @param[in] distribution  the distribution to use for the new vector.
-     */
-    explicit DenseVector( dmemo::DistributionPtr distribution );
-
-    /**
-     * @brief create a not initialized replicated DenseVector with a given context
-     *
-     * @param[in] size  is the global size of the vector
-     * @param[in] context  the context to use for the new vector.
-     */
-    DenseVector ( const IndexType size, hmemo::ContextPtr context );
-
-    /**
-     * @brief creates a not initialized distributed DenseVector of the passed global size.
-     *
-     * @param[in] distribution  the distribution to use for the new vector.
-     * @param[in] context  the context to use for the new vector.
-     */
-    DenseVector ( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
-
-    /**
-     * @brief creates a replicated DenseVector of the passed size initialized to the passed value.
+     * @brief Create a replicated DenseVector of a certain size initialized with same value for all elements.
      *
      * @param[in] size  the size of the new DenseVector.
      * @param[in] value the value to assign to all elements of the new DenseVector.
      * @param[in] context   specifies optionally the context where dense vector should reside
+     *
+     * Attention: DEPRECATED.
+     *
+     *  \code
+     *   DenseVector<ValueType> v( 100, 1 );
+     *   auto v = fill<DenseVector<ValueType>>( 100, 1 );
+     *  \endcode
      */
-    DenseVector( const IndexType size, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    DenseVector( const IndexType size, const ValueType value, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
      * @brief creates a distributed DenseVector of the passed global size initialized to the passed value.
@@ -154,7 +130,7 @@ public:
      * @param[in] value         the value to assign to all elements of the new DenseVector.
      * @param[in] context   specifies optionally the context where dense vector should reside
      */
-    DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
      * Override the default copy constructor to guarantee a deep copy.
@@ -166,37 +142,13 @@ public:
     DenseVector( const DenseVector<ValueType>& other );
 
     /**
-     * @brief Move constructor that reuses allocated resources from input vector instead of deep copy.
+     * @brief Override the default move constructor with appropriate version.
+     *
+     * @param[in] other the dense vector from which data is moved
      *
      * The attribute noexcept is mandatory to make the use of dense vectors possible in C++ container classes.
      */
     DenseVector( DenseVector<ValueType>&& other ) noexcept;
-
-    /**
-     * More general constructor that creates a deep copy of an arbitrary vector( same type )
-     *
-     * The explicit specifier avoids implict conversions as the following example shows.
-     *
-     * \code
-     *     subroutine sub( const DenseVector<float>& v );
-     *     ...
-     *     DenseVector<float> dV;
-     *     SparseVector<float> sV;
-     *     sub( dV );               // that is okay
-     *     sub( sV );               // compile error to avoid implicit conversions
-     * \endcode
-     */
-    explicit DenseVector( const Vector<ValueType>& other );
-
-    /**
-     * @brief creates a redistributed copy of the passed vector
-     *
-     * @param[in] other         the vector to take a copy from
-     * @param[in] distribution  the distribution to use for the new vector.
-     *
-     * Must be valid: other.size() == distribution.getGlobalSize()
-     */
-    DenseVector( const Vector<ValueType>& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
@@ -206,149 +158,36 @@ public:
      *
      * Note: localValues.size() == distribution->getLocalSize() must be valid.
      */
-    DenseVector( dmemo::DistributionPtr distribution, const hmemo::_HArray& localValues );
+    DenseVector( 
+        dmemo::DistributionPtr distribution, 
+        hmemo::HArray<ValueType> localValues, 
+        hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
-     * @brief Constructor of a replicated DenseVector with local values
+     * @brief Constructor of a replicated DenseVector with global values
      *
-     * Note: DenseVector( localValues ) is same as DenseVector( localValues, repDistribution )
-     *       with repDistributon = DistributionPtr( new NoDistribution( localValues.size() )
+     *  \code
+     *     HArray<double> values( { 1, 2, 3, 4, 5 } );
+     *     DenseVector<double>( values );
+     *     // short form of: DenseVector<double>( std::make_shared<NoDistriubiton<values.size()>, values );
+     *  \endcode
      *
-     * Usually, a replicated vector has on multiple processes the same values on each processor.
-     * It might be used in a local mode where each processor has individual values but then it
-     * should never be used in operations that involve global communication.
+     * Usually, a replicated vector has the same values on each processor.
+     * It might be used in a local mode where each processor has individual values but then you
+     * should exactly know what you do.
      */
-    explicit DenseVector( const hmemo::_HArray& localValues );
-
-    explicit DenseVector( hmemo::HArray<ValueType> localValues );
-
-    /**
-     * @brief This constructor creates a vector with the size and values stored
-     *        in the file with the given filename.
-     *
-     * @param[in] filename  the name of the file to read the Vector from.
-     *
-     * The distribution of the vector is CYCLIC(n) where n is the size of
-     * the vector. So only the first processor will hold all values.
-     *
-     * Note: Only the first processor will read the matrix file.
-     */
-    explicit DenseVector( const std::string& filename );
-
-    /* ================================================================ */
-    /*    expression constuctors                                        */
-    /* ================================================================ */
-
-    /**
-     * @brief creates a DenseVector with the Expression alpha * x.
-     *
-     * @param[in] expression    alpha * x
-     */
-    explicit DenseVector( const Expression_SV<ValueType>& expression );
-
-    /**
-     * @brief creates a DenseVector with the Expression alpha + x.
-     *
-     * @param[in] expression    alpha * x + beta
-     */
-    explicit DenseVector( const Expression_SV_S<ValueType>& expression );
-
-    /**
-     *  @brief creates a DenseVector with the Expression alpha * x * Y.
-     *
-     * @param[in] expression    x * y
-     */
-
-    explicit DenseVector( const Expression_VV<ValueType>& expression );
-
-
-    /**
-     *  @brief creates a DenseVector with the Expression alpha * x * Y.
-     *
-     * @param[in] expression    alpha * x * y
-     */
-
-    explicit DenseVector( const Expression_SVV<ValueType>& expression );
-
-    /**
-     * @brief creates a DenseVector with the Expression alpha * x + beta * y.
-     *
-     * @param[in] expression  is alpha * x + beta * y
-     */
-    explicit DenseVector( const Expression_SV_SV<ValueType>& expression );
-
-    /* --------------------------------------------------------------------- */
-
-    /**
-     * @brief creates a DenseVector with the Expression alpha * A * x + beta * y.
-     *
-     * @param[in] expression     alpha * A * x + beta * y
-     */
-    explicit DenseVector( const Expression_SMV_SV<ValueType>& expression );
-
-    /**
-     * @brief creates a DenseVector with the Expression alpha * x * A + beta * y.
-     *
-     * @param[in] expression     alpha * x * A + beta * y
-     */
-    explicit DenseVector( const Expression_SVM_SV<ValueType>& expression );
-
-    /**
-     * @brief creates a DenseVector with the Expression alpha * A * x.
-     *
-     * @param[in] expression     alpha * A * x
-     */
-    explicit DenseVector( const Expression_SMV<ValueType>& expression );
-
-    /**
-     * @brief creates a DenseVector with the Expression alpha * x * A.
-     *
-     * @param[in] expression     alpha * x * A
-     */
-    explicit DenseVector( const Expression_SVM<ValueType>& expression );
-
-    /**
-     * @brief creates a DenseVector with the Expression A * x.
-     *
-     * @param[in] expression     A * x
-     */
-    explicit DenseVector( const Expression_MV<ValueType>& expression );
-
-    /**
-     * @brief creates a DenseVector with the Expression x * A.
-     *
-     * @param[in] expression     x * A
-     */
-    explicit DenseVector( const Expression_VM<ValueType>& expression );
-
-    /**
-     *  @brief enable constructor for DenseVector<T>( complex( x, y ) );
-     */
-    inline explicit DenseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression );
-
-    /**
-     *  @brief enable constructor for DenseVector<T>( imag( x ) );
-     */
-    template<common::ComplexPart kind, typename OtherValueType>
-    explicit DenseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression );
-
-    /**
-     *  @brief enable constructor for DenseVector<T>( cast<T>( x ) );
-     */
-    template<typename OtherValueType>
-    explicit DenseVector( const CastVectorExpression<ValueType, OtherValueType>& expression );
-
-    /**
-     *  @brief enable constructor for DenseVector<T>( sin( x ) );
-     */
-    inline explicit DenseVector( const UnaryVectorExpression<ValueType>& expression );
+    explicit DenseVector( hmemo::HArray<ValueType> localValues, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     /**
      * @brief releases all allocated resources.
      */
     virtual ~DenseVector();
 
-    /* --------------------------------------------------------------------- */
+    /* ==================================================================== */
+    /*   split up member variables                                          */
+    /* ==================================================================== */
+
+    void splitUp( dmemo::DistributionPtr& dist, hmemo::HArray<ValueType>& localvalues );
 
     /** 
      * @brief Implementation of pure method _Vector::getVectorKind() 
@@ -363,13 +202,26 @@ public:
 
     /* --------------------------------------------------------------------- */
 
+    /**
+     *  @brief Implememenation of pure routine _Vector::allocate. 
+     *
+     *  Please keep in mind that this method does not initialize the values 
+     *  of the dense vector. So it should be used only in combination with
+     *  methods that set the values afterwards.
+     *
+     *  \code
+     *     DenseVector<double> v;       DenseVector<double> v( 100, 1.0 );     DenseVector<double> v;
+     *     v.allocate( 100 );                                                  v.setSameValue( 100, 1.0 );
+     *     v = 1.0;             
+     *  \endcode
+     */
+    virtual void allocate( const IndexType n );
+
     /** Implememenation of pure routine _Vector::allocate. */
 
     virtual void allocate( dmemo::DistributionPtr distribution );
 
-    /** Implememenation of pure routine _Vector::allocate. */
-
-    virtual void allocate( const IndexType n );
+    /* --------------------------------------------------------------------- */
 
     /** Override the default assignment operator.  */
 
@@ -394,16 +246,22 @@ public:
     virtual void assign( const _Vector& other );
 
     /** 
+     *  @brief Specific implementation of assign
+     */
+    template<typename OtherValueType>
+    void assignImpl( const Vector<OtherValueType>& other );
+
+    /** 
      *  @brief Specific implementation of assign for a sparse vector of a certain type.
      */
     template<typename OtherValueType>
-    void assignImpl( const SparseVector<OtherValueType>& other );
+    void assignSparse( const SparseVector<OtherValueType>& other );
 
     /** 
      *  @brief Specific implementation of assign for a dense vector of a certain type.
      */
     template<typename OtherValueType>
-    void assignImpl( const DenseVector<OtherValueType>& other );
+    void assignDense( const DenseVector<OtherValueType>& other );
 
     /**
      * Implementation of pure method _Vector::fillRandom 
@@ -423,10 +281,6 @@ public:
      */
     void fillLinearValues( const ValueType startValue, const ValueType inc );
 
-    /** Implemenation of pure method Vector<ValueType>::concatenate */
-
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors );
-
     /** Sort all elements of this vector.
      *
      *  Currently, sorting is only possible on block distributed vectors.
@@ -438,7 +292,6 @@ public:
      *
      *  Note:  oldVector[ perm ] ->  newVector
      */
-
     virtual void sort( DenseVector<IndexType>& perm, bool ascending );
 
     /** Same sort but without perm vector. */
@@ -662,9 +515,9 @@ public:
         const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
-    virtual ValueType dotProduct( const Vector<ValueType>& other ) const;
+    /** Implementation of pure method Vector<ValueType>::dotProduct */
 
-    using _Vector::prefetch; // prefetch() with no arguments
+    virtual ValueType dotProduct( const Vector<ValueType>& other ) const;
 
     virtual void prefetch( const hmemo::ContextPtr location ) const;
 
@@ -679,6 +532,8 @@ public:
     virtual void redistribute( const dmemo::Redistributor& redistributor );
 
 private:
+
+    using _Vector::setDistributionPtr;
 
     /** Allocate local values array with correct size at right context */
 
@@ -740,11 +595,11 @@ public:
  * Note: if ctx is specified, the vector will be allocated in its memory.
  */
 template<typename ValueType>
-DenseVector<ValueType> linearValuesVector( 
+DenseVector<ValueType> linearDenseVector( 
     const IndexType n,
     const ValueType startValue, 
     const ValueType inc, 
-    hmemo::ContextPtr ctx = hmemo::ContextPtr() )
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     DenseVector<ValueType> result( ctx );
     result.allocate( n );
@@ -760,54 +615,16 @@ DenseVector<ValueType> linearValuesVector(
  * @param[in] ctx context where the vector is allocated
  */
 template<typename ValueType>
-DenseVector<ValueType> linearValuesVector( 
+DenseVector<ValueType> linearDenseVector( 
     dmemo::DistributionPtr distribution, 
     const ValueType startValue, 
     const ValueType inc, 
-    hmemo::ContextPtr ctx = hmemo::ContextPtr() )
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     DenseVector<ValueType> result( ctx );
     result.allocate( distribution );
     result.fillLinearValues( startValue, inc );
     return result;
-}
-
-template<typename ValueType>
-template<common::ComplexPart kind, typename OtherValueType>
-DenseVector<ValueType>::DenseVector( const ComplexPartVectorExpression<OtherValueType, kind>& expression ) 
-{
-    const Vector<OtherValueType>& v = expression.getArg(); 
-    this->setContextPtr( v.getContextPtr()  );
-    this->allocate( v.getDistributionPtr() );
-    Vector<ValueType>::operator=( expression );
-}
-
-template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const ComplexBuildVectorExpression<RealType<ValueType> >& expression )
-{
-    const Vector<RealType<ValueType>>& v = expression.getRealArg(); 
-    this->setContextPtr( v.getContextPtr()  );
-    this->allocate( v.getDistributionPtr() );
-    Vector<ValueType>::operator=( expression );
-}
-
-template<typename ValueType>
-template<typename OtherValueType>
-DenseVector<ValueType>::DenseVector( const CastVectorExpression<ValueType, OtherValueType>& expression )
-{
-    const Vector<OtherValueType>& v = expression.getArg(); 
-    this->setContextPtr( v.getContextPtr()  );
-    this->allocate( v.getDistributionPtr() );
-    Vector<ValueType>::operator=( expression );
-}
-
-template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const UnaryVectorExpression<ValueType>& expression )
-{
-    const Vector<ValueType>& v = expression.getArg(); 
-    this->setContextPtr( v.getContextPtr()  );
-    this->allocate( v.getDistributionPtr() );
-    Vector<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */

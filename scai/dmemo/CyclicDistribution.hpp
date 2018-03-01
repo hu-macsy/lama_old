@@ -63,16 +63,17 @@ public:
      *
      * @param[in] globalSize number of elements to distribution
      * @param[in] chunkSize is the size of the chunk block.
-     * @param[in] communicator TODO[doxy] Complete Description.
+     * @param[in] communicator specifies the set of processors onto which the elements are distributed
      */
-    CyclicDistribution( const IndexType globalSize, const IndexType chunkSize, const CommunicatorPtr communicator );
+    CyclicDistribution(
+        const IndexType globalSize,
+        const IndexType chunkSize,
+        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     virtual ~CyclicDistribution();
 
     /**
-     * TODO[doxy] Complete Description.
-     *
-     * @param[in] index TODO[doxy] Complete Description.
+     * @brief Implementation of pure method Distribution::isLocal
      */
     virtual bool isLocal( const IndexType index ) const;
 

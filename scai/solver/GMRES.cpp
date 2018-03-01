@@ -39,7 +39,7 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 
 #include <scai/blaskernel/BLASKernelTrait.hpp>
@@ -62,7 +62,7 @@ using utilskernel::LAMAKernel;
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, GMRES<ValueType>::logger, "Solver.IterativeSolver.GMRES" )
 
 using lama::Matrix;
-using lama::DenseVector;
+using lama::Vector;
 using lama::Scalar;
 
 /* ========================================================================= */
@@ -127,33 +127,25 @@ void GMRES<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 
     GMRESRuntime& runtime = getRuntime();
 
-    runtime.mCC.reset( new ValueType[mKrylovDim + 1] );
-    runtime.mSS.reset( new ValueType[mKrylovDim + 1] );
-    runtime.mG.reset( new ValueType[mKrylovDim + 1] );
-    runtime.mY.reset( new ValueType[mKrylovDim + 1] );
-    runtime.mH.reset( new ValueType[( mKrylovDim * ( mKrylovDim + 1 ) ) / 2] );
-    runtime.mHd.reset( new ValueType[mKrylovDim] );
+    runtime.mCC.resize( mKrylovDim + 1 );
+    runtime.mSS.resize( mKrylovDim + 1 );
+    runtime.mG.resize( mKrylovDim + 1 );
+    runtime.mY.resize( mKrylovDim + 1 );
+    runtime.mH.resize( mKrylovDim * ( mKrylovDim + 1 ) / 2 );
+    runtime.mHd.resize( mKrylovDim );
 
-    runtime.mV.reset( new DenseVector<ValueType>[mKrylovDim + 1] );
+    runtime.mV.resize( mKrylovDim + 1 );   // allocate with NULL pointerso
+ 
+    for ( IndexType i = 0; i <= mKrylovDim; ++i )
+    {
+        runtime.mV[i].reset( coefficients.newTargetVector() );
+    }
 
     // 'force' vector operations to be computed at the same location where coefficients reside
 
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    hmemo::ContextPtr ctx = coefficients.getContextPtr();
-
-    runtime.mW.setContextPtr( ctx );
-    runtime.mT.setContextPtr( ctx ); 
-    runtime.mX0.setContextPtr( ctx ); 
-
-    runtime.mW.allocate( dist );
-    runtime.mT.allocate( dist ); 
-    runtime.mX0.allocate( dist ); 
-
-    for ( IndexType i = 0; i <=mKrylovDim; ++i )
-    {
-        runtime.mV[i].setContextPtr( ctx );
-        runtime.mV[i].allocate( dist );
-    }
+    runtime.mW.reset( coefficients.newTargetVector() );
+    runtime.mT.reset( coefficients.newTargetVector() );
+    runtime.mX0.reset( coefficients.newTargetVector() );
 }
 
 template<typename ValueType>
@@ -200,7 +192,7 @@ void GMRES<ValueType>::iterate()
     SCAI_LOG_INFO( logger, "GMRES( krylov dim = " << mKrylovDim << " ): iter = " << this->getIterationCount()
                            << ", inner step = " << krylovIndex )
 
-    DenseVector<ValueType>& vCurrent = runtime.mV[krylovIndex];
+    Vector<ValueType>& vCurrent = *runtime.mV[krylovIndex];
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
 
@@ -214,11 +206,11 @@ void GMRES<ValueType>::iterate()
 
         this->getResidual();
 
-        DenseVector<ValueType>& residual = runtime.mResidual;
+        Vector<ValueType>& residual = *runtime.mResidual;
 
         // store old solution
 
-        runtime.mX0 = runtime.mSolution.getConstReference();
+        *runtime.mX0 = runtime.mSolution.getConstReference();
 
         // set first search direction vCurrent
 
@@ -251,9 +243,8 @@ void GMRES<ValueType>::iterate()
 
     // precondition next search direction
 
-    DenseVector<ValueType>& w   = runtime.mW;
-    DenseVector<ValueType>& tmp = runtime.mT;
-
+    Vector<ValueType>& w   = *runtime.mW;
+    Vector<ValueType>& tmp = *runtime.mT;
 
     if ( !mPreconditioner )
     {
@@ -267,7 +258,7 @@ void GMRES<ValueType>::iterate()
 
         tmp = A * vCurrent;
 
-        w.setSameValue( A.getColDistributionPtr(), 0 );
+        w = 0;    // Note: w has been allocated with the right size
 
         mPreconditioner->solve( w, tmp );
     }
@@ -280,7 +271,7 @@ void GMRES<ValueType>::iterate()
     {
         SCAI_REGION( "Solver.GMRES.orthogonalization" )
 
-        const DenseVector<ValueType>& Vk = runtime.mV[k];
+        const Vector<ValueType>& Vk = *runtime.mV[k];
 
         runtime.mH[hIdxStart + k] = w.dotProduct( Vk );
         w = w - runtime.mH[hIdxStart + k] * Vk;
@@ -292,7 +283,7 @@ void GMRES<ValueType>::iterate()
 
     SCAI_LOG_DEBUG( logger, "Normalizing vNext." )
 
-    DenseVector<ValueType>& vNext = runtime.mV[krylovIndex + 1];
+    Vector<ValueType>& vNext = *runtime.mV[krylovIndex + 1];
 
     ValueType scal = ValueType( 1 ) / runtime.mHd[krylovIndex];
 
@@ -373,18 +364,18 @@ void GMRES<ValueType>::updateX( IndexType i )
     hmemo::ContextPtr context = hmemo::Context::getHostPtr();
     static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
 
-    tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
-                    runtime.mY.get(), i + 1 );
+    tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, &runtime.mH[0],
+                    &runtime.mY[0], i + 1 );
 
     // Update of solution vector
 
-    DenseVector<ValueType>& x = runtime.mSolution.getReference();  // -> dirty
+    Vector<ValueType>& x = runtime.mSolution.getReference();  // -> dirty
 
     // reset x to x0
 
     if ( i != 0 )
     {
-        x = runtime.mX0;
+        x = *runtime.mX0;
     }
 
     // update x
@@ -392,7 +383,7 @@ void GMRES<ValueType>::updateX( IndexType i )
 
     for ( IndexType k = 0; k <= i; ++k )
     {
-        x += runtime.mY[k] * runtime.mV[k];   // axpy calls
+        x += runtime.mY[k] * ( *runtime.mV[k]);   // axpy calls
     }
 }
 

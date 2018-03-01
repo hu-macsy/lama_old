@@ -192,15 +192,16 @@ public:
      *  @param[in,out] target  Harray where a value to set
      *  @param[in]     index  position to set ( 0 <= index < target.size() )
      *  @param[in]     val    value to set
+     *  @param[in]     op     specifies how to combine with current value
      *
      *  The value will be set at a valid context.
      */
-
     template<typename ValueType>
-    static void setVal( hmemo::_HArray& target, const IndexType index, const ValueType val );
-
-    template<typename ValueType>
-    static ValueType getVal( const hmemo::_HArray& array, const IndexType index );
+    static void setVal(
+        hmemo::HArray<ValueType>& target,
+        const IndexType index,
+        const ValueType val,
+        const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Axpy: result += beta * y
      *
@@ -274,6 +275,17 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** @brief Append an array to a given array 
+     *
+     *  @param[in,out] array1  is the array that will be extended
+     *  @param[in]     array2  is the array that willl be appended
+     *  @param[in]     context array1 should be valid here afterwards 
+     */
+    template<typename ValueType>
+    static void appendArray(
+        hmemo::HArray<ValueType>& array1,
+        const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
     /*
      * Implementation of functions
      */
@@ -333,18 +345,24 @@ public:
         hmemo::HArray<ValueType>& target,
         const ValueType value,
         const common::BinaryOp op,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
-    __attribute__( ( noinline ) );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Initialize an array with a certain size and a given value.
+     *
+     *  @param[out] array    is the array that will be allocated and set
+     *  @param[in]  n        is the number of values
+     *  @param[in]  val      is the value for each entry of the array
+     *  @param[in]  ctx      is the location where the array is initialized
+     */
     template<typename ValueType>
-    static void setValImpl(
+    static void setSameValue(
         hmemo::HArray<ValueType>& target,
-        const IndexType index,
+        const IndexType n,
         const ValueType val,
-        const common::BinaryOp op );
+        hmemo::ContextPtr ctx );
 
     template<typename ValueType>
-    static ValueType getValImpl(
+    static ValueType getVal(
         const hmemo::HArray<ValueType>& array,
         const IndexType index );
 
@@ -765,7 +783,7 @@ public:
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
 
-    static void buildSparseArray(
+    static void buildSparseArrayZero(
         hmemo::_HArray& sparseArray,
         hmemo::HArray<IndexType>& sparseIndexes,
         const hmemo::_HArray& denseArray,
@@ -829,11 +847,13 @@ public:
      *  Note: sparseIndexes must contain only indexes between 0 and denseN - 1
      */
 
+    template<typename ValueType>
     static void buildDenseArray(
-        hmemo::_HArray& denseArray,
+        hmemo::HArray<ValueType>& denseArray,
         const IndexType denseN,
-        const hmemo::_HArray& sparseArray,
+        const hmemo::HArray<ValueType>& sparseArray,
         const hmemo::HArray<IndexType>& sparseIndexes,
+        const ValueType zero,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Find an index in an array of sorted indexes 
@@ -953,7 +973,8 @@ public:
     /** Build complex array by combining two real array, one for real and one for imag part
      *
      *  @param[out] complexValues gets same size as realValues and imagValues
-     *  @param[in]  complexValues input array with complex values
+     *  @param[in]  realValues    input array with real parts for complex values
+     *  @param[in]  imagValues    input array with imag parts for complex values
      *  @param[in]  prefLoc location where selection should be done if possible
      */
     template<typename ValueType>
@@ -971,21 +992,21 @@ public:
      * The input arrays x and y must be sorted according to the specified comparator, and the
      * result will also be sorted according to the same comparator.
      *
-     *  @param[out] result, the resulting array after merging. Any data in the array will be overwritten. Size is x.size() + y.size().
-     *  @param[out] xMap, an array of indices such that result[xMap[i]] = x[i] for i = 0, .., x.size() - 1.
-     *  @param[out] yMap, an array of indices such that result[yMap[i]] = y[i] for i = 0, .., y.size() - 1.
-     *  @param[in] x, a *sorted* array.
-     *  @param[in] y, a *sorted* array.
-     *  @param[in] comparator, the operator to use for the comparison (optional).
-        @param[in] prefLoc, preferred context for computations.
+     *  @param[out] result     the resulting array after merging. Any data in the array will be overwritten. Size is x.size() + y.size().
+     *  @param[out] xMap       an array of indices such that result[xMap[i]] = x[i] for i = 0, .., x.size() - 1.
+     *  @param[out] yMap       an array of indices such that result[yMap[i]] = y[i] for i = 0, .., y.size() - 1.
+     *  @param[in]  x          a *sorted* array.
+     *  @param[in]  y          a *sorted* array.
+     *  @param[in]  comparator the operator to use for the comparison, i.e. LE for ascending or GE for descending sort
+     *  @param[in]  prefLoc    preferred context for computations.
      */
     template <typename ValueType>
     static void mergeAndMap(
-        hmemo::HArray<ValueType> & result,
-        hmemo::HArray<IndexType> & xMap,
-        hmemo::HArray<IndexType> & yMap,
-        const hmemo::HArray<ValueType> & x,
-        const hmemo::HArray<ValueType> & y,
+        hmemo::HArray<ValueType>& result,
+        hmemo::HArray<IndexType>& xMap,
+        hmemo::HArray<IndexType>& yMap,
+        const hmemo::HArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& y,
         const common::CompareOp comparator = common::CompareOp::LE,
         hmemo::ContextPtr prefLoc = hmemo::Context::getContextPtr() );
 

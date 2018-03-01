@@ -61,8 +61,8 @@ const std::string& SolverLogger::id() const
 
 SolverLogger::SolverLogger(
     const std::string& id,
-    LogLevel::LogLevel level,
-    LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+    LogLevel level,
+    LoggerWriteBehaviour writeBehaviour,
     bool ignoreRank )
     : mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank( ignoreRank )
 {
@@ -73,8 +73,8 @@ SolverLogger::SolverLogger(
 
 SolverLogger::SolverLogger(
     const std::string& id,
-    LogLevel::LogLevel level,
-    LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+    LogLevel level,
+    LoggerWriteBehaviour writeBehaviour,
     std::shared_ptr<Timer> timer,
     bool ignoreRank )
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
@@ -86,8 +86,8 @@ SolverLogger::SolverLogger(
 
 SolverLogger::SolverLogger(
     const std::string& id,
-    LogLevel::LogLevel level,
-    LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+    LogLevel level,
+    LoggerWriteBehaviour writeBehaviour,
     const std::string& logFileName,
     std::shared_ptr<Timer> timer,
     bool ignoreRank )
@@ -104,12 +104,12 @@ SolverLogger::~SolverLogger()
 {
 }
 
-LogLevel::LogLevel SolverLogger::getLogLevel() const
+LogLevel SolverLogger::getLogLevel() const
 {
     return mLogLevel;
 }
 
-void SolverLogger::setLogLevel( LogLevel::LogLevel level )
+void SolverLogger::setLogLevel( LogLevel level )
 {
     mLogLevel = level;
 }
@@ -144,7 +144,7 @@ void SolverLogger::logString( const std::string& message )
     }
 }
 
-void SolverLogger::logString( LogLevel::LogLevel level, const std::string& message )
+void SolverLogger::logString( LogLevel level, const std::string& message )
 {
     if ( level <= mLogLevel && !mIgnoreRank )
     {
@@ -152,21 +152,21 @@ void SolverLogger::logString( LogLevel::LogLevel level, const std::string& messa
     }
 }
 
-void SolverLogger::logMessage( LogLevel::LogLevel level, const std::string& message )
+void SolverLogger::logMessage( LogLevel level, const std::string& message )
 {
     SCAI_LOG_DEBUG( logger, "logMessage, level = " << level
                     << " ( mLevel = " << mLogLevel << " ), msg = " << message )
     logString( level, message );
 }
 
-void SolverLogger::logNewLine( LogLevel::LogLevel level )
+void SolverLogger::logNewLine( LogLevel level )
 {
     logString( level, "\n" );
 }
 
 template<typename ValueType>
 void SolverLogger::logResidual(
-    LogLevel::LogLevel level,
+    LogLevel level,
     const Solver<ValueType>& solver,
     const lama::Norm<ValueType>& norm,
     const std::string iterationPrefix )
@@ -183,7 +183,7 @@ void SolverLogger::logResidual(
     }
 }
 
-void SolverLogger::logTime( const std::string& timerId, LogLevel::LogLevel level, const std::string& message )
+void SolverLogger::logTime( const std::string& timerId, LogLevel level, const std::string& message )
 {
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
     double time = mTimer->getTime( timerId );
@@ -222,7 +222,7 @@ void SolverLogger::stopAndResetTimer( const std::string& timerId )
 
 #define SOLVER_LOGGER_SPECIFIER( ValueType )             \
      template void SolverLogger::logResidual(            \
-        LogLevel::LogLevel level,                        \
+        LogLevel level,                                  \
         const Solver<ValueType>& solver,                 \
         const lama::Norm<ValueType>&,                    \
         const std::string );                             \

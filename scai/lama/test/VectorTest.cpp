@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_type
     SparseVector<OtherValueType> sparseVector;
     sparseVector.setSparseData( n, indexes, values, OtherValueType( 1 ) );
 
-    DenseVector<OtherValueType> denseVector( sparseVector );
+    auto denseVector = convert<DenseVector<OtherValueType>>( sparseVector );
 
     TestVectors<ValueType> vectors;
 
@@ -312,7 +312,8 @@ BOOST_AUTO_TEST_CASE( ConcatenateTest )
 
     // build serial result by hand that is used for comparison
 
-    DenseVector<ValueType> result( n1 + n2 );
+    DenseVector<ValueType> result;
+    result.allocate( n1 + n2 );
 
     for ( IndexType i = 0; i < result.size(); ++i )
     {
@@ -403,8 +404,8 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
 
     const IndexType N = 3;
 
-    SparseVector<ValueType> v1( N, ValueType( 3 ) );
-    SparseVector<ValueType> v2( N, ValueType( 5 ) );
+    auto v1 = fill<SparseVector<ValueType>>( N, 3 );
+    auto v2 = fill<SparseVector<ValueType>>( N, 5 );
 
     v1.binaryOp( v1, common::BinaryOp::MULT, v2 );
 
@@ -439,8 +440,7 @@ BOOST_AUTO_TEST_CASE( BinaryOpExpTest )
 
     const IndexType N = 20;
 
-    DenseVector<ValueType> v( N );
-    v.fillLinearValues( -5, 1 );
+    auto v = linearDenseVector<ValueType>( N, -5, 1 );
 
     v = min( 0, v );
     v = max( v, 5 );
@@ -620,18 +620,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
 
         complexVector.setSparseRandom( vectorDist, zero, fillRate, bound );
 
-        DenseVector<Real> x( real ( complexVector ) );
+        auto x = eval<DenseVector<Real>>( real ( complexVector ) );
 
         DenseVector<Real> y;
         y = imag( complexVector );
 
-        DenseVector<ValueType> z( complex( x, y ) );
+        auto z = eval<DenseVector<ValueType>>( complex( x, y ) );
 
         Real diff = complexVector.maxDiffNorm( z );
 
         BOOST_CHECK_EQUAL( diff, 0 );
 
-        DenseVector<Real> x1( cast<Real>( complexVector ) );
+        auto x1 = convert<DenseVector<Real>>( complexVector );
 
         diff = x.maxDiffNorm( x1 );
 
@@ -706,6 +706,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_MV_Test, ValueType, scai_numeric_test_type
         m.setIdentity( dist );
 
         DenseVector<ValueType> v2;
+ 
+        SCAI_LOG_DEBUG( logger, "MV test, m = " << m << ", dV = " << dV1 << ", v2 = " << v2 )
 
         v2 = m * dV1;   // v1 and v2 are now equal
 
@@ -751,16 +753,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_VM_Test, ValueType, scai_numeric_test_type
 
         v1.allocate( dist );
 
-        v1 = 3;
+        v1 = ValueType( 3 );
 
         CSRSparseMatrix<ValueType> m;
 
         m.setIdentity( dist );
-        m.setCommunicationKind( SyncKind::ASYNCHRONOUS );
+        m.setCommunicationKind( SyncKind::ASYNC_LOCAL );
 
         VectorPtr<ValueType> v2( v1.newVector() );
 
-        *v2 = v1 * m;
+        *v2 = transpose( m ) * v1;
 
         // Now v1 and v2 must be equal
 
@@ -768,7 +770,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_VM_Test, ValueType, scai_numeric_test_type
 
         BOOST_CHECK( v2->maxNorm() < eps );
 
-        *v2 = 2 * v1 * m;
+        *v2 = 2 * transpose( m ) * v1;
 
         // Now 2 * v1 and v2 must be equal
 
@@ -776,11 +778,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_VM_Test, ValueType, scai_numeric_test_type
 
         BOOST_CHECK( v2->maxNorm() < eps );
 
-        *v2 = v1 * m - v1;
+        *v2 = transpose( m ) * v1 - v1;
 
         BOOST_CHECK( v2->maxNorm() < eps );
 
-        *v2 = 2 * v1 * m - 2 * v1;
+        *v2 = 2 * transpose( m ) * v1 - 2 * v1;
 
         BOOST_CHECK( v2->maxNorm() < eps );
     }
@@ -907,26 +909,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allTest, ValueType, scai_numeric_test_types )
 
     const IndexType n = 5;
 
-    const double denseData[] = { 0, 3, 3, 5, 2 };
+    const DefaultReal denseData[] = { 0, 3, 3, 5, 2 };
 
-    const double zero = 3;
+    const DefaultReal zero = 3;
     const IndexType sparseIndexes[] = { 0, 3, 4 };
-    const double sparseData[] = { 0, 5, 2 };
+    const DefaultReal sparseData[] = { 0, 5, 2 };
+    const IndexType nnz = 3;
 
     // we want to compare all combination of sparse/dense vectors
 
     TestVectors<ValueType> vectors1;
     TestVectors<ValueType> vectors2;
 
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( size_t i = 0; i < vectors1.size(); ++i )
     {
         Vector<ValueType>& v1 = *vectors1[i];
 
-        v1.setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
+        v1.setSparseRawData( n, 3, sparseIndexes, sparseData, ValueType( 0 ) );
 
         BOOST_CHECK( v1.all( common::CompareOp::GE, 0 ) );
 
-        v1.setRawData( 5, denseData );
+        v1.setRawData( n, denseData );
 
         BOOST_CHECK( v1.all( common::CompareOp::GE, 0 ) );
 
@@ -934,9 +939,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allTest, ValueType, scai_numeric_test_types )
         {
             Vector<ValueType>& v2 = *vectors2[j];
 
-            v2.setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
+            v2.setSparseRawData( n, nnz, sparseIndexes, sparseData, zero );
 
-            BOOST_CHECK( v1.all( common::CompareOp::EQ, v2 ) );
+            BOOST_CHECK( v1.maxDiffNorm( v2 ) < eps );
         }
     }
 }

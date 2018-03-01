@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_numeric_test_t
 {
     IndexType n = 4;
     ValueType val = 5.0;
-    DenseVector<ValueType> vec( n, val );
+    auto vec = fill<DenseVector<ValueType>>( n, val );
     L2Norm<ValueType> l2norm;
     ValueType expected = common::Math::sqrt( ValueType( n ) * val * val );
     BOOST_CHECK_EQUAL( expected, l2norm( vec ) );

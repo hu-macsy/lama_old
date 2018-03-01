@@ -135,13 +135,13 @@ extern "C"
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 // ComplexFloat
-    FORTRAN_LAPACK_DEF( getrf, c, void, CALL_DEF_GETRF( ComplexFloat ) )
-    FORTRAN_LAPACK_DEF( getri, c, void, CALL_DEF_GETRI( ComplexFloat ) )
-    FORTRAN_LAPACK_DEF( tptrs, c, void, CALL_DEF_TPTRS( ComplexFloat ) )
+    FORTRAN_LAPACK_DEF( getrf, c, void, CALL_DEF_GETRF( scai::ComplexFloat ) )
+    FORTRAN_LAPACK_DEF( getri, c, void, CALL_DEF_GETRI( scai::ComplexFloat ) )
+    FORTRAN_LAPACK_DEF( tptrs, c, void, CALL_DEF_TPTRS( scai::ComplexFloat ) )
 // ComplexDouble
-    FORTRAN_LAPACK_DEF( getri, z, void, CALL_DEF_GETRI( ComplexDouble ) )
-    FORTRAN_LAPACK_DEF( getrf, z, void, CALL_DEF_GETRF( ComplexDouble ) )
-    FORTRAN_LAPACK_DEF( tptrs, z, void, CALL_DEF_TPTRS( ComplexDouble ) )
+    FORTRAN_LAPACK_DEF( getri, z, void, CALL_DEF_GETRI( scai::ComplexDouble ) )
+    FORTRAN_LAPACK_DEF( getrf, z, void, CALL_DEF_GETRF( scai::ComplexDouble ) )
+    FORTRAN_LAPACK_DEF( tptrs, z, void, CALL_DEF_TPTRS( scai::ComplexDouble ) )
 #endif
 
 #undef CALL_DEF_GETRI

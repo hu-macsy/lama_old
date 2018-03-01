@@ -142,7 +142,7 @@ public:
      * effects for other solvers. On the other side, it might be useful
      * for solver hierarchies as used in multigrid methods.
      */
-    void setLogLevel( LogLevel::LogLevel level );
+    void setLogLevel( LogLevel level );
 
     /**
      * @brief Get the id of this solver

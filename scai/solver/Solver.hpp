@@ -47,7 +47,6 @@ namespace lama
 {
     template<typename ValueType> class Matrix;
     template<typename ValueType> class Vector;
-    template<typename ValueType> class DenseVector;
 }
 
 /** @brief Namespace for all solver classes, used for all stuff of project solver */
@@ -140,7 +139,7 @@ public:
      *                          solution for an IterativeSolver.
      * @param[in,out] rhs       The right hand side 
      */
-    void solve( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    void solve( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Initializes the solver with rhs and solution.
@@ -148,7 +147,7 @@ public:
      * @param[in]  rhs      The right hand side of the system of equations
      * @param[out] solution The allocated memory and starting solution for the system
      */
-    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Solves the equation system. Rhs and starting solution have to
@@ -179,7 +178,7 @@ public:
      *
      * @return The current residual
      */
-    const lama::DenseVector<ValueType>& getResidual() const;
+    const lama::Vector<ValueType>& getResidual() const;
 
     /**
      * @brief Gets the matrix A from A*u=f.
@@ -218,7 +217,7 @@ public:
         /**
          * @brief The right-hand-side f.
          */
-        const lama::DenseVector<ValueType>* mRhs;
+        const lama::Vector<ValueType>* mRhs;
 
         /**
          * @brief The solution u (using the SolutionProxy).
@@ -228,7 +227,7 @@ public:
         /**
          * @brief The residual.
          */
-        mutable lama::DenseVector<ValueType> mResidual;
+        std::unique_ptr<lama::Vector<ValueType>> mResidual;
 
         /**
          * @brief Flag for initialization status of solver.

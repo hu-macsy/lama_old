@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
     {
         ValueType zero = zeroValues[icase];
 
-        SparseVector<ValueType> v( n, zero );
+        auto v = fill<SparseVector<ValueType>>( n, zero );
 
         BOOST_CHECK_EQUAL( n, v.size() );
 
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 
         denseV.redistribute( dist );
 
-        SparseVector<ValueType> sparseV( denseV );
+        auto sparseV = convert<SparseVector<ValueType>>( denseV );
 
         // get each value from the distributed sparse vector
 
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 
         dmemo::DistributionPtr dist = dists[i];
 
-        SparseVector<ValueType> sparseV( data );
+        auto sparseV = convert<SparseVector<ValueType>>( data );
 
         sparseV.redistribute( dist );
 
@@ -315,10 +315,10 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
         SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
         SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
 
-        // use copy constructor to build equivalent dense vectors
+        // use convert function to build equivalent dense vectors
 
-        DenseVector<ValueType> xD1( xS1 );
-        DenseVector<ValueType> xD2( xS2 );
+        auto xD1 = convert<DenseVector<ValueType>>( xS1 );
+        auto xD2 = convert<DenseVector<ValueType>>( xS2 );
 
         SCAI_LOG_DEBUG( logger, "Run test case " << icase << " for binop on sparse vectors" )
 
@@ -384,13 +384,13 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
         SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
         SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
 
-        DenseVector<ValueType> xD1( xS1 );
-        DenseVector<ValueType> xD2( xS2 );
+        auto xD1 = convert<DenseVector<ValueType>>( xS1 );
+        auto xD2 = convert<DenseVector<ValueType>>( xS2 );
 
         // use copy constructor to build equivalent dense vectors
 
-        DenseVector<ValueType> result1( n, ValueType( 5 ) );
-        DenseVector<ValueType> result2( n, ValueType( 5 ) );
+        auto result1 = fill<DenseVector<ValueType>>( n, 5 );
+        auto result2 = fill<DenseVector<ValueType>>( n, 5 );
 
         SCAI_LOG_DEBUG( logger, "Run test case " << icase << " for binop on sparse vectors" )
 
@@ -444,8 +444,8 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
     SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
 
-    DenseVector<ValueType> xD1( xS1 );
-    DenseVector<ValueType> xD2( xS2 );
+    auto xD1 = convert<DenseVector<ValueType>>( xS1 );
+    auto xD2 = convert<DenseVector<ValueType>>( xS2 );
 
     BOOST_CHECK_EQUAL( xS1.min(), xD1.min() );
     BOOST_CHECK_EQUAL( xS2.min(), xD2.min() );
@@ -487,7 +487,7 @@ BOOST_AUTO_TEST_CASE( moveTest )
     BOOST_CHECK_EQUAL( nnz, xS1.getNonZeroIndexes().size() );
     BOOST_CHECK_EQUAL( nnz, xS1.getNonZeroValues().size() );
 
-    SparseVector<ValueType> xS2( n, zero );
+    auto xS2 = fill<SparseVector<ValueType>>( n, zero );
     xS2 = std::move( xS1 );
 
     BOOST_CHECK_EQUAL( nnz, xS2.getNonZeroIndexes().size() );
@@ -524,7 +524,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
     // Case 3: conversion from denso to sparse in assignment, should keep zero element
 
-    SparseVector<ValueType> xS2( n, ValueType ( 2 ) );
+    auto xS2 = fill<SparseVector<ValueType>>( n, 2 );
     xS2 = xD;
 
     BOOST_CHECK_EQUAL( n - 2, xS2.getNonZeroIndexes().size() );

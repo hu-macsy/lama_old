@@ -41,6 +41,7 @@
 #include <cuda.h>
 #include <cublas_v2.h>
 #include <cusparse_v2.h>
+#include <cufft.h>
 
 #include <cuda_runtime_api.h>
 
@@ -67,6 +68,10 @@ COMMON_DLL_IMPORTEXPORT const char* cublasErrorString( cublasStatus_t res );
 
 COMMON_DLL_IMPORTEXPORT const char* cusparseErrorString( cusparseStatus_t res );
 
+/** Function that translates enum cufftResult to strings. */
+
+COMMON_DLL_IMPORTEXPORT const char* cufftErrorString( cufftResult res );
+
 #if ( CUDART_VERSION >= 7050 )
 /** Function that translates enum cusolverStatus to strings. */
 
@@ -79,61 +84,61 @@ COMMON_DLL_IMPORTEXPORT const char* cusolverErrorString( cusolverStatus_t res );
 
 /** Macro for CUDA driver API calls to catch errors */
 
-#define SCAI_CUDA_DRV_CALL_EXCEPTION( call, msg, ExceptionClass )                       \
-    {                                                                                   \
-        CUresult res = call;                                                            \
-        if ( CUDA_SUCCESS != res )                                                      \
-        {                                                                               \
-            std::ostringstream errorStr;                                                \
-            errorStr << "CUDA driver error in line " << __LINE__;                       \
-            errorStr << " of file " << __FILE__ << std::endl;                           \
-            errorStr << "  Msg  : " << msg << std::endl;                                \
-            errorStr << "  Call : " #call;                                              \
-            errorStr << "  Error: ";                                                    \
-            errorStr << scai::common::cudaDriverErrorString( res );                     \
-            errorStr << ", CUresult = " << res << "\n";                                 \
-            scai::common::Exception::addCallStack( errorStr );                          \
-            throw ExceptionClass( errorStr.str() );                                     \
-        }                                                                               \
+#define SCAI_CUDA_DRV_CALL_EXCEPTION( call, msg, ExceptionClass )                   \
+    {                                                                               \
+        CUresult res = call;                                                        \
+        if ( CUDA_SUCCESS != res )                                                  \
+        {                                                                           \
+            std::ostringstream errorStr;                                            \
+            errorStr << "CUDA driver error in line " << __LINE__;                   \
+            errorStr << " of file " << __FILE__ << std::endl;                       \
+            errorStr << "  Msg  : " << msg << std::endl;                            \
+            errorStr << "  Call : " #call;                                          \
+            errorStr << "  Error: ";                                                \
+            errorStr << scai::common::cudaDriverErrorString( res );                 \
+            errorStr << ", CUresult = " << res << "\n";                             \
+            scai::common::Exception::addCallStack( errorStr );                      \
+            throw ExceptionClass( errorStr.str() );                                 \
+        }                                                                           \
     }
 
-#define SCAI_CUDA_DRV_CALL( call, msg )                                                 \
+#define SCAI_CUDA_DRV_CALL( call, msg )                                             \
     SCAI_CUDA_DRV_CALL_EXCEPTION( call, msg, scai::common::Exception )
 
-#define SCAI_CUDA_RT_CALL(call, msg)                                                    \
-    {                                                                                   \
-        cudaError_t res = call;                                                         \
-        if ( cudaSuccess != res )                                                       \
-        {                                                                               \
-            std::ostringstream errorStr;                                                \
-            errorStr << "CUDA runtime error in line " << __LINE__;                      \
-            errorStr << " of file " << __FILE__ << std::endl;                           \
-            errorStr << "  Call : " #call;                                              \
-            errorStr << "  Msg  : " << msg << std::endl;                                \
-            errorStr << "  Error: ";                                                    \
-            errorStr << cudaGetErrorString( res );                                      \
-            errorStr << ", cudaError_t = " << res << "\n";                              \
-            scai::common::Exception::addCallStack( errorStr );                          \
-            throw scai::common::Exception( errorStr.str() );                            \
-        }                                                                               \
+#define SCAI_CUDA_RT_CALL(call, msg)                                                \
+    {                                                                               \
+        cudaError_t res = call;                                                     \
+        if ( cudaSuccess != res )                                                   \
+        {                                                                           \
+            std::ostringstream errorStr;                                            \
+            errorStr << "CUDA runtime error in line " << __LINE__;                  \
+            errorStr << " of file " << __FILE__ << std::endl;                       \
+            errorStr << "  Call : " #call;                                          \
+            errorStr << "  Msg  : " << msg << std::endl;                            \
+            errorStr << "  Error: ";                                                \
+            errorStr << cudaGetErrorString( res );                                  \
+            errorStr << ", cudaError_t = " << res << "\n";                          \
+            scai::common::Exception::addCallStack( errorStr );                      \
+            throw scai::common::Exception( errorStr.str() );                        \
+        }                                                                           \
     }
 
-#define SCAI_CUBLAS_CALL( call, msg )                                                   \
-    {                                                                                   \
-        cublasStatus_t res = call;                                                      \
-        if ( CUBLAS_STATUS_SUCCESS != res )                                             \
-        {                                                                               \
-            std::ostringstream errorStr;                                                \
-            errorStr << "CUBLAS error in line " << __LINE__;                            \
-            errorStr << " of file " << __FILE__ << std::endl;                           \
-            errorStr << "  Call : " #call;                                              \
-            errorStr << "  Msg  : " << msg << std::endl;                                \
-            errorStr << "  Error: ";                                                    \
-            errorStr << scai::common::cublasErrorString( res );                         \
-            errorStr << ", cublasStatus = " << res << "\n";                             \
-            scai::common::Exception::addCallStack( errorStr );                          \
-            throw scai::common::Exception( errorStr.str() );                            \
-        }                                                                               \
+#define SCAI_CUBLAS_CALL( call, msg )                                               \
+    {                                                                               \
+        cublasStatus_t res = call;                                                  \
+        if ( CUBLAS_STATUS_SUCCESS != res )                                         \
+        {                                                                           \
+            std::ostringstream errorStr;                                            \
+            errorStr << "CUBLAS error in line " << __LINE__;                        \
+            errorStr << " of file " << __FILE__ << std::endl;                       \
+            errorStr << "  Call : " #call;                                          \
+            errorStr << "  Msg  : " << msg << std::endl;                            \
+            errorStr << "  Error: ";                                                \
+            errorStr << scai::common::cublasErrorString( res );                     \
+            errorStr << ", cublasStatus = " << res << "\n";                         \
+            scai::common::Exception::addCallStack( errorStr );                      \
+            throw scai::common::Exception( errorStr.str() );                        \
+        }                                                                           \
     }
 
 #define SCAI_CUSPARSE_CALL( call, msg )                                             \
@@ -149,6 +154,24 @@ COMMON_DLL_IMPORTEXPORT const char* cusolverErrorString( cusolverStatus_t res );
             errorStr << "  Error: ";                                                \
             errorStr << scai::common::cusparseErrorString( res );                   \
             errorStr << ", cusparseStatus = " << res << "\n";                       \
+            scai::common::Exception::addCallStack( errorStr );                      \
+            throw scai::common::Exception( errorStr.str() );                        \
+        }                                                                           \
+    }
+
+#define SCAI_CUFFT_CALL( call, msg )                                                \
+    {                                                                               \
+        cufftResult res = call;                                                     \
+        if ( CUFFT_SUCCESS != res )                                                 \
+        {                                                                           \
+            std::ostringstream errorStr;                                            \
+            errorStr << "CUFFT error in line " << __LINE__;                         \
+            errorStr << " of file " << __FILE__ << std::endl;                       \
+            errorStr << "  Call : " #call;                                          \
+            errorStr << "  Msg  : " << msg << std::endl;                            \
+            errorStr << "  Error: ";                                                \
+            errorStr << scai::common::cufftErrorString( res );                      \
+            errorStr << ", cufftStatus = " << res << "\n";                          \
             scai::common::Exception::addCallStack( errorStr );                      \
             throw scai::common::Exception( errorStr.str() );                        \
         }                                                                           \

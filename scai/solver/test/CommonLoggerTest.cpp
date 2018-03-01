@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( setAndGetLogLevelTest )
 
 /* --------------------------------------------------------------------- */
 
-void logMessageTest( std::string logFileName, LoggerWriteBehaviour::LoggerWriteBehaviour lwb )
+void logMessageTest( std::string logFileName, LoggerWriteBehaviour lwb )
 {
     SCAI_LOG_DEBUG( logger, "CommonLoggerTest with LoggerWriteBehaviour: " << lwb );
     CommonLogger consoleAndFileLogger( "<CommonLoggerTest>: ", LogLevel::noLogging, lwb, logFileName,

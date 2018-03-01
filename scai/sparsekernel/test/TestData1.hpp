@@ -352,11 +352,11 @@ static void getCOOTestData(
 /** This method computes the result of a matrix-vector multiplication via dense data by hand */
 
 template<typename ValueType>
-static void getGEMVResult( hmemo::HArray<ValueType>& res,
-                           const ValueType alpha,
-                           const hmemo::HArray<ValueType>& x,
-                           const ValueType beta,
-                           const hmemo::HArray<ValueType>& y )
+static hmemo::HArray<ValueType> getGEMVNormalResult(
+    const ValueType alpha,
+    const hmemo::HArray<ValueType>& x,
+    const ValueType beta,
+    const hmemo::HArray<ValueType>& y )
 {
     IndexType numRows;
     IndexType numColumns;
@@ -367,6 +367,8 @@ static void getGEMVResult( hmemo::HArray<ValueType>& res,
 
     SCAI_ASSERT_EQ_ERROR( x.size(), numColumns, "size mismatch for x" )
     SCAI_ASSERT_EQ_ERROR( y.size(), numRows, "size mismatch for y" )
+
+    hmemo::HArray<ValueType> res;
 
     {
         using hmemo::ReadAccess;
@@ -389,6 +391,8 @@ static void getGEMVResult( hmemo::HArray<ValueType>& res,
             wRes[i] = alpha * v + beta * rY[i];
         }
     }
+
+    return res;
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -450,11 +454,11 @@ static void getReduceResult( hmemo::HArray<ValueType>& res,
 /** This method computes the result of a vector-matrix multiplication via dense data by hand */
 
 template<typename ValueType>
-static void getGEVMResult( hmemo::HArray<ValueType>& res,
-                           const ValueType alpha,
-                           const hmemo::HArray<ValueType>& x,
-                           const ValueType beta,
-                           const hmemo::HArray<ValueType>& y )
+static hmemo::HArray<ValueType> getGEMVTransposeResult( 
+    const ValueType alpha,
+    const hmemo::HArray<ValueType>& x,
+    const ValueType beta,
+    const hmemo::HArray<ValueType>& y )
 {
     IndexType numRows;
     IndexType numColumns;
@@ -465,6 +469,8 @@ static void getGEVMResult( hmemo::HArray<ValueType>& res,
 
     SCAI_ASSERT_EQ_ERROR( x.size(), numRows, "size mismatch for x" )
     SCAI_ASSERT_EQ_ERROR( y.size(), numColumns, "size mismatch for y" )
+
+    hmemo::HArray<ValueType> res;
 
     {
         using hmemo::ReadAccess;
@@ -487,6 +493,8 @@ static void getGEVMResult( hmemo::HArray<ValueType>& res,
             wRes[j] = alpha * v + beta * rY[j];
         }
     }
+
+    return res;
 }
 
 /* ------------------------------------------------------------------------------------- */

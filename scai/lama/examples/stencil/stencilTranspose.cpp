@@ -88,19 +88,19 @@ int main( int argc, const char* argv[] )
     common::Grid1D grid1( 5 );
     common::Grid1D grid2( 5 );
  
-    grid1.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
-    grid2.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+    grid1.setBorderType( 0, common::Grid::BORDER_ABSORBING, common::Grid::BORDER_ABSORBING );
+    grid2.setBorderType( 0, common::Grid::BORDER_ABSORBING, common::Grid::BORDER_ABSORBING );
 
     StencilStorage<ValueType> s1( grid1, stencilFD8 );
     StencilStorage<ValueType> s2( grid2, stencilBD8 );
 
-    CSRStorage<ValueType> csr1( s1 );
+    auto csr1 = convert<CSRStorage<ValueType>>( s1 );
     csr1.writeToFile( "csr1.mtx" );
-    CSRStorage<ValueType> csr2( s2 );
+    auto csr2 = convert<CSRStorage<ValueType>>( s2 );
     csr2.writeToFile( "csr2.mtx" );
     CSRStorage<ValueType> csrT;
     csrT.assignTranspose( csr1 );
-    csr2.writeToFile( "csrT.mtx" );
+    csrT.writeToFile( "csrT.mtx" );
 
     ValueType diff = csr2.maxDiffNorm( csrT );
     std::cout << "max diff = " << diff << std::endl;

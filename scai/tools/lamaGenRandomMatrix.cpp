@@ -40,7 +40,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/matrix/MatrixAssemblyAccess.hpp>
+#include <scai/lama/matrix/MatrixAssembly.hpp>
 
 #include <scai/common/mepr/TypeListUtils.hpp>
 #include <scai/common/Settings.hpp>
@@ -106,25 +106,23 @@ static common::ScalarType getType()
 template<typename ValueType> 
 void generate( const IndexType nrows, const IndexType ncols, const float fillRate, std::string& matrixFileName )
 {
-    CSRSparseMatrix<ValueType> m( nrows, ncols );
+    MatrixAssembly<ValueType> assembly;
 
+    for ( IndexType i = 0; i < nrows; ++i )
     {
-        MatrixAssemblyAccess<ValueType> access( m, common::BinaryOp::COPY );
-
-        for ( IndexType i = 0; i < nrows; ++i )
+        for ( IndexType j = 0; j < ncols; ++j )
         {
-            for ( IndexType j = 0; j < ncols; ++j )
-            {
-                bool takeIt = common::Math::randomBool( fillRate );
+            bool takeIt = common::Math::randomBool( fillRate );
 
-                if ( takeIt )
-                {
-                    ValueType val = common::Math::random<ValueType>( 1 );
-                    access.push( i, j, val );
-                }
+            if ( takeIt )
+            {
+                ValueType val = common::Math::random<ValueType>( 1 );
+                assembly.push( i, j, val );
             }
         }
     }
+
+    auto m = convert<CSRSparseMatrix<ValueType>>( assembly.buildGlobalCOO( nrows, ncols ) );
 
     DenseVector<ValueType> x;
     DenseVector<ValueType> b;

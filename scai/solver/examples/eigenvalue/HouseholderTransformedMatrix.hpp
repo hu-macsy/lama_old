@@ -94,11 +94,11 @@ public:
         const DenseVector<ValueType>& x,
         const ValueType beta,
         const DenseVector<ValueType>* y,
-        bool transposeFlag ) const
+        common::MatrixOp op ) const
     {
-        if ( transposeFlag )
+        if ( op != common::MatrixOp::NORMAL )
         {
-            COMMON_THROWEXCEPTION( "transpose matrixTimesVector not supported" )
+            COMMON_THROWEXCEPTION( op << " for matrixTimesVector not supported here" )
         }
 
         SCAI_LOG_INFO( logger, "matrixTimesVector, mL = " << mL )

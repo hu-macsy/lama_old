@@ -100,8 +100,10 @@ macro ( scai_example_makefile )
     listToString ( " " "${EXAMPLE_EXECUTABLES}" EXAMPLE_EXECUTABLES )
     listToString ( " " "${EXAMPLE_MODULES}" EXAMPLE_MODULES )
     listToString ( " " "${EXAMPLE_LIBS}" EXAMPLE_LIBS )
+    listToString ( " " "${CUDA_NVCC_FLAGS}" CUDA_NVCC_FLAGS_CLEAN )
+    listToString ( " " "${SCAI_CUDA_LIBRARIES}" SCAI_CUDA_LIBRARIES_CLEAN )
 
-    configure_file ( "${CMAKE_SOURCE_DIR}/examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+    configure_file ( "${CMAKE_SOURCE_DIR}/examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" @ONLY )
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_Makefile.in" "${CMAKE_CURRENT_BINARY_DIR}/install_Makefile" COPYONLY )
 
     install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc 

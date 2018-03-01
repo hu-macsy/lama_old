@@ -110,21 +110,21 @@ public:
     {
         lama::MatrixPtr<ValueType> mConjTransposeA;
 
-        lama::DenseVector<ValueType> mInitialRes;
-        lama::DenseVector<ValueType> mVecV;
-        lama::DenseVector<ValueType> mVecW;
-        lama::DenseVector<ValueType> mVecY;      /*preconditioning 1*/
-        lama::DenseVector<ValueType> mVecZ;
+        std::unique_ptr<lama::Vector<ValueType>> mInitialRes;
+        std::unique_ptr<lama::Vector<ValueType>> mVecV;
+        std::unique_ptr<lama::Vector<ValueType>> mVecW;
+        std::unique_ptr<lama::Vector<ValueType>> mVecY;      /*preconditioning 1*/
+        std::unique_ptr<lama::Vector<ValueType>> mVecZ;
 
-        lama::DenseVector<ValueType> mVecWT;
-        lama::DenseVector<ValueType> mVecVT;
-        lama::DenseVector<ValueType> mVecYT;
-        lama::DenseVector<ValueType> mVecZT;
-        lama::DenseVector<ValueType> mVecP;
-        lama::DenseVector<ValueType> mVecQ;
-        lama::DenseVector<ValueType> mVecPT;
-        lama::DenseVector<ValueType> mVecS;
-        lama::DenseVector<ValueType> mVecD;
+        std::unique_ptr<lama::Vector<ValueType>> mVecWT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecVT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecYT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecZT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecP;
+        std::unique_ptr<lama::Vector<ValueType>> mVecQ;
+        std::unique_ptr<lama::Vector<ValueType>> mVecPT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecS;
+        std::unique_ptr<lama::Vector<ValueType>> mVecD;
 
         ValueType mGamma;
         ValueType mTheta;
@@ -143,7 +143,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class

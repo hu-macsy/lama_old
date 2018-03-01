@@ -35,6 +35,9 @@
 
 #include <scai/lama/_Vector.hpp>
 
+#include <scai/lama/VectorAssembly.hpp>
+#include <scai/lama/freeFunction.hpp>
+
 #include <scai/lama/expression/UnaryVectorExpression.hpp>
 #include <scai/lama/expression/CastVectorExpression.hpp>
 #include <scai/lama/expression/ComplexVectorExpression.hpp>
@@ -67,6 +70,11 @@ public:
      * @brief ExpressionMemberType is the type that is used the template Expression to store a _Vector.
      */
     typedef const Vector<ValueType>& ExpressionMemberType;
+
+    /**
+     * @brief Define ObjectValueType so Vector class can be used in certain free functions.
+     */
+    typedef ValueType ObjectValueType;
 
     /** Create a new vector of a certain kind but with same value type */
 
@@ -278,10 +286,6 @@ public:
 
     Vector<ValueType>& operator=( const Expression_SMV<ValueType>& expression );
 
-    /** this = alpha * x * A */
-
-    Vector<ValueType>& operator=( const Expression_SVM<ValueType>& expression );
-
     /** this = alpha * x + beta * y */
 
     Vector<ValueType>& operator=( const Expression_SV_SV<ValueType>& expression );
@@ -289,10 +293,6 @@ public:
     /** this = alpha * A * x + beta * y */
 
     Vector<ValueType>& operator=( const Expression_SMV_SV<ValueType>& expression );
-
-    /** this = alpha * x * A + beta * y */
-
-    Vector<ValueType>& operator=( const Expression_SVM_SV<ValueType>& expression );
 
     /** this = alpha * x */
 
@@ -355,10 +355,6 @@ public:
 
     Vector<ValueType>& operator+=( const Expression_SMV<ValueType>& expression );
 
-    /** this +=  alpha * x * A */
-
-    Vector<ValueType>& operator+=( const Expression_SVM<ValueType>& expression );
-
     /** this +=  alpha * x */
 
     Vector<ValueType>& operator+=( const Expression_SV<ValueType>& expression );
@@ -366,10 +362,6 @@ public:
     /** this -=  alpha * A * x */
 
     Vector<ValueType>& operator-=( const Expression_SMV<ValueType>& expression );
-
-    /** this -=  alpha * x * A */
-
-    Vector<ValueType>& operator-=( const Expression_SVM<ValueType>& expression );
 
     /** this -=  alpha * x */
 
@@ -606,6 +598,35 @@ public:
         fillSparseData( nonZeroIndexes, nonZeroValues, common::BinaryOp::COPY );
     }
 
+    /** Fill this vector with assembled vector data.
+     *
+     *  @param[in] assembly contains the assembled entries (individually by each processor)
+     *  @param[in] op       either COPY or ADD, specifies how to deal with entries at same positions
+     *
+     *  The vector must already have beeen allocated before this method is called.
+     */
+    void fillFromAssembly( const VectorAssembly<ValueType>& assembly, common::BinaryOp op = common::BinaryOp::COPY );
+
+    /**
+     *  @brief Disassemble all vector entries in an assembly
+     *
+     *  @param[in,out] assemby  is the object to which non-zero values of this vector are added
+     *  @param[in]     offset   is a global offset that is added to the coordinates
+     *
+     *  \code
+     *      const Vector<ValueType>& v1 = ...
+     *      const Vector<ValueType>& v2 = ...
+     *      // concatenate and distribute
+     *      VectorAssembly assembly;
+     *      v1.disassemble( assembly );
+     *      v2.disassemble( assembly, v1.size() );
+     *      dist = std::make_shared<BlockDistribution>( v1.size() + v2.size() );
+     *      auto v = fill<DenseVector<ValueType>>( dist, 0 );
+     *      v.fillFromAssembly( assembly );
+     *  \endcode
+     */
+    void disassemble( VectorAssembly<ValueType>& assembly, const IndexType offset = 0 ) const;
+
     /** Same as setSparseData but here with raw data for non-zero indexes and values. 
      *
      *  @tparam OtherValueType is the type of the raw data 
@@ -696,7 +717,7 @@ public:
      * This routine should also be able to deal with aliases, i.e. one ore more of the pointers might be
      * this vector itself.
      */
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors ) = 0;
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors );
 
     /**
      * @brief Concatenate two vectors to a new vector.

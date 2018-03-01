@@ -32,11 +32,14 @@
  # @date 04.07.2017
 ###
 
+set ( TEST_SOURCES PartitioningTest partitioningTest )
 
 if ( METIS_FOUND AND USE_METIS ) 
-    set ( MetisPartitioningTest MetisPartitioningTest )
-else  ()
-    set ( MetisPartitioningTest )
+    set ( TEST_SOURCES ${TEST_SOURCES} MetisPartitioningTest )
+endif ()
+
+if ( PARMETIS_FOUND AND USE_PARMETIS ) 
+    # set ( TEST_SOURCES ${TEST_SOURCES} ParMetisTest )
 endif ()
 
 ### set this dir as lama source dir ###
@@ -45,11 +48,7 @@ scai_project (
 
     SOURCES
 
-        PartitioningTest
-
-        ${MetisPartitioningTest}
-
-        partitioningTest
+        ${TEST_SOURCES}
 
     HEADERS
 

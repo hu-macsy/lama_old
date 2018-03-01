@@ -1,5 +1,5 @@
 /**
- * @file solver/examples/lecture/task1b.cpp
+ * @file common/test/MatrixOpTest.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,56 +27,44 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/examples/lecture/task1b.cpp
+ * @brief Test enum for MatrixOp
  * @author Thomas Brandes
- * @date 15.05.2013
+ * @date 01.03.2018
  */
 
-//Solution of task 1b:
+#include <boost/test/unit_test.hpp>
 
-#include <scai/lama.hpp>
-
-#include <scai/lama/storage/SparseAssemblyStorage.hpp>
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/DenseVector.hpp>
+#include <scai/common/MatrixOp.hpp>
+#include <sstream>
 
 using namespace scai;
-using namespace lama;
-using namespace hmemo;
+using namespace common;
 
-typedef DefaultReal ValueType;
-
-int main()
+BOOST_AUTO_TEST_CASE( MatrixOpTest )
 {
-    IndexType size = 4;
-    SparseAssemblyStorage<ValueType> sas( size, size, 10 );
-
-    for ( IndexType i = 0; i < size; i++ )
+    for ( int type = 0; type < static_cast<int>( MatrixOp::MAX_MATRIX_OP ); ++type )
     {
-        sas.set( i, i, 2 );
+        MatrixOp op = MatrixOp( type );
+
+        std::ostringstream s;
+        s << op;
+        BOOST_CHECK( s.str().length() > 0 );
     }
-
-    for ( IndexType i = 0; i < size - 1; i++ )
-    {
-        sas.set( i + 1, i, 1 );
-    }
-
-    for ( IndexType i = 0; i < size - 1; i++ )
-    {
-        sas.set( i, i + 1, 1 );
-    }
-
-    CSRSparseMatrix<ValueType> m ( sas );
-    DenseVector<ValueType> rhs( size , 0.0 );
-    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
-
-    for ( IndexType i = 0; i < size; i++ )
-    {
-        hwarhs[i] = i + 1.0;
-    }
-
-    hwarhs.release();
-    DenseVector<ValueType> solution( size , 0.0 );
-    return 0;
 }
 
+BOOST_AUTO_TEST_CASE( combineTest )
+{
+    for ( int i1 = 0; i1 < static_cast<int>( MatrixOp::MAX_MATRIX_OP ); ++i1 )
+    {
+        MatrixOp op1 = MatrixOp( i1 );
+   
+        BOOST_CHECK_EQUAL( combine( op1, op1 ), MatrixOp::NORMAL );
+
+        for ( int i2 = 0; i2 < static_cast<int>( MatrixOp::MAX_MATRIX_OP ); ++i2 )
+        {
+            MatrixOp op2 = MatrixOp( i2 );
+
+            BOOST_CHECK_EQUAL( combine( op1, op2 ), combine( op2, op1 ) );
+        }
+    }
+}

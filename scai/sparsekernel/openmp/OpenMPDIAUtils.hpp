@@ -43,7 +43,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -108,22 +108,8 @@ public:
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[] );
-
-    /** Implementation for DIAKernelTrait::normalGEVM  */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const IndexType diaOffsets[],
-        const ValueType diaValues[] );
+        const ValueType diaValues[],
+        const common::MatrixOp op );
 
     /** Implementation for DIAKernelTrait::jacobi  */
 
@@ -143,32 +129,6 @@ public:
 
     template<typename ValueType>
     static ValueType absMaxVal(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const IndexType diaOffsets[],
-        const ValueType diaValues[] );
-
-private:
-
-    /** Help routine with max 9 arguments required */
-
-    template<typename ValueType>
-    static void normalGEMV_a(
-        ValueType result[],
-        const std::pair<ValueType, const ValueType*> ax,  // alpha, x
-        const std::pair<ValueType, const ValueType*> by,  // beta, y
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const IndexType diaOffsets[],
-        const ValueType diaValues[] );
-
-    template<typename ValueType>
-    static void normalGEVM_a(
-        ValueType result[],
-        const std::pair<ValueType, const ValueType*> ax,  // alpha, x
-        const std::pair<ValueType, const ValueType*> by,  // beta, y
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numDiagonals,

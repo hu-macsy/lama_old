@@ -38,6 +38,7 @@
 #include <scai/lama/test/storage/Storages.hpp>
 
 #include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
@@ -88,11 +89,9 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
     values.setSparseRandom( 0.2f, 1 );
 
-    ValueType eps = static_cast<ValueType>( 1E-5 );
-
     // Note: diagonal property of sparse matrices will be set due to square matrix
 
-    storage.setDenseData( numRows, numColumns, values, eps );
+    storage.assign( DenseStorage<ValueType>( numRows, numColumns, std::move( values ) ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -102,6 +101,7 @@ static void setNonSquareData( MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 10;
+
     const IndexType ia[] = { 0,    2,       5, 6,    8 };
     const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
     const IndexType numValues = ia[numRows];
@@ -110,7 +110,7 @@ static void setNonSquareData( MatrixStorage<ValueType>& storage )
     LArray<IndexType> csrJA( numValues, ja );
     LArray<ValueType> csrValues( numValues, ValueType( 1 ) );
 
-    storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    storage.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -129,7 +129,7 @@ static void setSymmetricData( MatrixStorage<ValueType>& storage )
     LArray<IndexType> csrJA( numValues, ja );
     LArray<ValueType> csrValues( numValues, values );
 
-    storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    storage.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -955,7 +955,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
         LArray<ValueType> sparseArray;
         LArray<IndexType> sparseIndexes;
 
-        utilskernel::HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, array );
+        ValueType zero = 0;
+
+        utilskernel::HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, array, zero );
 
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outArraySparse_" + typeName) + fileSuffix;

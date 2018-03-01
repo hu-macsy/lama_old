@@ -41,6 +41,7 @@
 #include <scai/kregistry/mepr/Registrator.hpp>
 #include <scai/logging.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -83,7 +84,8 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
+        const ValueType csrValues[],
+        const common::MatrixOp op );
 
     /** Implementation for CSRKernelTrait::decomposition */
 

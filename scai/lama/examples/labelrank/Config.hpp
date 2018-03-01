@@ -100,7 +100,7 @@ public:
         }
         else if ( "ASYNC" == val )
         {
-            mCommunicationKind = scai::lama::SyncKind::ASYNCHRONOUS;
+            mCommunicationKind = scai::lama::SyncKind::ASYNC_LOCAL;
         }
         else if ( isNumber( val.c_str() ) )
         {

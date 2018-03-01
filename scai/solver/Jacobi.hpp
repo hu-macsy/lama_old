@@ -43,6 +43,7 @@
 
 // local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
+#include <scai/lama/Vector.hpp>
 #include <scai/lama/DenseVector.hpp>
 
 namespace scai
@@ -72,11 +73,13 @@ public:
 
     virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
-    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /** Implementation of pure method IterativeSolver<ValueType>::iterate */
 
     void iterate();
+
+    /** Note: Jacobi can only deal with dense vectors */
 
     struct JacobiRuntime: OmegaSolver<ValueType>::IterativeSolverRuntime
     {

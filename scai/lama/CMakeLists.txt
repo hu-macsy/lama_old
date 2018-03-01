@@ -66,7 +66,7 @@ scai_project (
         VectorKind
         _Vector
         Vector
-        VectorAssemblyAccess
+        VectorAssembly
 
         GridVector
         GridSection
@@ -76,6 +76,7 @@ scai_project (
         Scalar
         GridReadAccess
         GridWriteAccess
+        freeFunction
     )
 
 ### add subdirectories

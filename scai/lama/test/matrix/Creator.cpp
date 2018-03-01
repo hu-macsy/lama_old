@@ -59,9 +59,8 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
     { 6.0, 0.0, 0.0, 4.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.0, 4.0, 2.0, 5.0, 0.0, 3.0 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
     // Note: diagonal property of sparse matrices will be set due to square matrix
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------- */

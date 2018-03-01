@@ -94,7 +94,7 @@ public:
 
     struct KaczmarzRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        lama::VectorPtr<ValueType> mRow;   // temporary for row, might be sparse or dense
+        std::unique_ptr<lama::Vector<ValueType>> mRow;   // temporary for row, might be sparse or dense
     };
 
     /**

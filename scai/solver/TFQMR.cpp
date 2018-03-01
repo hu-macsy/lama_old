@@ -57,7 +57,7 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, TFQMR<ValueType>::logger, "Solver.IterativeSolver.TFQMR" )
 
 using lama::Matrix;
-using lama::DenseVector;
+using lama::Vector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -127,16 +127,13 @@ void TFQMR<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 
     // create dense runtime vectors with same row distribution, type, context as coefficients
 
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    hmemo::ContextPtr ctx = coefficients.getContextPtr();
-
-    runtime.mVecD.setContextPtr( ctx );
-    runtime.mInitialR.setContextPtr( ctx );
-    runtime.mVecVEven.setContextPtr( ctx );
-    runtime.mVecVOdd.setContextPtr( ctx );
-    runtime.mVecW.setContextPtr( ctx );
-    runtime.mVecZ.setContextPtr( ctx );
-    runtime.mVecVT.setContextPtr( ctx );
+    runtime.mVecD.reset( coefficients.newTargetVector() );
+    runtime.mInitialR.reset( coefficients.newTargetVector() );
+    runtime.mVecVEven.reset( coefficients.newTargetVector() );
+    runtime.mVecVOdd.reset( coefficients.newTargetVector() );
+    runtime.mVecW.reset( coefficients.newTargetVector() );
+    runtime.mVecZ.reset( coefficients.newTargetVector() );
+    runtime.mVecVT.reset( coefficients.newTargetVector() );
 }
 
 /* ========================================================================= */
@@ -144,7 +141,7 @@ void TFQMR<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 /* ========================================================================= */
 
 template<typename ValueType>
-void TFQMR<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
+void TFQMR<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -155,26 +152,33 @@ void TFQMR<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseV
     this->getResidual();
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
+ 
+    Vector<ValueType>& initialR = *runtime.mInitialR;
+    Vector<ValueType>& residual = *runtime.mResidual;
+    Vector<ValueType>& vecW     = *runtime.mVecW;
+    Vector<ValueType>& vecD     = *runtime.mVecD;
+    Vector<ValueType>& vecZ     = *runtime.mVecZ;
+    Vector<ValueType>& vecVEven = *runtime.mVecVEven;
 
-    runtime.mInitialR = runtime.mResidual;
-    runtime.mVecVEven = runtime.mResidual;
+    initialR = residual;
+    vecVEven = residual;
 
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        runtime.mVecW.setSameValue( runtime.mResidual.getDistributionPtr(), 0 );
-        mPreconditioner->solve( runtime.mVecW , runtime.mResidual );
+        vecW = 0;
+        mPreconditioner->solve( vecW , residual );
     }
     else
     {
-        runtime.mVecW = runtime.mResidual;
+        vecW = residual;
     }
 
-    runtime.mVecZ = A * runtime.mVecW;
-    runtime.mVecW = runtime.mResidual;
-    // mVecD = 0
-    runtime.mVecD.setSameValue( A.getRowDistributionPtr(), 0 );
-    runtime.mTau = l2Norm( runtime.mInitialR );
+    vecZ = A * vecW;
+    vecW = residual;
+    vecD = 0;
+
+    runtime.mTau = initialR.l2Norm();
     runtime.mRhoOld = runtime.mTau * runtime.mTau;
 }
 
@@ -187,10 +191,11 @@ void TFQMR<ValueType>::iterationEven()
 {
     TFQMRRuntime& runtime = getRuntime();
 
-    const DenseVector<ValueType>& vecZ = runtime.mVecZ;
-    const DenseVector<ValueType>& initialR = runtime.mInitialR;
-    const DenseVector<ValueType>& vecVEven = runtime.mVecVEven;
-    DenseVector<ValueType>& vecVOdd = runtime.mVecVOdd;
+    const Vector<ValueType>& vecZ = *runtime.mVecZ;
+    const Vector<ValueType>& initialR = *runtime.mInitialR;
+    const Vector<ValueType>& vecVEven = *runtime.mVecVEven;
+    Vector<ValueType>& vecVOdd = *runtime.mVecVOdd;
+
     const ValueType& rho = runtime.mRhoOld;
     const RealType<ValueType>& eps = runtime.mEps;
     const ValueType dotProduct = initialR.dotProduct( vecZ );
@@ -213,15 +218,16 @@ void TFQMR<ValueType>::iterationOdd()
 {
     TFQMRRuntime& runtime = getRuntime();
     const Matrix<ValueType>& A = *runtime.mCoefficients;
-    const DenseVector<ValueType>& initialR = runtime.mInitialR;
-    const DenseVector<ValueType>& vecW = runtime.mVecW;
-    const DenseVector<ValueType>& vecVOdd = runtime.mVecVOdd;
-    DenseVector<ValueType>& vecVEven = runtime.mVecVEven;
+    const Vector<ValueType>& initialR = *runtime.mInitialR;
+    const Vector<ValueType>& vecW = *runtime.mVecW;
+    const Vector<ValueType>& vecVOdd = *runtime.mVecVOdd;
+    Vector<ValueType>& vecVEven = *runtime.mVecVEven;
+
     ValueType& rhoOld = runtime.mRhoOld;
     ValueType& rhoNew = runtime.mRhoNew;
     ValueType& beta = runtime.mBeta;
-    DenseVector<ValueType>& vecZ = runtime.mVecZ;
-    DenseVector<ValueType>& vecVT = runtime.mVecVT;
+    Vector<ValueType>& vecZ = *runtime.mVecZ;
+    Vector<ValueType>& vecVT = *runtime.mVecVT;
     const RealType<ValueType>& eps = runtime.mEps;
 
     rhoNew  = initialR.dotProduct( vecW );
@@ -261,9 +267,9 @@ void TFQMR<ValueType>::iterate()
     TFQMRRuntime& runtime = getRuntime();
     const IndexType& iteration = runtime.mIterations;
     const Matrix<ValueType>& A = *runtime.mCoefficients;
-    DenseVector<ValueType>& vecW = runtime.mVecW;
-    DenseVector<ValueType>& vecD = runtime.mVecD;
-    DenseVector<ValueType>& solution = runtime.mSolution.getReference();  // dirty
+    Vector<ValueType>& vecW = *runtime.mVecW;
+    Vector<ValueType>& vecD = *runtime.mVecD;
+    Vector<ValueType>& solution = runtime.mSolution.getReference();  // dirty
     const ValueType& alpha = runtime.mAlpha;
     ValueType& c = runtime.mC;
     ValueType& eta = runtime.mEta;
@@ -274,7 +280,7 @@ void TFQMR<ValueType>::iterate()
 
     bool isEven = ( iteration % 2 ) == 0;
 
-    const DenseVector<ValueType>& vecV = isEven ? runtime.mVecVEven : runtime.mVecVOdd;
+    const Vector<ValueType>& vecV = isEven ? *runtime.mVecVEven : *runtime.mVecVOdd;
 
     if ( isEven )
     {

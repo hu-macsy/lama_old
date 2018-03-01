@@ -34,6 +34,7 @@
 #pragma once
 
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -164,18 +165,55 @@ template<typename ValueType>
 using Expression_SV_SV = Expression<Expression_SV<ValueType>, Expression_SV<ValueType>, common::BinaryOp::ADD>;
 
 /* ============================================================================ */
+/*    OpMatrix =   matrix, transpose( matrix ), conj( matrix ), ...             */
+/* ============================================================================ */
+
+template <typename ValueType>
+class OpMatrix
+{
+public:
+
+    typedef const OpMatrix<ValueType> ExpressionMemberType;
+
+    OpMatrix( const Matrix<ValueType>& matrix, const common::MatrixOp op ) :
+        mMatrix( matrix ),
+        mOp( op )
+    {
+    }
+
+    OpMatrix<ValueType>( const OpMatrix<ValueType>& other ) = default;
+
+    OpMatrix<ValueType>& operator=( const OpMatrix<ValueType>& other ) = delete;
+
+    const Matrix<ValueType>& getMatrix() const 
+    {
+        return mMatrix;
+    }
+
+    common::MatrixOp getOp() const 
+    {
+        return mOp;
+    }
+
+private:
+
+    const Matrix<ValueType>& mMatrix;
+    const common::MatrixOp mOp;
+};
+
+/* ============================================================================ */
 /*    Matrix expressions                                                        */
 /* ============================================================================ */
 
 /** Symbolic expression 'Scalar * Matrix' */
 
 template<typename ValueType>
-using Expression_SM = Expression<Scalar, Matrix<ValueType>, common::BinaryOp::MULT>;
+using Expression_SM = Expression<Scalar, OpMatrix<ValueType>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Scalar * Matrix * Matrix' */
 
 template<typename ValueType>
-using Expression_SMM = Expression<Expression_SM<ValueType>, Matrix<ValueType>, common::BinaryOp::MULT>;
+using Expression_SMM = Expression<Expression_SM<ValueType>, OpMatrix<ValueType>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Scalar * Matrix + Scalar * Matrix' */
 
@@ -191,35 +229,20 @@ using Expression_SMM_SM = Expression<Expression_SMM<ValueType>, Expression_SM<Va
 /*    Matrix - Vector expressions                                               */
 /* ============================================================================ */
 
-/** Symbolic expression 'Matrix * Vector' */
+/** Symbolic expression '(op)Matrix * Vector' */
 
 template<typename ValueType>
-using Expression_MV = Expression<Matrix<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>;
+using Expression_MV = Expression<OpMatrix<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>;
 
-/** Symbolic expression 'Vector * Matrix' */
-
-template<typename ValueType>
-using Expression_VM = Expression<Vector<ValueType>, Matrix<ValueType>, common::BinaryOp::MULT>;
-
-/** Symbolic expression 'Scalar * Matrix * Vector' */
+/** Symbolic expression 'Scalar * (op)Matrix * Vector' */
 
 template<typename ValueType>
-using Expression_SMV = Expression<Scalar, Expression<Matrix<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>, common::BinaryOp::MULT>;
+using Expression_SMV = Expression<Scalar, Expression_MV<ValueType>, common::BinaryOp::MULT>;
 
-/** Symbolic expression 'Scalar * Vector * Matrix' */
-
-template<typename ValueType>
-using Expression_SVM = Expression<Scalar, Expression<Vector<ValueType>, Matrix<ValueType>, common::BinaryOp::MULT>, common::BinaryOp::MULT>;
-
-/** Symbolic expression 'Scalar * Matrix * Vector + Scalar * Vector' */
+/** Symbolic expression 'Scalar * (op)Matrix * Vector + Scalar * Vector' */
 
 template<typename ValueType>
 using Expression_SMV_SV = Expression<Expression_SMV<ValueType>, Expression_SV<ValueType>, common::BinaryOp::ADD>;
-
-/** Symbolic expression 'Scalar * Vector * Matrix + Scalar * Vector' */
-
-template<typename ValueType>
-using Expression_SVM_SV = Expression<Expression_SVM<ValueType>, Expression_SV<ValueType>, common::BinaryOp::ADD>;
 
 } /* end namespace lama */
 

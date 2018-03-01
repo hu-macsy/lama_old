@@ -109,16 +109,18 @@ DenseVector<ValueType> computeGlobalPrefixSum( const DenseVector<ValueType>& inp
     ValueType myOffset[1];
     comm->scatter( myOffset, 1, 0, offsetPrefixSum.data() );
 
-    //get results by adding local sums and offsets
-    DenseVector<ValueType> result( input.getDistributionPtr() );
-    scai::hmemo::WriteOnlyAccess<ValueType> wResult( result.getLocalValues(), localN );
+    // get results by adding local sums and offsets
+
+    HArray<ValueType> resultValues;
+
+    scai::hmemo::WriteOnlyAccess<ValueType> wResult( resultValues, localN );
 
     for ( IndexType i = 0; i < localN; i++ )
     {
         wResult[i] = localPrefixSum[i] + myOffset[0];
     }
 
-    return result;
+    return DenseVector<ValueType>( input.getDistributionPtr(), std::move( resultValues ) );
 }
 
 /** Generic routine for benchmarking scan routine.

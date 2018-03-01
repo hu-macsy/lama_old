@@ -110,6 +110,8 @@ public:
 
     static void getCreateValues( std::vector<InputType>& values );
 
+    static std::vector<InputType> getCreateValues();
+
 protected:
 
     /** Create function that must be provided by derived classes */
@@ -259,6 +261,15 @@ void Factory1<InputType, ValueType, OutputType>::getCreateValues( std::vector<In
     {
         values.push_back( it->first );
     }
+}
+
+
+template<typename InputType, typename ValueType, typename OutputType>
+std::vector<InputType> Factory1<InputType, ValueType, OutputType>::getCreateValues()
+{
+    std::vector<InputType> values;
+    getCreateValues( values );
+    return values;
 }
 
 } /* end namespace common */

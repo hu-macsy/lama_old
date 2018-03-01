@@ -43,5 +43,5 @@
 
 int main( int argc, char* argv[] )
 {
-    return scai::testsupport::dmemoTestMain(argc, argv);
+    return scai::testsupport::dmemoTestMain( argc, argv );
 }

@@ -173,7 +173,8 @@ void DecompositionSolver<ValueType>::solveImpl()
     }
     else
     {
-        tmpCSRStorage.reset( new lama::CSRStorage<ValueType>( coefficients.getLocalStorage() ) );
+        tmpCSRStorage.reset( new lama::CSRStorage<ValueType>() );
+        tmpCSRStorage->assign( coefficients.getLocalStorage() );
         SCAI_LOG_WARN( logger, "new tmp csr storage = " << *tmpCSRStorage )
         csrStorage = tmpCSRStorage.get();
     }
