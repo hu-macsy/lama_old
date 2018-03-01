@@ -71,16 +71,16 @@ int main( int argc, const char* argv[] )
 
     std::string filename = argv[1];
 
-    CSRSparseMatrix<ValueType> A( filename );
+    auto A = read<CSRSparseMatrix<ValueType>>( filename );
+    auto r = fill<DenseVector<ValueType>>( A.getRowDistributionPtr(), 1 );
 
-    DenseVector<ValueType> r( A.getRowDistributionPtr(), 1 );
-    DenseVector<ValueType> y;
+    auto y = DenseVector<ValueType>();
 
     for ( int k = 0; k < 100; ++k )
     {
         y = A * r;
-        ValueType norm = y.l2Norm();
-        ValueType lambda = r.dotProduct ( y ) / r.dotProduct( r );
+        auto norm = y.l2Norm();
+        auto lambda = r.dotProduct ( y ) / r.dotProduct( r );
         r = y / norm;
         std::cout << "lambda = " << lambda << std::endl;
     }

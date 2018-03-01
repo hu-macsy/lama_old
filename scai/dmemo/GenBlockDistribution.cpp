@@ -105,7 +105,7 @@ void GenBlockDistribution::setOffsets( const PartitionId rank, const PartitionId
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const std::vector<IndexType>& localSizes,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
     Distribution( globalSize, communicator )
 {
@@ -124,9 +124,9 @@ GenBlockDistribution::GenBlockDistribution(
     const IndexType firstGlobalIdx,
     const IndexType lastGlobalIdx,
     bool,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
-    Distribution( globalSize, communicator ) 
+    Distribution( globalSize, communicator )
 
 {
     SCAI_ASSERT_LE_ERROR( firstGlobalIdx, lastGlobalIdx, "illegal local range" )
@@ -144,7 +144,7 @@ GenBlockDistribution::GenBlockDistribution(
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const IndexType localSize,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
     Distribution( globalSize, communicator )
 
@@ -159,7 +159,7 @@ GenBlockDistribution::GenBlockDistribution(
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const float weight,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
     Distribution( globalSize, communicator )
 
@@ -184,7 +184,7 @@ GenBlockDistribution::GenBlockDistribution(
     SCAI_LOG_INFO( logger,
                    "GenBlockDistribution of " << getGlobalSize() << " elements" << ", total weight = " << totalWeight )
 
-    mOffsets.reset( new IndexType[size+1] );
+    mOffsets.reset( new IndexType[size + 1] );
     float sumWeight = 0.0f;
 
     mOffsets[0] = 0;

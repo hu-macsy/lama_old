@@ -44,6 +44,7 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <cuda_runtime_api.h>
 
@@ -99,12 +100,12 @@ public:
 
     /** Implementation for CSRKernelTrait::Mult::scaleRows  */
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename ValueType>
     static void scaleRows(
-        ValueType1 csrValues[],
+        ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const ValueType2 values[] );
+        const ValueType values[] );
 
     /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 
@@ -120,23 +121,8 @@ public:
         const IndexType nnz,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
-
-    /** Implementation for CSRKernelTrait::Mult::normalGEVM  */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValues,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
+        const ValueType csrValues[],
+        const common::MatrixOp op );
 
     /** Implementation for CSRKernelTrait::Mult::sparseGEMV  */
 
@@ -149,21 +135,8 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
-
-    /** Implementation for CSRKernelTrait::Mult::sparseGEVM  */
-
-    template<typename ValueType>
-    static void sparseGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const IndexType numColumns,
-        const IndexType numNonZeroRows,
-        const IndexType rowIndexes[],
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
+        const ValueType csrValues[],
+        const common::MatrixOp op );
 
     /** Implementation for CSRKernelTrait::Solver::jacobi  */
 
@@ -329,18 +302,6 @@ private:
 
     template<typename ValueType>
     struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
     {
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };

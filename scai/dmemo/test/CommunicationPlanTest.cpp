@@ -190,8 +190,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
         }
     }
 
-    const IndexType * reqQuantitiesBegin = reqQuantities.size() > 0 ? &reqQuantities[0] : NULL;
-    const IndexType * reqOwnersBegin = reqOwners.size() > 0 ? &reqOwners[0] : NULL;
+    const IndexType* reqQuantitiesBegin = reqQuantities.size() > 0 ? &reqQuantities[0] : NULL;
+
+    const IndexType* reqOwnersBegin = reqOwners.size() > 0 ? &reqOwners[0] : NULL;
 
     CommunicationPlan requiredPlan2( comm->getSize(), reqOwnersBegin, static_cast<IndexType>( reqOwners.size() ) );
 
@@ -302,6 +303,26 @@ BOOST_AUTO_TEST_CASE( allocateTransposeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( singleEntryTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    const IndexType quantities[] = { 3, 0, 5, 2 };
+
+    CommunicationPlan plan( quantities, 4, true );
+   
+    BOOST_CHECK_EQUAL( plan.size(), 3 );
+    BOOST_CHECK_EQUAL( plan.maxQuantity(), 5 );
+
+    plan.singleEntry( 2, 4 );
+
+    BOOST_CHECK_EQUAL( plan.size(), 1 );
+
+    BOOST_CHECK_EQUAL( plan.maxQuantity(), 4 );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( getInfoTest )
 {
     // Idea: build a communication plan and call getInfo where quantity and offset are known
@@ -328,10 +349,10 @@ BOOST_AUTO_TEST_CASE( getInfoTest )
 
         BOOST_CHECK_EQUAL( n, required( rank, p ) );
 
-        if ( n > 0 ) 
+        if ( n > 0 )
         {
-             BOOST_CHECK_EQUAL( expectedOffset, offset );
-             expectedOffset += n;
+            BOOST_CHECK_EQUAL( expectedOffset, offset );
+            expectedOffset += n;
         }
     }
 
@@ -368,7 +389,7 @@ BOOST_AUTO_TEST_CASE( extractPlanTest )
         }
         else
         {
-            // singlePlan must have exactly one entry for this p 
+            // singlePlan must have exactly one entry for this p
 
             BOOST_CHECK_EQUAL( singlePlan.size(), IndexType( 1 ) );
             BOOST_CHECK_EQUAL( p, singlePlan[0].partitionId );

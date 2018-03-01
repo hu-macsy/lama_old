@@ -84,7 +84,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
     {
         if ( isSet )
         {
-            syncKind = scai::lama::SyncKind::ASYNCHRONOUS;
+            syncKind = scai::lama::SyncKind::ASYNC_LOCAL;
         }
     }
 
@@ -105,12 +105,10 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
     std::cout << "csrStencilMatrix " << csrMatrix << std::endl;
 
-    DenseVector<ValueType> x( stencilMatrix.getColDistributionPtr() );
+    auto x = fill<DenseVector<ValueType>>( stencilMatrix.getColDistributionPtr(), 1 );
 
-    x = 1.0;
-
-    DenseVector<ValueType> y1 ( stencilMatrix.getRowDistributionPtr(), 0.0 );
-    DenseVector<ValueType> y2 ( csrMatrix.getRowDistributionPtr(), 0.0 );
+    auto y1 = fill<DenseVector<ValueType>>( stencilMatrix.getRowDistributionPtr(), 0 );
+    auto y2 = fill<DenseVector<ValueType>>( csrMatrix.getRowDistributionPtr(), 0 );
 
     double timeStencil;
     double timeCSR;

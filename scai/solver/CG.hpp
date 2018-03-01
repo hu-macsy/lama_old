@@ -47,7 +47,7 @@ namespace scai
 namespace lama
 {
     template<typename ValueType> class Matrix;
-    template<typename ValueType> class DenseVector;
+    template<typename ValueType> class Vector;
 }
 
 namespace solver
@@ -98,14 +98,17 @@ public:
 
     struct CGRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        /** Initialize the runtime with target space of the matrix to be solved */
+        /** Initialize the runtime with, allocates the temporary vectors. */
 
-        void initialize( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx );
+        void initialize();
 
-        lama::DenseVector<ValueType> mP;
-        lama::DenseVector<ValueType> mQ;
-        lama::DenseVector<ValueType> mZ;
+        std::unique_ptr<lama::Vector<ValueType>> mP;
+        std::unique_ptr<lama::Vector<ValueType>> mQ;
+        std::unique_ptr<lama::Vector<ValueType>> mZ;
+
         ValueType mPScalar;
+  
+        using Solver<ValueType>::SolverRuntime::mCoefficients;
     };
 
     /**

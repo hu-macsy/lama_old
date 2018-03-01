@@ -91,11 +91,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, MatrixType, SparseMatrixTypes
     // i.e. vector is a dense matrix
     // Note: not yet available for distributed matrix
 
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    auto comm = dmemo::Communicator::getCommunicatorPtr();
 
     const IndexType n = 20;  // size of the square matrix
 
-    MatrixType matrix( 20, 20 );
+    auto matrix = zero<MatrixType>( 20, 20 );
 
     MatrixCreator::fillRandom( matrix, 0.2f );
 
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
 
     const IndexType n = 20;  // size of the square matrix
 
-    DenseMatrix<ValueType> matrix( n, n );
+    auto matrix = zero<DenseMatrix<ValueType>>( n, n );
 
     MatrixCreator::fillRandom( matrix, 1.0f );
 
@@ -129,9 +129,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
 
     invMatrix.invert( matrix );
 
-    DenseMatrix<ValueType> e1;
-    e1.setIdentity( n );
-    DenseMatrix<ValueType> e2( matrix * invMatrix );
+    auto e1 = identity<DenseMatrix<ValueType>>( n );
+    
+    auto e2 = eval<DenseMatrix<ValueType>>( matrix * invMatrix );
 
     BOOST_CHECK( e1.maxDiffNorm( e2 ) < 1e-3 );
 }

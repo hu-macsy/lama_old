@@ -311,7 +311,70 @@ const char* cusolverErrorString( cusolverStatus_t res )
 
     return str;
 }
+
 #endif
+
+const char* cufftErrorString( cufftResult res )
+{
+    const char* str = "";
+
+    switch ( res )
+    {
+        case CUFFT_SUCCESS:
+            str = "CUFFT successful";
+            break;
+        case CUFFT_INVALID_PLAN:
+            str = "CUFFT invalid plan";
+            break;
+        case CUFFT_ALLOC_FAILED:
+            str = "CUFFT alloc failed";
+            break;
+        case CUFFT_INVALID_TYPE:
+            str = "CUFFT invalid type";
+            break;
+        case CUFFT_INVALID_VALUE:
+            str = "CUFFT invalid value";
+            break;
+        case CUFFT_INTERNAL_ERROR:
+            str = "CUFFT internal error";
+            break;
+        case CUFFT_EXEC_FAILED:
+            str = "CUFFT execution failed";
+            break;
+        case CUFFT_SETUP_FAILED:
+            str = "CUFFT setup failed";
+            break;
+        case CUFFT_INVALID_SIZE:
+            str = "CUFFT invalid size";
+            break;
+        case CUFFT_UNALIGNED_DATA:
+            str = "CUFFT unaligned data";
+            break;
+        case CUFFT_INCOMPLETE_PARAMETER_LIST:
+            str = "CUFFT incomplete parameter list";
+            break;
+        case CUFFT_INVALID_DEVICE:
+            str = "CUFFT invalid device";
+            break;
+        case CUFFT_PARSE_ERROR:
+            str = "CUFFT parse error";
+            break;
+        case CUFFT_NO_WORKSPACE:
+            str = "CUFFT no workspace";
+            break;
+        case CUFFT_NOT_IMPLEMENTED:
+            str = "CUFFT not implemented";
+            break;
+        case CUFFT_LICENSE_ERROR:
+            str = "CUFFT license error";
+            break;
+
+        default:
+            str = "Unknown CUFFT error";
+        }
+
+    return str;
+}
 
 /* ----------------------------------------------------------------------------- */
 

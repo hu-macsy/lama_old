@@ -38,10 +38,13 @@
 #include <scai/partitioning/MetisPartitioning.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 using namespace scai;
+using namespace hmemo;
 using namespace dmemo;
 using namespace lama;
+using namespace utilskernel;
 using namespace partitioning;
 
 /* --------------------------------------------------------------------- */
@@ -86,7 +89,13 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
     DistributionPtr dist = partitioning.partitionIt( comm, csrMatrix, weight );
 
-    BOOST_CHECK( dist->getLocalSize() < dist->getGlobalSize() );
+    HArray<IndexType> newLocalOwners;
+
+    partitioning.squarePartitioning( newLocalOwners, csrMatrix, weight );
+
+    BOOST_CHECK_EQUAL( newLocalOwners.size(), csrMatrix.getRowDistribution().getLocalSize() );
+
+    BOOST_CHECK( HArrayUtils::validIndexes( newLocalOwners, comm->getSize() ) );
 }
 
 /* --------------------------------------------------------------------- */

@@ -66,17 +66,17 @@ public:
      * As an example, if halo2global[i] == distribution.local2global(i), then the halo set would correspond
      * to the set of local indexes in the distribution.
      *
-     * @param[in]  communicator     The communicator through which communication with other processors will take place.
+     * @param[in]  comm             The communicator through which communication with other processors will take place.
      * @param[in]  halo2global      An array mapping halo indexes to global indexes, i.e. halo2global[i] is the global index
      *                              corresponding to halo index i.
      * @param[in]  ownersOfProvided An array mapping local (halo), provided indices to owners. More precisely, ownersOfProvided[i] must contain
      *                              the owner of halo index i. Note that ownersOfProvided must have the same length as halo2global.
      * @param[out] halo             The Halo data structure to store the result in.
      */
-    static void buildFromProvidedOwners(const Communicator& comm,
-                                        const hmemo::HArray<IndexType>& halo2global,
-                                        const hmemo::HArray<PartitionId>& ownersOfProvided,
-                                        Halo& halo);
+    static void buildFromProvidedOwners( const Communicator& comm,
+                                         const hmemo::HArray<IndexType>& halo2global,
+                                         const hmemo::HArray<PartitionId>& ownersOfProvided,
+                                         Halo& halo );
 
 private:
 

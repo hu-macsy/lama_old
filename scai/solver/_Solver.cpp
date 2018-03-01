@@ -92,7 +92,7 @@ void _Solver::setLogger( LoggerPtr logger )
     mLogger = logger;
 }
 
-void _Solver::setLogLevel( LogLevel::LogLevel level )
+void _Solver::setLogLevel( LogLevel level )
 {
     mLogger->setLogLevel( level );
 }

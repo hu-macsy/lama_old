@@ -43,6 +43,7 @@ scai_project(
         CUDAReduceUtils
         CUDASortUtils
         CUDASection
+        CUFFT
         
     ADD_PARENT_SCOPE
 )

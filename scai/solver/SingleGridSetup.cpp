@@ -54,7 +54,7 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SingleGridSetup<ValueType>::logger, "AMGSetup.SingleGridSetup" )
 
 using lama::Matrix;
-using lama::DenseVector;
+using lama::Vector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -116,14 +116,10 @@ void SingleGridSetup<ValueType>::initialize( const Matrix<ValueType>& coefficien
     mIdentity->setIdentity( coefficients.getRowDistributionPtr() );
     SCAI_LOG_DEBUG( logger, "after identity" )
     SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    hmemo::ContextPtr ctx = coefficients.getContextPtr();
-    mSolutionVector.reset( new DenseVector<ValueType>( dist ) );
-    mSolutionVector->setContextPtr( ctx );
-    mRhsVector.reset( new DenseVector<ValueType>( dist ) );
-    mRhsVector->setContextPtr( ctx );
-    mTmpResVector.reset( new DenseVector<ValueType>( dist ) );
-    mTmpResVector->setContextPtr( ctx );
+
+    mSolutionVector.reset( coefficients.newTargetVector() );
+    mRhsVector.reset( coefficients.newTargetVector() );
+    mTmpResVector.reset( coefficients.newTargetVector() );
 }
 
 /* ========================================================================= */
@@ -167,19 +163,19 @@ const Matrix<ValueType>& SingleGridSetup<ValueType>::getInterpolation( const Ind
 }
 
 template<typename ValueType>
-DenseVector<ValueType>& SingleGridSetup<ValueType>::getSolutionVector( const IndexType )
+Vector<ValueType>& SingleGridSetup<ValueType>::getSolutionVector( const IndexType )
 {
     return *mSolutionVector;
 }
 
 template<typename ValueType>
-DenseVector<ValueType>& SingleGridSetup<ValueType>::getRhsVector( const IndexType )
+Vector<ValueType>& SingleGridSetup<ValueType>::getRhsVector( const IndexType )
 {
     return *mRhsVector;
 }
 
 template<typename ValueType>
-DenseVector<ValueType>& SingleGridSetup<ValueType>::getTmpResVector( const IndexType )
+Vector<ValueType>& SingleGridSetup<ValueType>::getTmpResVector( const IndexType )
 {
     return *mTmpResVector;
 }

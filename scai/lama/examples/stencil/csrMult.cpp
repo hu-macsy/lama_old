@@ -76,12 +76,12 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    ContextPtr ctx = Context::getContextPtr();
+    // read in a CSR matrix from file, name specified by command line argument
 
-    CSRSparseMatrix<ValueType> csrMatrix( argv[1] );
+    auto csrMatrix = read<CSRSparseMatrix<ValueType>>( argv[1] );
 
-    DenseVector<ValueType> x( csrMatrix.getColDistributionPtr(), 1 );
-    DenseVector<ValueType> y( csrMatrix.getRowDistributionPtr(), 0 );
+    auto x = fill<DenseVector<ValueType>>( csrMatrix.getColDistributionPtr(), 1 );
+    auto y = fill<DenseVector<ValueType>>( csrMatrix.getRowDistributionPtr(), 0 );
 
     for ( IndexType i = 0; i < NITER; ++i )
     {

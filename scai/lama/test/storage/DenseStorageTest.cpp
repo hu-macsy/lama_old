@@ -66,10 +66,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setZeroTest, ValueType, scai_numeric_test_types )
         0.0, 0.0, 9.0, 4.0,
         2.0, 5.0, 0.0, 3.0
     };
-    ValueType eps = static_cast<ValueType>( 1E-5 );
     DenseStorage<ValueType> denseStorage;
     denseStorage.setContextPtr( context );
-    denseStorage.setRawDenseData( numRows, numColumns, values, eps );
+    denseStorage.setRawDenseData( numRows, numColumns, values );
     denseStorage.setZero();
 
     for ( IndexType i = 0; i < denseStorage.getNumRows(); ++i )
@@ -89,8 +88,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     SCAI_LOG_INFO( logger, "constructorTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
     const IndexType numRows = 4;
     const IndexType numColumns = 2;
-    DenseStorage<ValueType> denseStorage( numRows, numColumns );
+    // DenseStorage<ValueType> denseStorage( numRows, numColumns );
+    DenseStorage<ValueType> denseStorage;
     denseStorage.setContextPtr( context );
+    denseStorage.allocate( numRows, numColumns );
     denseStorage.setZero();
     BOOST_REQUIRE_EQUAL( numRows, denseStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, denseStorage.getNumColumns() );
@@ -106,11 +107,49 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
+template<typename ValueType>
+static inline const ValueType* getPointer( const HArray<ValueType>& a, ContextPtr ctx )
 {
-    SCAI_LOG_INFO( logger, "swapTest for DenseStorage<" << common::TypeTraits<ValueType>::id() << ">" )
-    // use template storage test
-    storageSwapTest<DenseStorage<ValueType> >();
+    ReadAccess<ValueType> rA( a, ctx );
+    return rA.get();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( splitUpTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows    = 4;
+    const IndexType numColumns = 3;
+
+    HArray<ValueType> denseValues( { 5, 0, 0, 0, 5, 0, 0, 3, 2, 0, 1, 1 } );
+
+    const ValueType* ptrValues = getPointer( denseValues, context );
+
+    DenseStorage<ValueType> denseStorage( numRows, numColumns, std::move( denseValues ) );
+
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( denseStorage.getData(), context ) );
+
+    IndexType outNumRows;
+    IndexType outNumColumns;
+    HArray<ValueType> outValues;
+
+    denseStorage.splitUp( outNumRows, outNumColumns, outValues );
+
+    BOOST_CHECK_EQUAL( outNumRows, numRows );
+    BOOST_CHECK_EQUAL( outNumColumns, numColumns );
+
+    // we have still the same dense data as before moving it 
+
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( outValues, context ) );
+
+    // verify that the remaining storage is nothing else than a dense storge
+
+    DenseStorage<ValueType> zeroDenseStorage;
+    BOOST_CHECK_EQUAL( zeroDenseStorage.maxDiffNorm( denseStorage ), 0 );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

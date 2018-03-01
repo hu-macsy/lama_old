@@ -139,15 +139,13 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     CSRSparseMatrix<ValueType> matrix( system.coefficients );
     MatrixType coefficients( matrix );
     coefficients.setContextPtr( context );
-    DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
+    auto dist = std::make_shared<BlockDistribution>( coefficients.getNumRows(), comm );
     coefficients.redistribute( dist, dist );
     SCAI_LOG_INFO( logger, "JacobiTest uses context = " << context->getType() );
     DenseVector<ValueType> rhs( system.rhs );
     rhs.setContextPtr( context );
     rhs.redistribute( coefficients.getRowDistributionPtr() );
-    DenseVector<ValueType> solution( system.coefficients.getNumRows(), static_cast<ValueType>( 2.1 ) );
-    solution.setContextPtr( context );
-    solution.redistribute( coefficients.getColDistributionPtr() );
+    auto solution = fill<DenseVector<ValueType>>( coefficients.getColDistributionPtr(), ValueType( 2.1 ), context );
     DenseVector<ValueType> exactSolution( system.solution );
     exactSolution.setContextPtr( context );
     exactSolution.redistribute( coefficients.getColDistributionPtr() );
@@ -156,8 +154,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 120 ) );
     jacobiSolver.setStoppingCriterion( criterion );
     jacobiSolver.solve( solution, rhs );
-    DenseVector<ValueType> diff( solution - exactSolution );
-    diff.setContextPtr( context );
+    auto diff = eval<DenseVector<ValueType>>( solution - exactSolution, context );
     diff.redistribute( coefficients.getColDistributionPtr() );
     L2Norm<ValueType> l2Norm;
     RealType<ValueType> norm = l2Norm( diff );
@@ -167,17 +164,17 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     //test for even iterations
 
     ValueType omega = 0.5;
-    DenseVector<ValueType> solutionA( system.coefficients.getNumRows(), 1.0 );
-    solutionA.setContextPtr( context );
-    solutionA.redistribute( coefficients.getColDistributionPtr() );
+
+    auto colDist   = coefficients.getColDistributionPtr();
+    auto solutionA = fill<DenseVector<ValueType>>( colDist, 1.0, context );
+
     Jacobi<ValueType> jacobiSolverA( "JacobiTest solver 2" );
     jacobiSolverA.initialize( coefficients );
     jacobiSolverA.setOmega( omega );
     jacobiSolverA.solve( solutionA, rhs );
     jacobiSolverA.solve( solutionA, rhs ); //twice
-    DenseVector<ValueType> solutionB( system.coefficients.getNumRows(), 1.0 );
-    solutionB.setContextPtr( context );
-    solutionB.redistribute( coefficients.getColDistributionPtr() );
+
+    auto solutionB = fill<DenseVector<ValueType>>( colDist, 1.0, context );
 
     Jacobi<ValueType> jacobiSolverB( "JacobiTest solver 2" );
     CriterionPtr<ValueType> criterionB( new IterationCount<ValueType>( 2 ) );
@@ -185,9 +182,9 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     jacobiSolverB.initialize( coefficients );
     jacobiSolverB.setOmega( omega );
     jacobiSolverB.solve( solutionB, rhs );
-    DenseVector<ValueType> diffAB( solutionA - solutionB );
-    diffAB.setContextPtr( context );
-    diffAB.redistribute( coefficients.getColDistributionPtr() );
+
+    auto diffAB = eval<DenseVector<ValueType>>( solutionA - solutionB, context );
+
     RealType<ValueType> l2norm = l2Norm( diffAB );
     RealType<ValueType> eps    = 1e-5;
     BOOST_CHECK( l2norm < eps );

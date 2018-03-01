@@ -426,8 +426,8 @@ void Communicator::sumArray( HArray<ValueType>& array ) const
 {
     ContextPtr commContext = getCommunicationContext( array );
 
-    SCAI_LOG_INFO( logger, "sumArray<" << common::TypeTraits<ValueType>::id() 
-                           << " at this context " << *commContext << ", array = " << array )
+    SCAI_LOG_INFO( logger, "sumArray<" << common::TypeTraits<ValueType>::id()
+                   << " at this context " << *commContext << ", array = " << array )
 
     SCAI_CONTEXT_ACCESS( commContext );
 
@@ -459,7 +459,7 @@ void Communicator::shiftArray(
 
     ContextPtr commContext = getCommunicationContext( sendArray );
 
-    SCAI_LOG_INFO( logger, "shiftArray<" << common::TypeTraits<ValueType>::id() 
+    SCAI_LOG_INFO( logger, "shiftArray<" << common::TypeTraits<ValueType>::id()
                    << " at this context " << *commContext << ", sendArray = " << sendArray
                    << ", recvArray = " << recvArray )
 
@@ -511,6 +511,7 @@ void Communicator::joinArray(
             WriteAccess<ValueType> wGlobal( globalArray );
             ReadAccess<ValueType> rLocal( bufferArray );
             wGlobal.resize( currentSize + rLocal.size() );
+
             for ( IndexType i = 0; i < rLocal.size(); ++i )
             {
                 wGlobal[currentSize + i] = rLocal[i];
@@ -539,7 +540,7 @@ void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, cons
 
         ReadAccess<ValueType> rArray( array, commContext );   // WriteAccess might invalidate data
 
-        ValueType* arrayPtr = const_cast<ValueType*>( rArray.get() ); 
+        ValueType* arrayPtr = const_cast<ValueType*>( rArray.get() );
 
         bcast( arrayPtr, n, root ); // bcast the array
     }
@@ -563,12 +564,12 @@ void Communicator::bcastArray( HArray<ValueType>& array, const PartitionId root 
     IndexType n = 0;
 
     if ( root == getRank() )
-    {   
+    {
         n = array.size();
     }
 
     bcast( &n, 1, root );
-    
+
     bcastArray( array, n, root );
 }
 
@@ -879,7 +880,7 @@ ValueType Communicator::scan( const ValueType localValue ) const
     ValueType scanValue;
 
     scanImpl( &scanValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
- 
+
     // scanImpl does an inclusive scan
 
     return scanValue;
@@ -1122,7 +1123,7 @@ void Communicator::exchangeByPlan(
 
     hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
 
-    SCAI_LOG_INFO( logger, *this << ": exchangeByPlan<" << common::TypeTraits<ValueType>::id() << ">" 
+    SCAI_LOG_INFO( logger, *this << ": exchangeByPlan<" << common::TypeTraits<ValueType>::id() << ">"
                    << ", send " << sendArray.size() << " values to " << sendPlan.size() << " processors"
                    << ", recv " << recvSize << " values from " << recvPlan.size() << " processors"
                    << ", data at this context " << *comCtx )

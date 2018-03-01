@@ -147,7 +147,8 @@ struct UtilsWrapperT<ValueType, common::mepr::NullType>
         const common::BinaryOp,
         const hmemo::ContextPtr )
     {
-        COMMON_THROWEXCEPTION( "scatter: source type unsupported, target = " << target << ", source = " << source )
+        COMMON_THROWEXCEPTION( "scatter: no instantiation for type " << source.getValueType() << " of source array"
+                               << ", target = " << target )
     }
 
     static void setScalar( hmemo::_HArray& target, const ValueType, const common::BinaryOp, const hmemo::ContextPtr )
@@ -362,32 +363,6 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         else
         {
             UtilsWrapperT< ValueType, Tail >::setScalar( target, value, op, ctx );
-        }
-    }
-
-    static void setValImpl( hmemo::_HArray& target, const IndexType indexes, const ValueType val )
-    {
-        if ( common::getScalarType<H>() ==  target.getValueType() )
-        {
-            HArrayUtils::setValImpl( reinterpret_cast<hmemo::HArray<H>&>( target ),
-                                     indexes,
-                                     static_cast<H>( val ), common::BinaryOp::COPY );
-        }
-        else
-        {
-            UtilsWrapperT< ValueType, Tail >::setValImpl( target, indexes, val );
-        }
-    }
-
-    static ValueType getValImpl( const hmemo::_HArray& array, const IndexType indexes )
-    {
-        if ( common::getScalarType<H>() == array.getValueType() )
-        {
-            return static_cast<ValueType>( HArrayUtils::getValImpl( reinterpret_cast<const hmemo::HArray<H>&>( array ), indexes ) );
-        }
-        else
-        {
-            return UtilsWrapperT< ValueType, Tail>::getValImpl( array, indexes );
         }
     }
 

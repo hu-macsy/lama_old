@@ -48,8 +48,9 @@ namespace lama
  */
 enum class SyncKind
 {
-    ASYNCHRONOUS, // asynchronous execution to overlap computations, communications
-    SYNCHRONOUS // synchronous, operations will not overlap
+    SYNCHRONOUS,  // exchange communication - sync - local + halo computation
+    ASYNC_COMM,  // asynchronous execution of communication
+    ASYNC_LOCAL  // asynchronous execution of local computation
 };
 
 /** This function prints a SyncKind on an output stream.
@@ -67,9 +68,15 @@ inline std::ostream& operator<<( std::ostream& stream, const SyncKind& kind )
             break;
         }
 
-        case SyncKind::ASYNCHRONOUS:
+        case SyncKind::ASYNC_COMM:
         {
-            stream << "ASYNCHRONOUS";
+            stream << "ASYN_COMM";
+            break;
+        }
+
+        case SyncKind::ASYNC_LOCAL:
+        {
+            stream << "ASYNC_LOCAL";
             break;
         }
 

@@ -70,9 +70,9 @@ SCAI_LOG_DEF_LOGGER( OpenMPJDSUtils::logger, "OpenMP.JDSUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType>
 void OpenMPJDSUtils::getRow(
-    OtherValueType row[],
+    ValueType row[],
     const IndexType i,
     const IndexType numColumns,
     const IndexType numRows,
@@ -88,7 +88,7 @@ void OpenMPJDSUtils::getRow(
 
     for ( IndexType j = 0; j < numColumns; ++j )
     {
-        row[j] = static_cast<OtherValueType>( 0 );
+        row[j] = ValueType( 0 );
     }
 
     IndexType ii;
@@ -107,14 +107,14 @@ void OpenMPJDSUtils::getRow(
 
     for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
     {
-        row[ja[ii + k]] = static_cast<OtherValueType>( values[ii + k] );
+        row[ja[ii + k]] = values[ii + k];
         k += dlg[jj];
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType>
 void OpenMPJDSUtils::setRow(
     ValueType values[],
     const IndexType i,
@@ -124,7 +124,7 @@ void OpenMPJDSUtils::setRow(
     const IndexType ilg[],
     const IndexType dlg[],
     const IndexType ja[],
-    const OtherValueType row[],
+    const ValueType row[],
     const common::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.JDS.setRow" )
@@ -287,14 +287,14 @@ IndexType OpenMPJDSUtils::getValuePosRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType>
 void OpenMPJDSUtils::scaleRows(
     ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    const OtherValueType rowValues[] )
+    const ValueType rowValues[] )
 {
     SCAI_LOG_INFO( logger, "scaleRows with numRows = " << numRows )
 
@@ -304,7 +304,7 @@ void OpenMPJDSUtils::scaleRows(
     {
         IndexType offset = i;
 
-        ValueType rowScale = static_cast<ValueType>( rowValues[perm[i]] );
+        ValueType rowScale = rowValues[perm[i]];
 
         for ( IndexType jj = 0; jj < ilg[i]; jj++ )
         {
@@ -503,24 +503,6 @@ void OpenMPJDSUtils::setCSRValues(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPJDSUtils::normalGEMV_a(
-    ValueType result[],
-    const std::pair<ValueType, const ValueType*> ax,
-    const std::pair<ValueType, const ValueType*> by,
-    const std::pair<IndexType, const IndexType*> rows,
-    const IndexType perm[],
-    const std::pair<IndexType, const IndexType*> dlg,
-    const IndexType jdsJA[],
-    const ValueType jdsValues[] )
-{
-    normalGEMV( result, ax.first, ax.second, by.first, by.second,
-                rows.first, perm, rows.second, dlg.first, dlg.second,
-                jdsJA, jdsValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void OpenMPJDSUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -528,155 +510,94 @@ void OpenMPJDSUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
-    const IndexType perm[],
-    const IndexType jdsILG[],
-    const IndexType ndlg,
-    const IndexType jdsDLG[],
-    const IndexType jdsJA[],
-    const ValueType jdsValues[] )
-{
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        syncToken->run( std::bind( normalGEMV_a<ValueType>,
-                                   result,
-                                   std::pair<ValueType, const ValueType*>( alpha, x ),
-                                   std::pair<ValueType, const ValueType*>( beta, y ),
-                                   std::pair<IndexType, const IndexType*>( numRows, jdsILG ),
-                                   perm,
-                                   std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
-                                   jdsJA, jdsValues ) );
-        return;
-    }
-
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
-
-    // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
-
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numRows, common::BinaryOp::MULT, false );
-
-    if ( ndlg == 0 )
-    {
-        return; // definitively empty matrix
-    }
-
-    // dlg[0] stands exactly for number of non-empty rows
-    IndexType nonEmptyRows = jdsDLG[0];
-    SCAI_LOG_DEBUG( logger, "y += alpha * A * x, #non-empty row = " << nonEmptyRows )
-    #pragma omp parallel
-    {
-        SCAI_REGION( "OpenMP.JDS.normalGEMV" )
-        #pragma omp for 
-
-        for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
-        {
-            ValueType value = static_cast<ValueType>( 0.0 ); // sums up final value
-            IndexType offset = ii;
-
-            for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
-            {
-                IndexType j = jdsJA[offset];
-                SCAI_LOG_TRACE( logger,
-                                "compute entry i = " << perm[ii] << ", j = " << j << ", val = " << jdsValues[offset] )
-                value += jdsValues[offset] * x[j];
-                offset += jdsDLG[jj]; // there is next value for this row
-            }
-
-            // scattering needs no synchronization as values of perm are unique
-            result[perm[ii]] += alpha * value;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPJDSUtils::normalGEVM_a(
-    ValueType result[],
-    const std::pair<ValueType, const ValueType*> ax,
-    const std::pair<ValueType, const ValueType*> by,
-    const std::pair<IndexType, const IndexType*> rows,
-    const IndexType perm[],
-    const std::pair<IndexType, const IndexType*> dlg,
-    const IndexType jdsJA[],
-    const ValueType jdsValues[] )
-{
-    normalGEVM( result, ax.first, ax.second, by.first, by.second,
-                rows.first, perm, rows.second, dlg.first, dlg.second,
-                jdsJA, jdsValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPJDSUtils::normalGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
     const IndexType numColumns,
     const IndexType perm[],
     const IndexType jdsILG[],
     const IndexType ndlg,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const ValueType jdsValues[] )
+    const ValueType jdsValues[],
+    const common::MatrixOp op )
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        syncToken->run( std::bind( normalGEVM_a<ValueType>,
+        syncToken->run( std::bind( normalGEMV<ValueType>,
                                    result,
-                                   std::pair<ValueType, const ValueType*>( alpha, x ),
-                                   std::pair<ValueType, const ValueType*>( beta, y ),
-                                   std::pair<IndexType, const IndexType*>( numColumns, jdsILG ),
-                                   perm,
-                                   std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
-                                   jdsJA, jdsValues ) );
+                                   alpha, x, beta, y,
+                                   numRows, numColumns,
+                                   perm, jdsILG, ndlg, jdsDLG, 
+                                   jdsJA, jdsValues, op ) );
         return;
     }
 
+    const IndexType nResult = common::isTranspose( op ) ? numColumns : numRows;
+
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
+                   << ">, op = " << op << ", result[" << nResult 
+                   << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
+    // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
+    if ( beta != common::Constants::ONE || &result != &y )
+    {
+        utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, nResult, common::BinaryOp::MULT, false );
+    }
 
     if ( ndlg == 0 )
     {
         return; // definitively empty matrix
     }
 
-    // dlg[0] stands exactly for number of non-empty rows
+    IndexType nonEmptyRows = jdsDLG[0];  // stands exactly for number of non-empty rows
 
-    IndexType nonEmptyRows = jdsDLG[0];
-
-    SCAI_LOG_DEBUG( logger, "y += alpha * x * A, #non-empty row = " << nonEmptyRows )
+    SCAI_LOG_DEBUG( logger, "result += alpha * A * x, #non-empty row = " << nonEmptyRows )
 
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.JDS.normalGEVM" )
-
-        #pragma omp for
-
-        for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
+        if ( common::isTranspose( op ) )
         {
-            IndexType offset = ii;
+            SCAI_REGION( "OpenMP.JDS.gemv_t" )
 
-            const ValueType tmpX   = x[perm[ii]];
+            #pragma omp for
 
-            for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
+            for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
             {
-                IndexType j = jdsJA[offset];
-                ValueType v = alpha * jdsValues[offset] * tmpX;
-                atomicAdd( result[j], v );
-                offset += jdsDLG[jj];      // jump to next value for this row
+                IndexType offset = ii;
+
+                const ValueType tmpX   = x[perm[ii]];
+
+                for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
+                {
+                    IndexType j = jdsJA[offset];
+                    ValueType v = alpha * jdsValues[offset] * tmpX;
+                    atomicAdd( result[j], v );
+                    offset += jdsDLG[jj];      // jump to next value for this row
+                }
+            }
+        }
+        else
+        {
+            SCAI_REGION( "OpenMP.JDS.gemv_n" )
+            #pragma omp for 
+    
+            for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
+            {
+                ValueType value = 0; // sums up final value
+                IndexType offset = ii;
+    
+                for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
+                {
+                    IndexType j = jdsJA[offset];
+
+                    value += jdsValues[offset] * x[j];
+                    offset += jdsDLG[jj]; // there is next value for this row
+                }
+    
+                // scattering needs no synchronization as values of perm are unique
+                result[perm[ii]] += alpha * value;
             }
         }
     }
@@ -829,9 +750,11 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getRow<ValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setRow<ValueType> >( setRow, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
@@ -843,9 +766,6 @@ void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( 
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::setRow<ValueType, OtherValueType> >( setRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }

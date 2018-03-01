@@ -109,9 +109,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( solveWithoutInitialization, ValueType, scai_numer
     MatrixCreator::buildPoisson2D( coefficients, 9, N1, N2 );
 
     const ValueType solutionInitValue = 1.0;
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
-    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );
-    DenseVector<ValueType> rhs( coefficients * exactSolution );
+    auto colDist = coefficients.getColDistributionPtr();
+
+    auto solution      = fill<DenseVector<ValueType>>( colDist, solutionInitValue );
+    auto exactSolution = fill<DenseVector<ValueType>>( colDist, solutionInitValue + 1 );
+    auto rhs           = eval<DenseVector<ValueType>>( coefficients * exactSolution );
 
     // Test for all registered solvers ( with this value type )
 

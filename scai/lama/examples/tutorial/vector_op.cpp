@@ -112,8 +112,8 @@ void methods2()
 
     const IndexType n = 10;
 
-    DenseVector<ValueType> x( n, 1.0, ctx );
-    DenseVector<ValueType> y( n, 2.0, ctx );
+    auto x = fill<DenseVector<ValueType>>( n, 1, ctx );
+    auto y = fill<DenseVector<ValueType>>( n, 2, ctx );
 
     x[0] = 0.5;
     y[1] = x[0] * 1.0 - 0.5 * y[0];
@@ -176,9 +176,8 @@ int main()
 {
     IndexType n = 10;
 
-    DenseVector<ValueType> xD( n, 1 );
-
-    SparseVector<ValueType> xS( n, 1 );
+    auto xD = fill<DenseVector<ValueType>>( n, 1 );
+    auto xS = fill<SparseVector<ValueType>>( n, 1 );
 
     std::cout << "DenseVector = " << xS << std::endl;
 
@@ -194,18 +193,18 @@ int main()
     IndexType rawNonZeroIndexes1[] = { 0, 5, 6 };
     ValueType rawNonZeroValues1[] = { 0.5, 0.6, 0.7 };
 
-    xS.setSparseValues( 3, rawNonZeroIndexes1, rawNonZeroValues1, 1.0 );
+    xS.setSparseValues( 3, rawNonZeroIndexes1, rawNonZeroValues1, ValueType( 1 ) );
  
     xD *= xS;  // be careful, sets most of xD to 0
 
     IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
     ValueType rawNonZeroValues2[] = { 0.5, 0.4, 0.9 };
 
-    SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, 1.0 );
-    SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, 1.0 );
+    SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, ValueType( 1 ) );
+    SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, ValueType( 1 ) );
 
-    DenseVector<ValueType> xD1( xS1 );
-    DenseVector<ValueType> xD2( xS2 );
+    auto xD1 = convert<DenseVector<ValueType>>( xS1 );
+    auto xD2 = convert<DenseVector<ValueType>>( xS2 );
 
     std::cout << "Max norm xS1 = " << xS1.maxNorm() << ", xD1 = " << xD1.maxNorm() << std::endl;
     std::cout << "L1 norm xS1 = " << xS1.l1Norm() << ", xD1 = " << xD1.l1Norm() << std::endl;

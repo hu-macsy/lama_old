@@ -42,7 +42,7 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 // common
 #include <scai/common/SCAITypes.hpp>
@@ -60,7 +60,7 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CGS<ValueType>::logger, "Solver.IterativeSolver.CGS" )
 
 using lama::Matrix;
-using lama::DenseVector;
+using lama::Vector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -129,23 +129,14 @@ void CGS<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
     hmemo::ContextPtr ctx = coefficients.getContextPtr();
 
-    runtime.mRes0.setContextPtr( ctx );
-    runtime.mVecT.setContextPtr( ctx );
-    runtime.mVecP.setContextPtr( ctx );
-    runtime.mVecQ.setContextPtr( ctx );
-    runtime.mVecU.setContextPtr( ctx );
-    runtime.mVecPT.setContextPtr( ctx );
-    runtime.mVecUT.setContextPtr( ctx );
-    runtime.mVecTemp.setContextPtr( ctx );
-
-    runtime.mRes0.allocate( dist );
-    runtime.mVecT.allocate( dist );
-    runtime.mVecP.allocate( dist );
-    runtime.mVecQ.allocate( dist );
-    runtime.mVecU.allocate( dist );
-    runtime.mVecPT.allocate( dist );
-    runtime.mVecUT.allocate( dist );
-    runtime.mVecTemp.allocate( dist );
+    runtime.mRes0.reset( coefficients.newSourceVector() );
+    runtime.mVecT.reset( coefficients.newTargetVector() );
+    runtime.mVecP.reset( coefficients.newTargetVector() );
+    runtime.mVecQ.reset( coefficients.newTargetVector() );
+    runtime.mVecU.reset( coefficients.newTargetVector() );
+    runtime.mVecPT.reset( coefficients.newTargetVector() );
+    runtime.mVecUT.reset( coefficients.newTargetVector() );
+    runtime.mVecTemp.reset( coefficients.newTargetVector() );
 }
 
 /* ========================================================================= */
@@ -153,7 +144,7 @@ void CGS<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 /* ========================================================================= */
 
 template<typename ValueType>
-void CGS<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
+void CGS<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -161,25 +152,34 @@ void CGS<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVec
 
     this->getResidual();
 
-    runtime.mRes0 = runtime.mResidual;
-    runtime.mVecP = runtime.mResidual;
-    runtime.mVecU = runtime.mResidual;
+    const Vector<ValueType>& residual = *runtime.mResidual;
+
+    Vector<ValueType>& res0 = *runtime.mRes0;
+    Vector<ValueType>& vecP = *runtime.mVecP;
+    Vector<ValueType>& vecU = *runtime.mVecU;
+    Vector<ValueType>& vecPT = *runtime.mVecPT;
+
+    // (deep) copy of the residual to res0, vecP, vecU
+
+    res0 = residual;
+    vecP = residual;
+    vecU = residual;
 
     // PRECONDITIONING
 
     if ( mPreconditioner != NULL )
     {
-        runtime.mVecPT.setSameValue( runtime.mVecP.getDistributionPtr(), 0 );
-        mPreconditioner->solve( runtime.mVecPT, runtime.mVecP );
+        vecPT = 0;
+        mPreconditioner->solve( vecPT, vecP );
     }
     else
     {
-        runtime.mVecPT = runtime.mVecP;
+        vecPT = vecP;
     }
 
     //initial <res,res> inner product;
 
-    runtime.mInnerProdRes = runtime.mRes0.dotProduct( runtime.mRes0 );
+    runtime.mInnerProdRes = res0.dotProduct( res0 );
     SCAI_LOG_INFO( logger, "solveInit, mInnerProdRes = " << runtime.mInnerProdRes )
     runtime.mSolveInit = true;
 }
@@ -195,16 +195,16 @@ void CGS<ValueType>::iterate()
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
 
-    const DenseVector<ValueType>& res0 = runtime.mRes0;
-    DenseVector<ValueType>& res = runtime.mResidual;
-    DenseVector<ValueType>& vecP = runtime.mVecP;
-    DenseVector<ValueType>& vecQ = runtime.mVecQ;
-    DenseVector<ValueType>& vecU = runtime.mVecU;
-    DenseVector<ValueType>& vecT = runtime.mVecT;
-    DenseVector<ValueType>& vecPT = runtime.mVecPT;
-    DenseVector<ValueType>& vecUT = runtime.mVecUT;
-    DenseVector<ValueType>& vecTemp = runtime.mVecTemp;
-    DenseVector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
+    const Vector<ValueType>& res0 = *runtime.mRes0;
+    Vector<ValueType>& res = *runtime.mResidual;
+    Vector<ValueType>& vecP = *runtime.mVecP;
+    Vector<ValueType>& vecQ = *runtime.mVecQ;
+    Vector<ValueType>& vecU = *runtime.mVecU;
+    Vector<ValueType>& vecT = *runtime.mVecT;
+    Vector<ValueType>& vecPT = *runtime.mVecPT;
+    Vector<ValueType>& vecUT = *runtime.mVecUT;
+    Vector<ValueType>& vecTemp = *runtime.mVecTemp;
+    Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
 
     ValueType& innerProdRes = runtime.mInnerProdRes;
     ValueType alpha;

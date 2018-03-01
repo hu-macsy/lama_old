@@ -65,7 +65,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
     ValueType zero = 0;
-    ELLStorage<ValueType> ellStorage( numRows, numColumns, context );
+
+    ELLStorage<ValueType> ellStorage;
+    ellStorage.setContextPtr( context );
+    ellStorage.allocate( numRows, numColumns );
+
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( IndexType( 0 ), ellStorage.getNumValues() );
@@ -103,7 +107,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
     LArray<IndexType> ellIA( numRows, ia );
     LArray<IndexType> ellJA( numValues, ja );
     LArray<ValueType> ellValues( numValues, values );
-    ELLStorage<ValueType> ellStorage( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
+    ELLStorage<ValueType> ellStorage( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues, loc );
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValuesPerRow, ellStorage.getNumValuesPerRow() );
@@ -135,8 +139,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
             }
         }
     }
-    // copy constructor on all available locations
-    ELLStorage<ValueType> ellStorageCopy( ellStorage, loc );
+
+    // copy constructor 
+
+    ELLStorage<ValueType> ellStorageCopy( ellStorage );
     BOOST_REQUIRE_EQUAL( numRows, ellStorageCopy.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValuesPerRow, ellStorageCopy.getNumValuesPerRow() );
@@ -167,6 +173,101 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
             }
         }
     }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+static inline const ValueType* getPointer( const HArray<ValueType>& a, ContextPtr ctx )
+{
+    ReadAccess<ValueType> rA( a, ctx );
+    return rA.get();
+}
+
+BOOST_AUTO_TEST_CASE( moveConstructorTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+    const IndexType numValuesPerRow = 2;
+    const IndexType numValues = 4;
+
+    HArray<IndexType> ellIA( { 1, 1, 2 } );
+    HArray<IndexType> ellJA( { 0, 1, 2, 0, 0, 1 } );
+    HArray<ValueType> ellValues( { 5, 5, 3, 0, 0, 2 } );
+
+    const IndexType* ptrIA = getPointer( ellIA, context );
+    const IndexType* ptrJA = getPointer( ellJA, context );
+    const ValueType* ptrValues = getPointer( ellValues, context );
+
+    SCAI_LOG_INFO( logger, "call moveConstructor with ell arrays" )
+
+    ELLStorage<ValueType> ellStorage( numRows, numColumns, numValuesPerRow, std::move( ellIA ), ellJA, std::move( ellValues ) );
+
+    BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
+    BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
+    BOOST_REQUIRE_EQUAL( numValues, ellStorage.getNumValues() );
+
+    BOOST_CHECK( ellStorage.hasDiagonalProperty() );
+
+    // verify that move was okay
+
+    BOOST_CHECK_EQUAL( ptrIA, getPointer( ellStorage.getIA(), context ) );
+    BOOST_CHECK( ptrJA != getPointer( ellStorage.getJA(), context ) );
+    ptrJA = getPointer( ellStorage.getJA(), context );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( ellStorage.getValues(), context ) );
+
+    BOOST_CHECK_EQUAL( ellIA.size(), 0 );
+    BOOST_CHECK_EQUAL( ellJA.size(), numValuesPerRow * numRows );
+    BOOST_CHECK_EQUAL( ellValues.size(), 0 );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( splitUpTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+    const IndexType numValuesPerRow = 2;
+
+    HArray<IndexType> ellIA( { 1, 1, 2 } );
+    HArray<IndexType> ellJA( { 0, 1, 2, 0, 0, 1 } );
+    HArray<ValueType> ellValues( { 5, 5, 3, 0, 0, 2 } );
+
+    const IndexType* ptrIA = getPointer( ellIA, context );
+    const IndexType* ptrJA = getPointer( ellJA, context );
+    const ValueType* ptrValues = getPointer( ellValues, context );
+
+    ELLStorage<ValueType> ellStorage( numRows, numColumns, numValuesPerRow,
+                                      std::move( ellIA ), std::move( ellJA ), std::move( ellValues ) );
+
+    IndexType outNumRows;
+    IndexType outNumColumns;
+    IndexType outNumValuesPerRow;
+    HArray<IndexType> outIA;
+    HArray<IndexType> outJA;
+    HArray<ValueType> outValues;
+
+    ellStorage.splitUp( outNumRows, outNumColumns, outNumValuesPerRow, outIA, outJA, outValues );
+
+    BOOST_CHECK_EQUAL( outNumRows, numRows );
+    BOOST_CHECK_EQUAL( outNumColumns, numColumns );
+    BOOST_CHECK_EQUAL( outNumValuesPerRow, numValuesPerRow );
+
+    BOOST_CHECK_EQUAL( ptrIA, getPointer( outIA, context ) );
+    BOOST_CHECK_EQUAL( ptrJA, getPointer( outJA, context ) );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( outValues, context ) );
+
+    BOOST_CHECK_EQUAL( ellStorage.getIA().size(), 0 );
+    BOOST_CHECK_EQUAL( ellStorage.getJA().size(), 0 );
+    BOOST_CHECK_EQUAL( ellStorage.getValues().size(), 0 );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -214,14 +315,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
     }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
-{
-    // use template storage test
-    storageSwapTest<ELLStorage<ValueType> >();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

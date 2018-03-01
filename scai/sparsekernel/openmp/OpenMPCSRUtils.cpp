@@ -504,22 +504,20 @@ void OpenMPCSRUtils::compress(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType1, typename ValueType2>
+template<typename ValueType>
 void OpenMPCSRUtils::scaleRows(
-    ValueType1 csrValues[],
+    ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const ValueType2 values[] )
+    const ValueType values[] )
 {
     #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        ValueType1 tmp = static_cast<ValueType1>( values[i] );
-
         for ( IndexType j = csrIA[i]; j < csrIA[i + 1]; ++j )
         {
-            csrValues[j] *= tmp;
+            csrValues[j] *= values[i];
         }
     }
 }
@@ -746,68 +744,6 @@ void OpenMPCSRUtils::reduce(
 
 /* --------------------------------------------------------------------------- */
 
-// Alternative routine is needed as bind can only deal with up to 9 arguments
-
-template<typename ValueType>
-void OpenMPCSRUtils::normalGEMV_s(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const ValueType csrValues[] )
-{
-    SCAI_LOG_INFO( logger,
-                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y " )
-    // ToDo: for efficiency the following cases should be considered
-    // result = y, beta = 1.0 : result += alpha * A * x
-    // otherwise: alpha = -1.0, 1.0, beta = 1.0, -1.0, 0.0
-    // Note: for beta = 0.0, y could be uninitialized.
-    //       0.0 * undefined should deliver 0.0, but valgrind cannot deal with it
-    #pragma omp parallel
-    {
-        // Note: region will be entered by each thread
-        SCAI_REGION( "OpenMP.CSR.normalGEMV" )
-        #pragma omp for 
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            ValueType temp = static_cast<ValueType>( 0.0 );
-
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
-            {
-                IndexType j = csrJA[jj];
-                temp += csrValues[jj] * x[j];
-            }
-
-            if ( beta == common::Constants::ZERO )
-            {
-                result[i] = alpha * temp;
-            }
-            else
-            {
-                result[i] = alpha * temp + beta * y[i];
-            }
-        }
-    }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        std::cout << "NormalGEMV: result = ";
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            std::cout << " " << result[i];
-        }
-
-        std::cout << std::endl;
-    }
-}
-
 template<typename ValueType>
 void OpenMPCSRUtils::normalGEMV(
     ValueType result[],
@@ -816,96 +752,88 @@ void OpenMPCSRUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
-    const IndexType SCAI_UNUSED( numColumns ),
-    const IndexType SCAI_UNUSED( nnz ),
+    const IndexType numColumns,
+    const IndexType numValues,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[] )
+    const ValueType csrValues[], 
+    const common::MatrixOp op )
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        syncToken->run( std::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y,
-                                   numRows, csrIA, csrJA, csrValues ) );
-    }
-    else
-    {
-        normalGEMV_s( result, alpha, x, beta, y, numRows, csrIA, csrJA, csrValues );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPCSRUtils::normalGEVM_s(
-    ValueType result[],
-    std::pair<ValueType, const ValueType*> ax,
-    std::pair<ValueType, const ValueType*> by,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const ValueType csrValues[] )
-{
-    normalGEVM( result, ax.first, ax.second, by.first, by.second, numRows, numColumns, csrIA[numRows], csrIA, csrJA, csrValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPCSRUtils::normalGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType,
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const ValueType csrValues[] )
-{
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in a struct
         SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
-        syncToken->run( std::bind( normalGEVM_s<ValueType>, result,
-                                   std::pair<ValueType, const ValueType*>( alpha, x ),
-                                   std::pair<ValueType, const ValueType*>( beta, y ),
-                                   numRows, numColumns, csrIA, csrJA, csrValues ) );
+
+        syncToken->run( std::bind( normalGEMV<ValueType>, 
+                                   result, alpha, x, beta, y,
+                                   numRows, numColumns, numValues,
+                                   csrIA, csrJA, csrValues, op ) );
         return;
     }
 
     SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = "
-                   << alpha << " * x * A + " << beta << " * y " )
+                   "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
+                   << ">, result[" << numRows << "] = " << alpha << " * A * x + " << beta << " * y, matrix op = " << op )
 
-    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
-
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
-
-    #pragma omp parallel
+    if ( op == common::MatrixOp::TRANSPOSE )
     {
-        // Note: region will be entered by each thread
+        // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-        SCAI_REGION( "OpenMP.CSR.normalGEVM" )
+        utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
 
-        #pragma omp for
-
-        for ( IndexType i = 0; i < numRows; ++i )
+        #pragma omp parallel
         {
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
-            {
-                IndexType j = csrJA[jj];
-                ValueType v = alpha * csrValues[jj] * x[i];
+            // Note: region will be entered by each thread
 
-                atomicAdd( result[j], v );
+            SCAI_REGION( "OpenMP.CSR.normalGEMV_t" )
+
+            #pragma omp for
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+                {
+                    IndexType j = csrJA[jj];
+                    ValueType v = alpha * csrValues[jj] * x[i];
+
+                    atomicAdd( result[j], v );
+                }
             }
         }
+    }
+    else if ( op == common::MatrixOp::NORMAL )
+    {
+        #pragma omp parallel
+        {
+            // Note: region will be entered by each thread
+            SCAI_REGION( "OpenMP.CSR.normalGEMV_n" )
+            #pragma omp for 
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                ValueType temp = 0;
+
+                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+                {
+                    IndexType j = csrJA[jj];
+                    temp += csrValues[jj] * x[j];
+                }
+
+                if ( y == NULL) 
+                {
+                    result[i] = alpha * temp;
+                }
+                else
+                {
+                    result[i] = alpha * temp + beta * y[i];
+                }
+            }
+        }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unsupported matrix operation: " << op );
     }
 }
 
@@ -920,96 +848,63 @@ void OpenMPCSRUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[] )
+    const ValueType csrValues[],
+    const common::MatrixOp op )
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
         syncToken->run( std::bind( sparseGEMV<ValueType>, result, alpha,
-                                   x, numNonZeroRows, rowIndexes, csrIA, csrJA, csrValues ) );
+                                   x, numNonZeroRows, rowIndexes, csrIA, csrJA, csrValues, op ) );
         return;
     }
 
-    #pragma omp parallel
+    if ( op == common::MatrixOp::TRANSPOSE )
     {
-        // Note: region will be entered by each thread
-        SCAI_REGION( "OpenMP.CSR.sparseGEMV" )
-        #pragma omp for 
-
-        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
+        #pragma omp parallel
         {
-            ValueType temp = static_cast<ValueType>( 0.0 );
-            IndexType i = rowIndexes[ii];
+            // Note: region will be entered by each thread
 
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            SCAI_REGION( "OpenMP.CSR.sparseGEMV_t" )
+
+            #pragma omp for
+
+            for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
             {
-                IndexType j = csrJA[jj];
-                temp += csrValues[jj] * x[j];
+                IndexType i = rowIndexes[ii];
+
+                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+                {
+                    IndexType j = csrJA[jj];
+                    ValueType v = alpha * csrValues[jj] * x[i];
+    
+                    atomicAdd( result[j], v );
+                }
             }
-
-            result[i] += alpha * temp;
         }
     }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
+    else if ( op == common::MatrixOp::NORMAL )
     {
-        std::cout << "sparseGEMV: result = ";
-
-        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
+        #pragma omp parallel
         {
-            IndexType i = rowIndexes[ii];
-            std::cout << " " << i << ":" << result[i];
-        }
-
-        std::cout << std::endl;
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPCSRUtils::sparseGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const IndexType numColumns,
-    const IndexType numNonZeroRows,
-    const IndexType rowIndexes[],
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const ValueType csrValues[] )
-{
-    SCAI_LOG_INFO( logger,
-                   "sparseGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numColumns << "] += " << alpha << " * x * A" )
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
-    }
-
-    // While GEMV gathers x values needed for each row, GEVM scatters values in result
-
-    #pragma omp parallel
-    {
-        // Note: region will be entered by each thread
-
-        SCAI_REGION( "OpenMP.CSR.sparseGEVM" )
-
-        #pragma omp for
-
-        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
-        {
-            IndexType i = rowIndexes[ii];
-
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            // Note: region will be entered by each thread
+            SCAI_REGION( "OpenMP.CSR.sparseGEMV_n" )
+            #pragma omp for 
+    
+            for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
             {
-                IndexType j = csrJA[jj];
-                ValueType v = alpha * csrValues[jj] * x[i];
+                ValueType temp = 0;
+    
+                IndexType i = rowIndexes[ii];
+    
+                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+                {
+                    IndexType j = csrJA[jj];
+                    temp += csrValues[jj] * x[j];
+                }
 
-                atomicAdd( result[j], v );
+                result[i] += alpha * temp;
             }
         }
     }
@@ -1974,8 +1869,6 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<CSRKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::gemm<ValueType> >( gemm, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
@@ -1987,16 +1880,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
-}
-
-template<typename ValueType, typename OtherValueType>
-void OpenMPCSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    common::ContextType ctx = common::ContextType::Host;
-    SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2010,7 +1894,6 @@ OpenMPCSRUtils::OpenMPCSRUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPCSRUtils::~OpenMPCSRUtils()
@@ -2020,7 +1903,6 @@ OpenMPCSRUtils::~OpenMPCSRUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

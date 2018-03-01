@@ -269,23 +269,6 @@ void OpenMPCOOUtils::setCSRData(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPCOOUtils::normalGEMV_a(
-    ValueType result[],
-    const std::pair<ValueType, const ValueType*> ax,
-    const std::pair<ValueType, const ValueType*> by,
-    const IndexType numRows,
-    const IndexType numValues,
-    const IndexType cooIA[],
-    const IndexType cooJA[],
-    const ValueType cooValues[] )
-{
-    normalGEMV( result, ax.first, ax.second, by.first, by.second,
-                numRows, numValues, cooIA, cooJA, cooValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void OpenMPCOOUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -293,118 +276,76 @@ void OpenMPCOOUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType numColumns,
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
-    const ValueType cooValues[] )
+    const ValueType cooValues[],
+    const common::MatrixOp op )
 {
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        // bind has limited number of arguments, so take help routine for call
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
-        syncToken->run( std::bind( normalGEMV_a<ValueType>,
-                                   result,
-                                   std::pair<ValueType, const ValueType*>( alpha, x ),
-                                   std::pair<ValueType, const ValueType*>( beta, y ),
-                                   numRows, numValues, cooIA, cooJA, cooValues ) );
+
+        syncToken->run( std::bind( normalGEMV<ValueType>,
+                                   result, alpha, x, beta, y,
+                                   numRows, numColumns, numValues, 
+                                   cooIA, cooJA, cooValues, op ) );
         return;
     }
+
+    const IndexType nResult = common::isTranspose( op ) ? numColumns : numRows;
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">,"
-                   << " result[" << numRows << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
+                   << " result[" << nResult << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + " << beta << " * y " )
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numRows, common::BinaryOp::MULT, false );
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, nResult, common::BinaryOp::MULT, false );
 
-    #pragma omp parallel
+    if ( op == common::MatrixOp::TRANSPOSE )
     {
-        SCAI_REGION( "OpenMP.COO.normalGEMV" )
-        #pragma omp for
-
-        for ( IndexType k = 0; k < numValues; ++k )
+        #pragma omp parallel
         {
-            IndexType i = cooIA[k];
-            IndexType j = cooJA[k];
-            // we must use atomic updates as different threads might update same row i
-            const ValueType resultUpdate = alpha * cooValues[k] * x[j];
-            atomicAdd( result[i], resultUpdate );
+            SCAI_REGION( "OpenMP.COO.GEMV_t" )
+
+            #pragma omp for 
+
+            for ( IndexType k = 0; k < numValues; ++k )
+            {
+                IndexType i = cooIA[k];
+                IndexType j = cooJA[k];
+                // we must use atomic updates as different threads might update same row i
+                const ValueType resultUpdate = alpha * cooValues[k] * x[i];
+                // thread-safe atomic update
+                atomicAdd( result[j], resultUpdate );
+            }
         }
     }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPCOOUtils::normalGEVM_a(
-    ValueType result[],
-    const std::pair<ValueType, const ValueType*> ax,
-    const std::pair<ValueType, const ValueType*> by,
-    const IndexType numColumns,
-    const IndexType numValues,
-    const IndexType cooIA[],
-    const IndexType cooJA[],
-    const ValueType cooValues[] )
-{
-    normalGEVM( result, ax.first, ax.second, by.first, by.second, numColumns, numValues, cooIA, cooJA, cooValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPCOOUtils::normalGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numColumns,
-    const IndexType numValues,
-    const IndexType cooIA[],
-    const IndexType cooJA[],
-    const ValueType cooValues[] )
-{
-    SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numColumns << "] = " << alpha << " x[] * A( coo, #vals = " << numValues << " ) + "
-                   << beta << " * y " )
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
+    else if ( op == common::MatrixOp::NORMAL )
     {
-        // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in pair structs
-        SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
-        syncToken->run( std::bind( normalGEVM_a<ValueType>,
-                                   result,
-                                   std::pair<ValueType, const ValueType*>( alpha, x ),
-                                   std::pair<ValueType, const ValueType*>( beta, y ),
-                                   numColumns, numValues, cooIA, cooJA, cooValues ) );
-        return;
-    }
-
-    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
-
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
-
-    #pragma omp parallel
-    {
-        SCAI_REGION( "OpenMP.COO.normalGEVM" )
-
-        #pragma omp for 
-
-        for ( IndexType k = 0; k < numValues; ++k )
+        #pragma omp parallel
         {
-            IndexType i = cooIA[k];
-            IndexType j = cooJA[k];
-            // we must use atomic updates as different threads might update same row i
-            const ValueType resultUpdate = alpha * cooValues[k] * x[i];
-            // thread-safe atomic update
-            atomicAdd( result[j], resultUpdate );
+            SCAI_REGION( "OpenMP.COO.GEMV_n" )
+            #pragma omp for
+    
+            for ( IndexType k = 0; k < numValues; ++k )
+            {
+                IndexType i = cooIA[k];
+                IndexType j = cooJA[k];
+                // we must use atomic updates as different threads might update same row i
+                const ValueType resultUpdate = alpha * cooValues[k] * x[j];
+                atomicAdd( result[i], resultUpdate );
+            }
         }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "matrix op " << op << " unsupported here." )
     }
 }
 
@@ -483,7 +424,6 @@ void OpenMPCOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
 

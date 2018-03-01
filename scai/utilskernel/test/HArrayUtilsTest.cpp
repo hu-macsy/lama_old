@@ -93,14 +93,17 @@ BOOST_AUTO_TEST_CASE( factoryTest )
 BOOST_AUTO_TEST_CASE( untypedTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
+
     ContextPtr ctx  = Context::getContextPtr();
+
+    HArray<IndexType> perm( { 1, 0, 3, 2}, ctx );
+    const IndexType n = perm.size();
+
+    HArray<IndexType> order( ctx );
+    HArrayUtils::setOrder( order, n );    // 0, 1, 2, .., n-1
+
     HArrays allArrays1;    // vector with HArray of each type
     HArrays allArrays2;    // another vector to get each pair combination
-    const IndexType permVals[] = { 1, 0, 3, 2 };
-    const IndexType n = sizeof( permVals ) / sizeof( IndexType );
-    LArray<IndexType> perm( n, permVals );
-    LArray<IndexType> order;
-    HArrayUtils::setOrder( order, n );    // 0, 1, 2, .., n-1
 
     for ( size_t i1 = 0; i1 < allArrays1.size(); ++i1 )
     {
@@ -145,14 +148,12 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             bool unique = true;  // perm has unique indexes
             HArrayUtils::scatter( *tmp, perm, unique, array1, BinaryOp::COPY, ctx );
 
-            // as perm is its inverse, tmp and array2 should be the same
+            // as perm is its inverse, tmp and array2 should be the same, convert them to ValueType
 
-            for ( IndexType k = 0; k < n; ++k )
-            {
-                ValueType val1 = HArrayUtils::getVal<ValueType>( array2, k );
-                ValueType val2 = HArrayUtils::getVal<ValueType>( *tmp, k );
-                BOOST_CHECK_EQUAL( val1, val2 );
-            }
+            LArray<ValueType> vArray1( array2 );
+            LArray<ValueType> vArray2( *tmp );
+
+            BOOST_TEST( hostReadAccess( vArray1 ) == hostReadAccess( vArray2 ), boost::test_tools::per_element() );
         }
     }
 }
@@ -180,6 +181,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setScalarTest, ValueType, scai_numeric_test_types
             BOOST_CHECK_EQUAL( expectedValue, read[i] );
         }
     }
+
+    BOOST_TEST( hostReadAccess( array ) == std::vector<ValueType>( N, expectedValue ), boost::test_tools::per_element() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -524,18 +527,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
     {
         BinaryOp op = BinaryOp( i );
 
-        HArray<IndexType> ia1( ctx );
-        HArray<IndexType> ia2( ctx );
+        HArray<IndexType> ia1( nnz1, indexes1, ctx );
+        HArray<IndexType> ia2( nnz2, indexes2, ctx );
         HArray<IndexType> ia3( ctx );
 
-        HArray<ValueType> array1( ctx );
-        HArray<ValueType> array2( ctx );
+        HArray<ValueType> array1( nnz1, values1, ctx );
+        HArray<ValueType> array2( nnz1, values2, ctx );
         HArray<ValueType> array3( ctx );
-
-        ia1.setRawData( nnz1, indexes1 );
-        array1.setRawData( nnz1, values1 );
-        ia2.setRawData( nnz1, indexes2 );
-        array2.setRawData( nnz2, values2 );
 
         ValueType zero1 = 1;
         ValueType zero2 = 2;
@@ -545,6 +543,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
         BOOST_REQUIRE_EQUAL( ia3.size(), array3.size() ); 
         BOOST_REQUIRE( ia3.size() >= ia2.size() ); 
         BOOST_REQUIRE( ia3.size() >= ia1.size() ); 
+
+        SCAI_LOG_DEBUG( logger, "Sparse indexes: ia1 = " << ia1 << ", ia2 = " << ia2 << ", ia3 = " << ia3 )
 
         IndexType pos1 = 0;
         IndexType pos2 = 0;
@@ -562,23 +562,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
         {
             ValueType res = 0;
 
+            SCAI_LOG_TRACE( logger, "check i = " << i << ", pos1 = " << pos1 << ", pos2 = " << pos2 << ", pos3 = " << pos3 )
+
+            if ( pos3 >= ia3.size() )
+            {
+                break;
+            }
+
             if ( rIA3[pos3] != i )
             {
                 continue;
             }
 
-            if ( rIA2[pos2] == i && rIA1[pos1] == i )
+            // Be careful here: do not read out of range
+
+            if ( pos1 < ia1.size() && pos2 < ia2.size() && rIA2[pos2] == i && rIA1[pos1] == i )
             {
                 res = applyBinary( rValues1[pos1], op, rValues2[pos2] );
                 pos1++;
                 pos2++;
             }
-            else if ( rIA1[pos1] == i )
+            else if ( pos1 < ia1.size() && rIA1[pos1] == i )
             {
                 res = applyBinary( rValues1[pos1], op, zero2 );
                 pos1++;
             }
-            else if ( rIA2[pos2] == i )
+            else if ( pos2 < ia2.size() && rIA2[pos2] == i )
             {
                 res = applyBinary( zero1, op, rValues2[pos2] );
                 pos2++;
@@ -1303,6 +1312,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArraySectionTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( appendArrayTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    HArray<ValueType> x( { 3, 1, 4 }, loc );
+    HArray<ValueType> y( { 2, 1, 1, 3 }, loc );
+    HArray<ValueType> xy( { 3, 1, 4, 2, 1, 1, 3 } );
+
+    IndexType nx = x.size();
+
+    HArrayUtils::appendArray( x, HArray<ValueType>( {} ), loc );
+
+    BOOST_CHECK_EQUAL( x.size(), nx );
+
+    HArrayUtils::appendArray( x, y, loc );
+  
+    BOOST_TEST( hostReadAccess( x ) == hostReadAccess( xy ), boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
 typedef boost::mpl::list<SCAI_ALL_TYPES> all_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setArrayFailTest, ValueType, all_types )
@@ -1584,26 +1614,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayAliasTest, ValueType, scai_numeric_
 BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
-    ValueType denseValues[] = { 3, 0, 0, 1, 4, 0, 2, 7, 0, -1, -3 };
-    const IndexType n = sizeof( denseValues ) / sizeof( ValueType );
-    LArray<ValueType> denseArray( n, denseValues, loc );
+
+    HArray<ValueType> denseArray( { 3, 0, 0, 1, 4, 0, 2, 1, 0, 1, -3 }, loc );
+
+    const IndexType N = denseArray.size();
+
+    const IndexType expectedNNZ  = N - 4;  // 4 values are 0
+    const IndexType expectedNNZ1 = N - 3;  // 3 values are 1
+
+
     /* Idea: convert to sparse and back to dense, must contain original data */
+
     LArray<ValueType> sparseArray( loc );
     LArray<IndexType> sparseIndexes( loc );
-    HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, denseArray, loc );
-    BOOST_CHECK_EQUAL( sparseArray.size(), IndexType( 7 ) );
-    BOOST_REQUIRE_EQUAL( sparseArray.size(), sparseIndexes.size() );
-    // The sparse indexes must be sorted, no doubles
-    BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, CompareOp::LT, loc ) );
-    denseArray.purge();  // will also reset size
-    HArrayUtils::buildDenseArray( denseArray, n, sparseArray, sparseIndexes, loc );
-    BOOST_REQUIRE_EQUAL( denseArray.size(), n );
 
-    for ( IndexType i = 0; i < n; ++i )
+    ValueType sparseZero = 0;
+
+    HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, denseArray, sparseZero, loc );
+
+    BOOST_CHECK_EQUAL( sparseArray.size(), expectedNNZ );
+
+    BOOST_REQUIRE_EQUAL( sparseArray.size(), sparseIndexes.size() );
+
+    // The sparse indexes must be sorted, no doubles
+
+    BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, CompareOp::LT, loc ) );
+
+    HArray<ValueType> newArray;
+
+    HArrayUtils::buildDenseArray( newArray, N, sparseArray, sparseIndexes, ValueType( 0 ), loc );
+
+    BOOST_REQUIRE_EQUAL( newArray.size(), N );
+
+    if ( false )
     {
-        ValueType v = denseArray[i];
-        BOOST_CHECK_EQUAL( v, denseValues[i] );
+        auto r1 = hostReadAccess( denseArray );
+        auto r2 = hostReadAccess( newArray );
+
+        BOOST_CHECK_EQUAL_COLLECTIONS( r1.begin(), r1.end(), r2.begin(), r2.end() );
     }
+    else
+    { 
+        // this test causes problems with Boost 1.59.0 as 0 == 0 fails here
+        BOOST_TEST( hostReadAccess( denseArray ) == hostReadAccess( newArray ), boost::test_tools::per_element() );
+    }
+
+    // check that we can use a different value as zero element
+
+    sparseZero = 1;
+
+    HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, denseArray, sparseZero, loc );
+
+    BOOST_CHECK_EQUAL( sparseArray.size(), expectedNNZ1 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -1916,9 +1978,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( complexText, ValueType, scai_numeric_test_types )
 
 struct MergeAndMapInput
 {
-    HArray<int> x;
-    HArray<int> y;
-    MergeAndMapInput(HArray<int> x, HArray<int> y) : x(x), y(y) { }
+    HArray<IndexType> x;
+    HArray<IndexType> y;
+    MergeAndMapInput(HArray<IndexType> x, HArray<IndexType> y) : x(x), y(y) { }
 };
 
 std::ostream & operator << ( std::ostream & o, const MergeAndMapInput & input)
@@ -1942,7 +2004,7 @@ std::vector< MergeAndMapInput > mergeAndMapTestData()
         MergeAndMapInput( { 0 }, { 0 } ),
         MergeAndMapInput( { 1, 5, 8 }, { 0, 2, 3 } ),
         MergeAndMapInput( { 0, 2, 5 }, { 2, 2, 3, 8, 9 } ),
-        MergeAndMapInput( { 7, 8, 9 }, { -5, 0, 5 } )
+        MergeAndMapInput( { 7, 8, 9 }, { 0, 2, 5 } )
     };
 }
 
@@ -1957,7 +2019,7 @@ BOOST_DATA_TEST_CASE(
     const auto x = data.x;
     const auto y = data.y;
 
-    HArray<int> result;
+    HArray<IndexType> result;
     HArray<IndexType> xMap;
     HArray<IndexType> yMap;
 
@@ -1966,8 +2028,8 @@ BOOST_DATA_TEST_CASE(
     const auto read = hostReadAccess(result);
     BOOST_TEST( std::is_sorted( read.begin(), read.end() ) );
 
-    HArray<int> xFromXMap;
-    HArray<int> yFromYMap;
+    HArray<IndexType> xFromXMap;
+    HArray<IndexType> yFromYMap;
 
     HArrayUtils::gather( xFromXMap, result, xMap, common::BinaryOp::COPY );
     HArrayUtils::gather( yFromYMap, result, yMap, common::BinaryOp::COPY );

@@ -75,13 +75,11 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.IterativeSolverTest" )
 /** This routine provides a 2-dim stencil matrix for all tests */
 
 template<typename ValueType>
-static void setupMatrix( CSRSparseMatrix<ValueType>& matrix, const IndexType N1, const IndexType N2 )
+CSRSparseMatrix<ValueType> setupMatrix( const IndexType N1, const IndexType N2 )
 {
-    ContextPtr context   = Context::getContextPtr();
-
+    CSRSparseMatrix<ValueType> matrix;                    // gets default context
     MatrixCreator::buildPoisson2D( matrix, 9, N1, N2 );
-
-    matrix.setContextPtr( context );
+    return matrix;
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -139,8 +137,7 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
 
-    CSRSparseMatrix<ValueType> matrix;
-    setupMatrix( matrix, 40, 40 );
+    const CSRSparseMatrix<ValueType> matrix = setupMatrix<ValueType>( 40, 40 );
 
     SCAI_LOG_INFO( logger, "DefaultCriterionTest with matrix = " << matrix )
 
@@ -148,10 +145,9 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
 
     BOOST_REQUIRE_EQUAL( matrix.getRowDistribution(), matrix.getColDistribution() );
 
-    DenseVector<ValueType> rhs( matrix.getColDistributionPtr(), ValueType( 1 ) );
-    rhs.setContextPtr( matrix.getContextPtr() );
+    auto rhs = fill<DenseVector<ValueType>>( matrix.getColDistributionPtr(), 1, matrix.getContextPtr() );
+    auto solution = fill<DenseVector<ValueType>>( matrix.getRowDistributionPtr(), 0, matrix.getContextPtr() );
 
-    DenseVector<ValueType> solution( matrix.getRowDistributionPtr(), ValueType( 0 ) );
     solution.setContextPtr( matrix.getContextPtr() );
 
     IterativeSolvers<ValueType> solvers;  // All available iterative solvers
@@ -175,19 +171,16 @@ BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
 
-    CSRSparseMatrix<ValueType> matrix;
-    setupMatrix( matrix, 40, 40 );
+    const CSRSparseMatrix<ValueType> matrix = setupMatrix<ValueType>( 40, 40 );
 
     SCAI_LOG_INFO( logger, "matrix = " << matrix );
 
     const ValueType solutionInitValue = 1.0;
-    DenseVector<ValueType> solution( matrix.getColDistributionPtr(), solutionInitValue );
-    // TODO: use constructor to set context
-    solution.setContextPtr( matrix.getContextPtr() );
-    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionInitValue + 1.0 );
-    // TODO: use constructor to set context
-    exactSolution.setContextPtr( matrix.getContextPtr() );
-    DenseVector<ValueType> rhs( matrix * exactSolution );
+
+    auto solution      = fill<DenseVector<ValueType>>( matrix.getColDistributionPtr(), solutionInitValue, matrix.getContextPtr() );
+    auto exactSolution = eval<DenseVector<ValueType>>( solution + 1 );
+    auto rhs           = eval<DenseVector<ValueType>>( matrix * exactSolution );
+
     IndexType numIterations = 300;
     CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( numIterations ) );
 
@@ -221,19 +214,15 @@ BOOST_AUTO_TEST_CASE( ConservativeTest )
 
     typedef SCAI_TEST_TYPE ValueType;
 
-    CSRSparseMatrix<ValueType> matrix;
-    setupMatrix( matrix, 40, 40 );
+    const CSRSparseMatrix<ValueType> matrix = setupMatrix<ValueType>( 40, 40 );
 
     SCAI_LOG_INFO( logger, "matrix = " << matrix );
 
     ValueType solutionValue = 1;
 
-    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionValue );
-    exactSolution.setContextPtr( matrix.getContextPtr() );
-
-    DenseVector<ValueType> solution( exactSolution );
-
-    DenseVector<ValueType> rhs( matrix * exactSolution );
+    auto exactSolution = fill<DenseVector<ValueType>>( matrix.getColDistributionPtr(), solutionValue, matrix.getContextPtr() );
+    auto solution      = DenseVector<ValueType>( exactSolution );
+    auto rhs           = eval<DenseVector<ValueType>>( matrix * exactSolution );
 
     IndexType numIterations = 1;
     CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( numIterations ) );
@@ -270,21 +259,20 @@ BOOST_AUTO_TEST_CASE( SolveTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
 
-    CSRSparseMatrix<ValueType> matrix;
-    setupMatrix( matrix, 10, 10 );
+    const CSRSparseMatrix<ValueType> matrix = setupMatrix<ValueType>( 10, 10 );
 
     SCAI_LOG_INFO( logger, "matrix = " << matrix );
 
     const ValueType solutionInitValue = 1;
-    DenseVector<ValueType> solution( matrix.getColDistributionPtr(), solutionInitValue );
-    // TODO: use constructor to set context
-    solution.setContextPtr( matrix.getContextPtr() );
-    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionInitValue + ValueType( 1 ) );
-    // TODO: use constructor to set context
-    exactSolution.setContextPtr( matrix.getContextPtr() );
-    DenseVector<ValueType> rhs( matrix * exactSolution );
+
+    auto colDist       = matrix.getColDistributionPtr();
+    auto solution      = fill<DenseVector<ValueType>>( colDist, solutionInitValue, matrix.getContextPtr() );
+    auto exactSolution = fill<DenseVector<ValueType>>( colDist, solutionInitValue + 1, matrix.getContextPtr() );
+    auto rhs           = eval<DenseVector<ValueType>>( matrix * exactSolution );
+
     IndexType maxExpectedIterations = 3000;
-    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( maxExpectedIterations ) );
+
+    auto criterion = std::make_shared<IterationCount<ValueType>>( maxExpectedIterations );
 
     IterativeSolvers<ValueType> solvers;  // vector with incarnation of each solver
 
@@ -298,7 +286,7 @@ BOOST_AUTO_TEST_CASE( SolveTest )
         iterativeSolver.initialize( matrix );
         solution = solutionInitValue;
         iterativeSolver.solve( solution, rhs );
-        DenseVector<ValueType> diff( solution - exactSolution );
+        auto diff = eval<DenseVector<ValueType>>( solution - exactSolution );
         RealType<ValueType> realMaxNorm     = maxNorm( diff );
         RealType<ValueType> expectedMaxNorm = 1E-4;
         SCAI_LOG_INFO( logger, "maxNorm of diff = ( solution - exactSolution ) = " << realMaxNorm );

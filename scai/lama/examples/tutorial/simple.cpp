@@ -51,7 +51,8 @@ int main()
     // Create a DenseVector of size 8 with value 1.1 in each position
     //
     IndexType size = 8;
-    DenseVector<ValueType> v( size, 1.1 );
+
+    const auto v = fill<DenseVector<ValueType>>( size, 1.1 );
     //
     // Compute the L1 norm of the vector and print it
     //

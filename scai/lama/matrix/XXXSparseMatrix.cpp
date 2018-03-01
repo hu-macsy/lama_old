@@ -58,27 +58,23 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, XXXSparseMatrix<Valu
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-std::shared_ptr<MatrixStorage<ValueType> > XXXSparseMatrix<ValueType>::createStorage()
+std::shared_ptr<XXXStorage<ValueType> > XXXSparseMatrix<ValueType>::createStorage( hmemo::ContextPtr ctx )
 {
-    return shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
+    return shared_ptr<XXXStorage<ValueType> >( new StorageType( ctx ) );
 }
 
 template<typename ValueType>
-std::shared_ptr<MatrixStorage<ValueType> > XXXSparseMatrix<ValueType>::createStorage(
-    const IndexType numRows,
-    const IndexType numColumns )
+std::shared_ptr<XXXStorage<ValueType> > XXXSparseMatrix<ValueType>::createStorage( XXXStorage<ValueType>&& storage )
 {
-    shared_ptr<MatrixStorage<ValueType> > storage( new StorageType() );
-    storage->allocate( numRows, numColumns );
-    return storage;
+    return shared_ptr<XXXStorage<ValueType> >( new XXXStorage<ValueType>( std::move( storage ) ) );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix()
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( hmemo::ContextPtr ctx ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( ctx ) )
 
 {
     SCAI_LOG_INFO( logger, "XXXSparseMatrix()" )
@@ -87,152 +83,65 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix()
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const IndexType numRows, const IndexType numColumns )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const XXXSparseMatrix& other ) : 
 
-    : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
-
-{
-    SCAI_LOG_INFO( logger, "XXXSparseMatrix( " << numRows << " x " << numColumns << " )" )
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
-
-    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ), rowDist,
-                               colDist )
-{
-    // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const XXXSparseMatrix& other )
-
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 
 {
     this->setCommunicationKind( other.getCommunicationKind() );
-    this->setContextPtr( other.getContextPtr() );
     SparseMatrix<ValueType>::assign( other );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Matrix<ValueType>& other, bool transposeFlag ) : 
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( XXXSparseMatrix&& other ) noexcept :
 
-    SparseMatrix<ValueType>( createStorage() )
-
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 {
-    this->setContextPtr( other.getContextPtr() );
-    this->setCommunicationKind( other.getCommunicationKind() );
-
-    if ( transposeFlag )
-    {
-        SparseMatrix<ValueType>::assignTranspose( other );
-    }
-    else
-    {
-        SparseMatrix<ValueType>::assign( other );
-    }
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Matrix<ValueType>& other, DistributionPtr rowDist, DistributionPtr colDist ) : 
+XXXSparseMatrix<ValueType>&  XXXSparseMatrix<ValueType>::operator=( XXXSparseMatrix&& other ) 
+{
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
+    return *this;
+}
 
-    SparseMatrix<ValueType>( createStorage() )
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Matrix<ValueType>& other ) : 
+
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 
 {
     this->setContextPtr( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
-    // this might be done more efficiently as assign introduces intermediate copy
+
     SparseMatrix<ValueType>::assign( other );
-    this->redistribute( rowDist, colDist );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const MatrixStorage<ValueType>& globalData ) : 
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( XXXStorage<ValueType> globalStorage ) : 
 
-    SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( std::move( globalStorage ) ) )
 
 {
-    DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
-    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
-    SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix(
-    const MatrixStorage<ValueType>& localData,
-    DistributionPtr rowDist,
-    DistributionPtr colDist ) : 
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( DistributionPtr rowDist, XXXStorage<ValueType> localStorage ) :
 
-    SparseMatrix<ValueType>( createStorage() )
-
+    SparseMatrix<ValueType>( rowDist, createStorage( std::move( localStorage ) ) )
 {
-    SparseMatrix<ValueType>::assign( localData, rowDist, colDist );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM<ValueType>& expression ) : 
-
-    SparseMatrix<ValueType>( createStorage() )
-
-{
-    const Matrix<ValueType>& master = expression.getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix<ValueType>::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SMM<ValueType>& expression ) : 
-
-    SparseMatrix<ValueType>( createStorage() )
-
-{
-    const Matrix<ValueType>& master = expression.getArg1().getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix<ValueType>::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM_SM<ValueType>& expression )
-
-    : SparseMatrix<ValueType>( createStorage() )
-{
-    // inherit context from matA in alpha * matA + beta * matB
-    const Matrix<ValueType>& master = expression.getArg1().getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix<ValueType>::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const std::string& filename )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
-{
-    this->readFromFile( filename );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -295,26 +204,13 @@ XXXSparseMatrix<ValueType>::getHaloStorage() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void XXXSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
-{
-    // make sure that local storage fits into this sparse matrix
-    SCAI_ASSERT_EQUAL_ERROR( localStorage.getNumRows(), mLocalData->getNumRows() )
-    SCAI_ASSERT_EQUAL_ERROR( localStorage.getNumColumns(), mLocalData->getNumColumns() )
-    // make sure that local matrix storage has the correct format / value type
-    StorageType* localData = dynamic_cast<StorageType*>( mLocalData.get() );
-    SCAI_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() )
-    localData->swap( localStorage );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::newMatrix() const
 {
     std::unique_ptr<XXXSparseMatrix<ValueType> > newSparseMatrix( new XXXSparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
+    newSparseMatrix->allocate( getRowDistributionPtr(), getColDistributionPtr() );
     SCAI_LOG_INFO( logger,
                    *this << ": create -> " << *newSparseMatrix << " @ " << * ( newSparseMatrix->getContextPtr() )
                    << ", kind = " << newSparseMatrix->getCommunicationKind() );

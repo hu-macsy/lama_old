@@ -59,13 +59,13 @@ class CSRGraph : public Distributed
 {
 public:
 
-    CSRGraph( DistributionPtr  dist ) : Distributed( dist ) 
+    CSRGraph( DistributionPtr  dist ) : Distributed( dist )
     {
     }
 
     IndexType getCSRGraphSize() const
     {
-         return 12;  // number of edges
+        return 12;  // number of edges
     }
 
     virtual void buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* ) const

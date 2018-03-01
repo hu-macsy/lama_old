@@ -107,7 +107,9 @@ If the compile step was successful, you can run the executable
 
     ./simple
 
-Due to the dynamic linking of libraries, the executable **simple** will not contain the LAMA codes itself. Instead, it contains a reference to the LAMA library and references will be resolved when the executable is started. Here, it is very likely that you get the following error message
+Due to the dynamic linking of libraries, the executable **simple** will not contain the LAMA codes itself. 
+Instead, it contains a reference to the LAMA library and references will be resolved when the executable is started. 
+Here, it is very likely that you get the following error message
 
 .. code-block:: bash
 
@@ -140,7 +142,7 @@ So the executable contains a link to the library libscai_lama.so but it does not
 
 .. code-block:: bash
 
-      g++ [-std=c++11] -o simple simple.cpp -DSCAI_ASSERT_LEVEL_ERROR -DSCAI_LOG_LEVEL_ERROR -DSCAI_TRACE_OFF -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama -Wl,-rpath=${SCAI_ROOT}/lib
+    g++ -std=c++11 -o simple simple.cpp -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama [..] -Wl,-rpath=${SCAI_ROOT}/lib
 
 Now it should be possible to run the executable. Beside the output it is very likely that you get the following warning message from LAMA:
 

@@ -40,7 +40,7 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
 namespace scai
@@ -133,8 +133,8 @@ void Richardson<ValueType>::initialize( const lama::Matrix<ValueType>& coefficie
 
     RichardsonRuntime& runtime = getRuntime();
 
-    runtime.mOldSolution.setContextPtr( ctx );
-    runtime.mX.setContextPtr( ctx );
+    runtime.mOldSolution.reset( coefficients.newTargetVector() );
+    runtime.mX.reset( coefficients.newTargetVector() );
 }
 
 /* ========================================================================= */
@@ -142,7 +142,7 @@ void Richardson<ValueType>::initialize( const lama::Matrix<ValueType>& coefficie
 /* ========================================================================= */
 
 template<typename ValueType>
-void Richardson<ValueType>::solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs )
+void Richardson<ValueType>::solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs )
 {
     if ( solution.getVectorKind() != lama::VectorKind::DENSE )
     {
@@ -164,14 +164,14 @@ void Richardson<ValueType>::iterate()
     const lama::Vector<ValueType>& rhs = *runtime.mRhs;
     const lama::Matrix<ValueType>& A   = *runtime.mCoefficients;
 
-    lama::Vector<ValueType>& oldSolution = runtime.mOldSolution;
+    lama::Vector<ValueType>& oldSolution = *runtime.mOldSolution;
     lama::Vector<ValueType>& solution    = runtime.mSolution.getReference(); // dirty
 
     // swap old solution and solution, so solution is save for update
 
     solution.swap( oldSolution );
 
-    lama::Vector<ValueType>& x = runtime.mX;
+    lama::Vector<ValueType>& x = *runtime.mX;
 
     x = A * oldSolution;
     solution = rhs - x;

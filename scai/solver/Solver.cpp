@@ -41,7 +41,6 @@
 
 // internal scai libraries
 
-#include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
@@ -55,7 +54,7 @@ namespace solver
 {
 
 using lama::Matrix;
-using lama::DenseVector;
+using lama::Vector;
 
 /* ========================================================================= */
 /*    Solver<ValueType>:  static methods for factory                         */
@@ -161,8 +160,7 @@ void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     getRuntime().mCoefficients = &coefficients;
     getRuntime().mInitialized = true;
     getRuntime().mSolveInit = false;
-    getRuntime().mResidual.setContextPtr( coefficients.getContextPtr() );         // IMPORTANT
-    getRuntime().mResidual.allocate( coefficients.getRowDistributionPtr() );
+    getRuntime().mResidual.reset( coefficients.newTargetVector() );
     mLogger->logMessage( LogLevel::solverInformation, "Solver initialized\n" );
 }
 
@@ -171,7 +169,7 @@ void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 /* ========================================================================= */
 
 template<typename ValueType>
-void Solver<ValueType>::solve( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
+void Solver<ValueType>::solve( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     SCAI_REGION( "Solver.solve" )
 
@@ -195,7 +193,7 @@ void Solver<ValueType>::solve( DenseVector<ValueType>& solution, const DenseVect
 /* ========================================================================= */
 
 template<typename ValueType>
-void Solver<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
+void Solver<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     SolverRuntime& runtime = getRuntime();
 
@@ -220,7 +218,7 @@ void Solver<ValueType>::solveFinalize()
 /* ========================================================================= */
 
 template<typename ValueType>
-const DenseVector<ValueType>& Solver<ValueType>::getResidual() const
+const Vector<ValueType>& Solver<ValueType>::getResidual() const
 {
     const SolverRuntime& runtime = getRuntime();
 
@@ -235,22 +233,22 @@ const DenseVector<ValueType>& Solver<ValueType>::getResidual() const
     {
         SCAI_REGION( "Solver.computeResidual" )
 
-        const DenseVector<ValueType>& x = runtime.mSolution.getConstReference();  // solution not modified here
+        const Vector<ValueType>& x = runtime.mSolution.getConstReference();  // solution not modified here
 
         SCAI_LOG_DEBUG( logger, "calculating residual current solution = " << x )
 
         const Matrix<ValueType>& A = *runtime.mCoefficients;
-        const DenseVector<ValueType>& y = *runtime.mRhs;
+        const Vector<ValueType>& y = *runtime.mRhs;
 
         mLogger->startTimer( "ResidualTimer" );
-        runtime.mResidual = y - A  * x;
+        *runtime.mResidual = y - A  * x;
         mLogger->stopTimer( "ResidualTimer" );
         mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );
         mLogger->stopAndResetTimer( "ResidualTimer" );
         runtime.mSolution.setDirty( false );
     }
 
-    return runtime.mResidual;
+    return *runtime.mResidual;
 }
 
 template<typename ValueType>

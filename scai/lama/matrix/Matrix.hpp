@@ -34,6 +34,11 @@
 #pragma once
 
 #include <scai/lama/matrix/_Matrix.hpp>
+
+#include <scai/lama/matrix/MatrixAssembly.hpp>
+#include <scai/lama/freeFunction.hpp>
+
+#include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/expression/CastMatrixExpression.hpp>
 #include <scai/lama/expression/ComplexMatrixExpression.hpp>
 
@@ -70,7 +75,20 @@ public:
 
     /** Overwrite _Matrix::newMatrix to get the covariant return type */
 
-    virtual Matrix<ValueType>* newMatrix( void ) const = 0;
+    virtual Matrix<ValueType>* newMatrix() const = 0;
+
+    /** 
+     *  This method returns a new allocated target vector ( has getRowDistribution() )
+     *
+     *  This method might be used in polymorphic code where the result vector of
+     *  matrixTimesVector is not always a dense vector.
+     */
+    virtual Vector<ValueType>* newTargetVector() const;
+
+    /** 
+     *  This method returns a new allocated source vector ( has getColDistribution() )
+     */
+    virtual Vector<ValueType>* newSourceVector() const;
 
     /** Overwrite _Matrix::copy to get the covariant return type */
 
@@ -183,6 +201,19 @@ public:
     ValueType operator()( IndexType i, IndexType j ) const;
 
     /**
+     * @brief Assign this matrix a diagonal matrix specified by a vector containing the diagonal elements.
+     *
+     * @param[in] diagonal contains the values for the diagonal
+     *
+     * \code
+     *     Matrix<ValueType>& m = ...
+     *     // m.setIdentity( n ) can also be written as follows
+     *     m.assignDiagonal( fill<DenseVector<ValueType>>( n, ValueType( 1 ) ) );  
+     * \endcode
+     */
+    virtual void assignDiagonal( const Vector<ValueType>& diagonal ) = 0;
+
+    /**
      * @brief Returns a copy of the value at the passed global indexes.
      *
      * @param[in] i   the global row index
@@ -255,7 +286,7 @@ public:
         const Vector<ValueType>& x,
         const ValueType beta,
         const Vector<ValueType>* y,
-        bool transposeFlag ) const;
+        const common::MatrixOp op ) const;
 
     /**
      *  @brief Special case of matrixTimesVector but with all vectors are dense 
@@ -276,7 +307,7 @@ public:
         const DenseVector<ValueType>& x,
         const ValueType beta,
         const DenseVector<ValueType>* y,
-        bool transposeFlag ) const = 0;
+        const common::MatrixOp op ) const = 0;
 
     /**
      * @brief Computes this = alpha * A.
@@ -366,52 +397,6 @@ public:
     virtual RealType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const = 0;
 
     /* ======================================================================= */
-    /*     General methods for setting a matrix                                */
-    /* ======================================================================= */
-
-    /** This method sets a matrix with the values owned by this partition in dense format
-     *
-     *  @param[in] rowDist distributon of rows for the matrix
-     *  @param[in] colDist distributon of columns for the matrix
-     *  @param[in] values contains all values of the owned rows in row-major order (C-style)
-     *  @param[in] eps    threshold value for non-zero elements
-     *
-     *  Note: only the row distribution decides which data is owned by this processor
-     *
-     *  The following must be valid: values.size() == rowDist->getLocalSize() * colDist->getGlobalSize()
-     */
-    virtual void setDenseData( 
-        dmemo::DistributionPtr rowDist, 
-        dmemo::DistributionPtr colDist, 
-        const hmemo::HArray<ValueType>& values, 
-        ValueType eps = 0 ) = 0;
-
-    /** This method sets raw dense data in the same way as setDenseData but with raw value array */
-
-    void setRawDenseData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const ValueType* values,
-        const ValueType eps = 0 )
-    {
-        const IndexType n = rowDist->getLocalSize();
-        const IndexType m = colDist->getGlobalSize();
-        // use of HArrayRef instead of HArray avoids additional copying of values
-        const hmemo::HArrayRef<ValueType> valueArray( n * m, values );
-        setDenseData( rowDist, colDist, valueArray, eps );
-    }
-
-    /** Setting raw dense data for a replicated matrix, only for convenience. */
-
-    void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values, const ValueType eps = 0 )
-    {
-        setRawDenseData( dmemo::DistributionPtr( new dmemo::NoDistribution( n ) ),
-                         dmemo::DistributionPtr( new dmemo::NoDistribution( m ) ),
-                         values,
-                         eps );
-    }
-
-    /* ======================================================================= */
     /*     setter / getter for diagonal of a matrix                            */
     /* ======================================================================= */
 
@@ -422,7 +407,7 @@ public:
      *  This matrix must be a square matrix with the same row and column distribution.
      *  Note: diagonal will have the same distribution.
      */
-    virtual void getDiagonal( DenseVector<ValueType>& diagonal ) const = 0;
+    virtual void getDiagonal( Vector<ValueType>& diagonal ) const = 0;
 
     /** @brief This method replaces the diagonal
      *
@@ -431,7 +416,7 @@ public:
      * For a sparse matrix, the matrix must have the diagonal property, i.e. the sparse
      * pattern has an entry for each diagonal element.
      */
-    virtual void setDiagonal( const DenseVector<ValueType>& diagonal ) = 0;
+    virtual void setDiagonal( const Vector<ValueType>& diagonal ) = 0;
 
     /** @brief This method replaces the diagonal by a diagonal value.
      *
@@ -553,10 +538,39 @@ public:
      */
 
     virtual void reduce(
-        DenseVector<ValueType>& v,
+        Vector<ValueType>& v,
         const IndexType dim,
         const common::BinaryOp reduceOp,
         const common::UnaryOp elemOp ) const = 0;
+
+    /* ======================================================================= */
+    /*     set/fill assembly matrix                                            */
+    /* ======================================================================= */
+
+    /** Fill this matrix with assembled matrix data.
+     *
+     *  @param[in] assembly contains the assembled entries (individually by each processor)
+     *  @param[in] op       either COPY or ADD, specifies how to deal with entries at same positions
+     *
+     *  The matrix must already have beeen allocated before this method is called.
+     */
+    virtual void fillFromAssembly( const MatrixAssembly<ValueType>& assembly, common::BinaryOp op = common::BinaryOp::COPY );
+
+    /**
+     *  @brief Insert all non-zero coefficients of this matrix in an assembly
+     *
+     *  Each processor adds its part locally with global coordinates.
+     *
+     *  @param[in,out] assemby     is the object to which non-zero coefficients of this matrix are inserted
+     *  @param[in]     rowOffset   is a global offset that is added to the row coordinates
+     *  @param[in]     colOffset   is a global offset that is added to the column coordinates
+     *
+     *  The offsets can be used to reposition this matrix when it is combined/joined with other matrices.
+     */
+    virtual void disassemble( 
+        MatrixAssembly<ValueType>& assembly, 
+        const IndexType rowOffset = 0,
+        const IndexType colOffset = 0 ) const = 0;
 
     /* ======================================================================= */
     /*     Concatenation of matrices                                           */
@@ -590,7 +604,10 @@ public:
      */
     void hcat( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 );
 
-protected:
+    /**
+     *  General routine set a matrix globally with dense data 
+     */
+    void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values );
 
     Matrix();
 
@@ -701,6 +718,7 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const ComplexBuildMatrixExpress
     buildComplex( exp.getRealArg(), exp.getImagArg() );
     return *this;
 }
+
 
 } /* end namespace lama */
 

@@ -56,10 +56,6 @@ using common::CompareOp;
 
 /* --------------------------------------------------------------------- */
 
-extern ContextPtr testContext;
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_SUITE( UtilsTest )
 
 /* --------------------------------------------------------------------- */
@@ -71,9 +67,13 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     setVal.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
+
     SCAI_LOG_INFO( logger, "scaleTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     ValueType valuesValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
@@ -100,7 +100,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     reduce.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     SCAI_LOG_INFO( logger, "sumTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
@@ -130,7 +133,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::reduce2<ValueType> > reduce2;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     reduce2.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     SCAI_LOG_INFO( logger, "reduce2Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
@@ -169,7 +175,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     setVal.getSupportedContext( loc );
     SCAI_LOG_INFO( logger, "setValTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
@@ -208,7 +217,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     isSorted.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     SCAI_LOG_INFO( logger, "isSortedTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
@@ -252,7 +264,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE( setOrderTest )
 {
     // setOrder is only for IndexType
-    ContextPtr loc = Context::getContextPtr();
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     SCAI_LOG_INFO( logger, "setOrderTest on " << *loc )
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     {
@@ -286,9 +301,13 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpScalar1Test, ValueType, scai_numeric_test_types )
 {
     static LAMAKernel<UtilKernelTrait::binaryOpScalar<ValueType> > binop;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     binop.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
+
     SCAI_LOG_INFO( logger, "binaryOpScalar1Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     {
         // TODO: should it be possible to pass 0 elements? What should be the result?

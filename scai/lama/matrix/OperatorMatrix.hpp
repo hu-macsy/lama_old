@@ -135,7 +135,15 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void assign(const _MatrixStorage&, dmemo::DistributionPtr, dmemo::DistributionPtr)
+    virtual void assignLocal(const _MatrixStorage&, dmemo::DistributionPtr)
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
+    virtual void assignDistribute(const _MatrixStorage&, dmemo::DistributionPtr, dmemo::DistributionPtr)
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
+    virtual void assignDistribute(const _Matrix&, dmemo::DistributionPtr, dmemo::DistributionPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
@@ -143,6 +151,14 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
+    /** Implemenation of Matrix<ValueType>::disassemble not support */
+
+    virtual void disassemble( MatrixAssembly<ValueType>&, const IndexType, const IndexType ) const
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
+
     virtual const MatrixStorage<ValueType>& getLocalStorage() const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
@@ -183,11 +199,11 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getDiagonal( DenseVector<ValueType>& ) const
+    virtual void getDiagonal( Vector<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setDiagonal( const DenseVector<ValueType>& )
+    virtual void setDiagonal( const Vector<ValueType>& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
@@ -195,8 +211,12 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+    virtual void assignDiagonal( const Vector<ValueType>& )
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
 
-    virtual void reduce( DenseVector<ValueType>&, 
+    virtual void reduce( Vector<ValueType>&, 
                          const IndexType,
                          const common::BinaryOp,
                          const common::UnaryOp ) const
@@ -296,19 +316,19 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual ValueType l1Norm() const
+    virtual RealType<ValueType> l1Norm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual ValueType l2Norm() const
+    virtual RealType<ValueType> l2Norm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual ValueType maxNorm() const
+    virtual RealType<ValueType> maxNorm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual ValueType maxDiffNorm( const Matrix<ValueType>& ) const
+    virtual RealType<ValueType> maxDiffNorm( const Matrix<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

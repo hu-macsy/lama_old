@@ -69,13 +69,6 @@ MPI_Datatype MPICommunicator::mComplexLongDoubleType = 0;
 
 MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
-MPI_Op MPICommunicator::mMaxComplexFloat = 0;
-MPI_Op MPICommunicator::mMaxComplexDouble = 0;
-MPI_Op MPICommunicator::mMaxComplexLongDouble = 0;
-
-MPI_Op MPICommunicator::mMinComplexFloat = 0;
-MPI_Op MPICommunicator::mMinComplexDouble = 0;
-MPI_Op MPICommunicator::mMinComplexLongDouble = 0;
 #endif
 
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
@@ -193,42 +186,6 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for sum complex long double" )
     }
 
-    if ( mMaxComplexFloat == 0 )
-    {
-        SCAI_MPICALL( logger, MPI_Op_create( &max_operator<ComplexFloat>, true, &mMaxComplexFloat ), "Create MPI_Op max for ComplexFloat" )
-        SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex float" )
-    }
-
-    if ( mMaxComplexDouble == 0 )
-    {
-        SCAI_MPICALL( logger, MPI_Op_create( &max_operator<ComplexDouble>, true, &mMaxComplexDouble ), "Create MPI_Op max for ComplexDouble" )
-        SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex double" )
-    }
-
-    if ( mMaxComplexLongDouble == 0 )
-    {
-        SCAI_MPICALL( logger, MPI_Op_create( &max_operator<ComplexLongDouble>, true, &mMaxComplexLongDouble ), "Create MPI_Op max for ComplexLongDouble" )
-        SCAI_LOG_DEBUG( logger, "MPI_Op_create for max complex long double" )
-    }
-
-    if ( mMinComplexFloat == 0 )
-    {
-        SCAI_MPICALL( logger, MPI_Op_create( &min_operator<ComplexFloat>, true, &mMinComplexFloat ), "Create MPI_Op min for ComplexFloat" )
-        SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex float" )
-    }
-
-    if ( mMinComplexDouble == 0 )
-    {
-        SCAI_MPICALL( logger, MPI_Op_create( &min_operator<ComplexDouble>, true, &mMinComplexDouble ), "Create MPI_Op min for ComplexDouble" )
-        SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex double" )
-    }
-
-    if ( mMinComplexLongDouble == 0 )
-    {
-        SCAI_MPICALL( logger, MPI_Op_create( &min_operator<ComplexLongDouble>, true, &mMinComplexLongDouble ), "Create MPI_Op min for ComplexLongDouble" )
-        SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex long double" )
-    }
-
     if ( mComplexLongDoubleType == 0 )
     {
         SCAI_MPICALL( logger, MPI_Type_contiguous( 2, MPI_LONG_DOUBLE, &mComplexLongDoubleType ), "Call init of MPI_Datatype for ComplexLongDouble" )
@@ -283,30 +240,6 @@ void MPICommunicator::sum_complex_long_double( void* in, void* out, int* count,
     }
 }
 
-template<typename ValueType>
-void MPICommunicator::max_operator( void* in, void* out, int* count, MPI_Datatype* SCAI_UNUSED( dtype ) )
-{
-    ValueType* a = reinterpret_cast<ValueType*>( in );
-    ValueType* b = reinterpret_cast<ValueType*>( out );
-
-    for ( int i = 0; i < *count; ++i )
-    {
-        b[i] = common::applyBinary( a[i], common::BinaryOp::MAX, b[i] );
-    }
-}
-
-template<typename ValueType>
-void MPICommunicator::min_operator( void* in, void* out, int* count, MPI_Datatype* SCAI_UNUSED( dtype ) )
-{
-    ValueType* a = reinterpret_cast<ValueType*>( in );
-    ValueType* b = reinterpret_cast<ValueType*>( out );
-
-    for ( int i = 0; i < *count; ++i )
-    {
-        b[i] = common::applyBinary( a[i], common::BinaryOp::MIN, b[i] );
-    }
-}
-
 #endif
 
 /* ---------------------------------------------------------------------------------- */
@@ -351,11 +284,11 @@ MPICommunicator::~MPICommunicator()
 #endif
 
             SCAI_LOG_INFO( logger, "call MPI_Finalize" )
-           
+
             int status = MPI_Finalize();
 
             if ( status != MPI_SUCCESS )
-            { 
+            {
                 char mpiErrorString[MPI_MAX_ERROR_STRING];
                 int resultlen = MPI_MAX_ERROR_STRING;
                 MPI_Error_string( status, mpiErrorString, &resultlen );
@@ -363,7 +296,7 @@ MPICommunicator::~MPICommunicator()
             }
         }
         else
-        { 
+        {
             SCAI_LOG_INFO( logger, "ATTENTION: no call MPI_Finalize, was externally initialized" )
         }
     }
@@ -780,13 +713,13 @@ void MPICommunicator::scanImpl( void* outValues, const void* inValues, const Ind
 
     if ( inValues == outValues )
     {
-        SCAI_MPICALL( logger, MPI_Scan( MPI_IN_PLACE, outValues, 1, commType, opType, 
-                              selectMPIComm() ), "MPI_Scan" )
+        SCAI_MPICALL( logger, MPI_Scan( MPI_IN_PLACE, outValues, 1, commType, opType,
+                                        selectMPIComm() ), "MPI_Scan" )
     }
     else
     {
         SCAI_MPICALL( logger, MPI_Scan( const_cast<void*>( inValues ), outValues, n, commType, opType,
-                              selectMPIComm() ), "MPI_Scan" )
+                                        selectMPIComm() ), "MPI_Scan" )
     }
 }
 

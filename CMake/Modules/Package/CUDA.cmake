@@ -119,7 +119,9 @@ if ( CUDA_FOUND AND USE_CUDA )
     set ( SCAI_CUDA_INCLUDE_DIR ${CUDA_INCLUDE_DIRS} )
     
     # conclude all needed CUDA libraries
-    set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} ${CUDA_cusolver_LIBRARY} )
+    set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} 
+                              ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} 
+                              ${CUDA_cufft_LIBRARY} ${CUDA_cusolver_LIBRARY} )
 
     get_filename_component ( SCAI_CUDA_LIBRARY_PATH ${CUDA_CUDART_LIBRARY} PATH CACHE )
 

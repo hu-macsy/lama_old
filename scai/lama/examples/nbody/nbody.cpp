@@ -81,18 +81,17 @@ ValueType radius = 1e18;           // radius of the universe
 
 IndexType iter = 0;               // global iteration count
 
-DenseVector<ValueType> x( nBodies, 0.0 );
-DenseVector<ValueType> y( nBodies, 0.0 );
+auto x = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto y = fill<DenseVector<ValueType>>( nBodies, 0 );
 
-DenseVector<ValueType> vx( nBodies, 0.0 );
-DenseVector<ValueType> vy( nBodies, 0.0 );
+auto vx = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto vy = fill<DenseVector<ValueType>>( nBodies, 0 );
 
-DenseVector<ValueType> fx( nBodies, 0.0 );
-DenseVector<ValueType> fy( nBodies, 0.0 );
+auto fx = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto fy = fill<DenseVector<ValueType>>( nBodies, 0 );
 
-DenseVector<ValueType> mass( nBodies, 0.0 );
-DenseVector<ValueType> inversemass( nBodies, 0.0 );
-
+auto mass        = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto inversemass = fill<DenseVector<ValueType>>( nBodies, 0 );
 
 void randomBodies( )
 {
@@ -140,9 +139,10 @@ void randomBodies( )
 
 void updateParticles( )
 {
-    DenseVector<ValueType> help( nBodies, 0.0 );
+    DenseVector<ValueType> help;
 
     // update velocities  v  = v + (dt * fx)/mass
+
     help = dt * fx;
     help *= inversemass;  // elementwise multiplication
     vx += help;

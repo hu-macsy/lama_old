@@ -58,7 +58,7 @@ int main( int narg, const char* argv[] )
     std::string procs    = argv[2];
 
     IndexType np = 0;
-    utilskernel::LArray<float> pWeights;
+    HArray<float> pWeights;
 
     if ( procs.find( "." ) == std::string::npos )
     {
@@ -70,11 +70,21 @@ int main( int narg, const char* argv[] )
     else
     {
         FileIO::read( pWeights, procs );
-        // scale the weight
-        float sumWeight = pWeights.sum();
-        pWeights /= sumWeight;
         np = pWeights.size();
+        // scale the weight:  pWeights /= pWeights.sum();
+        WriteAccess<float> rWeight( pWeights );
+        float sumWeight = 0;
+        for ( IndexType i = 0; i < np; ++i )
+        {
+            sumWeight += rWeight[ i ];
+        }
+        for ( IndexType i = 0; i < np; ++i )
+        {
+            rWeight [ i ] /= sumWeight;
+        }
     }
+
+    std::cout << "Processor weights: " << pWeights << std::endl;
 
     SCAI_ASSERT_GT_ERROR( np , 0, "Partitioning requires at least one processor" )
 
@@ -96,7 +106,7 @@ int main( int narg, const char* argv[] )
         COMMON_THROWEXCEPTION( kind << " as partition kind not supported" )
     }
 
-    CSRSparseMatrix<ValueType> csrMatrix( fileName );
+    auto csrMatrix = read<CSRSparseMatrix<ValueType>>( fileName );
 
     HArray<PartitionId> rowDist;
     HArray<PartitionId> colDist;

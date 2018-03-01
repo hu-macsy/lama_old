@@ -43,11 +43,8 @@
 #include <scai/logging.hpp>
 #include <scai/tracing.hpp>
 
-scai::hmemo::ContextPtr testContext;
-
 int main( int argc, char* argv[] )
 {
-    testContext = scai::hmemo::Context::getContextPtr();
     SCAI_LOG_THREAD( "main" )
     SCAI_REGION( "Main.UtilsKernelTest" )
     return scai::testsupport::hmemoTestMain(argc, argv);

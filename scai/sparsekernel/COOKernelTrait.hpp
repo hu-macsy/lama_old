@@ -35,6 +35,7 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -253,38 +254,6 @@ struct COOKernelTrait
          *  @param beta is scaling factor for additional vector
          *  @param y is additional input vector to add
          *  @param numRows is number of elements for vectors result and b and rows of matrix
-         *  @param cooIA, cooJA, cooValues are arrays of COO storage
-         *  @param numValues is the size of the coo arrays
-         */
-
-        typedef void ( *FuncType ) (
-            ValueType result[],
-            const ValueType alpha,
-            const ValueType x[],
-            const ValueType beta,
-            const ValueType y[],
-            const IndexType numRows,
-            const IndexType nnz,
-            const IndexType cooIA[],
-            const IndexType cooJA[],
-            const ValueType cooValues[] );
-
-        static const char* getId()
-        {
-            return "COO.normalGEMV";
-        }
-    };
-
-    template<typename ValueType>
-    struct normalGEVM
-    {
-        /** result = alpha * x * CSR-Matrix + b * y.
-         *
-         *  @param result is the result vector
-         *  @param alpha is scaling factor for matrix x vector
-         *  @param x is input vector for matrix multiplication
-         *  @param beta is scaling factor for additional vector
-         *  @param y is additional input vector to add
          *  @param numColumns is number of elements for columns of matrix, size of result, y
          *  @param cooIA, cooJA, cooValues are arrays of COO storage
          *  @param numValues is the size of the coo arrays
@@ -296,15 +265,17 @@ struct COOKernelTrait
             const ValueType x[],
             const ValueType beta,
             const ValueType y[],
+            const IndexType numRows,
             const IndexType numColumns,
             const IndexType nnz,
             const IndexType cooIA[],
             const IndexType cooJA[],
-            const ValueType cooValues[] );
+            const ValueType cooValues[],
+            const common::MatrixOp op );
 
         static const char* getId()
         {
-            return "COO.normalGEVM";
+            return "COO.normalGEMV";
         }
     };
 

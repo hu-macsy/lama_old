@@ -71,10 +71,6 @@ public:
 
     virtual ~MetisPartitioning();
 
-    /** Implementation of pure method Partitioning::partitionIt */
-
-    virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::_Matrix& matrix, float weight ) const;
-
     /** Implementation of pure method Partitioning::rectangularPartitioning */
 
     virtual void rectangularPartitioning( hmemo::HArray<PartitionId>& rowMapping, 
@@ -82,28 +78,18 @@ public:
                                           const lama::_Matrix& matrix, 
                                           const hmemo::HArray<float>& processorWeights ) const;
 
-    /* Partitioning of square matrix 
+    using Partitioning::squarePartitioning;
+
+    /** Implementation of pure method Partitioning::squarePartitioning 
      *
-     *  @param[in]  matrix must be square sparse matrix that is partitioned, matrix.getNumRows() == matrix.getNumColumns()
-     *  @param[in]  processorWeights specifies the weight for load on each processor, must be same on all procs
-     *  @param[out] mapping defines the mapping of the rows to np processors, np = processorWeights.size()
-    virtual squarePartitioning( HArray<PartitionId>& mapping, 
-                                const lama::_Matrix& matrix, 
-                                const HArray<float>& processorWeights );
-
-    */
-
-    /*
-    virtual rowPartitioning( HArray<PartitionId>& rowMapping, 
-                             const HArray<PartitionId>& colMapping,
-                             const lama::_Matrix& matrix, 
-                             const HArray<float>& processorWeights );
-
-    virtual colPartitioning( HArray<PartitionId>& colMapping, 
-                             const HArray<PartitionId>& rowMapping,
-                             const lama::_Matrix& matrix, 
-                             const HArray<float>& processorWeights );
-    */
+     *  Be careful: if the input matrix is distributed the CSR graph will be build on
+     *              the MASTER node that calls a routine of the serial software package METIS;
+     *              the computed owners will be distributed back to the array newLocalOwners
+     *              corresponding to the distribution of the matrix.
+     */
+    virtual void squarePartitioning( hmemo::HArray<PartitionId>& newLocalOwners,
+                                     const lama::_Matrix& matrix,
+                                     const hmemo::HArray<float>& processorWeights ) const;
 
     /** Override Printable::writeAt */
 
@@ -141,6 +127,12 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static const char theCreateValue[];
+
+    /** squarePartitioning called for whole matrix on the master node. */
+
+    virtual void squarePartitioningMaster( hmemo::HArray<PartitionId>& newLocalOwners,
+                                           const lama::_Matrix& matrix,
+                                           const hmemo::HArray<float>& processorWeights ) const;
 };
 
 } /* end namespace partitioning */

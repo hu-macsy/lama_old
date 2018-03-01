@@ -53,6 +53,9 @@ scai_project (
 
         MatrixAssemblyTest
 
+        GramianMatrixTest
+        HybridMatrixTest
+
         lamaMatrixTest
     )
 

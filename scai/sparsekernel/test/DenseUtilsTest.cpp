@@ -404,10 +404,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
                                      };
 
     const DefaultReal dense_values1[] = { 1, 1, 2,
-                                          2, 1, 1,
-                                          1, 1, 1,
-                                          2, 2, 2
-                                        };
+                                       2, 1, 1,
+                                       1, 1, 1,
+                                       2, 2, 2
+                                     };
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;
@@ -568,7 +568,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<DenseKernelTrait::scaleRows<ValueType, ValueType> > scaleRows;
+    static LAMAKernel<DenseKernelTrait::scaleRows<ValueType> > scaleRows;
 
     ContextPtr loc = testContext;
 

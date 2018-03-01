@@ -66,6 +66,7 @@ using lama::MatrixKind;
 using lama::SparseMatrix;
 using lama::VectorKind;
 using lama::DenseVector;
+using lama::Vector;
 
 namespace solver
 {
@@ -152,7 +153,7 @@ void Jacobi<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 }
 
 template<typename ValueType>
-void Jacobi<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
+void Jacobi<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -190,15 +191,15 @@ void Jacobi<ValueType>::iterate()
         return;
     }
 
-    DenseVector<ValueType>& solutionV = runtime.mSolution.getReference();   // mark solution as dirty
+    Vector<ValueType>& solutionV = runtime.mSolution.getReference();   // mark solution as dirty
 
-    // Note: reinterpret casts are safe as already verified in initialize, solveInit
+    // Note: start casts are safe as already verified in initialize, solveInit
 
-    const SparseMatrix<ValueType>& coefficients = reinterpret_cast<const SparseMatrix<ValueType>&>( m );
+    const SparseMatrix<ValueType>& coefficients = static_cast<const SparseMatrix<ValueType>&>( m );
   
     DenseVector<ValueType>& oldSolution = runtime.mOldSolution;
-    DenseVector<ValueType>& solution    = reinterpret_cast<DenseVector<ValueType>&>( solutionV );
-    const DenseVector<ValueType>& rhs   = reinterpret_cast<const DenseVector<ValueType>&>( *runtime.mRhs );
+    DenseVector<ValueType>& solution    = static_cast<DenseVector<ValueType>&>( solutionV );
+    const DenseVector<ValueType>& rhs   = static_cast<const DenseVector<ValueType>&>( *runtime.mRhs );
 
     // Swap solution and old solution
 
@@ -272,7 +273,7 @@ void Jacobi<ValueType>::iterate()
             const HArray<ValueType>& localX ) > localAsyncF =
                 bind( jacobiIterateAsync, _1, _2, _3, cref( localRhs ), omega );
 
-        coefficients.haloOperationAsync( localSolution, localOldSolution, haloOldSolution, localAsyncF, haloF );
+        coefficients.haloOperationAsyncLocal( localSolution, localOldSolution, haloOldSolution, localAsyncF, haloF );
     }
 
     SCAI_LOG_INFO( logger, "Jacobi iterate done, local sol = " << localSolution 

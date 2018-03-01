@@ -69,15 +69,11 @@ const char* format2Str( const Format storageFormat )
             break;
 
         case Format::DENSE:
-            return "DENSE";
+            return "Dense";
             break;
 
         case Format::STENCIL:
-            return "STENCIL";
-            break;
-
-        case Format::ASSEMBLY:
-            return "ASSEMBLY";
+            return "Stencil";
             break;
 
         case Format::UNDEFINED:

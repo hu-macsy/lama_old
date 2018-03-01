@@ -140,7 +140,7 @@ void OpenMPDenseUtils::getCSRSizes(
 
 /** Helper routine for conversion Dense to CSR */
 
-template<typename DenseValueType, typename CSRValueType>
+template<typename CSRValueType, typename DenseValueType>
 void OpenMPDenseUtils::getCSRValues(
     IndexType csrJA[],
     CSRValueType csrValues[],
@@ -373,12 +373,12 @@ void OpenMPDenseUtils::setValue(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename DenseValueType, typename OtherValueType>
+template<typename ValueType>
 void OpenMPDenseUtils::scaleRows(
-    DenseValueType denseValues[],
+    ValueType denseValues[],
     const IndexType numRows,
     const IndexType numColumns,
-    const OtherValueType rowValues[] )
+    const ValueType rowValues[] )
 {
     SCAI_REGION( "OpenMP.DenseUtils.scaleRows" )
 
@@ -386,7 +386,7 @@ void OpenMPDenseUtils::scaleRows(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        const DenseValueType scaleValue = static_cast<DenseValueType>( rowValues[i] );
+        const ValueType scaleValue = rowValues[i];
 
         // scale the whole row with this value
 
@@ -412,6 +412,7 @@ void OpenMPDenseUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kern
     KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ValueType> >( setDiagonalValue, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
@@ -424,7 +425,6 @@ void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels
     KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

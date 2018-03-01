@@ -88,7 +88,8 @@ void MKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[] )
+    const ValueType csrValues[],
+    const common::MatrixOp op )
 {
     SCAI_REGION( "MKL.scsrmv" )
     SCAI_LOG_INFO( logger,
@@ -111,11 +112,15 @@ void MKLCSRUtils::normalGEMV(
 
     if ( y != result && beta != common::Constants::ZERO )
     {
-        OpenMPUtils::set( result, y, numRows, common::BinaryOp::COPY );
+        IndexType n = common::isTranspose( op ) ? numColumns : numRows;
+
+        OpenMPUtils::set( result, y, n, common::BinaryOp::COPY );
     }
 
     // performs y = alpha * A * x + beta * y
-    BLASTrans transa = 'n';
+
+    BLASTrans transa = common::isTranspose( op ) ? 't' : 'n';
+
     // General, - triangular, Non-Unit, C for zero-indexing
     BLASMatrix matdescra;
     matdescra[0] = 'g';

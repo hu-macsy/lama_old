@@ -67,7 +67,7 @@ static void bench( _Matrix& b, _Matrix& a )
 
     for ( int k = 0; k < nrepeat; ++k )
     {
-        b = a;
+        b.assign( a );
     }
 
     timeHost = Walltime::get() - timeHost;
@@ -80,7 +80,7 @@ static void bench( _Matrix& b, _Matrix& a )
 
     for ( int k = 0; k < nrepeat; ++k )
     {
-        b = a;
+        b.assign( a );
     }
 
     timeGPU = Walltime::get() - timeGPU;
@@ -126,11 +126,13 @@ int main()
             typedef SCAI_COMMON_FIRST_ARG( SCAI_COMMON_TAIL( SCAI_NUMERIC_TYPES_HOST ) ) ValueType1;
 #endif
             float rate = fillrates[j];
-            CSRSparseMatrix<ValueType> a( size, size );
-            CSRSparseMatrix<ValueType> a1( size, size );
-            ELLSparseMatrix<ValueType1> b( size, size );
-            JDSSparseMatrix<ValueType1> c( size, size );
-            CSRSparseMatrix<ValueType1> d( size, size );
+
+            auto a  = zero<CSRSparseMatrix<ValueType>>( size, size );
+            auto a1 = zero<CSRSparseMatrix<ValueType>>( size, size );
+            auto b  = zero<ELLSparseMatrix<ValueType1>>( size, size );
+            auto c  = zero<JDSSparseMatrix<ValueType1>>( size, size );
+            auto d  = zero<CSRSparseMatrix<ValueType1>>( size, size );
+
             MatrixCreator::fillRandom( a, rate );
             cout << "ELL <-- CSR" << endl;
             bench( b, a );

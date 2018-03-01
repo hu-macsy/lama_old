@@ -71,8 +71,8 @@ int main( int argc, const char* argv[] )
 
     std::string filename = argv[1];
 
-    CSRSparseMatrix<ValueType> A( filename );
-
+    auto A = read<CSRSparseMatrix<ValueType>>( filename );
+  
     DenseVector<ValueType> diag;
 
     ValueType theta = 0.0;
@@ -81,9 +81,10 @@ int main( int argc, const char* argv[] )
     diag -= theta;
     A.setDiagonal( diag );
 
-    DenseVector<ValueType> x( A.getRowDistributionPtr(), 1 );
-    DenseVector<ValueType> q;
-    DenseVector<ValueType> y;
+    auto x = fill<DenseVector<ValueType>>( A.getRowDistributionPtr(), 1 );
+
+    DenseVector<ValueType> q;   // tmp vector, allocated data will be reused in loop
+    DenseVector<ValueType> y;   // tmp vector, allocated data will be reused in loop
 
     LoggerPtr slogger( new CommonLogger( "CGLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly ) );
     CG<ValueType> solver( "CG", slogger );

@@ -460,13 +460,14 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
         DistributionPtr rowDist = testDists[i];
         CommunicatorPtr comm = rowDist->getCommunicatorPtr();
 
-        CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+        auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 
         float fillRate = 0.2f;
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
         matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
+
         PartitionIO::write( *rowDist, distFileName );
 
         CSRSparseMatrix<ValueType> readMatrix;
@@ -519,7 +520,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
         DistributionPtr rowDist = testDists[i];
         CommunicatorPtr comm = rowDist->getCommunicatorPtr();
 
-        CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+        auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 
         float fillRate = 0.2f;
 
@@ -613,7 +614,7 @@ BOOST_AUTO_TEST_CASE( _MatrixColPartitionIO )
 
         CommunicatorPtr comm = rowDist->getCommunicatorPtr();
 
-        CSRSparseMatrix<ValueType> matrix( stencilMatrix, rowDist, colDist );
+        auto matrix = distribute<CSRSparseMatrix<ValueType>>( stencilMatrix, rowDist, colDist );
 
         // Stencil matrix has diagonal property so we know the distribution
 

@@ -166,7 +166,8 @@ void PETScIO::writeSparseImpl(
     // sparse unsupported for this file format, write it dense
 
     HArray<ValueType> denseArray;
-    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    ValueType zero = 0;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
     writeArrayImpl( denseArray, fileName );
 }
 
@@ -439,7 +440,7 @@ void PETScIO::readStorageImpl(
 
     if ( firstRow == 0 && nRows == invalidIndex )
     {
-        storage.setCSRData( numRows, numCols, nnz, csrSizes, csrJA, csrValues );
+        storage.setCSRData( numRows, numCols, csrSizes, csrJA, csrValues );
     }
     else
     {

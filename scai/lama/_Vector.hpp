@@ -354,13 +354,15 @@ public:
     virtual common::ScalarType getValueType() const = 0;
 
     /**
-     *  @brief Creates a new Vector of the same kind and value type, and same context
+     *  @brief Creates a new Vector of the same kind, same ValueType, same distribution, same context
+     *         (initilized with 0)
      *
      *  /code
      *    const Vector& old = ...
      *    ....
      *
-     *  The new vector is a zero vector, neither allocated, nor initialized.
+     *  The new vector is a zero vector of same size/distribution, same type, same kind.
+     *  In contrary to copy is does not have to read the values of this vector.
      */
     virtual _Vector* newVector() const = 0;
 
@@ -418,6 +420,19 @@ public:
      */
     void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
 
+    /** 
+     *  @brief Assign a vector with a new distriubtion
+     *
+     *  \code
+     *    dvTarget.assignDistribute( dvSource, dist );
+     *    // short and optimized version of 
+     *    dvTarget.assign( dvSource ); dvTarget.redistribute( dist );
+     *  \endcode
+     */
+    void assignDistribute( const _Vector& other, dmemo::DistributionPtr distribution );
+
+    void assignDistribute( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
+
     /**
      *  Define a non-distributed vector by an array with all its values.
      *
@@ -472,7 +487,7 @@ public:
      *  The call v1.setVector( v2, op ) is equivalent to the following code:
      *
      *  \code
-     *      SCAI_ASSERT_EQ_ERROR(( v1.getDistribution(), v2.getDistribuiton(), "mismatch" )
+     *      SCAI_ASSERT_EQ_ERROR(( v1.getDistribution(), v2.getDistribution(), "mismatch" )
      *      for ( IndexType i = 0; i < v1.size(); ++i )
      *      {
      *          v1[i] = v1[i] op v2[i];    // swapArgs = false

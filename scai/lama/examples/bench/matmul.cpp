@@ -57,11 +57,14 @@ template<typename ValueType>
 static void bench( IndexType size, float fillRate )
 {
     ContextPtr host = Context::getHostPtr();
-    CSRSparseMatrix<ValueType> a( size, size );
-    CSRSparseMatrix<ValueType> b( size, size );
-    CSRSparseMatrix<ValueType> c( size, size );
+
+    auto a = zero<CSRSparseMatrix<ValueType>>( size, size );
+    auto b = zero<CSRSparseMatrix<ValueType>>( size, size );
+    auto c = zero<CSRSparseMatrix<ValueType>>( size, size );
+
     MatrixCreator::fillRandom( a, fillRate );
     MatrixCreator::fillRandom( b, fillRate );
+
     a.setContextPtr( host );
     b.setContextPtr( host );
     c.setContextPtr( host );
@@ -75,7 +78,9 @@ static void bench( IndexType size, float fillRate )
     ContextPtr gpu = Context::getContextPtr( ContextType::CUDA );
     a.setContextPtr( gpu );
     b.setContextPtr( gpu );
-    CSRSparseMatrix<ValueType> c1( size, size );
+
+    auto c1 = zero<CSRSparseMatrix<ValueType>>( size, size );
+
     a.prefetch();
     b.prefetch();
     a.wait();

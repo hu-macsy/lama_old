@@ -99,14 +99,14 @@ public:
 
     struct CGSRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        lama::DenseVector<ValueType> mRes0;
-        lama::DenseVector<ValueType> mVecP;
-        lama::DenseVector<ValueType> mVecQ;
-        lama::DenseVector<ValueType> mVecU;
-        lama::DenseVector<ValueType> mVecT;
-        lama::DenseVector<ValueType> mVecPT;
-        lama::DenseVector<ValueType> mVecUT;
-        lama::DenseVector<ValueType> mVecTemp;
+        std::unique_ptr<lama::Vector<ValueType>> mRes0;
+        std::unique_ptr<lama::Vector<ValueType>> mVecP;
+        std::unique_ptr<lama::Vector<ValueType>> mVecQ;
+        std::unique_ptr<lama::Vector<ValueType>> mVecU;
+        std::unique_ptr<lama::Vector<ValueType>> mVecT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecPT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecUT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecTemp;
 
         RealType<ValueType> mEps;
         RealType<ValueType> mNormRes;
@@ -120,7 +120,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class

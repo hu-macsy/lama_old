@@ -86,17 +86,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
         { 2, 0, 1 };
         const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
         const IndexType numRows = nIlg;
-        const IndexType numValues = nJa;
         const IndexType numColumns = 10;
-        const IndexType numDiagonals = nDlg;
         HArrayRef<IndexType> jdsJA( nJa, valuesJa );
         HArray<ValueType> jdsValues( nJa, 1.0 ); // only need to build JDS storage
         HArrayRef<IndexType> jdsDLG( nDlg, valuesDlg );
         HArrayRef<IndexType> jdsILG( nIlg, valuesIlg );
         HArrayRef<IndexType> jdsPerm( nPerm, valuesPerm );
         // setJDSData will copy/convert values up to the needed context
-        jdsStorage.setJDSData( numRows, numColumns, numValues, numDiagonals, jdsDLG, jdsILG, jdsPerm, jdsJA,
-                               jdsValues );
+
+        jdsStorage.setJDSData( numRows, numColumns, jdsDLG, jdsILG, jdsPerm, jdsJA, jdsValues );
 
         if ( icase == 0 )
         {
@@ -117,7 +115,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
             HArray<IndexType>& jdsILG = const_cast<HArray<IndexType>&>( jdsStorage.getIlg() );
             IndexType idx = 2;
             IndexType val = 4;
-            HArrayUtils::setValImpl( jdsILG, idx, val, BinaryOp::COPY );
+            HArrayUtils::setVal( jdsILG, idx, val, BinaryOp::COPY );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal ilg" ); }, Exception );
         }
         else if ( icase == 3 )
@@ -126,7 +124,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
             HArray<IndexType>& jdsDLG = const_cast<HArray<IndexType>&>( jdsStorage.getDlg() );
             IndexType idx = 2;
             IndexType val = 4;
-            HArrayUtils::setValImpl( jdsDLG, idx, val, BinaryOp::COPY );
+            HArrayUtils::setVal( jdsDLG, idx, val, BinaryOp::COPY );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal dlg" ); }, Exception );
         }
         else if ( icase == 4 )
@@ -142,7 +140,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
             HArray<IndexType>& jdsPerm = const_cast<HArray<IndexType>&>( jdsStorage.getPerm() );
             IndexType idx = 0;
             IndexType val = 0;
-            HArrayUtils::setValImpl( jdsPerm, idx, val, BinaryOp::COPY );
+            HArrayUtils::setVal( jdsPerm, idx, val, BinaryOp::COPY );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
         }
     } // CASE_LOOP
@@ -156,7 +154,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     SCAI_LOG_INFO( logger, "constructorTest for JDSStorage<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-    JDSStorage<ValueType> jdsStorage( numRows, numColumns );
+    JDSStorage<ValueType> jdsStorage;
+    jdsStorage.setContextPtr( context );
+    jdsStorage.allocate( numRows, numColumns );
     BOOST_REQUIRE_EQUAL( numRows, jdsStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, jdsStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( IndexType( 0 ), jdsStorage.getNumValues() );
@@ -203,9 +203,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
     LArray<IndexType> jdsPerm( numRows, perm );
     LArray<IndexType> jdsJA( numValues, ja );
     LArray<ValueType> jdsValues( numValues, values );
+
     // Call the specific constructor for JDS storage
-    JDSStorage<ValueType> jdsStorage( numRows, numColumns, numValues, numDiagonals,
-                                      jdsDLG, jdsILG, jdsPerm, jdsJA, jdsValues );
+
+    JDSStorage<ValueType> jdsStorage( numRows, numColumns, 
+                                      jdsDLG, jdsILG, jdsPerm, jdsJA, jdsValues, context );
+
     // Test all the getter routines, includes the specific ones for JDSStorage
     BOOST_REQUIRE_EQUAL( numRows, jdsStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, jdsStorage.getNumColumns() );
@@ -238,8 +241,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
             BOOST_CHECK_EQUAL( values[i], jdsValues[i] );
         }
     }
-    // copy constructor on all available locations
-    JDSStorage<ValueType> jdsStorageCopy( jdsStorage, context );
+
+    // copy constructor 
+
+    JDSStorage<ValueType> jdsStorageCopy( jdsStorage );
     BOOST_REQUIRE_EQUAL( numRows, jdsStorageCopy.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, jdsStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numDiagonals, jdsStorageCopy.getNumDiagonals() );
@@ -275,12 +280,67 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
+template<typename ValueType>
+static inline const ValueType* getPointer( const HArray<ValueType>& a, ContextPtr ctx )
 {
-    // use template storage test
-    storageSwapTest<JDSStorage<ValueType> >();
+    ReadAccess<ValueType> rA( a, ctx );
+    return rA.get();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( splitUpTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+    const IndexType numDiagonals = 2;
+    const IndexType numValues = 4;
+
+    HArray<IndexType> jdsIlg( { 2, 1, 1 } );
+    HArray<IndexType> jdsDlg( { 3, 1 } );
+    HArray<IndexType> jdsPerm( { 2, 0, 1 } );
+    HArray<IndexType> jdsJA( { 2, 0, 1, 2 } );
+    HArray<ValueType> jdsValues( { 3, 5, 5, 2 } );
+
+    const IndexType* ptrJA = getPointer( jdsJA, context );
+    const ValueType* ptrValues = getPointer( jdsValues, context );
+
+    JDSStorage<ValueType> jdsStorage( numRows, numColumns, 
+                                      std::move( jdsDlg ), std::move( jdsIlg ), std::move( jdsPerm ),
+                                      std::move( jdsJA ), std::move( jdsValues ) );
+
+    IndexType outNumRows;
+    IndexType outNumColumns;
+
+    HArray<IndexType> outIlg;
+    HArray<IndexType> outDlg;
+    HArray<IndexType> outPerm;
+    HArray<IndexType> outJA;
+    HArray<ValueType> outValues;
+
+    jdsStorage.splitUp( outNumRows, outNumColumns, outDlg, outIlg, outPerm, outJA, outValues );
+
+    BOOST_CHECK_EQUAL( outDlg.size(), numDiagonals );
+    BOOST_CHECK_EQUAL( outIlg.size(), numRows );
+    BOOST_CHECK_EQUAL( outPerm.size(), numRows );
+    BOOST_CHECK_EQUAL( outJA .size(), numValues );
+    BOOST_CHECK_EQUAL( outValues.size(), numValues );
+
+    BOOST_CHECK_EQUAL( outNumRows, numRows );
+    BOOST_CHECK_EQUAL( outNumColumns, numColumns );
+
+    BOOST_CHECK_EQUAL( ptrJA, getPointer( outJA, context ) );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( outValues, context ) );
+
+    BOOST_CHECK_EQUAL( jdsStorage.getIlg().size(), 0 );
+    BOOST_CHECK_EQUAL( jdsStorage.getDlg().size(), 0 );
+    BOOST_CHECK_EQUAL( jdsStorage.getJA().size(), 0 );
+    BOOST_CHECK_EQUAL( jdsStorage.getValues().size(), 0 );
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

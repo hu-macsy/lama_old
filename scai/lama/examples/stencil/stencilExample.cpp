@@ -112,7 +112,7 @@ int main( int argc, const char* argv[] )
     GridVector<ValueType> v1;
     v1 = m * v;
     GridVector<ValueType> v2;
-    v2 = v * m2;
+    v2 = transpose( m2 ) * v;
 
     std::cout << "max diff = " << v1.maxDiffNorm( v2 ) << std::endl;
 }

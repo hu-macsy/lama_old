@@ -64,7 +64,7 @@ public:
      *  @param[in] globalSize   number of elements to distribute
      *  @param[in] communicator used for the partitions onto which elements are distributed.
      */
-    BlockDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
+    BlockDistribution( const IndexType globalSize, const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     virtual ~BlockDistribution();
 

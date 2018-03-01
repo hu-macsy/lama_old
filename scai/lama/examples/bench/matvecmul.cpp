@@ -109,7 +109,7 @@ static void bench( Matrix<ValueType>& mat )
     double time2 = Walltime::get();
     {
         SCAI_REGION( "Main.Bench.gevm" )
-        y2 = x * *matT;
+        y2 = transpose( *matT ) * x;
     }
 
     time2 = Walltime::get() - time2;
@@ -131,7 +131,7 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    COOSparseMatrix<DefaultReal> C( 10000, 10000 );
+    auto C = zero<COOSparseMatrix<DefaultReal>>( 10000, 10000 );
 
     MatrixCreator::fillRandom( C, 0.1 );
 

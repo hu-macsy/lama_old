@@ -180,8 +180,6 @@ static inline char codeBorder( Grid::BorderType border )
             return 'A';
         case Grid::BORDER_PERIODIC:
             return 'P';
-        case Grid::BORDER_REFLECTING:
-            return 'R';
         default:
             return 'U';
     }
@@ -235,10 +233,6 @@ static bool inline getBorderPosL( IndexType& pos, const IndexType offset, const 
     {
         pos = ( pos + size ) - offset;
     }
-    else if ( border == Grid::BORDER_REFLECTING )
-    {
-        pos = offset - ( pos + 1 ); 
-    }
 
     return valid;
 }
@@ -266,10 +260,6 @@ static bool inline getBorderPosR( IndexType& pos, const IndexType offset, const 
     else if ( border == Grid::BORDER_PERIODIC )
     {
         pos = ( pos + offset ) - size;
-    }
-    else if ( border == Grid::BORDER_REFLECTING )
-    {
-        pos = 2 * size - ( pos + 1 + offset ); 
     }
     return valid;
 }

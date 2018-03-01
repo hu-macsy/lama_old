@@ -183,36 +183,51 @@ static void update( CSRStorage<ValueType>& affinityMatrix, const std::vector<Ind
 {
     // This is some kind of hack to make sure that labelsMatrix is not updated in
     // all rows where at least one element is found
+
     const IndexType size = evidenceVector.size();
-    ReadAccess<IndexType> csrIA( affinityMatrix.getIA() );
-    WriteAccess<IndexType> csrJA( affinityMatrix.getJA() );
-    WriteAccess<ValueType> csrValues( affinityMatrix.getValues() );
 
-    // if labelsMatrix[i,:] has entry, we set affinityMatrix[i,:] = [0, ..., 1 ... ]
-    // so labelsMatrix[i,:] remains unchanged for affinityMatrix * labelsMatrix
+    utilskernel::LArray<IndexType> ia;
+    utilskernel::LArray<IndexType> ja;
+    utilskernel::LArray<ValueType> values;
 
-    for ( IndexType ii = 0; ii < size; ++ii )
+    IndexType numRows;
+    IndexType numColumns;
+
+    affinityMatrix.splitUp( numRows, numColumns, ia, ja, values );
+
     {
-        IndexType i = evidenceVector[ii];
+        ReadAccess<IndexType> csrIA( ia );
+        WriteAccess<IndexType> csrJA( ja );
+        WriteAccess<ValueType> csrValues( values );
 
-        // set row i of affinityMatrix to identity
+        // if labelsMatrix[i,:] has entry, we set affinityMatrix[i,:] = [0, ..., 1 ... ]
+        // so labelsMatrix[i,:] remains unchanged for affinityMatrix * labelsMatrix
 
-        // SCAI_ASSERT_ERROR( csrIA[i] < csrIA[i+1], "row " << i << " of affinity matrix empty" );
-
-        if ( csrIA[i] >= csrIA[i + 1] )
+        for ( IndexType ii = 0; ii < size; ++ii )
         {
-            continue;
-        }
+            IndexType i = evidenceVector[ii];
 
-        csrJA[ csrIA[i] ] = i;
-        csrValues[ csrIA[i] ] = 1.0;
+            // set row i of affinityMatrix to identity
 
-        for ( IndexType jj = csrIA[i] + 1; jj < csrIA[i + 1]; ++jj )
-        {
-            csrJA[ jj ] = i;
-            csrValues[ jj ] = 0.0;
+            // SCAI_ASSERT_ERROR( csrIA[i] < csrIA[i+1], "row " << i << " of affinity matrix empty" );
+
+            if ( csrIA[i] >= csrIA[i + 1] )
+            {
+                continue;
+            }
+
+            csrJA[ csrIA[i] ] = i;
+            csrValues[ csrIA[i] ] = 1.0;
+
+            for ( IndexType jj = csrIA[i] + 1; jj < csrIA[i + 1]; ++jj )
+            {
+                csrJA[ jj ] = i;
+                csrValues[ jj ] = 0.0;
+            }
         }
     }
+
+    affinityMatrix = CSRStorage<ValueType>( numRows, numColumns, std::move( ia ), std::move( ja ), std::move( values ) );
 }
 
 int main( int argc, char* argv[] )
@@ -242,20 +257,28 @@ int main( int argc, char* argv[] )
     }
 
     double start = Walltime::get();
-    AffinityMatrix affinityMatrix( wFilename );
+
+    auto affinityMatrix = read<AffinityMatrix>( wFilename );
+
     cout << "loading affinityMatrix took " << Walltime::get() - start << " secs." << endl;
     cout << "affinityMatrix = " << affinityMatrix << endl;
+
     start = Walltime::get();
-    LabelMatrix labelsMatrix( yFilename );
+
+    auto labelsMatrix = read<LabelMatrix>( yFilename );
+
     cout << "loading labelsMatrix took " << Walltime::get() - start << " secs." << endl;
     cout << "labelsMatrix = " << labelsMatrix << endl;
     // compute diagonal degree matrix and invert it
     start = Walltime::get();
     //const IndexType numRows = affinityMatrix.getNumRows();
     const IndexType numCols = affinityMatrix.getNumColumns();
-    DenseVector<ValueType> oneVector( numCols, 1.0 );
-    DenseVector<ValueType> y( affinityMatrix * oneVector );  // rowSums
-    y.unaryOp( y, UnaryOp::RECIPROCAL );   // y(i) = 1.0 / y(i)
+
+    auto oneVector = fill<DenseVector<ValueType>>( numCols, 1.0 );
+    auto y         = eval<DenseVector<ValueType>>( affinityMatrix * oneVector );  // rowSums
+
+    y = 1 / y; 
+
     affinityMatrix.scaleRows( y );  // scales each row
     cout << "invert/scale calculations took " << Walltime::get() - start << " secs." << endl;
     // update affinityMatrix so that labelsMatrix remains unchanged

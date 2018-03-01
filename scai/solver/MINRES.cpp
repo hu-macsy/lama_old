@@ -42,7 +42,7 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -59,7 +59,7 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MINRES<ValueType>::logger, "Solver.IterativeSolver.MINRES" )
 
 using lama::Matrix;
-using lama::DenseVector;
+using lama::Vector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -123,19 +123,18 @@ void MINRES<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     runtime.mCNew = 1.0;
     runtime.mS = 0.0;
     runtime.mSNew = 0.0;
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    hmemo::ContextPtr ctx = coefficients.getContextPtr();
-    runtime.mVecV.setContextPtr( ctx );
-    runtime.mVecVOld.setContextPtr( ctx );
-    runtime.mVecVNew.setContextPtr( ctx );
-    runtime.mVecP.setContextPtr( ctx );
-    runtime.mVecPOld.setContextPtr( ctx );
-    runtime.mVecPNew.setContextPtr( ctx );
+
+    runtime.mVecV.reset( coefficients.newTargetVector() );
+    runtime.mVecVOld.reset( coefficients.newTargetVector() );
+    runtime.mVecVNew.reset( coefficients.newTargetVector() );
+    runtime.mVecP.reset( coefficients.newTargetVector() );
+    runtime.mVecPOld.reset( coefficients.newTargetVector() );
+    runtime.mVecPNew.reset( coefficients.newTargetVector() );
     runtime.mEps = common::TypeTraits<ValueType>::eps1() * 3;
 }
 
 template<typename ValueType>
-void MINRES<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
+void MINRES<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     MINRESRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -146,12 +145,14 @@ void MINRES<ValueType>::solveInit( DenseVector<ValueType>& solution, const Dense
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
     // Initialize
     this->getResidual();
-    runtime.mVecVNew = runtime.mResidual;
-    runtime.mVecV.setSameValue( solution.getDistributionPtr(), ValueType( 0 ) );
-    runtime.mVecP = ValueType( 0 );
-    runtime.mVecPNew = ValueType( 0 );
-    runtime.mZeta = runtime.mResidual.l2Norm();
-    runtime.mVecVNew /= runtime.mZeta;  // *runtime.mVecVNew /= runtime.mZeta
+
+    *runtime.mVecVNew = *runtime.mResidual;
+    *runtime.mVecV = 0;
+    *runtime.mVecP = 0;
+    *runtime.mVecPNew = 0;
+
+    runtime.mZeta = runtime.mResidual->l2Norm();
+    *runtime.mVecVNew /= runtime.mZeta;  // *runtime.mVecVNew /= runtime.mZeta
     runtime.mSolveInit = true;
 }
 
@@ -162,9 +163,9 @@ void MINRES<ValueType>::Lanczos()
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
 
-    DenseVector<ValueType>& vecV = runtime.mVecV;
-    DenseVector<ValueType>& vecVOld = runtime.mVecVOld;
-    DenseVector<ValueType>& vecVNew = runtime.mVecVNew;
+    Vector<ValueType>& vecV = *runtime.mVecV;
+    Vector<ValueType>& vecVOld = *runtime.mVecVOld;
+    Vector<ValueType>& vecVNew = *runtime.mVecVNew;
 
     ValueType& alpha = runtime.mAlpha;
     RealType<ValueType>& betaNew = runtime.mBetaNew;
@@ -237,16 +238,21 @@ void MINRES<ValueType>::applyGivensRotation()
         rho3 = nu;
     }
 
-    DenseVector<ValueType>& vecP = runtime.mVecP;
-    DenseVector<ValueType>& vecPOld = runtime.mVecPOld;
-    DenseVector<ValueType>& vecPNew = runtime.mVecPNew;
+    std::swap( runtime.mVecPOld, runtime.mVecP );
+    std::swap( runtime.mVecP, runtime.mVecPNew );
 
-    const DenseVector<ValueType>& vecV = runtime.mVecV;
+    Vector<ValueType>& vecP    = *runtime.mVecP;
+    Vector<ValueType>& vecPOld = *runtime.mVecPOld;
+    Vector<ValueType>& vecPNew = *runtime.mVecPNew;
 
+    const Vector<ValueType>& vecV = *runtime.mVecV;
+
+    /*
     // update P(new) -> P -> POld
 
     vecPOld.swap( vecP );
     vecP.swap( vecPNew );
+    */
 
     vecPNew = vecV - rho1 * vecPOld;
     vecPNew = vecPNew - rho2 * vecP;
@@ -261,8 +267,8 @@ void MINRES<ValueType>::iterate()
     Lanczos();
     applyGivensRotation();
 
-    const DenseVector<ValueType>& vecPNew = runtime.mVecPNew;
-    DenseVector<ValueType>& solution = runtime.mSolution.getReference(); // dirty
+    const Vector<ValueType>& vecPNew = *runtime.mVecPNew;
+    Vector<ValueType>& solution = runtime.mSolution.getReference(); // dirty
 
     ValueType& cNew = runtime.mCNew;
     ValueType& sNew = runtime.mSNew;

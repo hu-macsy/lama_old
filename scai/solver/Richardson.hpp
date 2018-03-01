@@ -90,7 +90,7 @@ public:
 
     virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
-    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -102,8 +102,8 @@ public:
 
     struct RichardsonRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        lama::DenseVector<ValueType> mOldSolution;
-        lama::DenseVector<ValueType> mX;
+        std::unique_ptr<lama::Vector<ValueType>> mOldSolution;
+        std::unique_ptr<lama::Vector<ValueType>> mX;
     };
     /**
      * @brief Returns the complete configuration of the derived class

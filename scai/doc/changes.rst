@@ -37,6 +37,37 @@ Here is a summary of the major changes compared to the old release LAMA 2.1.
  * MIC support (i.e. support of Xeon Phi Knights Corner in accelerator mode) has been dropped
  * Support of native mode for Xeon Phi Knights Landing has been improved
 
+Namespaces
+-----------
+
+The LAMA internal types IndexType and PartitionId are now in the namespace ``scai``. In previous versions
+they were defined  in the default namespace.
+
+.. code-block:: c++
+
+    // old version
+    void myRoutine( scai::lama::DenseVector<ValueType>& vector, const IndexType N );
+    // new version
+    void myRoutine( scai::lama::DenseVector<ValueType>& vector, const scai::IndexType N );
+
+The constant values ``nIndex`` and ``nPartition`` were used as result values for index positions
+or partition ids that have not been found. They have been renamed to ``invalidIndex`` 
+and ``invalidPartition`` to make their meaning more clear. And they are also moved to the 
+namespace scai.
+
+.. code-block:: c++
+
+     scai::dmemo::DistributionPtr dist = ...
+     scai::IndexType localIndex = dist->global2local( 100 );
+     if ( localIndex != scai::invalidIndex )                  // before: localIndex != nIndex
+     {
+         std::cout << dist->getCommunicator() << ": local index of 100 = " << localIndex << std::endl;
+     }
+     else
+     {
+         std::cout << dist->getCommunicator() << ": I am not owner of index 100" << std::endl;
+     }
+
 Typed Vector Classes
 --------------------
 
@@ -99,7 +130,7 @@ the generality.
         DenseVector<ValueType> z;
         z = m * y - x;
         ValueType alpha = z.l2Norm();
-        x += alpha * z;
+        x  :+= alpha * z;
     }
 
 There is no more need to use a pointer variable for the temporary vector as now the type
@@ -298,6 +329,55 @@ Actually the code might have also been written as follows:
 
 By using the move operations the code becomes faster and it might be helpful to avoid running out of memory.
 
+As a kind of opposite to construct an object via move constructor or assignment, an object can be unmoved
+in its parts. If available, this operation is called splitUp.
+
+.. code-block:: c++
+
+    CSRStorage<ValueType> csrStorage;
+    csrStorage.readFromFile( "matrix.mtx" );
+
+    HArray<IndexType> ia;
+    HArray<IndexType> ja;
+    HArray<ValueType> values;
+    IndexType         numRows;
+    IndexType         numColumns;
+
+    csrStorage.splitUp( numRows, numColumns, ia, ja, values );  
+    // Note: csrStorage should be considered as undefined, internally it is a matrix of size 0 x 0
+
+Free Constructor Functions
+--------------------------
+
+The old LAMA version provided for most classes, especially matrix and storage classes, a lot of constructors.
+This resulted in some confusion about the functionality of the constructors as they differ only by the
+number of arguments.
+
+.. code-block:: c++
+
+    CSRSparseMatrix<ValueType> csr( nRows, nCols );   // construct a zero matrix of size nRows x nCols
+
+In the new release the number of constructors is rather limited. Instead of this a lot of free functions
+have been added that return corresponding objects as if they have been constructed.
+
+.. code-block:: c++
+
+    auto csr = zero<CSRSparseMatrix<ValueType>>( nRows, nCols );
+
+.. code-block:: c++
+
+    CSRSparseMatrix<ValueType> csr2( "matrix.txt" );               // old version
+    auto csr2 = read<CSRSparseMatrix<ValueType>>( "matrix.txt" );  // new version
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v1( A * x + 2 * y );                  // old version
+    auto v1 = eval<DenseVector<ValueType>>( A * x + 2 * y );     // new version
+
+    DenseVector<ValueType> oneVector( numCols, 1.0 );               // old version
+    auto oneVector = fill<DenseVector<ValueType>>( numCols, 1.0 );  // new version
+
+
 AssemblyAccess
 --------------
 
@@ -307,6 +387,29 @@ Instead of this you should use the class MatrixAssemblyAccess that has a similia
 but works also well for distributed matrix data.
 
 The class VectorAssemblyAccess has a similiar functionaly for distributed vectors.
+
+Storage Classes
+---------------
+
+Some constructors of storage classes have been simplified.
+
+.. code-block:: c++
+
+    HArray<IndexType> ia( .. );
+    HArray<IndexType> ja( .. );
+    HArray<ValueType> values( .. );
+    // old version
+    lama::CSRStorage<ValueType> localCSR( numRows, numColumns, numValues, ia, ja, values );
+    // new version, numValues was redundant as same as ja.size() and values.size()
+    lama::CSRStorage<ValueType> localCSR( numRows, numColumns, ia, ja, values );
+
+Not all constructors for storage classes had the dimensions as first arguments. This
+is now always the case.
+
+.. code-block:: c++
+
+    DenseStorage<double>( m, n, HArray<double>( m * n, 1 ) );    // new version
+    DenseStorage<double>( HArray<double>( m * n, 1 ), m, n );    // old version
 
 HostReadAccess
 --------------

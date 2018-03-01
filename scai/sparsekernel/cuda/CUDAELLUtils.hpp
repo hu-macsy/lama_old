@@ -43,6 +43,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -80,9 +81,9 @@ public:
 
     /** Returns one row of the matrix */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static void getRow(
-        OtherValueType row[],
+        ValueType row[],
         const IndexType i,
         const IndexType numRows,
         const IndexType numColumns,
@@ -103,15 +104,15 @@ public:
         const IndexType ellJA[],
         const ValueType ellValues[] );
 
-    /** Scales matrix using an vector */
+    /** Implemenation of ELLKernelTrait::scaleRows for CUDA device */
 
-    template<typename ValueType, typename OtherValueType>
-    static void scaleValue(
+    template<typename ValueType>
+    static void scaleRows(
+        ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
-        ValueType ellValues[],
-        const OtherValueType values[] );
+        const ValueType values[] );
 
     /** Implementation for ELLKernelTrait::compressIA */
 
@@ -183,26 +184,12 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
+        const IndexType numColumns,
         const IndexType numValuesPerRow,
         const IndexType ellIA[],
         const IndexType ellJA[],
-        const ValueType ellValues[] );
-
-    /** Implementation for ELLKernelTrait::normalGEVM  */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValuesPerRow,
-        const IndexType ellSizes[],
-        const IndexType ellJA[],
-        const ValueType ellValues[] );
+        const ValueType ellValues[],
+        const common::MatrixOp op );
 
     /** Implementation for ELLKernelTrait::sparseGEMV  */
 
@@ -217,23 +204,8 @@ public:
         const IndexType rowIndexes[],
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ValueType ellValues[] );
-
-    /** Implementation for ELLKernelTrait::sparseGEVM  */
-
-    template<typename ValueType>
-    static void sparseGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numNonZerosPerRow,
-        const IndexType numNonZeroRows,
-        const IndexType rowIndexes[],
-        const IndexType ellIA[],
-        const IndexType ellJA[],
-        const ValueType ellValues[] );
+        const ValueType ellValues[],
+        const common::MatrixOp op );
 
     /** Implementation for ELLKernelTrait::jacobi  */
 

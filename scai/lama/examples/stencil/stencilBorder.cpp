@@ -87,7 +87,7 @@ int main( int argc, const char* argv[] )
 
     common::Grid1D grid( N1 );
 
-    grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+    grid.setBorderType( 0, common::Grid::BORDER_ABSORBING, common::Grid::BORDER_ABSORBING );
 
     StencilStorage<ValueType> st( grid, stencilFD8 );
 
@@ -113,7 +113,7 @@ int main( int argc, const char* argv[] )
         std::cout << std::endl;
     }
 
-    CSRStorage<ValueType> csr( st );
+    auto csr = convert<CSRStorage<ValueType>>( st );
 
     for ( IndexType i = 0; i < N1; ++i )
     {

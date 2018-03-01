@@ -43,6 +43,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -96,25 +97,12 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
+        const IndexType numColumns,
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[] );
-
-    /** Implementation for COOKernelTrait::normalGEVM with CUDA on GPUs */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType numValues,
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const ValueType cooValues[] );
+        const ValueType cooValues[],
+        const common::MatrixOp op );
 
 private:
 

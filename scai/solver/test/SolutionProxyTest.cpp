@@ -54,9 +54,10 @@ struct SolutionProxyTestConfig
 {
     SolutionProxyTestConfig() : 
 
-        vPtr( new DenseVector<ValueType>( 3, ValueType( -5 ) ) ),
+        vPtr( new DenseVector<ValueType>() ),
         mProxy( vPtr.get() )
     {
+        vPtr->setSameValue( 3, -5 );
     }
 
     ~SolutionProxyTestConfig()

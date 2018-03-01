@@ -96,7 +96,7 @@ public:
         const IndexType firstGlobalIdx,
         const IndexType lastGlobalIdx,
         bool  dummy,
-        const CommunicatorPtr communicator );
+        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     /** Construct a general block distribution by individual localSize
      *
@@ -105,8 +105,10 @@ public:
      *  @param[in] communicator specifies the communicator used for this distribution
      *
      */
-
-    GenBlockDistribution( const IndexType globalSize, const IndexType localSize, const CommunicatorPtr communicator );
+    GenBlockDistribution(
+        const IndexType globalSize,
+        const IndexType localSize,
+        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     /** Construct a general block distribution by a weight so that each partition
      *  will have a size corresponding to its weight.
@@ -118,8 +120,10 @@ public:
      *  Note: GenBlockDistribution( globalSize, localSize, comm) is the same
      *        as GenBlockDistribution( globalSize, (float) localSize, comm )
      */
-
-    GenBlockDistribution( const IndexType globalSize, const float weight, const CommunicatorPtr communicator );
+    GenBlockDistribution(
+        const IndexType globalSize,
+        const float weight,
+        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     virtual ~GenBlockDistribution();
 
@@ -134,7 +138,7 @@ public:
 
     void getLocalRange( IndexType& lb, IndexType& ub ) const;
 
-    // Implementation of abstract methods, override default virtual methods
+    /** Implemenation of pure method Distribution::isLocal */
 
     virtual bool isLocal( const IndexType index ) const;
 

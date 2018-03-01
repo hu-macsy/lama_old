@@ -44,6 +44,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <utility>
 
@@ -107,9 +108,9 @@ private:
 
     /** Returns one row of the matrix */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static void getRow(
-        OtherValueType row[],
+        ValueType row[],
         const IndexType i,
         const IndexType numRows,
         const IndexType numColumns,
@@ -143,13 +144,15 @@ private:
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrJA[] );
 
-    template<typename ValueType, typename OtherValueType>
-    static void scaleValue(
+    /** Implementation for ELLKernelTrait::scaleRows */
+
+    template<typename ValueType>
+    static void scaleRows(
+        ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
-        ValueType ellValues[],
-        const OtherValueType values[] );
+        const ValueType values[] );
 
     /** Implementation for ELLKernelTrait::compressIA */
 
@@ -324,10 +327,12 @@ private:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
+        const IndexType numColumns,
         const IndexType numNonZerosPerRow,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
+        const ValueType csrValues[],
+        const common::MatrixOp op );
 
     /** Implementation for ELLKernelTrait::sparseGEMV  */
 
@@ -342,65 +347,10 @@ private:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
-
-    /** Implementation for CSRKernelTrait::normalGEVM */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValuesPerRow,
-        const IndexType ellSizes[],
-        const IndexType ellJA[],
-        const ValueType ellValues[] );
-
-    /** Implementation for CSRKernelTrait::sparseGEVM  */
-
-    template<typename ValueType>
-    static void sparseGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValuesPerRow,
-        const IndexType numNonZeroRows,
-        const IndexType rowIndexes[],
-        const IndexType ellSizes[],
-        const IndexType ellJA[],
-        const ValueType ellValues[] );
+        const ValueType csrValues[],
+        const common::MatrixOp op );
 
 private:
-
-    /** Help routine with combined arguments for asynchronous execution. */
-
-    template<typename ValueType>
-    static void normalGEMV_a(
-        ValueType result[],
-        const std::pair<ValueType, const ValueType*> ax,
-        const std::pair<ValueType, const ValueType*> by,
-        const IndexType numRows,
-        const IndexType numValuesPerRow,
-        const IndexType ellSizes[],
-        const IndexType ellJA[],
-        const ValueType ellValues[] );
-
-    template<typename ValueType>
-    static void sparseGEMV_a(
-        ValueType result[],
-        const std::pair<ValueType, const ValueType*> ax,
-        const IndexType numRows,
-        const IndexType numValuesPerRow,
-        const std::pair<IndexType, const IndexType*> rows,
-        const IndexType ellSizes[],
-        const IndexType ellJA[],
-        const ValueType ellValues[] );
 
     /** Struct for registration of methods without template arguments */
 

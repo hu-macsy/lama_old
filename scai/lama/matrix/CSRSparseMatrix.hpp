@@ -68,7 +68,19 @@ class COMMON_DLL_IMPORTEXPORT CSRSparseMatrix:
 
 public:
 
-    /** Type definition of the storage type for this sparse matrix. */
+    /** @brief Type definition of the storage type for this sparse matrix. 
+     * 
+     *  \code
+     *     template<typename MatrixClass>
+     *     void setup( MatrixClass& matrix )
+     *     {
+     *         typename MatrixClass::StorageType storage;
+     *         storage.allocate( .. )
+     *         ...
+     *         matrix = MatrixClass( std::move( storage ) );
+     *     }
+     *  \endcode
+     */
 
     typedef CSRStorage<ValueType> StorageType;
 
@@ -78,116 +90,48 @@ public:
 
     /** Default constructor, creates a replicated matrix of size 0 x 0 */
 
-    CSRSparseMatrix();
-
-    /** Constructor, creates a replicated zero-matrix of size numRows x numColums */
-
-    CSRSparseMatrix( const IndexType numRows, const IndexType numColumns );
-
-    /** Constructor, creates a distributed zero-matrix by given row and column distribution */
-
-    CSRSparseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    CSRSparseMatrix( hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /** Override default constructor, make sure that deep copies are created. */
 
     CSRSparseMatrix( const CSRSparseMatrix<ValueType>& other );
 
+    /** Rewriting move constructor, leaves the other matrix as zero matrix */
+
+    CSRSparseMatrix( CSRSparseMatrix<ValueType>&& other ) noexcept;
+
     /** Most general copy constrcuctor with possibility of transpose. */
 
-    CSRSparseMatrix( const Matrix<ValueType>& other, bool transposeFlag = false );
-
-    /** Constructor of a sparse matrix by another input matrix with redistribution.
-     *
-     * @param[in] other     is the input matrix.
-     * @param[in] rowDist   row distribution of the new matrix
-     * @param[in] colDist   column distribution of the new matrix
-     */
-    CSRSparseMatrix( const Matrix<ValueType>& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    explicit CSRSparseMatrix( const Matrix<ValueType>& other);
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
-     *  @param[in] globalData  contains local rows of the distributed matrix
+     *  @param[in] globalStorage  contains the full storage, must be of same format and type
      */
-    explicit CSRSparseMatrix( const MatrixStorage<ValueType>& globalData );
+    explicit CSRSparseMatrix( CSRStorage<ValueType> globalStorage );
 
-    /** Constructor of a sparse matrix by local storage.
+    /** Constructor of a sparse matrix by local storage
      *
-     *  @param[in] localData   contains local rows of the distributed matrix
-     *  @param[in] rowDist     is distribution of localData
-     *  @param[in] colDist     specifies how to split local rows for halo
+     *  @param[in] localStorage  contains local rows of the distributed matrix
+     *  @param[in] rowDist       is distribution of localData
      *
-     *  This constructor works also fine if localData is the full global matrix;
-     *  in this case only local rows will be taken on this processor.
+     *  The number of rows for the local storage must be rowDist->getLocalSize(), and the 
+     *  number of columns must be the same on all processors.
      */
-    CSRSparseMatrix( const MatrixStorage<ValueType>& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
-    /** Constructor of a replicated sparse matrix by reading the matrix
-     *  data from a file.
-     *
-     *  @param[in] filename   name of the file where the matrix is read from
-     *
-     *  Next releases will also support distributed/parallel I/O. In the
-     *  meantime this constructor should be used with a following call of
-     *  the redistribute method.
-     */
-    explicit CSRSparseMatrix( const std::string& filename );
-
-    // Expression constructors
-
-    explicit CSRSparseMatrix( const Expression_SM<ValueType>& expression );
-
-    explicit CSRSparseMatrix( const Expression_SMM<ValueType>& expression );
-
-    explicit CSRSparseMatrix( const Expression_SM_SM<ValueType>& expression );
-
-    template<typename OtherValueType>
-    explicit CSRSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression );
-
-    explicit CSRSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression );
-
-    template<common::ComplexPart kind, typename OtherValueType>
-    explicit CSRSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression );
-
-    /** @brief Constructor of a CSR sparse matrix with distributed CSR storage data.
-     *
-     * @param[in] numLocalRows       the number of rows of the matrix
-     * @param[in] numLocalNonZeros   the number of local none zeros of the matrix
-     * @param[in] numHaloNonZeros    the number of halo none zeros of the matrix
-     * @param[in] localIA            row pointer of the input csr sparse matrix (local)
-     * @param[in] localJA            column indexes of the input csr sparse matrix (local)
-     * @param[in] localValues        the none zero values of the input csr sparse matrix (local)
-     * @param[in] haloIA             row pointer of the input csr sparse matrix (halo)
-     * @param[in] haloJA             column indexes of the input csr sparse matrix (halo)
-     * @param[in] haloValues         the none zero values of the input csr sparse matrix (halo)
-     * @param[in] ownedIndexes       the global Indexes of the local rows
-     * @param[in] communicator       communicator of the distribution
-     */
-    template<typename LocalValueType, typename HaloValueType>
-    CSRSparseMatrix(
-        const IndexType numLocalRows,
-        const IndexType numLocalNonZeros,
-        const IndexType numHaloNonZeros,
-        const IndexType localIA[],
-        const IndexType localJA[],
-        const LocalValueType localValues[],
-        const IndexType haloIA[],
-        const IndexType haloJA[],
-        const HaloValueType haloValues[],
-        const std::vector<IndexType>& ownedIndexes,
-        const dmemo::CommunicatorPtr communicator );
+    CSRSparseMatrix( dmemo::DistributionPtr rowDist, CSRStorage<ValueType> localStorage );
 
     /**
      * @brief Destructor. Releases all allocated resources.
      */
     ~CSRSparseMatrix();
 
-    // Make all assignment operators of base class visible before overwriting one
-
-    using SparseMatrix<ValueType>::operator=;
-
     /** Override the default assignment operator that would not make deep copies. */
 
     CSRSparseMatrix& operator=( const CSRSparseMatrix& matrix );
+
+    /** Override the default move assignment operator */
+
+    CSRSparseMatrix& operator=( CSRSparseMatrix&& matrix );
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
@@ -201,10 +145,6 @@ public:
 
     virtual const StorageType& getHaloStorage() const;
 
-    /** Swap local storage data, allows consistent write access to local storage. */
-
-    virtual void swapLocalStorage( StorageType& localStorage );
-
     /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 
     virtual CSRSparseMatrix<ValueType>* newMatrix() const;
@@ -215,16 +155,29 @@ public:
 
     /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format getFormat() const
-    {
-        return Format::CSR;
-    }
+    virtual Format getFormat() const;
 
     /* Implementation of pure method of class _Matrix. */
 
     virtual const char* getTypeName() const;
 
+    using _Matrix::getNumRows;
+    using _Matrix::getNumColumns;
+    using _Matrix::setIdentity;
+
+    using _Matrix::getRowDistribution;
+    using _Matrix::getRowDistributionPtr;
+    using _Matrix::getColDistribution;
+    using _Matrix::getColDistributionPtr;
+
+
+    using Matrix<ValueType>::getValueType;
+    using SparseMatrix<ValueType>::operator=;
+    using SparseMatrix<ValueType>::operator-=;
+    using SparseMatrix<ValueType>::operator+=;
+
     using SparseMatrix<ValueType>::setContextPtr;
+    using SparseMatrix<ValueType>::redistribute;
 
 protected:
 
@@ -236,9 +189,11 @@ private:
 
     /** This private routine provides empty CSR storage for a CSRSparseMatrix. */
 
-    std::shared_ptr<MatrixStorage<ValueType> > createStorage();
+    std::shared_ptr<CSRStorage<ValueType> > createStorage( hmemo::ContextPtr ctx );
 
-    std::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
+    /** This private routine provides empty CSR storage for a CSRSparseMatrix. */
+
+    std::shared_ptr<CSRStorage<ValueType> > createStorage( CSRStorage<ValueType>&&  );
 
     static std::string initTypeName();
 
@@ -255,73 +210,14 @@ public:
     static MatrixCreateKeyType createValue();
 };
 
-template<typename ValueType>
-template<common::ComplexPart kind, typename OtherValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( const ComplexPartMatrixExpression<OtherValueType, kind>& expression ) :
-
-   SparseMatrix<ValueType>( createStorage() )
-
-{
-    const Matrix<OtherValueType>& m = expression.getArg();
-    this->setContextPtr( m.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
-    Matrix<ValueType>::operator=( expression );
-}
+/* ================================================================================ */
+/*   Implementation of inline methods                                               */
+/* ================================================================================ */
 
 template<typename ValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( const ComplexBuildMatrixExpression<RealType<ValueType> >& expression ) :
-
-   SparseMatrix<ValueType>( createStorage() )
-
+Format CSRSparseMatrix<ValueType>::getFormat() const
 {
-    const Matrix<RealType<ValueType> >& m = expression.getRealArg();
-    this->setContextPtr( m.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
-    Matrix<ValueType>::operator=( expression );
-}
-
-template<typename ValueType>
-template<typename OtherValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix( const CastMatrixExpression<ValueType, OtherValueType>& expression ) :
-
-   SparseMatrix<ValueType>( createStorage() )
-
-{
-    const Matrix<OtherValueType>& m = expression.getArg();
-    this->setContextPtr( m.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( m.getCommunicationKind() );
-    Matrix<ValueType>::operator=( expression );
-}
-
-template<typename ValueType>
-template<typename LocalValueType, typename HaloValueType>
-CSRSparseMatrix<ValueType>::CSRSparseMatrix(
-    const IndexType numLocalRows,
-    const IndexType numLocalNonZeros,
-    const IndexType numHaloNonZeros,
-    const IndexType localIA[],
-    const IndexType localJA[],
-    const LocalValueType localValues[],
-    const IndexType haloIA[],
-    const IndexType haloJA[],
-    const HaloValueType haloValues[],
-    const std::vector<IndexType>& ownedIndexes,
-    const dmemo::CommunicatorPtr communicator )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
-{
-    SCAI_LOG_INFO( logger,
-                   communicator << ": construct distributed matrix " << numLocalRows << " by local and halo data + owned indexes" );
-    // For the distribution we need the global number of rows, not available as arg, so compute it
-    IndexType numGlobalRows = communicator->sum( numLocalRows );
-    mLocalData->setRawCSRData( numLocalRows, numLocalRows, numLocalNonZeros, localIA, localJA, localValues );
-    mHaloData->setRawCSRData( numLocalRows, numGlobalRows, numHaloNonZeros, haloIA, haloJA, haloValues );
-    hmemo::HArrayRef<IndexType> myIndexes( static_cast<IndexType>( ownedIndexes.size() ), &ownedIndexes[0] );
-    dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, myIndexes, communicator ) );
-    // Halo is already splitted, but still contains the global indexes
-    mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
-    _Matrix::setDistributedMatrix( dist, dist );
+    return Format::CSR;
 }
 
 } /* end namespace lama */

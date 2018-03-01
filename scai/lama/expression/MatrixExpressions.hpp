@@ -58,8 +58,10 @@ namespace lama
 template<typename ValueType>
 inline Expression_SM_SM<ValueType> operator+( const Matrix<ValueType>& matrixA, const Matrix<ValueType>& matrixB )
 {
-    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), matrixA ), 
-                                        Expression_SM<ValueType>( Scalar( 1 ), matrixB ) );
+    auto op = common::MatrixOp::NORMAL;
+
+    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), OpMatrix<ValueType>( matrixA, op ) ), 
+                                        Expression_SM<ValueType>( Scalar( 1 ), OpMatrix<ValueType>( matrixB, op ) ) );
 }
 
 /**
@@ -72,8 +74,10 @@ inline Expression_SM_SM<ValueType> operator+( const Matrix<ValueType>& matrixA, 
 template<typename ValueType>
 inline Expression_SM_SM<ValueType> operator-( const Matrix<ValueType>& matrixA, const Matrix<ValueType>& matrixB )
 {
-    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), matrixA ), 
-                                        Expression_SM<ValueType>( Scalar( -1 ), matrixB ) );
+    auto op = common::MatrixOp::NORMAL;
+
+    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), OpMatrix<ValueType>( matrixA, op ) ), 
+                                        Expression_SM<ValueType>( Scalar( -1 ), OpMatrix<ValueType>( matrixB, op ) ) );
 }
 
 /* --------------------------------------------------------------- */
@@ -93,7 +97,13 @@ inline Expression_SM_SM<ValueType> operator-( const Matrix<ValueType>& matrixA, 
 template<typename ValueType>
 inline Expression_SM<ValueType> operator*( const Scalar& scalar, const Matrix<ValueType>& matrix )
 {
-    return Expression_SM<ValueType>( scalar, matrix );
+    return Expression_SM<ValueType>( scalar, OpMatrix<ValueType>( matrix, common::MatrixOp::NORMAL ) );
+}
+
+template<typename ValueType>
+inline Expression_SM<ValueType> operator*( const Scalar& scalar, const OpMatrix<ValueType>& opMatrix )
+{
+    return Expression_SM<ValueType>( scalar, opMatrix );
 }
 
 /**
@@ -107,7 +117,13 @@ inline Expression_SM<ValueType> operator*( const Scalar& scalar, const Matrix<Va
 template<typename ValueType>
 inline Expression_SM<ValueType> operator*( const Matrix<ValueType>& matrix, const Scalar& scalar )
 {
-    return Expression_SM<ValueType>( scalar, matrix );
+    return Expression_SM<ValueType>( scalar, OpMatrix<ValueType>( matrix, common::MatrixOp::NORMAL ) );
+}
+
+template<typename ValueType>
+inline Expression_SM<ValueType> operator*( const OpMatrix<ValueType>& opMatrix, const Scalar& scalar )
+{
+    return Expression_SM<ValueType>( scalar, opMatrix );
 }
 
 /**
@@ -116,7 +132,13 @@ inline Expression_SM<ValueType> operator*( const Matrix<ValueType>& matrix, cons
 template<typename ValueType>
 inline Expression_SM<ValueType> operator-( const Matrix<ValueType>& matrix )
 {
-    return Expression_SM<ValueType>( Scalar( -1 ), matrix );
+    return Expression_SM<ValueType>( Scalar( -1 ), OpMatrix<ValueType>( matrix, common::MatrixOp::NORMAL ) );
+}
+
+template<typename ValueType>
+inline Expression_SM<ValueType> operator-( const OpMatrix<ValueType>& opMatrix )
+{
+    return Expression_SM<ValueType>( Scalar( -1 ), opMatrix );
 }
 
 /**
@@ -131,7 +153,7 @@ template<typename ValueType>
 inline Expression_SM<ValueType> operator/( const Matrix<ValueType>& matrix, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix
-    return Expression_SM<ValueType>( Scalar( 1 ) / alpha, matrix );
+    return Expression_SM<ValueType>( Scalar( 1 ) / alpha, OpMatrix<ValueType>( matrix, common::MatrixOp::NORMAL ) );
 }
 
 /* --------------------------------------------------------------- */
@@ -151,7 +173,8 @@ inline Expression_SM<ValueType> operator/( const Matrix<ValueType>& matrix, cons
 template<typename ValueType>
 inline Expression_SMM<ValueType> operator*( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 )
 {
-    return Expression_SMM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), m1 ), m2 );
+    auto op = common::MatrixOp::NORMAL;
+    return Expression_SMM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), OpMatrix<ValueType>( m1, op ) ),  OpMatrix<ValueType>( m2, op ) );
 }
 
 /**
@@ -165,7 +188,8 @@ inline Expression_SMM<ValueType> operator*( const Matrix<ValueType>& m1, const M
 template<typename ValueType>
 inline Expression_SMM<ValueType> operator*( const Matrix<ValueType>& matrix, const Expression_SM<ValueType>& exp )
 {
-    return Expression_SMM<ValueType>( Expression_SM<ValueType>( exp.getArg1(), matrix ), exp.getArg2() );
+    auto op = common::MatrixOp::NORMAL;
+    return Expression_SMM<ValueType>( Expression_SM<ValueType>( exp.getArg1(), OpMatrix<ValueType>( matrix, op ) ), exp.getArg2() );
 }
 
 /**
@@ -179,7 +203,7 @@ inline Expression_SMM<ValueType> operator*( const Matrix<ValueType>& matrix, con
 template<typename ValueType>
 inline Expression_SMM<ValueType> operator*( const Expression_SM<ValueType>& exp, const Matrix<ValueType>& matrix )
 {
-    return Expression_SMM<ValueType>( exp, matrix );
+    return Expression_SMM<ValueType>( exp, OpMatrix<ValueType>( matrix, common::MatrixOp::NORMAL ) );
 }
 
 /* --------------------------------------------------------------- */
@@ -262,7 +286,9 @@ inline Expression_SMM_SM<ValueType> operator-( const Expression_SM<ValueType>& e
 template<typename ValueType>
 inline Expression_SMM_SM<ValueType> operator+( const Expression_SMM<ValueType>& exp, const Matrix<ValueType>& matrix )
 {
-    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), matrix ) );
+    auto op = common::MatrixOp::NORMAL;   // identity on matrix
+
+    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), OpMatrix<ValueType>( matrix, op ) ) );
 }
 
 /**
@@ -275,7 +301,9 @@ inline Expression_SMM_SM<ValueType> operator+( const Expression_SMM<ValueType>& 
 template<typename ValueType>
 inline Expression_SMM_SM<ValueType> operator+( const Matrix<ValueType>& matrix, const Expression_SMM<ValueType>& exp )
 {
-    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), matrix ) );
+    auto op = common::MatrixOp::NORMAL;   // identity on matrix
+
+    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), OpMatrix<ValueType>( matrix, op ) ) );
 }
 
 /**
@@ -288,7 +316,9 @@ inline Expression_SMM_SM<ValueType> operator+( const Matrix<ValueType>& matrix, 
 template<typename ValueType>
 inline Expression_SMM_SM<ValueType> operator-( const Expression_SMM<ValueType>& exp, const Matrix<ValueType>& matrix )
 {
-    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( -1 ), matrix ) );
+    auto op = common::MatrixOp::NORMAL;   // identity on matrix
+
+    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( -1 ), OpMatrix<ValueType>( matrix, op ) ) );
 }
 
 /**
@@ -301,10 +331,12 @@ inline Expression_SMM_SM<ValueType> operator-( const Expression_SMM<ValueType>& 
 template<typename ValueType>
 inline Expression_SMM_SM<ValueType> operator-( const Matrix<ValueType>& matrix, const Expression_SMM<ValueType>& exp )
 {
+    auto op = common::MatrixOp::NORMAL;   // identity on matrix
+
     // Build temporary expression for -exp
     Expression_SM<ValueType> expSM = exp.getArg1();
     Expression_SMM<ValueType> minusExp( Expression_SM<ValueType>( -expSM.getArg1(), expSM.getArg2() ), exp.getArg2() );
-    return Expression_SMM_SM<ValueType>( minusExp, Expression_SM<ValueType>( Scalar( 1 ), matrix ) );
+    return Expression_SMM_SM<ValueType>( minusExp, Expression_SM<ValueType>( Scalar( 1 ), OpMatrix<ValueType>( matrix, op ) ) );
 }
 
 /* --------------------------------------------------------------- */

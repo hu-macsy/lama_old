@@ -103,30 +103,30 @@ public:
     struct GMRESRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
         // arrays to store rotations
-        std::unique_ptr<ValueType[]> mCC;
-        std::unique_ptr<ValueType[]> mSS;
+        std::vector<ValueType> mCC;
+        std::vector<ValueType> mSS;
 
         // array for Hessenberg equation
         // H*y=g
-        std::unique_ptr<ValueType[]> mG;
-        std::unique_ptr<ValueType[]> mY;
+        std::vector<ValueType> mG;
+        std::vector<ValueType> mY;
 
         // Hessenberg matrix
         // mH:  Upper triangular (columnwise)
         // mHd: diagonal band h(i+1,i)
-        std::unique_ptr<ValueType[]> mH;
-        std::unique_ptr<ValueType[]> mHd;
+        std::vector<ValueType> mH;
+        std::vector<ValueType> mHd;
 
-        // krylov space
-        std::unique_ptr<lama::DenseVector<ValueType>[]> mV;
+        // krylov space, vector of (unique) vector pointers
+        std::vector<std::unique_ptr<lama::Vector<ValueType>>> mV;
 
         // temp-arrays
-        lama::DenseVector<ValueType> mW;
-        lama::DenseVector<ValueType> mT;
+        std::unique_ptr<lama::Vector<ValueType>> mW;
+        std::unique_ptr<lama::Vector<ValueType>> mT;
 
         // remember starting solution
         // only needed if x is modified within krylov loop
-        lama::DenseVector<ValueType> mX0;
+        std::unique_ptr<lama::Vector<ValueType>> mX0;
     };
 
     /**

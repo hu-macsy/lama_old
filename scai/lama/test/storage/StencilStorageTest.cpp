@@ -108,7 +108,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertTest, ValueType, scai_numeric_test_types )
     common::Stencil2D<ValueType> stencil( 5 ); // take 5-point stencil
 
     StencilStorage<ValueType> stencilStorage( grid, stencil );
-    CSRStorage<ValueType> csrStorage( stencilStorage );
+
+    auto csrStorage = convert<CSRStorage<ValueType>>( stencilStorage );
 
     // 5 entries for each grid element, but subract one for all border elements
 
@@ -147,26 +148,14 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 {
     typedef DefaultReal ValueType;
 
-    for ( int b1 = 0; b1 < 3; b1++ )
+    for ( int b1 = 0; b1 < 2; b1++ )
     {
-        for ( int b2 = 0; b2 < 3; b2++ )
+        for ( int b2 = 0; b2 < 2; b2++ )
         {
             const IndexType N1 = 6;
             const IndexType N2 = 8;
 
             common::Grid2D grid( N1, N2 );
-
-            // transpose not possible for reflecting boundaries
-
-            if ( common::Grid::BORDER_REFLECTING == common::Grid::BorderType( b1 ) )
-            {
-                continue;
-            }
-
-            if ( common::Grid::BORDER_REFLECTING == common::Grid::BorderType( b2 ) )
-            {
-                continue;
-            }
 
             // transpose only if boundary conditions are same
 
@@ -188,11 +177,11 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
             StencilStorage<ValueType> stencilStorageT( grid, stencilT );
         
-            CSRStorage<ValueType> csrStorage( stencilStorage );
+            auto csrStorage = convert<CSRStorage<ValueType>>( stencilStorage );
             csrStorage.sortRows( false );
             csrStorage.compress( ValueType( 0 ) );
 
-            CSRStorage<ValueType> csrStorageT( stencilStorageT );
+            auto csrStorageT = convert<CSRStorage<ValueType>>( stencilStorageT );
             csrStorageT.sortRows( false );
             csrStorageT.compress( ValueType( 0 ) );
         
@@ -223,7 +212,7 @@ BOOST_AUTO_TEST_CASE( getTest )
 
     StencilStorage<ValueType> stencilStorage( grid, stencil );
 
-    CSRStorage<ValueType> csrStorage( stencilStorage );
+    auto csrStorage = convert<CSRStorage<ValueType>>( stencilStorage );
 
     for ( IndexType i = 0; i < N1; i++ )
     {

@@ -140,9 +140,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
   
     // For one-dimensional stencil we check for all border types 
 
-    for ( int b1 = 0; b1 < 3; b1++ )
+    for ( int b1 = 0; b1 < 2; b1++ )
     {
-        for ( int b2 = 0; b2 < 3; b2++ )
+        for ( int b2 = 0; b2 < 2; b2++ )
         {
             Grid::BorderType gridBorders[] = { Grid::BorderType( b1 ), Grid::BorderType( b2 ) };
 
@@ -169,10 +169,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
                     {
                         wY[ i ] -= rX[ n1 - 1 ];
                     }
-                    else if ( gridBorders[0] == Grid::BORDER_REFLECTING )
-                    {
-                        wY[ i ] -= rX[ 0 ];
-                    }
 
                     if ( i < n1 - 1 )
                     {
@@ -181,10 +177,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
                     else if ( gridBorders[1] == Grid::BORDER_PERIODIC )
                     {
                         wY[ i ] -= rX[ 0 ];
-                    }
-                    else if ( gridBorders[1] == Grid::BORDER_REFLECTING )
-                    {
-                        wY[ i ] -= rX[ n1 - 1 ];
                     }
                 }
             }
@@ -290,10 +282,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
                 {
                     wY[ i * n2 + j ] -= rX[ ( n1 - 1 ) * n2 + j ];
                 }
-                else if ( gridBorders[0] == Grid::BORDER_REFLECTING )
-                {
-                    wY[ i * n2 + j ] -= rX[ 0 * n2 + j ];
-                }
 
                 if ( i < n1 - 1 )
                 {
@@ -302,10 +290,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
                 else if ( gridBorders[1] == Grid::BORDER_PERIODIC )
                 {
                     wY[ i * n2 + j ] -= rX[ ( 0 ) * n2 + j ];
-                }
-                else if ( gridBorders[1] == Grid::BORDER_REFLECTING )
-                {
-                    wY[ i * n2 + j ] -= rX[ ( n1 - 1 ) * n2 + j ];
                 }
 
                 if ( j > 0 )

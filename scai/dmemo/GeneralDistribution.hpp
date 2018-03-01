@@ -74,7 +74,7 @@ public:
     GeneralDistribution(
         const IndexType globalSize,
         const hmemo::HArray<IndexType>& myGlobalIndexes,
-        const CommunicatorPtr communicator );
+        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     /** This constructor creates a general distribution by an array containing the owner for each element
      *
@@ -83,26 +83,19 @@ public:
      *
      *  // Note: owners must only be valid on host processor
      */
-
     GeneralDistribution(
         const hmemo::HArray<PartitionId>& owners,
-        const CommunicatorPtr communicator );
+        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     /** This constructor creates a general distribution from an existing distribution and an
-     *  owners array locally for each processor. 
+     *  owners array locally for each processor.
      *
      *  @param[in] other is the given distribution
      *  @param[in] owners contains the new owner for each of the local indexes.
      */
-    GeneralDistribution( const Distribution& other, const hmemo::HArray<PartitionId>& owners );
- 
-    /** Constructor of a general distribution just as copy of any other distribution. */
-
-    explicit GeneralDistribution( const Distribution& other );
-
-    /** Reimplment the default copy constructor */
-
-    GeneralDistribution( const GeneralDistribution& other );
+    GeneralDistribution(
+        const Distribution& other,
+        const hmemo::HArray<PartitionId>& owners );
 
     virtual ~GeneralDistribution();
 
@@ -121,6 +114,10 @@ public:
     /** Implementation of pure method Distribution::global2local */
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
+
+    /** Override Distribution::global2localV */
+
+    virtual void global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize.
      *
@@ -177,34 +174,30 @@ protected:
 
     static const char theCreateValue[];
 
-    /** This constructor might be called for derived classes that fill mGlobal2Local and mLocal2Global themselves. */
-
-    GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
-
     utilskernel::LArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
- 
+
     // the following arrays will only be available if enableAnyAddressing has been called
     // Note: if set the array mGlobal2Local is no more needed
 
     mutable utilskernel::LArray<PartitionId> mAllOwners;
     mutable utilskernel::LArray<IndexType> mAllLocalOffsets;     // local size on each partition
-    mutable utilskernel::LArray<IndexType> mAllLocal2Global;     // sorts elements into buckets 
-    mutable utilskernel::LArray<IndexType> mAllGlobal2Local;     // sorts elements into buckets 
+    mutable utilskernel::LArray<IndexType> mAllLocal2Global;     // sorts elements into buckets
+    mutable utilskernel::LArray<IndexType> mAllGlobal2Local;     // sorts elements into buckets
 
     // Example
-    // index       0    1    2    3   4    5    6    7   8   9   10   11   12 
-    // mOwners:    0    1    2    0   2    0    1    0   0   1    1    2    2 
+    // index       0    1    2    3   4    5    6    7   8   9   10   11   12
+    // mOwners:    0    1    2    0   2    0    1    0   0   1    1    2    2
     // Offsets:    0                       5                 9                    13
     // perm   :    0    3    5    7   8    1    6    9  10   2    4   11   12     local2global
     // perm'  :    0    5    9    1  10    2    6    3   4   7    8   11   12     global2local
-    // 
+    //
     // Note: perm is identity iff we have a block distribution
 
 private:
 
     GeneralDistribution();
 
-    GeneralDistribution& operator=( const GeneralDistribution& other );
+    GeneralDistribution& operator=( const GeneralDistribution& other ) = delete;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

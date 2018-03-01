@@ -78,15 +78,16 @@ public:
         const DenseVector<ValueType>& x,
         const ValueType beta,
         const DenseVector<ValueType>* y,
-        bool ) const
+        const common::MatrixOp op ) const
     {
+        SCAI_ASSERT_ERROR( !common::isConj( op ), "conj matrix operation not supported here." )
+
         // Note: transpose flag does not matter as marix is symmetric
 
         SCAI_LOG_INFO( logger, "matrixTimesVector, mA = " << mA )
 
         mAx    = mA * x;
-        result = mAx * mA;  // same as mA' * mAx
-        result *= alpha;
+        result = alpha * transpose( mA ) * mAx;  
 
         if ( y != nullptr )
         {

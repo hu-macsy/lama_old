@@ -148,8 +148,8 @@ void MyJacobi<ValueType>::iterate()
 
     // swap old solution and solution, solution is marked as dirty
 
-    lama::DenseVector<ValueType>& solution    = runtime.mSolution.getReference();
-    lama::DenseVector<ValueType>& oldSolution = runtime.mOldSolution;
+    lama::Vector<ValueType>& solution    = runtime.mSolution.getReference();
+    lama::Vector<ValueType>& oldSolution = runtime.mOldSolution;
 
     solution.swap( oldSolution );
 

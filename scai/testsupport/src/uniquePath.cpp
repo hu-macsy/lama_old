@@ -59,7 +59,9 @@ std::vector<std::chrono::microseconds::rep> generateSeedSequence()
     std::random_device device;
     const auto us_epoch = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
 
-    auto r = [&device] () { return static_cast<decltype(us_epoch)>(device()); };
+    //  auto r = [&device] () { return static_cast<decltype(us_epoch)>(device()); };
+
+    auto r = [&device] () { return static_cast<microseconds::rep>(device()); };
 
     return { r(), r(), r(), r(), r(), r(), r(), r(), us_epoch };
 }

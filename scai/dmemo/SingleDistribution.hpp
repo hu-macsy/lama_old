@@ -78,7 +78,7 @@ public:
 
     virtual PartitionId findOwner( const IndexType globalIndex ) const;
 
-    /** Implementation of pure method Distribution::getLocalSize 
+    /** Implementation of pure method Distribution::getLocalSize
      *
      *  Returns global size for the owner partition, all other return 0
      */
@@ -88,7 +88,7 @@ public:
 
     virtual IndexType getMaxLocalSize() const;
 
-    /** Implementation of pure method Distribution::getBlockDistributionSize 
+    /** Implementation of pure method Distribution::getBlockDistributionSize
      *
      *  Note: a single distribution is a special case of a general block distribution.
      */

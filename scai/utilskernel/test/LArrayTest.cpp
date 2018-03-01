@@ -49,8 +49,6 @@ using namespace utilskernel;
 using namespace hmemo;
 using namespace common;
 
-extern ContextPtr testContext;
-
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( LArrayTest )
@@ -63,7 +61,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.LArrayTest" )
 
 BOOST_AUTO_TEST_CASE( indexTest )
 {
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "indexTest on " << *testContext )
     // the LArray allows indexed access, but attention: can be very slow
     LArray<IndexType> array( testContext );
@@ -85,7 +84,8 @@ BOOST_AUTO_TEST_CASE( indexTest )
 
 BOOST_AUTO_TEST_CASE( assignTest )
 {
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "assignTest on " << *testContext )
     // the LArray allows indexed access, but attention: can be very slow
     LArray<IndexType> array( testContext );
@@ -104,7 +104,8 @@ BOOST_AUTO_TEST_CASE( assignTest )
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "constructorTest on " << *testContext )
     // the LArray allows indexed access, but attention: can be very slow
     const IndexType N = 10;
@@ -141,7 +142,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 {
     typedef typename TypeTraits<ValueType>::RealType RealType;    // abs, <, <=, ..
 
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "reductionTest on " << *testContext )
     // ToDo: example with complex numbers
     const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
@@ -184,7 +186,8 @@ typedef boost::mpl::list<SCAI_NUMERIC_TYPES_CUDA> ArithmeticRedTypes;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
 {
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "normTest on " << *testContext )
     // ToDo: example with complex numbers
     const IndexType N = 13;
@@ -225,7 +228,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
 {
     typedef typename TypeTraits<ValueType>::RealType RealType;
 
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "binReductionTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
     // the LArray allows indexed access, but attention: can be very slow
     const ValueType myVals1[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
@@ -253,7 +257,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, ArithmeticRedTypes )
 {
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "invertTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
     // the LArray allows indexed access, but attention: can be very slow
     const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 3 };
@@ -286,7 +291,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, ArithmeticRedTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
 {
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "conjTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
     const IndexType N = 16;
     LArray<ValueType> array( N );
@@ -311,7 +317,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( remoteTest, ValueType, ArithmeticRedTypes )
 {
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
 
     ContextPtr host = Context::getHostPtr();
 
@@ -352,7 +358,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remoteTest, ValueType, ArithmeticRedTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignOperatorTest, ValueType, ArithmeticRedTypes )
 {
-    testContext = Context::getContextPtr();
+    ContextPtr testContext = Context::getContextPtr();
+
     SCAI_LOG_INFO( logger, "assignOperatorTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
     // the LArray allows indexed access, but attention: can be very slow
     const ValueType myVals[]  = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };

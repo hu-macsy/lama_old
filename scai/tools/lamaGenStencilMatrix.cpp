@@ -225,9 +225,11 @@ int main( int argc, const char* argv[] )
         // replace %s in file name with stencil description
         replaceStencil( matrixFileName, stencilName );
         CSRSparseMatrix<ValueType> m;
+
         MatrixCreator::buildPoisson( m, cmdArgs.dimension, cmdArgs.stencilType, cmdArgs.dimX, cmdArgs.dimY, cmdArgs.dimZ );
-        DenseVector<ValueType> lhs( m.getRowDistributionPtr(), 1.0 );
-        DenseVector<ValueType> rhs( m * lhs );
+
+        auto lhs = fill<DenseVector<ValueType>>( m.getRowDistributionPtr(), 1 );
+        auto rhs = eval<DenseVector<ValueType>>( m * lhs );
 
         HOST_PRINT( myRank, "Poisson matrix m = " << m )
 

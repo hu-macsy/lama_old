@@ -65,33 +65,33 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( Redistributor::logger, "Redistributor" )
 
-static HArray<IndexType> ownedGlobalIndexesForDist( const Distribution & dist )
+static HArray<IndexType> ownedGlobalIndexesForDist( const Distribution& dist )
 {
     HArray<IndexType> indexes;
-    dist.getOwnedIndexes(indexes);
+    dist.getOwnedIndexes( indexes );
     return indexes;
 }
 
 // Partitions local indexes of the source distribution into "keep"
 // and "exchange", based on the new owner of each individual index.
-static void partitionSourceIndexes(HArray<IndexType> & keepLocalIndexes,
-                                  HArray<IndexType> & exchangeLocalIndexes,
-                                  const HArray<PartitionId> & newOwnersOfLocalElements,
-                                  const Distribution & sourceDist)
+static void partitionSourceIndexes( HArray<IndexType> & keepLocalIndexes,
+                                    HArray<IndexType> & exchangeLocalIndexes,
+                                    const HArray<PartitionId> & newOwnersOfLocalElements,
+                                    const Distribution& sourceDist )
 {
-    SCAI_ASSERT_EQ_DEBUG(newOwnersOfLocalElements.size(), sourceDist.getLocalSize(), "sourceDist and newOwners must have same size");
+    SCAI_ASSERT_EQ_DEBUG( newOwnersOfLocalElements.size(), sourceDist.getLocalSize(), "sourceDist and newOwners must have same size" );
     const auto rank = sourceDist.getCommunicator().getRank();
     const auto numPartitions = sourceDist.getCommunicator().getSize();
     const auto sourceNumLocal = sourceDist.getLocalSize();
 
-    const auto rNewOwners = hostReadAccess(newOwnersOfLocalElements);
-    auto wKeep = hostWriteOnlyAccess(keepLocalIndexes, sourceNumLocal);
-    auto wExchange = hostWriteOnlyAccess(exchangeLocalIndexes, sourceNumLocal);
+    const auto rNewOwners = hostReadAccess( newOwnersOfLocalElements );
+    auto wKeep = hostWriteOnlyAccess( keepLocalIndexes, sourceNumLocal );
+    auto wExchange = hostWriteOnlyAccess( exchangeLocalIndexes, sourceNumLocal );
 
     IndexType numKeep = 0;
     IndexType numExchange = 0;
 
-    for (IndexType localSourceIndex = 0; localSourceIndex < sourceDist.getLocalSize(); ++localSourceIndex)
+    for ( IndexType localSourceIndex = 0; localSourceIndex < sourceDist.getLocalSize(); ++localSourceIndex )
     {
         const auto newOwner = rNewOwners[localSourceIndex];
         SCAI_ASSERT_VALID_INDEX( newOwner, numPartitions, "owner index out of range" );
@@ -106,8 +106,8 @@ static void partitionSourceIndexes(HArray<IndexType> & keepLocalIndexes,
         }
     }
 
-    wKeep.resize(numKeep);
-    wExchange.resize(numExchange);
+    wKeep.resize( numKeep );
+    wExchange.resize( numExchange );
 }
 
 template <typename ValueType>
@@ -118,15 +118,18 @@ static HArray<ValueType> selectIndexes( const HArray<ValueType> & source, const 
     return result;
 }
 
-static HArray<IndexType> local2global( const HArray<IndexType> & localIndexes, const Distribution & dist )
+static HArray<IndexType> local2global( const HArray<IndexType> & localIndexes, const Distribution& dist )
 {
     HArray<IndexType> globalIndexes;
 
-    auto wGlobal = hostWriteOnlyAccess(globalIndexes, localIndexes.size());
-    auto rLocal = hostReadAccess(localIndexes);
+    auto wGlobal = hostWriteOnlyAccess( globalIndexes, localIndexes.size() );
+    auto rLocal = hostReadAccess( localIndexes );
 
     std::transform( rLocal.begin(), rLocal.end(), wGlobal.begin(),
-                    [&dist] ( IndexType localIndex ) { return dist.local2global( localIndex ); });
+                    [&dist] ( IndexType localIndex )
+    {
+        return dist.local2global( localIndex );
+    } );
 
     return globalIndexes;
 }
@@ -170,6 +173,8 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
         const auto rank = comm->getRank();
         const auto intermediateDist = std::make_shared<BlockDistribution>( globalSize, comm );
 
+        SCAI_LOG_INFO( logger, "build Redistributor via intermediate dist = " << *intermediateDist )
+
         Redistributor targetToIntermediate( intermediateDist, targetDistribution );
 
         // Note: source to intermediate first, then reverse
@@ -197,14 +202,14 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     const auto targetGlobalIndexes = initializeFromNewOwners( targetOwners, *sourceDistribution );
 
     SCAI_ASSERT_DEBUG(
-        HArrayUtils::all ( targetGlobalIndexes, common::CompareOp::EQ, ownedGlobalIndexesForDist(*targetDistribution) ),
+        HArrayUtils::all ( targetGlobalIndexes, common::CompareOp::EQ, ownedGlobalIndexesForDist( *targetDistribution ) ),
         "Internal error: mismatch between expected global indexes and target distribution" );
 }
 
 
 
 Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution )
-    :   mSourceDistribution(sourceDistribution)
+    :   mSourceDistribution( sourceDistribution )
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" );
     SCAI_ASSERT_EQ_ERROR( newOwnersOfLocalElements.size(), sourceDistribution->getLocalSize(),
@@ -212,12 +217,12 @@ Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwner
 
     const auto targetGlobalIndexes = initializeFromNewOwners( newOwnersOfLocalElements, *sourceDistribution );
     mTargetDistribution = DistributionPtr ( new GeneralDistribution( sourceDistribution->getGlobalSize(),
-                                                                     targetGlobalIndexes,
-                                                                     sourceDistribution->getCommunicatorPtr() ) );
+                                            targetGlobalIndexes,
+                                            sourceDistribution->getCommunicatorPtr() ) );
 }
 
 // Note: returns global target indexes
-HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<PartitionId> & newOwnersOfLocalElements, const Distribution & sourceDist )
+HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<PartitionId> & newOwnersOfLocalElements, const Distribution& sourceDist )
 {
     const auto sourceNumLocal = sourceDist.getLocalSize();
 
@@ -227,7 +232,7 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
     HArray<IndexType> providedSourceIndexes;
     partitionSourceIndexes( mKeepSourceIndexes, providedSourceIndexes, newOwnersOfLocalElements, sourceDist );
 
-    const auto globalKeepIndexes = local2global (mKeepSourceIndexes, sourceDist );
+    const auto globalKeepIndexes = local2global ( mKeepSourceIndexes, sourceDist );
     const auto globalProvidedIndexes = local2global( providedSourceIndexes, sourceDist );
     const auto newOwnersOfProvided = selectIndexes( newOwnersOfLocalElements, providedSourceIndexes );
 
@@ -249,7 +254,7 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
 
     // Repurpose the storage of sortedRequiredIndexes (same size and type as inversePerm) to further additional memory allocation
     auto inversePerm = std::move( sortedRequiredIndexes );
-    HArrayUtils::inversePerm(inversePerm, sortPermutation);
+    HArrayUtils::inversePerm( inversePerm, sortPermutation );
     mExchangeSourceIndexes = selectIndexes( providedSourceIndexes, exchangeHalo.getProvidesIndexes() );
     mExchangeTargetIndexes = selectIndexes( mapFromExchangeToTarget, inversePerm );
 

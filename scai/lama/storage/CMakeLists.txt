@@ -38,6 +38,7 @@ set ( CLASSES
 
         Format
 
+        _MatrixStorage
         MatrixStorage
 
         COOStorage
@@ -46,14 +47,10 @@ set ( CLASSES
         DIAStorage
         ELLStorage
         JDSStorage
-        SparseAssemblyStorage
         StencilStorage
 
         StorageMethods
-    )
-    
-set ( HEADERS
-        CRTPMatrixStorage
+        COOUtils
     )
     
 scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )

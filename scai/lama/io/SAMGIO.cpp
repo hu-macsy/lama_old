@@ -184,6 +184,9 @@ void SAMGIO::writeArrayImpl(
     const HArray<ValueType>& array,
     const std::string& fileName )
 {
+
+    SCAI_LOG_INFO( logger, "writeArrayImpl<" << common::TypeTraits<ValueType>::id() << ">, array = " << array << " to " << fileName )
+
     // needed for header file: type size is size of data type used in output
 
     int typeSize = sizeof( ValueType );
@@ -235,8 +238,12 @@ void SAMGIO::writeSparseImpl(
 {
     // sparse unsupported for SAMG file format, write it dense
 
+    SCAI_LOG_INFO( logger, "writeSparseImpl, size = " << size << ", nnz = " << values.size() << " to " << fileName );
+
     HArray<ValueType> denseArray;
-    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    ValueType zero = 0;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
+
     writeArrayImpl( denseArray, fileName );
 }
 
@@ -696,7 +703,7 @@ void SAMGIO::readStorageImpl(
         numColumns = maxColumn;      // but might be bigger for partitioned data
     }
 
-    storage.setCSRData( numBlockRows, numColumns, numBlockValues, csrIA, csrJA, csrValues );
+    storage.setCSRData( numBlockRows, numColumns, csrIA, csrJA, csrValues );
 }
 
 /* --------------------------------------------------------------------------------- */

@@ -47,7 +47,7 @@
 #include <scai/lama/matrix/SyncKind.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
-#include <scai/lama/storage/MatrixStorage.hpp>
+#include <scai/lama/storage/_MatrixStorage.hpp>
 
 // internal scai libraries
 
@@ -104,14 +104,6 @@ public:
      */
     virtual ~_Matrix();
 
-    /** Override Distributed::buildCSRGraph */
-
-    virtual void buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalRowIndexes ) const;
-
-    /** Override Distributed::getCSRGraphSize */
-
-    virtual IndexType getCSRGraphSize() const;
-
     /**
      * @brief write the matrix to an output file
      *
@@ -148,7 +140,10 @@ public:
     virtual bool isConsistent() const = 0;
 
     /**
-     *  @brief Virtual method that delivers the class name to which a matrix belongs.
+     *  @brief Virtual method that delivers a unique identification of the class name to which a matrix belongs.
+     *
+     *  This method is mainly used for error messages but might also be used to verify
+     *  correctness when a base class pointer/reference is statically casted to a derived class.
      */
     virtual const char* getTypeName() const = 0;
 
@@ -254,59 +249,6 @@ public:
      */
     void setDiagonalProperty();
 
-    /** This method set a matrix with the values owned by this partition in CSR format
-     *
-     *  @param[in] rowDist distributon of rows for the matrix
-     *  @param[in] colDist distributon of columns for the matrix
-     *  @param[in] numValues number of non-zero values
-     *  @param[in] ia     is the offset array for number of elements in local rows
-     *  @param[in] ja     contains the (global) column indexes
-     *  @param[in] values contains the matrix values for the entries specified by ja
-     *
-     *  Note: only the row distribution decides which data is owned by this processor
-     *
-     *  - ja.size() == values.size() must be valid, stands for the number of non-zero values of this partition
-     *  - ia.size() == rowDistribution.getLocalSize() + 1 must be valid
-     */
-
-    virtual void setCSRData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const IndexType numValues,
-        const hmemo::HArray<IndexType>& ia,
-        const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values ) = 0;
-
-    /** This method sets raw CSR data in the same way as setCSRData but with raw value array */
-
-    template<typename ValueType>
-    void setRawCSRData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const IndexType numValues,
-        const IndexType* ia,
-        const IndexType* ja,
-        const ValueType* values )
-    {
-        const IndexType n = rowDist->getLocalSize();
-        // use of HArrayRef instead of HArray avoids additional copying of values
-        const hmemo::HArrayRef<IndexType> iaArray( n + 1, ia );
-        const hmemo::HArrayRef<IndexType> jaArray( numValues, ja );
-        const hmemo::HArrayRef<ValueType> valueArray( numValues, values );
-        setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
-    }
-
-    /** Setting raw dense data for a replicated matrix, only for convenience. */
-
-    template<typename ValueType>
-    void setRawDenseData( const IndexType n, const IndexType m, const ValueType* values, const ValueType eps = 0 )
-    {
-        setRawDenseData( dmemo::DistributionPtr( new dmemo::NoDistribution( n ) ),
-                         dmemo::DistributionPtr( new dmemo::NoDistribution( m ) ),
-                         values,
-                         eps );
-    }
-
     /** @brief Assignment of a matrix to this matrix
      *
      * Assignment of a matrix to this matrix with automatic conversion
@@ -343,7 +285,11 @@ public:
      *  @param[in] rowDist   the given row distribution.
      *  @param[in] colDist   storage will be splitted according to the column distribution.
      */
-    virtual void assign( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
+    virtual void assignDistribute( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
+
+    virtual void assignDistribute( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
+
+    virtual void assignLocal( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist ) = 0;
 
     /** @brief Gets the local part (no splitted columns) of a matrix as if the distribution of columns is replicated.
      *
@@ -731,6 +677,40 @@ protected:
      */
     void setDistributedMatrix( dmemo::DistributionPtr distribution, dmemo::DistributionPtr colDistribution );
 
+    /** 
+     *   @brief Assignment operator for base class _Matrix is explicitly disabled.
+     * 
+     *   \code
+     *       void copyIt( _Matrix& a, const _Matrix& b )
+     *       {
+     *           a = b;           // NOT allowed
+     *           a.assign( b );   // can be used as workaround
+     *       }
+     *
+     *       template<typename ValueType>
+     *       void copyIt( Matrix<ValueType>& a, const Matrix<ValueType>& b )
+     *       {
+     *           a = b;           // This is supported
+     *       }
+     *   \endcode
+     *
+     *   Note: assignment operations with expressions are also not supported for the base class _Matrix.
+     */
+    _Matrix& operator=( const _Matrix& other ) = delete;
+
+    /**
+     *   @brief Move assignment operator for base class _Matrix is explicitly disabled.
+     *
+     *   \code
+     *       _Matrix& a = ...
+     *       _Matrix& b = ...
+     *       a = std::move( b );           // NOT allowed
+     *   \endcode
+     *
+     *   Note: move assignment operator is supported for full matrix classes.
+     */
+    _Matrix& operator=( _Matrix&& other ) = delete;
+
     void readFromSingleFile( const std::string& fileName );
 
     void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr distribution );
@@ -746,6 +726,20 @@ protected:
     void swapMatrix( _Matrix& other ); // swap member variables of _Matrix
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+protected:
+
+    /**
+     *  @brief Provide move assignment operator for base class, disable default one 
+     *
+     *  This method moves only member variables of this base class.
+     */
+    void moveImpl( _Matrix&& other );
+
+    /**
+     *  @brief Check that size of local storage fits the distributions
+     */
+    static void checkLocalStorageSizes( const  _MatrixStorage& localStorage, const dmemo::Distribution& rowDist );
 
 private:
 

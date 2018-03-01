@@ -171,10 +171,13 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
 {
     const IndexType N = 40;
+
     lama::CSRSparseMatrix<ValueType> coefficients;
     lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
-    lama::DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
-    lama::DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
+
+    auto rhs      = lama::fill<lama::DenseVector<ValueType>>( coefficients.getRowDistributionPtr(), ValueType( 1 ) );
+    auto solution = lama::fill<lama::DenseVector<ValueType>>( coefficients.getColDistributionPtr(), ValueType( 1 ) );
+
     CG<ValueType> cgsolver( "CriterionTestSolver" );
     cgsolver.setStoppingCriterion( mIterationCountCriterion2Ptr );
     cgsolver.initialize( coefficients );

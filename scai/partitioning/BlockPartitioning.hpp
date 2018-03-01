@@ -69,16 +69,18 @@ public:
 
     virtual ~BlockPartitioning();
 
-    /** Implementation of pure method Partitioning::partitionIt */
-
-    virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::_Matrix& matrix, float weight ) const;
-
     /** Implementation of pure method Partitioning::rectangularPartitioning */
 
     virtual void rectangularPartitioning( hmemo::HArray<PartitionId>& rowMapping,
                                           hmemo::HArray<PartitionId>& colMapping,
                                           const lama::_Matrix& matrix,
                                           const hmemo::HArray<float>& processorWeights ) const;
+
+    /** Implementation of pure method Partitioning::squarePartitioning */
+
+    virtual void squarePartitioning( hmemo::HArray<PartitionId>& newLocalOwners, 
+                                     const lama::_Matrix& matrix, 
+                                     const hmemo::HArray<float>& processorWeights ) const;
 
     /** Override of Partitioning::rectangularRedistribute */
 

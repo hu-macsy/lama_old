@@ -63,7 +63,7 @@ SingleDistribution::SingleDistribution( const IndexType globalSize, const Commun
 
     Distribution( globalSize, communicator ),
     mOwner( owner )
- 
+
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( owner, communicator->getSize(), "owner is not a valid rank of any processor" )
 

@@ -64,8 +64,8 @@ typedef DefaultReal ValueType;
 
 static void bench( CSRSparseMatrix<ValueType>& mat )
 {
-    DenseVector<ValueType> y( mat.getColDistributionPtr(), 1.0 );
-    DenseVector<ValueType> x( mat.getRowDistributionPtr(), 0.0 );
+    auto y = fill<DenseVector<ValueType>>( mat.getColDistributionPtr(), 1 );
+    auto x = fill<DenseVector<ValueType>>( mat.getRowDistributionPtr(), 0 );
 
     x = x + mat * y;  // warm up
     x = x + mat * y;  // warm up

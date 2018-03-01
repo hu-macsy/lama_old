@@ -98,10 +98,6 @@ bool getBorderPosL( IndexType& pos, const IndexType offset, const IndexType size
     {
         pos = ( pos + size ) - offset;
     }
-    else if ( border == Grid::BORDER_REFLECTING )
-    {
-        pos = offset - ( pos + 1 );
-    }
 
     return valid;
 }
@@ -124,10 +120,6 @@ bool getBorderPosR( IndexType& pos, const IndexType offset, const IndexType size
     else if ( border == Grid::BORDER_PERIODIC )
     {
         pos = ( pos + offset ) - size; 
-    }
-    else if ( border == Grid::BORDER_REFLECTING )
-    {
-        pos = 2 * size - ( pos + 1 + offset );
     }
     return valid;
 }

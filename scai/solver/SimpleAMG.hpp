@@ -83,8 +83,8 @@ public:
     const lama::Matrix<ValueType>& getRestriction( IndexType level );
     const lama::Matrix<ValueType>& getInterpolation( IndexType level );
 
-    lama::DenseVector<ValueType>& getSolutionVector( IndexType level );
-    lama::DenseVector<ValueType>& getRhsVector( IndexType level );
+    lama::Vector<ValueType>& getSolutionVector( IndexType level );
+    lama::Vector<ValueType>& getRhsVector( IndexType level );
 
     Solver<ValueType>& getSmoother( IndexType level );
     Solver<ValueType>& getCoarseLevelSolver();

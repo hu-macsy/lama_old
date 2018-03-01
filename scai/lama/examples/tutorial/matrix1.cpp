@@ -69,20 +69,38 @@ int main()
     IndexType perm [] = { 5, 2, 1, 0, 3, 4 };
     const IndexType irow = 3;
     const IndexType N = sizeof( perm ) / sizeof( IndexType );
-    CSRSparseMatrix<ValueType> a;
-    std::unique_ptr<ValueType[]> values( new ValueType[ N * N ] );
 
-    for ( IndexType i = 0; i < N; ++i )
+    HArray<ValueType> values( N * N );
+
     {
-        for ( IndexType j = 0; j < N; ++j )
+        WriteOnlyAccess<ValueType> writeValues( values, N * N );
+
+        for ( IndexType i = 0; i < N; ++i )
         {
-            values[ i * N + j ] = mv( i, j );
+            for ( IndexType j = 0; j < N; ++j )
+            {
+                writeValues[ i * N + j ] = mv( i, j );
+            }
         }
     }
 
-    DistributionPtr rep( new NoDistribution( N ) );
-    a.setRawDenseData( rep, rep, values.get() );
+    DenseStorage<ValueType> denseData( N, N, std::move( values ) );
+
+    //      0  -1 -2 -3 -4 -5
+    //      3   2  1  0 -1 -2
+    //      6   5  4  3  2  1
+    //      9   8  7  6  5  4
+    //     12  11 10  9  8  7
+    //     15  14 13 12 11 10
+
+    // convert storage -> matrix, is replicated on each processor
+
+    auto a = convert<CSRSparseMatrix<ValueType>>( denseData );
+
+    a.assign( denseData );   // replicated matrix
+
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
     std::vector<IndexType> myGlobalIndexes;
 
     for ( IndexType i = 0; i < N; ++i )
@@ -94,14 +112,23 @@ int main()
     }
 
     std::cout << *comm << ": have " << myGlobalIndexes.size() << " indexes" << std::endl;
-    hmemo::HArrayRef<IndexType> indexes( static_cast<IndexType>( myGlobalIndexes.size() ), &myGlobalIndexes[0] );
-    DistributionPtr dist( new GeneralDistribution( N, indexes, comm ) );
+
+    hmemo::HArrayRef<IndexType> indexes( myGlobalIndexes );
+
+    auto dist = std::make_shared<GeneralDistribution>( N, indexes, comm );
+
     a.redistribute( dist, dist );
+
     std::cout << "Communicator = " << *comm << std::endl;
-    DenseVector<ValueType> row( dist );     // any type, any distribution
+
+    DenseVector<ValueType> row;   // will be initialized 
+
     a.getRow( row, irow );
+
     std::cout << "a( " << irow << ", : ) = " << row << std::endl;
+
     ReadAccess<ValueType> rowRead( row.getLocalValues() );
+
     int errors = 0;
     std::cout << "Values = ";
 
@@ -109,7 +136,7 @@ int main()
     {
         std::cout << " " << rowRead[j];
 
-        if ( rowRead[j] != mv( irow, j ) )
+        if ( rowRead[j] != mv( irow, dist->local2global( j ) ) )
         {
             std::cout << " Error";
             errors++;

@@ -67,7 +67,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SimpleAMG<ValueType>
                               "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
 
 using lama::Matrix;
-using lama::DenseVector;
+using lama::Vector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -285,13 +285,13 @@ const Matrix<ValueType>& SimpleAMG<ValueType>::getInterpolation( IndexType level
 }
 
 template<typename ValueType>
-DenseVector<ValueType>& SimpleAMG<ValueType>::getSolutionVector( IndexType level )
+Vector<ValueType>& SimpleAMG<ValueType>::getSolutionVector( IndexType level )
 {
     return getRuntime().mSetup->getSolutionVector( level );
 }
 
 template<typename ValueType>
-DenseVector<ValueType>& SimpleAMG<ValueType>::getRhsVector( IndexType level )
+Vector<ValueType>& SimpleAMG<ValueType>::getRhsVector( IndexType level )
 {
     return getRuntime().mSetup->getRhsVector( level );
 }
@@ -354,8 +354,8 @@ void SimpleAMG<ValueType>::cycle()
     SCAI_REGION_N( "Solver.SimpleAMG.cycle", runtime.mCurrentLevel )
     // dereferences to current level solution + rhs
     AMGSetup<ValueType>& amgSetup = *runtime.mSetup;
-    const DenseVector<ValueType>* curRhsPtr = runtime.mRhs;
-    DenseVector<ValueType>* curSolutionPtr = 0;
+    const Vector<ValueType>* curRhsPtr = runtime.mRhs;
+    Vector<ValueType>* curSolutionPtr = 0;
 
     if ( runtime.mCurrentLevel == 0 )
     {
@@ -367,8 +367,8 @@ void SimpleAMG<ValueType>::cycle()
         curRhsPtr = &( amgSetup.getRhsVector( runtime.mCurrentLevel ) );
     }
 
-    DenseVector<ValueType>& curSolution = ( *curSolutionPtr );
-    const DenseVector<ValueType>& curRhs = ( *curRhsPtr );
+    Vector<ValueType>& curSolution = ( *curSolutionPtr );
+    const Vector<ValueType>& curRhs = ( *curRhsPtr );
 
     //no more Smoothers we are on the coareste level
     if ( runtime.mCurrentLevel >= amgSetup.getNumLevels() - 1 )
@@ -380,9 +380,9 @@ void SimpleAMG<ValueType>::cycle()
         const Matrix<ValueType>& curGalerkin = amgSetup.getGalerkin( runtime.mCurrentLevel );
         const Matrix<ValueType>& curRestriction = amgSetup.getRestriction( runtime.mCurrentLevel );
         const Matrix<ValueType>& curInterpolation = amgSetup.getInterpolation( runtime.mCurrentLevel );
-        DenseVector<ValueType>& curTmpRhs = amgSetup.getTmpResVector( runtime.mCurrentLevel );
-        DenseVector<ValueType>& curCoarseSolution = amgSetup.getSolutionVector( runtime.mCurrentLevel + 1 );
-        DenseVector<ValueType>& curCoarseRhs = amgSetup.getRhsVector( runtime.mCurrentLevel + 1 );
+        Vector<ValueType>& curTmpRhs = amgSetup.getTmpResVector( runtime.mCurrentLevel );
+        Vector<ValueType>& curCoarseSolution = amgSetup.getSolutionVector( runtime.mCurrentLevel + 1 );
+        Vector<ValueType>& curCoarseRhs = amgSetup.getRhsVector( runtime.mCurrentLevel + 1 );
         Solver<ValueType>& curSmoother = amgSetup.getSmoother( runtime.mCurrentLevel );
         // PreSmoothing
         SCAI_LOG_DEBUG( logger, "Pre smoothing on level " << runtime.mCurrentLevel )

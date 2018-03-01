@@ -346,6 +346,18 @@ void _Vector::assign( const _HArray& globalValues )
     setDenseValues( globalValues );
 }
 
+void _Vector::assignDistribute( const _HArray& globalValues, DistributionPtr dist )
+{
+    assign( globalValues );
+    redistribute( dist );
+}
+
+void _Vector::assignDistribute( const _Vector& other, DistributionPtr distribution )
+{
+    assign( other );
+    redistribute( distribution );
+}
+
 /* ---------------------------------------------------------------------------------------*/
 /*   writeToFile                                                                          */
 /* ---------------------------------------------------------------------------------------*/

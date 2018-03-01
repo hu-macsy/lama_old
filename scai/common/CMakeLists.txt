@@ -199,6 +199,7 @@ set ( COMMON_HEADERS
         Factory
         Factory1
         Math
+        MatrixOp
         OpenMP
         NonCopyable
         Stencil

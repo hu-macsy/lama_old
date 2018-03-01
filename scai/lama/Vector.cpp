@@ -155,12 +155,15 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV<ValueType>
     Scalar alphaS = expression.getArg1(); 
     ValueType alpha = alphaS.getValue<ValueType>();
 
-    const Matrix<ValueType>& matrix = expression.getArg2().getArg1();
+    const OpMatrix<ValueType>& opMat = expression.getArg2().getArg1();
     const Vector<ValueType>& vector = expression.getArg2().getArg2();
 
-    SCAI_LOG_INFO( logger, "this = " << alpha << " * matrix * vector" )
+    const Matrix<ValueType>& matrix = opMat.getMatrix();
+    const common::MatrixOp op = opMat.getOp();
 
-    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), nullptr, false );
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * matrix " << &matrix << " * vector " << &vector )
+
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), nullptr, op );
 
     return *this;
 }
@@ -173,81 +176,35 @@ Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV<IndexType>
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM<ValueType>& expression )
-{   
-    Scalar alphaS = expression.getArg1(); 
-    ValueType alpha = alphaS.getValue<ValueType>();
-
-    const Vector<ValueType>& vector = expression.getArg2().getArg1();
-    const Matrix<ValueType>& matrix = expression.getArg2().getArg2();
-
-    SCAI_LOG_INFO( logger, "this = " << alpha << " * vector * matrix" )
-
-    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), nullptr, true );
-
-    return *this;
-}
-
-template<>
-Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM<IndexType>& )
-{
-    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
-    return *this;
-}
-
-template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueType>& expression )
 {
     SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
+
     const Expression_SMV<ValueType>& exp1 = expression.getArg1();
-    const Expression_SV<ValueType>& exp2 = expression.getArg2();
-    Scalar alphaS = exp1.getArg1();
+    const Expression_SV<ValueType>& exp2  = expression.getArg2();
+
+    // split up exp1 -> alpha * op( matrix ) * vectorX
+
+    const Scalar& alphaS = exp1.getArg1();
     ValueType alpha = alphaS.getValue<ValueType>();
     const Expression_MV<ValueType> matrixTimesVectorExp = exp1.getArg2();
+    const common::MatrixOp op = matrixTimesVectorExp.getArg1().getOp();
+    const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1().getMatrix();
+    const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
+
+    // split up exp2 -> beta * vectorY
+
     const Scalar& betaS = exp2.getArg1();
     const ValueType& beta = betaS.getValue<ValueType>();
     const Vector<ValueType>& vectorY = exp2.getArg2();
-    const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1();
-    const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
 
-    matrix.matrixTimesVector( *this, alpha, vectorX, beta, &vectorY, false );
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, &vectorY, op );
 
     return *this;
 }
 
 template<>
 Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV_SV<IndexType>& )
-{
-    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
-    return *this;
-}
-
-template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM_SV<ValueType>& expression )
-
-{   
-    SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
-    const Expression_SVM<ValueType>& exp1 = expression.getArg1();
-    const Expression_SV<ValueType>& exp2 = expression.getArg2();
-    const Expression_VM<ValueType>& vectorTimesMatrixExp = exp1.getArg2();
-    
-    // resolve : result = alhpa * A * x + beta * y
-    
-    const Scalar& alphaS  = exp1.getArg1();
-    const Scalar& betaS   = exp2.getArg1();
-    const ValueType alpha = alphaS.getValue<ValueType>();
-    const ValueType beta  = betaS.getValue<ValueType>();
-    const Vector<ValueType>& vectorY = exp2.getArg2();
-    const Vector<ValueType>& vectorX = vectorTimesMatrixExp.getArg1();
-    const Matrix<ValueType>& matrix = vectorTimesMatrixExp.getArg2();
-    
-    matrix.matrixTimesVector( *this, alpha, vectorX, beta, &vectorY, true );
-    
-    return *this;
-}
-
-template<>
-Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM_SV<IndexType>& )
 {
     COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
     return *this;
@@ -381,12 +338,6 @@ Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SMV<ValueType
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SVM<ValueType>& expression )
-{
-    return operator=( Expression_SVM_SV<ValueType>( expression, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
-}
-
-template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SMV<ValueType>& exp )
 {
     Expression_SMV<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
@@ -429,6 +380,124 @@ void Vector<ValueType>::setSparseRandom( dmemo::DistributionPtr dist, const Valu
         // initialization with zero value not required
         fillRandom( bound );
     }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   fill assembly data                                                                   */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::fillFromAssembly( const VectorAssembly<ValueType>& assembly, common::BinaryOp op )
+{
+    hmemo::HArray<IndexType> nonZeroIndexes;
+    hmemo::HArray<ValueType> nonZeroValues;
+ 
+    const dmemo::Distribution& dist = getDistribution();
+    const dmemo::Communicator& comm = dist.getCommunicator();
+
+    if ( comm == assembly.getCommunicator() )
+    {
+         // assembly collected on same set of processors
+
+         assembly.buildLocalData( nonZeroIndexes, nonZeroValues, getDistribution() );
+    }
+    else if ( comm.getType() == dmemo::Communicator::NO )
+    {
+         // we can build a replicated vector from assembled data 
+
+         assembly.buildGlobalData( nonZeroIndexes, nonZeroValues, dist.getGlobalSize() );
+    }
+    else
+    {
+         COMMON_THROWEXCEPTION( "Processor set of assembled data : " << assembly.getCommunicator()
+                                << " does not match processor set of distribution " << dist )
+    }
+
+    fillSparseData( nonZeroIndexes, nonZeroValues, op );
+}
+
+template<typename ValueType>
+void Vector<ValueType>::disassemble( VectorAssembly<ValueType>& assembly, const IndexType offset ) const
+{
+    const dmemo::Distribution& dist = getDistribution();
+    const dmemo::Communicator& comm = dist.getCommunicator();
+
+    if ( comm == assembly.getCommunicator() )
+    {
+        // that is fine, either replicated or distributed
+    } 
+    else if ( comm.getType() == dmemo::Communicator::NO )
+    {
+        // disassemble of replicated matrix will only be done first processor
+
+        if ( comm.getRank() != 0 )
+        {
+            return;
+        }
+    }
+    else 
+    {
+        COMMON_THROWEXCEPTION( "Processor set of assembly = " << assembly.getCommunicator() 
+                             << " does not match to processor set onto which vector is distributed: " << comm )
+    }
+
+    hmemo::HArray<IndexType> ownedIndexes;
+    hmemo::HArray<ValueType> localData;
+
+    getDistribution().getOwnedIndexes( ownedIndexes );
+    buildLocalValues( localData );
+
+    auto values       = hostReadAccess( localData );
+    auto local2Global = hostReadAccess( ownedIndexes );
+
+    ValueType zero = 0;
+
+    for ( IndexType i = 0; i < localData.size(); ++i )
+    {
+        if ( values[i] == zero )
+        {
+            continue;  // skip zero values 
+
+        }
+
+        // Be careful: we need global indexes in assembly
+
+        assembly.push( offset + local2Global[i], values[i] );
+    }
+}
+
+
+/* ---------------------------------------------------------------------------------------*/
+/*   concatenation of vectors                                                             */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors )
+{
+    ValueType zero = 0;
+
+    // use an assembly to collect local values from any distribution
+
+    VectorAssembly<ValueType> assembly( dist->getCommunicatorPtr() );
+
+    IndexType offset = 0;
+
+    for ( size_t k = 0; k < vectors.size(); ++k )
+    {
+        const Vector<ValueType>& v = *vectors[k];
+
+        if ( offset + v.size() > dist->getGlobalSize() )
+        {
+            COMMON_THROWEXCEPTION( "concatenate fails, exceeds global size of target vector" )
+        }
+
+        v.disassemble( assembly, offset );
+
+        offset += v.size();
+    }
+
+    setSameValue( dist, zero );
+    fillFromAssembly( assembly );
 }
 
 /* ---------------------------------------------------------------------------------------*/

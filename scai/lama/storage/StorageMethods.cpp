@@ -41,6 +41,7 @@
 #include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/utilskernel/TransferUtils.hpp>
 
 #include <scai/common/macros/assert.hpp>
 
@@ -266,9 +267,9 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     // as its size cannot be determined by arguments
     HArray<IndexType> sendJA( sendVSize );
     HArray<ValueType> sendValues( sendVSize );
-    Redistributor::gatherV( sendJA, sourceJA, sourceIA, providesIndexes );
+    utilskernel::TransferUtils::gatherV( sendJA, sourceJA, sourceIA, providesIndexes );
     comm.exchangeByPlan( targetJA, requiredV, sendJA, provideV );
-    Redistributor::gatherV( sendValues, sourceValues, sourceIA, providesIndexes );
+    utilskernel::TransferUtils::gatherV( sendValues, sourceValues, sourceIA, providesIndexes );
     comm.exchangeByPlan( targetValues, requiredV, sendValues, provideV );
     // thats it !!
 }
@@ -289,6 +290,20 @@ void StorageMethods<ValueType>::splitCSR(
     const Distribution& colDist,
     const Distribution* rowDist )
 {
+    if ( rowDist )
+    {
+        if ( rowDist->getGlobalSize() != rowDist->getLocalSize() )
+        {
+            HArray<IndexType> myIA;
+            HArray<IndexType> myJA;
+            HArray<ValueType> myValues;
+            localizeCSR( myIA, myJA, myValues, csrIA, csrJA, csrValues, *rowDist );
+            SCAI_LOG_INFO( logger, "localized before split: ia = " << myIA << ", ja = " << myJA << ", values = " << myValues )
+            splitCSR( localIA, localJA, localValues, haloIA, haloJA, haloValues, myIA, myJA, myValues, colDist, NULL );
+            return;
+        }
+    }
+
     SCAI_REGION( "Storage.splitCSR" )
 
     ContextPtr ctx = Context::getHostPtr();  // all done on host here
@@ -296,15 +311,14 @@ void StorageMethods<ValueType>::splitCSR(
     IndexType numRows = csrIA.size() - 1;
 
     SCAI_LOG_INFO( logger, "splitCSR( #rows = " << numRows << ", #values = " << csrJA.size()
-                   << ", colDist = " << colDist << " ) on " << *ctx )
+                            << ", colDist = " << colDist << " ) on " << *ctx )
 
-    if ( rowDist )
-    {
-        numRows = rowDist->getLocalSize();
-    }
+    HArray<IndexType> isLocalJA;    // contains translation global->local indexes, invalidIndex if not local
+
+    colDist.global2localV( isLocalJA, csrJA );
 
     ReadAccess<IndexType> ia( csrIA, ctx );
-    ReadAccess<IndexType> ja( csrJA, ctx );
+    ReadAccess<IndexType> jaLocal( isLocalJA, ctx );
     WriteOnlyAccess<IndexType> wLocalIA( localIA, ctx, numRows + 1 );
     WriteOnlyAccess<IndexType> wHaloIA( haloIA, ctx, numRows + 1 );
 
@@ -316,25 +330,18 @@ void StorageMethods<ValueType>::splitCSR(
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
-            IndexType globalI = i;
-
-            if ( rowDist )
-            {
-                globalI = rowDist->local2global( i );
-            }
-
             IndexType localNonZeros = 0;
             IndexType haloNonZeros = 0;
 
-            for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
+            for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
             {
-                if ( colDist.isLocal( ja[jj] ) )
+                if ( jaLocal[jj] == invalidIndex )
                 {
-                    ++localNonZeros;
+                    ++haloNonZeros;
                 }
                 else
                 {
-                    ++haloNonZeros;
+                    ++localNonZeros;
                 }
             }
 
@@ -357,6 +364,7 @@ void StorageMethods<ValueType>::splitCSR(
     WriteOnlyAccess<IndexType> wHaloJA( haloJA, ctx, haloNumValues );
     WriteOnlyAccess<ValueType> wHaloValues( haloValues, ctx, haloNumValues );
 
+    ReadAccess<IndexType> jaGlobal( csrJA, ctx );
     ReadAccess<ValueType> values( csrValues, ctx );
 
     #pragma omp parallel
@@ -366,22 +374,15 @@ void StorageMethods<ValueType>::splitCSR(
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
-            IndexType globalI = i;
-
-            if ( rowDist )
-            {
-                globalI = rowDist->local2global( i );
-            }
-
             IndexType localOffset = wLocalIA[i];
             IndexType haloOffset = wHaloIA[i];
 
             SCAI_LOG_TRACE( logger, "fill local row " << i << " from " << localOffset << " to " << wLocalIA[i + 1] )
             SCAI_LOG_TRACE( logger, "fill halo row " << i << " from " << haloOffset << " to " << wHaloIA[i + 1] )
 
-            for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
+            for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
             {
-                const IndexType jLocal = colDist.global2local( ja[jj] );
+                const IndexType jLocal = jaLocal[jj];
 
                 if ( jLocal != invalidIndex )
                 {
@@ -391,7 +392,7 @@ void StorageMethods<ValueType>::splitCSR(
                     wLocalValues[localOffset] = values[jj];
 
                     SCAI_LOG_TRACE( logger,
-                                    "row " << i << " (global = " << globalI << ": j = " << ja[jj]
+                                    "row " << i << " : j = " << jaGlobal[jj]
                                     << " is local " << " local offset = " << localOffset )
 
                     ++localOffset;
@@ -400,11 +401,11 @@ void StorageMethods<ValueType>::splitCSR(
                 {
                     // non-local index, global index remains in halo JA
 
-                    wHaloJA[haloOffset] = ja[jj];
+                    wHaloJA[haloOffset] = jaGlobal[jj];    // global -> halo translation is done later
                     wHaloValues[haloOffset] = values[jj];
 
                     SCAI_LOG_TRACE( logger,
-                                    "row " << i << " (global = " << globalI << ": j = " << ja[jj]
+                                    "row " << i << " (: j = " << jaGlobal[jj]
                                     << " is not local " << " halo offset = " << haloOffset )
                     ++haloOffset;
                 }

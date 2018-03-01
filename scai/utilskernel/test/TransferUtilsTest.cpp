@@ -71,33 +71,22 @@ BOOST_AUTO_TEST_CASE( copyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
 
-    IndexType numIndexes = 4;
+    auto ctx = Context::getContextPtr();
 
-    const IndexType sIndexes[] = { 2, 3, 1, 5 };
-    const IndexType tIndexes[] = { 4, 2, 1, 0 };
+    HArray<ValueType> sourceArray( { 1, 2, 3, 4, 5, 6 }, ctx );
+    HArray<ValueType> targetArray( { 9, 9, 9, 9, 9 } );
 
-    const IndexType nSource = 6;
-    const IndexType nTarget = 5;
+    HArray<IndexType> sourceIndexes( { 2, 3, 1, 5 } );
+    HArray<IndexType> targetIndexes( { 4, 2, 1, 0 } );
 
-    const ValueType sVals[] = { 1, 2, 3, 4, 5, 6 };
-    const ValueType tVals[] = { 9, 9, 9, 9, 9 };
+    SCAI_ASSERT_EQ_ERROR( sourceIndexes.size(), targetIndexes.size(), "#indexes must match" )
 
-    const ValueType eVals[] = { 6, 2, 4, 9, 3 };
+    HArray<ValueType> expectedTargetArray( { 6, 2, 4, 9, 3 } );
 
-    LArray<IndexType> sourceIndexes( numIndexes, sIndexes );
-    LArray<IndexType> targetIndexes( numIndexes, tIndexes );
+    TransferUtils::copy( targetArray, targetIndexes, sourceArray, sourceIndexes );
 
-    LArray<ValueType> sourceArray( nSource, sVals );
-    LArray<ValueType> targetArray( nTarget, tVals );
-
-    TransferUtils<ValueType>::copy( targetArray, targetIndexes, sourceArray, sourceIndexes );
-
-    ReadAccess<ValueType> targetRead( targetArray );
-
-    for ( IndexType i = 0; i < nTarget; ++i ) 
-    {
-        BOOST_CHECK_EQUAL( targetRead[i], eVals[i] );
-    }
+    BOOST_TEST( hostReadAccess( expectedTargetArray ) == hostReadAccess( targetArray ),
+                 boost::test_tools::per_element() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -122,7 +111,7 @@ BOOST_AUTO_TEST_CASE( gatherVTest )
 
     LArray<ValueType> targetArray( 4 );
 
-    TransferUtils<ValueType>::gatherV( targetArray, sourceArray, sourceOffsets, sourceIndexes );
+    TransferUtils::gatherV( targetArray, sourceArray, sourceOffsets, sourceIndexes );
 
     ReadAccess<ValueType> targetRead( targetArray );
 

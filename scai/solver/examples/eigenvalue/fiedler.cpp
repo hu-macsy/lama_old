@@ -76,6 +76,7 @@ using namespace solver;
 void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 {
     using namespace hmemo;
+    using namespace utilskernel;
 
     // set all non-zero non-diagonal elements to -1
     // set all diagonal elements to number of non-diagonal elements
@@ -84,7 +85,10 @@ void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 
     const HArray<IndexType>& ia = localStorage.getIA();
     const HArray<IndexType>& ja = localStorage.getJA();
-    HArray<ValueType>& values = localStorage.getValues();
+
+    // Okay, not very safe but we know what we do, and certainly do not change the size 
+
+    LArray<ValueType>& values = const_cast<LArray<ValueType>&>( localStorage.getValues() );
 
     {
         const ValueType minusOne = -1;
@@ -106,8 +110,8 @@ void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 
     // check that x = (1, 1, ..., 1 ) is eigenvector with eigenvalue 0
 
-    DenseVector<ValueType> x( L.getColDistributionPtr(), 1 );
-    DenseVector<ValueType> y( L * x );
+    auto x = fill<DenseVector<ValueType>>( L.getColDistributionPtr(), 1 );
+    auto y = eval<DenseVector<ValueType>>( L * x );
 
     SCAI_ASSERT_LT_ERROR( y.maxNorm(), ValueType( 1e-8 ), "L not Laplacian matrix" )
 }
@@ -135,7 +139,8 @@ int main( int argc, const char* argv[] )
     CSRSparseMatrix<ValueType> L;  // laplacian matrix
 
     IndexType kmax = 100;        // maximal number of iterations
-    ValueType eps  = 1e-5;       // accuracy for maxNorm 
+
+    auto eps = common::Math::real( ValueType( 1e-5 ) );  // accuracy for maxNorm, must not be complex
 
     L.readFromFile( argv[1] );
 
@@ -145,14 +150,13 @@ int main( int argc, const char* argv[] )
 
     makeLaplacian( L );   // make the matrix Laplacian and check it
 
-    const IndexType n = L.getNumRows();
+    const auto n = L.getNumRows();
 
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    auto blockDist = std::make_shared<dmemo::BlockDistribution>( n );
 
-    dmemo::DistributionPtr blockDist( new dmemo::BlockDistribution( n, comm ) );
     L.redistribute( blockDist, blockDist );
 
-    DenseVector<ValueType> u( L.getRowDistributionPtr(), 1 );
+    auto u = fill<DenseVector<ValueType>>( L.getRowDistributionPtr(), 1 ); 
 
     ValueType n12 = common::Math::sqrt( ValueType( n  ) );
 
@@ -162,11 +166,10 @@ int main( int argc, const char* argv[] )
 
     HouseholderTransformedMatrix<ValueType> HLH( L, u, alpha );
 
-    DenseVector<ValueType> t( L.getRowDistributionPtr(), 1.0 );
+    auto t = fill<DenseVector<ValueType>>( L.getRowDistributionPtr(), 1.0 );
 
     DenseVector<ValueType> y;
     DenseVector<ValueType> diff;
-
 
     t[0] = 0.0;
 
@@ -175,10 +178,11 @@ int main( int argc, const char* argv[] )
     // set up the CG solver that is used for the inverse power method
 
     CG<ValueType> cgSolver( "InversePowerMethodSolver" );
-    CriterionPtr<ValueType> criterion1( new IterationCount<ValueType>( 50 ) );
-    NormPtr<ValueType> norm( Norm<ValueType>::create( "L2" ) );   // Norm from factory
-    CriterionPtr<ValueType> criterion2( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
-    CriterionPtr<ValueType> criterion( new Criterion<ValueType>( criterion1, criterion2, BooleanOp::OR ) );
+
+    auto criterion1 = std::make_shared<IterationCount<ValueType>>( 50 );
+    NormPtr<ValueType> norm( Norm<ValueType>::create( "L2" ) );           // Norm from factory
+    auto criterion2 = std::make_shared<ResidualThreshold<ValueType>>( norm, eps, ResidualCheck::Absolute );
+    auto criterion  = std::make_shared<Criterion<ValueType>>( criterion1, criterion2, BooleanOp::OR );
 
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( HLH );
@@ -191,9 +195,11 @@ int main( int argc, const char* argv[] )
 
         y = HLH * t;
 
-        ValueType lambda = t.dotProduct( y );
+        auto lambda = t.dotProduct( y );
+
         diff = y - lambda * t;
-        ValueType diffNorm = diff.maxNorm();
+
+        auto diffNorm = diff.maxNorm();
 
         std::cout << "Iter " << k << ", lambda = " << lambda << ", diff = " << diffNorm << std::endl;
 

@@ -88,7 +88,6 @@ public:
     using _Matrix::setContextPtr; 
     using _Matrix::getNumRows;
     using _Matrix::getNumColumns;
-    using _Matrix::setIdentity;     
 
     using _Matrix::getRowDistribution;
     using _Matrix::getRowDistributionPtr;
@@ -137,15 +136,6 @@ public:
         return mLocalData->getFormat();
     }
 
-    /** This method sets all relevant data of a sparse matrix and checks consistency */
-
-    void set(
-        std::shared_ptr<MatrixStorage<ValueType> > localData,
-        std::shared_ptr<MatrixStorage<ValueType> > haloData,
-        const dmemo::Halo& halo,
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist );
-
     /**
      * @brief Constructor of a replicated sparse matrix with global storage.
      *
@@ -159,26 +149,19 @@ public:
      */
     SparseMatrix( std::shared_ptr<MatrixStorage<ValueType> > storage );
 
-    SparseMatrix( std::shared_ptr<MatrixStorage<ValueType> > storage, dmemo::DistributionPtr rowDist );
-
-    SparseMatrix(
-        std::shared_ptr<MatrixStorage<ValueType> > storage,
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist );
-
-    /** Constructor of a sparse matrix with local and halo data available. */
-
-    SparseMatrix(
-        std::shared_ptr<MatrixStorage<ValueType> > localData,
-        std::shared_ptr<MatrixStorage<ValueType> > haloData,
-        const dmemo::Halo& halo,
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist );
+    /**
+     *  @brief Constructor of a distributed sparse matrix with local storages
+     */
+    SparseMatrix( dmemo::DistributionPtr rowDist, std::shared_ptr<MatrixStorage<ValueType> > storage );
 
     /** Override also the default copy constructor that does not make a
      *  deep copy of the input matrix due to the use of shared pointers.
      */
     SparseMatrix( const SparseMatrix<ValueType>& other );
+
+    /** Move constructor */
+
+    SparseMatrix( SparseMatrix<ValueType>&& other ) noexcept;
 
     /** Implementation of abstract method for sparse matrices. */
 
@@ -195,33 +178,6 @@ public:
     /* Implementation of pure method of class _Matrix. */
 
     virtual hmemo::ContextPtr getContextPtr() const;
-
-    /** Implementation for _Matrix::setDenseData */
-
-    virtual void setDenseData(
-        dmemo::DistributionPtr rowDistribution,
-        dmemo::DistributionPtr colDistribution,
-        const hmemo::HArray<ValueType>& values,
-        ValueType eps = ValueType( 0 ) );
-
-    /** Implementation for pure method _Matrix::setCSRData. */
-
-    virtual void setCSRData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const IndexType numValues,
-        const hmemo::HArray<IndexType>& ia,
-        const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values );
-
-    /** Implementation for pure method _Matrix::setDIAData. */
-
-    virtual void setDIAData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const IndexType numDiagonals,
-        const hmemo::HArray<IndexType>& offsets,
-        const hmemo::_HArray& values );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -249,6 +205,10 @@ public:
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
+
+    /** Implementation of pure method Matrix<ValueType>::assignDiagonal */
+
+    virtual void assignDiagonal( const Vector<ValueType>& diagonal );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -278,11 +238,22 @@ public:
 
     /* Implementation of pure method of class _Matrix. */
 
-    virtual void assign( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    virtual void assignDistribute( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+
+    virtual void assignLocal( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist );
+
+    virtual void assignDistribute( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Implementation of of pure method of class _Matrix. */
 
     virtual void buildLocalStorage( _MatrixStorage& storage ) const;
+
+    /** Implemenation of Matrix<ValueType>::disassemble */
+
+    virtual void disassemble(
+        MatrixAssembly<ValueType>& assembly,
+        const IndexType rowOffset = 0,
+        const IndexType colOffset = 0 ) const;
 
     /**
      * @brief This method will swap all member variables of the two sparse matrices.
@@ -302,11 +273,11 @@ public:
 
     /** Implementation of pure method Matrix<ValueType>::getDiagonal */
 
-    virtual void getDiagonal( DenseVector<ValueType>& diagonal ) const;
+    virtual void getDiagonal( Vector<ValueType>& diagonal ) const;
 
     /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const DenseVector<ValueType>& diagonal );
+    virtual void setDiagonal( const Vector<ValueType>& diagonal );
 
     /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
@@ -315,9 +286,17 @@ public:
     /* Implementation of pure method Matrix<ValueType>::reduce */
 
     virtual void reduce( 
-        DenseVector<ValueType>& v, 
+        Vector<ValueType>& v, 
         const IndexType dim, 
         const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp ) const;
+
+    /* Implementation of reduce for dense vector. */
+
+    void reduceImpl(
+        DenseVector<ValueType>& v,
+        const IndexType dim,
+        const common::BinaryOp reduceOp,
         const common::UnaryOp elemOp ) const;
 
     /* ======================================================================= */
@@ -380,7 +359,7 @@ public:
         const DenseVector<ValueType>& x,
         const ValueType beta,
         const DenseVector<ValueType>* y,
-        bool transposeFlag ) const;
+        const common::MatrixOp op ) const;
 
     /**
      * @brief Operation on distributed matrix with halo exchange, sync version
@@ -441,13 +420,34 @@ public:
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
-    /**
-     * @brief Operation on distributed matrix with halo exchange, async version
+    /*
+     * @brief Operation on distributed matrix with halo exchange, asynchronous communication
      *
-     * The asynchronous version starts the local computation asynchronously so it
+     * This asynchronous version starts the communication asynchronously so it
      * can overlap with the halo exchange.
      */
-    void haloOperationAsync(
+    void haloOperationAsyncComm(
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        hmemo::HArray<ValueType>& haloX,
+        std::function <
+        void(
+            const MatrixStorage<ValueType>* localMatrix,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX ) > localF,
+        std::function <
+        void(
+            const MatrixStorage<ValueType>* haloMatrix,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
+
+    /**
+     * @brief Operation on distributed matrix with halo exchange, async execution of local computation
+     *
+     * This asynchronous version starts the local computation asynchronously so it
+     * can overlap with the halo exchange.
+     */
+    void haloOperationAsyncLocal(
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
@@ -465,14 +465,6 @@ public:
     /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
     virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
-
-    /**
-     * Implementation of pure method Matrix<ValueType>::concatenate
-     */
-    virtual void concatenate( 
-        dmemo::DistributionPtr rowDist, 
-        dmemo::DistributionPtr colDist, 
-        const std::vector<const Matrix<ValueType>*>& matrices );
 
     /* Implemenation of pure method Matrix<ValueType>::matrixTimesMatrix */
 
@@ -501,7 +493,7 @@ public:
     /**
      * @brief Same as maxDiffNorm but with other as sparse matrix of same value type.
      */
-    ValueType maxDiffNormImpl( const SparseMatrix<ValueType>& other ) const;
+    RealType<ValueType> maxDiffNormImpl( const SparseMatrix<ValueType>& other ) const;
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -594,6 +586,8 @@ public:
 
     SparseMatrix<ValueType>& operator=( const SparseMatrix<ValueType>& matrix );
 
+    SparseMatrix<ValueType>& operator=( SparseMatrix<ValueType>&& matrix );
+
     /**
      * Gives info about the matrix kind (SPARSE).
      */
@@ -608,7 +602,7 @@ public:
 
     /** Get a complete row of this matrix from its local part in sparse format */
 
-    void getLocalRowSparse( hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const IndexType localRowIndex ) const;
+    void getLocalRowSparse( hmemo::HArray<IndexType>& indexes, hmemo::HArray<ValueType>& values, const IndexType localRowIndex ) const;
 
     /** Implementation of pure method Matrix<ValueType>::getRow */
 
