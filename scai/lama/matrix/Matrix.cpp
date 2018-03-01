@@ -506,6 +506,27 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Matrix<ValueType>& other 
 }
 
 template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const OpMatrix<ValueType>& other )
+{
+    const Matrix<ValueType>& matrix = other.getMatrix();
+    const common::MatrixOp op = other.getOp();
+
+    switch ( op ) 
+    {
+        case common::MatrixOp::NORMAL:  
+            this->assign( matrix ); 
+            break;
+        case common::MatrixOp::TRANSPOSE:  
+            this->assignTranspose( matrix ); 
+            break;
+        default:
+            COMMON_THROWEXCEPTION( "matrix = " << op << "( matrix ) not supported yet" )
+    }
+
+    return *this;
+}
+
+template<typename ValueType>
 Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM_SM<ValueType>& exp )
 {
     const Expression_SMM<ValueType>& arg1 = exp.getArg1();

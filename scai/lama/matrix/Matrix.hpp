@@ -109,6 +109,19 @@ public:
     Matrix<ValueType>& operator=( const Matrix<ValueType>& other );
 
     /**
+     * @brief Assign of a matrix with an implicit operation, e.g. transpose( A ), conj( A )
+     *
+     * @param[in] other   matrix and implicit operation
+     *
+     * \code
+     *     DenseMatrix<double> m( DenseStorage<double>( 2, 3, HArray<double>( { 1, 2, 3, 4, 5, 6} ) ) );
+     *     DenseMatrix<double> mT;
+     *     mT = transpose( m );
+     * \endcode
+     */
+    Matrix<ValueType>& operator=( const OpMatrix<ValueType>& other );
+
+    /**
      * @brief The assignment operator with explicit type conversion.
      *
      * \code
