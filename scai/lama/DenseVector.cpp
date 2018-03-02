@@ -1156,7 +1156,7 @@ void DenseVector<ValueType>::vectorTimesVector(
         return;
     }
 
-    setDistributonPtr( x.getDistributionPtr() );   // result inherits (same) space of operands, mostly its same
+    setDistributionPtr( x.getDistributionPtr() );   // result inherits (same) space of operands, mostly its same
 
     const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
     const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
