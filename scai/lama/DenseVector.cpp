@@ -1138,6 +1138,7 @@ void DenseVector<ValueType>::vectorTimesVector(
     const Vector<ValueType>& y )
 {
     SCAI_LOG_INFO( logger, "z = x * y, z = " << *this << " , x = " << x << " , y = " << y )
+
     SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
     SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
 
@@ -1161,8 +1162,8 @@ void DenseVector<ValueType>::vectorTimesVector(
     const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
     const DenseVector<ValueType>& denseY = static_cast<const DenseVector<ValueType>&>( y );
 
-    SCAI_ASSERT_EQ_DEBUG( mLocalValues.size(), denseX.mLocalValues.size(), "serious space mismatch" )
-    SCAI_ASSERT_EQ_DEBUG( mLocalValues.size(), denseY.mLocalValues.size(), "serious space mismatch" )
+    // denseX.mLocalValues.size() == denseY.mLocalValues.size() is already verified
+    // mLocalValues will be allocated with the correct size, alias are handled correctly.
 
     SCAI_LOG_DEBUG( logger, "call arrayTimesArray" )
 
@@ -1192,11 +1193,11 @@ void DenseVector<ValueType>::vectorPlusScalar( const ValueType& alpha, const Vec
 
     setDistributionPtr( x.getDistributionPtr() );
 
-    SCAI_ASSERT_EQ_DEBUG( mLocalValues.size(), denseX.mLocalValues.size(), "serious mismatch" )
-
     SCAI_LOG_DEBUG( logger, "call arrayPlusScalar" )
 
     utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alpha, denseX.mLocalValues, beta, getContextPtr() );
+
+    SCAI_ASSERT_EQ_DEBUG( mLocalValues.size(), denseX.mLocalValues.size(), "serious mismatch" )
 }
 
 /* ----------------------------------------------------------------------- */
