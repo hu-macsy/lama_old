@@ -475,7 +475,7 @@ void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::H
 
     // with entries in pos we can gather the column indexes and the values from jdsJA, jdsValues
  
-    HArrayUtils::gatherImpl( jA, mJA, pos, BinaryOp::COPY, loc );
+    HArrayUtils::gather( jA, mJA, pos, BinaryOp::COPY, loc );
     HArrayUtils::gather( values, mValues, pos, BinaryOp::COPY, loc );
 
     SCAI_LOG_DEBUG( logger, "getSparseRow( " << i << " ) : jA = " << jA << ", values = " << values )
@@ -607,8 +607,8 @@ void JDSStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 
     //  mValues[ pos ] op= column[row]
 
-    HArrayUtils::gatherImpl( colValues, column, rowIndexes, BinaryOp::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
+    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( mValues, valuePos, true, colValues, op, loc );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

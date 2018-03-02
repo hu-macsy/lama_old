@@ -153,8 +153,8 @@ void DenseVector<ValueType>::fillLinearValues( const ValueType startValue, const
     // localValues[] =  indexes[] * inc + startValue
 
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc, BinaryOp::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue, BinaryOp::ADD, context );
+    HArrayUtils::setScalar( mLocalValues, inc, BinaryOp::MULT, context );
+    HArrayUtils::setScalar( mLocalValues, startValue, BinaryOp::ADD, context );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -727,7 +727,7 @@ void DenseVector<ValueType>::fillSparseData(
 {
     // Note: scatter checks for legal indexes
 
-    HArrayUtils::scatter( mLocalValues, nonZeroIndexes, false, nonZeroValues, op, getContextPtr() );
+    HArrayUtils::_scatter( mLocalValues, nonZeroIndexes, false, nonZeroValues, op, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1642,7 +1642,7 @@ void DenseVector<ValueType>::gatherLocalValues(
      const BinaryOp op,
      ContextPtr prefLoc ) const
 {
-    HArrayUtils::gather( localValues, mLocalValues, indexes, op, prefLoc );
+    HArrayUtils::_gather( localValues, mLocalValues, indexes, op, prefLoc );
 }
 
 template<typename ValueType>

@@ -249,7 +249,7 @@ void HArrayUtils::setArraySectionImpl(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::gather(
+void HArrayUtils::_gather(
     _HArray& target,
     const _HArray& source,
     const HArray<IndexType>& indexes,
@@ -335,7 +335,7 @@ void HArrayUtils::sparseGatherImpl(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::scatter(
+void HArrayUtils::_scatter(
     _HArray& target,
     const HArray<IndexType>& indexes,
     const bool unique,
@@ -350,7 +350,7 @@ void HArrayUtils::scatter(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void HArrayUtils::gatherImpl(
+void HArrayUtils::gather(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
     const HArray<IndexType>& indexes,
@@ -414,7 +414,7 @@ void HArrayUtils::gatherImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void HArrayUtils::scatterImpl(
+void HArrayUtils::scatter(
     HArray<TargetValueType>& target,
     const HArray<IndexType>& indexes,
     const bool unique,
@@ -467,18 +467,6 @@ void HArrayUtils::scatterImpl(
     ReadAccess<IndexType> rIndexes( indexes, loc );
     //  target[ indexes[i] ] = source[i]
     setScatter[loc] ( wTarget.get(), rIndexes.get(), unique, rSource.get(), op, n );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void HArrayUtils::assignScalar(
-    _HArray& target,
-    const ValueType value,
-    const BinaryOp op,
-    ContextPtr prefLoc )
-{
-    mepr::UtilsWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setScalar( target, value, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -545,6 +533,20 @@ void HArrayUtils::setSameValue(
     WriteOnlyAccess<ValueType> wTarget( target, loc, n );
     SCAI_CONTEXT_ACCESS( loc )
     setVal[loc]( wTarget.get(), n, value, common::BinaryOp::COPY );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::_setSameValue(
+    hmemo::_HArray& target,
+    const IndexType n,
+    const ValueType val,
+    hmemo::ContextPtr ctx )
+{
+    // use meta-programming to resolve the type of target array
+
+    mepr::UtilsWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setSameValue( target, n, val, ctx );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -946,13 +948,13 @@ void HArrayUtils::arrayPlusScalar(
     if ( alpha == common::Constants::ZERO ) // result = b
     {
         result.resize( x.size() );
-        assignScalar( result, beta, BinaryOp::COPY, prefLoc );
+        setScalar( result, beta, BinaryOp::COPY, prefLoc );
         return;
     }
 
     if ( &x == &result && alpha == common::Constants::ONE ) // result += b (elementwise)
     {
-        assignScalar( result, beta, BinaryOp::ADD, prefLoc );
+        setScalar( result, beta, BinaryOp::ADD, prefLoc );
         return;
     }
 
@@ -2071,7 +2073,7 @@ void HArrayUtils::buildDenseArray(
     setSameValue( denseArray, denseN, zero, prefLoc );
 
     bool unique = true;
-    HArrayUtils::scatterImpl( denseArray, sparseIndexes, unique, sparseArray, BinaryOp::COPY, prefLoc );
+    HArrayUtils::scatter( denseArray, sparseIndexes, unique, sparseArray, BinaryOp::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2498,7 +2500,7 @@ void HArrayUtils::buildComplex(
 /** Makro for the instantiation of routines with two template arguments for source and target type. */
 
 #define HARRAUTILS_SPECIFIER_LVL2( TargetType, SourceType )                          \
-    template void HArrayUtils::gatherImpl<TargetType, SourceType>(                   \
+    template void HArrayUtils::gather<TargetType, SourceType>(                       \
             hmemo::HArray<TargetType>&,                                              \
             const hmemo::HArray<SourceType>&,                                        \
             const hmemo::HArray<IndexType>&,                                         \
@@ -2523,7 +2525,7 @@ void HArrayUtils::buildComplex(
             const IndexType,                                                         \
             const BinaryOp,                                                          \
             hmemo::ContextPtr );                                                     \
-    template void HArrayUtils::scatterImpl<TargetType, SourceType>(                  \
+    template void HArrayUtils::scatter<TargetType, SourceType>(                      \
             hmemo::HArray<TargetType>&,                                              \
             const hmemo::HArray<IndexType>&,                                         \
             const bool,                                                              \
@@ -2556,11 +2558,6 @@ void HArrayUtils::buildComplex(
     template ValueType HArrayUtils::getVal<ValueType>(                  \
             const hmemo::HArray<ValueType>&,                            \
             const IndexType );                                          \
-    template void HArrayUtils::assignScalar<ValueType>(                 \
-            hmemo::_HArray&,                                            \
-            const ValueType,                                            \
-            const BinaryOp,                                             \
-            hmemo::ContextPtr);                                         \
     template void HArrayUtils::setScalar<ValueType>(                    \
             hmemo::HArray<ValueType>&,                                  \
             const ValueType,                                            \
@@ -2568,6 +2565,11 @@ void HArrayUtils::buildComplex(
             hmemo::ContextPtr);                                         \
     template void HArrayUtils::setSameValue<ValueType>(                 \
             hmemo::HArray<ValueType>&,                                  \
+            const IndexType,                                            \
+            const ValueType,                                            \
+            hmemo::ContextPtr);                                         \
+    template void HArrayUtils::_setSameValue<ValueType>(                \
+            hmemo::_HArray&,                                            \
             const IndexType,                                            \
             const ValueType,                                            \
             hmemo::ContextPtr);                                         \

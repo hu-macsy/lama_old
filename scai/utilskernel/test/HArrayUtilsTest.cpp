@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             {
                 BOOST_CHECK_THROW(
                 {
-                    HArrayUtils::gather( array2, array1, perm, BinaryOp::COPY, ctx );
+                    HArrayUtils::_gather( array2, array1, perm, BinaryOp::COPY, ctx );
                 }, common::Exception );
 
                 continue;
@@ -142,11 +142,11 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             // create array with same type, context
             std::unique_ptr<_HArray> tmp( array2.copy() );
             // array2 = array1[ perm ], tmp[ perm ] = array1
-            HArrayUtils::gather( array2, array1, perm, BinaryOp::COPY, ctx );
+            HArrayUtils::_gather( array2, array1, perm, BinaryOp::COPY, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
             bool unique = true;  // perm has unique indexes
-            HArrayUtils::scatter( *tmp, perm, unique, array1, BinaryOp::COPY, ctx );
+            HArrayUtils::_scatter( *tmp, perm, unique, array1, BinaryOp::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same, convert them to ValueType
 
@@ -783,7 +783,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
     LArray<ValueType> target;
     BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
     BOOST_CHECK( !HArrayUtils::validIndexes( indexes, 1 ) );
-    HArrayUtils::gatherImpl( target, source, indexes, BinaryOp::COPY );
+    HArrayUtils::gather( target, source, indexes, BinaryOp::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -867,11 +867,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
         // scatter on an empty array with more than one index should always fail
 
         LArray<ValueType> target;
-        HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, BinaryOp::COPY );
+        HArrayUtils::scatter( target, indexes, uniqueIndexes, source, BinaryOp::COPY );
 
     }, Exception );
+
     LArray<ValueType> target( M );
-    HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, BinaryOp::COPY );
+    HArrayUtils::scatter( target, indexes, uniqueIndexes, source, BinaryOp::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -1029,7 +1030,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
     BOOST_REQUIRE_EQUAL( array1.size(), n );
 
     LArray<RealValueType> array2;   // = array[perm]
-    HArrayUtils::gatherImpl( array2, array, perm, BinaryOp::COPY );
+    HArrayUtils::gather( array2, array, perm, BinaryOp::COPY );
 
     BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), RealValueType( 0 ) );
 }
@@ -1147,7 +1148,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     BOOST_CHECK_EQUAL( perm.size(), n );
 
     LArray<IndexType> sortedArray;
-    HArrayUtils::gatherImpl( sortedArray, array, perm, BinaryOp::COPY );
+    HArrayUtils::gather( sortedArray, array, perm, BinaryOp::COPY );
     BOOST_CHECK( HArrayUtils::isSorted( sortedArray, CompareOp::LE, loc ) );
 
     // number of buckets = 1, so only two values array[i] == 0 are taken

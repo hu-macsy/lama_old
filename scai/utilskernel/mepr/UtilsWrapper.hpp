@@ -156,14 +156,9 @@ struct UtilsWrapperT<ValueType, common::mepr::NullType>
         COMMON_THROWEXCEPTION( "setScalar: target type unsupported, target = " << target )
     }
 
-    static void setValImpl( hmemo::_HArray& target, const IndexType, const ValueType )
+    static void setSameValue( hmemo::_HArray& target, const IndexType, const ValueType, const hmemo::ContextPtr )
     {
-        COMMON_THROWEXCEPTION( "setVal: target type unsupported, target = " << target )
-    }
-
-    static ValueType getValImpl( const hmemo::_HArray&, const IndexType )
-    {
-        return ValueType( 0 );
+        COMMON_THROWEXCEPTION( "setSameValue: target type unsupported, target = " << target )
     }
 
     static void buildSparse( 
@@ -307,7 +302,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         if ( common::getScalarType<H>() ==  source.getValueType() )
         {
             const hmemo::HArray<H>& typedSource = reinterpret_cast<const hmemo::HArray<H>&>( source );
-            HArrayUtils::gatherImpl( target, typedSource, indexes, op, prefLoc );
+            HArrayUtils::gather( target, typedSource, indexes, op, prefLoc );
         }
         else
         {
@@ -346,7 +341,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         if ( common::getScalarType<H>() ==  source.getValueType() )
         {
             const hmemo::HArray<H>& typedSource = reinterpret_cast<const hmemo::HArray<H>&>( source );
-            HArrayUtils::scatterImpl( target, indexes, unique, typedSource, op, prefLoc );
+            HArrayUtils::scatter( target, indexes, unique, typedSource, op, prefLoc );
         }
         else
         {
@@ -363,6 +358,18 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         else
         {
             UtilsWrapperT< ValueType, Tail >::setScalar( target, value, op, ctx );
+        }
+    }
+
+    static void setSameValue( hmemo::_HArray& target, const IndexType size, const ValueType val, const hmemo::ContextPtr ctx )
+    {
+        if ( common::getScalarType<H>() ==  target.getValueType() )
+        {
+            HArrayUtils::setSameValue( static_cast<hmemo::HArray<H>&>( target ), size, static_cast<H>( val ), ctx );
+        }
+        else
+        {
+            UtilsWrapperT< ValueType, Tail >::setSameValue( target, size, val, ctx );
         }
     }
 

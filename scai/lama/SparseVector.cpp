@@ -437,17 +437,15 @@ void SparseVector<ValueType>::buildLocalValues(
     {
         // build values array from scratch 
 
-        values.clear();
-        values.resize( size );
-        HArrayUtils::assignScalar( values, mZeroValue, op, getContextPtr() );
-        HArrayUtils::scatter( values, mNonZeroIndexes, UNIQUE, mNonZeroValues, op, getContextPtr() );
+        HArrayUtils::_setSameValue( values, size, mZeroValue, getContextPtr() );
+        HArrayUtils::_scatter( values, mNonZeroIndexes, UNIQUE, mNonZeroValues, op, getContextPtr() );
     }
     else if ( mZeroValue == common::zeroBinary<ValueType>( op ) ) 
     {
         // ZERO element of this sparse vector is ZERO element for op, that is fine, we only apply non-zero values
 
         SCAI_ASSERT_EQ_ERROR( values.size(), size, "size mismatch" )
-        HArrayUtils::scatter( values, mNonZeroIndexes, UNIQUE, mNonZeroValues, op, loc );
+        HArrayUtils::_scatter( values, mNonZeroIndexes, UNIQUE, mNonZeroValues, op, loc );
     }
     else 
     {
@@ -456,7 +454,7 @@ void SparseVector<ValueType>::buildLocalValues(
         SCAI_UNSUPPORTED( *this << ", mZero = " << mZeroValue << " is not ZERO element of " << op << ", temporary dense values are built" )
 
         utilskernel::LArray<ValueType> myDenseValues( size, mZeroValue );
-        HArrayUtils::scatterImpl( myDenseValues, mNonZeroIndexes, UNIQUE, mNonZeroValues, common::BinaryOp::COPY, loc );
+        HArrayUtils::scatter( myDenseValues, mNonZeroIndexes, UNIQUE, mNonZeroValues, common::BinaryOp::COPY, loc );
         HArrayUtils::setArray( values, myDenseValues, op, loc );
     }
 }
@@ -1716,7 +1714,7 @@ void SparseVector<ValueType>::writeLocalToFile(
 
             hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
             LArray<ValueType> denseArray( size, mZeroValue, ctx );
-            HArrayUtils::scatterImpl( denseArray, mNonZeroIndexes, true, mNonZeroValues, common::BinaryOp::COPY, ctx );
+            HArrayUtils::scatter( denseArray, mNonZeroIndexes, true, mNonZeroValues, common::BinaryOp::COPY, ctx );
             fileIO->writeArray( denseArray, fileName );
         }
     }

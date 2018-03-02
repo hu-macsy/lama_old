@@ -406,7 +406,7 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     const ContextPtr loc = this->getContextPtr();
 
     HArrayUtils::setSameValue( mIA, size, IndexType( 1 ), loc );
-    HArrayUtils::setSequence( mJA, 0, 1, size, getContextPtr() );
+    HArrayUtils::setSequence( mJA, IndexType( 0 ), IndexType( 1 ), size, getContextPtr() );
     HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), loc );
 
     mDiagonalProperty = true;
@@ -427,9 +427,9 @@ void ELLStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
 
     // Note: we pass also the current context as it might have been changed
 
-    HArrayUtils::setSameValue( mIA, size, IndexType( 1 ), getContextPtr() );
-    HArrayUtils::setSequence( mJA, 0, 1, size, getContextPtr() );
-    HArrayUtils::setArray( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
+    HArrayUtils::setSameValue<IndexType>( mIA, size, 1, getContextPtr() );
+    HArrayUtils::setSequence<IndexType>( mJA, 0, 1, size, getContextPtr() );
+    HArrayUtils::setArrayImpl<ValueType, ValueType>( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
 
     mDiagonalProperty = true; // obviously given for identity matrix
 

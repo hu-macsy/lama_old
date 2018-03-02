@@ -338,8 +338,11 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
 
     // Note: we pass also the current context as it might have been changed
 
-    HArrayUtils::setSequence( mIA, 0, 1, size + 1, getContextPtr() );
-    HArrayUtils::setSequence( mJA, 0, 1, size, getContextPtr() );
+    IndexType start = 0;
+    IndexType inc   = 1;
+
+    HArrayUtils::setSequence( mIA, start, inc, size + 1, getContextPtr() );
+    HArrayUtils::setSequence( mJA, start, inc, size, getContextPtr() );
     HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), getContextPtr() );
 
     mDiagonalProperty = true; // obviously given for identity matrix
@@ -361,8 +364,11 @@ void CSRStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
 
     // Note: we pass also the current context as it might have been changed
     
-    HArrayUtils::setSequence( mIA, 0, 1, size + 1, getContextPtr() );
-    HArrayUtils::setSequence( mJA, 0, 1, size, getContextPtr() );
+    IndexType start = 0;
+    IndexType inc   = 1;
+
+    HArrayUtils::setSequence( mIA, start, inc, size + 1, getContextPtr() );
+    HArrayUtils::setSequence( mJA, start, inc, size, getContextPtr() );
     HArrayUtils::setArray( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
 
     mDiagonalProperty = true; // obviously given for identity matrix
@@ -1110,8 +1116,8 @@ void CSRStorage<ValueType>::setColumn(
 
     //  mValues[ pos ] op= column[row]
 
-    HArrayUtils::gatherImpl( colValues, column, rowIndexes, BinaryOp::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
+    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( mValues, valuePos, true, colValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */

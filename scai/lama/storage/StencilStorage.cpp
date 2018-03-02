@@ -247,9 +247,7 @@ void StencilStorage<ValueType>::getDiagonal( HArray<ValueType>& array ) const
 
     SCAI_LOG_ERROR( logger, "diagonal value is = " << diagonalValue );
 
-    HArrayUtils::assignScalar( array, diagonalValue, common::BinaryOp::COPY );
-
-    // Attention: reflecting boundaries can imply changes on the diagonal values
+    HArrayUtils::setScalar( array, diagonalValue, common::BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -440,7 +438,7 @@ void StencilStorage<ValueType>::getRow( hmemo::HArray<ValueType>& values, const 
 
     values.resize( getNumColumns() );
 
-    HArrayUtils::assignScalar( values, ValueType( 0 ), BinaryOp::COPY );
+    HArrayUtils::setScalar<ValueType>( values, 0, BinaryOp::COPY );
 
     HArray<IndexType> sparseIA;
     HArray<ValueType> sparseValues;

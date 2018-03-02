@@ -82,7 +82,7 @@ public:
      *
      *  target[i] op= source[indexes[i]]
      */
-    static void gather(
+    static void _gather(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& indexes,
@@ -127,7 +127,7 @@ public:
      *  @brief Gathering (unstructured read of values) with HArrays, template typed version
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void gatherImpl(
+    static void gather(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
         const hmemo::HArray<IndexType>& indexes,
@@ -152,7 +152,7 @@ public:
      *
      *  target[index[i]] = source[i]
      */
-    static void scatter(
+    static void _scatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const bool unique,
@@ -166,26 +166,13 @@ public:
      *  target[index[i]] = source[i]
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void scatterImpl(
+    static void scatter(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
         const bool unique,
         const hmemo::HArray<SourceValueType>& source,
         const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    /**
-     *  @brief Setting one scalar element for all elements of HArray
-     *
-     *  target[i] _op_= value
-     */
-    template<typename ValueType>
-    static void assignScalar(
-        hmemo::_HArray& target,
-        const ValueType value,
-        const common::BinaryOp op,
-        hmemo::ContextPtr prefLoc  = hmemo::ContextPtr() )
-    __attribute__( ( noinline ) );
 
     /** This method sets a single value in a heterogeneous array.
      *
@@ -357,6 +344,15 @@ public:
     template<typename ValueType>
     static void setSameValue(
         hmemo::HArray<ValueType>& target,
+        const IndexType n,
+        const ValueType val,
+        hmemo::ContextPtr ctx );
+
+    /** Provide a version of setSameValue that deals with untyped HArray. */
+
+    template<typename ValueType>
+    static void _setSameValue(
+        hmemo::_HArray& target,
         const IndexType n,
         const ValueType val,
         hmemo::ContextPtr ctx );

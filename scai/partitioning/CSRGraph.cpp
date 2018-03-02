@@ -230,7 +230,7 @@ void CSRGraph<IdxType>::buildByCSRSparseMatrix( const CSRSparseMatrix<ValueType>
 
     SCAI_LOG_DEBUG( logger, comm << ": gather translates now" )
 
-    utilskernel::HArrayUtils::gatherImpl( haloJA, requiredGlobalIndexes, haloJA, common::BinaryOp::COPY );
+    utilskernel::HArrayUtils::gather( haloJA, requiredGlobalIndexes, haloJA, common::BinaryOp::COPY );
 
     joinCSR( mIA, mJA, localIA, localJA, haloIA, haloJA );
 

@@ -1354,8 +1354,8 @@ void DenseStorage<ValueType>::fillCOO(
 
     bool unique = false;    // there might be multiple entries in the COO data
 
-    HArrayUtils::arrayPlusArray( pos, getNumColumns(), ia, 1, ja, getContextPtr() );
-    HArrayUtils::scatter( mData, pos, unique, values, op, getContextPtr() );
+    HArrayUtils::arrayPlusArray<IndexType>( pos, getNumColumns(), ia, 1, ja, getContextPtr() );
+    HArrayUtils::scatter<ValueType, ValueType>( mData, pos, unique, values, op, getContextPtr() );
 }
 
 /* ========================================================================= */
