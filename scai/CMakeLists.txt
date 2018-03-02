@@ -216,7 +216,7 @@ file (COPY ${CMAKE_SOURCE_DIR}/doc/lama.png  DESTINATION ${CMAKE_BINARY_DIR}/doc
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 ## depends on user doc of all defined modules ( = used modules + dependent ones)
 
-set ( MODULE_NAME "lama_all" )
+set ( MODULE_NAME "libama" )
 set ( INTERNAL_DEPS ${SCAI_DEFINED_MODULES} )
 
 ## MODULE_NAME, INTERNAL_DEPS are needed to build LAMA user documentation
@@ -239,7 +239,7 @@ include ( CustomCommands/DoxygenDoc )
 
 ##  add custom target doc to build both
 
-add_custom_target ( doc DEPENDS doxygendoc doc_lama_all )
+add_custom_target ( doc DEPENDS doxygendoc doc_libama )
 
 ## add custom target distClean
 
