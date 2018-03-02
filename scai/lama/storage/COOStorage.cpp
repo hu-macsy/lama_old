@@ -276,9 +276,9 @@ void COOStorage<ValueType>::assignCOO( const COOStorage<OtherValueType>& other )
 
     _MatrixStorage::_assign( other );
 
-    HArrayUtils::setArrayImpl( mIA, other.getIA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::setArray( mIA, other.getIA(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::setArray( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::setArray( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
 
     _MatrixStorage::resetDiagonalProperty();
 }
@@ -429,7 +429,7 @@ void COOStorage<ValueType>::setCOOData(
 
     HArrayUtils::assign( mIA, ia, loc );
     HArrayUtils::assign( mJA, ja, loc );
-    HArrayUtils::assign( mValues, values, loc ); // supports type conversion
+    HArrayUtils::_assign( mValues, values, loc ); // supports type conversion
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 #ifdef SCAI_ASSERT_LEVEL_DEBUG

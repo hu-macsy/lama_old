@@ -79,7 +79,7 @@ SCAI_LOG_DEF_LOGGER( HArrayUtils::logger, "HArrayUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextPtr prefLoc )
+void HArrayUtils::_assign( _HArray& target, const _HArray& source, const ContextPtr prefLoc )
 {
     if ( &target == &source )
     {
@@ -87,13 +87,47 @@ void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextP
     }
     else
     {
-        setArray( target, source, BinaryOp::COPY, prefLoc );
+        mepr::UtilsWrapperTT<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArray( target, source, common::BinaryOp::COPY, prefLoc );
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::setArray(
+template<typename TargetValueType, typename SourceValueType>
+void HArrayUtils::assign( HArray<TargetValueType>& target, const HArray<SourceValueType>& source, const ContextPtr prefLoc )
+{
+    if ( static_cast<const _HArray*>( &target ) == static_cast<const _HArray*>( &source ) )
+    {
+        SCAI_LOG_INFO( logger, "assign skipped, target and source are aliased" )
+        return;
+    }
+
+    // set should be available on interface for each loc
+
+    static LAMAKernel<UtilKernelTrait::set<TargetValueType, SourceValueType> > set;
+
+    ContextPtr loc = prefLoc;
+
+    if ( !loc )
+    {
+        // if no context is given we assign where source has a valid copy available
+        loc = source.getValidContext();
+    }
+
+    set.getSupportedContext( loc );
+
+    const IndexType n = source.size();
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<SourceValueType> sourceVals( source, loc );
+    WriteOnlyAccess<TargetValueType> targetVals( target, loc, n );
+    set[loc]( targetVals.get(), sourceVals.get(), n, common::BinaryOp::COPY );
+}
+
+/* --------------------------------------------------------------------------- */
+
+void HArrayUtils::_setArray(
     _HArray& target,
     const _HArray& source,
     const BinaryOp op,
@@ -105,16 +139,26 @@ void HArrayUtils::setArray(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void HArrayUtils::setArrayImpl(
+void HArrayUtils::setArray(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
     const BinaryOp op,
     const ContextPtr prefLoc )
 {
+    SCAI_LOG_ERROR( logger, "setArray<" << common::TypeTraits<TargetValueType>::id() << 
+                    ", " << common::TypeTraits<SourceValueType>::id() << ">, target[ " << target.size()
+                    << "] <- " << op << " source[" << source.size() )
+
+    if ( op == common::BinaryOp::COPY )
+    {
+        assign( target, source, prefLoc );
+        return;
+    }
+
     SCAI_ASSERT_ERROR( common::isBinarySupported<TargetValueType>( op ),
                        op << " not supported for " << TypeTraits<TargetValueType>::id() )
 
-    // set should be available on interface for each loc
+    SCAI_ASSERT_EQ_ERROR( target.size(), source.size(), "array size mismatch for set( op = " << op << " )" )
 
     static LAMAKernel<UtilKernelTrait::set<TargetValueType, SourceValueType> > set;
 
@@ -122,36 +166,19 @@ void HArrayUtils::setArrayImpl(
 
     if ( !loc )
     {
-        if ( op == BinaryOp::COPY )
-        {
-            // if no context is given we assign where source has a valid copy available
-            loc = source.getValidContext();
-        }
-        else
-        {
-            // if no context is given we assign where target has a valid copy available
-            loc = target.getValidContext();
-        }
+        // if no context is given we assign where target has a valid copy available
+        loc = target.getValidContext();
     }
 
-    set.getSupportedContext( loc );
+    set.getSupportedContext( loc );  // just in case, but set should be available on interface for each loc
 
     const IndexType n = source.size();
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    if ( op == BinaryOp::COPY )
-    {
-        ReadAccess<SourceValueType> sourceVals( source, loc );
-        WriteOnlyAccess<TargetValueType> targetVals( target, loc, n );
-        set[loc]( targetVals.get(), sourceVals.get(), n, op );
-    }
-    else
-    {
-        ReadAccess<SourceValueType> sourceVals( source, loc );
-        WriteAccess<TargetValueType> targetVals( target, loc );
-        set[loc]( targetVals.get(), sourceVals.get(), n, op );
-    }
+    ReadAccess<SourceValueType> sourceVals( source, loc );
+    WriteAccess<TargetValueType> targetVals( target, loc );
+    set[loc]( targetVals.get(), sourceVals.get(), n, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -187,7 +214,7 @@ void HArrayUtils::appendArray(
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::setArraySection(
+void HArrayUtils::_setArraySection(
     _HArray& target,
     const IndexType targetOffset,
     const IndexType targetStride,
@@ -208,7 +235,7 @@ void HArrayUtils::setArraySection(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void HArrayUtils::setArraySectionImpl(
+void HArrayUtils::setArraySection(
     HArray<TargetValueType>& target,
     const IndexType targetOffset,
     const IndexType targetStride,
@@ -263,7 +290,7 @@ void HArrayUtils::_gather(
 /* --------------------------------------------------------------------------- */
 
 template<typename SourceValueType>
-void HArrayUtils::sparseGather(
+void HArrayUtils::_sparseGather(
     _HArray& target,
     const SourceValueType sourceZeroValue,
     const HArray<SourceValueType>& sourceNonZeroValues,
@@ -272,7 +299,7 @@ void HArrayUtils::sparseGather(
     const BinaryOp op,
     const ContextPtr prefLoc )
 {
-    // use metaprogramming to call sparseGatherImpl version with the correct value type for target
+    // use metaprogramming to call sparseGather version with the correct value type for target
 
     mepr::UtilsWrapperT<SourceValueType, SCAI_ARRAY_TYPES_HOST_LIST>::
            sparseGather( target, sourceZeroValue, sourceNonZeroValues, sourceNonZeroIndexes, indexes, op, prefLoc );
@@ -282,7 +309,7 @@ void HArrayUtils::sparseGather(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void HArrayUtils::sparseGatherImpl(
+void HArrayUtils::sparseGather(
     HArray<TargetValueType>& target,
     const SourceValueType sourceZeroValue,
     const HArray<SourceValueType>& sourceNonZeroValues,
@@ -1262,7 +1289,7 @@ void HArrayUtils::setRandom( _HArray& array,
                              const IndexType bound,
                              const ContextPtr prefLoc )
 {
-    // use meta-programming to call fillRandomImpl<ValueType> with the type of array
+    // use meta-programming to call fillRandom<ValueType> with the type of array
 
     mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::fillRandom( array, bound, 1.0f, prefLoc );
 }
@@ -1274,7 +1301,7 @@ void HArrayUtils::setSparseRandom( _HArray& array,
                                    const IndexType bound,
                                    const ContextPtr prefLoc )
 {
-    // use meta-programming to call fillRandomImpl<ValueType> with the type of array
+    // use meta-programming to call fillRandom<ValueType> with the type of array
 
     mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::fillRandom( array, bound, fillRate, prefLoc );
 }
@@ -1282,10 +1309,10 @@ void HArrayUtils::setSparseRandom( _HArray& array,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::fillRandomImpl( HArray<ValueType>& array,
-                                  const IndexType bound,
-                                  const float fillRate,
-                                  const ContextPtr prefLoc )
+void HArrayUtils::fillRandom( HArray<ValueType>& array,
+                              const IndexType bound,
+                              const float fillRate,
+                              const ContextPtr prefLoc )
 {
     ContextPtr loc = Context::getHostPtr();   // currently only available on host
 
@@ -1944,7 +1971,7 @@ void HArrayUtils::buildSparseArrayZero(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetType, typename SourceType>
-void HArrayUtils::buildSparseArrayImpl(
+void HArrayUtils::buildSparseArray(
     HArray<TargetType>& sparseArray,
     HArray<IndexType>& sparseIndexes,
     const HArray<SourceType>& denseArray,
@@ -2510,7 +2537,7 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<IndexType>&,                                         \
             const BinaryOp,                                                          \
             const hmemo::ContextPtr );                                               \
-    template void HArrayUtils::sparseGatherImpl<TargetType, SourceType>(             \
+    template void HArrayUtils::sparseGather<TargetType, SourceType>(                 \
             hmemo::HArray<TargetType>&,                                              \
             const SourceType,                                                        \
             const hmemo::HArray<SourceType>&,                                        \
@@ -2518,12 +2545,16 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<IndexType>&,                                         \
             const BinaryOp,                                                          \
             const hmemo::ContextPtr );                                               \
-    template void HArrayUtils::setArrayImpl<TargetType, SourceType>(                 \
+    template void HArrayUtils::assign<TargetType, SourceType>(                       \
+            hmemo::HArray<TargetType>&,                                              \
+            const hmemo::HArray<SourceType>&,                                        \
+            hmemo::ContextPtr );                                                     \
+    template void HArrayUtils::setArray<TargetType, SourceType>(                     \
             hmemo::HArray<TargetType>&,                                              \
             const hmemo::HArray<SourceType>&,                                        \
             const BinaryOp,                                                          \
             hmemo::ContextPtr );                                                     \
-    template void HArrayUtils::setArraySectionImpl<TargetType, SourceType>(          \
+    template void HArrayUtils::setArraySection<TargetType, SourceType>(              \
             hmemo::HArray<TargetType>&, const IndexType, const IndexType,            \
             const hmemo::HArray<SourceType>&, const IndexType, const IndexType,      \
             const IndexType,                                                         \
@@ -2536,7 +2567,7 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<SourceType>&,                                        \
             const BinaryOp,                                                          \
             const hmemo::ContextPtr );                                               \
-    template void HArrayUtils::buildSparseArrayImpl<TargetType, SourceType>(         \
+    template void HArrayUtils::buildSparseArray<TargetType, SourceType>(             \
             hmemo::HArray<TargetType>&,                                              \
             hmemo::HArray<IndexType>&,                                               \
             const hmemo::HArray<SourceType>&,                                        \
@@ -2546,7 +2577,7 @@ void HArrayUtils::buildComplex(
 /** Makro for the instantiation of routines with one template argument for the value type. */
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                              \
-    template void HArrayUtils::sparseGather<ValueType>(                 \
+    template void HArrayUtils::_sparseGather<ValueType>(                \
             hmemo::_HArray&,                                            \
             const ValueType,                                            \
             const hmemo::HArray<ValueType>&,                            \
@@ -2684,7 +2715,7 @@ void HArrayUtils::buildComplex(
             ValueType,                                                  \
             IndexType,                                                  \
             hmemo::ContextPtr );                                        \
-    template void HArrayUtils::fillRandomImpl<ValueType>(               \
+    template void HArrayUtils::fillRandom<ValueType>(                   \
             hmemo::HArray<ValueType>&,                                  \
             IndexType,                                                  \
             float,                                                      \

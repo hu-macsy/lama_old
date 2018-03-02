@@ -1241,9 +1241,9 @@ void CSRStorage<ValueType>::assignCSR( const CSRStorage<OtherValueType>& other )
 
     _MatrixStorage::setDimension( other.getNumRows(), other.getNumColumns() );
 
-    HArrayUtils::setArrayImpl( mIA, other.getIA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::assign( mIA, other.getIA(), ctx );
+    HArrayUtils::assign( mJA, other.getJA(), ctx );
+    HArrayUtils::assign( mValues, other.getValues(), ctx );
 
     mSortedRows = false; // other.mSortedRows;
 

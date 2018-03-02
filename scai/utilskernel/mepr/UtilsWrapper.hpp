@@ -241,7 +241,7 @@ struct UtilsWrapper<common::mepr::TypeList<THead, TList> >
         {
             // now type of array is known, so we can make a safe cast
             hmemo::HArray<THead>& typedArray = reinterpret_cast<hmemo::HArray<THead>&>( array );
-            HArrayUtils::fillRandomImpl( typedArray, bound, fillRate, loc );
+            HArrayUtils::fillRandom( typedArray, bound, fillRate, loc );
         }
         else
         {
@@ -262,7 +262,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         if ( common::getScalarType<H>() ==  source.getValueType() )
         {
             const hmemo::HArray<H>& typedSource = reinterpret_cast<const hmemo::HArray<H>&>( source );
-            HArrayUtils::setArrayImpl( target, typedSource, op, loc );
+            HArrayUtils::setArray( target, typedSource, op, loc );
         }
         else
         {
@@ -279,7 +279,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         {
             const hmemo::HArray<H>& typedSource = reinterpret_cast<const hmemo::HArray<H>&>( source );
 
-            HArrayUtils::setArraySectionImpl<ValueType, H>( typedTarget, targetOffset, targetInc,
+            HArrayUtils::setArraySection<ValueType, H>( typedTarget, targetOffset, targetInc,
                     typedSource, sourceOffset, sourceInc,
                     n, op, loc );
         }
@@ -322,7 +322,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         if ( common::getScalarType<H>() ==  target.getValueType() )
         {
             hmemo::HArray<H>& typedTarget = reinterpret_cast<hmemo::HArray<H>&>( target );
-            HArrayUtils::sparseGatherImpl( typedTarget, sourceZ, sourceVA, sourceIA, indexes, op, prefLoc );
+            HArrayUtils::sparseGather( typedTarget, sourceZ, sourceVA, sourceIA, indexes, op, prefLoc );
         }
         else
         {
@@ -383,7 +383,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
         {
             const hmemo::HArray<H>& typedDenseArray = reinterpret_cast<const hmemo::HArray<H>&>( denseArray );
             H zero = 0;
-            HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, typedDenseArray, zero, prefLoc );
+            HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, typedDenseArray, zero, prefLoc );
         }
         else
         {

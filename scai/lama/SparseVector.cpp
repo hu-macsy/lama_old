@@ -455,7 +455,7 @@ void SparseVector<ValueType>::buildLocalValues(
 
         utilskernel::LArray<ValueType> myDenseValues( size, mZeroValue );
         HArrayUtils::scatter( myDenseValues, mNonZeroIndexes, UNIQUE, mNonZeroValues, common::BinaryOp::COPY, loc );
-        HArrayUtils::setArray( values, myDenseValues, op, loc );
+        HArrayUtils::_setArray( values, myDenseValues, op, loc );
     }
 }
 
@@ -468,7 +468,7 @@ void SparseVector<ValueType>::gatherLocalValues(
     const common::BinaryOp op,
     ContextPtr loc ) const
 {
-    HArrayUtils::sparseGather( values, mZeroValue, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
+    HArrayUtils::_sparseGather( values, mZeroValue, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -494,7 +494,7 @@ void SparseVector<ValueType>::setDenseValuesImpl( const hmemo::HArray<OtherValue
     SCAI_LOG_INFO( logger, "setDenseValues<" << common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() << ">"
                             << ", local size = " << size << ", zero = " << mZeroValue )
 
-    utilskernel::HArrayUtils::buildSparseArrayImpl( mNonZeroValues, mNonZeroIndexes, values, zero, getContextPtr() );
+    utilskernel::HArrayUtils::buildSparseArray( mNonZeroValues, mNonZeroIndexes, values, zero, getContextPtr() );
 
     SCAI_ASSERT_EQ_DEBUG( mNonZeroValues.size(), mNonZeroIndexes.size(), "serious mismatch for sparse arrays." )
 }
@@ -554,7 +554,7 @@ void SparseVector<ValueType>::fillSparseData( const HArray<IndexType>& nonZeroIn
         HArray<ValueType> newValues;
 
         HArrayUtils::setArray( newIndexes, nonZeroIndexes, common::BinaryOp::COPY, getContextPtr() );
-        HArrayUtils::setArray( newValues, nonZeroValues, common::BinaryOp::COPY, getContextPtr() );
+        HArrayUtils::_setArray( newValues, nonZeroValues, common::BinaryOp::COPY, getContextPtr() );
 
         // then we have to merge zero indexes
 
@@ -575,7 +575,7 @@ void SparseVector<ValueType>::fillSparseData( const HArray<IndexType>& nonZeroIn
     else
     {
         HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, common::BinaryOp::COPY, getContextPtr() );
-        HArrayUtils::setArray( mNonZeroValues, nonZeroValues, common::BinaryOp::COPY, getContextPtr() );
+        HArrayUtils::_setArray( mNonZeroValues, nonZeroValues, common::BinaryOp::COPY, getContextPtr() );
 
         HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
         HArrayUtils::elimDoubles( mNonZeroIndexes, mNonZeroValues, op );

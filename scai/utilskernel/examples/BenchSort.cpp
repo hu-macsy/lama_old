@@ -61,7 +61,7 @@ void bucketSort( const IndexType N )
     HArrayUtils::bucketSort( offsets, perm, values, nBuckets );
 
     HArray<IndexType> sortedValues;
-    HArrayUtils::gatherImpl( sortedValues, values, perm, common::BinaryOp::COPY );
+    HArrayUtils::gather( sortedValues, values, perm, common::BinaryOp::COPY );
 
     double time1 = common::Walltime::get() - start;
 

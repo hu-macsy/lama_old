@@ -72,9 +72,15 @@ public:
      *  \endcode
      *  Size of target array will be the same as the source array.
      */
-    static void assign(
+    static void _assign(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename TargetValueType, typename SourceValueType>
+    static void assign(
+        hmemo::HArray<TargetValueType>& target,
+        const hmemo::HArray<SourceValueType>& source,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -114,7 +120,7 @@ public:
      *  As sourceNonZeroIndexes is sorted (ascending), binary search can be applied to find j for i
      */
     template<typename SourceValueType>
-    static void sparseGather(
+    static void _sparseGather(
         hmemo::_HArray& target,
         const SourceValueType sourceZeroValue,
         const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
@@ -138,7 +144,7 @@ public:
      *  @brief Gathering (unstructured read of values) for sparse data, typed version
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void sparseGatherImpl(
+    static void sparseGather(
         hmemo::HArray<TargetValueType>& target,
         const SourceValueType sourceZero,
         const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
@@ -277,14 +283,14 @@ public:
     /*
      * Implementation of functions
      */
-    static void setArray(
+    static void _setArray(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename TargetValueType, typename SourceValueType>
-    static void setArrayImpl(
+    static void setArray(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
         const common::BinaryOp op = common::BinaryOp::COPY,
@@ -303,7 +309,7 @@ public:
      *  @param context is the preferred context where option is done
      */
 
-    static void setArraySection(
+    static void _setArraySection(
         hmemo::_HArray& target,
         const IndexType targetOffset,
         const IndexType targetStride,
@@ -317,7 +323,7 @@ public:
     /** Typed version for setting sectioned arrays */
 
     template<typename TargetValueType, typename SourceValueType>
-    static void setArraySectionImpl(
+    static void setArraySection(
         hmemo::HArray<TargetValueType>& target,
         const IndexType targetOffset,
         const IndexType targetStride,
@@ -765,10 +771,10 @@ public:
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
      */
     template<typename ValueType>
-    static void fillRandomImpl( hmemo::HArray<ValueType>& array,
-                                IndexType bound,
-                                float fillRate,
-                                hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void fillRandom( hmemo::HArray<ValueType>& array,
+                            IndexType bound,
+                            float fillRate,
+                            hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Create an array of sparse indexes where an index value appears only with a certain probability.
      *
@@ -789,7 +795,7 @@ public:
     /** Build sparse indexes only, useful if sparseArray is not really needed */
 
     template<typename TargetType, typename SourceType>
-    static void buildSparseArrayImpl(
+    static void buildSparseArray(
         hmemo::HArray<TargetType>& sparseArray,
         hmemo::HArray<IndexType>& sparseIndexes,
         const hmemo::HArray<SourceType>& denseArray,

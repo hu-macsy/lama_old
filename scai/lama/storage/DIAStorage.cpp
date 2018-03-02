@@ -247,8 +247,8 @@ void DIAStorage<ValueType>::assignDIA( const DIAStorage<OtherValueType>& other )
     
     _MatrixStorage::_assign( other );     // assign member variables of base class
     
-    HArrayUtils::setArrayImpl( mOffset, other.getOffsets(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::assign( mOffset, other.getOffsets(), ctx );
+    HArrayUtils::assign( mValues, other.getValues(), ctx );
     
     _MatrixStorage::resetDiagonalProperty();
     

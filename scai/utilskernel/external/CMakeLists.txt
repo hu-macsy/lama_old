@@ -34,7 +34,7 @@
 
 ### Add classes and header files ###
 
-if ( USE_FFTW )
+if ( USE_FFTW  AND SCAI_USE_COMPLEX )
 
     message( STATUS "add fftw classes" )
 

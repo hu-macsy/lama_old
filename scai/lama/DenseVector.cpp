@@ -714,7 +714,7 @@ void DenseVector<ValueType>::setDenseValues( const _HArray& values )
 
     SCAI_ASSERT_EQ_ERROR( localSize, values.size(), "size of array with local values does not match local size of distribution" )
 
-    HArrayUtils::assign( mLocalValues, values, getContextPtr() );
+    HArrayUtils::_assign( mLocalValues, values, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1622,15 +1622,7 @@ void DenseVector<ValueType>::buildLocalValues(
      ContextPtr prefLoc ) const
 
 {
-    if ( op == BinaryOp::COPY )
-    {
-        HArrayUtils::assign( localValues, mLocalValues, prefLoc );
-    }
-    else
-    {
-        SCAI_ASSERT_EQ_ERROR( localValues.size(), mLocalValues.size(), "size mismatch" )
-        HArrayUtils::setArray( localValues, mLocalValues, op, prefLoc );
-    }
+    HArrayUtils::_setArray( localValues, mLocalValues, op, prefLoc );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1782,7 +1774,7 @@ static void localize( HArray<ValueType>& out, const HArray<ValueType>& in, const
 
     if ( dist.isReplicated() )
     {
-        HArrayUtils::setArrayImpl( out, in, common::BinaryOp::COPY, ctx );
+        HArrayUtils::assign( out, in, ctx );
     }
     else
     {

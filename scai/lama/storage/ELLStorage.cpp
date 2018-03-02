@@ -297,9 +297,9 @@ void ELLStorage<ValueType>::assignELL( const ELLStorage<OtherValueType>& other )
 
     mNumValuesPerRow = other.getNumValuesPerRow();
 
-    HArrayUtils::setArrayImpl( mIA, other.getIA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::assign( mIA, other.getIA(), ctx );
+    HArrayUtils::assign( mJA, other.getJA(), ctx );
+    HArrayUtils::assign( mValues, other.getValues(), ctx );
 
     _MatrixStorage::resetDiagonalProperty();
 
@@ -405,9 +405,11 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
 
     const ContextPtr loc = this->getContextPtr();
 
-    HArrayUtils::setSameValue( mIA, size, IndexType( 1 ), loc );
-    HArrayUtils::setSequence( mJA, IndexType( 0 ), IndexType( 1 ), size, getContextPtr() );
-    HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), loc );
+    // Note: specify template param explicitly as type deduce might fail due to 0, 1
+
+    HArrayUtils::setSameValue<IndexType>( mIA, size, 1, loc );
+    HArrayUtils::setSequence<IndexType>( mJA, 0, 1, size, getContextPtr() );
+    HArrayUtils::setSameValue<ValueType>( mValues, size, 1, loc );
 
     mDiagonalProperty = true;
 
@@ -429,7 +431,7 @@ void ELLStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
 
     HArrayUtils::setSameValue<IndexType>( mIA, size, 1, getContextPtr() );
     HArrayUtils::setSequence<IndexType>( mJA, 0, 1, size, getContextPtr() );
-    HArrayUtils::setArrayImpl<ValueType, ValueType>( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
+    HArrayUtils::assign( mValues, diagonal, getContextPtr() );
 
     mDiagonalProperty = true; // obviously given for identity matrix
 
@@ -515,7 +517,7 @@ void ELLStorage<ValueType>::buildCSR(
     IndexType numValues = 0;
     ia.clear();
     ia.reserve( context, getNumRows() + 1 );  // reserve one more entry
-    HArrayUtils::setArrayImpl( ia, mIA, common::BinaryOp::COPY, context );
+    HArrayUtils::assign( ia, mIA, context );
 
     if ( ja == NULL || values == NULL )
     {
@@ -677,11 +679,11 @@ void ELLStorage<ValueType>::setELLData(
     mNumValuesPerRow = numValuesPerRow;
 
     ContextPtr loc = getContextPtr();
-    HArrayUtils::setArrayImpl( mIA, ia, common::BinaryOp::COPY, loc );
-    HArrayUtils::setArrayImpl( mJA, ja, common::BinaryOp::COPY, loc );
+    HArrayUtils::assign( mIA, ia, loc );
+    HArrayUtils::assign( mJA, ja, loc );
 
-    // setArray must be used here instead of setArrayImpl as values is untyped
-    HArrayUtils::setArray( mValues, values, common::BinaryOp::COPY, loc );  // also type conversion
+    // _assign must be used here instead of assign as values are untyped
+    HArrayUtils::_assign( mValues, values, loc );  // can deal with type conversion
 
     // fill up my arrays ja and values to make matrix-multiplication fast
     fillValues();

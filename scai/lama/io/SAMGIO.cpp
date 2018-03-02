@@ -390,7 +390,7 @@ void SAMGIO::readSparseImpl(
     readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     ValueType zero = 0;
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray, zero );
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
 /* --------------------------------------------------------------------------------- */

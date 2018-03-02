@@ -257,7 +257,7 @@ void TextIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySectionImpl( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
 
         array.swap( block );
     }
@@ -298,7 +298,7 @@ void TextIO::readSparseImpl(
     readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     ValueType zeroValue = 0;
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray, zeroValue );
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -362,8 +362,8 @@ void TextIO::readData(
 
     ContextPtr ctx = Context::getHostPtr();
 
-    HArrayUtils::setArrayImpl( ia, dIA );  // conversion from DefaultReal to IndexType
-    HArrayUtils::setArrayImpl( ja, dJA );  // conversion from DefaultReal to IndexType
+    HArrayUtils::assign( ia, dIA );  // conversion from DefaultReal to IndexType
+    HArrayUtils::assign( ja, dJA );  // conversion from DefaultReal to IndexType
 
     IndexType minRowIndex = HArrayUtils::reduce( ia, common::BinaryOp::MIN );
 

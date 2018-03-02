@@ -500,7 +500,7 @@ void Communicator::joinArray(
         {
             // my turn for broadcast
 
-            utilskernel::HArrayUtils::assign( bufferArray, localArray );
+            utilskernel::HArrayUtils::_assign( bufferArray, localArray );
         }
 
         bcastArray( bufferArray, p );

@@ -731,7 +731,7 @@ void MatrixMarketIO::readSparseImpl(
         HArray<ValueType> denseArray;
         inFile.readFormatted( denseArray, size );
         ValueType zero = 0;
-        HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray, zero );
+        HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
     }
 
     if ( inFile.eof() )

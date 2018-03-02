@@ -215,7 +215,7 @@ public:
                      hmemo::ContextPtr context = hmemo::Context::getHostPtr() )
     {
         hmemo::HArrayRef<OtherValueType> tmp( n, values );
-        HArrayUtils::assign( *this, tmp, context );
+        HArrayUtils::_assign( *this, tmp, context );
     }
 
     /** Override the default copy construtor */
@@ -242,19 +242,19 @@ public:
 
     LArray( const hmemo::_HArray& other ) : hmemo::HArray<ValueType>()
     {
-        HArrayUtils::assign( *this, other );
+        HArrayUtils::_assign( *this, other );
     }
 
     /** Copy constructor that works with HArray of any type and specifies context */
 
     LArray( const hmemo::_HArray& other, hmemo::ContextPtr context ) : hmemo::HArray<ValueType>()
     {
-        HArrayUtils::assign( *this, other, context );
+        HArrayUtils::_assign( *this, other, context );
     }
 
     LArray& operator= ( const LArray<ValueType>& other )
     {
-        HArrayUtils::assign( *this, other );
+        HArrayUtils::_assign( *this, other );
         return *this;
     }
 
@@ -276,13 +276,13 @@ public:
 
     LArray& operator= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::assign( *this, other );
+        HArrayUtils::_assign( *this, other );
         return *this;
     }
 
     LArray& operator*= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::setArray( *this, other, common::BinaryOp::MULT );
+        HArrayUtils::_setArray( *this, other, common::BinaryOp::MULT );
         return *this;
     }
 
@@ -294,7 +294,7 @@ public:
 
     LArray& operator/= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::setArray( *this, other, common::BinaryOp::DIVIDE );
+        HArrayUtils::_setArray( *this, other, common::BinaryOp::DIVIDE );
         return *this;
     }
 
@@ -306,7 +306,7 @@ public:
 
     LArray& operator+= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::setArray( *this, other, common::BinaryOp::ADD );
+        HArrayUtils::_setArray( *this, other, common::BinaryOp::ADD );
         return *this;
     }
 
@@ -318,7 +318,7 @@ public:
 
     LArray& operator-= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::setArray( *this, other, common::BinaryOp::SUB );
+        HArrayUtils::_setArray( *this, other, common::BinaryOp::SUB );
         return *this;
     }
 
@@ -362,12 +362,12 @@ public:
      */
     void setSparseRandom( float fillRate, IndexType bound, hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
-        HArrayUtils::fillRandomImpl( *this, bound, fillRate, context );
+        HArrayUtils::fillRandom( *this, bound, fillRate, context );
     }
 
     void setRandom( IndexType bound, hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
-        HArrayUtils::fillRandomImpl( *this, bound, 1.0f, context );
+        HArrayUtils::fillRandom( *this, bound, 1.0f, context );
     }
 
     /** Get the minimal value of an array */

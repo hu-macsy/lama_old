@@ -40,6 +40,8 @@
 
 #include <scai/common/macros/instantiate.hpp>
 
+#include <algorithm>
+
 namespace scai
 {
 

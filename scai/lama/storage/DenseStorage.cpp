@@ -142,8 +142,8 @@ void DenseStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo:
 
     HArray<ValueType> row;
     getRow( row, i );
-    ValueType zero = 0; 
-    HArrayUtils::buildSparseArrayImpl( values, jA, row, zero, mContext );
+    ValueType zero = 0;
+    HArrayUtils::buildSparseArray( values, jA, row, zero, mContext );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -154,7 +154,7 @@ void DenseStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hme
     HArray<ValueType> col;
     getColumn( col, j );
     ValueType zero = 0;
-    HArrayUtils::buildSparseArrayImpl( values, iA, col, zero, mContext );
+    HArrayUtils::buildSparseArray( values, iA, col, zero, mContext );
 }
 
 /* --------------------------------------------------------------------------- */

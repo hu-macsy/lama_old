@@ -146,7 +146,9 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
             safer_memcpy( wData.get(), data, nBytes );
         }
 
-        HArrayUtils::assign( array, tmp );
+        // Attention: not all conversions might be supported
+
+        HArrayUtils::_assign( array, tmp );
     }
 }
 
@@ -380,7 +382,7 @@ void MatlabIO::readSparseImpl(
     readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     ValueType zeroValue = 0;
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray, zeroValue );
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
 }
 
 /* --------------------------------------------------------------------------------- */

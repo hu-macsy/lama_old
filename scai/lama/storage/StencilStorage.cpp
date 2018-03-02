@@ -355,7 +355,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
     }
     else
     {
-        HArrayUtils::assign( csrValues, typedValues );
+        HArrayUtils::_assign( csrValues, typedValues );  // conversion required
     }
 }
 

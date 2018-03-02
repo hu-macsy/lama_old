@@ -957,7 +957,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
         ValueType zero = 0;
 
-        utilskernel::HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, array, zero );
+        utilskernel::HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, array, zero );
 
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outArraySparse_" + typeName) + fileSuffix;

@@ -115,14 +115,14 @@ BOOST_AUTO_TEST_CASE( untypedTest )
         {
             BOOST_CHECK_THROW(
             {
-                HArrayUtils::assign( array1, order );
+                HArrayUtils::_assign( array1, order );
             }, common::Exception );
 
             continue;
         }
         else
         {
-            HArrayUtils::assign( array1, order );
+            HArrayUtils::_assign( array1, order );
         }
 
         for ( size_t i2 = 0; i2 < allArrays2.size(); ++i2 )
@@ -1353,7 +1353,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArrayFailTest, ValueType, all_types )
     {
         SCAI_LOG_INFO( logger, "supported value type " << TypeTraits<ValueType>::id() << " can be used in HArray utilities" )
 
-        HArrayUtils::setArray( y, x, BinaryOp::COPY, loc );
+        HArrayUtils::_setArray( y, x, BinaryOp::COPY, loc );
 
         BOOST_REQUIRE_EQUAL( y.size(), x.size() );
 
@@ -1372,7 +1372,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArrayFailTest, ValueType, all_types )
 
         BOOST_CHECK_THROW(
         {
-            HArrayUtils::setArray( y, x, BinaryOp::COPY, loc );
+            HArrayUtils::_setArray( y, x, BinaryOp::COPY, loc );
         },
         common::Exception );
     }
@@ -1631,7 +1631,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
 
     ValueType sparseZero = 0;
 
-    HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, denseArray, sparseZero, loc );
+    HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, denseArray, sparseZero, loc );
 
     BOOST_CHECK_EQUAL( sparseArray.size(), expectedNNZ );
 
@@ -1664,7 +1664,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
 
     sparseZero = 1;
 
-    HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, denseArray, sparseZero, loc );
+    HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, denseArray, sparseZero, loc );
 
     BOOST_CHECK_EQUAL( sparseArray.size(), expectedNNZ1 );
 }
