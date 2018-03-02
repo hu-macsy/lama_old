@@ -251,7 +251,8 @@ public:
      *  @param[in]  y       second input array
      *  @param[in]  prefLoc location where operation should be done if possible
      *
-     *  Any alias of the arrays x, y, result is supported.
+     *  Any alias of the arrays x, y, result is supported. If no alias exists
+     *  result will be allocated with the same size as x and y.
      */
 
     template<typename ValueType>

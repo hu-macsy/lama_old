@@ -947,8 +947,7 @@ void HArrayUtils::arrayPlusScalar(
 
     if ( alpha == common::Constants::ZERO ) // result = b
     {
-        result.resize( x.size() );
-        setScalar( result, beta, BinaryOp::COPY, prefLoc );
+        setSameValue( result, x.size(), beta, prefLoc );
         return;
     }
 
@@ -968,7 +967,7 @@ void HArrayUtils::arrayPlusScalar(
     {
         if ( alpha == common::Constants::ZERO ) // result = 0
         {
-            setScalar( result, ValueType( 0 ), BinaryOp::COPY, prefLoc );
+            setSameValue<ValueType>( result, x.size(), 0, prefLoc );
         }
         else // result = alpha * x
         {
@@ -1005,6 +1004,8 @@ void HArrayUtils::arrayPlusScalar(
     scaleVectorAddScalar[loc]( wResult.get(), rX.get(), n, alpha, beta );
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void HArrayUtils::arrayTimesArray(
     HArray<ValueType>& result,
@@ -1018,7 +1019,9 @@ void HArrayUtils::arrayTimesArray(
 
     if ( alpha == common::Constants::ZERO )
     {
-        setScalar( result, ValueType( 0 ), BinaryOp::COPY, prefLoc );
+        // result = alpha * x * y -> result = 0
+
+        setSameValue<ValueType>( result, n, 0, prefLoc );
         return;
     }
 
@@ -1032,6 +1035,7 @@ void HArrayUtils::arrayTimesArray(
     }
 
     binaryOp.getSupportedContext( loc );
+
     // no alias checks are done here
     {
         ReadAccess<ValueType> xAccess( x, loc );
