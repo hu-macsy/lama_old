@@ -145,9 +145,9 @@ void HArrayUtils::setArray(
     const BinaryOp op,
     const ContextPtr prefLoc )
 {
-    SCAI_LOG_ERROR( logger, "setArray<" << common::TypeTraits<TargetValueType>::id() << 
+    SCAI_LOG_DEBUG( logger, "setArray<" << common::TypeTraits<TargetValueType>::id() << 
                     ", " << common::TypeTraits<SourceValueType>::id() << ">, target[ " << target.size()
-                    << "] <- " << op << " source[" << source.size() )
+                    << "] <- " << op << " source[" << source.size() << "]" )
 
     if ( op == common::BinaryOp::COPY )
     {

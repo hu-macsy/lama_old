@@ -48,8 +48,8 @@ void setupSmoothMatrix( CSRSparseMatrix<double>& L, const IndexType ny, const In
 
     common::Grid2D grid( ny, nz );
 
-    grid.setBorderType( 0, common::Grid::BORDER_REFLECTING );
-    grid.setBorderType( 1, common::Grid::BORDER_REFLECTING );
+    grid.setBorderType( 0, common::Grid::BORDER_ABSORBING );
+    grid.setBorderType( 1, common::Grid::BORDER_ABSORBING );
 
     StencilMatrix<double> stencilMatrix( grid, stencil );
 
