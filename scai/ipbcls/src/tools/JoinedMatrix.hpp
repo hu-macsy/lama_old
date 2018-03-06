@@ -80,7 +80,7 @@ public:
         // SCAI_ASSERT result is JoinedVector
         // SCAI_ASSERT if beta != 0 y is JoinedVector
 
-        SCAI_LOG_ERROR( logger, "joined matrix, result = " << alpha << " * A * x + " << beta << " * y " )
+        SCAI_LOG_INFO( logger, "joined matrix, result = " << alpha << " * A * x + " << beta << " * y " )
     
         if ( !common::isTranspose( op ) )
         {
@@ -172,11 +172,11 @@ public:
         stream << "JoinedMatrix( " << mA1 << ", " << mA2 << " )";
     }
 
-    /** Joined matrix has joined row distribution, so we need a new method for temporary column vector. */
+    /** Joined matrix has joined row distribution, so we need a new method for temporary row vector. */
 
-    virtual Vector<ValueType>* newSourceVector() const
+    virtual Vector<ValueType>* newTargetVector() const
     {
-        return new JoinedVector<ValueType>( mA1.newSourceVector(), mA2.newSourceVector() );
+        return new JoinedVector<ValueType>( mA1.newTargetVector(), mA2.newTargetVector() );
     }
 
 private:

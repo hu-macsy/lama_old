@@ -230,7 +230,7 @@ public:
 
 	virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& v1, const ValueType& beta, const Vector<ValueType>& v2 )
     {
-        SCAI_LOG_ERROR( logger, "joinedVector = " << alpha << " * v1 + " << beta << " * v2" )
+        SCAI_LOG_INFO( logger, "joinedVector = " << alpha << " * v1 + " << beta << " * v2" )
 
         SCAI_ASSERT_EQ_ERROR( v1.getDistribution(), this->getDistribution(), "distribution mismatch" );
         SCAI_ASSERT_EQ_ERROR( v2.getDistribution(), this->getDistribution(), "distribution mismatch" );
@@ -242,9 +242,18 @@ public:
         mV2.vectorPlusVector( alpha, jV1.second(), beta, jV2.second() );
     }
 
-	virtual void vectorTimesVector( const ValueType&, const Vector<ValueType>&, const Vector<ValueType>& )
+	virtual void vectorTimesVector( const ValueType& alpha, const Vector<ValueType>& v1, const Vector<ValueType>& v2 )
     {
-        COMMON_THROWEXCEPTION( "unsupported" )
+        SCAI_LOG_INFO( logger, "joinedVector = " << alpha << " * v1 * v2, v1 = " << v1 << ", v2 = " << v2 )
+
+        SCAI_ASSERT_EQ_ERROR( v1.getDistribution(), this->getDistribution(), "distribution mismatch" );
+        SCAI_ASSERT_EQ_ERROR( v2.getDistribution(), this->getDistribution(), "distribution mismatch" );
+
+        const JoinedVector& jV1 = reinterpret_cast<const JoinedVector&>( v1 );
+        const JoinedVector& jV2 = reinterpret_cast<const JoinedVector&>( v2 );
+
+        mV1.vectorTimesVector( alpha, jV1.first(), jV2.first() );
+        mV2.vectorTimesVector( alpha, jV1.second(), jV2.second() );
     }
 
 	virtual void vectorPlusScalar(const ValueType&, const Vector<ValueType>&, const ValueType&)

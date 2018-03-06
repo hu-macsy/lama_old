@@ -45,7 +45,7 @@ namespace lama
 
 {
 
-/** The CentralPathHessian matrix stands for H = 2 * tau A' * A + D 
+/** The CentralPathHessian matrix stands for H = 2 * tau transpose( A ) * A + D 
  *
  *  This matrix is used for a solver that computes the search direction in each 
  *  iteration step of an iterative method in least square with box constraints.
@@ -99,20 +99,20 @@ public:
         Vector<ValueType>& tmpSource = *tmpSourcePtr;
         Vector<ValueType>& tmpTarget = *tmpTargetPtr;
 
-        tmpTarget = alpha * *mD * x; // elmentwise multiplication
+        tmpSource = alpha * *mD * x; // elmentwise multiplication
 
         if ( y != NULL )
         {
             result = beta * *y;
-            result += tmpTarget;
+            result += tmpSource;
         }
         else 
         {
-            result = tmpTarget;
+            result = tmpSource;
         }
 
-        tmpSource = mA * x;
-        result += ( 2 * mTau * alpha ) * transpose( mA ) * tmpSource;
+        tmpTarget = mA * x;
+        result += ( 2 * mTau * alpha ) * transpose( mA ) * tmpTarget;
     }
     
     virtual void matrixTimesVectorDense(

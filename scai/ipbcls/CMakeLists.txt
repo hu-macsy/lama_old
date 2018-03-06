@@ -63,6 +63,9 @@ target_link_libraries( prepare ${SCAI_LIBRARIES} )
 add_executable ( lsbc src/tools/lsbc.cpp)
 target_link_libraries( lsbc ${SCAI_LIBRARIES} ipbcls)
 
+add_executable ( lsbcJoined src/tools/lsbcJoined.cpp)
+target_link_libraries( lsbcJoined ${SCAI_LIBRARIES} ipbcls)
+
 add_executable ( makeImage src/tools/makeImage.cpp )
 target_link_libraries( makeImage ${SCAI_LIBRARIES} )
 
