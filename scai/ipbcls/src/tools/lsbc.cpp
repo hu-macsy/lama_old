@@ -57,6 +57,8 @@ using namespace lama;
  */
 void setDistribution( _Matrix& A )
 {
+    SCAI_REGION( "Main.setDistribution" )
+
     using namespace partitioning;
     using namespace common;
 
@@ -117,10 +119,14 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
+    SCAI_REGION_START( "Main.read" )
+
     auto A  = read<CSRSparseMatrix<double>>( argv[2] );
     auto b  = read<DenseVector<double>>( argv[3] );
     auto lb = read<DenseVector<double>>( argv[4] );
     auto ub = read<DenseVector<double>>( argv[5] );
+
+    SCAI_REGION_END( "Main.read" )
 
     if ( false )
     {
