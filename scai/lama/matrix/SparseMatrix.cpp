@@ -343,6 +343,8 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>& matrix )
 
 {
+    SCAI_REGION( "Mat.Sp.transpose" )
+
     SCAI_LOG_INFO( logger, "transpose sparse matrix with same value type, switch row/col distributions" )
     // assign matrix properties
     _Matrix::setDistributedMatrix( matrix.getColDistributionPtr(), matrix.getRowDistributionPtr() );
