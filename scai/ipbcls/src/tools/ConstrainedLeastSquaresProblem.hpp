@@ -1,5 +1,5 @@
 /**
- * @file ConstrainedLeastSquares.cpp
+ * @file ConstrainedLeastSquaresProblem.hpp
  *
  * @license
  * Copyright (c) 2009-2015

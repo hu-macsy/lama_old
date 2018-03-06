@@ -123,6 +123,7 @@ public:
      *
      * @param[in] rowDist   size and distribution of rows
      * @param[in] colDist   size and distribution of columns
+     * @param[in] ctx       context for memory/operations of this matrix
      *
      * For consistency with the constructors of sparse matrices the values
      * of the dense matrix are initialized with 0 here.

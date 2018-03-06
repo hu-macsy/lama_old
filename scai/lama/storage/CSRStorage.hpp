@@ -128,9 +128,11 @@ public:
      *
      * @param[in] numRows    number of rows
      * @param[in] numColumns number of columns
-     * @param[in] context    specifies optionally the context where storage is located
+     * @param[in] ctx        context where storage is located, optional
      *
      * Attention: DEPRECATED.
+     *
+     * Instead of this constructor you should use the free function zero to create a storage.
      *
      *  \code
      *   CSRStorage<ValueType> csr( m, n, ctx );

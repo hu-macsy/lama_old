@@ -540,7 +540,7 @@ void HArrayUtils::setScalar(
 
 template<typename ValueType>
 void HArrayUtils::setSameValue(
-    HArray<ValueType>& target,
+    HArray<ValueType>& array,
     const IndexType n,
     const ValueType value,
     ContextPtr ctx )
@@ -552,12 +552,12 @@ void HArrayUtils::setSameValue(
     if ( loc == ContextPtr() )
     {
         // default location: where we have valid copy of the data
-        loc = target.getValidContext();
+        loc = array.getValidContext();
     }
 
     setVal.getSupportedContext( loc );
 
-    WriteOnlyAccess<ValueType> wTarget( target, loc, n );
+    WriteOnlyAccess<ValueType> wTarget( array, loc, n );
     SCAI_CONTEXT_ACCESS( loc )
     setVal[loc]( wTarget.get(), n, value, common::BinaryOp::COPY );
 }
@@ -566,14 +566,14 @@ void HArrayUtils::setSameValue(
 
 template<typename ValueType>
 void HArrayUtils::_setSameValue(
-    hmemo::_HArray& target,
+    hmemo::_HArray& array,
     const IndexType n,
     const ValueType val,
     hmemo::ContextPtr ctx )
 {
     // use meta-programming to resolve the type of target array
 
-    mepr::UtilsWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setSameValue( target, n, val, ctx );
+    mepr::UtilsWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setSameValue( array, n, val, ctx );
 }
 
 /* --------------------------------------------------------------------------- */

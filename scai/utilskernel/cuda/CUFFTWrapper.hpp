@@ -1,5 +1,5 @@
 /**
- * @file utilskernel/cuda/CUBLASWrapper.hpp
+ * @file utilskernel/cuda/CUFFTWrapper.hpp
  *
  * @license
  * Copyright (c) 2009-2016

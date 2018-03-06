@@ -80,8 +80,6 @@ scai_project (
     HEADERS
 
         OmegaSolver
-        MatrixWithT
-
     )
 
 ## add subdirectories

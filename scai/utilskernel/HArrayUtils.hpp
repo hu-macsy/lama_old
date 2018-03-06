@@ -350,7 +350,7 @@ public:
      */
     template<typename ValueType>
     static void setSameValue(
-        hmemo::HArray<ValueType>& target,
+        hmemo::HArray<ValueType>& array,
         const IndexType n,
         const ValueType val,
         hmemo::ContextPtr ctx );
@@ -841,15 +841,15 @@ public:
 
     /** Build dense array from sparse array, needed for conversion SparseVector -> DenseVector
      *
-     *  @param[out]  denseArray will contain the dense data (input its only its size)
-     *  @param[in]   denseN is the size of the dense array
-     *  @param[in]   sparseArray contains non-zero values
+     *  @param[out]  denseArray    will contain the dense data (input its only its size)
+     *  @param[in]   denseN        is the size of the dense array
+     *  @param[in]   sparseArray   contains non-zero values
      *  @param[in]   sparseIndexes are the positions of the non-zero values
-     *  @param[in]   prefLoc is the context where operation should be done
+     *  @param[in]   zero          is the default value for all positions not specifiedin sparseIndexes
+     *  @param[in]   prefLoc       is the context where operation should be done
      *
      *  Note: sparseIndexes must contain only indexes between 0 and denseN - 1
      */
-
     template<typename ValueType>
     static void buildDenseArray(
         hmemo::HArray<ValueType>& denseArray,

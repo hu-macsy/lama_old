@@ -610,8 +610,8 @@ public:
     /**
      *  @brief Disassemble all vector entries in an assembly
      *
-     *  @param[in,out] assemby  is the object to which non-zero values of this vector are added
-     *  @param[in]     offset   is a global offset that is added to the coordinates
+     *  @param[in,out] assembly  is the object to which non-zero values of this vector are added
+     *  @param[in]     offset    is a global offset that is added to the coordinates
      *
      *  \code
      *      const Vector<ValueType>& v1 = ...
