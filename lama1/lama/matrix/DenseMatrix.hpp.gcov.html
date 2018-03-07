@@ -1,0 +1,748 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/matrix/DenseMatrix.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/matrix</a> - DenseMatrix.hpp<span style="font-size: 80%;"> (source / <a href="DenseMatrix.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntryLo">70.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntryMed">75.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file DenseMatrix.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Definition of matrix class for distributed matrixes in Dense format.
+<span class="lineNum">      31 </span>            :  * @author Michael Drost
+<span class="lineNum">      32 </span>            :  * @date 22.02.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #pragma once
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : // for dll_import
+<span class="lineNum">      38 </span>            : #include &lt;scai/common/config.hpp&gt;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : // base classes
+<span class="lineNum">      41 </span>            : #include &lt;scai/lama/matrix/Matrix.hpp&gt;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : // local library
+<span class="lineNum">      44 </span>            : #include &lt;scai/lama/matrix/SparseMatrix.hpp&gt;
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : #include &lt;scai/lama/storage/DenseStorage.hpp&gt;
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : #include &lt;memory&gt;
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : namespace scai
+<span class="lineNum">      51 </span>            : {
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            : namespace lama
+<span class="lineNum">      54 </span>            : {
+<span class="lineNum">      55 </span>            : 
+<span class="lineNum">      56 </span>            : template&lt;typename ValueType&gt; class DenseVector;
+<span class="lineNum">      57 </span>            : // forward declaration
+<span class="lineNum">      58 </span>            : 
+<span class="lineNum">      59 </span>            : /** Class for dense matrices where rows are distributed among rows and columns
+<span class="lineNum">      60 </span>            :  *  are splitted according to a column distribution.
+<span class="lineNum">      61 </span>            :  *
+<span class="lineNum">      62 </span>            :  *  The local rows are splitted according to a column distribution into different
+<span class="lineNum">      63 </span>            :  *  blocks that are stored in a vector of shared pointers. A copy of this vector
+<span class="lineNum">      64 </span>            :  *  will not make deep copies of the blocks so default copy constructor and
+<span class="lineNum">      65 </span>            :  *  assignment operator must be overridden.
+<span class="lineNum">      66 </span>            :  *
+<span class="lineNum">      67 </span>            :  *  @tparam ValueType is the value type of the matrix values.
+<span class="lineNum">      68 </span>            :  */
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      71 </span>            : class COMMON_DLL_IMPORTEXPORT DenseMatrix:
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            :     public Matrix&lt;ValueType&gt;,
+<span class="lineNum">      74 </span>            :     public _Matrix::Register&lt;DenseMatrix&lt;ValueType&gt; &gt;    // register at factory
+<span class="lineNum">      75 </span>            : {
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            : public:
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span>            :     /* Using clauses for convenience, avoids using this-&gt;... */
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            :     using _Matrix::operator=;
+<span class="lineNum">      82 </span>            :     using _Matrix::setContextPtr; 
+<span class="lineNum">      83 </span>            :     using _Matrix::getNumRows;
+<span class="lineNum">      84 </span>            :     using _Matrix::getNumColumns;
+<span class="lineNum">      85 </span>            :     using _Matrix::setIdentity;   
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            :     using _Matrix::getRowDistribution;
+<span class="lineNum">      88 </span>            :     using _Matrix::getRowDistributionPtr;
+<span class="lineNum">      89 </span>            :     using _Matrix::getColDistribution;
+<span class="lineNum">      90 </span>            :     using _Matrix::getColDistributionPtr;
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span>            :     using _Matrix::redistribute;
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            :     using Matrix&lt;ValueType&gt;::operator=;
+<span class="lineNum">      95 </span>            :     using Matrix&lt;ValueType&gt;::operator+=;
+<span class="lineNum">      96 </span>            :     using Matrix&lt;ValueType&gt;::operator-=;
+<span class="lineNum">      97 </span>            :     using Matrix&lt;ValueType&gt;::getValueType;
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span>            :     typedef ValueType MatrixValueType; //!&lt; This is the type of the matrix values.
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span>            :     typedef DenseStorage&lt;ValueType&gt; StorageType;
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span>            :     typedef std::shared_ptr&lt;DenseStorage&lt;ValueType&gt; &gt; DenseStoragePtr;
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span>            :     /** Getter for the type name of the class. */
+<span class="lineNum">     106 </span>            : 
+<span class="lineNum">     107 </span>            :     static const char* typeName();
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            :     /** Default constructor. */
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            :     DenseMatrix( hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            :     /** Constructor of a replicated dense matrix.
+<span class="lineNum">     114 </span>            :      *
+<span class="lineNum">     115 </span>            :      * @param[in] numRows      number of rows, must be non-negative.
+<span class="lineNum">     116 </span>            :      * @param[in] numColumns   number of columns, must be non-negative.
+<span class="lineNum">     117 </span>            :      * @param[in] ctx          context for the new matrix.
+<span class="lineNum">     118 </span>            :      */
+<span class="lineNum">     119 </span>            :     DenseMatrix( const IndexType numRows, const IndexType numColumns, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span>            :     /**
+<span class="lineNum">     122 </span>            :      * Constructor of a distributed dense matrix.
+<span class="lineNum">     123 </span>            :      *
+<span class="lineNum">     124 </span>            :      * @param[in] rowDist   size and distribution of rows
+<span class="lineNum">     125 </span>            :      * @param[in] colDist   size and distribution of columns
+<span class="lineNum">     126 </span>            :      *
+<span class="lineNum">     127 </span>            :      * For consistency with the constructors of sparse matrices the values
+<span class="lineNum">     128 </span>            :      * of the dense matrix are initialized with 0 here.
+<span class="lineNum">     129 </span>            :      */
+<span class="lineNum">     130 </span>            :     DenseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            :     /** Overwrites default copy constructor so it uses other copy constructor.
+<span class="lineNum">     133 </span>            :      *
+<span class="lineNum">     134 </span>            :      *  Note: Default copy constructor would not make deep copies of the
+<span class="lineNum">     135 </span>            :      *        storages, so it must be overridden
+<span class="lineNum">     136 </span>            :      */
+<span class="lineNum">     137 </span>            :     DenseMatrix( const DenseMatrix&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     138 </span>            : 
+<span class="lineNum">     139 </span>            :     /** Override default move constructor */
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span>            :     DenseMatrix( DenseMatrix&lt;ValueType&gt;&amp;&amp; other ) noexcept;
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span>            :     /** Constructor of a (replicated) sparse matrix by global storage.
+<span class="lineNum">     144 </span>            :      *
+<span class="lineNum">     145 </span>            :      *  @param[in] globalStorage  contains the full storage, must be of same format and type as matrix
+<span class="lineNum">     146 </span>            :      */
+<span class="lineNum">     147 </span>            :     explicit DenseMatrix( DenseStorage&lt;ValueType&gt; globalStorage );
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span>            :     /** Constructor of a distributed dense matrix by local storage
+<span class="lineNum">     150 </span>            :      *
+<span class="lineNum">     151 </span>            :      *  @param[in] rowDist       is distribution of localData
+<span class="lineNum">     152 </span>            :      *  @param[in] localStorage  contains local rows of the distributed matrix
+<span class="lineNum">     153 </span>            :      *
+<span class="lineNum">     154 </span>            :      *  The number of rows for the local storage must be rowDist-&gt;getLocalSize(), and the 
+<span class="lineNum">     155 </span>            :      *  number of columns must be the same on all processors.
+<span class="lineNum">     156 </span>            :      *
+<span class="lineNum">     157 </span>            :      *  The context of the matrix is the same as the context of localStorage.
+<span class="lineNum">     158 </span>            :      */
+<span class="lineNum">     159 </span>            :     DenseMatrix( dmemo::DistributionPtr rowDist, DenseStorage&lt;ValueType&gt; localStorage );
+<span class="lineNum">     160 </span>            : 
+<span class="lineNum">     161 </span>            :     /**
+<span class="lineNum">     162 </span>            :      * Destructor, releases all allocated resources.
+<span class="lineNum">     163 </span>            :      */
+<span class="lineNum">     164 </span>            :     virtual ~DenseMatrix();
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span>            :     /** Implementation of abstract method for dense matrices. */
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span>            :     virtual bool isConsistent() const;
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span>            :     /** Overrides the default assignment operator to guarantee deep copy. */
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span>            :     DenseMatrix&amp; operator=( const DenseMatrix&lt;ValueType&gt;&amp; matrix );
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span>            :     /** Override implicitly declared move assignment operator */
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span>            :     DenseMatrix&amp; operator=( DenseMatrix&lt;ValueType&gt;&amp;&amp; matrix );
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span>            :     /** Implementation for _Matrix::getTypeName() */
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span>            :     const char* getTypeName() const;
+<span class="lineNum">     181 </span>            : 
+<span class="lineNum">     182 </span>            :     /**
+<a name="183"><span class="lineNum">     183 </span>            :      * Gives info about the matrix kind (DENSE).</a>
+<span class="lineNum">     184 </span>            :      */
+<span class="lineNum">     185 </span><span class="lineCov">      10356 :     virtual MatrixKind getMatrixKind() const</span>
+<span class="lineNum">     186 </span>            :     {
+<span class="lineNum">     187 </span><span class="lineCov">      10356 :         return MatrixKind::DENSE;</span>
+<span class="lineNum">     188 </span>            :     }
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span>            :     virtual void setContextPtr( const hmemo::ContextPtr context );
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span><span class="lineCov">      46382 :     virtual hmemo::ContextPtr getContextPtr() const</span>
+<span class="lineNum">     197 </span>            :     {
+<span class="lineNum">     198 </span><span class="lineCov">      92764 :         if ( mData.size() &gt;  0 )</span>
+<span class="lineNum">     199 </span>            :         {
+<span class="lineNum">     200 </span><span class="lineCov">      46382 :             return mData[0]-&gt;getContextPtr();</span>
+<span class="lineNum">     201 </span>            :         }
+<span class="lineNum">     202 </span>            :         else
+<span class="lineNum">     203 </span>            :         {
+<span class="lineNum">     204 </span>            :             return hmemo::Context::getHostPtr();
+<span class="lineNum">     205 </span>            :         }
+<span class="lineNum">     206 </span>            :     }
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span>            :     /** Implementation of pure method _Matrix::setIdentity. */
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span>            :     virtual void setIdentity( dmemo::DistributionPtr distribution );
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            :     /** Implementation of pure method Matrix&lt;ValueType&gt;::assignDiagonal */
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span>            :     virtual void assignDiagonal( const Vector&lt;ValueType&gt;&amp; diagonal );
+<span class="lineNum">     215 </span>            : 
+<span class="lineNum">     216 </span>            :     /** Implementation for pure method _Matrix::setCSRData. */
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span>            :     virtual void setCSRData(
+<span class="lineNum">     219 </span>            :         dmemo::DistributionPtr rowDist,
+<span class="lineNum">     220 </span>            :         dmemo::DistributionPtr colDist,
+<span class="lineNum">     221 </span>            :         const IndexType numValues,
+<span class="lineNum">     222 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; ia,
+<span class="lineNum">     223 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; ja,
+<span class="lineNum">     224 </span>            :         const hmemo::_HArray&amp; values );
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            :     /** Implementation of pure method for the dense storage format. */
+<span class="lineNum">     227 </span>            : 
+<span class="lineNum">     228 </span>            :     virtual void buildCSRData( hmemo::HArray&lt;IndexType&gt;&amp; rowIA, hmemo::HArray&lt;IndexType&gt;&amp; rowJA, hmemo::_HArray&amp; rowValues ) const;
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :     /** Implementation of pure method. */
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span>            :     virtual void setCSRData(
+<span class="lineNum">     233 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; rowIA,
+<span class="lineNum">     234 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; rowJA,
+<span class="lineNum">     235 </span>            :         const hmemo::_HArray&amp; rowValues,
+<span class="lineNum">     236 </span>            :         dmemo::DistributionPtr rowDistribution,
+<span class="lineNum">     237 </span>            :         dmemo::DistributionPtr colDistribution );
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span>            :     /** Local version of setCSRData . */
+<span class="lineNum">     240 </span>            : 
+<span class="lineNum">     241 </span>            :     void setCSRDataLocal(
+<span class="lineNum">     242 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; rowIA,
+<span class="lineNum">     243 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; rowJA,
+<span class="lineNum">     244 </span>            :         const hmemo::_HArray&amp; rowValues ) const;
+<span class="lineNum">     245 </span>            : 
+<span class="lineNum">     246 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     247 </span>            : 
+<span class="lineNum">     248 </span>            :     virtual void clear();
+<span class="lineNum">     249 </span>            : 
+<span class="lineNum">     250 </span>            :     /* Implementation of pure method _Matrix::purge. */
+<span class="lineNum">     251 </span>            : 
+<span class="lineNum">     252 </span>            :     virtual void purge();
+<span class="lineNum">     253 </span>            : 
+<span class="lineNum">     254 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span>            :     virtual void allocate( const IndexType numRows, const IndexType numColumns );
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span>            :     virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     263 </span>            : 
+<span class="lineNum">     264 </span>            :     virtual void assign( const _Matrix&amp; other );
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span>            :     virtual void assignTranspose( const _Matrix&amp; other );
+<span class="lineNum">     269 </span>            : 
+<span class="lineNum">     270 </span>            :     void assignTransposeImpl( const DenseMatrix&lt;ValueType&gt;&amp; Mat );
+<span class="lineNum">     271 </span>            : 
+<span class="lineNum">     272 </span>            :     /** @brief Swap will swap all member variables of the two dense matrices.
+<span class="lineNum">     273 </span>            :      *
+<span class="lineNum">     274 </span>            :      *  This operation might be useful in iteration loops where a dense matrix
+<span class="lineNum">     275 </span>            :      *  is updated each iteration. It is more convenient than a solution that
+<span class="lineNum">     276 </span>            :      *  is based on using pointers in the application.
+<span class="lineNum">     277 </span>            :      *
+<span class="lineNum">     278 </span>            :      * @param[in] other   TODO[doxy] Complete Description.
+<span class="lineNum">     279 </span>            :      */
+<span class="lineNum">     280 </span>            :     void swap( DenseMatrix&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span>            :     /** Method that assigns a sparse matrix, specialization of assign( const _Matrix&amp; ) */
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     285 </span>            :     void assignSparse( const SparseMatrix&lt;OtherValueType&gt;&amp; other );
+<span class="lineNum">     286 </span>            : 
+<span class="lineNum">     287 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     288 </span>            : 
+<span class="lineNum">     289 </span>            :     virtual void assign( const _MatrixStorage&amp; storage );
+<span class="lineNum">     290 </span>            : 
+<span class="lineNum">     291 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     292 </span>            :     void assignImpl( const Matrix&lt;OtherValueType&gt;&amp; other );
+<span class="lineNum">     293 </span>            : 
+<span class="lineNum">     294 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            :     virtual void assignDistribute( const _MatrixStorage&amp; storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span>            :     virtual void assignLocal( const _MatrixStorage&amp; storage, dmemo::DistributionPtr rowDist );
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span>            :     virtual void assignDistribute( const _Matrix&amp; other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+<span class="lineNum">     301 </span>            : 
+<span class="lineNum">     302 </span>            :     /** @brief TODO[doxy] Complete Description.
+<span class="lineNum">     303 </span>            :      *
+<span class="lineNum">     304 </span>            :      * @param[in] other   TODO[doxy] Complete Description.
+<span class="lineNum">     305 </span>            :      */
+<span class="lineNum">     306 </span>            :     void assignLocal( const _MatrixStorage&amp; other );
+<span class="lineNum">     307 </span>            : 
+<span class="lineNum">     308 </span>            :     /** Implementation of _Matrix::buildLocalStorage. */
+<span class="lineNum">     309 </span>            : 
+<span class="lineNum">     310 </span>            :     virtual void buildLocalStorage( _MatrixStorage&amp; storage ) const;
+<span class="lineNum">     311 </span>            : 
+<span class="lineNum">     312 </span>            :     /** Implemenation of Matrix&lt;ValueType&gt;::disassemble */
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span>            :     virtual void disassemble(
+<span class="lineNum">     315 </span>            :         MatrixAssembly&lt;ValueType&gt;&amp; assembly,
+<span class="lineNum">     316 </span>            :         const IndexType rowOffset = 0,
+<span class="lineNum">     317 </span>            :         const IndexType colOffset = 0 ) const;
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span>            :     virtual void redistribute( dmemo::DistributionPtr rowDistributionPtr, dmemo::DistributionPtr colDistributionPtr );
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span>            :     virtual void redistribute( const dmemo::Redistributor&amp; redistributor, dmemo::DistributionPtr colDistributionPtr );
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span>            :     /** Implementation of pure method Matrix&lt;ValueType&gt;::getDiagonal */
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span>            :     virtual void getDiagonal( Vector&lt;ValueType&gt;&amp; diagonal ) const;
+<span class="lineNum">     330 </span>            : 
+<span class="lineNum">     331 </span>            :     /** Implementation of pure method Matrix&lt;ValueType&gt;::setDiagonal */
+<span class="lineNum">     332 </span>            : 
+<span class="lineNum">     333 </span>            :     virtual void setDiagonal( const Vector&lt;ValueType&gt;&amp; diagonal );
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span>            :     /** Implementation of pure method Matrix&lt;ValueType&gt;::setDiagonal */
+<span class="lineNum">     336 </span>            : 
+<span class="lineNum">     337 </span>            :     virtual void setDiagonal( const ValueType&amp; scalar );
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span>            :     /* Implementation of pure method Matrix&lt;ValueType&gt;::reduce */
+<span class="lineNum">     340 </span>            : 
+<span class="lineNum">     341 </span>            :     virtual void reduce( 
+<span class="lineNum">     342 </span>            :         Vector&lt;ValueType&gt;&amp; v, 
+<span class="lineNum">     343 </span>            :         const IndexType dim, 
+<span class="lineNum">     344 </span>            :         const common::BinaryOp reduceOp, 
+<span class="lineNum">     345 </span>            :         const common::UnaryOp elemOp ) const;
+<span class="lineNum">     346 </span>            : 
+<span class="lineNum">     347 </span>            :     /* Implementation of reduce for dense vector. */
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span>            :     void reduceImpl( 
+<span class="lineNum">     350 </span>            :         DenseVector&lt;ValueType&gt;&amp; v, 
+<span class="lineNum">     351 </span>            :         const IndexType dim, 
+<span class="lineNum">     352 </span>            :         const common::BinaryOp reduceOp, 
+<span class="lineNum">     353 </span>            :         const common::UnaryOp elemOp ) const;
+<span class="lineNum">     354 </span>            : 
+<span class="lineNum">     355 </span>            :     /* ======================================================================= */
+<span class="lineNum">     356 </span>            :     /*     scaling of matrix entries                                           */
+<span class="lineNum">     357 </span>            :     /* ======================================================================= */
+<span class="lineNum">     358 </span>            : 
+<span class="lineNum">     359 </span>            :     /* Implementation of pure method Matrix&lt;ValueType&gt;::scale */
+<span class="lineNum">     360 </span>            : 
+<span class="lineNum">     361 </span>            :     virtual void scale( const ValueType&amp; alpha );
+<span class="lineNum">     362 </span>            : 
+<span class="lineNum">     363 </span>            :     /* Implementation of pure method Matrix&lt;ValueType&gt;::scale */
+<span class="lineNum">     364 </span>            : 
+<span class="lineNum">     365 </span>            :     virtual void scaleRows( const DenseVector&lt;ValueType&gt;&amp; scaleY );
+<span class="lineNum">     366 </span>            : 
+<span class="lineNum">     367 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     368 </span>            : 
+<span class="lineNum">     369 </span>            :     virtual void conj();
+<span class="lineNum">     370 </span>            : 
+<span class="lineNum">     371 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     372 </span>            : 
+<span class="lineNum">     373 </span>            :     virtual ValueType getValue( IndexType i, IndexType j ) const;
+<span class="lineNum">     374 </span>            : 
+<span class="lineNum">     375 </span>            :     /** Implementation of pure method _Matrix::setValue */
+<span class="lineNum">     376 </span>            : 
+<span class="lineNum">     377 </span>            :     virtual void setValue(
+<span class="lineNum">     378 </span>            :         const IndexType i,
+<span class="lineNum">     379 </span>            :         const IndexType j,
+<span class="lineNum">     380 </span>            :         const ValueType val,
+<span class="lineNum">     381 </span>            :         const common::BinaryOp op = common::BinaryOp::COPY );
+<span class="lineNum">     382 </span>            : 
+<span class="lineNum">     383 </span>            :     /* Implemenation of pure method Matrix&lt;ValueType&gt;::matrixTimesScalar */
+<span class="lineNum">     384 </span>            : 
+<span class="lineNum">     385 </span>            :     virtual void matrixTimesScalar( const Matrix&lt;ValueType&gt;&amp; other, const ValueType alpha );
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span>            :     /**
+<span class="lineNum">     388 </span>            :      * @brief Implementation of pure method Matrix&lt;ValueType&gt;::matrixTimesVectorDense
+<span class="lineNum">     389 </span>            :      */
+<span class="lineNum">     390 </span>            :     void matrixTimesVectorDense(
+<span class="lineNum">     391 </span>            :         DenseVector&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     392 </span>            :         const ValueType alpha,
+<span class="lineNum">     393 </span>            :         const DenseVector&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     394 </span>            :         const ValueType beta,
+<span class="lineNum">     395 </span>            :         const DenseVector&lt;ValueType&gt;* y,
+<span class="lineNum">     396 </span>            :         const common::MatrixOp op ) const;
+<span class="lineNum">     397 </span>            : 
+<span class="lineNum">     398 </span>            :     /**
+<span class="lineNum">     399 </span>            :      *  @brief Provide method matrixTimesVector where all vectors are now dense
+<span class="lineNum">     400 </span>            :      *
+<span class="lineNum">     401 </span>            :      * @param[out] denseResult   result vector 
+<span class="lineNum">     402 </span>            :      * @param[in]  alphaValue    scaling factor for matrix * vector
+<span class="lineNum">     403 </span>            :      * @param[in]  denseX        vector that is used for multiplication
+<span class="lineNum">     404 </span>            :      * @param[in]  betaValue     scaling factor for additional summand
+<span class="lineNum">     405 </span>            :      * @param[in]  denseY        additional summand ( beta = 0 if not available )
+<span class="lineNum">     406 </span>            :      *
+<span class="lineNum">     407 </span>            :      *  Note: _Matrix::matrixTimesMatrix is implemented in the CRTPMatrix class.
+<span class="lineNum">     408 </span>            :      *        that requires this method.
+<span class="lineNum">     409 </span>            :      *
+<span class="lineNum">     410 </span>            :      *  Note: all vectors must have the right distribution.
+<span class="lineNum">     411 </span>            :      */
+<span class="lineNum">     412 </span>            :     void matrixTimesVectorImpl(
+<span class="lineNum">     413 </span>            :         DenseVector&lt;ValueType&gt;&amp; denseResult,
+<span class="lineNum">     414 </span>            :         const ValueType alphaValue,
+<span class="lineNum">     415 </span>            :         const DenseVector&lt;ValueType&gt;&amp; denseX,
+<span class="lineNum">     416 </span>            :         const ValueType betaValue,
+<span class="lineNum">     417 </span>            :         const DenseVector&lt;ValueType&gt;* denseY ) const;
+<span class="lineNum">     418 </span>            : 
+<span class="lineNum">     419 </span>            :     void vectorTimesMatrixImpl(
+<span class="lineNum">     420 </span>            :         DenseVector&lt;ValueType&gt;&amp; denseResult,
+<span class="lineNum">     421 </span>            :         const ValueType alphaValue,
+<span class="lineNum">     422 </span>            :         const DenseVector&lt;ValueType&gt;&amp; denseX,
+<span class="lineNum">     423 </span>            :         const ValueType betaValue,
+<span class="lineNum">     424 </span>            :         const DenseVector&lt;ValueType&gt;* denseY ) const;
+<span class="lineNum">     425 </span>            : 
+<span class="lineNum">     426 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     427 </span>            : 
+<span class="lineNum">     428 </span>            :     virtual void invert( const _Matrix&amp; other );
+<span class="lineNum">     429 </span>            : 
+<a name="430"><span class="lineNum">     430 </span>            :     /** Invert in place */</a>
+<span class="lineNum">     431 </span>            : 
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :     void invert()</span>
+<span class="lineNum">     433 </span>            :     {
+<span class="lineNum">     434 </span><span class="lineNoCov">          0 :         this-&gt;invert( *this );</span>
+<span class="lineNum">     435 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     436 </span>            : 
+<span class="lineNum">     437 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     438 </span>            :     virtual RealType&lt;ValueType&gt; l1Norm() const;
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     441 </span>            :     virtual RealType&lt;ValueType&gt; l2Norm() const;
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span>            :     /** Implementation of _Matrix::maxNorm for dense matrices. */
+<span class="lineNum">     444 </span>            : 
+<span class="lineNum">     445 </span>            :     virtual RealType&lt;ValueType&gt; maxNorm() const;
+<span class="lineNum">     446 </span>            : 
+<span class="lineNum">     447 </span>            :     /** Implementation of _Matrix::maxDiffNorm for dense matrices. */
+<span class="lineNum">     448 </span>            : 
+<span class="lineNum">     449 </span>            :     virtual RealType&lt;ValueType&gt; maxDiffNorm( const Matrix&lt;ValueType&gt;&amp; other ) const;
+<span class="lineNum">     450 </span>            : 
+<span class="lineNum">     451 </span>            :     /** Get the maximal difference between two elements for dense matrices of same type. */
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span>            :     ValueType maxDiffNormImpl( const DenseMatrix&lt;ValueType&gt;&amp; other ) const;
+<span class="lineNum">     454 </span>            : 
+<span class="lineNum">     455 </span>            :     /* Implemenation of pure method Matrix&lt;ValueType&gt;::matrixPlusMatrix */
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span>            :     virtual void matrixPlusMatrix( const ValueType alpha, const Matrix&lt;ValueType&gt;&amp; A, const ValueType beta, const Matrix&lt;ValueType&gt;&amp; B );
+<span class="lineNum">     458 </span>            : 
+<span class="lineNum">     459 </span>            :     /* Implemenation of pure method Matrix&lt;ValueType&gt;::matrixTimesMatrix */
+<span class="lineNum">     460 </span>            : 
+<span class="lineNum">     461 </span>            :     virtual void matrixTimesMatrix(
+<span class="lineNum">     462 </span>            :         Matrix&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     463 </span>            :         const ValueType alpha,
+<span class="lineNum">     464 </span>            :         const Matrix&lt;ValueType&gt;&amp; B,
+<span class="lineNum">     465 </span>            :         const ValueType beta,
+<span class="lineNum">     466 </span>            :         const Matrix&lt;ValueType&gt;&amp; C ) const;
+<span class="lineNum">     467 </span>            : 
+<span class="lineNum">     468 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     469 </span>            : 
+<span class="lineNum">     470 </span>            :     virtual void prefetch() const;
+<span class="lineNum">     471 </span>            : 
+<span class="lineNum">     472 </span>            :     /** @brief TODO[doxy] Complete Description.
+<span class="lineNum">     473 </span>            :      *
+<span class="lineNum">     474 </span>            :      * @param[in] loc   TODO[doxy] Complete Description.
+<span class="lineNum">     475 </span>            :      */
+<span class="lineNum">     476 </span>            :     void prefetch( hmemo::ContextPtr loc ) const;
+<span class="lineNum">     477 </span>            : 
+<span class="lineNum">     478 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     479 </span>            : 
+<span class="lineNum">     480 </span>            :     void wait() const;
+<span class="lineNum">     481 </span>            : 
+<span class="lineNum">     482 </span>            :     /** This method returns the storage containing the local data regarding row/col distribution. */
+<span class="lineNum">     483 </span>            : 
+<span class="lineNum">     484 </span>            :     const DenseStorage&lt;ValueType&gt;&amp; getLocalStorage() const;
+<span class="lineNum">     485 </span>            : 
+<span class="lineNum">     486 </span>            :     DenseStorage&lt;ValueType&gt;&amp; getLocalStorage();
+<span class="lineNum">     487 </span>            : 
+<span class="lineNum">     488 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     489 </span>            : 
+<span class="lineNum">     490 </span>            :     virtual IndexType getLocalNumValues() const;
+<span class="lineNum">     491 </span>            : 
+<span class="lineNum">     492 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     493 </span>            : 
+<span class="lineNum">     494 </span>            :     virtual IndexType getLocalNumRows() const;
+<span class="lineNum">     495 </span>            : 
+<span class="lineNum">     496 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     497 </span>            : 
+<span class="lineNum">     498 </span>            :     virtual IndexType getLocalNumColumns() const;
+<span class="lineNum">     499 </span>            : 
+<span class="lineNum">     500 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     501 </span>            : 
+<span class="lineNum">     502 </span>            :     virtual IndexType getNumValues() const;
+<span class="lineNum">     503 </span>            : 
+<span class="lineNum">     504 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     505 </span>            : 
+<span class="lineNum">     506 </span>            :     virtual bool hasDiagonalProperty() const;
+<span class="lineNum">     507 </span>            : 
+<span class="lineNum">     508 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     509 </span>            : 
+<span class="lineNum">     510 </span>            :     virtual void resetDiagonalProperty();
+<span class="lineNum">     511 </span>            : 
+<span class="lineNum">     512 </span>            :     /* Implementation of method writeAt for dense matrix. */
+<span class="lineNum">     513 </span>            : 
+<span class="lineNum">     514 </span>            :     virtual void writeAt( std::ostream&amp; stream ) const;
+<span class="lineNum">     515 </span>            : 
+<span class="lineNum">     516 </span>            :     /**
+<span class="lineNum">     517 </span>            :      * @brief Implementation of pure function _Matrix::copy with covariant return type.
+<span class="lineNum">     518 </span>            :      */
+<span class="lineNum">     519 </span>            :     virtual DenseMatrix&lt;ValueType&gt;* newMatrix() const;
+<span class="lineNum">     520 </span>            : 
+<span class="lineNum">     521 </span>            :     /**
+<span class="lineNum">     522 </span>            :      * @brief Implementation of pure function _Matrix::copy with covariant return type.
+<span class="lineNum">     523 </span>            :      */
+<span class="lineNum">     524 </span>            :     virtual DenseMatrix&lt;ValueType&gt;* copy() const;
+<span class="lineNum">     525 </span>            : 
+<a name="526"><span class="lineNum">     526 </span>            :     /* Implementation of pure method _Matrix::getFormat */</a>
+<span class="lineNum">     527 </span>            : 
+<span class="lineNum">     528 </span><span class="lineCov">         80 :     virtual Format getFormat() const</span>
+<span class="lineNum">     529 </span>            :     {
+<span class="lineNum">     530 </span><span class="lineCov">         80 :         return Format::DENSE;</span>
+<span class="lineNum">     531 </span>            :     }
+<span class="lineNum">     532 </span>            : 
+<span class="lineNum">     533 </span>            :     /* Implementation of pure method of class _Matrix. */
+<span class="lineNum">     534 </span>            : 
+<span class="lineNum">     535 </span>            :     virtual size_t getMemoryUsage() const;
+<span class="lineNum">     536 </span>            : 
+<span class="lineNum">     537 </span>            :     /** local data is allocated in chunks according to column distribution */
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span>            :     std::vector&lt;std::shared_ptr&lt;DenseStorage&lt;ValueType&gt; &gt; &gt; mData;
+<span class="lineNum">     540 </span>            : 
+<span class="lineNum">     541 </span>            :     /** Implementation of pure methode Matrix&lt;ValueType&gt;::getRow */
+<span class="lineNum">     542 </span>            : 
+<span class="lineNum">     543 </span>            :     virtual void getRow( Vector&lt;ValueType&gt;&amp; row, const IndexType globalRowIndex ) const;
+<span class="lineNum">     544 </span>            : 
+<span class="lineNum">     545 </span>            :     /** Implementation of pure methode Matrix&lt;ValueType&gt;::getRowLocal */
+<span class="lineNum">     546 </span>            : 
+<span class="lineNum">     547 </span>            :     virtual void getRowLocal( Vector&lt;ValueType&gt;&amp; row, const IndexType globalRowIndex ) const;
+<span class="lineNum">     548 </span>            : 
+<span class="lineNum">     549 </span>            :     /** Implementation of pure method Matrix&lt;ValueType&gt;::getColumn */
+<span class="lineNum">     550 </span>            : 
+<span class="lineNum">     551 </span>            :     virtual void getColumn( Vector&lt;ValueType&gt;&amp; col, const IndexType globalColIndex ) const;
+<span class="lineNum">     552 </span>            : 
+<span class="lineNum">     553 </span>            :     /** Get a complete row of the local storage */
+<span class="lineNum">     554 </span>            : 
+<span class="lineNum">     555 </span>            :     void getLocalRow( hmemo::HArray&lt;ValueType&gt;&amp; row, const IndexType iLocal ) const;
+<span class="lineNum">     556 </span>            : 
+<span class="lineNum">     557 </span>            :     void setLocalRow( const hmemo::HArray&lt;ValueType&gt;&amp; row,
+<span class="lineNum">     558 </span>            :                       const IndexType localRowIndex,
+<span class="lineNum">     559 </span>            :                       const common::BinaryOp op  );
+<span class="lineNum">     560 </span>            : 
+<span class="lineNum">     561 </span>            :     void setLocalColumn( const hmemo::HArray&lt;ValueType&gt;&amp; column,
+<span class="lineNum">     562 </span>            :                          const IndexType colIndex,
+<span class="lineNum">     563 </span>            :                          const common::BinaryOp op  );
+<span class="lineNum">     564 </span>            : 
+<span class="lineNum">     565 </span>            :     /** Copy a dense matrix with different data type; inherits sizes and distributions */
+<span class="lineNum">     566 </span>            : 
+<span class="lineNum">     567 </span>            :     template&lt;typename otherT&gt;
+<span class="lineNum">     568 </span>            :     void assignDense( const DenseMatrix&lt;otherT&gt;&amp; other );
+<span class="lineNum">     569 </span>            : 
+<span class="lineNum">     570 </span>            :     /** Optimized implementation for dense vectors as diagonal. */
+<span class="lineNum">     571 </span>            : 
+<span class="lineNum">     572 </span>            :     template&lt;typename OtherT&gt;
+<span class="lineNum">     573 </span>            :     void getDiagonalImpl( DenseVector&lt;OtherT&gt;&amp; diagonal ) const;
+<span class="lineNum">     574 </span>            : 
+<span class="lineNum">     575 </span>            : protected:
+<span class="lineNum">     576 </span>            : 
+<span class="lineNum">     577 </span>            :     /**
+<span class="lineNum">     578 </span>            :      * @brief Same as matrixPlusMatrix but now input matrices A and B are really dense
+<span class="lineNum">     579 </span>            :      */
+<span class="lineNum">     580 </span>            :     void matrixPlusMatrixDense(
+<span class="lineNum">     581 </span>            :         const ValueType alpha,
+<span class="lineNum">     582 </span>            :         const DenseMatrix&lt;ValueType&gt;&amp; A,
+<span class="lineNum">     583 </span>            :         const ValueType beta,
+<span class="lineNum">     584 </span>            :         const DenseMatrix&lt;ValueType&gt;&amp; B );
+<span class="lineNum">     585 </span>            : 
+<span class="lineNum">     586 </span>            :     /** Implementation of pure method Matrix&lt;ValueType&gt;::selectComplexPart */
+<span class="lineNum">     587 </span>            : 
+<span class="lineNum">     588 </span>            :     virtual void selectComplexPart( Matrix&lt;RealType&lt;ValueType&gt; &gt;&amp; x, common::ComplexPart kind ) const;
+<span class="lineNum">     589 </span>            : 
+<span class="lineNum">     590 </span>            :     /** Implementation of pure method Matrix&lt;ValueType&gt;::buildComplex */
+<span class="lineNum">     591 </span>            : 
+<span class="lineNum">     592 </span>            :     virtual void buildComplex( const Matrix&lt;RealType&lt;ValueType&gt; &gt;&amp; x, const Matrix&lt;RealType&lt;ValueType&gt; &gt;&amp; y );
+<span class="lineNum">     593 </span>            : 
+<span class="lineNum">     594 </span>            : private:
+<span class="lineNum">     595 </span>            : 
+<span class="lineNum">     596 </span>            :     /** Allocate of storage for the column blocks. */
+<span class="lineNum">     597 </span>            : 
+<span class="lineNum">     598 </span>            :     void allocateData( hmemo::ContextPtr ctx );
+<span class="lineNum">     599 </span>            : 
+<span class="lineNum">     600 </span>            :     /** Join column data of column distributed dense data
+<span class="lineNum">     601 </span>            :      *
+<span class="lineNum">     602 </span>            :      *  @param[out]  result     will be the joined data
+<span class="lineNum">     603 </span>            :      *  @param[in]   firstRow   first local row
+<span class="lineNum">     604 </span>            :      *  @param[in]   nRows      number of rows to join
+<span class="lineNum">     605 </span>            :      */
+<span class="lineNum">     606 </span>            :     void joinColumnData( hmemo::HArray&lt;ValueType&gt;&amp; result, const IndexType firstRow, const IndexType nRows ) const;
+<span class="lineNum">     607 </span>            : 
+<span class="lineNum">     608 </span>            :     /***************************************************************************
+<span class="lineNum">     609 </span>            :      *  Static Methods for dense storage                                        *
+<span class="lineNum">     610 </span>            :      ***************************************************************************/
+<span class="lineNum">     611 </span>            : 
+<span class="lineNum">     612 </span>            :     /** Split dense storage data according to a distribution into chunks.
+<span class="lineNum">     613 </span>            :      *
+<span class="lineNum">     614 </span>            :      *  @param[out]  chunks        vector of shared pointer to the new allocated chunks
+<span class="lineNum">     615 </span>            :      *  @param[in]   columnData    is the dense storage to split
+<span class="lineNum">     616 </span>            :      *  @param[in]   columnDist    is the distribution used for splitting global data to local data
+<span class="lineNum">     617 </span>            :      *
+<span class="lineNum">     618 </span>            :      *  Note:  columnData.getNumColumns() == columnDist.getGlobalSize()
+<span class="lineNum">     619 </span>            :      *  After: chunks.size() == columnDist.getNumPartitions()
+<span class="lineNum">     620 </span>            :      */
+<span class="lineNum">     621 </span>            :     static void splitColumnData(
+<span class="lineNum">     622 </span>            :         std::vector&lt;std::shared_ptr&lt;DenseStorage&lt;ValueType&gt; &gt; &gt;&amp; chunks,
+<span class="lineNum">     623 </span>            :         const DenseStorage&lt;ValueType&gt;&amp; columnData,
+<span class="lineNum">     624 </span>            :         const dmemo::Distribution&amp; columnDist );
+<span class="lineNum">     625 </span>            : 
+<span class="lineNum">     626 </span>            :     /** Restrict dense storage of a replicated matrix to its local part according to row distribution.
+<span class="lineNum">     627 </span>            :      *
+<span class="lineNum">     628 </span>            :      * @param[out] local is the local part of the dense storage for this partition
+<span class="lineNum">     629 </span>            :      * @param[in] global is the replicated dense storage
+<span class="lineNum">     630 </span>            :      * @param[in] rowDistribution distribution used to localize the dense storage.
+<span class="lineNum">     631 </span>            :      */
+<span class="lineNum">     632 </span>            : 
+<span class="lineNum">     633 </span>            :     static void localize(
+<span class="lineNum">     634 </span>            :         DenseStorage&lt;ValueType&gt;&amp; local,
+<span class="lineNum">     635 </span>            :         const DenseStorage&lt;ValueType&gt;&amp; global,
+<span class="lineNum">     636 </span>            :         const dmemo::Distribution&amp; rowDistribution );
+<span class="lineNum">     637 </span>            : 
+<span class="lineNum">     638 </span>            :     void redistributeRows( dmemo::DistributionPtr rowDistribution );
+<span class="lineNum">     639 </span>            : 
+<span class="lineNum">     640 </span>            :     /** Split the replicated columns into chunks according to the column distribution. */
+<span class="lineNum">     641 </span>            : 
+<span class="lineNum">     642 </span>            :     void splitColumns( dmemo::DistributionPtr colDistribution );
+<span class="lineNum">     643 </span>            : 
+<span class="lineNum">     644 </span>            :     mutable hmemo::HArray&lt;ValueType&gt; mSendValues;
+<span class="lineNum">     645 </span>            :     mutable hmemo::HArray&lt;ValueType&gt; mReceiveValues;
+<span class="lineNum">     646 </span>            : 
+<span class="lineNum">     647 </span>            :     void computeOwners();
+<span class="lineNum">     648 </span>            : 
+<span class="lineNum">     649 </span>            :     /** Special implementation of invert in place for a cyclic distributed matrix. */
+<span class="lineNum">     650 </span>            : 
+<span class="lineNum">     651 </span>            :     void invertReplicated();
+<span class="lineNum">     652 </span>            : 
+<span class="lineNum">     653 </span>            :     static std::string initTypeName();
+<span class="lineNum">     654 </span>            : 
+<span class="lineNum">     655 </span>            : public:
+<span class="lineNum">     656 </span>            : 
+<span class="lineNum">     657 </span>            :     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+<span class="lineNum">     658 </span>            : 
+<span class="lineNum">     659 </span>            :     // static methods, variables to register create routine in _Matrix factory of base class.
+<span class="lineNum">     660 </span>            : 
+<span class="lineNum">     661 </span>            :     static _Matrix* create();
+<span class="lineNum">     662 </span>            : 
+<span class="lineNum">     663 </span>            :     // key for factory
+<span class="lineNum">     664 </span>            : 
+<span class="lineNum">     665 </span>            :     static MatrixCreateKeyType createValue();
+<span class="lineNum">     666 </span>            : 
+<span class="lineNum">     667 </span>            :     MatrixCreateKeyType getCreateValue() const;
+<span class="lineNum">     668 </span>            : };
+<span class="lineNum">     669 </span>            : 
+<span class="lineNum">     670 </span>            : } /* end namespace lama */
+<span class="lineNum">     671 </span>            : 
+<span class="lineNum">     672 </span>            : } /* end namespace scai */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

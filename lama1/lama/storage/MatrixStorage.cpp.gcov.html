@@ -1,0 +1,1358 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/storage/MatrixStorage.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/storage</a> - MatrixStorage.cpp<span style="font-size: 80%;"> (source / <a href="MatrixStorage.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">386</td>
+            <td class="headerCovTableEntry">447</td>
+            <td class="headerCovTableEntryMed">86.4 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">114</td>
+            <td class="headerCovTableEntry">186</td>
+            <td class="headerCovTableEntryLo">61.3 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file MatrixStorage.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of methods for common base class of all matrix storage formats.
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 27.04.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // hpp
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/storage/MatrixStorage.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : // local library
+<span class="lineNum">      39 </span>            : #include &lt;scai/lama/storage/CSRStorage.hpp&gt;
+<span class="lineNum">      40 </span>            : #include &lt;scai/lama/storage/DenseStorage.hpp&gt;
+<span class="lineNum">      41 </span>            : #include &lt;scai/lama/storage/StorageMethods.hpp&gt;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : #include &lt;scai/dmemo/Distribution.hpp&gt;
+<span class="lineNum">      44 </span>            : #include &lt;scai/dmemo/Redistributor.hpp&gt;
+<span class="lineNum">      45 </span>            : #include &lt;scai/dmemo/Halo.hpp&gt;
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : #include &lt;scai/lama/io/FileIO.hpp&gt;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : // internal scai libraries
+<span class="lineNum">      50 </span>            : #include &lt;scai/sparsekernel/CSRKernelTrait.hpp&gt;
+<span class="lineNum">      51 </span>            : #include &lt;scai/sparsekernel/openmp/OpenMPCSRUtils.hpp&gt;
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            : #include &lt;scai/utilskernel/LAMAKernel.hpp&gt;
+<span class="lineNum">      54 </span>            : #include &lt;scai/utilskernel/UtilKernelTrait.hpp&gt;
+<span class="lineNum">      55 </span>            : #include &lt;scai/utilskernel/HArrayUtils.hpp&gt;
+<span class="lineNum">      56 </span>            : #include &lt;scai/utilskernel/openmp/OpenMPUtils.hpp&gt;
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            : #include &lt;scai/tasking/TaskSyncToken.hpp&gt;
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            : #include &lt;scai/tracing.hpp&gt;
+<span class="lineNum">      61 </span>            : 
+<span class="lineNum">      62 </span>            : #include &lt;scai/common/SCAITypes.hpp&gt;
+<span class="lineNum">      63 </span>            : #include &lt;scai/common/macros/unsupported.hpp&gt;
+<span class="lineNum">      64 </span>            : #include &lt;scai/common/macros/instantiate.hpp&gt;
+<span class="lineNum">      65 </span>            : #include &lt;scai/common/macros/loop.hpp&gt;
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : #include &lt;functional&gt;
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : namespace scai
+<span class="lineNum">      70 </span>            : {
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            : using namespace hmemo;
+<span class="lineNum">      73 </span>            : using namespace dmemo;
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            : using tasking::SyncToken;
+<span class="lineNum">      76 </span>            : using tasking::TaskSyncToken;
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            : using utilskernel::LAMAKernel;
+<span class="lineNum">      79 </span>            : using utilskernel::UtilKernelTrait;
+<span class="lineNum">      80 </span>            : using utilskernel::OpenMPUtils;
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            : using sparsekernel::CSRKernelTrait;
+<span class="lineNum">      83 </span>            : using sparsekernel::OpenMPCSRUtils;
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            : using common::BinaryOp;
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            : namespace lama
+<span class="lineNum">      88 </span>            : {
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            : /* --------------------------------------------------------------------------- */
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<span class="lineNum">      92 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      93 </span><span class="lineCov">     398935 : MatrixStorage&lt;ValueType&gt;::MatrixStorage( const IndexType numRows, const IndexType numColumns, ContextPtr ctx ) : </span>
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span><span class="lineCov">     797870 :     _MatrixStorage( numRows, numColumns, ctx )</span>
+<span class="lineNum">      96 </span>            : 
+<span class="lineNum">      97 </span>            : {
+<span class="lineNum">      98 </span><span class="lineCov">     398935 :     setDimension( numRows, numColumns );</span>
+<span class="lineNum">      99 </span>            :     SCAI_LOG_DEBUG( logger, &quot;constructed MatrixStorage&lt;ValueType&gt; for &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns &lt;&lt; &quot; matrix&quot; )
+<span class="lineNum">     100 </span><span class="lineCov">     398935 : }</span>
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            : /* --------------------------------------------------------------------------- */
+<a name="103"><span class="lineNum">     103 </span>            : </a>
+<span class="lineNum">     104 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     105 </span><span class="lineCov">     532947 : MatrixStorage&lt;ValueType&gt;::~MatrixStorage()</span>
+<span class="lineNum">     106 </span>            : {
+<span class="lineNum">     107 </span>            :     SCAI_LOG_DEBUG( logger, &quot;~MatrixStorage&quot; )
+<span class="lineNum">     108 </span><span class="lineCov">     532947 : }</span>
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span>            : /* --------------------------------------------------------------------------- */
+<a name="111"><span class="lineNum">     111 </span>            : </a>
+<span class="lineNum">     112 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     113 </span><span class="lineCov">     119078 : MatrixStorage&lt;ValueType&gt;::MatrixStorage( const MatrixStorage&lt;ValueType&gt;&amp; other ) : </span>
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span><span class="lineCov">     119078 :     _MatrixStorage( other )</span>
+<span class="lineNum">     116 </span>            : {
+<span class="lineNum">     117 </span><span class="lineCov">     119078 : }</span>
+<a name="118"><span class="lineNum">     118 </span>            : </a>
+<span class="lineNum">     119 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     120 </span><span class="lineCov">      14934 : MatrixStorage&lt;ValueType&gt;::MatrixStorage( MatrixStorage&lt;ValueType&gt;&amp;&amp; other ) noexcept :</span>
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span><span class="lineCov">      14934 :     _MatrixStorage( std::move( other ) )</span>
+<span class="lineNum">     123 </span>            : 
+<span class="lineNum">     124 </span>            : {
+<span class="lineNum">     125 </span><span class="lineCov">      14934 : }</span>
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span>            : /* --------------------------------------------------------------------------- */
+<a name="128"><span class="lineNum">     128 </span>            : </a>
+<span class="lineNum">     129 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     130 </span><span class="lineCov">     633575 : common::ScalarType MatrixStorage&lt;ValueType&gt;::getValueType() const</span>
+<span class="lineNum">     131 </span>            : {
+<span class="lineNum">     132 </span><span class="lineCov">     633575 :     return common::getScalarType&lt;ValueType&gt;();</span>
+<span class="lineNum">     133 </span>            : }
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            : /* --------------------------------------------------------------------------- */
+<a name="136"><span class="lineNum">     136 </span>            : </a>
+<span class="lineNum">     137 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     138 </span><span class="lineCov">       5021 : void MatrixStorage&lt;ValueType&gt;::convertCSR2CSC(</span>
+<span class="lineNum">     139 </span>            :     HArray&lt;IndexType&gt;&amp; colIA,
+<span class="lineNum">     140 </span>            :     HArray&lt;IndexType&gt;&amp; colJA,
+<span class="lineNum">     141 </span>            :     HArray&lt;ValueType&gt;&amp; colValues,
+<span class="lineNum">     142 </span>            :     const IndexType numColumns,
+<span class="lineNum">     143 </span>            :     const HArray&lt;IndexType&gt;&amp; rowIA,
+<span class="lineNum">     144 </span>            :     const HArray&lt;IndexType&gt;&amp; rowJA,
+<span class="lineNum">     145 </span>            :     const HArray&lt;ValueType&gt;&amp; rowValues,
+<span class="lineNum">     146 </span>            :     const ContextPtr preferredLoc )
+<span class="lineNum">     147 </span>            : {
+<span class="lineNum">     148 </span><span class="lineCov">       5021 :     const IndexType numRows = rowIA.size() - 1;</span>
+<span class="lineNum">     149 </span><span class="lineCov">       5021 :     const IndexType numValues = rowJA.size();</span>
+<span class="lineNum">     150 </span>            :     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
+<span class="lineNum">     151 </span><span class="lineCov">       5049 :     static LAMAKernel&lt;CSRKernelTrait::convertCSR2CSC&lt;ValueType&gt; &gt; convertCSR2CSC;</span>
+<span class="lineNum">     152 </span>            :     ContextPtr loc = preferredLoc;
+<span class="lineNum">     153 </span><span class="lineCov">       5021 :     convertCSR2CSC.getSupportedContext( loc );</span>
+<span class="lineNum">     154 </span><span class="lineCov">      10042 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     155 </span>            :                    &quot;MatrixStorage::CSR2CSC of matrix &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns &lt;&lt; &quot;, #nnz = &quot; &lt;&lt; numValues &lt;&lt; &quot; on &quot; &lt;&lt; *loc )
+<span class="lineNum">     156 </span><span class="lineCov">       5021 :     SCAI_REGION( &quot;Storage.CSR2CSC&quot; )</span>
+<span class="lineNum">     157 </span><span class="lineCov">      20084 :     WriteOnlyAccess&lt;IndexType&gt; cIA( colIA, loc, numColumns + 1 );</span>
+<span class="lineNum">     158 </span><span class="lineCov">      15063 :     WriteOnlyAccess&lt;IndexType&gt; cJA( colJA, loc, numValues );</span>
+<span class="lineNum">     159 </span><span class="lineCov">      15063 :     WriteOnlyAccess&lt;ValueType&gt; cValues( colValues, loc, numValues );</span>
+<span class="lineNum">     160 </span><span class="lineCov">      10042 :     ReadAccess&lt;IndexType&gt; rIA( rowIA, loc );</span>
+<span class="lineNum">     161 </span><span class="lineCov">      10042 :     ReadAccess&lt;IndexType&gt; rJA( rowJA, loc );</span>
+<span class="lineNum">     162 </span><span class="lineCov">      10042 :     ReadAccess&lt;ValueType&gt; rValues( rowValues, loc );</span>
+<span class="lineNum">     163 </span><span class="lineCov">      15063 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     164 </span><span class="lineCov">       5021 :     convertCSR2CSC[loc]( cIA.get(), cJA.get(), cValues.get(),  // output args</span>
+<span class="lineNum">     165 </span>            :                          rIA.get(), rJA.get(), rValues.get(), numRows, numColumns, numValues );
+<span class="lineNum">     166 </span><span class="lineCov">       5021 : }</span>
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span>            : /* --------------------------------------------------------------------------- */
+<a name="169"><span class="lineNum">     169 </span>            : </a>
+<span class="lineNum">     170 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     171 </span><span class="lineCov">       2666 : void MatrixStorage&lt;ValueType&gt;::buildCSCData(</span>
+<span class="lineNum">     172 </span>            :     HArray&lt;IndexType&gt;&amp; colIA,
+<span class="lineNum">     173 </span>            :     HArray&lt;IndexType&gt;&amp; colJA,
+<span class="lineNum">     174 </span>            :     HArray&lt;ValueType&gt;&amp; colValues ) const
+<span class="lineNum">     175 </span>            : {
+<span class="lineNum">     176 </span><span class="lineCov">       2666 :     HArray&lt;IndexType&gt; rowIA;</span>
+<span class="lineNum">     177 </span><span class="lineCov">       2666 :     HArray&lt;IndexType&gt; rowJA;</span>
+<span class="lineNum">     178 </span><span class="lineCov">       2666 :     HArray&lt;ValueType&gt; rowValues;</span>
+<span class="lineNum">     179 </span><span class="lineCov">       5332 :     buildCSRData( rowIA, rowJA, rowValues );</span>
+<span class="lineNum">     180 </span>            :     ContextPtr loc = Context::getHostPtr();
+<span class="lineNum">     181 </span><span class="lineCov">       5332 :     convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), rowIA, rowJA, rowValues, loc );</span>
+<span class="lineNum">     182 </span><span class="lineCov">       2666 : }</span>
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span>            : /* --------------------------------------------------------------------------- */
+<a name="185"><span class="lineNum">     185 </span>            : </a>
+<span class="lineNum">     186 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     187 </span><span class="lineCov">        556 : void MatrixStorage&lt;ValueType&gt;::getFirstColumnIndexes( hmemo::HArray&lt;IndexType&gt;&amp; colIndexes ) const</span>
+<span class="lineNum">     188 </span>            : {
+<span class="lineNum">     189 </span>            :     utilskernel::LArray&lt;IndexType&gt; csrIA;
+<span class="lineNum">     190 </span>            :     utilskernel::LArray&lt;IndexType&gt; csrJA;
+<span class="lineNum">     191 </span>            :     utilskernel::LArray&lt;ValueType&gt; csrValues;
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span><span class="lineCov">       1668 :     buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span>            :     // ToDo: csrIA[i] == csrIA[i+1], no entry in row at all
+<span class="lineNum">     196 </span>            :     // ToDo: csrIA[numRows-1] == numValues possible, out of range addressing
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span>            :     // gather: colIndexes[i] = csrJA[ csrIA[i] ]
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span><span class="lineCov">        556 :     if ( getNumRows() &gt; 0 )</span>
+<span class="lineNum">     201 </span>            :     {
+<span class="lineNum">     202 </span><span class="lineCov">        992 :         SCAI_ASSERT_LT_ERROR( csrIA[getNumRows() - 1], csrJA.size(), &quot;last row without any entry&quot; )</span>
+<span class="lineNum">     203 </span>            :     }
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span><span class="lineCov">        578 :     static LAMAKernel&lt;UtilKernelTrait::setGather&lt;IndexType, IndexType&gt; &gt; setGather;</span>
+<span class="lineNum">     206 </span>            : 
+<span class="lineNum">     207 </span>            :     ContextPtr loc = getContextPtr();
+<span class="lineNum">     208 </span><span class="lineCov">        556 :     setGather.getSupportedContext( loc );</span>
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span><span class="lineCov">       1668 :     WriteOnlyAccess&lt;IndexType&gt; wColIndexes( colIndexes, loc, getNumRows() );</span>
+<span class="lineNum">     211 </span><span class="lineCov">       1668 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     212 </span><span class="lineCov">       1112 :     ReadAccess&lt;IndexType&gt; ja( csrJA, loc );</span>
+<span class="lineNum">     213 </span><span class="lineCov">       1112 :     ReadAccess&lt;IndexType&gt; ia( csrIA, loc );</span>
+<span class="lineNum">     214 </span><span class="lineCov">        556 :     setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), BinaryOp::COPY, getNumRows() );</span>
+<span class="lineNum">     215 </span><span class="lineCov">        556 : }</span>
+<span class="lineNum">     216 </span>            : 
+<span class="lineNum">     217 </span>            : /* --------------------------------------------------------------------------- */
+<a name="218"><span class="lineNum">     218 </span>            : </a>
+<span class="lineNum">     219 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 : void MatrixStorage&lt;ValueType&gt;::assignDummy( const _MatrixStorage&amp; other )</span>
+<span class="lineNum">     221 </span>            : {
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :     SCAI_REGION( &quot;Storage.assign&quot; )</span>
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :     if ( &amp;other == this )</span>
+<span class="lineNum">     225 </span>            :     {
+<span class="lineNum">     226 </span>            :         // self assignments might occur during redistributions
+<span class="lineNum">     227 </span><span class="lineNoCov">          0 :         SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: self assign (skipped)&quot; )</span>
+<span class="lineNum">     228 </span>            :         return;
+<span class="lineNum">     229 </span>            :     }
+<span class="lineNum">     230 </span>            : 
+<span class="lineNum">     231 </span><span class="lineNoCov">          0 :     _MatrixStorage::_assign( other );</span>
+<span class="lineNum">     232 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: assign ( &quot; &lt;&lt; other &lt;&lt; &quot; )&quot; )</span>
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span><span class="lineNoCov">          0 :     if ( other.getFormat() == Format::CSR )</span>
+<span class="lineNum">     235 </span>            :     {
+<span class="lineNum">     236 </span>            :         // CSR storage has more efficient solution: just set CSR data
+<span class="lineNum">     237 </span><span class="lineNoCov">          0 :         other.copyTo( *this );</span>
+<span class="lineNum">     238 </span>            :         return;
+<span class="lineNum">     239 </span>            :     }
+<span class="lineNum">     240 </span>            : 
+<span class="lineNum">     241 </span>            :     // If the size of other value type is smaller that this value type, it might be better
+<span class="lineNum">     242 </span>            :     // to use the other value type.
+<span class="lineNum">     243 </span>            : 
+<span class="lineNum">     244 </span><span class="lineNoCov">          0 :     if ( common::typeSize( other.getValueType() ) &lt; common::typeSize( getValueType() ) )</span>
+<span class="lineNum">     245 </span>            :     {
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :         other.copyTo( *this );</span>
+<span class="lineNum">     247 </span>            :         return;
+<span class="lineNum">     248 </span>            :     }
+<span class="lineNum">     249 </span>            : 
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: (default) assign ( &quot; &lt;&lt; other &lt;&lt; &quot; )&quot; )</span>
+<span class="lineNum">     251 </span>            : 
+<span class="lineNum">     252 </span><span class="lineNoCov">          0 :     HArray&lt;IndexType&gt; csrIA;</span>
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :     HArray&lt;IndexType&gt; csrJA;</span>
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :     HArray&lt;ValueType&gt; csrValues;</span>
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :     other.buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span>            :     IndexType numRows = other.getNumRows();
+<span class="lineNum">     259 </span>            :     IndexType numColumns = other.getNumColumns();
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span>            :     SCAI_LOG_DEBUG( logger, &quot;build CSR data &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns &lt;&lt; &quot;, #nnz = &quot; &lt;&lt; csrJA.size() )
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span><span class="lineNoCov">          0 :     setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     264 </span>            : 
+<span class="lineNum">     265 </span>            :     SCAI_LOG_DEBUG( logger, &quot;now assigned: &quot; &lt;&lt; *this )
+<span class="lineNum">     266 </span>            : }
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span>            : /* --------------------------------------------------------------------------- */
+<a name="269"><span class="lineNum">     269 </span>            : </a>
+<span class="lineNum">     270 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     271 </span><span class="lineNoCov">          0 : void MatrixStorage&lt;ValueType&gt;::copyTo( _MatrixStorage&amp; other ) const</span>
+<span class="lineNum">     272 </span>            : {
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :     SCAI_REGION( &quot;Storage.copyTo&quot; )</span>
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span>            :     // convert my matrix data to CSR and set it for the other matrix 
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: (default) copyTo ( &quot; &lt;&lt; other &lt;&lt; &quot; )&quot; )</span>
+<span class="lineNum">     278 </span>            : 
+<span class="lineNum">     279 </span><span class="lineNoCov">          0 :     HArray&lt;IndexType&gt; csrIA;</span>
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :     HArray&lt;IndexType&gt; csrJA;</span>
+<span class="lineNum">     281 </span><span class="lineNoCov">          0 :     HArray&lt;ValueType&gt; csrValues;</span>
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span><span class="lineNoCov">          0 :     buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     284 </span>            : 
+<span class="lineNum">     285 </span>            :     SCAI_ASSERT_EQ_DEBUG( csrIA.size(), getNumRows() + 1, &quot;csr: offset array ia has illegal size&quot; )
+<span class="lineNum">     286 </span>            :     SCAI_ASSERT_EQ_DEBUG( csrValues.size(), csrJA.size(), 
+<span class="lineNum">     287 </span>            :                           &quot;csr: ja and values must have same number of entries for non-zero values&quot; )
+<span class="lineNum">     288 </span>            : 
+<span class="lineNum">     289 </span>            :     SCAI_LOG_DEBUG( logger, &quot;build CSR data &quot; &lt;&lt; getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns() &lt;&lt; &quot;, #nnz = &quot; &lt;&lt; csrJA.size() )
+<span class="lineNum">     290 </span>            : 
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :     other.setCSRData( getNumRows(), getNumColumns(), csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;now assigned: &quot; &lt;&lt; *this )</span>
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            : /* --------------------------------------------------------------------------- */
+<a name="297"><span class="lineNum">     297 </span>            : </a>
+<span class="lineNum">     298 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     299 </span><span class="lineCov">         16 : void MatrixStorage&lt;ValueType&gt;::copyBlockTo( _MatrixStorage&amp; other, const IndexType first, const IndexType n ) const</span>
+<span class="lineNum">     300 </span>            : {
+<span class="lineNum">     301 </span>            :     using namespace utilskernel;
+<span class="lineNum">     302 </span>            : 
+<span class="lineNum">     303 </span><span class="lineCov">         16 :     SCAI_ASSERT_LE( first, first + n, &quot;illegal range&quot; )</span>
+<span class="lineNum">     304 </span><span class="lineCov">         48 :     SCAI_ASSERT_VALID_INDEX( first, getNumRows(), &quot;first row out of range&quot; )</span>
+<span class="lineNum">     305 </span><span class="lineCov">         32 :     SCAI_ASSERT_VALID_INDEX( first + n - 1, getNumRows(), &quot;last row out of range&quot; );</span>
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            :     LArray&lt;IndexType&gt; csrIA;
+<span class="lineNum">     308 </span>            :     LArray&lt;IndexType&gt; csrJA;
+<span class="lineNum">     309 </span>            :     LArray&lt;ValueType&gt; csrValues;
+<span class="lineNum">     310 </span>            : 
+<span class="lineNum">     311 </span><span class="lineCov">         16 :     buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     312 </span>            : 
+<span class="lineNum">     313 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span><span class="lineCov">         32 :     SCAI_LOG_INFO( logger, &quot;copyBlockTo : first = &quot; &lt;&lt; first &lt;&lt; &quot;, n = &quot; &lt;&lt; n &lt;&lt; &quot;, from this : &quot; &lt;&lt; *this )</span>
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            :     // copy out the corresponding sections, ia needs a shifting to zero
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span><span class="lineCov">         32 :     LArray&lt;IndexType&gt; blockIA( n + 1 );</span>
+<span class="lineNum">     320 </span><span class="lineCov">         32 :     HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, BinaryOp::COPY, loc );</span>
+<span class="lineNum">     321 </span>            : 
+<span class="lineNum">     322 </span>            :     IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
+<span class="lineNum">     323 </span><span class="lineCov">         32 :     HArrayUtils::compute( blockIA, blockIA, BinaryOp::SUB, offset, loc );</span>
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span>            :     IndexType numBlockValues = blockIA[n];
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span>            :     SCAI_LOG_DEBUG( logger, &quot;offset = &quot; &lt;&lt; offset &lt;&lt; &quot;, #nnz = &quot; &lt;&lt; numBlockValues );
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span><span class="lineCov">         32 :     LArray&lt;IndexType&gt; blockJA( numBlockValues );</span>
+<span class="lineNum">     330 </span><span class="lineCov">         32 :     LArray&lt;ValueType&gt; blockValues( numBlockValues );</span>
+<span class="lineNum">     331 </span>            : 
+<span class="lineNum">     332 </span><span class="lineCov">         32 :     HArrayUtils::setArraySection( blockJA, 0, 1, csrJA, offset, 1, numBlockValues, BinaryOp::COPY, loc );</span>
+<span class="lineNum">     333 </span><span class="lineCov">         32 :     HArrayUtils::setArraySection( blockValues, 0, 1, csrValues, offset, 1, numBlockValues, BinaryOp::COPY, loc );</span>
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span><span class="lineCov">         32 :     other.setCSRData( n, getNumColumns(), blockIA, blockJA, blockValues );</span>
+<span class="lineNum">     336 </span><span class="lineCov">         16 : }</span>
+<span class="lineNum">     337 </span>            : 
+<span class="lineNum">     338 </span>            : /* --------------------------------------------------------------------------- */
+<a name="339"><span class="lineNum">     339 </span>            : </a>
+<span class="lineNum">     340 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     341 </span><span class="lineCov">       1754 : void MatrixStorage&lt;ValueType&gt;::assignTranspose( const MatrixStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     342 </span>            : {
+<span class="lineNum">     343 </span><span class="lineCov">       1754 :     SCAI_REGION( &quot;Storage.assignTranspose&quot; )</span>
+<span class="lineNum">     344 </span><span class="lineCov">       3508 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: assignTranspose &quot; &lt;&lt; other )</span>
+<span class="lineNum">     345 </span><span class="lineCov">       1754 :     HArray&lt;IndexType&gt; cscIA;</span>
+<span class="lineNum">     346 </span><span class="lineCov">       1754 :     HArray&lt;IndexType&gt; cscJA;</span>
+<span class="lineNum">     347 </span><span class="lineCov">       1754 :     HArray&lt;ValueType&gt; cscValues;</span>
+<span class="lineNum">     348 </span><span class="lineCov">       1754 :     other.buildCSCData( cscIA, cscJA, cscValues );</span>
+<span class="lineNum">     349 </span>            :     // Compressed sparse column data can be used directly to generate the transposed matrix
+<span class="lineNum">     350 </span>            :     // by interpretation as CSR data.
+<span class="lineNum">     351 </span><span class="lineCov">       1754 :     setCSRData( other.getNumColumns(), other.getNumRows(), cscIA, cscJA, cscValues );</span>
+<span class="lineNum">     352 </span><span class="lineCov">       1754 : }</span>
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            : /* --------------------------------------------------------------------------- */
+<a name="355"><span class="lineNum">     355 </span>            : </a>
+<span class="lineNum">     356 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     357 </span><span class="lineCov">       1140 : void MatrixStorage&lt;ValueType&gt;::joinRows(</span>
+<span class="lineNum">     358 </span>            :     HArray&lt;IndexType&gt;&amp; outSizes,
+<span class="lineNum">     359 </span>            :     HArray&lt;IndexType&gt;&amp; outJA,
+<span class="lineNum">     360 </span>            :     HArray&lt;ValueType&gt;&amp; outValues,
+<span class="lineNum">     361 </span>            :     const IndexType numLocalRows,
+<span class="lineNum">     362 </span>            :     const HArray&lt;IndexType&gt;&amp; rowIndexes,
+<span class="lineNum">     363 </span>            :     const HArray&lt;IndexType&gt;&amp; inSizes,
+<span class="lineNum">     364 </span>            :     const HArray&lt;IndexType&gt;&amp; inJA,
+<span class="lineNum">     365 </span>            :     const HArray&lt;ValueType&gt;&amp; inValues )
+<span class="lineNum">     366 </span>            : {
+<span class="lineNum">     367 </span><span class="lineCov">       1140 :     SCAI_REGION( &quot;Storage.joinRows&quot; )</span>
+<span class="lineNum">     368 </span><span class="lineCov">       2280 :     SCAI_LOG_INFO( logger, &quot;join &quot; &lt;&lt; numLocalRows &lt;&lt; &quot; rows &quot; )</span>
+<span class="lineNum">     369 </span>            :     {
+<span class="lineNum">     370 </span><span class="lineCov">       1140 :         WriteOnlyAccess&lt;IndexType&gt; sizes( outSizes, numLocalRows );</span>
+<span class="lineNum">     371 </span><span class="lineCov">       1140 :         ReadAccess&lt;IndexType&gt; rowSizes( inSizes );</span>
+<span class="lineNum">     372 </span><span class="lineCov">       1140 :         ReadAccess&lt;IndexType&gt; indexes( rowIndexes );</span>
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span>            :         // initialize counters (Attention: sizes.size() != rowSizes.size())
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span><span class="lineCov">       2510 :         for ( IndexType i = 0; i &lt; sizes.size(); ++i )</span>
+<span class="lineNum">     377 </span>            :         {
+<span class="lineNum">     378 </span><span class="lineCov">       2510 :             sizes[i] = 0;</span>
+<span class="lineNum">     379 </span>            :         }
+<span class="lineNum">     380 </span>            : 
+<span class="lineNum">     381 </span>            :         // count elements for each row
+<span class="lineNum">     382 </span><span class="lineCov">       4230 :         for ( IndexType i = 0; i &lt; rowSizes.size(); ++i )</span>
+<span class="lineNum">     383 </span>            :         {
+<span class="lineNum">     384 </span><span class="lineCov">       1545 :             sizes[indexes[i]] += rowSizes[i];</span>
+<span class="lineNum">     385 </span><span class="lineCov">       1140 :         }</span>
+<span class="lineNum">     386 </span>            :     }
+<span class="lineNum">     387 </span>            :     // generate offset array for insertion
+<span class="lineNum">     388 </span><span class="lineCov">       1140 :     HArray&lt;IndexType&gt; IA;</span>
+<span class="lineNum">     389 </span>            :     {
+<span class="lineNum">     390 </span><span class="lineCov">       1140 :         WriteOnlyAccess&lt;IndexType&gt; offsets( IA, numLocalRows + 1 );</span>
+<span class="lineNum">     391 </span><span class="lineCov">       1140 :         ReadAccess&lt;IndexType&gt; sizes( outSizes );</span>
+<span class="lineNum">     392 </span><span class="lineCov">       1140 :         OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, BinaryOp::COPY );</span>
+<span class="lineNum">     393 </span><span class="lineCov">       2280 :         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );</span>
+<span class="lineNum">     394 </span>            :     }
+<span class="lineNum">     395 </span><span class="lineCov">       1140 :     WriteAccess&lt;IndexType&gt; tmpIA( IA );</span>
+<span class="lineNum">     396 </span><span class="lineCov">       1140 :     WriteAccess&lt;IndexType&gt; ja( outJA );</span>
+<span class="lineNum">     397 </span><span class="lineCov">       1140 :     WriteAccess&lt;ValueType&gt; values( outValues );</span>
+<span class="lineNum">     398 </span><span class="lineCov">       1140 :     ReadAccess&lt;IndexType&gt; rowSizes( inSizes );</span>
+<span class="lineNum">     399 </span><span class="lineCov">       1140 :     ReadAccess&lt;IndexType&gt; rowJA( inJA );</span>
+<span class="lineNum">     400 </span><span class="lineCov">       1140 :     ReadAccess&lt;ValueType&gt; rowValues( inValues );</span>
+<span class="lineNum">     401 </span><span class="lineCov">       1140 :     ReadAccess&lt;IndexType&gt; indexes( rowIndexes );</span>
+<span class="lineNum">     402 </span>            :     // resize data arrays
+<span class="lineNum">     403 </span><span class="lineCov">       2280 :     ja.resize( rowJA.size() );</span>
+<span class="lineNum">     404 </span><span class="lineCov">       2280 :     values.resize( rowValues.size() );</span>
+<span class="lineNum">     405 </span>            :     // insert rows
+<span class="lineNum">     406 </span>            :     IndexType dataIndex = 0;
+<span class="lineNum">     407 </span>            : 
+<span class="lineNum">     408 </span><span class="lineCov">       4230 :     for ( IndexType i = 0; i &lt; rowSizes.size(); ++i )</span>
+<span class="lineNum">     409 </span>            :     {
+<span class="lineNum">     410 </span><span class="lineCov">       1545 :         IndexType currentRow = indexes[i];</span>
+<span class="lineNum">     411 </span>            : 
+<span class="lineNum">     412 </span><span class="lineCov">       3350 :         for ( IndexType ii = 0; ii &lt; rowSizes[i]; ++ii )</span>
+<span class="lineNum">     413 </span>            :         {
+<span class="lineNum">     414 </span>            :             // insert data at old position 'dataIndex' in row 'currentRow'
+<span class="lineNum">     415 </span>            :             // at new position 'tmpIA[currentRow]'
+<span class="lineNum">     416 </span><span class="lineCov">       1805 :             ja[tmpIA[currentRow]] = rowJA[dataIndex];</span>
+<span class="lineNum">     417 </span><span class="lineCov">       1805 :             values[tmpIA[currentRow]] = rowValues[dataIndex];</span>
+<span class="lineNum">     418 </span><span class="lineCov">       1805 :             dataIndex++;</span>
+<span class="lineNum">     419 </span><span class="lineCov">       1805 :             tmpIA[currentRow]++;</span>
+<span class="lineNum">     420 </span>            :         }
+<span class="lineNum">     421 </span>            :     }
+<span class="lineNum">     422 </span><span class="lineCov">       1140 : }</span>
+<span class="lineNum">     423 </span>            : 
+<span class="lineNum">     424 </span>            : /* --------------------------------------------------------------------------- */
+<a name="425"><span class="lineNum">     425 </span>            : </a>
+<span class="lineNum">     426 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 : MatrixStorage&lt;ValueType&gt;&amp; MatrixStorage&lt;ValueType&gt;::operator=( const _MatrixStorage&amp; other )</span>
+<span class="lineNum">     428 </span>            : {
+<span class="lineNum">     429 </span><span class="lineNoCov">          0 :     assign( other ); // assign can deal with all kind of storage formats/types</span>
+<span class="lineNum">     430 </span><span class="lineNoCov">          0 :     return *this;</span>
+<span class="lineNum">     431 </span>            : }
+<span class="lineNum">     432 </span>            : 
+<span class="lineNum">     433 </span>            : /* --------------------------------------------------------------------------- */
+<a name="434"><span class="lineNum">     434 </span>            : </a>
+<span class="lineNum">     435 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     436 </span><span class="lineCov">         84 : MatrixStorage&lt;ValueType&gt;&amp; MatrixStorage&lt;ValueType&gt;::operator=( const MatrixStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     437 </span>            : {
+<span class="lineNum">     438 </span><span class="lineCov">         84 :     assign( other ); // assign can deal with all kind of storage formats/types</span>
+<span class="lineNum">     439 </span><span class="lineCov">         84 :     return *this;</span>
+<span class="lineNum">     440 </span>            : }
+<span class="lineNum">     441 </span>            : 
+<span class="lineNum">     442 </span>            : /* --------------------------------------------------------------------------- */
+<a name="443"><span class="lineNum">     443 </span>            : </a>
+<span class="lineNum">     444 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     445 </span><span class="lineCov">         15 : void MatrixStorage&lt;ValueType&gt;::moveImpl( MatrixStorage&lt;ValueType&gt;&amp;&amp; other )</span>
+<span class="lineNum">     446 </span>            : {
+<span class="lineNum">     447 </span><span class="lineCov">         15 :     _MatrixStorage::moveImpl( std::move( other ) );</span>
+<span class="lineNum">     448 </span><span class="lineCov">         15 : }</span>
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span>            : /* --------------------------------------------------------------------------- */
+<a name="451"><span class="lineNum">     451 </span>            : </a>
+<span class="lineNum">     452 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     453 </span><span class="lineCov">      12858 : void MatrixStorage&lt;ValueType&gt;::joinHalo(</span>
+<span class="lineNum">     454 </span><span class="lineCov">       7566 :     const _MatrixStorage&amp; localData,</span>
+<span class="lineNum">     455 </span>            :     const _MatrixStorage&amp; haloData,
+<span class="lineNum">     456 </span>            :     const Halo&amp; halo,
+<span class="lineNum">     457 </span><span class="lineCov">      12858 :     const Distribution&amp; colDist,</span>
+<span class="lineNum">     458 </span>            :     const bool attemptDiagonalProperty )
+<span class="lineNum">     459 </span>            : {
+<span class="lineNum">     460 </span><span class="lineCov">      12858 :     SCAI_REGION( &quot;Storage.joinHalo&quot; )</span>
+<span class="lineNum">     461 </span><span class="lineCov">      25716 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     462 </span>            :                    &quot;join local = &quot; &lt;&lt; localData &lt;&lt; &quot; with diag = &quot; &lt;&lt; localData.hasDiagonalProperty() &lt;&lt; &quot; and halo = &quot; &lt;&lt; haloData &lt;&lt; &quot;, col dist = &quot; &lt;&lt; colDist )
+<span class="lineNum">     463 </span>            :     //  Default solution joins storage data via the CSR format
+<span class="lineNum">     464 </span>            :     //  Note: this solution works also for *this == localData or haloData
+<span class="lineNum">     465 </span><span class="lineCov">      12858 :     HArray&lt;IndexType&gt; localIA;</span>
+<span class="lineNum">     466 </span><span class="lineCov">      12858 :     HArray&lt;IndexType&gt; localJA;</span>
+<span class="lineNum">     467 </span><span class="lineCov">      12858 :     HArray&lt;ValueType&gt; localValues;</span>
+<span class="lineNum">     468 </span><span class="lineCov">      12858 :     localData.buildCSRData( localIA, localJA, localValues );</span>
+<span class="lineNum">     469 </span>            :     SCAI_LOG_DEBUG( logger, &quot;local CSR: ia = &quot; &lt;&lt; localIA &lt;&lt; &quot;, ja = &quot; &lt;&lt; localJA &lt;&lt; &quot;, values = &quot; &lt;&lt; localValues )
+<span class="lineNum">     470 </span>            :     // map back the local indexes to global column indexes
+<span class="lineNum">     471 </span>            :     {
+<span class="lineNum">     472 </span><span class="lineCov">      12858 :         IndexType numValues = localJA.size();</span>
+<span class="lineNum">     473 </span><span class="lineCov">      12858 :         WriteAccess&lt;IndexType&gt; ja( localJA );</span>
+<span class="lineNum">     474 </span>            : 
+<span class="lineNum">     475 </span><span class="lineCov">      73968 :         for ( IndexType i = 0; i &lt; numValues; i++ )</span>
+<span class="lineNum">     476 </span>            :         {
+<span class="lineNum">     477 </span><span class="lineCov">      73968 :             ja[i] = colDist.local2global( ja[i] );</span>
+<span class="lineNum">     478 </span>            :         }
+<span class="lineNum">     479 </span>            :     }
+<span class="lineNum">     480 </span><span class="lineCov">      12858 :     HArray&lt;IndexType&gt; haloIA;</span>
+<span class="lineNum">     481 </span><span class="lineCov">      12858 :     HArray&lt;IndexType&gt; haloJA;</span>
+<span class="lineNum">     482 </span><span class="lineCov">      12858 :     HArray&lt;ValueType&gt; haloValues;</span>
+<span class="lineNum">     483 </span><span class="lineCov">      12858 :     haloData.buildCSRData( haloIA, haloJA, haloValues );</span>
+<span class="lineNum">     484 </span>            :     SCAI_LOG_DEBUG( logger, &quot;halo CSR: ia = &quot; &lt;&lt; haloIA &lt;&lt; &quot;, ja = &quot; &lt;&lt; haloJA &lt;&lt; &quot;, values = &quot; &lt;&lt; haloValues )
+<span class="lineNum">     485 </span>            :     // map back the halo indexes to global column indexes
+<span class="lineNum">     486 </span>            :     // this mapping is given by the array of required indexes
+<span class="lineNum">     487 </span>            :     {
+<span class="lineNum">     488 </span><span class="lineCov">      12858 :         IndexType numValues = haloJA.size();</span>
+<span class="lineNum">     489 </span><span class="lineCov">      12858 :         WriteAccess&lt;IndexType&gt; ja( haloJA );</span>
+<span class="lineNum">     490 </span><span class="lineCov">      12858 :         ReadAccess&lt;IndexType&gt; halo2global( halo.getRequiredIndexes() );</span>
+<span class="lineNum">     491 </span>            : 
+<span class="lineNum">     492 </span><span class="lineCov">      87850 :         for ( IndexType i = 0; i &lt; numValues; i++ )</span>
+<span class="lineNum">     493 </span>            :         {
+<span class="lineNum">     494 </span><span class="lineCov">      87850 :             ja[i] = halo2global[ja[i]];</span>
+<span class="lineNum">     495 </span>            :         }
+<span class="lineNum">     496 </span>            :     }
+<span class="lineNum">     497 </span><span class="lineCov">      12858 :     HArray&lt;IndexType&gt; outIA;</span>
+<span class="lineNum">     498 </span><span class="lineCov">      12858 :     HArray&lt;IndexType&gt; outJA;</span>
+<span class="lineNum">     499 </span><span class="lineCov">      12858 :     HArray&lt;ValueType&gt; outValues;</span>
+<span class="lineNum">     500 </span>            :     IndexType numKeepDiagonals = 0;
+<span class="lineNum">     501 </span>            : 
+<span class="lineNum">     502 </span><span class="lineCov">      16722 :     if ( attemptDiagonalProperty &amp;&amp; localData.hasDiagonalProperty() )</span>
+<span class="lineNum">     503 </span>            :     {
+<span class="lineNum">     504 </span>            :         numKeepDiagonals = common::Math::min( localData.getNumRows(), localData.getNumColumns() );
+<span class="lineNum">     505 </span><span class="lineCov">       7404 :         SCAI_LOG_INFO( logger, localData &lt;&lt; &quot;: has diagonal property, numKeepDiagonals = &quot; &lt;&lt; numKeepDiagonals );</span>
+<span class="lineNum">     506 </span>            :     }
+<span class="lineNum">     507 </span>            : 
+<span class="lineNum">     508 </span>            :     // use static method of MatrixStorage
+<span class="lineNum">     509 </span><span class="lineCov">      12858 :     StorageMethods&lt;ValueType&gt;::joinCSR( outIA, outJA, outValues, localIA, localJA, localValues, haloIA, haloJA,</span>
+<span class="lineNum">     510 </span>            :                                         haloValues, numKeepDiagonals );
+<span class="lineNum">     511 </span>            :     // here mIA is size array, NOT offsets
+<span class="lineNum">     512 </span><span class="lineCov">      12858 :     const IndexType numRows = outIA.size() - 1;</span>
+<span class="lineNum">     513 </span>            :     const IndexType numColumns = colDist.getGlobalSize();
+<span class="lineNum">     514 </span><span class="lineCov">      12858 :     setCSRData( numRows, numColumns, outIA, outJA, outValues );</span>
+<span class="lineNum">     515 </span><span class="lineCov">      12858 :     check( &quot;joined matrix storage&quot; );</span>
+<span class="lineNum">     516 </span><span class="lineCov">      12858 : }</span>
+<span class="lineNum">     517 </span>            : 
+<span class="lineNum">     518 </span>            : /* --------------------------------------------------------------------------- */
+<a name="519"><span class="lineNum">     519 </span>            : </a>
+<span class="lineNum">     520 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     521 </span><span class="lineCov">      44145 : void MatrixStorage&lt;ValueType&gt;::localize( const _MatrixStorage&amp; globalData, const Distribution&amp; rowDist )</span>
+<span class="lineNum">     522 </span>            : {
+<span class="lineNum">     523 </span><span class="lineCov">      14739 :     SCAI_REGION( &quot;Storage.localize&quot; )</span>
+<span class="lineNum">     524 </span>            : 
+<span class="lineNum">     525 </span><span class="lineCov">      14739 :     if ( rowDist.isReplicated() )</span>
+<span class="lineNum">     526 </span>            :     {
+<span class="lineNum">     527 </span><span class="lineCov">         36 :         assign( globalData );</span>
+<span class="lineNum">     528 </span><span class="lineCov">      14739 :         return;</span>
+<span class="lineNum">     529 </span>            :     }
+<span class="lineNum">     530 </span>            : 
+<span class="lineNum">     531 </span><span class="lineCov">      14703 :     SCAI_ASSERT_EQUAL_ERROR( globalData.getNumRows(), rowDist.getGlobalSize() )</span>
+<span class="lineNum">     532 </span>            :     const IndexType numColumns = globalData.getNumColumns();
+<span class="lineNum">     533 </span><span class="lineCov">      14703 :     const IndexType localNumRows = rowDist.getLocalSize();</span>
+<span class="lineNum">     534 </span><span class="lineCov">      14703 :     HArray&lt;IndexType&gt; globalIA;</span>
+<span class="lineNum">     535 </span><span class="lineCov">      14703 :     HArray&lt;IndexType&gt; globalJA;</span>
+<span class="lineNum">     536 </span><span class="lineCov">      14703 :     HArray&lt;ValueType&gt; globalValues;</span>
+<span class="lineNum">     537 </span><span class="lineCov">      14703 :     globalData.buildCSRData( globalIA, globalJA, globalValues );</span>
+<span class="lineNum">     538 </span><span class="lineCov">      14703 :     HArray&lt;IndexType&gt; localIA;</span>
+<span class="lineNum">     539 </span><span class="lineCov">      14703 :     HArray&lt;IndexType&gt; localJA;</span>
+<span class="lineNum">     540 </span><span class="lineCov">      14703 :     HArray&lt;ValueType&gt; localValues;</span>
+<span class="lineNum">     541 </span><span class="lineCov">      14703 :     StorageMethods&lt;ValueType&gt;::localizeCSR( localIA, localJA, localValues, globalIA, globalJA, globalValues, rowDist );</span>
+<span class="lineNum">     542 </span><span class="lineCov">      14703 :     setCSRData( localNumRows, numColumns, localIA, localJA, localValues );</span>
+<span class="lineNum">     543 </span><span class="lineCov">      14703 :     check( &quot;localized matrix&quot; );</span>
+<span class="lineNum">     544 </span>            : }
+<span class="lineNum">     545 </span>            : 
+<span class="lineNum">     546 </span>            : /* --------------------------------------------------------------------------- */
+<a name="547"><span class="lineNum">     547 </span>            : </a>
+<span class="lineNum">     548 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     549 </span><span class="lineCov">      14577 : void MatrixStorage&lt;ValueType&gt;::replicate( const _MatrixStorage&amp; localData, const Distribution&amp; rowDist )</span>
+<span class="lineNum">     550 </span>            : {
+<span class="lineNum">     551 </span><span class="lineCov">       4875 :     SCAI_REGION( &quot;Storage.replicate&quot; )</span>
+<span class="lineNum">     552 </span>            : 
+<span class="lineNum">     553 </span><span class="lineCov">       4875 :     if ( rowDist.isReplicated() )</span>
+<span class="lineNum">     554 </span>            :     {
+<span class="lineNum">     555 </span><span class="lineCov">         48 :         SCAI_LOG_INFO( logger, &quot;replicate: assign due to replicated distribution&quot; )</span>
+<span class="lineNum">     556 </span><span class="lineCov">         24 :         assign( localData );</span>
+<span class="lineNum">     557 </span><span class="lineCov">       4875 :         return;</span>
+<span class="lineNum">     558 </span>            :     }
+<span class="lineNum">     559 </span>            : 
+<span class="lineNum">     560 </span><span class="lineCov">       4851 :     SCAI_ASSERT_EQUAL_ERROR( localData.getNumRows(), rowDist.getLocalSize() )</span>
+<span class="lineNum">     561 </span>            :     const IndexType numColumns = localData.getNumColumns();
+<span class="lineNum">     562 </span>            :     const IndexType globalNumRows = rowDist.getGlobalSize();
+<span class="lineNum">     563 </span><span class="lineCov">       4851 :     HArray&lt;IndexType&gt; localIA;</span>
+<span class="lineNum">     564 </span><span class="lineCov">       4851 :     HArray&lt;IndexType&gt; localJA;</span>
+<span class="lineNum">     565 </span><span class="lineCov">       4851 :     HArray&lt;ValueType&gt; localValues;</span>
+<span class="lineNum">     566 </span><span class="lineCov">       4851 :     buildCSRData( localIA, localJA, localValues );</span>
+<span class="lineNum">     567 </span><span class="lineCov">       4851 :     HArray&lt;IndexType&gt; globalIA;</span>
+<span class="lineNum">     568 </span><span class="lineCov">       4851 :     HArray&lt;IndexType&gt; globalJA;</span>
+<span class="lineNum">     569 </span><span class="lineCov">       4851 :     HArray&lt;ValueType&gt; globalValues;</span>
+<span class="lineNum">     570 </span><span class="lineCov">       4851 :     StorageMethods&lt;ValueType&gt;::replicateCSR( globalIA, globalJA, globalValues, localIA, localJA, localValues, rowDist );</span>
+<span class="lineNum">     571 </span><span class="lineCov">       4851 :     setCSRData( globalNumRows, numColumns, globalIA, globalJA, globalValues );</span>
+<span class="lineNum">     572 </span><span class="lineCov">       4851 :     check( &quot;replicated matrix storage&quot; );</span>
+<span class="lineNum">     573 </span>            : }
+<span class="lineNum">     574 </span>            : 
+<span class="lineNum">     575 </span>            : /* --------------------------------------------------------------------------- */
+<a name="576"><span class="lineNum">     576 </span>            : </a>
+<span class="lineNum">     577 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     578 </span><span class="lineCov">      82268 : void MatrixStorage&lt;ValueType&gt;::splitHalo(</span>
+<span class="lineNum">     579 </span>            :     MatrixStorage&lt;ValueType&gt;&amp; localData,
+<span class="lineNum">     580 </span>            :     MatrixStorage&lt;ValueType&gt;&amp; haloData,
+<span class="lineNum">     581 </span>            :     Halo&amp; halo,
+<span class="lineNum">     582 </span><span class="lineCov">      82268 :     const Distribution&amp; colDist,</span>
+<span class="lineNum">     583 </span><span class="lineCov">      31959 :     const Distribution* rowDist ) const</span>
+<span class="lineNum">     584 </span>            : {
+<span class="lineNum">     585 </span><span class="lineCov">      82268 :     SCAI_REGION( &quot;Storage.splitHalo&quot; )</span>
+<span class="lineNum">     586 </span><span class="lineCov">     164536 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: split according to column distribution &quot; &lt;&lt; colDist )</span>
+<span class="lineNum">     587 </span><span class="lineCov">     278763 :     SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), colDist.getGlobalSize() )</span>
+<span class="lineNum">     588 </span>            : 
+<span class="lineNum">     589 </span><span class="lineCov">      82268 :     if ( getFormat() != Format::CSR )</span>
+<span class="lineNum">     590 </span>            :     {
+<span class="lineNum">     591 </span><span class="lineCov">      82268 :         SCAI_UNSUPPORTED( &quot;splitHalo is not supported for &quot; &lt;&lt; getFormat() &lt;&lt; &quot;, converting to CSR!&quot; );</span>
+<span class="lineNum">     592 </span>            :     }
+<span class="lineNum">     593 </span>            : 
+<span class="lineNum">     594 </span><span class="lineCov">      82268 :     if ( colDist.isReplicated() )</span>
+<span class="lineNum">     595 </span>            :     {
+<span class="lineNum">     596 </span>            :         // if there is no column distribution, halo is not needed
+<span class="lineNum">     597 </span><span class="lineCov">      43034 :         if ( rowDist )</span>
+<span class="lineNum">     598 </span>            :         {
+<span class="lineNum">     599 </span><span class="lineCov">      11283 :             localData.localize( *this, *rowDist );</span>
+<span class="lineNum">     600 </span>            :         }
+<span class="lineNum">     601 </span>            :         else
+<span class="lineNum">     602 </span>            :         {
+<span class="lineNum">     603 </span><span class="lineCov">      31751 :             localData.assign( *this );</span>
+<span class="lineNum">     604 </span>            :         }
+<span class="lineNum">     605 </span>            : 
+<span class="lineNum">     606 </span><span class="lineCov">      86068 :         haloData.allocate( getNumRows(), 0 );</span>
+<span class="lineNum">     607 </span><span class="lineCov">      43034 :         halo = Halo(); // empty halo schedule</span>
+<span class="lineNum">     608 </span><span class="lineCov">      82268 :         return;</span>
+<span class="lineNum">     609 </span>            :     }
+<span class="lineNum">     610 </span>            : 
+<span class="lineNum">     611 </span>            :     IndexType numRows = getNumRows();
+<span class="lineNum">     612 </span>            : 
+<span class="lineNum">     613 </span>            :     // check optional row distribution if specified
+<span class="lineNum">     614 </span>            : 
+<span class="lineNum">     615 </span><span class="lineCov">      39234 :     if ( rowDist )</span>
+<span class="lineNum">     616 </span>            :     {
+<span class="lineNum">     617 </span><span class="lineCov">      63918 :         SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: split also localizes for &quot; &lt;&lt; *rowDist )</span>
+<span class="lineNum">     618 </span><span class="lineCov">      31959 :         SCAI_ASSERT_EQUAL_ERROR( getNumRows(), rowDist-&gt;getGlobalSize() )</span>
+<span class="lineNum">     619 </span><span class="lineCov">      31959 :         numRows = rowDist-&gt;getLocalSize();</span>
+<span class="lineNum">     620 </span>            :     }
+<span class="lineNum">     621 </span>            : 
+<span class="lineNum">     622 </span><span class="lineCov">      39234 :     HArray&lt;IndexType&gt; csrIA;</span>
+<span class="lineNum">     623 </span><span class="lineCov">      39234 :     HArray&lt;IndexType&gt; csrJA;</span>
+<span class="lineNum">     624 </span><span class="lineCov">      39234 :     HArray&lt;ValueType&gt; csrValues;</span>
+<span class="lineNum">     625 </span><span class="lineCov">      39234 :     buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     626 </span><span class="lineCov">      78468 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: CSR data generated, #non-zeros = &quot; &lt;&lt; csrJA.size() )</span>
+<span class="lineNum">     627 </span><span class="lineCov">      39234 :     HArray&lt;IndexType&gt; localIA;</span>
+<span class="lineNum">     628 </span><span class="lineCov">      39234 :     HArray&lt;IndexType&gt; localJA;</span>
+<span class="lineNum">     629 </span><span class="lineCov">      39234 :     HArray&lt;ValueType&gt; localValues;</span>
+<span class="lineNum">     630 </span><span class="lineCov">      39234 :     HArray&lt;IndexType&gt; haloIA;</span>
+<span class="lineNum">     631 </span><span class="lineCov">      39234 :     HArray&lt;IndexType&gt; haloJA;</span>
+<span class="lineNum">     632 </span><span class="lineCov">      39234 :     HArray&lt;ValueType&gt; haloValues;</span>
+<span class="lineNum">     633 </span><span class="lineCov">      39234 :     StorageMethods&lt;ValueType&gt;::splitCSR( localIA, localJA, localValues, haloIA, haloJA, haloValues, csrIA, csrJA,</span>
+<span class="lineNum">     634 </span>            :                                          csrValues, colDist, rowDist );
+<span class="lineNum">     635 </span>            :     SCAI_ASSERT_EQUAL_DEBUG( localIA.size(), numRows + 1 )
+<span class="lineNum">     636 </span>            :     SCAI_ASSERT_EQUAL_DEBUG( haloIA.size(), numRows + 1 )
+<span class="lineNum">     637 </span><span class="lineCov">      78468 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     638 </span>            :                    *this &lt;&lt; &quot;: split into &quot; &lt;&lt; localJA.size() &lt;&lt; &quot; local non-zeros &quot; &quot; and &quot; &lt;&lt; haloJA.size() &lt;&lt; &quot; halo non-zeros&quot; )
+<span class="lineNum">     639 </span><span class="lineCov">      39234 :     const IndexType localNumColumns = colDist.getLocalSize();</span>
+<span class="lineNum">     640 </span>            :     IndexType haloNumColumns; // will be available after remap
+<span class="lineNum">     641 </span>            :     // build the halo by the non-local indexes
+<span class="lineNum">     642 </span><span class="lineCov">      39234 :     _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );</span>
+<span class="lineNum">     643 </span><span class="lineCov">      78468 :     SCAI_LOG_INFO( logger, &quot;build halo: &quot; &lt;&lt; halo )</span>
+<span class="lineNum">     644 </span><span class="lineCov">      39234 :     localData.setCSRData( numRows, localNumColumns, localIA, localJA, localValues );</span>
+<span class="lineNum">     645 </span><span class="lineCov">      39234 :     localData.check( &quot;local part after split&quot; );</span>
+<span class="lineNum">     646 </span>            :     // halo data is expected to have many empty rows, so enable compressing with row indexes
+<span class="lineNum">     647 </span><span class="lineCov">      39234 :     haloData.setCompressThreshold( 0.5 );</span>
+<span class="lineNum">     648 </span><span class="lineCov">      39234 :     haloData.setCSRData( numRows, haloNumColumns, haloIA, haloJA, haloValues );</span>
+<span class="lineNum">     649 </span><span class="lineCov">      39234 :     haloData.check( &quot;halo part after split&quot; );</span>
+<span class="lineNum">     650 </span><span class="lineCov">      78468 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     651 </span>            :                    &quot;Result of split: local storage = &quot; &lt;&lt; localData &lt;&lt; &quot;, halo storage = &quot; &lt;&lt; haloData &lt;&lt; &quot;, halo = &quot; &lt;&lt; halo )
+<span class="lineNum">     652 </span>            : }
+<span class="lineNum">     653 </span>            : 
+<span class="lineNum">     654 </span>            : /* --------------------------------------------------------------------------- */
+<a name="655"><span class="lineNum">     655 </span>            : </a>
+<span class="lineNum">     656 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     657 </span><span class="lineCov">       2280 : void MatrixStorage&lt;ValueType&gt;::buildHalo( Halo&amp; halo, const Distribution&amp; colDist )</span>
+<span class="lineNum">     658 </span>            : {
+<span class="lineNum">     659 </span><span class="lineCov">       2280 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: build halo according to column distribution &quot; &lt;&lt; colDist )</span>
+<span class="lineNum">     660 </span><span class="lineCov">       3420 :     SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), colDist.getGlobalSize() )</span>
+<span class="lineNum">     661 </span><span class="lineCov">       1140 :     HArray&lt;IndexType&gt; haloIA;</span>
+<span class="lineNum">     662 </span><span class="lineCov">       1140 :     HArray&lt;IndexType&gt; haloJA; // global columns, all non-local</span>
+<span class="lineNum">     663 </span><span class="lineCov">       1140 :     HArray&lt;ValueType&gt; haloValues;</span>
+<span class="lineNum">     664 </span><span class="lineCov">       1140 :     buildCSRData( haloIA, haloJA, haloValues );</span>
+<span class="lineNum">     665 </span>            :     IndexType haloNumColumns; // will be available after remap
+<span class="lineNum">     666 </span>            :     // build the halo by the non-local indexes
+<span class="lineNum">     667 </span><span class="lineCov">       1140 :     _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );</span>
+<span class="lineNum">     668 </span><span class="lineCov">       2280 :     setCSRData( getNumRows(), haloNumColumns, haloIA, haloJA, haloValues );</span>
+<span class="lineNum">     669 </span><span class="lineCov">       1140 :     check( &quot;halo part after split&quot; );</span>
+<span class="lineNum">     670 </span><span class="lineCov">       2280 :     SCAI_LOG_INFO( logger, &quot;Result of buildHalo: &quot; &lt;&lt; &quot;halo storage = &quot; &lt;&lt; *this &lt;&lt; &quot;, halo = &quot; &lt;&lt; halo )</span>
+<span class="lineNum">     671 </span><span class="lineCov">       1140 : }</span>
+<span class="lineNum">     672 </span>            : 
+<span class="lineNum">     673 </span>            : /* ------------------------------------------------------------------------- */
+<a name="674"><span class="lineNum">     674 </span>            : </a>
+<span class="lineNum">     675 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     676 </span><span class="lineCov">         30 : void MatrixStorage&lt;ValueType&gt;::invert( const MatrixStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     677 </span>            : {
+<span class="lineNum">     678 </span><span class="lineCov">         30 :     SCAI_ASSERT_NE_ERROR( other.getFormat(), Format::DENSE, &quot;default implementation relies on override for DenseStorage&quot; )</span>
+<span class="lineNum">     679 </span>            : 
+<span class="lineNum">     680 </span>            :     // there is only a fallback solution via dense matrices
+<span class="lineNum">     681 </span>            : 
+<span class="lineNum">     682 </span><span class="lineCov">         60 :     auto otherDense = convert&lt;DenseStorage&lt;ValueType&gt;&gt;( other );</span>
+<span class="lineNum">     683 </span><span class="lineCov">         30 :     otherDense.invert( otherDense );</span>
+<span class="lineNum">     684 </span><span class="lineCov">         30 :     this-&gt;assign( otherDense );</span>
+<span class="lineNum">     685 </span><span class="lineCov">         30 : }</span>
+<span class="lineNum">     686 </span>            : 
+<span class="lineNum">     687 </span>            : /* ------------------------------------------------------------------------- */
+<a name="688"><span class="lineNum">     688 </span>            : </a>
+<span class="lineNum">     689 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     690 </span><span class="lineCov">      29359 : void MatrixStorage&lt;ValueType&gt;::reduce(</span>
+<span class="lineNum">     691 </span>            :     hmemo::HArray&lt;ValueType&gt;&amp; array, 
+<span class="lineNum">     692 </span>            :     const IndexType dim, 
+<span class="lineNum">     693 </span>            :     const common::BinaryOp reduceOp,
+<span class="lineNum">     694 </span>            :     const common::UnaryOp elemOp )
+<span class="lineNum">     695 </span>            : {
+<span class="lineNum">     696 </span><span class="lineCov">      29359 :     HArray&lt;IndexType&gt; csrIA;</span>
+<span class="lineNum">     697 </span><span class="lineCov">      29359 :     HArray&lt;IndexType&gt; csrJA;</span>
+<span class="lineNum">     698 </span><span class="lineCov">      29359 :     HArray&lt;ValueType&gt; csrValues;</span>
+<span class="lineNum">     699 </span>            : 
+<span class="lineNum">     700 </span><span class="lineCov">      58718 :     buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     701 </span>            : 
+<span class="lineNum">     702 </span><span class="lineCov">      29359 :     hmemo::ReadAccess&lt;ValueType&gt; values( csrValues );</span>
+<span class="lineNum">     703 </span><span class="lineCov">      29359 :     hmemo::ReadAccess&lt;IndexType&gt; ia( csrIA );</span>
+<span class="lineNum">     704 </span><span class="lineCov">      29359 :     hmemo::ReadAccess&lt;IndexType&gt; ja( csrJA );</span>
+<span class="lineNum">     705 </span>            : 
+<span class="lineNum">     706 </span><span class="lineCov">      29359 :     hmemo::WriteAccess&lt;ValueType&gt; a( array );</span>
+<span class="lineNum">     707 </span>            : 
+<span class="lineNum">     708 </span><span class="lineCov">      29359 :     OpenMPCSRUtils::reduce( a.get(), ia.get(), ja.get(), values.get(), getNumRows(), dim, reduceOp, elemOp );</span>
+<span class="lineNum">     709 </span>            : 
+<span class="lineNum">     710 </span>            :     /*
+<span class="lineNum">     711 </span>            :     if ( dim == 0 )
+<span class="lineNum">     712 </span>            :     {
+<span class="lineNum">     713 </span>            :         SCAI_ASSERT_EQ_ERROR( array.size(), getNumRows(), &quot;size mismatch&quot; );
+<span class="lineNum">     714 </span>            : 
+<span class="lineNum">     715 </span>            :         for ( IndexType i = 0; i &lt; getNumRows(); ++i )
+<span class="lineNum">     716 </span>            :         {
+<span class="lineNum">     717 </span>            :             // a[i] = 0;
+<span class="lineNum">     718 </span>            : 
+<span class="lineNum">     719 </span>            :             for ( IndexType jj = ia[i]; jj &lt; ia[i+1]; ++jj )
+<span class="lineNum">     720 </span>            :             {
+<span class="lineNum">     721 </span>            :                 ValueType v = values[jj];
+<span class="lineNum">     722 </span>            :                 v = applyUnaryOp( elemOp, v );
+<span class="lineNum">     723 </span>            :                 a[i] += v;
+<span class="lineNum">     724 </span>            :             }
+<span class="lineNum">     725 </span>            :         }
+<span class="lineNum">     726 </span>            :     }
+<span class="lineNum">     727 </span>            :     else if ( dim == 1 )
+<span class="lineNum">     728 </span>            :     {
+<span class="lineNum">     729 </span>            :         SCAI_ASSERT_EQ_ERROR( array.size(), getNumColumns(), &quot;size mismatch&quot; );
+<span class="lineNum">     730 </span>            : 
+<span class="lineNum">     731 </span>            :         // for ( IndexType j = 0; j &lt; getNumColumns(); ++j )
+<span class="lineNum">     732 </span>            :         // {
+<span class="lineNum">     733 </span>            :             // a[j] = 0;
+<span class="lineNum">     734 </span>            :         // }
+<span class="lineNum">     735 </span>            : 
+<span class="lineNum">     736 </span>            :         for ( IndexType i = 0; i &lt; getNumRows(); ++i )
+<span class="lineNum">     737 </span>            :         {
+<span class="lineNum">     738 </span>            :             for ( IndexType jj = ia[i]; jj &lt; ia[i+1]; ++jj )
+<span class="lineNum">     739 </span>            :             {
+<span class="lineNum">     740 </span>            :                 IndexType j = ja[jj];
+<span class="lineNum">     741 </span>            :                 ValueType v = values[jj];
+<span class="lineNum">     742 </span>            :                 v = applyUnaryOp( elemOp, v );
+<span class="lineNum">     743 </span>            :                 a[j] += v;
+<span class="lineNum">     744 </span>            :             }
+<span class="lineNum">     745 </span>            :         }
+<span class="lineNum">     746 </span>            :     }
+<span class="lineNum">     747 </span>            :     */
+<span class="lineNum">     748 </span><span class="lineCov">      29359 : }</span>
+<span class="lineNum">     749 </span>            : 
+<span class="lineNum">     750 </span>            : /* ------------------------------------------------------------------------- */
+<a name="751"><span class="lineNum">     751 </span>            : </a>
+<span class="lineNum">     752 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     753 </span><span class="lineCov">         20 : void MatrixStorage&lt;ValueType&gt;::matrixTimesVectorN(</span>
+<span class="lineNum">     754 </span>            :     HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     755 </span>            :     const IndexType n,
+<span class="lineNum">     756 </span>            :     const ValueType alpha,
+<span class="lineNum">     757 </span>            :     const HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     758 </span>            :     const ValueType beta,
+<span class="lineNum">     759 </span>            :     const HArray&lt;ValueType&gt;&amp; y ) const
+<span class="lineNum">     760 </span>            : {
+<span class="lineNum">     761 </span><span class="lineCov">         20 :     SCAI_UNSUPPORTED(</span>
+<span class="lineNum">     762 </span>            :         *this &lt;&lt; &quot;: no matrixTimesVectorN&quot; &lt;&lt; &quot; ( denseStorage = anyStorage * denseStorage )&quot; &lt;&lt; &quot; for this format available, take CSR&quot; );
+<span class="lineNum">     763 </span>            : 
+<span class="lineNum">     764 </span><span class="lineCov">         40 :     auto tmp = convert&lt;CSRStorage&lt;ValueType&gt;&gt;( *this );</span>
+<span class="lineNum">     765 </span><span class="lineCov">         20 :     tmp.matrixTimesVectorN( result, n, alpha, x, beta, y );</span>
+<span class="lineNum">     766 </span><span class="lineCov">         20 : }</span>
+<span class="lineNum">     767 </span>            : 
+<span class="lineNum">     768 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     769 </span>            : 
+<span class="lineNum">     770 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     771 </span><span class="lineCov">          4 : SyncToken* MatrixStorage&lt;ValueType&gt;::matrixTimesVectorAsync(</span>
+<span class="lineNum">     772 </span>            :     HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     773 </span>            :     const ValueType alpha,
+<span class="lineNum">     774 </span>            :     const HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     775 </span>            :     const ValueType beta,
+<span class="lineNum">     776 </span>            :     const HArray&lt;ValueType&gt;&amp; y,
+<span class="lineNum">     777 </span>            :     const common::MatrixOp op ) const
+<span class="lineNum">     778 </span>            : {
+<span class="lineNum">     779 </span><span class="lineCov">          8 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: asynchronous matrixTimesVector by new thread&quot; )</span>
+<span class="lineNum">     780 </span>            :     // general default: asynchronous execution is done by a new thread
+<span class="lineNum">     781 </span>            :     void ( MatrixStorage::*pf )(
+<span class="lineNum">     782 </span>            :         HArray&lt;ValueType&gt;&amp;,
+<span class="lineNum">     783 </span>            :         const ValueType,
+<span class="lineNum">     784 </span>            :         const HArray&lt;ValueType&gt;&amp;,
+<span class="lineNum">     785 </span>            :         const ValueType,
+<span class="lineNum">     786 </span>            :         const HArray&lt;ValueType&gt;&amp;,
+<span class="lineNum">     787 </span>            :         const common::MatrixOp ) const
+<span class="lineNum">     788 </span>            :     = &amp;MatrixStorage&lt;ValueType&gt;::matrixTimesVector;
+<span class="lineNum">     789 </span>            :     using std::bind;
+<span class="lineNum">     790 </span>            :     using std::ref;
+<span class="lineNum">     791 </span>            :     using std::cref;
+<span class="lineNum">     792 </span><span class="lineCov">          8 :     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ), op ) );</span>
+<span class="lineNum">     793 </span>            : }
+<span class="lineNum">     794 </span>            : 
+<span class="lineNum">     795 </span>            : /* --------------------------------------------------------------------------- */
+<a name="796"><span class="lineNum">     796 </span>            : </a>
+<span class="lineNum">     797 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     798 </span><span class="lineCov">         18 : void MatrixStorage&lt;ValueType&gt;::jacobiIterate(</span>
+<span class="lineNum">     799 </span>            :     HArray&lt;ValueType&gt;&amp; solution,
+<span class="lineNum">     800 </span>            :     const HArray&lt;ValueType&gt;&amp; oldSolution,
+<span class="lineNum">     801 </span>            :     const HArray&lt;ValueType&gt;&amp; rhs,
+<span class="lineNum">     802 </span>            :     const ValueType omega ) const
+<span class="lineNum">     803 </span>            : {
+<span class="lineNum">     804 </span><span class="lineCov">         18 :     SCAI_UNSUPPORTED( *this &lt;&lt; &quot;: no jacobiIterate for this format available, take CSR&quot; )</span>
+<span class="lineNum">     805 </span><span class="lineCov">         36 :     auto tmp = convert&lt;CSRStorage&lt;ValueType&gt;&gt;( * this );</span>
+<span class="lineNum">     806 </span><span class="lineCov">         18 :     tmp.jacobiIterate( solution, oldSolution, rhs, omega );</span>
+<span class="lineNum">     807 </span><span class="lineCov">         18 : }</span>
+<span class="lineNum">     808 </span>            : 
+<span class="lineNum">     809 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     810 </span>            : 
+<span class="lineNum">     811 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     812 </span><span class="lineCov">         24 : SyncToken* MatrixStorage&lt;ValueType&gt;::jacobiIterateAsync(</span>
+<span class="lineNum">     813 </span>            :     HArray&lt;ValueType&gt;&amp; solution,
+<span class="lineNum">     814 </span>            :     const HArray&lt;ValueType&gt;&amp; oldSolution,
+<span class="lineNum">     815 </span>            :     const HArray&lt;ValueType&gt;&amp; rhs,
+<span class="lineNum">     816 </span>            :     const ValueType omega ) const
+<span class="lineNum">     817 </span>            : {
+<span class="lineNum">     818 </span>            :     // general default: asynchronous execution is done by a new thread
+<span class="lineNum">     819 </span>            :     void ( MatrixStorage::*pf )(
+<span class="lineNum">     820 </span>            :         HArray&lt;ValueType&gt;&amp;,
+<span class="lineNum">     821 </span>            :         const HArray&lt;ValueType&gt;&amp;,
+<span class="lineNum">     822 </span>            :         const HArray&lt;ValueType&gt;&amp;,
+<span class="lineNum">     823 </span>            :         const ValueType ) const
+<span class="lineNum">     824 </span>            :     = &amp;MatrixStorage&lt;ValueType&gt;::jacobiIterate;
+<span class="lineNum">     825 </span>            :     using std::bind;
+<span class="lineNum">     826 </span>            :     using std::cref;
+<span class="lineNum">     827 </span>            :     using std::ref;
+<span class="lineNum">     828 </span><span class="lineCov">         48 :     return new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );</span>
+<span class="lineNum">     829 </span>            : }
+<span class="lineNum">     830 </span>            : 
+<span class="lineNum">     831 </span>            : /* --------------------------------------------------------------------------- */
+<a name="832"><span class="lineNum">     832 </span>            : </a>
+<span class="lineNum">     833 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     834 </span><span class="lineCov">         12 : void MatrixStorage&lt;ValueType&gt;::jacobiIterateHalo(</span>
+<span class="lineNum">     835 </span>            :     HArray&lt;ValueType&gt;&amp; localSolution,
+<span class="lineNum">     836 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; localStorage,
+<span class="lineNum">     837 </span>            :     const HArray&lt;ValueType&gt;&amp; oldHaloSolution,
+<span class="lineNum">     838 </span>            :     const ValueType omega ) const
+<span class="lineNum">     839 </span>            : {
+<span class="lineNum">     840 </span><span class="lineCov">         12 :     SCAI_UNSUPPORTED( *this &lt;&lt; &quot;: jacobiIterateHalo for this format NOT available, take CSR&quot; )</span>
+<span class="lineNum">     841 </span>            : 
+<span class="lineNum">     842 </span>            :     // very inefficient as we just need the diagonal
+<span class="lineNum">     843 </span>            : 
+<span class="lineNum">     844 </span><span class="lineCov">         24 :     auto csrHalo  = convert&lt;CSRStorage&lt;ValueType&gt;&gt;( *this );</span>
+<span class="lineNum">     845 </span>            :    
+<span class="lineNum">     846 </span>            :     // we need the diagonal from the local storage
+<span class="lineNum">     847 </span>            : 
+<span class="lineNum">     848 </span><span class="lineCov">         12 :     HArray&lt;ValueType&gt; diagValues;</span>
+<span class="lineNum">     849 </span><span class="lineCov">         12 :     localStorage.getDiagonal( diagValues );</span>
+<span class="lineNum">     850 </span>            : 
+<span class="lineNum">     851 </span><span class="lineCov">         36 :     auto csrLocal = diagonal&lt;CSRStorage&lt;ValueType&gt;&gt;( diagValues );</span>
+<span class="lineNum">     852 </span>            : 
+<span class="lineNum">     853 </span><span class="lineCov">         24 :     csrHalo.jacobiIterateHalo( localSolution, csrLocal, oldHaloSolution, omega );</span>
+<span class="lineNum">     854 </span><span class="lineCov">         12 : }</span>
+<span class="lineNum">     855 </span>            : 
+<span class="lineNum">     856 </span>            : /* --------------------------------------------------------------------------- */
+<a name="857"><span class="lineNum">     857 </span>            : </a>
+<span class="lineNum">     858 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     859 </span><span class="lineNoCov">          0 : void MatrixStorage&lt;ValueType&gt;::jacobiIterateHalo(</span>
+<span class="lineNum">     860 </span>            :     HArray&lt;ValueType&gt;&amp; localSolution,
+<span class="lineNum">     861 </span>            :     const HArray&lt;ValueType&gt;&amp; localDiagonal,
+<span class="lineNum">     862 </span>            :     const HArray&lt;ValueType&gt;&amp; oldHaloSolution,
+<span class="lineNum">     863 </span>            :     const ValueType omega ) const
+<span class="lineNum">     864 </span>            : {
+<span class="lineNum">     865 </span><span class="lineNoCov">          0 :     SCAI_UNSUPPORTED( *this &lt;&lt; &quot;: jacobiIterateHalo for this format NOT available, take CSR&quot; )</span>
+<span class="lineNum">     866 </span>            : 
+<span class="lineNum">     867 </span><span class="lineNoCov">          0 :     auto csrHalo  = convert&lt;CSRStorage&lt;ValueType&gt;&gt;( *this );</span>
+<span class="lineNum">     868 </span><span class="lineNoCov">          0 :     csrHalo.jacobiIterateHalo( localSolution, localDiagonal, oldHaloSolution, omega );</span>
+<span class="lineNum">     869 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     870 </span>            : 
+<span class="lineNum">     871 </span>            : /* --------------------------------------------------------------------------- */
+<a name="872"><span class="lineNum">     872 </span>            : </a>
+<span class="lineNum">     873 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     874 </span><span class="lineNoCov">          0 : void MatrixStorage&lt;ValueType&gt;::matrixTimesScalar( const ValueType alpha, const MatrixStorage&lt;ValueType&gt;&amp; a )</span>
+<span class="lineNum">     875 </span>            : {
+<span class="lineNum">     876 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot; = alpha( &quot; &lt;&lt; alpha &lt;&lt; &quot; ) x &quot; &lt;&lt; a )</span>
+<span class="lineNum">     877 </span>            : 
+<span class="lineNum">     878 </span><span class="lineNoCov">          0 :     if ( &amp;a != this )</span>
+<span class="lineNum">     879 </span>            :     {
+<span class="lineNum">     880 </span><span class="lineNoCov">          0 :         assign( a );</span>
+<span class="lineNum">     881 </span>            :     }
+<span class="lineNum">     882 </span>            : 
+<span class="lineNum">     883 </span><span class="lineNoCov">          0 :     scale( alpha );</span>
+<span class="lineNum">     884 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     885 </span>            : 
+<span class="lineNum">     886 </span>            : /* --------------------------------------------------------------------------- */
+<a name="887"><span class="lineNum">     887 </span>            : </a>
+<span class="lineNum">     888 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     889 </span><span class="lineCov">       2931 : void MatrixStorage&lt;ValueType&gt;::matrixPlusMatrix(</span>
+<span class="lineNum">     890 </span>            :     const ValueType alpha,
+<span class="lineNum">     891 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; a,
+<span class="lineNum">     892 </span>            :     const ValueType beta,
+<span class="lineNum">     893 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; b )
+<span class="lineNum">     894 </span>            : {
+<span class="lineNum">     895 </span><span class="lineCov">       2931 :     SCAI_UNSUPPORTED( *this &lt;&lt; &quot;: no matrixPlusMatrix for this format available, take CSR&quot; )</span>
+<span class="lineNum">     896 </span>            : 
+<span class="lineNum">     897 </span>            :     // Make sure that CSRStorage really has overridden it, otherwise endless recursion here
+<span class="lineNum">     898 </span>            : 
+<span class="lineNum">     899 </span><span class="lineCov">       2931 :     SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, &quot;default implementation has not been overridden by CSR&quot; )</span>
+<span class="lineNum">     900 </span>            : 
+<span class="lineNum">     901 </span><span class="lineCov">       5862 :     auto csr  = convert&lt;CSRStorage&lt;ValueType&gt;&gt;( *this );</span>
+<span class="lineNum">     902 </span><span class="lineCov">       2931 :     csr.matrixPlusMatrix( alpha, a, beta, b );</span>
+<span class="lineNum">     903 </span><span class="lineCov">       2931 :     assign( csr );</span>
+<span class="lineNum">     904 </span><span class="lineCov">       2931 : }</span>
+<span class="lineNum">     905 </span>            : 
+<span class="lineNum">     906 </span>            : /* --------------------------------------------------------------------------- */
+<a name="907"><span class="lineNum">     907 </span>            : </a>
+<span class="lineNum">     908 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     909 </span><span class="lineCov">        319 : void MatrixStorage&lt;ValueType&gt;::matrixTimesMatrix(</span>
+<span class="lineNum">     910 </span>            :     const ValueType alpha,
+<span class="lineNum">     911 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; a,
+<span class="lineNum">     912 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; b,
+<span class="lineNum">     913 </span>            :     const ValueType beta,
+<span class="lineNum">     914 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; y )
+<span class="lineNum">     915 </span>            : {
+<span class="lineNum">     916 </span><span class="lineCov">        319 :     SCAI_UNSUPPORTED( *this &lt;&lt; &quot;: no matrixTimesMatrix for this format available, take CSR&quot; )</span>
+<span class="lineNum">     917 </span>            : 
+<span class="lineNum">     918 </span>            :     // Make sure that CSRStorage really has overridden it, otherwise endless recursion here
+<span class="lineNum">     919 </span>            : 
+<span class="lineNum">     920 </span><span class="lineCov">        319 :     SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, &quot;default implementation has not been overridden by CSR&quot; )</span>
+<span class="lineNum">     921 </span>            : 
+<span class="lineNum">     922 </span><span class="lineCov">        638 :     auto csr  = convert&lt;CSRStorage&lt;ValueType&gt;&gt;( *this );</span>
+<span class="lineNum">     923 </span><span class="lineCov">        319 :     csr.matrixTimesMatrix( alpha, a, b, beta, y );</span>
+<span class="lineNum">     924 </span><span class="lineCov">        319 :     assign( csr );</span>
+<span class="lineNum">     925 </span><span class="lineCov">        319 : }</span>
+<span class="lineNum">     926 </span>            : 
+<span class="lineNum">     927 </span>            : /* --------------------------------------------------------------------------- */
+<a name="928"><span class="lineNum">     928 </span>            : </a>
+<span class="lineNum">     929 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     930 </span><span class="lineCov">       9245 : RealType&lt;ValueType&gt; MatrixStorage&lt;ValueType&gt;::maxDiffNorm( const MatrixStorage&lt;ValueType&gt;&amp; other ) const</span>
+<span class="lineNum">     931 </span>            : {
+<span class="lineNum">     932 </span><span class="lineCov">       9245 :     SCAI_ASSERT_EQ_ERROR( getNumRows(), other.getNumRows(), &quot;row size mismatch for maxDiffNorm&quot; )</span>
+<span class="lineNum">     933 </span><span class="lineCov">       9245 :     SCAI_ASSERT_EQ_ERROR( getNumColumns(), other.getNumColumns(), &quot;col size mismatch for maxDiffNorm&quot; )</span>
+<span class="lineNum">     934 </span>            : 
+<span class="lineNum">     935 </span><span class="lineCov">       9245 :     SCAI_UNSUPPORTED( *this &lt;&lt; &quot;: no maxDiffNorm for format &quot; &lt;&lt; getFormat() &lt;&lt; &quot; available, take Dense&quot; )</span>
+<span class="lineNum">     936 </span>            : 
+<span class="lineNum">     937 </span><span class="lineCov">       9245 :     SCAI_ASSERT_NE_ERROR( getFormat(), Format::DENSE, &quot;default implementation has not been overridden for DENSE&quot; )</span>
+<span class="lineNum">     938 </span>            : 
+<span class="lineNum">     939 </span><span class="lineCov">      18490 :     auto dense = convert&lt;DenseStorage&lt;ValueType&gt;&gt;( *this );</span>
+<span class="lineNum">     940 </span><span class="lineCov">       9245 :     return dense.maxDiffNorm( other );</span>
+<span class="lineNum">     941 </span>            : }
+<span class="lineNum">     942 </span>            : 
+<span class="lineNum">     943 </span>            : /* --------------------------------------------------------------------------- */
+<a name="944"><span class="lineNum">     944 </span>            : </a>
+<span class="lineNum">     945 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     946 </span><span class="lineCov">         30 : void MatrixStorage&lt;ValueType&gt;::exchangeHalo(</span>
+<span class="lineNum">     947 </span>            :     const Halo&amp; halo,
+<span class="lineNum">     948 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; matrix,
+<span class="lineNum">     949 </span>            :     const Communicator&amp; comm )
+<span class="lineNum">     950 </span>            : {
+<span class="lineNum">     951 </span><span class="lineCov">         30 :     IndexType numColumns = matrix.getNumColumns(); // remains unchanged</span>
+<span class="lineNum">     952 </span>            :     // get the matrix data in CSR format
+<span class="lineNum">     953 </span><span class="lineCov">         30 :     HArray&lt;IndexType&gt; sourceIA;</span>
+<span class="lineNum">     954 </span><span class="lineCov">         30 :     HArray&lt;IndexType&gt; sourceJA;</span>
+<span class="lineNum">     955 </span><span class="lineCov">         30 :     HArray&lt;ValueType&gt; sourceValues;</span>
+<span class="lineNum">     956 </span><span class="lineCov">         30 :     matrix.buildCSRData( sourceIA, sourceJA, sourceValues );</span>
+<span class="lineNum">     957 </span><span class="lineCov">         30 :     HArray&lt;IndexType&gt; targetIA;</span>
+<span class="lineNum">     958 </span><span class="lineCov">         30 :     HArray&lt;IndexType&gt; targetJA;</span>
+<span class="lineNum">     959 </span><span class="lineCov">         30 :     HArray&lt;ValueType&gt; targetValues;</span>
+<span class="lineNum">     960 </span><span class="lineCov">         30 :     StorageMethods&lt;ValueType&gt;::exchangeHaloCSR( targetIA, targetJA, targetValues, sourceIA, sourceJA, sourceValues,</span>
+<span class="lineNum">     961 </span>            :             halo, comm );
+<span class="lineNum">     962 </span><span class="lineCov">         30 :     const IndexType targetNumRows = targetIA.size() - 1;</span>
+<span class="lineNum">     963 </span><span class="lineCov">         30 :     setCSRData( targetNumRows, numColumns, targetIA, targetJA, targetValues );</span>
+<span class="lineNum">     964 </span><span class="lineCov">         30 : }</span>
+<span class="lineNum">     965 </span>            : 
+<span class="lineNum">     966 </span>            : /* --------------------------------------------------------------------------- */
+<a name="967"><span class="lineNum">     967 </span>            : </a>
+<span class="lineNum">     968 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     969 </span><span class="lineCov">       9219 : void MatrixStorage&lt;ValueType&gt;::redistribute( const _MatrixStorage&amp; other, const Redistributor&amp; redistributor )</span>
+<span class="lineNum">     970 </span>            : 
+<span class="lineNum">     971 </span>            : {
+<span class="lineNum">     972 </span><span class="lineCov">       5340 :     if ( other.getFormat() == Format::CSR &amp;&amp; other.getValueType() == getValueType() )</span>
+<span class="lineNum">     973 </span>            :     {
+<span class="lineNum">     974 </span>            :         // This special case avoids unnecssary CSR conversions
+<span class="lineNum">     975 </span><span class="lineCov">        971 :         const CSRStorage&lt;ValueType&gt;* otherCSR = dynamic_cast&lt;const CSRStorage&lt;ValueType&gt;*&gt;( &amp;other );</span>
+<span class="lineNum">     976 </span>            :         SCAI_ASSERT_DEBUG( otherCSR, &quot;serious cast error&quot; );
+<span class="lineNum">     977 </span><span class="lineCov">        971 :         redistributeCSR( *otherCSR, redistributor );</span>
+<span class="lineNum">     978 </span><span class="lineCov">       1461 :         return;</span>
+<span class="lineNum">     979 </span>            :     }
+<span class="lineNum">     980 </span>            : 
+<span class="lineNum">     981 </span><span class="lineCov">       4369 :     SCAI_REGION( &quot;Storage.redistribute&quot; )</span>
+<span class="lineNum">     982 </span>            :     // For the redistribution we use the CSR format on both sides
+<span class="lineNum">     983 </span><span class="lineCov">       8738 :     const Distribution&amp; sourceDistribution = *redistributor.getSourceDistributionPtr();</span>
+<span class="lineNum">     984 </span><span class="lineCov">       8738 :     const Distribution&amp; targetDistribution = *redistributor.getTargetDistributionPtr();</span>
+<span class="lineNum">     985 </span><span class="lineCov">       8738 :     SCAI_LOG_INFO( logger, other &lt;&lt; &quot;: redistribute rows via &quot; &lt;&lt; redistributor )</span>
+<span class="lineNum">     986 </span>            :     bool sameDist = false;
+<span class="lineNum">     987 </span>            : 
+<span class="lineNum">     988 </span>            :     // check for same distribution, either equal or both replicated
+<span class="lineNum">     989 </span>            : 
+<span class="lineNum">     990 </span><span class="lineCov">       4379 :     if ( sourceDistribution.isReplicated() &amp;&amp; targetDistribution.isReplicated() )</span>
+<span class="lineNum">     991 </span>            :     {
+<span class="lineNum">     992 </span>            :         sameDist = true;
+<span class="lineNum">     993 </span>            :     }
+<span class="lineNum">     994 </span><span class="lineCov">       4359 :     else if ( &amp;sourceDistribution == &amp;targetDistribution )</span>
+<span class="lineNum">     995 </span>            :     {
+<span class="lineNum">     996 </span>            :         sameDist = true;
+<span class="lineNum">     997 </span>            :     }
+<span class="lineNum">     998 </span>            : 
+<span class="lineNum">     999 </span><span class="lineCov">       4369 :     if ( sameDist )</span>
+<span class="lineNum">    1000 </span>            :     {
+<span class="lineNum">    1001 </span><span class="lineCov">        980 :         SCAI_LOG_INFO( logger, &quot;redistributor with same source/target distribution&quot; )</span>
+<span class="lineNum">    1002 </span><span class="lineCov">        490 :         assign( other );</span>
+<span class="lineNum">    1003 </span>            :         return; // so we are done
+<span class="lineNum">    1004 </span>            :     }
+<span class="lineNum">    1005 </span>            : 
+<span class="lineNum">    1006 </span>            :     const IndexType numColumns = other.getNumColumns(); // does not change
+<span class="lineNum">    1007 </span>            : 
+<span class="lineNum">    1008 </span>            :     // check that source distribution fits with storage
+<span class="lineNum">    1009 </span><span class="lineCov">       3879 :     SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )</span>
+<span class="lineNum">    1010 </span>            :     // get the matrix data from other in CSR format
+<span class="lineNum">    1011 </span><span class="lineCov">       3879 :     HArray&lt;IndexType&gt; sourceIA;</span>
+<span class="lineNum">    1012 </span>            : 
+<span class="lineNum">    1013 </span><span class="lineCov">       3879 :     HArray&lt;IndexType&gt; sourceJA;</span>
+<span class="lineNum">    1014 </span>            : 
+<span class="lineNum">    1015 </span><span class="lineCov">       3879 :     HArray&lt;ValueType&gt; sourceValues;</span>
+<span class="lineNum">    1016 </span>            : 
+<span class="lineNum">    1017 </span><span class="lineCov">       3879 :     other.buildCSRData( sourceIA, sourceJA, sourceValues );</span>
+<span class="lineNum">    1018 </span>            : 
+<span class="lineNum">    1019 </span><span class="lineCov">       3879 :     HArray&lt;IndexType&gt; targetIA;</span>
+<span class="lineNum">    1020 </span>            : 
+<span class="lineNum">    1021 </span><span class="lineCov">       3879 :     HArray&lt;IndexType&gt; targetJA;</span>
+<span class="lineNum">    1022 </span>            : 
+<span class="lineNum">    1023 </span><span class="lineCov">       3879 :     HArray&lt;ValueType&gt; targetValues;</span>
+<span class="lineNum">    1024 </span>            : 
+<span class="lineNum">    1025 </span><span class="lineCov">       3879 :     StorageMethods&lt;ValueType&gt;::redistributeCSR( targetIA, targetJA, targetValues, sourceIA, sourceJA, sourceValues,</span>
+<span class="lineNum">    1026 </span>            :             redistributor );
+<span class="lineNum">    1027 </span>            : 
+<span class="lineNum">    1028 </span><span class="lineCov">       3879 :     const IndexType targetNumRows = targetIA.size() - 1;</span>
+<span class="lineNum">    1029 </span>            : 
+<span class="lineNum">    1030 </span><span class="lineCov">       3879 :     setCSRData( targetNumRows, numColumns, targetIA, targetJA, targetValues );</span>
+<span class="lineNum">    1031 </span>            : }
+<span class="lineNum">    1032 </span>            : 
+<span class="lineNum">    1033 </span>            : /* ------------------------------------------------------------------------- */
+<a name="1034"><span class="lineNum">    1034 </span>            : </a>
+<span class="lineNum">    1035 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1036 </span><span class="lineNoCov">          0 : void MatrixStorage&lt;ValueType&gt;::redistributeCSR( const CSRStorage&lt;ValueType&gt;&amp; other, const Redistributor&amp; redistributor )</span>
+<span class="lineNum">    1037 </span>            : {
+<span class="lineNum">    1038 </span><span class="lineNoCov">          0 :     SCAI_REGION( &quot;Storage.redistributeCSR&quot; )</span>
+<span class="lineNum">    1039 </span><span class="lineNoCov">          0 :     const Distribution&amp; sourceDistribution = *redistributor.getSourceDistributionPtr();</span>
+<span class="lineNum">    1040 </span><span class="lineNoCov">          0 :     const Distribution&amp; targetDistribution = *redistributor.getTargetDistributionPtr();</span>
+<span class="lineNum">    1041 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, other &lt;&lt; &quot;: redistribute rows via &quot; &lt;&lt; redistributor )</span>
+<span class="lineNum">    1042 </span>            :     bool sameDist = false;
+<span class="lineNum">    1043 </span>            : 
+<span class="lineNum">    1044 </span>            :     // check for same distribution, either equal or both replicated
+<span class="lineNum">    1045 </span>            : 
+<span class="lineNum">    1046 </span><span class="lineNoCov">          0 :     if ( sourceDistribution.isReplicated() &amp;&amp; targetDistribution.isReplicated() )</span>
+<span class="lineNum">    1047 </span>            :     {
+<span class="lineNum">    1048 </span>            :         sameDist = true;
+<span class="lineNum">    1049 </span>            :     }
+<span class="lineNum">    1050 </span><span class="lineNoCov">          0 :     else if ( &amp;sourceDistribution == &amp;targetDistribution )</span>
+<span class="lineNum">    1051 </span>            :     {
+<span class="lineNum">    1052 </span>            :         sameDist = true;
+<span class="lineNum">    1053 </span>            :     }
+<span class="lineNum">    1054 </span>            : 
+<span class="lineNum">    1055 </span><span class="lineNoCov">          0 :     if ( sameDist )</span>
+<span class="lineNum">    1056 </span>            :     {
+<span class="lineNum">    1057 </span><span class="lineNoCov">          0 :         SCAI_LOG_INFO( logger, &quot;redistributor with same source/target distribution&quot; )</span>
+<span class="lineNum">    1058 </span><span class="lineNoCov">          0 :         assign( other );</span>
+<span class="lineNum">    1059 </span><span class="lineNoCov">          0 :         return; // so we are done</span>
+<span class="lineNum">    1060 </span>            :     }
+<span class="lineNum">    1061 </span>            : 
+<span class="lineNum">    1062 </span>            :     const IndexType numColumns = other.getNumColumns(); // does not change
+<span class="lineNum">    1063 </span>            : 
+<span class="lineNum">    1064 </span>            :     // check that source distribution fits with storage
+<span class="lineNum">    1065 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )</span>
+<span class="lineNum">    1066 </span>            :     // it is not necessary to convert the other storage to CSR
+<span class="lineNum">    1067 </span><span class="lineNoCov">          0 :     HArray&lt;IndexType&gt; targetIA;</span>
+<span class="lineNum">    1068 </span>            : 
+<span class="lineNum">    1069 </span><span class="lineNoCov">          0 :     HArray&lt;IndexType&gt; targetJA;</span>
+<span class="lineNum">    1070 </span>            : 
+<span class="lineNum">    1071 </span><span class="lineNoCov">          0 :     HArray&lt;ValueType&gt; targetValues;</span>
+<span class="lineNum">    1072 </span>            : 
+<span class="lineNum">    1073 </span><span class="lineNoCov">          0 :     StorageMethods&lt;ValueType&gt;::redistributeCSR( targetIA, targetJA, targetValues, other.getIA(), other.getJA(),</span>
+<span class="lineNum">    1074 </span><span class="lineNoCov">          0 :             other.getValues(), redistributor );</span>
+<span class="lineNum">    1075 </span>            : 
+<span class="lineNum">    1076 </span><span class="lineNoCov">          0 :     const IndexType targetNumRows = targetIA.size() - 1;</span>
+<span class="lineNum">    1077 </span>            : 
+<span class="lineNum">    1078 </span><span class="lineNoCov">          0 :     setCSRData( targetNumRows, numColumns, targetIA, targetJA, targetValues );</span>
+<span class="lineNum">    1079 </span>            : }
+<span class="lineNum">    1080 </span>            : 
+<a name="1081"><span class="lineNum">    1081 </span>            : template&lt;typename ValueType&gt;</a>
+<span class="lineNum">    1082 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">    1083 </span><span class="lineCov">        844 : void MatrixStorage&lt;ValueType&gt;::setRawDenseData(</span>
+<span class="lineNum">    1084 </span>            :     const IndexType numRows,
+<span class="lineNum">    1085 </span>            :     const IndexType numColumns,
+<span class="lineNum">    1086 </span>            :     const OtherValueType values[] )
+<span class="lineNum">    1087 </span>            : {
+<span class="lineNum">    1088 </span>            :     // wrap all the data in a dense storage and make just an assign
+<span class="lineNum">    1089 </span>            : 
+<span class="lineNum">    1090 </span><span class="lineCov">       1688 :     SCAI_LOG_INFO( logger, &quot;set dense storage &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns )</span>
+<span class="lineNum">    1091 </span>            : 
+<span class="lineNum">    1092 </span><span class="lineCov">        844 :     HArrayRef&lt;OtherValueType&gt; denseData( numRows * numColumns, values );</span>
+<span class="lineNum">    1093 </span>            : 
+<span class="lineNum">    1094 </span><span class="lineCov">       1688 :     SCAI_LOG_INFO( logger, &quot;use HArray array ref: &quot; &lt;&lt; denseData  )</span>
+<span class="lineNum">    1095 </span>            : 
+<span class="lineNum">    1096 </span>            :     // move constructor avoids copy of the data
+<span class="lineNum">    1097 </span>            : 
+<span class="lineNum">    1098 </span><span class="lineCov">       4220 :     DenseStorage&lt;OtherValueType&gt; denseStorage( numRows, numColumns, std::move( denseData ) );</span>
+<span class="lineNum">    1099 </span>            : 
+<span class="lineNum">    1100 </span><span class="lineCov">        844 :     assign( denseStorage ); // will internally use the value epsilon</span>
+<span class="lineNum">    1101 </span>            : 
+<span class="lineNum">    1102 </span><span class="lineCov">       1688 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: have set dense data &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns )</span>
+<span class="lineNum">    1103 </span><span class="lineCov">        844 : }</span>
+<span class="lineNum">    1104 </span>            : 
+<span class="lineNum">    1105 </span>            : /* ========================================================================= */
+<span class="lineNum">    1106 </span>            : /*       File I/O                                                            */
+<span class="lineNum">    1107 </span>            : /* ========================================================================= */
+<a name="1108"><span class="lineNum">    1108 </span>            : </a>
+<span class="lineNum">    1109 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1110 </span><span class="lineCov">        304 : void MatrixStorage&lt;ValueType&gt;::writeToFile(</span>
+<span class="lineNum">    1111 </span>            :     const std::string&amp; fileName,
+<span class="lineNum">    1112 </span>            :     const std::string&amp; fileType,
+<span class="lineNum">    1113 </span>            :     const common::ScalarType valuesType,
+<span class="lineNum">    1114 </span>            :     const common::ScalarType indexType,
+<span class="lineNum">    1115 </span>            :     const FileIO::FileMode mode ) const
+<span class="lineNum">    1116 </span>            : {
+<span class="lineNum">    1117 </span><span class="lineCov">        304 :     writeToFile( 1, 0, fileName, fileType, valuesType, indexType, mode );</span>
+<span class="lineNum">    1118 </span><span class="lineCov">        256 : }</span>
+<a name="1119"><span class="lineNum">    1119 </span>            : </a>
+<span class="lineNum">    1120 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1121 </span><span class="lineCov">        304 : void MatrixStorage&lt;ValueType&gt;::writeToFile(</span>
+<span class="lineNum">    1122 </span>            :     const PartitionId /* size */,
+<span class="lineNum">    1123 </span>            :     const PartitionId /* rank */,
+<span class="lineNum">    1124 </span>            :     const std::string&amp; fileName,
+<span class="lineNum">    1125 </span>            :     const std::string&amp; fileType,
+<span class="lineNum">    1126 </span>            :     const common::ScalarType dataType,
+<span class="lineNum">    1127 </span>            :     const common::ScalarType indexType,
+<span class="lineNum">    1128 </span>            :     const FileIO::FileMode mode ) const
+<span class="lineNum">    1129 </span>            : {
+<span class="lineNum">    1130 </span><span class="lineCov">        304 :     std::string suffix = fileType;</span>
+<span class="lineNum">    1131 </span>            : 
+<span class="lineNum">    1132 </span><span class="lineCov">        304 :     if ( suffix == &quot;&quot; )</span>
+<span class="lineNum">    1133 </span>            :     {
+<span class="lineNum">    1134 </span><span class="lineCov">        608 :         suffix = FileIO::getSuffix( fileName );</span>
+<span class="lineNum">    1135 </span>            :     }
+<span class="lineNum">    1136 </span>            : 
+<span class="lineNum">    1137 </span><span class="lineCov">        608 :     if ( FileIO::canCreate( suffix ) )</span>
+<span class="lineNum">    1138 </span>            :     {
+<span class="lineNum">    1139 </span>            :         // okay, we can use FileIO class from factory
+<span class="lineNum">    1140 </span>            : 
+<span class="lineNum">    1141 </span><span class="lineCov">        608 :         std::unique_ptr&lt;FileIO&gt; fileIO( FileIO::create( suffix ) );</span>
+<span class="lineNum">    1142 </span>            : 
+<span class="lineNum">    1143 </span><span class="lineCov">        304 :         if ( dataType != common::ScalarType::UNKNOWN )</span>
+<span class="lineNum">    1144 </span>            :         {
+<span class="lineNum">    1145 </span><span class="lineCov">        174 :             fileIO-&gt;setDataType( dataType );</span>
+<span class="lineNum">    1146 </span>            :         }
+<span class="lineNum">    1147 </span>            : 
+<span class="lineNum">    1148 </span><span class="lineCov">        304 :         if ( indexType != common::ScalarType::UNKNOWN )</span>
+<span class="lineNum">    1149 </span>            :         {
+<span class="lineNum">    1150 </span><span class="lineCov">        174 :             fileIO-&gt;setIndexType( indexType );</span>
+<span class="lineNum">    1151 </span>            :         }
+<span class="lineNum">    1152 </span>            : 
+<span class="lineNum">    1153 </span><span class="lineCov">        304 :         if ( mode != FileIO::DEFAULT_MODE )</span>
+<span class="lineNum">    1154 </span>            :         {
+<span class="lineNum">    1155 </span><span class="lineCov">        174 :             fileIO-&gt;setMode( mode );</span>
+<span class="lineNum">    1156 </span>            :         }
+<span class="lineNum">    1157 </span>            : 
+<span class="lineNum">    1158 </span><span class="lineCov">        608 :         SCAI_LOG_INFO( logger, &quot;write matrix storage to file, FileIO = &quot; &lt;&lt; *fileIO &lt;&lt; &quot;, storage = &quot; &lt;&lt; *this )</span>
+<span class="lineNum">    1159 </span>            : 
+<span class="lineNum">    1160 </span>            :         // Note. SCAI_IO_TYPE_DATA allows that data is converted
+<span class="lineNum">    1161 </span>            : 
+<span class="lineNum">    1162 </span><span class="lineCov">        304 :         fileIO-&gt;writeStorage( *this, fileName );</span>
+<span class="lineNum">    1163 </span>            :     }
+<span class="lineNum">    1164 </span>            :     else
+<span class="lineNum">    1165 </span>            :     {
+<span class="lineNum">    1166 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;writeToFile &quot; &lt;&lt; fileName &lt;&lt; &quot;, unknown file type &quot; &lt;&lt; suffix )</span>
+<span class="lineNum">    1167 </span>            :     }
+<span class="lineNum">    1168 </span><span class="lineCov">        256 : }</span>
+<span class="lineNum">    1169 </span>            : 
+<span class="lineNum">    1170 </span>            : /*****************************************************************************/
+<a name="1171"><span class="lineNum">    1171 </span>            : </a>
+<span class="lineNum">    1172 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1173 </span><span class="lineCov">        266 : void MatrixStorage&lt;ValueType&gt;::readFromFile( const std::string&amp; fileName, const IndexType firstRow, IndexType nRows )</span>
+<span class="lineNum">    1174 </span>            : {
+<span class="lineNum">    1175 </span><span class="lineCov">        532 :     SCAI_LOG_INFO( logger, &quot;MatrixStorage&lt;&quot; &lt;&lt; getValueType() &lt;&lt; &quot;&gt;::readFromFile( &quot; &lt;&lt; fileName &lt;&lt; &quot;)&quot; )</span>
+<span class="lineNum">    1176 </span><span class="lineCov">        266 :     SCAI_REGION( &quot;Storage.readFromFile&quot; )</span>
+<span class="lineNum">    1177 </span>            : 
+<span class="lineNum">    1178 </span><span class="lineCov">        266 :     std::string suffix = FileIO::getSuffix( fileName );</span>
+<span class="lineNum">    1179 </span>            : 
+<span class="lineNum">    1180 </span>            :     // Note: reading does not care about binary argument, just read as it is
+<span class="lineNum">    1181 </span>            : 
+<span class="lineNum">    1182 </span><span class="lineCov">        532 :     if ( FileIO::canCreate( suffix ) )</span>
+<span class="lineNum">    1183 </span>            :     {
+<span class="lineNum">    1184 </span>            :         // okay, we can use FileIO class from factory
+<span class="lineNum">    1185 </span>            : 
+<span class="lineNum">    1186 </span><span class="lineCov">        532 :         std::unique_ptr&lt;FileIO&gt; fileIO( FileIO::create( suffix ) );</span>
+<span class="lineNum">    1187 </span>            : 
+<span class="lineNum">    1188 </span>            :         // We do not set data type, take it from environment variable SCAI_IO_TYPE_DATA
+<span class="lineNum">    1189 </span>            :         // fileIO-&gt;setDataType( common::ScalarType::INTERNAL );
+<span class="lineNum">    1190 </span>            : 
+<span class="lineNum">    1191 </span><span class="lineCov">        532 :         SCAI_LOG_INFO( logger, &quot;Got from factory: &quot; &lt;&lt; *fileIO )</span>
+<span class="lineNum">    1192 </span>            : 
+<span class="lineNum">    1193 </span><span class="lineCov">        266 :         fileIO-&gt;readStorage( *this, fileName, firstRow, nRows );</span>
+<span class="lineNum">    1194 </span>            :     }
+<span class="lineNum">    1195 </span>            :     else
+<span class="lineNum">    1196 </span>            :     {
+<span class="lineNum">    1197 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;readFromFile &quot; &lt;&lt; fileName &lt;&lt; &quot;, illegal suffix &quot; &lt;&lt; suffix )</span>
+<span class="lineNum">    1198 </span>            :     }
+<span class="lineNum">    1199 </span>            : 
+<span class="lineNum">    1200 </span><span class="lineCov">        266 :     check( &quot;read matrix&quot; );</span>
+<span class="lineNum">    1201 </span><span class="lineCov">        266 : }</span>
+<span class="lineNum">    1202 </span>            : 
+<span class="lineNum">    1203 </span>            : /*****************************************************************************/
+<a name="1204"><span class="lineNum">    1204 </span>            : </a>
+<span class="lineNum">    1205 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1206 </span><span class="lineCov">         48 : bool MatrixStorage&lt;ValueType&gt;::checkSymmetry() const</span>
+<span class="lineNum">    1207 </span>            : {
+<span class="lineNum">    1208 </span>            : // check symmetry of matrix
+<span class="lineNum">    1209 </span><span class="lineCov">         48 :     IndexType n = getNumRows();</span>
+<span class="lineNum">    1210 </span>            : 
+<span class="lineNum">    1211 </span><span class="lineCov">         48 :     if ( n != getNumColumns() )</span>
+<span class="lineNum">    1212 </span>            :     {
+<span class="lineNum">    1213 </span>            :         return false;
+<span class="lineNum">    1214 </span>            :     }
+<span class="lineNum">    1215 </span>            : 
+<span class="lineNum">    1216 </span><span class="lineCov">        168 :     for ( IndexType i = 0; i &lt; n; ++i )</span>
+<span class="lineNum">    1217 </span>            :     {
+<span class="lineNum">    1218 </span><span class="lineCov">        312 :         for ( IndexType j = 0; j &lt; i; ++j )</span>
+<span class="lineNum">    1219 </span>            :         {
+<span class="lineNum">    1220 </span><span class="lineCov">        312 :             if ( getValue( i, j ) != getValue( j, i ) )</span>
+<span class="lineNum">    1221 </span>            :             {
+<span class="lineNum">    1222 </span>            :                 return false;
+<span class="lineNum">    1223 </span>            :             }
+<span class="lineNum">    1224 </span>            :         }
+<span class="lineNum">    1225 </span>            :     }
+<span class="lineNum">    1226 </span>            : 
+<span class="lineNum">    1227 </span>            :     return true;
+<span class="lineNum">    1228 </span>            : }
+<span class="lineNum">    1229 </span>            : 
+<span class="lineNum">    1230 </span>            : /* ========================================================================= */
+<a name="1231"><span class="lineNum">    1231 </span>            : </a>
+<span class="lineNum">    1232 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1233 </span><span class="lineCov">        760 : void MatrixStorage&lt;ValueType&gt;::fillCOO( </span>
+<span class="lineNum">    1234 </span>            :     hmemo::HArray&lt;IndexType&gt; ia, 
+<span class="lineNum">    1235 </span>            :     hmemo::HArray&lt;IndexType&gt; ja, 
+<span class="lineNum">    1236 </span>            :     hmemo::HArray&lt;ValueType&gt; values,
+<span class="lineNum">    1237 </span>            :     const common::BinaryOp op )
+<span class="lineNum">    1238 </span>            : {
+<span class="lineNum">    1239 </span>            :     // Default implementatinon convert this matrix to CSR, calls fillCOO for CSR storage, and convert bak
+<span class="lineNum">    1240 </span>            : 
+<span class="lineNum">    1241 </span><span class="lineCov">       1520 :     SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, &quot;FATAL: CSR storage must override fillCOO&quot; )</span>
+<span class="lineNum">    1242 </span>            : 
+<span class="lineNum">    1243 </span><span class="lineCov">        760 :     IndexType numRows = getNumRows();</span>
+<span class="lineNum">    1244 </span><span class="lineCov">        760 :     IndexType numColumns = getNumColumns();</span>
+<span class="lineNum">    1245 </span>            : 
+<span class="lineNum">    1246 </span><span class="lineCov">        760 :     HArray&lt;IndexType&gt; csrIA;</span>
+<span class="lineNum">    1247 </span><span class="lineCov">        760 :     HArray&lt;IndexType&gt; csrJA;</span>
+<span class="lineNum">    1248 </span><span class="lineCov">        760 :     HArray&lt;ValueType&gt; csrValues;</span>
+<span class="lineNum">    1249 </span>            : 
+<span class="lineNum">    1250 </span><span class="lineCov">        760 :     buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">    1251 </span>            : 
+<span class="lineNum">    1252 </span><span class="lineCov">       5320 :     CSRStorage&lt;ValueType&gt; csr( numRows, numColumns, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );</span>
+<span class="lineNum">    1253 </span>            : 
+<span class="lineNum">    1254 </span><span class="lineCov">       3040 :     csr.fillCOO( std::move( ia ), std::move( ja ), std::move( values ), op );</span>
+<span class="lineNum">    1255 </span>            : 
+<span class="lineNum">    1256 </span><span class="lineCov">        736 :     csr.splitUp( numRows, numColumns, csrIA, csrJA, csrValues );</span>
+<span class="lineNum">    1257 </span>            : 
+<span class="lineNum">    1258 </span><span class="lineCov">        736 :     setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );</span>
+<span class="lineNum">    1259 </span><span class="lineCov">        736 : }</span>
+<span class="lineNum">    1260 </span>            : 
+<span class="lineNum">    1261 </span>            : /* ========================================================================= */
+<span class="lineNum">    1262 </span>            : /*       Template Instantiations                                             */
+<span class="lineNum">    1263 </span>            : /* ========================================================================= */
+<span class="lineNum">    1264 </span>            : 
+<span class="lineNum">    1265 </span>            : #define LAMA_MATRIXSTORAGE2_INST( ValueType, OtherValueType )                                          \
+<span class="lineNum">    1266 </span>            :     template COMMON_DLL_IMPORTEXPORT void MatrixStorage&lt;ValueType&gt;::setRawDenseData&lt;OtherValueType&gt;(   \
+<span class="lineNum">    1267 </span>            :             const IndexType, const IndexType, const OtherValueType* );                                 \
+<span class="lineNum">    1268 </span>            : 
+<span class="lineNum">    1269 </span>            : #define LAMA_MATRIXSTORAGE_INST( ValueType )                                                           \
+<span class="lineNum">    1270 </span>            :     SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1271 </span>            : 
+<span class="lineNum">    1272 </span>            : SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1273 </span>            : 
+<span class="lineNum">    1274 </span>            : #undef LAMA_MATRIXSTORAGE2_INST
+<span class="lineNum">    1275 </span>            : #undef LAMA_MATRIXSTORAGE_INST
+<span class="lineNum">    1276 </span>            : 
+<span class="lineNum">    1277 </span>            : 
+<span class="lineNum">    1278 </span>            : SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1279 </span>            : 
+<a name="1280"><span class="lineNum">    1280 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">    1281 </span>            : 
+<span class="lineNum">    1282 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

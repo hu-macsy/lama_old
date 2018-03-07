@@ -1,0 +1,912 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/matutils/MatrixCreator.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/matutils</a> - MatrixCreator.cpp<span style="font-size: 80%;"> (source / <a href="MatrixCreator.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">233</td>
+            <td class="headerCovTableEntry">262</td>
+            <td class="headerCovTableEntryMed">88.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntry">38</td>
+            <td class="headerCovTableEntryLo">57.9 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file MatrixCreator.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief MatrixCreator.cpp
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 01.02.2012
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // hpp
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/matutils/MatrixCreator.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : // local library
+<span class="lineNum">      39 </span>            : #include &lt;scai/dmemo/GridDistribution.hpp&gt;
+<span class="lineNum">      40 </span>            : #include &lt;scai/dmemo/CyclicDistribution.hpp&gt;
+<span class="lineNum">      41 </span>            : #include &lt;scai/dmemo/GenBlockDistribution.hpp&gt;
+<span class="lineNum">      42 </span>            : #include &lt;scai/dmemo/BlockDistribution.hpp&gt;
+<span class="lineNum">      43 </span>            : #include &lt;scai/dmemo/NoDistribution.hpp&gt;
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : // internal scai libraries
+<span class="lineNum">      46 </span>            : #include &lt;scai/hmemo/WriteAccess.hpp&gt;
+<span class="lineNum">      47 </span>            : #include &lt;scai/common/macros/loop.hpp&gt;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : // std
+<span class="lineNum">      50 </span>            : #include &lt;cmath&gt;
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : namespace scai
+<span class="lineNum">      53 </span>            : {
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : namespace lama
+<span class="lineNum">      56 </span>            : {
+<span class="lineNum">      57 </span>            : 
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">         28 : SCAI_LOG_DEF_LOGGER( MatrixCreator::logger, &quot;MatrixCreator&quot; )</span></a>
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span><span class="lineCov">       1820 : static inline void getStencilProperties(</span>
+<span class="lineNum">      61 </span>            :     IndexType&amp; dimension,
+<span class="lineNum">      62 </span>            :     IndexType&amp; length,
+<span class="lineNum">      63 </span>            :     IndexType&amp; distance,
+<span class="lineNum">      64 </span>            :     IndexType stencilType )
+<span class="lineNum">      65 </span>            : {
+<span class="lineNum">      66 </span><span class="lineCov">       1820 :     switch ( stencilType )</span>
+<span class="lineNum">      67 </span>            :     {
+<span class="lineNum">      68 </span>            :         case 27:
+<span class="lineNum">      69 </span><span class="lineCov">          5 :             length = 1;</span>
+<span class="lineNum">      70 </span><span class="lineCov">          5 :             distance = 3;</span>
+<span class="lineNum">      71 </span><span class="lineCov">          5 :             dimension = 3;</span>
+<span class="lineNum">      72 </span><span class="lineCov">          5 :             break;</span>
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            :         case 19:
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :             length = 1;</span>
+<span class="lineNum">      76 </span><span class="lineNoCov">          0 :             distance = 2;</span>
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 :             dimension = 3;</span>
+<span class="lineNum">      78 </span><span class="lineNoCov">          0 :             break;</span>
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            :         case 7:
+<span class="lineNum">      81 </span><span class="lineCov">         30 :             length = 1;</span>
+<span class="lineNum">      82 </span><span class="lineCov">         30 :             distance = 1;</span>
+<span class="lineNum">      83 </span><span class="lineCov">         30 :             dimension = 3;</span>
+<span class="lineNum">      84 </span><span class="lineCov">         30 :             break;</span>
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            :         case 9:
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :             length = 1;</span>
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :             distance = 2;</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :             dimension = 2;</span>
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :             break;</span>
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span>            :         case 5:
+<span class="lineNum">      93 </span><span class="lineCov">       1780 :             length = 1;</span>
+<span class="lineNum">      94 </span><span class="lineCov">       1780 :             distance = 1;</span>
+<span class="lineNum">      95 </span><span class="lineCov">       1780 :             dimension = 2;</span>
+<span class="lineNum">      96 </span><span class="lineCov">       1780 :             break;</span>
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            :         case 3:
+<span class="lineNum">      99 </span><span class="lineCov">          5 :             length = 1;</span>
+<span class="lineNum">     100 </span><span class="lineCov">          5 :             distance = 1;</span>
+<span class="lineNum">     101 </span><span class="lineCov">          5 :             dimension = 1;</span>
+<span class="lineNum">     102 </span><span class="lineCov">          5 :             break;</span>
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span>            :         default:
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 :             length = 1;</span>
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :             distance = 1;</span>
+<span class="lineNum">     107 </span><span class="lineNoCov">          0 :             dimension = 1;</span>
+<span class="lineNum">     108 </span><span class="lineNoCov">          0 :             COMMON_THROWEXCEPTION( &quot;Invalid Stencil type = &quot; &lt;&lt; stencilType )</span>
+<span class="lineNum">     109 </span>            :     }
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">       1820 : }</span></a>
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 : bool MatrixCreator::supportedStencilType( const IndexType dimension, const IndexType stencilType )</span>
+<span class="lineNum">     113 </span>            : {
+<span class="lineNum">     114 </span>            :     bool supported = false;
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            :     try
+<span class="lineNum">     117 </span>            :     {
+<span class="lineNum">     118 </span>            :         IndexType dim;
+<span class="lineNum">     119 </span>            :         IndexType length;
+<span class="lineNum">     120 </span>            :         IndexType distance;
+<span class="lineNum">     121 </span><span class="lineNoCov">          0 :         getStencilProperties( dim, length, distance, stencilType );</span>
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 :         supported = ( dim == dimension );</span>
+<span class="lineNum">     123 </span>            :     }
+<span class="lineNum">     124 </span><span class="lineNoCov">          0 :     catch ( ... )</span>
+<span class="lineNum">     125 </span>            :     {
+<span class="lineNum">     126 </span>            :         supported = false; // so it is not supported
+<span class="lineNum">     127 </span>            :     }
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :     return supported;</span>
+<span class="lineNum">     130 </span>            : }
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            : template&lt;typename IndexType&gt;
+<span class="lineNum">     133 </span>            : static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
+<span class="lineNum">     134 </span>            : {
+<span class="lineNum">     135 </span>            :     int neighbors = common::Math::abs( shift );
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span><span class="lineCov">     605988 :     if ( shift &lt; 0 )</span>
+<span class="lineNum">     138 </span>            :     {
+<span class="lineNum">     139 </span>            :         int leftBorder = id;
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span><span class="lineCov">     302994 :         if ( leftBorder &lt; neighbors )</span>
+<span class="lineNum">     142 </span>            :         {
+<span class="lineNum">     143 </span>            :             neighbors = leftBorder;
+<span class="lineNum">     144 </span>            :         }
+<span class="lineNum">     145 </span>            :     }
+<span class="lineNum">     146 </span>            :     else
+<span class="lineNum">     147 </span>            :     {
+<span class="lineNum">     148 </span><span class="lineCov">     302994 :         int rightBorder = dim - 1 - id;</span>
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span><span class="lineCov">     302994 :         if ( rightBorder &lt; neighbors )</span>
+<span class="lineNum">     151 </span>            :         {
+<span class="lineNum">     152 </span>            :             neighbors = rightBorder;
+<span class="lineNum">     153 </span>            :         }
+<span class="lineNum">     154 </span>            :     }
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span>            :     // printf(&quot;%d of %d, shift = %d, has %d neighbors\n&quot;, id, dim, shift, neighbors );
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            :     return neighbors;
+<span class="lineNum">     159 </span>            : }
+<span class="lineNum">     160 </span>            : 
+<span class="lineNum">     161 </span>            : /* ------------------------------------------------------------------------- */ 
+<a name="162"><span class="lineNum">     162 </span>            : </a>
+<span class="lineNum">     163 </span>            : template&lt;typename IndexType&gt;
+<span class="lineNum">     164 </span><span class="lineCov">      67332 : static inline IndexType getNStencilValues(</span>
+<span class="lineNum">     165 </span>            :     const IndexType pos[],
+<span class="lineNum">     166 </span>            :     const common::Grid&amp; grid,
+<span class="lineNum">     167 </span>            :     IndexType length,
+<span class="lineNum">     168 </span>            :     IndexType maxDistance )
+<span class="lineNum">     169 </span>            : {
+<span class="lineNum">     170 </span>            :     SCAI_ASSERT_DEBUG( grid.validPos( pos ), &quot;Invalid pos = &quot; &lt;&lt; pos[0] &lt;&lt; &quot;-&quot; &lt;&lt; pos[1] &lt;&lt; &quot;-&quot; &lt;&lt; pos[2] &lt;&lt; &quot; in &quot; &lt;&lt; grid )
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span><span class="lineCov">     201996 :     IndexType nX = getNumNeighbors( pos[0], grid.size( 0 ), -length ) + getNumNeighbors( pos[0], grid.size( 0 ), length );</span>
+<span class="lineNum">     173 </span><span class="lineCov">     134664 :     IndexType nY = getNumNeighbors( pos[1], grid.size( 1 ), -length ) + getNumNeighbors( pos[1], grid.size( 1 ), length );</span>
+<span class="lineNum">     174 </span><span class="lineCov">     134664 :     IndexType nZ = getNumNeighbors( pos[2], grid.size( 2 ), -length ) + getNumNeighbors( pos[2], grid.size( 2 ), length );</span>
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span>            :     // Note: nZ will be 0 for dim &lt;= 2, nY will be 0 for dim &lt;= 1
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span><span class="lineCov">      67332 :     IndexType numValues = 1 + nX + nY + nZ; // maxDistance 1</span>
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span><span class="lineCov">      67332 :     if ( maxDistance &gt;= 2 )</span>
+<span class="lineNum">     181 </span>            :     {
+<span class="lineNum">     182 </span><span class="lineCov">       1680 :         SCAI_ASSERT_EQ_ERROR( 1, length, &quot;length &gt; 1 for stencil not supported&quot; )</span>
+<span class="lineNum">     183 </span><span class="lineCov">       1680 :         numValues += nX * nY + nX * nZ + nY * nZ;</span>
+<span class="lineNum">     184 </span>            :     }
+<span class="lineNum">     185 </span>            : 
+<span class="lineNum">     186 </span><span class="lineCov">      67332 :     if ( maxDistance &gt;= 3 )</span>
+<span class="lineNum">     187 </span>            :     {
+<span class="lineNum">     188 </span><span class="lineCov">       1680 :         SCAI_ASSERT_EQ_ERROR( 1, length, &quot;length &gt; 1 for stencil not supported&quot; )</span>
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            :         // dimension cannot be 1, 2
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span><span class="lineCov">       1680 :         numValues += nX * nY * nZ;</span>
+<span class="lineNum">     193 </span>            :     }
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span>            :     /*
+<span class="lineNum">     196 </span>            :     std::cout &lt;&lt; &quot;getNStencilValues( pos = &quot; &lt;&lt; pos[0] &lt;&lt; &quot;, &quot; &lt;&lt; pos[1] &lt;&lt; &quot;, &quot; &lt;&lt; pos[2]
+<span class="lineNum">     197 </span>            :                             &lt;&lt; &quot;, grid = &quot; &lt;&lt; grid
+<span class="lineNum">     198 </span>            :                             &lt;&lt; &quot;, len = &quot; &lt;&lt; length &lt;&lt; &quot;, maxDist = &quot; &lt;&lt; maxDistance  &lt;&lt; &quot; ) -&gt; &quot; &lt;&lt; numValues &lt;&lt; std::endl;
+<span class="lineNum">     199 </span>            :     */
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span><span class="lineCov">      67332 :     return numValues;</span>
+<a name="202"><span class="lineNum">     202 </span>            : }</a>
+<span class="lineNum">     203 </span>            : 
+<span class="lineNum">     204 </span><span class="lineCov">      33666 : static inline void getStencil(</span>
+<span class="lineNum">     205 </span>            :     std::vector&lt;IndexType&gt;&amp; positions,
+<span class="lineNum">     206 </span>            :     std::vector&lt;int&gt;&amp; values,
+<span class="lineNum">     207 </span>            :     const IndexType pos[],
+<span class="lineNum">     208 </span>            :     const common::Grid&amp; grid,
+<span class="lineNum">     209 </span>            :     const IndexType stencilType,
+<span class="lineNum">     210 </span>            :     const IndexType length,
+<span class="lineNum">     211 </span>            :     const IndexType maxDistance )
+<span class="lineNum">     212 </span>            : {
+<span class="lineNum">     213 </span>            :     positions.clear(); // reset number of entries to 0
+<span class="lineNum">     214 </span>            :     values.clear(); // reset
+<span class="lineNum">     215 </span>            : 
+<span class="lineNum">     216 </span><span class="lineCov">      67332 :     positions.push_back( grid.linearPos( pos ) );</span>
+<span class="lineNum">     217 </span><span class="lineCov">      67332 :     values.push_back( stencilType - 1 );</span>
+<span class="lineNum">     218 </span>            : 
+<span class="lineNum">     219 </span><span class="lineCov">      67332 :     int leftX = getNumNeighbors( pos[0], grid.size( 0 ), -length );</span>
+<span class="lineNum">     220 </span>            :     int rightX = getNumNeighbors( pos[0], grid.size( 0 ), length );
+<span class="lineNum">     221 </span><span class="lineCov">      33666 :     int leftY = getNumNeighbors( pos[1], grid.size( 1 ), -length );</span>
+<span class="lineNum">     222 </span>            :     int rightY = getNumNeighbors( pos[1], grid.size( 1 ), length );
+<span class="lineNum">     223 </span><span class="lineCov">      33666 :     int leftZ = getNumNeighbors( pos[2], grid.size( 2 ), -length );</span>
+<span class="lineNum">     224 </span>            :     int rightZ = getNumNeighbors( pos[2], grid.size( 2 ), length );
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            :     // std::cout &lt;&lt; &quot;range [ &quot; &lt;&lt; leftX &lt;&lt; &quot;:&quot; &lt;&lt; rightX &lt;&lt; &quot;, &quot; &lt;&lt; leftY &lt;&lt; &quot;:&quot; &lt;&lt; rightY &lt;&lt; &quot;, &quot; &lt;&lt; leftZ &lt;&lt; &quot;:&quot; &lt;&lt; rightZ &lt;&lt; &quot;]&quot;
+<span class="lineNum">     227 </span>            :     //           &lt;&lt; &quot; for &quot; &lt;&lt; pos[0] &lt;&lt; &quot;:&quot; &lt;&lt; pos[1] &lt;&lt; &quot;:&quot; &lt;&lt; pos[2] &lt;&lt; std::endl;
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span><span class="lineCov">     101172 :     for ( int dz = -leftZ; dz &lt;= rightZ; ++dz )</span>
+<span class="lineNum">     230 </span>            :     {
+<span class="lineNum">     231 </span>            :         IndexType distZ = common::Math::abs( dz );
+<span class="lineNum">     232 </span>            : 
+<span class="lineNum">     233 </span><span class="lineCov">     251472 :         for ( int dy = -leftY; dy &lt;= rightY; ++dy )</span>
+<span class="lineNum">     234 </span>            :         {
+<span class="lineNum">     235 </span><span class="lineCov">     183966 :             IndexType distYZ = distZ + common::Math::abs( dy );</span>
+<span class="lineNum">     236 </span>            : 
+<span class="lineNum">     237 </span><span class="lineCov">     183966 :             if ( distYZ &gt; maxDistance )</span>
+<span class="lineNum">     238 </span>            :             {
+<span class="lineNum">     239 </span>            :                 continue; // can already skip next loop
+<span class="lineNum">     240 </span>            :             }
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span><span class="lineCov">     463194 :             for ( int dx = -leftX; dx &lt;= rightX; ++dx )</span>
+<span class="lineNum">     243 </span>            :             {
+<span class="lineNum">     244 </span><span class="lineCov">     337548 :                 IndexType distXYZ = distYZ + common::Math::abs( dx );</span>
+<span class="lineNum">     245 </span>            : 
+<span class="lineNum">     246 </span><span class="lineCov">     337548 :                 if ( distXYZ &gt; maxDistance )</span>
+<span class="lineNum">     247 </span>            :                 {
+<span class="lineNum">     248 </span>            :                     continue;
+<span class="lineNum">     249 </span>            :                 }
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span>            :                 // skip the diagonal element already added
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span><span class="lineCov">     189300 :                 if ( distXYZ == 0 )</span>
+<span class="lineNum">     254 </span>            :                 {
+<span class="lineNum">     255 </span>            :                     continue;
+<span class="lineNum">     256 </span>            :                 }
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span>            :                 // reinterpretation as 3D grid is safe as all 3 dimensions are set
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span><span class="lineCov">     155634 :                 const common::Grid3D&amp; grid3D = reinterpret_cast&lt;const common::Grid3D&amp;&gt;( grid );</span>
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span><span class="lineCov">     466902 :                 positions.push_back( grid3D.linearPos( pos[0] + dx, pos[1] + dy, pos[2] + dz ) );</span>
+<span class="lineNum">     263 </span>            : 
+<span class="lineNum">     264 </span><span class="lineCov">     311268 :                 values.push_back( -1 );</span>
+<span class="lineNum">     265 </span>            :             }
+<span class="lineNum">     266 </span>            :         }
+<span class="lineNum">     267 </span>            :     }
+<span class="lineNum">     268 </span><span class="lineCov">      33666 : }</span>
+<span class="lineNum">     269 </span>            : 
+<span class="lineNum">     270 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     271 </span>            : 
+<span class="lineNum">     272 </span><span class="lineCov">       1820 : void MatrixCreator::buildPoisson(</span>
+<span class="lineNum">     273 </span>            :     _Matrix&amp; matrix,
+<span class="lineNum">     274 </span>            :     const IndexType dimension,
+<span class="lineNum">     275 </span>            :     const IndexType stencilType,
+<span class="lineNum">     276 </span>            :     const IndexType dimX,
+<span class="lineNum">     277 </span>            :     const IndexType dimY,
+<span class="lineNum">     278 </span>            :     const IndexType dimZ )
+<span class="lineNum">     279 </span>            : {
+<span class="lineNum">     280 </span>            :     using namespace dmemo;   // simplifies working with distributons, communicator
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span><span class="lineCov">       1820 :     IndexType sizes[] = { dimX, dimY, dimZ };</span>
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span><span class="lineCov">       1820 :     common::Grid globalGrid( dimension, sizes );</span>
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span><span class="lineCov">       1820 :     CommunicatorPtr comm = Communicator::getCommunicatorPtr( );   // get the default communicator</span>
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span><span class="lineCov">       3640 :     std::shared_ptr&lt;GridDistribution&gt; gridDistribution( new GridDistribution( globalGrid, comm ) );</span>
+<span class="lineNum">     289 </span>            : 
+<span class="lineNum">     290 </span><span class="lineCov">       3640 :     SCAI_LOG_INFO( logger, *comm &lt;&lt; &quot;: &quot; &lt;&lt; *gridDistribution )</span>
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span>            :     IndexType myNNA = 0; // accumulated sum for number of my entries
+<span class="lineNum">     293 </span>            : 
+<span class="lineNum">     294 </span>            :     IndexType length;
+<span class="lineNum">     295 </span>            :     IndexType dimStencil;
+<span class="lineNum">     296 </span>            :     IndexType maxDistance;
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span><span class="lineCov">       1820 :     getStencilProperties( dimStencil, length, maxDistance, stencilType );</span>
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span><span class="lineCov">       1820 :     SCAI_ASSERT_EQUAL_ERROR( dimStencil, dimension )</span>
+<span class="lineNum">     301 </span>            : 
+<span class="lineNum">     302 </span><span class="lineCov">       3640 :     SCAI_LOG_INFO( logger, &quot;stencil type = &quot; &lt;&lt; stencilType &lt;&lt; &quot; -&gt; dim = &quot; &lt;&lt; dimStencil </span>
+<span class="lineNum">     303 </span>            :                             &lt;&lt; &quot;, direction length = &quot; &lt;&lt; length &lt;&lt; &quot;, max distance = &quot; &lt;&lt; maxDistance )
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            :     // Loop over all local grid points and count number of matrix values needed
+<span class="lineNum">     306 </span>            :     // Actual we could make a guess here with getLocalSize * nPoints
+<span class="lineNum">     307 </span>            : 
+<span class="lineNum">     308 </span><span class="lineCov">       1820 :     const common::Grid&amp; localGrid = gridDistribution-&gt;getLocalGrid();</span>
+<span class="lineNum">     309 </span><span class="lineCov">       1820 :     const IndexType localSize = gridDistribution-&gt;getLocalSize();</span>
+<span class="lineNum">     310 </span>            : 
+<span class="lineNum">     311 </span><span class="lineCov">       1820 :     IndexType localGridPos[3]  = { 0, 0, 0 };</span>
+<span class="lineNum">     312 </span><span class="lineCov">       1820 :     IndexType globalGridPos[3] = { 0, 0, 0 };</span>
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span><span class="lineCov">      35486 :     for ( IndexType i = 0; i &lt; localSize; ++i )</span>
+<span class="lineNum">     315 </span>            :     {
+<span class="lineNum">     316 </span><span class="lineCov">      33666 :         localGrid.gridPos( localGridPos, i );</span>
+<span class="lineNum">     317 </span><span class="lineCov">      33666 :         gridDistribution-&gt;local2global( globalGridPos, localGridPos );</span>
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span><span class="lineCov">      33666 :         const IndexType numNonZeros = getNStencilValues( globalGridPos, globalGrid, length, maxDistance );</span>
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span><span class="lineCov">      33666 :         myNNA += numNonZeros;</span>
+<span class="lineNum">     322 </span>            :     }
+<span class="lineNum">     323 </span>            : 
+<span class="lineNum">     324 </span>            :     // create new local CSR data ( # local rows x # columns )
+<span class="lineNum">     325 </span>            : 
+<span class="lineNum">     326 </span><span class="lineCov">       5460 :     CSRStorage&lt;DefaultReal&gt; localMatrix;</span>
+<span class="lineNum">     327 </span>            : 
+<span class="lineNum">     328 </span><span class="lineCov">       1820 :     localMatrix.allocate( localSize, globalGrid.size() );</span>
+<span class="lineNum">     329 </span>            : 
+<span class="lineNum">     330 </span><span class="lineCov">       1820 :     hmemo::HArray&lt;IndexType&gt; csrIA;</span>
+<span class="lineNum">     331 </span><span class="lineCov">       1820 :     hmemo::HArray&lt;IndexType&gt; csrJA;</span>
+<span class="lineNum">     332 </span><span class="lineCov">       1820 :     hmemo::HArray&lt;DefaultReal&gt; csrValues;</span>
+<span class="lineNum">     333 </span>            : 
+<span class="lineNum">     334 </span>            :     {
+<span class="lineNum">     335 </span><span class="lineCov">       1820 :         hmemo::WriteOnlyAccess&lt;IndexType&gt; ia( csrIA, localSize + 1 );</span>
+<span class="lineNum">     336 </span><span class="lineCov">       3640 :         hmemo::WriteOnlyAccess&lt;IndexType&gt; ja( csrJA, myNNA );</span>
+<span class="lineNum">     337 </span><span class="lineCov">       3640 :         hmemo::WriteOnlyAccess&lt;DefaultReal&gt; values( csrValues, myNNA );</span>
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span><span class="lineCov">       1820 :         ia[0] = 0;</span>
+<span class="lineNum">     340 </span>            : 
+<span class="lineNum">     341 </span>            :         std::vector&lt;IndexType&gt; colIndexes;
+<span class="lineNum">     342 </span>            :         std::vector&lt;int&gt; colValues;
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span><span class="lineCov">       1820 :         colIndexes.reserve( stencilType );</span>
+<span class="lineNum">     345 </span><span class="lineCov">       1820 :         colValues.reserve( stencilType );</span>
+<span class="lineNum">     346 </span>            : 
+<span class="lineNum">     347 </span>            :         // compute global indexes this processor is responsibile for and number of non-zero values
+<span class="lineNum">     348 </span>            :         // Important: same loop order as above
+<span class="lineNum">     349 </span>            :         IndexType rowCounter = 0; // count local rows
+<span class="lineNum">     350 </span>            :         IndexType nnzCounter = 0; // count local non-zero elements
+<span class="lineNum">     351 </span>            : 
+<span class="lineNum">     352 </span><span class="lineCov">      33666 :         for ( IndexType i = 0; i &lt; localSize; ++i )</span>
+<span class="lineNum">     353 </span>            :         {
+<span class="lineNum">     354 </span><span class="lineCov">      33666 :             localGrid.gridPos( localGridPos, i );</span>
+<span class="lineNum">     355 </span><span class="lineCov">      33666 :             gridDistribution-&gt;local2global( globalGridPos, localGridPos );</span>
+<span class="lineNum">     356 </span>            : 
+<span class="lineNum">     357 </span>            :             // get column positions and values of matrix, diagonal element is first
+<span class="lineNum">     358 </span>            : 
+<span class="lineNum">     359 </span><span class="lineCov">      33666 :             getStencil( colIndexes, colValues, globalGridPos, globalGrid, stencilType, length, maxDistance );</span>
+<span class="lineNum">     360 </span>            : 
+<span class="lineNum">     361 </span>            :             // check colIndexes.size() against number of values given by getNStencilValues
+<span class="lineNum">     362 </span>            : 
+<span class="lineNum">     363 </span><span class="lineCov">      33666 :             SCAI_ASSERT_EQ_DEBUG( ( IndexType ) colIndexes.size(), </span>
+<span class="lineNum">     364 </span>            :                                     getNStencilValues( globalGridPos, globalGrid, length, maxDistance ), 
+<span class="lineNum">     365 </span>            :                                     &quot;serious mismatch&quot; );
+<span class="lineNum">     366 </span>            : 
+<span class="lineNum">     367 </span>            :             SCAI_ASSERT_EQ_DEBUG( colIndexes.size(), colValues.size(), &quot;serious mismatch&quot; )
+<span class="lineNum">     368 </span>            : 
+<span class="lineNum">     369 </span>            :             SCAI_LOG_DEBUG( logger,
+<span class="lineNum">     370 </span>            :                             *comm &lt;&lt; &quot;: at &quot; &lt;&lt; globalGridPos[0] &lt;&lt; &quot;-&quot; &lt;&lt; globalGridPos[1] &lt;&lt; &quot;-&quot; &lt;&lt; globalGridPos[2] 
+<span class="lineNum">     371 </span>            :                              &lt;&lt; &quot;, local row : &quot; &lt;&lt; rowCounter &lt;&lt; &quot;, global row : &quot; &lt;&lt; globalGrid.linearPos( globalGridPos ) 
+<span class="lineNum">     372 </span>            :                              &lt;&lt; &quot;: &quot; &lt;&lt; colIndexes.size() &lt;&lt; &quot; entries: &quot; &lt;&lt; colIndexes[0] &lt;&lt; &quot;: &quot; &lt;&lt; colValues[0] &lt;&lt; &quot;, ...&quot; )
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span><span class="lineCov">      67332 :             ia[rowCounter + 1] = ia[rowCounter] + static_cast&lt;IndexType&gt;( colIndexes.size() );</span>
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span><span class="lineCov">     445932 :             for ( size_t k = 0; k &lt; colIndexes.size(); ++k )</span>
+<span class="lineNum">     377 </span>            :             {
+<span class="lineNum">     378 </span><span class="lineCov">     378600 :                 ja[nnzCounter] = colIndexes[k];</span>
+<span class="lineNum">     379 </span><span class="lineCov">     378600 :                 values[nnzCounter] = static_cast&lt;DefaultReal&gt;( colValues[k] );</span>
+<span class="lineNum">     380 </span><span class="lineCov">     189300 :                 ++nnzCounter;</span>
+<span class="lineNum">     381 </span>            :             }
+<span class="lineNum">     382 </span>            : 
+<span class="lineNum">     383 </span>            :             ++rowCounter;
+<span class="lineNum">     384 </span><span class="lineCov">       1820 :         }</span>
+<span class="lineNum">     385 </span>            :     }
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span><span class="lineCov">       1820 :     localMatrix.swap( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     388 </span>            :     SCAI_LOG_DEBUG( logger, &quot;replace owned data with &quot; &lt;&lt; localMatrix )
+<span class="lineNum">     389 </span><span class="lineCov">       5460 :     matrix.assignLocal( localMatrix, gridDistribution );   </span>
+<span class="lineNum">     390 </span><span class="lineCov">       7280 :     matrix.redistribute( gridDistribution, gridDistribution );     // builds also halo</span>
+<span class="lineNum">     391 </span>            : 
+<span class="lineNum">     392 </span>            :     // but now the local part of matrixA should have the diagonal property as global column // indexes have been localized
+<span class="lineNum">     393 </span>            :     // is not for each storage format the case
+<span class="lineNum">     394 </span>            :     // SCAI_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), &quot;local storage data has not diagonal property: &quot; &lt;&lt; matrix )
+<span class="lineNum">     395 </span>            : 
+<span class="lineNum">     396 </span><span class="lineCov">       3640 :     SCAI_LOG_INFO( logger, &quot;built matrix A = &quot; &lt;&lt; matrix )</span>
+<span class="lineNum">     397 </span><span class="lineCov">       1820 : }</span>
+<span class="lineNum">     398 </span>            : 
+<a name="399"><span class="lineNum">     399 </span>            : /* ------------------------------------------------------------------------- */</a>
+<span class="lineNum">     400 </span>            : 
+<span class="lineNum">     401 </span><span class="lineNoCov">          0 : void MatrixCreator::buildPoisson1D(</span>
+<span class="lineNum">     402 </span>            :     _Matrix&amp; matrix,
+<span class="lineNum">     403 </span>            :     const IndexType stencilType,
+<span class="lineNum">     404 </span>            :     const IndexType dim )
+<span class="lineNum">     405 </span>            : {
+<span class="lineNum">     406 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;build Poisson1D&quot; &lt;&lt; stencilType &lt;&lt; &quot;P( &quot; &lt;&lt; dim &lt;&lt; &quot;)&quot; )</span>
+<span class="lineNum">     407 </span><span class="lineNoCov">          0 :     buildPoisson( matrix, 1, stencilType, dim, 1, 1 );</span>
+<span class="lineNum">     408 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     409 </span>            : 
+<a name="410"><span class="lineNum">     410 </span>            : /* ------------------------------------------------------------------------- */</a>
+<span class="lineNum">     411 </span>            : 
+<span class="lineNum">     412 </span><span class="lineCov">       1775 : void MatrixCreator::buildPoisson2D(</span>
+<span class="lineNum">     413 </span>            :     _Matrix&amp; matrix,
+<span class="lineNum">     414 </span>            :     const IndexType stencilType,
+<span class="lineNum">     415 </span>            :     const IndexType dim1,
+<span class="lineNum">     416 </span>            :     const IndexType dim2 )
+<span class="lineNum">     417 </span>            : {
+<span class="lineNum">     418 </span><span class="lineCov">       3550 :     SCAI_LOG_INFO( logger, &quot;build Poisson2D&quot; &lt;&lt; stencilType &lt;&lt; &quot;P( &quot; &lt;&lt; dim1 &lt;&lt; &quot;, &quot; &lt;&lt; dim2 &lt;&lt; &quot;)&quot; )</span>
+<span class="lineNum">     419 </span><span class="lineCov">       1775 :     buildPoisson( matrix, 2, stencilType, dim1, dim2, 1 );</span>
+<span class="lineNum">     420 </span><span class="lineCov">       1775 : }</span>
+<span class="lineNum">     421 </span>            : 
+<a name="422"><span class="lineNum">     422 </span>            : /* ------------------------------------------------------------------------- */</a>
+<span class="lineNum">     423 </span>            : 
+<span class="lineNum">     424 </span><span class="lineCov">         30 : void MatrixCreator::buildPoisson3D(</span>
+<span class="lineNum">     425 </span>            :     _Matrix&amp; matrix,
+<span class="lineNum">     426 </span>            :     const IndexType stencilType,
+<span class="lineNum">     427 </span>            :     const IndexType dim1,
+<span class="lineNum">     428 </span>            :     const IndexType dim2,
+<span class="lineNum">     429 </span>            :     const IndexType dim3 )
+<span class="lineNum">     430 </span>            : {
+<span class="lineNum">     431 </span><span class="lineCov">         60 :     SCAI_LOG_INFO( logger, &quot;build Poisson3D&quot; &lt;&lt; stencilType &lt;&lt; &quot;P( &quot; &lt;&lt; dim1 &lt;&lt; &quot;, &quot; &lt;&lt; dim2 &lt;&lt; &quot;, &quot; &lt;&lt; dim3 &lt;&lt; &quot;)&quot; )</span>
+<span class="lineNum">     432 </span><span class="lineCov">         30 :     buildPoisson( matrix, 3, stencilType, dim1, dim2, dim3 );</span>
+<span class="lineNum">     433 </span><span class="lineCov">         30 : }</span>
+<span class="lineNum">     434 </span>            : 
+<a name="435"><span class="lineNum">     435 </span>            : /* ------------------------------------------------------------------------- */</a>
+<span class="lineNum">     436 </span>            : 
+<span class="lineNum">     437 </span><span class="lineCov">        454 : void MatrixCreator::randomCSRPattern( </span>
+<span class="lineNum">     438 </span><span class="lineCov">       8999 :     std::vector&lt;IndexType&gt;&amp; csrIA, </span>
+<span class="lineNum">     439 </span>            :     std::vector&lt;IndexType&gt;&amp; csrJA, 
+<span class="lineNum">     440 </span>            :     const IndexType numRows, 
+<span class="lineNum">     441 </span>            :     const IndexType numCols, 
+<span class="lineNum">     442 </span>            :     float density )
+<span class="lineNum">     443 </span>            : {
+<span class="lineNum">     444 </span><span class="lineCov">        454 :     const IndexType expectedEntries = static_cast&lt;IndexType&gt;( numRows * numCols * density + 30.0 );</span>
+<span class="lineNum">     445 </span>            : 
+<span class="lineNum">     446 </span><span class="lineCov">        454 :     csrIA.resize( numRows + 1 );</span>
+<span class="lineNum">     447 </span><span class="lineCov">        454 :     csrJA.reserve( expectedEntries );</span>
+<span class="lineNum">     448 </span>            : 
+<span class="lineNum">     449 </span>            :     IndexType numValues = 0;
+<span class="lineNum">     450 </span>            : 
+<span class="lineNum">     451 </span><span class="lineCov">        454 :     csrIA[0] = numValues;</span>
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span><span class="lineCov">       9453 :     for ( IndexType i = 0; i &lt; numRows; ++i )</span>
+<span class="lineNum">     454 </span>            :     {
+<span class="lineNum">     455 </span><span class="lineCov">     428875 :         for ( IndexType j = 0; j &lt; numCols; ++j )</span>
+<span class="lineNum">     456 </span>            :         {
+<span class="lineNum">     457 </span>            :             // density determines the true ratio of random bool value
+<span class="lineNum">     458 </span>            : 
+<span class="lineNum">     459 </span><span class="lineCov">     420330 :             bool takeIt = common::Math::randomBool( density );</span>
+<span class="lineNum">     460 </span>            : 
+<span class="lineNum">     461 </span><span class="lineCov">     420330 :             if ( takeIt )</span>
+<span class="lineNum">     462 </span>            :             {
+<span class="lineNum">     463 </span><span class="lineCov">      53674 :                 csrJA.push_back( j );</span>
+<span class="lineNum">     464 </span><span class="lineCov">      53674 :                 ++numValues;</span>
+<span class="lineNum">     465 </span>            :             }
+<span class="lineNum">     466 </span>            :         }
+<span class="lineNum">     467 </span>            : 
+<span class="lineNum">     468 </span><span class="lineCov">      17090 :         csrIA[i + 1] = numValues;</span>
+<span class="lineNum">     469 </span>            :     }
+<span class="lineNum">     470 </span><span class="lineCov">        454 : }</span>
+<span class="lineNum">     471 </span>            : 
+<span class="lineNum">     472 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     473 </span><span class="lineCov">        454 : void MatrixCreator::fillRandomImpl( Matrix&lt;ValueType&gt;&amp; matrix, float density )</span>
+<span class="lineNum">     474 </span>            : {
+<span class="lineNum">     475 </span>            :     dmemo::DistributionPtr saveColDist = matrix.getColDistributionPtr();
+<span class="lineNum">     476 </span>            : 
+<span class="lineNum">     477 </span><span class="lineCov">        454 :     const IndexType localRowSize = matrix.getRowDistribution().getLocalSize();</span>
+<span class="lineNum">     478 </span><span class="lineCov">        454 :     const IndexType colSize      = matrix.getColDistribution().getGlobalSize();</span>
+<span class="lineNum">     479 </span>            : 
+<span class="lineNum">     480 </span>            :     std::vector&lt;IndexType&gt; csrIA;
+<span class="lineNum">     481 </span>            :     std::vector&lt;IndexType&gt; csrJA;   
+<span class="lineNum">     482 </span>            : 
+<span class="lineNum">     483 </span><span class="lineCov">        454 :     randomCSRPattern( csrIA, csrJA, localRowSize, colSize, density );</span>
+<span class="lineNum">     484 </span>            : 
+<span class="lineNum">     485 </span><span class="lineCov">        908 :     SCAI_LOG_INFO( logger, &quot;generated csrIA( size = &quot; &lt;&lt; csrIA.size() &lt;&lt; &quot; ), csrJA( size = &quot; &lt;&lt; csrJA.size() &lt;&lt; &quot; )&quot; )</span>
+<span class="lineNum">     486 </span>            :  
+<span class="lineNum">     487 </span><span class="lineCov">        908 :     IndexType numValues = csrJA.size();    </span>
+<span class="lineNum">     488 </span>            : 
+<span class="lineNum">     489 </span>            :     // now we draw the non-zero values
+<span class="lineNum">     490 </span>            : 
+<span class="lineNum">     491 </span><span class="lineCov">        454 :     hmemo::HArray&lt;ValueType&gt; values( numValues );</span>
+<span class="lineNum">     492 </span>            : 
+<span class="lineNum">     493 </span><span class="lineCov">        908 :     utilskernel::HArrayUtils::setRandom( values, 1 );</span>
+<span class="lineNum">     494 </span>            : 
+<span class="lineNum">     495 </span>            :     // ToDo: use move operations when available
+<span class="lineNum">     496 </span>            : 
+<span class="lineNum">     497 </span><span class="lineCov">        454 :     hmemo::HArrayRef&lt;IndexType&gt; ia( csrIA );</span>
+<span class="lineNum">     498 </span><span class="lineCov">        454 :     hmemo::HArrayRef&lt;IndexType&gt; ja( csrJA );</span>
+<span class="lineNum">     499 </span>            : 
+<span class="lineNum">     500 </span><span class="lineCov">       2724 :     CSRStorage&lt;ValueType&gt; localStorage( localRowSize, colSize, ia, ja, values );</span>
+<span class="lineNum">     501 </span>            : 
+<span class="lineNum">     502 </span>            :     // The new matrix data has the same row distribution as the input matrix
+<span class="lineNum">     503 </span>            : 
+<span class="lineNum">     504 </span><span class="lineCov">       1362 :     matrix.assignLocal( localStorage, matrix.getRowDistributionPtr() );</span>
+<span class="lineNum">     505 </span>            : 
+<span class="lineNum">     506 </span>            :     // take over the original column distribution to build halo
+<span class="lineNum">     507 </span>            : 
+<span class="lineNum">     508 </span><span class="lineCov">       1816 :     matrix.redistribute( matrix.getRowDistributionPtr(), saveColDist );</span>
+<span class="lineNum">     509 </span>            : 
+<span class="lineNum">     510 </span><span class="lineCov">        908 :     SCAI_LOG_INFO( logger, &quot;matrix: &quot; &lt;&lt; matrix )</span>
+<span class="lineNum">     511 </span><span class="lineCov">        454 : }</span>
+<span class="lineNum">     512 </span>            : 
+<span class="lineNum">     513 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     514 </span>            : 
+<span class="lineNum">     515 </span>            : // Metaprogramming to translate assign( _Matrix ) to assignImpl( Matrix&lt;ValueType&gt; )
+<span class="lineNum">     516 </span>            : 
+<span class="lineNum">     517 </span>            : template&lt;typename TList&gt;
+<span class="lineNum">     518 </span>            : struct RandomWrapper;
+<span class="lineNum">     519 </span>            : 
+<span class="lineNum">     520 </span>            : template&lt;&gt;
+<a name="521"><span class="lineNum">     521 </span>            : struct RandomWrapper&lt;common::mepr::NullType&gt;</a>
+<span class="lineNum">     522 </span>            : {
+<span class="lineNum">     523 </span><span class="lineNoCov">          0 :     static void fillRandom( _Matrix&amp; matrix, float )</span>
+<span class="lineNum">     524 </span>            :     {
+<span class="lineNum">     525 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Unsupported matrix value type: --&gt; &quot; &lt;&lt; matrix )</span>
+<span class="lineNum">     526 </span>            :     }
+<span class="lineNum">     527 </span>            : };
+<span class="lineNum">     528 </span>            : 
+<span class="lineNum">     529 </span>            : template&lt;typename H, typename T&gt;
+<a name="530"><span class="lineNum">     530 </span>            : struct RandomWrapper&lt;common::mepr::TypeList&lt;H, T&gt; &gt;</a>
+<span class="lineNum">     531 </span>            : {
+<span class="lineNum">     532 </span><span class="lineCov">       1068 :     static void fillRandom( _Matrix&amp; matrix, float density )</span>
+<span class="lineNum">     533 </span>            :     {
+<span class="lineNum">     534 </span><span class="lineCov">       1068 :         if ( matrix.getValueType() == common::getScalarType&lt;H&gt;() )</span>
+<span class="lineNum">     535 </span>            :         {
+<span class="lineNum">     536 </span><span class="lineCov">        454 :             MatrixCreator::fillRandomImpl( static_cast&lt;Matrix&lt;H&gt;&amp; &gt;( matrix ), density );</span>
+<span class="lineNum">     537 </span>            :         }
+<span class="lineNum">     538 </span>            :         else
+<span class="lineNum">     539 </span>            :         {
+<span class="lineNum">     540 </span><span class="lineCov">        614 :             RandomWrapper&lt;T&gt;::fillRandom( matrix, density );</span>
+<span class="lineNum">     541 </span>            :         }
+<span class="lineNum">     542 </span><span class="lineCov">       1068 :     }</span>
+<a name="543"><span class="lineNum">     543 </span>            : };</a>
+<span class="lineNum">     544 </span>            : 
+<span class="lineNum">     545 </span><span class="lineCov">        454 : void MatrixCreator::fillRandom( _Matrix&amp; matrix, float density )</span>
+<span class="lineNum">     546 </span>            : {
+<span class="lineNum">     547 </span>            :     // use meta programming to call the version
+<span class="lineNum">     548 </span>            : 
+<span class="lineNum">     549 </span><span class="lineCov">        454 :     RandomWrapper&lt;SCAI_NUMERIC_TYPES_HOST_LIST&gt;::fillRandom( matrix, density );</span>
+<span class="lineNum">     550 </span><span class="lineCov">        454 : }</span>
+<span class="lineNum">     551 </span>            : 
+<span class="lineNum">     552 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     553 </span>            : 
+<span class="lineNum">     554 </span><span class="lineNoCov">          0 : void MatrixCreator::buildRandom(</span>
+<span class="lineNum">     555 </span>            :     _Matrix&amp; matrix,
+<span class="lineNum">     556 </span>            :     const IndexType size,
+<span class="lineNum">     557 </span>            :     const float density )
+<span class="lineNum">     558 </span>            : {
+<span class="lineNum">     559 </span><span class="lineNoCov">          0 :     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );</span>
+<span class="lineNum">     560 </span><span class="lineNoCov">          0 :     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( size, comm ) );</span>
+<span class="lineNum">     561 </span><span class="lineNoCov">          0 :     matrix.allocate( dist, dist );</span>
+<span class="lineNum">     562 </span><span class="lineNoCov">          0 :     fillRandom( matrix, density );</span>
+<span class="lineNum">     563 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     564 </span>            : 
+<span class="lineNum">     565 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     566 </span>            : 
+<span class="lineNum">     567 </span>            : /** Help routine to replicate matrix storage in diagonal blocks. */
+<span class="lineNum">     568 </span>            : 
+<span class="lineNum">     569 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     570 </span><span class="lineCov">          5 : static void replicateStorageDiag(</span>
+<span class="lineNum">     571 </span>            :     MatrixStorage&lt;ValueType&gt;&amp; out,
+<span class="lineNum">     572 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; in,
+<span class="lineNum">     573 </span>            :     const IndexType nRepeat )
+<span class="lineNum">     574 </span>            : {
+<span class="lineNum">     575 </span>            :     using namespace hmemo;
+<span class="lineNum">     576 </span>            : 
+<span class="lineNum">     577 </span>            :     // replication is done via CSR storage data, so get it form input storage
+<span class="lineNum">     578 </span>            : 
+<span class="lineNum">     579 </span><span class="lineCov">          5 :     HArray&lt;IndexType&gt; inIA;</span>
+<span class="lineNum">     580 </span><span class="lineCov">          5 :     HArray&lt;IndexType&gt; inJA;</span>
+<span class="lineNum">     581 </span><span class="lineCov">          5 :     HArray&lt;ValueType&gt; inValues;</span>
+<span class="lineNum">     582 </span>            : 
+<span class="lineNum">     583 </span><span class="lineCov">         10 :     in.buildCSRData( inIA, inJA, inValues );</span>
+<span class="lineNum">     584 </span>            : 
+<span class="lineNum">     585 </span><span class="lineCov">          5 :     IndexType nRows   = inIA.size() - 1;</span>
+<span class="lineNum">     586 </span>            :     IndexType nCols   = in.getNumColumns();
+<span class="lineNum">     587 </span><span class="lineCov">          5 :     IndexType nValues = inJA.size();</span>
+<span class="lineNum">     588 </span>            : 
+<span class="lineNum">     589 </span><span class="lineCov">          5 :     HArray&lt;IndexType&gt; outIA;</span>
+<span class="lineNum">     590 </span><span class="lineCov">          5 :     HArray&lt;IndexType&gt; outJA;</span>
+<span class="lineNum">     591 </span><span class="lineCov">          5 :     HArray&lt;ValueType&gt; outValues;</span>
+<span class="lineNum">     592 </span>            : 
+<span class="lineNum">     593 </span>            :     // Replication is done at the host
+<span class="lineNum">     594 </span>            : 
+<span class="lineNum">     595 </span>            :     ContextPtr ctx = Context::getHostPtr();
+<span class="lineNum">     596 </span>            : 
+<span class="lineNum">     597 </span>            :     {
+<span class="lineNum">     598 </span>            :         IndexType offset = 0;   // current offset in new JA, Values array
+<span class="lineNum">     599 </span>            : 
+<span class="lineNum">     600 </span><span class="lineCov">         10 :         ReadAccess&lt;IndexType&gt; rIA( inIA, ctx );</span>
+<span class="lineNum">     601 </span><span class="lineCov">         10 :         ReadAccess&lt;IndexType&gt; rJA( inJA, ctx );</span>
+<span class="lineNum">     602 </span><span class="lineCov">         10 :         ReadAccess&lt;ValueType&gt; rValues( inValues, ctx );</span>
+<span class="lineNum">     603 </span>            : 
+<span class="lineNum">     604 </span><span class="lineCov">         20 :         WriteOnlyAccess&lt;IndexType&gt; wIA( outIA, ctx, nRows * nRepeat + 1 );</span>
+<span class="lineNum">     605 </span><span class="lineCov">         20 :         WriteOnlyAccess&lt;IndexType&gt; wJA( outJA, ctx, nValues * nRepeat );</span>
+<span class="lineNum">     606 </span><span class="lineCov">         15 :         WriteOnlyAccess&lt;ValueType&gt; wValues( outValues, ctx, nValues * nRepeat );</span>
+<span class="lineNum">     607 </span>            : 
+<span class="lineNum">     608 </span><span class="lineCov">         23 :         for ( IndexType iRepeat = 0; iRepeat &lt; nRepeat; iRepeat++ )</span>
+<span class="lineNum">     609 </span>            :         {
+<span class="lineNum">     610 </span><span class="lineCov">         36 :             for ( IndexType i = 0; i &lt; nRows; i++ )</span>
+<span class="lineNum">     611 </span>            :             {
+<span class="lineNum">     612 </span><span class="lineCov">         36 :                 wIA[ iRepeat * nRows + i ] = offset + rIA[i];   // the current row offset</span>
+<span class="lineNum">     613 </span>            :             }
+<span class="lineNum">     614 </span>            : 
+<span class="lineNum">     615 </span><span class="lineCov">         18 :             IndexType colOffset = iRepeat * nCols;</span>
+<span class="lineNum">     616 </span>            : 
+<span class="lineNum">     617 </span><span class="lineCov">        162 :             for ( IndexType k = 0; k &lt; nValues; ++k )</span>
+<span class="lineNum">     618 </span>            :             {
+<span class="lineNum">     619 </span><span class="lineCov">        144 :                 wJA[ offset ] = rJA[ k ] + colOffset;</span>
+<span class="lineNum">     620 </span><span class="lineCov">        144 :                 wValues[ offset ] = rValues[ k ];</span>
+<span class="lineNum">     621 </span><span class="lineCov">        144 :                 offset++;</span>
+<span class="lineNum">     622 </span>            :             }
+<span class="lineNum">     623 </span>            :         }
+<span class="lineNum">     624 </span>            : 
+<span class="lineNum">     625 </span><span class="lineCov">          5 :         wIA[ nRepeat * nRows ] = offset;  // final offset</span>
+<span class="lineNum">     626 </span>            : 
+<span class="lineNum">     627 </span><span class="lineCov">          5 :         SCAI_ASSERT_EQUAL( offset, nRepeat * nValues, &quot;size mismatch&quot; );</span>
+<span class="lineNum">     628 </span>            :     }
+<span class="lineNum">     629 </span>            : 
+<span class="lineNum">     630 </span><span class="lineCov">          5 :     out.setCSRData( nRows * nRepeat, nCols * nRepeat, outIA, outJA, outValues );</span>
+<span class="lineNum">     631 </span><span class="lineCov">          5 : }</span>
+<span class="lineNum">     632 </span>            : 
+<span class="lineNum">     633 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     634 </span>            : 
+<span class="lineNum">     635 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     636 </span><span class="lineCov">          4 : static void replicateStorage(</span>
+<span class="lineNum">     637 </span>            :     MatrixStorage&lt;ValueType&gt;&amp; out,
+<span class="lineNum">     638 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; in,
+<span class="lineNum">     639 </span>            :     const IndexType nRepeatRow,
+<span class="lineNum">     640 </span>            :     const IndexType nRepeatCol )
+<span class="lineNum">     641 </span>            : {
+<span class="lineNum">     642 </span><span class="lineCov">          4 :     IndexType nRepeat = nRepeatRow * nRepeatCol;</span>
+<span class="lineNum">     643 </span>            : 
+<span class="lineNum">     644 </span>            :     using namespace hmemo;
+<span class="lineNum">     645 </span><span class="lineCov">          4 :     HArray&lt;IndexType&gt; inIA;</span>
+<span class="lineNum">     646 </span><span class="lineCov">          4 :     HArray&lt;IndexType&gt; inJA;</span>
+<span class="lineNum">     647 </span><span class="lineCov">          4 :     HArray&lt;ValueType&gt; inValues;</span>
+<span class="lineNum">     648 </span>            : 
+<span class="lineNum">     649 </span><span class="lineCov">          8 :     in.buildCSRData( inIA, inJA, inValues );</span>
+<span class="lineNum">     650 </span>            : 
+<span class="lineNum">     651 </span><span class="lineCov">          4 :     IndexType nRows   = inIA.size() - 1;</span>
+<span class="lineNum">     652 </span>            :     IndexType nCols   = in.getNumColumns();
+<span class="lineNum">     653 </span><span class="lineCov">          4 :     IndexType nValues = inJA.size();</span>
+<span class="lineNum">     654 </span>            : 
+<span class="lineNum">     655 </span><span class="lineCov">          4 :     HArray&lt;IndexType&gt; outIA;</span>
+<span class="lineNum">     656 </span><span class="lineCov">          4 :     HArray&lt;IndexType&gt; outJA;</span>
+<span class="lineNum">     657 </span><span class="lineCov">          4 :     HArray&lt;ValueType&gt; outValues;</span>
+<span class="lineNum">     658 </span>            : 
+<span class="lineNum">     659 </span>            :     // Replication is done at the host
+<span class="lineNum">     660 </span>            : 
+<span class="lineNum">     661 </span>            :     ContextPtr ctx = Context::getHostPtr();
+<span class="lineNum">     662 </span>            : 
+<span class="lineNum">     663 </span>            :     {
+<span class="lineNum">     664 </span>            :         IndexType offset = 0;   // current offset in new JA, Values array
+<span class="lineNum">     665 </span>            : 
+<span class="lineNum">     666 </span><span class="lineCov">          8 :         ReadAccess&lt;IndexType&gt; rIA( inIA, ctx );</span>
+<span class="lineNum">     667 </span><span class="lineCov">          8 :         ReadAccess&lt;IndexType&gt; rJA( inJA, ctx );</span>
+<span class="lineNum">     668 </span><span class="lineCov">          8 :         ReadAccess&lt;ValueType&gt; rValues( inValues, ctx );</span>
+<span class="lineNum">     669 </span>            : 
+<span class="lineNum">     670 </span><span class="lineCov">         16 :         WriteOnlyAccess&lt;IndexType&gt; wIA( outIA, ctx, nRows * nRepeatRow + 1 );</span>
+<span class="lineNum">     671 </span><span class="lineCov">         16 :         WriteOnlyAccess&lt;IndexType&gt; wJA( outJA, ctx, nValues * nRepeat );</span>
+<span class="lineNum">     672 </span><span class="lineCov">         12 :         WriteOnlyAccess&lt;ValueType&gt; wValues( outValues, ctx, nValues * nRepeat );</span>
+<span class="lineNum">     673 </span>            : 
+<span class="lineNum">     674 </span><span class="lineCov">         10 :         for ( IndexType iRepeat = 0; iRepeat &lt; nRepeatRow; iRepeat++ )</span>
+<span class="lineNum">     675 </span>            :         {
+<span class="lineNum">     676 </span><span class="lineCov">         18 :             for ( IndexType i = 0; i &lt; nRows; i++ )</span>
+<span class="lineNum">     677 </span>            :             {
+<span class="lineNum">     678 </span><span class="lineCov">         12 :                 wIA[ iRepeat * nRows + i ] = offset;   // the current row offset</span>
+<span class="lineNum">     679 </span>            : 
+<span class="lineNum">     680 </span><span class="lineCov">         12 :                 IndexType rowOffset  = rIA[i];</span>
+<span class="lineNum">     681 </span><span class="lineCov">         12 :                 IndexType nRowValues = rIA[i + 1] - rIA[i];</span>
+<span class="lineNum">     682 </span>            : 
+<span class="lineNum">     683 </span>            :                 IndexType colOffset = 0;
+<span class="lineNum">     684 </span>            : 
+<span class="lineNum">     685 </span><span class="lineCov">         36 :                 for ( IndexType jRepeat = 0; jRepeat &lt; nRepeatCol; jRepeat++ )</span>
+<span class="lineNum">     686 </span>            :                 {
+<span class="lineNum">     687 </span><span class="lineCov">         96 :                     for ( IndexType jj = 0; jj &lt; nRowValues; ++jj )</span>
+<span class="lineNum">     688 </span>            :                     {
+<span class="lineNum">     689 </span><span class="lineCov">         96 :                         wJA[ offset ] = rJA[ rowOffset + jj ] + colOffset;</span>
+<span class="lineNum">     690 </span><span class="lineCov">         96 :                         wValues[ offset ] = rValues[ rowOffset + jj ];</span>
+<span class="lineNum">     691 </span><span class="lineCov">         96 :                         offset++;</span>
+<span class="lineNum">     692 </span>            :                     }
+<span class="lineNum">     693 </span>            : 
+<span class="lineNum">     694 </span><span class="lineCov">         24 :                     colOffset += nCols;</span>
+<span class="lineNum">     695 </span>            :                 }
+<span class="lineNum">     696 </span>            :             }
+<span class="lineNum">     697 </span>            :         }
+<span class="lineNum">     698 </span>            : 
+<span class="lineNum">     699 </span><span class="lineCov">          4 :         wIA[ nRepeatRow * nRows ] = offset;   // the final offset</span>
+<span class="lineNum">     700 </span>            : 
+<span class="lineNum">     701 </span><span class="lineCov">          4 :         SCAI_ASSERT_EQUAL( offset, nRepeat * nValues, &quot;serious offset/size mismatch&quot; )</span>
+<span class="lineNum">     702 </span>            :     }
+<span class="lineNum">     703 </span>            : 
+<span class="lineNum">     704 </span><span class="lineCov">          4 :     out.setCSRData( nRows * nRepeatRow, nCols * nRepeatCol, outIA, outJA, outValues );</span>
+<span class="lineNum">     705 </span><span class="lineCov">          4 : }</span>
+<span class="lineNum">     706 </span>            : 
+<span class="lineNum">     707 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     708 </span>            : 
+<span class="lineNum">     709 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     710 </span><span class="lineCov">          5 : void MatrixCreator::buildReplicatedDiag(</span>
+<span class="lineNum">     711 </span>            :     SparseMatrix&lt;ValueType&gt;&amp; matrix,
+<span class="lineNum">     712 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; storage,
+<span class="lineNum">     713 </span>            :     const IndexType nRepeat )
+<span class="lineNum">     714 </span>            : {
+<span class="lineNum">     715 </span>            :     using namespace dmemo;
+<span class="lineNum">     716 </span>            : 
+<span class="lineNum">     717 </span>            :     // create the distribution
+<span class="lineNum">     718 </span>            : 
+<span class="lineNum">     719 </span><span class="lineCov">          5 :     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );</span>
+<span class="lineNum">     720 </span>            : 
+<span class="lineNum">     721 </span><span class="lineCov">         15 :     IndexType nRows     = storage.getNumRows() * nRepeat;</span>
+<span class="lineNum">     722 </span><span class="lineCov">          5 :     IndexType nCols     = storage.getNumColumns() * nRepeat;</span>
+<span class="lineNum">     723 </span>            : 
+<span class="lineNum">     724 </span>            :     IndexType nChunks;  // will be number of chunks for this processor
+<span class="lineNum">     725 </span>            : 
+<span class="lineNum">     726 </span>            :     // this replication will never split any of the storages
+<span class="lineNum">     727 </span>            :     // bit tricky: use a cyclic( 1 ) distribution of nrepeat to get the local size of this processor
+<span class="lineNum">     728 </span>            : 
+<span class="lineNum">     729 </span>            :     {
+<span class="lineNum">     730 </span><span class="lineCov">         10 :         CyclicDistribution cdist( nRepeat, 1, comm );</span>
+<span class="lineNum">     731 </span><span class="lineCov">          5 :         nChunks = cdist.getNumLocalChunks();</span>
+<span class="lineNum">     732 </span>            :     }
+<span class="lineNum">     733 </span>            : 
+<span class="lineNum">     734 </span>            :     // we will take a general block distribution for the rows
+<span class="lineNum">     735 </span>            : 
+<span class="lineNum">     736 </span><span class="lineCov">         15 :     dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( nRows, nChunks * storage.getNumRows(), comm ) );</span>
+<span class="lineNum">     737 </span>            : 
+<span class="lineNum">     738 </span>            :     // we will take also a general block distribution for the columns to avoid the translation into global indexes
+<span class="lineNum">     739 </span>            : 
+<span class="lineNum">     740 </span><span class="lineCov">         15 :     dmemo::DistributionPtr colDist( new dmemo::GenBlockDistribution( nCols, nChunks * storage.getNumColumns(), comm ) );</span>
+<span class="lineNum">     741 </span>            : 
+<span class="lineNum">     742 </span>            :     SCAI_LOG_DEBUG( logger, *comm &lt;&lt; &quot;: row dist = &quot; &lt;&lt; *rowDist )
+<span class="lineNum">     743 </span>            :     SCAI_LOG_DEBUG( logger, *comm &lt;&lt; &quot;: col dist = &quot; &lt;&lt; *colDist )
+<span class="lineNum">     744 </span>            : 
+<span class="lineNum">     745 </span>            :     // Allocate the correct size
+<span class="lineNum">     746 </span>            : 
+<span class="lineNum">     747 </span><span class="lineCov">         20 :     matrix.allocate( rowDist, colDist );</span>
+<span class="lineNum">     748 </span>            : 
+<span class="lineNum">     749 </span>            :     // now build the local part
+<span class="lineNum">     750 </span>            : 
+<span class="lineNum">     751 </span><span class="lineCov">          5 :     if ( nChunks &gt;= 1 )</span>
+<span class="lineNum">     752 </span>            :     {
+<span class="lineNum">     753 </span><span class="lineCov">          5 :         const MatrixStorage&lt;ValueType&gt;&amp; local = matrix.getLocalStorage();</span>
+<span class="lineNum">     754 </span>            : 
+<span class="lineNum">     755 </span>            :         // we only change the local part, this is safe!
+<span class="lineNum">     756 </span>            : 
+<span class="lineNum">     757 </span><span class="lineCov">          5 :         replicateStorageDiag( const_cast&lt;MatrixStorage&lt;ValueType&gt;&amp; &gt;( local ), storage, nChunks );</span>
+<span class="lineNum">     758 </span>            :     }
+<span class="lineNum">     759 </span>            : 
+<span class="lineNum">     760 </span>            :     // The halo part remains empty, so we are done
+<span class="lineNum">     761 </span><span class="lineCov">          5 : }</span>
+<span class="lineNum">     762 </span>            : 
+<span class="lineNum">     763 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     764 </span>            : 
+<span class="lineNum">     765 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     766 </span><span class="lineCov">          5 : void MatrixCreator::buildReplicated( SparseMatrix&lt;ValueType&gt;&amp; matrix,</span>
+<span class="lineNum">     767 </span>            :                                      const MatrixStorage&lt;ValueType&gt;&amp; storage,
+<span class="lineNum">     768 </span>            :                                      const IndexType nRepeatRow,
+<span class="lineNum">     769 </span>            :                                      const IndexType nRepeatCol )
+<span class="lineNum">     770 </span>            : {
+<span class="lineNum">     771 </span>            :     using namespace dmemo;
+<span class="lineNum">     772 </span>            : 
+<span class="lineNum">     773 </span>            :     // create the distribution
+<span class="lineNum">     774 </span>            : 
+<span class="lineNum">     775 </span><span class="lineCov">          5 :     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );</span>
+<span class="lineNum">     776 </span>            : 
+<span class="lineNum">     777 </span><span class="lineCov">         10 :     IndexType chunkSize = storage.getNumRows();</span>
+<span class="lineNum">     778 </span><span class="lineCov">          5 :     IndexType nGlobal   = storage.getNumRows() * nRepeatRow;</span>
+<span class="lineNum">     779 </span>            : 
+<span class="lineNum">     780 </span>            :     IndexType nLocal;   // will be #local chunks * chunkSize
+<span class="lineNum">     781 </span>            :     IndexType nChunks;  // will be #local chunks * chunkSi
+<span class="lineNum">     782 </span>            : 
+<span class="lineNum">     783 </span>            :     // bit tricky: use a cyclic( nLocal)  distribution to get the local size of this processor
+<span class="lineNum">     784 </span>            : 
+<span class="lineNum">     785 </span>            :     {
+<span class="lineNum">     786 </span><span class="lineCov">         10 :         CyclicDistribution cdist( nGlobal, chunkSize, comm );</span>
+<span class="lineNum">     787 </span><span class="lineCov">          5 :         nChunks = cdist.getNumLocalChunks();</span>
+<span class="lineNum">     788 </span><span class="lineCov">          5 :         nLocal  = cdist.getLocalSize();</span>
+<span class="lineNum">     789 </span>            : 
+<span class="lineNum">     790 </span><span class="lineCov">          5 :         SCAI_ASSERT_EQUAL( nLocal, nChunks * chunkSize, &quot;serious mismatch&quot; )</span>
+<span class="lineNum">     791 </span>            :     }
+<span class="lineNum">     792 </span>            : 
+<span class="lineNum">     793 </span>            :     // we will take a general block distribution
+<span class="lineNum">     794 </span>            : 
+<span class="lineNum">     795 </span><span class="lineCov">         10 :     dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( nGlobal, nLocal, comm ) );</span>
+<span class="lineNum">     796 </span><span class="lineCov">          5 :     dmemo::DistributionPtr colDist( new dmemo::NoDistribution( storage.getNumColumns() * nRepeatCol  ) );</span>
+<span class="lineNum">     797 </span>            : 
+<span class="lineNum">     798 </span>            :     SCAI_LOG_DEBUG( logger, *comm &lt;&lt; &quot;: rowDist for replicated matrix = &quot; &lt;&lt; *rowDist )
+<span class="lineNum">     799 </span>            : 
+<span class="lineNum">     800 </span>            :     // Allocate the correct size
+<span class="lineNum">     801 </span>            : 
+<span class="lineNum">     802 </span><span class="lineCov">         20 :     matrix.allocate( rowDist, colDist );</span>
+<span class="lineNum">     803 </span>            : 
+<span class="lineNum">     804 </span>            :     // now build the local part
+<span class="lineNum">     805 </span>            : 
+<span class="lineNum">     806 </span><span class="lineCov">          5 :     if ( nChunks &gt;= 1 )</span>
+<span class="lineNum">     807 </span>            :     {
+<span class="lineNum">     808 </span><span class="lineCov">          4 :         const MatrixStorage&lt;ValueType&gt;&amp; local = matrix.getLocalStorage();</span>
+<span class="lineNum">     809 </span>            : 
+<span class="lineNum">     810 </span>            :         // we only change the local part, this is safe!
+<span class="lineNum">     811 </span>            : 
+<span class="lineNum">     812 </span><span class="lineCov">          4 :         replicateStorage( const_cast&lt;MatrixStorage&lt;ValueType&gt;&amp; &gt;( local ), storage, nChunks, nRepeatCol );</span>
+<span class="lineNum">     813 </span>            :     }
+<span class="lineNum">     814 </span><span class="lineCov">          5 : }</span>
+<span class="lineNum">     815 </span>            : 
+<span class="lineNum">     816 </span>            : /* ========================================================================= */
+<span class="lineNum">     817 </span>            : /*       Template Method Instantiations                                      */
+<span class="lineNum">     818 </span>            : /* ========================================================================= */
+<span class="lineNum">     819 </span>            : 
+<span class="lineNum">     820 </span>            : #define MATRIX_CREATOR_SPECIFIER( ValueType )                                                  \
+<span class="lineNum">     821 </span>            :     template void MatrixCreator::buildReplicated( SparseMatrix&lt;ValueType&gt;&amp; matrix,             \
+<span class="lineNum">     822 </span>            :             const MatrixStorage&lt;ValueType&gt;&amp; storage,     \
+<span class="lineNum">     823 </span>            :             const IndexType nRepeatRow,                  \
+<span class="lineNum">     824 </span>            :             const IndexType nRepeatCol );                \
+<span class="lineNum">     825 </span>            :     template void MatrixCreator::buildReplicatedDiag( SparseMatrix&lt;ValueType&gt;&amp; matrix,         \
+<span class="lineNum">     826 </span>            :             const MatrixStorage&lt;ValueType&gt;&amp; storage, \
+<span class="lineNum">     827 </span>            :             const IndexType nRepeat ) ;
+<span class="lineNum">     828 </span>            : 
+<span class="lineNum">     829 </span>            : SCAI_COMMON_LOOP( MATRIX_CREATOR_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">     830 </span>            : 
+<span class="lineNum">     831 </span>            : #undef MATRIX_CREATOR_SPECIFIER
+<span class="lineNum">     832 </span>            : 
+<a name="833"><span class="lineNum">     833 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">     834 </span>            : 
+<span class="lineNum">     835 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+<span class="lineNum">     836 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

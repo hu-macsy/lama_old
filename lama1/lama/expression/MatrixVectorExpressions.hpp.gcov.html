@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/expression/MatrixVectorExpressions.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/expression</a> - MatrixVectorExpressions.hpp<span style="font-size: 80%;"> (source / <a href="MatrixVectorExpressions.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">31</td>
+            <td class="headerCovTableEntry">31</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file MatrixVectorExpressions.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Operators to form symbolic expressions scalar * matrix * vector + scalar * vector
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 28.03.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : #pragma once
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/matrix/Matrix.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : #include &lt;scai/lama/Vector.hpp&gt;
+<span class="lineNum">      39 </span>            : #include &lt;scai/lama/Scalar.hpp&gt;
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : #include &lt;scai/lama/expression/Expression.hpp&gt;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : namespace scai
+<span class="lineNum">      44 </span>            : {
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : namespace lama
+<span class="lineNum">      47 </span>            : {
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">      50 </span>            : /*  Expressions return 'Scalar * matrix * Vector'                            */
+<span class="lineNum">      51 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      54 </span>            : inline OpMatrix&lt;ValueType&gt; transpose( const Matrix&lt;ValueType&gt;&amp; matrix )
+<span class="lineNum">      55 </span>            : {
+<span class="lineNum">      56 </span>            :     return OpMatrix&lt;ValueType&gt;( matrix, common::MatrixOp::TRANSPOSE );
+<span class="lineNum">      57 </span>            : }
+<span class="lineNum">      58 </span>            : 
+<span class="lineNum">      59 </span>            : /**
+<span class="lineNum">      60 </span>            :  * @brief This times operator creates an expression that represents the product
+<span class="lineNum">      61 </span>            :  *        of a matrix and a Vector.
+<span class="lineNum">      62 </span>            :  *
+<span class="lineNum">      63 </span>            :  * The times operator creates an Expression that represents the product of the
+<span class="lineNum">      64 </span>            :  * a matrix and a vector. To give an example this Expression is
+<span class="lineNum">      65 </span>            :  * used by a assignment operator Vector to assign the result of this expression to a Vector
+<span class="lineNum">      66 </span>            :  * without generating any unnecessary temporaries.
+<span class="lineNum">      67 </span>            :  *
+<span class="lineNum">      68 </span>            :  * @param[in] matrix  The input matrix.
+<span class="lineNum">      69 </span>            :  * @param[in] vector  The input vector.
+<span class="lineNum">      70 </span>            :  * @return            The expression representing this product.
+<a name="71"><span class="lineNum">      71 </span>            :  */</a>
+<span class="lineNum">      72 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      73 </span><span class="lineCov">      10520 : inline Expression_SMV&lt;ValueType&gt; operator*( const Matrix&lt;ValueType&gt;&amp; matrix, const Vector&lt;ValueType&gt;&amp; vector )</span>
+<span class="lineNum">      74 </span>            : {
+<span class="lineNum">      75 </span>            :     return Expression_SMV&lt;ValueType&gt;( Scalar( 1 ), 
+<span class="lineNum">      76 </span>            :                                       Expression_MV&lt;ValueType&gt;( OpMatrix&lt;ValueType&gt;( matrix, common::MatrixOp::NORMAL ), 
+<span class="lineNum">      77 </span><span class="lineCov">      21040 :                                                                 vector ) );</span>
+<span class="lineNum">      78 </span>            : }
+<a name="79"><span class="lineNum">      79 </span>            : </a>
+<span class="lineNum">      80 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      81 </span><span class="lineCov">       4360 : inline Expression_SMV&lt;ValueType&gt; operator*( const OpMatrix&lt;ValueType&gt;&amp; opMatrix, const Vector&lt;ValueType&gt;&amp; vector )</span>
+<span class="lineNum">      82 </span>            : {
+<span class="lineNum">      83 </span>            :     return Expression_SMV&lt;ValueType&gt;( Scalar( 1 ), 
+<span class="lineNum">      84 </span><span class="lineCov">       8720 :                                       Expression_MV&lt;ValueType&gt;( opMatrix, vector ) );</span>
+<span class="lineNum">      85 </span>            : }
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            : /**
+<span class="lineNum">      88 </span>            :  * @brief This times operator creates an expression that represents the product
+<span class="lineNum">      89 </span>            :  *        of a matrix, Vector and scalar.
+<span class="lineNum">      90 </span>            :  *
+<span class="lineNum">      91 </span>            :  * @param[in] matrix  The matrix.
+<span class="lineNum">      92 </span>            :  * @param[in] exp     The expression a*x
+<span class="lineNum">      93 </span>            :  * @return            The expression representing this product.
+<span class="lineNum">      94 </span>            :  */
+<span class="lineNum">      95 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      96 </span>            : inline Expression_SMV&lt;ValueType&gt; operator*( const Matrix&lt;ValueType&gt;&amp; matrix, const Expression_SV&lt;ValueType&gt;&amp; exp )
+<span class="lineNum">      97 </span>            : {
+<span class="lineNum">      98 </span>            :     return Expression_SMV&lt;ValueType&gt;( 
+<span class="lineNum">      99 </span>            :                exp.getArg1(), 
+<span class="lineNum">     100 </span>            :                Expression_MV&lt;ValueType&gt;( 
+<span class="lineNum">     101 </span>            :                    OpMatrix&lt;ValueType&gt;( matrix, common::MatrixOp::NORMAL ), 
+<span class="lineNum">     102 </span>            :                    exp.getArg2() ) );
+<span class="lineNum">     103 </span>            : }
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     106 </span>            : inline Expression_SMV&lt;ValueType&gt; operator*( const OpMatrix&lt;ValueType&gt;&amp; opMatrix, const Expression_SV&lt;ValueType&gt;&amp; exp )
+<span class="lineNum">     107 </span>            : {
+<span class="lineNum">     108 </span>            :     return Expression_SMV&lt;ValueType&gt;( 
+<span class="lineNum">     109 </span>            :                exp.getArg1(), 
+<span class="lineNum">     110 </span>            :                Expression_MV&lt;ValueType&gt;( opMatrix, exp.getArg2() ) );
+<span class="lineNum">     111 </span>            : }
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            : /**
+<span class="lineNum">     114 </span>            :  * @brief This plus operator creates an expression that represents A * B * x, where
+<span class="lineNum">     115 </span>            :  *        x is vector, A and B are matrices.
+<span class="lineNum">     116 </span>            :  *
+<span class="lineNum">     117 </span>            :  * @param[in] exp     The expression a*A
+<span class="lineNum">     118 </span>            :  * @param[in] vector  The vector.
+<span class="lineNum">     119 </span>            :  * @return            The expression representing this product.
+<span class="lineNum">     120 </span>            :  */
+<span class="lineNum">     121 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     122 </span>            : inline Expression_SMV&lt;ValueType&gt; operator*( const Expression_SM&lt;ValueType&gt;&amp; exp, const Vector&lt;ValueType&gt;&amp; vector )
+<span class="lineNum">     123 </span>            : {
+<span class="lineNum">     124 </span>            :     return Expression_SMV&lt;ValueType&gt;( exp.getArg1(), 
+<span class="lineNum">     125 </span><span class="lineCov">      23790 :                                       Expression_MV&lt;ValueType&gt;( exp.getArg2(), vector ) );</span>
+<span class="lineNum">     126 </span>            : }
+<span class="lineNum">     127 </span>            : 
+<span class="lineNum">     128 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     129 </span>            : /*  Expressions 'scalar * matrix * Vector' +/- vector                        */
+<span class="lineNum">     130 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            : /**
+<span class="lineNum">     133 </span>            :  * @brief This minus operator creates an expression that represents a * A * x + b * y, where
+<span class="lineNum">     134 </span>            :  *        x and y are vectors, A is a matrix and a and b are scalars
+<span class="lineNum">     135 </span>            :  *
+<span class="lineNum">     136 </span>            :  * @param[in] vector  The input vector y.
+<span class="lineNum">     137 </span>            :  * @param[in] exp     The expression a * A * x.
+<span class="lineNum">     138 </span>            :  * @return            The expression representing this sum.
+<a name="139"><span class="lineNum">     139 </span>            :  */</a>
+<span class="lineNum">     140 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     141 </span><span class="lineCov">      13805 : inline Expression_SMV_SV&lt;ValueType&gt; operator-( const Expression_SMV&lt;ValueType&gt;&amp; exp, const Vector&lt;ValueType&gt;&amp; vector )</span>
+<span class="lineNum">     142 </span>            : {
+<span class="lineNum">     143 </span><span class="lineCov">      41415 :     return Expression_SMV_SV&lt;ValueType&gt;( exp, Expression_SV&lt;ValueType&gt;( Scalar( -1 ), vector ) );</span>
+<span class="lineNum">     144 </span>            : }
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            : /**
+<span class="lineNum">     147 </span>            :  * @brief This minus operator creates an expression that represents a * A * x + b * y, where
+<span class="lineNum">     148 </span>            :  *        x and y are vectors, A is a matrix and a and b are scalars
+<span class="lineNum">     149 </span>            :  *
+<span class="lineNum">     150 </span>            :  * @param[in] vector  The input vector y.
+<span class="lineNum">     151 </span>            :  * @param[in] exp     The expression A * x.
+<span class="lineNum">     152 </span>            :  * @return            The expression representing this sum.
+<a name="153"><span class="lineNum">     153 </span>            :  */</a>
+<span class="lineNum">     154 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     155 </span><span class="lineCov">        180 : inline Expression_SMV_SV&lt;ValueType&gt; operator-( const Vector&lt;ValueType&gt;&amp; vector, const Expression_SMV&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     156 </span>            : {
+<span class="lineNum">     157 </span><span class="lineCov">        540 :     Expression_SMV&lt;ValueType&gt; minusExp( -exp.getArg1(), exp.getArg2() );</span>
+<span class="lineNum">     158 </span><span class="lineCov">        720 :     return Expression_SMV_SV&lt;ValueType&gt;( minusExp, Expression_SV&lt;ValueType&gt;( Scalar( 1 ), vector ) );</span>
+<span class="lineNum">     159 </span>            : }
+<span class="lineNum">     160 </span>            : 
+<span class="lineNum">     161 </span>            : /**
+<span class="lineNum">     162 </span>            :  * @brief This plus operator creates an expression that represents a * A * x + b * y, where
+<span class="lineNum">     163 </span>            :  *        x and y are vectors, A is a matrix and a and b are scalars
+<span class="lineNum">     164 </span>            :  *
+<span class="lineNum">     165 </span>            :  * @param[in] vector  The input vector y.
+<span class="lineNum">     166 </span>            :  * @param[in] exp     The expression A * x.
+<span class="lineNum">     167 </span>            :  * @return            The expression representing this addition.
+<span class="lineNum">     168 </span>            :  */
+<span class="lineNum">     169 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     170 </span>            : inline Expression_SMV_SV&lt;ValueType&gt; operator+( const Vector&lt;ValueType&gt;&amp; vector, const Expression_SMV&lt;ValueType&gt;&amp; exp )
+<span class="lineNum">     171 </span>            : {
+<span class="lineNum">     172 </span>            :     return Expression_SMV_SV&lt;ValueType&gt;( exp, Expression_SV&lt;ValueType&gt;( Scalar( 1 ), vector ) );
+<span class="lineNum">     173 </span>            : }
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span>            : /**
+<span class="lineNum">     176 </span>            :  * @brief This plus operator creates an expression that represents a * A * x + b * y, where
+<span class="lineNum">     177 </span>            :  *        x and y are vectors, A is a matrix and a and b are scalars
+<span class="lineNum">     178 </span>            :  *
+<span class="lineNum">     179 </span>            :  * @param[in] vector  The input vector y.
+<span class="lineNum">     180 </span>            :  * @param[in] exp     The expression a * A * y.
+<span class="lineNum">     181 </span>            :  * @return            The expression representing this addition.
+<a name="182"><span class="lineNum">     182 </span>            :  */</a>
+<span class="lineNum">     183 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     184 </span><span class="lineCov">       1260 : inline Expression_SMV_SV&lt;ValueType&gt; operator+( const Expression_SMV&lt;ValueType&gt;&amp; exp, const Vector&lt;ValueType&gt;&amp; vector )</span>
+<span class="lineNum">     185 </span>            : {
+<span class="lineNum">     186 </span><span class="lineCov">       3780 :     return Expression_SMV_SV&lt;ValueType&gt;( exp, Expression_SV&lt;ValueType&gt;( Scalar( 1 ), vector ) );</span>
+<span class="lineNum">     187 </span>            : }
+<span class="lineNum">     188 </span>            : 
+<span class="lineNum">     189 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     190 </span>            : /*  Expressions 'Scalar * matrix * Vector' +/- 'Scalar * Vector'             */
+<span class="lineNum">     191 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span>            : /**
+<span class="lineNum">     194 </span>            :  * @brief This minus operator creates an expression that represents a * A * x + b * y, where
+<span class="lineNum">     195 </span>            :  *        x and y are vectors, A is a matrix and a and b are scalars
+<span class="lineNum">     196 </span>            :  *
+<span class="lineNum">     197 </span>            :  * @param[in] exp1    The expression a*A*x
+<span class="lineNum">     198 </span>            :  * @param[in] exp2    The expression b*y
+<span class="lineNum">     199 </span>            :  * @return            The expression representing this sum.
+<a name="200"><span class="lineNum">     200 </span>            :  */</a>
+<span class="lineNum">     201 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     202 </span><span class="lineCov">        360 : inline Expression_SMV_SV&lt;ValueType&gt; operator-( const Expression_SMV&lt;ValueType&gt;&amp; exp1, const Expression_SV&lt;ValueType&gt;&amp; exp2 )</span>
+<span class="lineNum">     203 </span>            : {
+<span class="lineNum">     204 </span><span class="lineCov">        360 :     Expression_SV&lt;ValueType&gt; minusExp2( -exp2.getArg1(), exp2.getArg2() );</span>
+<span class="lineNum">     205 </span><span class="lineCov">        720 :     return Expression_SMV_SV&lt;ValueType&gt;( exp1, minusExp2 );</span>
+<span class="lineNum">     206 </span>            : }
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span>            : /**
+<span class="lineNum">     209 </span>            :  * @brief This minus operator creates an expression that represents a * A * x + b * y, where
+<span class="lineNum">     210 </span>            :  *        x and y are vectors, A is a matrix and a and b are scalars
+<span class="lineNum">     211 </span>            :  *
+<span class="lineNum">     212 </span>            :  * @param[in] exp2    The expression a*x
+<span class="lineNum">     213 </span>            :  * @param[in] exp1    The expression b*A*y
+<span class="lineNum">     214 </span>            :  * @return            The expression representing this sum.
+<span class="lineNum">     215 </span>            :  */
+<span class="lineNum">     216 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     217 </span>            : inline Expression_SMV_SV&lt;ValueType&gt; operator-( Expression_SV&lt;ValueType&gt;&amp; exp1, const Expression_SMV&lt;ValueType&gt;&amp; exp2 )
+<span class="lineNum">     218 </span>            : {
+<span class="lineNum">     219 </span>            :     return Expression_SMV_SV&lt;ValueType&gt;( Expression_SMV&lt;ValueType&gt;( -exp2.getArg1(), exp2.getArg2() ), exp1 );
+<span class="lineNum">     220 </span>            : }
+<span class="lineNum">     221 </span>            : 
+<span class="lineNum">     222 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     223 </span>            : inline Expression_SMV_SV&lt;ValueType&gt; operator+( const Expression_SV&lt;ValueType&gt;&amp; exp1, const Expression_SMV&lt;ValueType&gt;&amp; exp2 )
+<span class="lineNum">     224 </span>            : {
+<span class="lineNum">     225 </span><span class="lineCov">        180 :     return Expression_SMV_SV&lt;ValueType&gt;( exp2, exp1 );</span>
+<span class="lineNum">     226 </span>            : }
+<span class="lineNum">     227 </span>            : 
+<span class="lineNum">     228 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     229 </span>            : inline Expression_SMV_SV&lt;ValueType&gt; operator+( const Expression_SMV&lt;ValueType&gt;&amp; exp1, const Expression_SV&lt;ValueType&gt;&amp; exp2 )
+<span class="lineNum">     230 </span>            : {
+<span class="lineNum">     231 </span><span class="lineCov">       6660 :     return Expression_SMV_SV&lt;ValueType&gt;( exp1, exp2 );</span>
+<span class="lineNum">     232 </span>            : }
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     235 </span>            : /*   scaling of matrix-vector operations                                     */
+<span class="lineNum">     236 </span>            : /* ------------------------------------------------------------------------- */
+<a name="237"><span class="lineNum">     237 </span>            : </a>
+<span class="lineNum">     238 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     239 </span><span class="lineCov">        360 : inline Expression_SMV&lt;ValueType&gt; operator*( const Expression_SMV&lt;ValueType&gt;&amp; exp, const Scalar alpha )</span>
+<span class="lineNum">     240 </span>            : {
+<span class="lineNum">     241 </span><span class="lineCov">        720 :     return Expression_SMV&lt;ValueType&gt;( exp.getArg1() * alpha, exp.getArg2() );</span>
+<span class="lineNum">     242 </span>            : }
+<a name="243"><span class="lineNum">     243 </span>            : </a>
+<span class="lineNum">     244 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     245 </span><span class="lineCov">        180 : inline Expression_SMV_SV&lt;ValueType&gt; operator*( const Expression_SMV_SV&lt;ValueType&gt;&amp; exp, const Scalar alpha )</span>
+<span class="lineNum">     246 </span>            : {
+<span class="lineNum">     247 </span><span class="lineCov">        900 :     return Expression_SMV_SV&lt;ValueType&gt;( exp.getArg1() * alpha, exp.getArg2() * alpha );</span>
+<span class="lineNum">     248 </span>            : }
+<a name="249"><span class="lineNum">     249 </span>            : </a>
+<span class="lineNum">     250 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     251 </span><span class="lineCov">        180 : inline Expression_SMV&lt;ValueType&gt; operator*( const Scalar alpha, const Expression_SMV&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     252 </span>            : {
+<span class="lineNum">     253 </span><span class="lineCov">        360 :     return Expression_SMV&lt;ValueType&gt;( alpha * exp.getArg1(), exp.getArg2() );</span>
+<span class="lineNum">     254 </span>            : }
+<a name="255"><span class="lineNum">     255 </span>            : </a>
+<span class="lineNum">     256 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     257 </span><span class="lineCov">        180 : inline Expression_SMV_SV&lt;ValueType&gt; operator*( const Scalar alpha, const Expression_SMV_SV&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     258 </span>            : {
+<span class="lineNum">     259 </span><span class="lineCov">        900 :     return Expression_SMV_SV&lt;ValueType&gt;( alpha * exp.getArg1(), alpha * exp.getArg2() );</span>
+<span class="lineNum">     260 </span>            : }
+<a name="261"><span class="lineNum">     261 </span>            : </a>
+<span class="lineNum">     262 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     263 </span><span class="lineCov">        180 : inline Expression_SMV&lt;ValueType&gt; operator/( const Expression_SMV&lt;ValueType&gt;&amp; exp, const Scalar alpha )</span>
+<span class="lineNum">     264 </span>            : {
+<span class="lineNum">     265 </span><span class="lineCov">        360 :     return Expression_SMV&lt;ValueType&gt;( exp.getArg1() / alpha, exp.getArg2() );</span>
+<span class="lineNum">     266 </span>            : }
+<a name="267"><span class="lineNum">     267 </span>            : </a>
+<span class="lineNum">     268 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     269 </span><span class="lineCov">        180 : inline Expression_SMV_SV&lt;ValueType&gt; operator/( const Expression_SMV_SV&lt;ValueType&gt;&amp; exp, const Scalar alpha )</span>
+<span class="lineNum">     270 </span>            : {
+<span class="lineNum">     271 </span><span class="lineCov">        900 :     return Expression_SMV_SV&lt;ValueType&gt;( exp.getArg1() / alpha, exp.getArg2() / alpha );</span>
+<span class="lineNum">     272 </span>            : }
+<span class="lineNum">     273 </span>            : 
+<span class="lineNum">     274 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     275 </span>            : /*   unary operator -                                                        */
+<span class="lineNum">     276 </span>            : /* ------------------------------------------------------------------------- */
+<a name="277"><span class="lineNum">     277 </span>            : </a>
+<span class="lineNum">     278 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     279 </span><span class="lineCov">        360 : inline Expression_SMV&lt;ValueType&gt; operator-( const Expression_SMV&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     280 </span>            : {
+<span class="lineNum">     281 </span><span class="lineCov">       1080 :     return Expression_SMV&lt;ValueType&gt;( -exp.getArg1(), exp.getArg2() );</span>
+<span class="lineNum">     282 </span>            : }
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     285 </span>            : inline Expression_SMV_SV&lt;ValueType&gt; operator-( const Expression_SMV_SV&lt;ValueType&gt;&amp; exp )
+<span class="lineNum">     286 </span>            : {
+<span class="lineNum">     287 </span>            :     return Expression_SMV_SV&lt;ValueType&gt;( -exp.getArg1(), -exp.getArg2() );
+<span class="lineNum">     288 </span>            : }
+<span class="lineNum">     289 </span>            : 
+<span class="lineNum">     290 </span>            : } /* end namespace lama */
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span>            : } /* end namespace scai */
+<span class="lineNum">     293 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

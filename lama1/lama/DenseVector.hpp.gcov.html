@@ -1,0 +1,738 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/DenseVector.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">lama</a> - DenseVector.hpp<span style="font-size: 80%;"> (source / <a href="DenseVector.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntryLo">65.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntryLo">42.9 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file DenseVector.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Definition of template class that stands for a dense vector of a certain type.
+<span class="lineNum">      31 </span>            :  * @author Jiri Kraus
+<span class="lineNum">      32 </span>            :  * @date 22.02.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #pragma once
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : // for dll_import
+<span class="lineNum">      38 </span>            : #include &lt;scai/common/config.hpp&gt;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : // base classes
+<span class="lineNum">      41 </span>            : #include &lt;scai/lama/Vector.hpp&gt;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : // internal scai libraries
+<span class="lineNum">      44 </span>            : #include &lt;scai/utilskernel/LArray.hpp&gt;
+<span class="lineNum">      45 </span>            : #include &lt;scai/dmemo/Distribution.hpp&gt;
+<span class="lineNum">      46 </span>            : #include &lt;scai/dmemo/Halo.hpp&gt;
+<span class="lineNum">      47 </span>            : #include &lt;scai/hmemo.hpp&gt;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : #include &lt;scai/tasking/SyncToken.hpp&gt;
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : #include &lt;scai/common/macros/throw.hpp&gt;
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            : // std
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : namespace scai
+<span class="lineNum">      56 </span>            : {
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            : namespace dmemo
+<span class="lineNum">      59 </span>            : {
+<span class="lineNum">      60 </span>            : class Redistributor;
+<span class="lineNum">      61 </span>            : }
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            : namespace lama
+<span class="lineNum">      64 </span>            : {
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : // forward declaration required as we do not include SparseVector.hpp here
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      70 </span>            : class SparseVector;
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            : /**
+<span class="lineNum">      73 </span>            :  * @brief The template class DenseVector represents a distributed 1D Vector with elements of type ValueType.
+<span class="lineNum">      74 </span>            :  *
+<span class="lineNum">      75 </span>            :  * @tparam ValueType the value type for the vector values.
+<span class="lineNum">      76 </span>            :  *
+<span class="lineNum">      77 </span>            :  * In contrarary to a sparse vector a dense vector has allocated memory for each entry. If the vector
+<span class="lineNum">      78 </span>            :  * is distributed on multiple processors, each processor has allocated only memory for its local part, 
+<span class="lineNum">      79 </span>            :  * i.e. for the elements that are owned by it.
+<span class="lineNum">      80 </span>            :  *
+<span class="lineNum">      81 </span>            :  */
+<span class="lineNum">      82 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      83 </span>            : class COMMON_DLL_IMPORTEXPORT DenseVector:
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            :     public Vector&lt;ValueType&gt;,
+<span class="lineNum">      86 </span>            :     public _Vector::Register&lt;DenseVector&lt;ValueType&gt; &gt;    // register at factory
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span>            : {
+<span class="lineNum">      89 </span>            : public:
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span>            :     using _Vector::logger;
+<span class="lineNum">      92 </span>            :     using _Vector::getDistribution;
+<span class="lineNum">      93 </span>            :     using _Vector::getContextPtr;
+<span class="lineNum">      94 </span>            :     using _Vector::getContext;
+<span class="lineNum">      95 </span>            :     using _Vector::readFromFile;
+<span class="lineNum">      96 </span>            :     using _Vector::getDistributionPtr;
+<span class="lineNum">      97 </span>            :     using _Vector::size;
+<span class="lineNum">      98 </span>            :     using _Vector::assign;
+<span class="lineNum">      99 </span>            :     using _Vector::prefetch; // prefetch() with no arguments
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            :     using Vector&lt;ValueType&gt;::operator=;
+<span class="lineNum">     103 </span>            :     using Vector&lt;ValueType&gt;::getValueType;
+<span class="lineNum">     104 </span>            :     using Vector&lt;ValueType&gt;::binaryOp;    
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            :     /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
+<span class="lineNum">     107 </span>            : 
+<span class="lineNum">     108 </span>            :     explicit DenseVector( hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span>            :     /**
+<span class="lineNum">     111 </span>            :      * @brief Create a replicated DenseVector of a certain size initialized with same value for all elements.
+<span class="lineNum">     112 </span>            :      *
+<span class="lineNum">     113 </span>            :      * @param[in] size  the size of the new DenseVector.
+<span class="lineNum">     114 </span>            :      * @param[in] value the value to assign to all elements of the new DenseVector.
+<span class="lineNum">     115 </span>            :      * @param[in] context   specifies optionally the context where dense vector should reside
+<span class="lineNum">     116 </span>            :      *
+<span class="lineNum">     117 </span>            :      * Attention: DEPRECATED.
+<span class="lineNum">     118 </span>            :      *
+<span class="lineNum">     119 </span>            :      *  \code
+<span class="lineNum">     120 </span>            :      *   DenseVector&lt;ValueType&gt; v( 100, 1 );
+<span class="lineNum">     121 </span>            :      *   auto v = fill&lt;DenseVector&lt;ValueType&gt;&gt;( 100, 1 );
+<span class="lineNum">     122 </span>            :      *  \endcode
+<span class="lineNum">     123 </span>            :      */
+<span class="lineNum">     124 </span>            :     DenseVector( const IndexType size, const ValueType value, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span>            :     /**
+<span class="lineNum">     127 </span>            :      * @brief creates a distributed DenseVector of the passed global size initialized to the passed value.
+<span class="lineNum">     128 </span>            :      *
+<span class="lineNum">     129 </span>            :      * @param[in] distribution  the distribution to use for the new vector.
+<span class="lineNum">     130 </span>            :      * @param[in] value         the value to assign to all elements of the new DenseVector.
+<span class="lineNum">     131 </span>            :      * @param[in] context   specifies optionally the context where dense vector should reside
+<span class="lineNum">     132 </span>            :      */
+<span class="lineNum">     133 </span>            :     DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            :     /**
+<span class="lineNum">     136 </span>            :      * Override the default copy constructor to guarantee a deep copy.
+<span class="lineNum">     137 </span>            :      *
+<span class="lineNum">     138 </span>            :      * @param[in] other the dense vector that will be copied
+<span class="lineNum">     139 </span>            :      *
+<span class="lineNum">     140 </span>            :      * The new constructed vector has the same distribution as the input vector.
+<span class="lineNum">     141 </span>            :      */
+<span class="lineNum">     142 </span>            :     DenseVector( const DenseVector&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span>            :     /**
+<span class="lineNum">     145 </span>            :      * @brief Override the default move constructor with appropriate version.
+<span class="lineNum">     146 </span>            :      *
+<span class="lineNum">     147 </span>            :      * @param[in] other the dense vector from which data is moved
+<span class="lineNum">     148 </span>            :      *
+<span class="lineNum">     149 </span>            :      * The attribute noexcept is mandatory to make the use of dense vectors possible in C++ container classes.
+<span class="lineNum">     150 </span>            :      */
+<span class="lineNum">     151 </span>            :     DenseVector( DenseVector&lt;ValueType&gt;&amp;&amp; other ) noexcept;
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            :     /**
+<span class="lineNum">     154 </span>            :      * @brief creates a distributed DenseVector with given local values.
+<span class="lineNum">     155 </span>            :      *
+<span class="lineNum">     156 </span>            :      * @param[in] distribution  the distribution for the vector
+<span class="lineNum">     157 </span>            :      * @param[in] localValues   the local values to initialize the new DenseVector with.
+<span class="lineNum">     158 </span>            :      *
+<span class="lineNum">     159 </span>            :      * Note: localValues.size() == distribution-&gt;getLocalSize() must be valid.
+<span class="lineNum">     160 </span>            :      */
+<span class="lineNum">     161 </span>            :     DenseVector( 
+<span class="lineNum">     162 </span>            :         dmemo::DistributionPtr distribution, 
+<span class="lineNum">     163 </span>            :         hmemo::HArray&lt;ValueType&gt; localValues, 
+<span class="lineNum">     164 </span>            :         hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span>            :     /**
+<span class="lineNum">     167 </span>            :      * @brief Constructor of a replicated DenseVector with global values
+<span class="lineNum">     168 </span>            :      *
+<span class="lineNum">     169 </span>            :      *  \code
+<span class="lineNum">     170 </span>            :      *     HArray&lt;double&gt; values( { 1, 2, 3, 4, 5 } );
+<span class="lineNum">     171 </span>            :      *     DenseVector&lt;double&gt;( values );
+<span class="lineNum">     172 </span>            :      *     // short form of: DenseVector&lt;double&gt;( std::make_shared&lt;NoDistriubiton&lt;values.size()&gt;, values );
+<span class="lineNum">     173 </span>            :      *  \endcode
+<span class="lineNum">     174 </span>            :      *
+<span class="lineNum">     175 </span>            :      * Usually, a replicated vector has the same values on each processor.
+<span class="lineNum">     176 </span>            :      * It might be used in a local mode where each processor has individual values but then you
+<span class="lineNum">     177 </span>            :      * should exactly know what you do.
+<span class="lineNum">     178 </span>            :      */
+<span class="lineNum">     179 </span>            :     explicit DenseVector( hmemo::HArray&lt;ValueType&gt; localValues, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
+<span class="lineNum">     180 </span>            : 
+<span class="lineNum">     181 </span>            :     /**
+<span class="lineNum">     182 </span>            :      * @brief releases all allocated resources.
+<span class="lineNum">     183 </span>            :      */
+<span class="lineNum">     184 </span>            :     virtual ~DenseVector();
+<span class="lineNum">     185 </span>            : 
+<span class="lineNum">     186 </span>            :     /* ==================================================================== */
+<span class="lineNum">     187 </span>            :     /*   split up member variables                                          */
+<span class="lineNum">     188 </span>            :     /* ==================================================================== */
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            :     void splitUp( dmemo::DistributionPtr&amp; dist, hmemo::HArray&lt;ValueType&gt;&amp; localvalues );
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span>            :     /** 
+<span class="lineNum">     193 </span>            :      * @brief Implementation of pure method _Vector::getVectorKind() 
+<span class="lineNum">     194 </span>            :      */
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            :     inline virtual VectorKind getVectorKind() const;
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span>            :     /**
+<span class="lineNum">     199 </span>            :      * @brief Implementation of pure method _Vector::isConsistent 
+<span class="lineNum">     200 </span>            :      */
+<span class="lineNum">     201 </span>            :     virtual bool isConsistent() const;
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            :     /* --------------------------------------------------------------------- */
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span>            :     /**
+<span class="lineNum">     206 </span>            :      *  @brief Implememenation of pure routine _Vector::allocate. 
+<span class="lineNum">     207 </span>            :      *
+<span class="lineNum">     208 </span>            :      *  Please keep in mind that this method does not initialize the values 
+<span class="lineNum">     209 </span>            :      *  of the dense vector. So it should be used only in combination with
+<span class="lineNum">     210 </span>            :      *  methods that set the values afterwards.
+<span class="lineNum">     211 </span>            :      *
+<span class="lineNum">     212 </span>            :      *  \code
+<span class="lineNum">     213 </span>            :      *     DenseVector&lt;double&gt; v;       DenseVector&lt;double&gt; v( 100, 1.0 );     DenseVector&lt;double&gt; v;
+<span class="lineNum">     214 </span>            :      *     v.allocate( 100 );                                                  v.setSameValue( 100, 1.0 );
+<span class="lineNum">     215 </span>            :      *     v = 1.0;             
+<span class="lineNum">     216 </span>            :      *  \endcode
+<span class="lineNum">     217 </span>            :      */
+<span class="lineNum">     218 </span>            :     virtual void allocate( const IndexType n );
+<span class="lineNum">     219 </span>            : 
+<span class="lineNum">     220 </span>            :     /** Implememenation of pure routine _Vector::allocate. */
+<span class="lineNum">     221 </span>            : 
+<span class="lineNum">     222 </span>            :     virtual void allocate( dmemo::DistributionPtr distribution );
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span>            :     /* --------------------------------------------------------------------- */
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span>            :     /** Override the default assignment operator.  */
+<span class="lineNum">     227 </span>            : 
+<span class="lineNum">     228 </span>            :     DenseVector&amp; operator=( const DenseVector&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span>            :     /**
+<span class="lineNum">     231 </span>            :      * @brief Move assignment operator for dense vector.
+<span class="lineNum">     232 </span>            :      *
+<span class="lineNum">     233 </span>            :      * @param[in] other the dense vector to move
+<span class="lineNum">     234 </span>            :      * @return reference to this array for further assignments
+<span class="lineNum">     235 </span>            :      *
+<span class="lineNum">     236 </span>            :      * The other dense vector will be a zero vector afterwards.
+<span class="lineNum">     237 </span>            :      */
+<span class="lineNum">     238 </span>            :     DenseVector&lt;ValueType&gt;&amp; operator=( DenseVector&lt;ValueType&gt;&amp;&amp; other ) noexcept;
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span>            :     // All other assignment operators are inherited from class Vector, but using is required
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span>            :     /** Implementation of pure method _Vector::asign 
+<span class="lineNum">     243 </span>            :      *
+<span class="lineNum">     244 </span>            :      *  uses metaprogramming to call assignImpl with actual type and kind
+<span class="lineNum">     245 </span>            :      */
+<span class="lineNum">     246 </span>            :     virtual void assign( const _Vector&amp; other );
+<span class="lineNum">     247 </span>            : 
+<span class="lineNum">     248 </span>            :     /** 
+<span class="lineNum">     249 </span>            :      *  @brief Specific implementation of assign
+<span class="lineNum">     250 </span>            :      */
+<span class="lineNum">     251 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     252 </span>            :     void assignImpl( const Vector&lt;OtherValueType&gt;&amp; other );
+<span class="lineNum">     253 </span>            : 
+<span class="lineNum">     254 </span>            :     /** 
+<span class="lineNum">     255 </span>            :      *  @brief Specific implementation of assign for a sparse vector of a certain type.
+<span class="lineNum">     256 </span>            :      */
+<span class="lineNum">     257 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     258 </span>            :     void assignSparse( const SparseVector&lt;OtherValueType&gt;&amp; other );
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span>            :     /** 
+<span class="lineNum">     261 </span>            :      *  @brief Specific implementation of assign for a dense vector of a certain type.
+<span class="lineNum">     262 </span>            :      */
+<span class="lineNum">     263 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     264 </span>            :     void assignDense( const DenseVector&lt;OtherValueType&gt;&amp; other );
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span>            :     /**
+<span class="lineNum">     267 </span>            :      * Implementation of pure method _Vector::fillRandom 
+<span class="lineNum">     268 </span>            :      */
+<span class="lineNum">     269 </span>            :     virtual void fillRandom( const IndexType bound );
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span>            :     /** Implementation of pure method _Vector::fillSparseRandom */
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span>            :     virtual void fillSparseRandom( const float fillRate, const IndexType bound );
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span>            :     /**
+<span class="lineNum">     276 </span>            :      * @brief This method fills/initializes an allocated vector 
+<span class="lineNum">     277 </span>            :      *
+<span class="lineNum">     278 </span>            :      * @param[in] startValue value for the first element
+<span class="lineNum">     279 </span>            :      * @param[in] inc increment between the elements
+<span class="lineNum">     280 </span>            :      *
+<span class="lineNum">     281 </span>            :      */
+<span class="lineNum">     282 </span>            :     void fillLinearValues( const ValueType startValue, const ValueType inc );
+<span class="lineNum">     283 </span>            : 
+<span class="lineNum">     284 </span>            :     /** Sort all elements of this vector.
+<span class="lineNum">     285 </span>            :      *
+<span class="lineNum">     286 </span>            :      *  Currently, sorting is only possible on block distributed vectors.
+<span class="lineNum">     287 </span>            :      *  Keep in mind that this operation might introduce a new (general block) distribution
+<span class="lineNum">     288 </span>            :      *  for the vector.
+<span class="lineNum">     289 </span>            :      *
+<span class="lineNum">     290 </span>            :      *  @param[out] perm         permutation vector with the global indexes of original positions
+<span class="lineNum">     291 </span>            :      *  @param[in]  ascending    flag if sorting is ascending or descending
+<span class="lineNum">     292 </span>            :      *
+<span class="lineNum">     293 </span>            :      *  Note:  oldVector[ perm ] -&gt;  newVector
+<span class="lineNum">     294 </span>            :      */
+<span class="lineNum">     295 </span>            :     virtual void sort( DenseVector&lt;IndexType&gt;&amp; perm, bool ascending );
+<span class="lineNum">     296 </span>            : 
+<span class="lineNum">     297 </span>            :     /** Same sort but without perm vector. */
+<span class="lineNum">     298 </span>            : 
+<span class="lineNum">     299 </span>            :     virtual void sort( bool ascending );
+<span class="lineNum">     300 </span>            : 
+<span class="lineNum">     301 </span>            :     /** Checking whether all values in a dense vector are sorted.
+<span class="lineNum">     302 </span>            :      *
+<span class="lineNum">     303 </span>            :      *  This method can only be applied for block distributions.
+<span class="lineNum">     304 </span>            :      */
+<span class="lineNum">     305 </span>            :     virtual bool isSorted( bool ascending ) const;
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            :     /** Compute a global prefix sum for the elements of this vector. 
+<span class="lineNum">     308 </span>            :      *
+<span class="lineNum">     309 </span>            :      *  \code
+<span class="lineNum">     310 </span>            :      *   A = { 1, 2, 3, 4, 5, 6 }
+<span class="lineNum">     311 </span>            :      *   A.scan();
+<span class="lineNum">     312 </span>            :      *   A = { 1, 3, 6, 10, 15, 21 }
+<span class="lineNum">     313 </span>            :      *  \endcode  
+<span class="lineNum">     314 </span>            :      *
+<span class="lineNum">     315 </span>            :      *  Note: This vector must be block distributed, otherwise it throws an exception
+<span class="lineNum">     316 </span>            :      */
+<span class="lineNum">     317 </span>            :     void scan();
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span>            :     /** Same as scan but it uses another input vector. */
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span>            :     void scan( const DenseVector&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span>            :     /**
+<span class="lineNum">     324 </span>            :      * Implementation of pure method _Vector::setDenseValues.
+<span class="lineNum">     325 </span>            :      */
+<span class="lineNum">     326 </span><span class="lineCov">      36085 :     virtual void setDenseValues( const hmemo::_HArray&amp; values );</span>
+<span class="lineNum">     327 </span>            : 
+<span class="lineNum">     328 </span>            :     /**
+<span class="lineNum">     329 </span>            :      * Implementation of pure method _Vector::fillSparseData
+<span class="lineNum">     330 </span>            :      */
+<span class="lineNum">     331 </span>            :     virtual void fillSparseData( 
+<span class="lineNum">     332 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; nonZeroIndexes,
+<span class="lineNum">     333 </span>            :         const hmemo::_HArray&amp; nonZeroValues,
+<span class="lineNum">     334 </span>            :         const common::BinaryOp op );
+<span class="lineNum">     335 </span>            : 
+<span class="lineNum">     336 </span>            :     /**
+<span class="lineNum">     337 </span>            :      * Implementation of _Vector::copy with covariant return type.
+<span class="lineNum">     338 </span>            :      */
+<span class="lineNum">     339 </span>            :     virtual DenseVector* copy() const;
+<span class="lineNum">     340 </span>            : 
+<span class="lineNum">     341 </span>            :     /**
+<span class="lineNum">     342 </span>            :      * Implementation of _Vector::newVector with covariant return type.
+<span class="lineNum">     343 </span>            :      */
+<span class="lineNum">     344 </span>            :     virtual DenseVector* newVector() const;
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span>            :     /**
+<span class="lineNum">     347 </span>            :      * @brief get a non constant reference to local values of this Dense Vector.
+<span class="lineNum">     348 </span>            :      *
+<span class="lineNum">     349 </span>            :      * @return  a non constant reference to the local values of this.
+<span class="lineNum">     350 </span>            :      */
+<span class="lineNum">     351 </span>            : 
+<span class="lineNum">     352 </span>            :     inline utilskernel::LArray&lt;ValueType&gt;&amp; getLocalValues();
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            :     /**
+<span class="lineNum">     355 </span>            :      * @brief get a constant reference to local values of this Dense Vector.
+<span class="lineNum">     356 </span>            :      *
+<span class="lineNum">     357 </span>            :      * @return  a constant reference to the local values of this.
+<span class="lineNum">     358 </span>            :      */
+<span class="lineNum">     359 </span>            :     inline const utilskernel::LArray&lt;ValueType&gt;&amp; getLocalValues() const;
+<span class="lineNum">     360 </span>            : 
+<span class="lineNum">     361 </span>            :     /**
+<span class="lineNum">     362 </span>            :      * @brief Get a reference to the halo temp array of this Dense Vector.
+<span class="lineNum">     363 </span>            :      *
+<span class="lineNum">     364 </span>            :      * @return  a reference to the halo values of this.
+<span class="lineNum">     365 </span>            :      *
+<span class="lineNum">     366 </span>            :      * The halo array can be used as temporary array to keep values of neighbored
+<span class="lineNum">     367 </span>            :      * processors. It avoids reallocation of memory for the values.
+<span class="lineNum">     368 </span>            :      */
+<span class="lineNum">     369 </span>            : 
+<span class="lineNum">     370 </span>            :     inline utilskernel::LArray&lt;ValueType&gt;&amp; getHaloValues() const;
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span>            :     /** @brief Implementation of pure method Vector&lt;ValueType&gt;::getValue */
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span>            :     virtual ValueType getValue( IndexType globalIndex ) const;
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span>            :     /** @brief Implementation of pure method Vector&lt;ValueType&gt;::setValue */
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span>            :     virtual void setValue( const IndexType globalIndex, const ValueType value );
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span>            :     virtual ValueType min() const;
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span>            :     virtual ValueType max() const;
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span>            :     virtual ValueType sum() const;
+<span class="lineNum">     385 </span>            : 
+<span class="lineNum">     386 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::l1Norm() for dense vector */
+<span class="lineNum">     387 </span>            : 
+<span class="lineNum">     388 </span>            :     virtual RealType&lt;ValueType&gt; l1Norm() const;
+<span class="lineNum">     389 </span>            : 
+<span class="lineNum">     390 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::l2Norm() for dense vector */
+<span class="lineNum">     391 </span>            : 
+<span class="lineNum">     392 </span>            :     virtual RealType&lt;ValueType&gt; l2Norm() const;
+<span class="lineNum">     393 </span>            : 
+<span class="lineNum">     394 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::maxNorm() for dense vector */
+<span class="lineNum">     395 </span>            : 
+<span class="lineNum">     396 </span>            :     virtual RealType&lt;ValueType&gt; maxNorm() const;
+<span class="lineNum">     397 </span>            : 
+<span class="lineNum">     398 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::maxDiffNorm */
+<span class="lineNum">     399 </span>            : 
+<span class="lineNum">     400 </span>            :     virtual RealType&lt;ValueType&gt; maxDiffNorm( const Vector&lt;ValueType&gt;&amp; other ) const;
+<span class="lineNum">     401 </span>            : 
+<span class="lineNum">     402 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::all */
+<span class="lineNum">     403 </span>            : 
+<span class="lineNum">     404 </span>            :     virtual bool all( common::CompareOp op, const ValueType value ) const;
+<span class="lineNum">     405 </span>            : 
+<span class="lineNum">     406 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::all */
+<span class="lineNum">     407 </span>            : 
+<span class="lineNum">     408 </span>            :     virtual bool all( common::CompareOp op, const Vector&lt;ValueType&gt;&amp; other ) const;
+<span class="lineNum">     409 </span>            : 
+<span class="lineNum">     410 </span>            :     virtual void swap( _Vector&amp; other );
+<span class="lineNum">     411 </span>            : 
+<span class="lineNum">     412 </span>            :     /** Reset a dense vector with a new array of local values and a new distribution.
+<span class="lineNum">     413 </span>            :      *
+<span class="lineNum">     414 </span>            :      *  @param[in,out] newValues array with the new values before, contains old values afterwards
+<span class="lineNum">     415 </span>            :      *  @param[in]     newDist is the new distribution
+<span class="lineNum">     416 </span>            :      *
+<span class="lineNum">     417 </span>            :      *  This methods throws an exception if the size of the new local values does not fit with the
+<span class="lineNum">     418 </span>            :      *  local size of the new distribution.
+<span class="lineNum">     419 </span>            :      *
+<span class="lineNum">     420 </span>            :      *  This method is more efficient than calling a constructor for DenseVector if the array
+<span class="lineNum">     421 </span>            :      *  newValues is no more needed afterwards.
+<span class="lineNum">     422 </span>            :      */
+<span class="lineNum">     423 </span>            :     void swap( hmemo::HArray&lt;ValueType&gt;&amp; newValues, dmemo::DistributionPtr newDist );
+<span class="lineNum">     424 </span>            : 
+<span class="lineNum">     425 </span>            :     virtual void writeAt( std::ostream&amp; stream ) const;
+<span class="lineNum">     426 </span>            : 
+<span class="lineNum">     427 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::unaryOp for dense vector. */
+<span class="lineNum">     428 </span>            : 
+<span class="lineNum">     429 </span>            :     void unaryOp( const Vector&lt;ValueType&gt;&amp; x, common::UnaryOp op );
+<span class="lineNum">     430 </span>            : 
+<span class="lineNum">     431 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::binaryOp for dense vector. */
+<span class="lineNum">     432 </span>            : 
+<span class="lineNum">     433 </span>            :     void binaryOp( const Vector&lt;ValueType&gt;&amp; x, common::BinaryOp op, const Vector&lt;ValueType&gt;&amp; y );
+<span class="lineNum">     434 </span>            : 
+<span class="lineNum">     435 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::selectComplexPart for dense vector. */
+<span class="lineNum">     436 </span>            : 
+<span class="lineNum">     437 </span>            :     virtual void selectComplexPart( Vector&lt;RealType&lt;ValueType&gt; &gt;&amp; x, const common::ComplexPart kind ) const;
+<span class="lineNum">     438 </span>            : 
+<span class="lineNum">     439 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::buildComplex for dense vector. */
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span>            :     virtual void buildComplex( const Vector&lt;RealType&lt;ValueType&gt; &gt;&amp; x, const Vector&lt;RealType&lt;ValueType&gt; &gt;&amp; y );
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::binaryOpScalar for dense vector. */
+<span class="lineNum">     444 </span>            : 
+<span class="lineNum">     445 </span>            :     void binaryOpScalar( const Vector&lt;ValueType&gt;&amp; x, const ValueType&amp; alpha, const common::BinaryOp op, const bool swap );
+<span class="lineNum">     446 </span>            : 
+<span class="lineNum">     447 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::vectorPlusVector */
+<span class="lineNum">     448 </span>            : 
+<span class="lineNum">     449 </span>            :     virtual void vectorPlusVector( const ValueType&amp; alpha, const Vector&lt;ValueType&gt;&amp; x, const ValueType&amp; beta, const Vector&lt;ValueType&gt;&amp; y );
+<span class="lineNum">     450 </span>            : 
+<span class="lineNum">     451 </span>            :     /** vectorPlusVector with aliased */
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span><span class="lineNoCov">          0 :     void axpy( const ValueType&amp; alpha, const Vector&lt;ValueType&gt;&amp; x );</span>
+<span class="lineNum">     454 </span>            : 
+<span class="lineNum">     455 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::vectorTimesVector */
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span>            :     virtual void vectorTimesVector( const ValueType&amp; alpha, const Vector&lt;ValueType&gt;&amp; x, const Vector&lt;ValueType&gt;&amp; y );
+<span class="lineNum">     458 </span>            : 
+<span class="lineNum">     459 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::vectorPlusScalar */
+<span class="lineNum">     460 </span>            : 
+<span class="lineNum">     461 </span>            :     virtual void vectorPlusScalar( const ValueType&amp; alpha, const Vector&lt;ValueType&gt;&amp; x, const ValueType&amp; beta );
+<span class="lineNum">     462 </span>            : 
+<span class="lineNum">     463 </span>            :     /** Implementation for pure method Vector&lt;ValueType&gt;::setScalar */
+<span class="lineNum">     464 </span>            : 
+<span class="lineNum">     465 </span>            :     virtual void setScalar( const ValueType&amp; alpha );
+<span class="lineNum">     466 </span>            : 
+<span class="lineNum">     467 </span>            :     /** Implementation of pure method _Vector::setVector */
+<span class="lineNum">     468 </span>            : 
+<span class="lineNum">     469 </span>            :     virtual void setVector( const _Vector&amp; other, const common::BinaryOp op, const bool swapScalar = false );
+<span class="lineNum">     470 </span>            : 
+<span class="lineNum">     471 </span>            :     /** Setting this vector by gathering vector elements from another vector.
+<span class="lineNum">     472 </span>            :      *
+<span class="lineNum">     473 </span>            :      *  @param[in] source is the vector from which elements are gathered
+<span class="lineNum">     474 </span>            :      *  @param[in] index  are the elements needed from other processors
+<span class="lineNum">     475 </span>            :      *  @param[in] op     specifies how to combine elements with existing ones
+<span class="lineNum">     476 </span>            :      *
+<span class="lineNum">     477 </span>            :      *  If op is COPY, this vector will have the same size and distribution as index, otherwise
+<span class="lineNum">     478 </span>            :      *  this vector and the other vector must have the same size and distribution.
+<span class="lineNum">     479 </span>            :      */
+<span class="lineNum">     480 </span>            :     virtual void gather(
+<span class="lineNum">     481 </span>            :         const DenseVector&lt;ValueType&gt;&amp; source,
+<span class="lineNum">     482 </span>            :         const DenseVector&lt;IndexType&gt;&amp; index,
+<span class="lineNum">     483 </span>            :         const common::BinaryOp op = common::BinaryOp::COPY );
+<span class="lineNum">     484 </span>            : 
+<span class="lineNum">     485 </span>            :     /** Scattering values from another vector into this vector
+<span class="lineNum">     486 </span>            :      *
+<span class="lineNum">     487 </span>            :      *  @param[in] index  specifies positions where to update values
+<span class="lineNum">     488 </span>            :      *  @param[in] source values that are scattered
+<span class="lineNum">     489 </span>            :      *  @param[in] op     specifies how to combine elements with existing ones
+<span class="lineNum">     490 </span>            :      *
+<span class="lineNum">     491 </span>            :      *  *this[ index ] = source, index and source must have same size/distribution
+<span class="lineNum">     492 </span>            :      */
+<span class="lineNum">     493 </span>            :     virtual void scatter(
+<span class="lineNum">     494 </span>            :         const DenseVector&lt;IndexType&gt;&amp; index,
+<span class="lineNum">     495 </span>            :         const DenseVector&lt;ValueType&gt;&amp; source,
+<span class="lineNum">     496 </span>            :         const common::BinaryOp op = common::BinaryOp::COPY );
+<span class="lineNum">     497 </span>            : 
+<span class="lineNum">     498 </span>            :     /**
+<span class="lineNum">     499 </span>            :      * @brief Implementation of pure method _Vector::buildLocalValues.
+<span class="lineNum">     500 </span>            :      */
+<span class="lineNum">     501 </span>            :     virtual void buildLocalValues( 
+<span class="lineNum">     502 </span>            :         hmemo::_HArray&amp; localValues,
+<span class="lineNum">     503 </span>            :         const common::BinaryOp op = common::BinaryOp::COPY,
+<span class="lineNum">     504 </span>            :         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
+<span class="lineNum">     505 </span>            : 
+<span class="lineNum">     506 </span>            :     /**
+<span class="lineNum">     507 </span>            :      * @brief Implementation of pure method _Vector::gatherLocalValues.
+<span class="lineNum">     508 </span>            :      *
+<span class="lineNum">     509 </span>            :      * For a dense vector this is just a corresponding gather of the HArray containing
+<span class="lineNum">     510 </span>            :      * all local values.
+<span class="lineNum">     511 </span>            :      */
+<span class="lineNum">     512 </span>            :     virtual void gatherLocalValues(
+<span class="lineNum">     513 </span>            :         hmemo::_HArray&amp; localValues,
+<span class="lineNum">     514 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; localIndexes,
+<span class="lineNum">     515 </span>            :         const common::BinaryOp op = common::BinaryOp::COPY,
+<span class="lineNum">     516 </span>            :         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
+<span class="lineNum">     517 </span>            : 
+<span class="lineNum">     518 </span>            :     /** Implementation of pure method Vector&lt;ValueType&gt;::dotProduct */
+<span class="lineNum">     519 </span>            : 
+<span class="lineNum">     520 </span>            :     virtual ValueType dotProduct( const Vector&lt;ValueType&gt;&amp; other ) const;
+<span class="lineNum">     521 </span>            : 
+<span class="lineNum">     522 </span>            :     virtual void prefetch( const hmemo::ContextPtr location ) const;
+<span class="lineNum">     523 </span>            : 
+<span class="lineNum">     524 </span>            :     virtual void wait() const;
+<span class="lineNum">     525 </span>            : 
+<span class="lineNum">     526 </span>            :     virtual size_t getMemoryUsage() const;
+<span class="lineNum">     527 </span>            : 
+<span class="lineNum">     528 </span>            :     virtual void redistribute( dmemo::DistributionPtr distribution );
+<span class="lineNum">     529 </span>            : 
+<span class="lineNum">     530 </span>            :     /** Implementation of pure method _Vector::redistribute */
+<span class="lineNum">     531 </span>            : 
+<span class="lineNum">     532 </span>            :     virtual void redistribute( const dmemo::Redistributor&amp; redistributor );
+<span class="lineNum">     533 </span>            : 
+<span class="lineNum">     534 </span>            : private:
+<span class="lineNum">     535 </span>            : 
+<span class="lineNum">     536 </span>            :     using _Vector::setDistributionPtr;
+<span class="lineNum">     537 </span>            : 
+<span class="lineNum">     538 </span>            :     /** Allocate local values array with correct size at right context */
+<span class="lineNum">     539 </span>            : 
+<span class="lineNum">     540 </span>            :     void allocate();
+<span class="lineNum">     541 </span>            : 
+<span class="lineNum">     542 </span>            :     /** Static method for sorting of DenseVector */
+<span class="lineNum">     543 </span>            : 
+<span class="lineNum">     544 </span>            :     static void sortImpl(
+<span class="lineNum">     545 </span>            :         DenseVector&lt;IndexType&gt;* perm,
+<span class="lineNum">     546 </span>            :         DenseVector&lt;ValueType&gt;* out,
+<span class="lineNum">     547 </span>            :         DenseVector&lt;ValueType&gt;&amp; in,
+<span class="lineNum">     548 </span>            :         bool descending );
+<span class="lineNum">     549 </span>            : 
+<span class="lineNum">     550 </span>            :     utilskernel::LArray&lt;ValueType&gt; mLocalValues; //!&lt; my local values of vector
+<span class="lineNum">     551 </span>            : 
+<span class="lineNum">     552 </span>            :     /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
+<span class="lineNum">     553 </span>            : 
+<span class="lineNum">     554 </span>            :     mutable utilskernel::LArray&lt;ValueType&gt; mHaloValues;
+<span class="lineNum">     555 </span>            : 
+<span class="lineNum">     556 </span>            :     /** Implementation of _Vector::writeLocalToFile */
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span>            :     virtual void writeLocalToFile(
+<span class="lineNum">     559 </span>            :         const std::string&amp; fileName,
+<span class="lineNum">     560 </span>            :         const std::string&amp; fileType,
+<span class="lineNum">     561 </span>            :         const common::ScalarType dataType,
+<span class="lineNum">     562 </span>            :         const FileIO::FileMode fileMode ) const;
+<span class="lineNum">     563 </span>            : 
+<span class="lineNum">     564 </span>            :     /** Implementation of _Vector::readLocalFromFile */
+<span class="lineNum">     565 </span>            : 
+<span class="lineNum">     566 </span>            :     virtual IndexType readLocalFromFile( const std::string&amp; fileName, const IndexType first = 0, const IndexType size = invalidIndex );
+<span class="lineNum">     567 </span>            : 
+<span class="lineNum">     568 </span>            :     /** Implementation of _Vector::clearValues */
+<span class="lineNum">     569 </span>            : 
+<span class="lineNum">     570 </span>            :     virtual void clearValues();
+<span class="lineNum">     571 </span>            : 
+<span class="lineNum">     572 </span>            : public:
+<span class="lineNum">     573 </span>            : 
+<span class="lineNum">     574 </span>            :     // static methods, variables to register create routine in Vector factory of base class.
+<span class="lineNum">     575 </span>            : 
+<span class="lineNum">     576 </span>            :     static _Vector* create();
+<span class="lineNum">     577 </span>            : 
+<span class="lineNum">     578 </span>            :     // key for factory
+<span class="lineNum">     579 </span>            : 
+<span class="lineNum">     580 </span>            :     static VectorCreateKeyType createValue();
+<span class="lineNum">     581 </span>            : };
+<span class="lineNum">     582 </span>            : 
+<span class="lineNum">     583 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     584 </span>            : /*  Functions that return a DenseVector                                      */
+<span class="lineNum">     585 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     586 </span>            : 
+<span class="lineNum">     587 </span>            : /**
+<span class="lineNum">     588 </span>            :  * @brief create a replicated vector and fill it with linear values
+<span class="lineNum">     589 </span>            :  *
+<span class="lineNum">     590 </span>            :  * @param[in] n becomes the size of the vector
+<span class="lineNum">     591 </span>            :  * @param[in] startValue value for the first element, $vector[0] = startValue$
+<span class="lineNum">     592 </span>            :  * @param[in] inc increment between two elements, i.e. $vector[i+1] - vector[i] = inc$
+<span class="lineNum">     593 </span>            :  * @param[in] ctx specifies the context of the vector.
+<span class="lineNum">     594 </span>            :  *
+<span class="lineNum">     595 </span>            :  * Note: if ctx is specified, the vector will be allocated in its memory.
+<a name="596"><span class="lineNum">     596 </span>            :  */</a>
+<span class="lineNum">     597 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     598 </span><span class="lineCov">         30 : DenseVector&lt;ValueType&gt; linearDenseVector( </span>
+<span class="lineNum">     599 </span>            :     const IndexType n,
+<span class="lineNum">     600 </span>            :     const ValueType startValue, 
+<span class="lineNum">     601 </span>            :     const ValueType inc, 
+<span class="lineNum">     602 </span>            :     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+<span class="lineNum">     603 </span>            : {
+<span class="lineNum">     604 </span><span class="lineCov">         60 :     DenseVector&lt;ValueType&gt; result( ctx );</span>
+<span class="lineNum">     605 </span><span class="lineCov">         30 :     result.allocate( n );</span>
+<span class="lineNum">     606 </span><span class="lineCov">         30 :     result.fillLinearValues( startValue, inc );</span>
+<span class="lineNum">     607 </span><span class="lineCov">         30 :     return result;</span>
+<span class="lineNum">     608 </span>            : }
+<span class="lineNum">     609 </span>            : /**
+<span class="lineNum">     610 </span>            :  * @brief create a distributed vector and fill it with linear values
+<span class="lineNum">     611 </span>            :  *
+<span class="lineNum">     612 </span>            :  * @param[in] distribution determines global/local size of the vector
+<span class="lineNum">     613 </span>            :  * @param[in] startValue value for the first elemen
+<span class="lineNum">     614 </span>            :  * @param[in] inc increment between the element
+<span class="lineNum">     615 </span>            :  * @param[in] ctx context where the vector is allocated
+<a name="616"><span class="lineNum">     616 </span>            :  */</a>
+<span class="lineNum">     617 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     618 </span><span class="lineCov">       4950 : DenseVector&lt;ValueType&gt; linearDenseVector( </span>
+<span class="lineNum">     619 </span>            :     dmemo::DistributionPtr distribution, 
+<span class="lineNum">     620 </span>            :     const ValueType startValue, 
+<span class="lineNum">     621 </span>            :     const ValueType inc, 
+<span class="lineNum">     622 </span>            :     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+<span class="lineNum">     623 </span>            : {
+<span class="lineNum">     624 </span><span class="lineCov">       9900 :     DenseVector&lt;ValueType&gt; result( ctx );</span>
+<span class="lineNum">     625 </span><span class="lineCov">       9900 :     result.allocate( distribution );</span>
+<span class="lineNum">     626 </span><span class="lineCov">       4950 :     result.fillLinearValues( startValue, inc );</span>
+<span class="lineNum">     627 </span><span class="lineCov">       4950 :     return result;</span>
+<span class="lineNum">     628 </span>            : }
+<span class="lineNum">     629 </span>            : 
+<span class="lineNum">     630 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     631 </span>            : /*  Implementation of inline methods                                         */
+<span class="lineNum">     632 </span>            : /* ------------------------------------------------------------------------- */
+<a name="633"><span class="lineNum">     633 </span>            : </a>
+<span class="lineNum">     634 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     635 </span><span class="lineCov">     831549 : VectorKind DenseVector&lt;ValueType&gt;::getVectorKind() const</span>
+<span class="lineNum">     636 </span>            : {
+<span class="lineNum">     637 </span><span class="lineCov">     831549 :     return VectorKind::DENSE;</span>
+<span class="lineNum">     638 </span>            : }
+<a name="639"><span class="lineNum">     639 </span>            : </a>
+<span class="lineNum">     640 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     641 </span><span class="lineNoCov">          0 : utilskernel::LArray&lt;ValueType&gt;&amp; DenseVector&lt;ValueType&gt;::getLocalValues()</span>
+<span class="lineNum">     642 </span>            : {
+<span class="lineNum">     643 </span><span class="lineNoCov">          0 :     return mLocalValues;</span>
+<span class="lineNum">     644 </span>            : }
+<a name="645"><span class="lineNum">     645 </span>            : </a>
+<span class="lineNum">     646 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     647 </span><span class="lineNoCov">          0 : const utilskernel::LArray&lt;ValueType&gt;&amp; DenseVector&lt;ValueType&gt;::getLocalValues() const</span>
+<span class="lineNum">     648 </span>            : {
+<span class="lineNum">     649 </span><span class="lineNoCov">          0 :     return mLocalValues;</span>
+<span class="lineNum">     650 </span>            : }
+<a name="651"><span class="lineNum">     651 </span>            : </a>
+<span class="lineNum">     652 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     653 </span><span class="lineNoCov">          0 : utilskernel::LArray&lt;ValueType&gt;&amp; DenseVector&lt;ValueType&gt;::getHaloValues() const</span>
+<span class="lineNum">     654 </span>            : {
+<span class="lineNum">     655 </span><span class="lineNoCov">          0 :     return mHaloValues;</span>
+<span class="lineNum">     656 </span>            : }
+<span class="lineNum">     657 </span>            : 
+<span class="lineNum">     658 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">     659 </span>            : 
+<span class="lineNum">     660 </span>            : } /* end namespace lama */
+<span class="lineNum">     661 </span>            : 
+<span class="lineNum">     662 </span>            : } /* end namespace scai */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

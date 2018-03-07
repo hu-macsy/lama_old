@@ -1,0 +1,1550 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/storage/COOStorage.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/storage</a> - COOStorage.cpp<span style="font-size: 80%;"> (source / <a href="COOStorage.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">502</td>
+            <td class="headerCovTableEntry">508</td>
+            <td class="headerCovTableEntryHi">98.8 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">285</td>
+            <td class="headerCovTableEntry">314</td>
+            <td class="headerCovTableEntryHi">90.8 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file COOStorage.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Instantitions for template class COOStorage.
+<span class="lineNum">      31 </span>            :  * @author Lauretta Schubert, Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 25.05.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // hpp
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/storage/COOStorage.hpp&gt;
+<span class="lineNum">      37 </span>            : #include &lt;scai/lama/storage/CSRStorage.hpp&gt;
+<span class="lineNum">      38 </span>            : #include &lt;scai/lama/storage/COOUtils.hpp&gt;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : // internal scai libraries
+<span class="lineNum">      41 </span>            : #include &lt;scai/sparsekernel/COOKernelTrait.hpp&gt;
+<span class="lineNum">      42 </span>            : #include &lt;scai/sparsekernel/CSRKernelTrait.hpp&gt;
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            : #include &lt;scai/utilskernel/HArrayUtils.hpp&gt;
+<span class="lineNum">      45 </span>            : #include &lt;scai/utilskernel/LAMAKernel.hpp&gt;
+<span class="lineNum">      46 </span>            : #include &lt;scai/utilskernel/UtilKernelTrait.hpp&gt;
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : #include &lt;scai/blaskernel/BLASKernelTrait.hpp&gt;
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : #include &lt;scai/hmemo.hpp&gt;
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : #include &lt;scai/tasking/NoSyncToken.hpp&gt;
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : #include &lt;scai/tracing.hpp&gt;
+<span class="lineNum">      55 </span>            : 
+<span class="lineNum">      56 </span>            : #include &lt;scai/common/Constants.hpp&gt;
+<span class="lineNum">      57 </span>            : #include &lt;scai/common/TypeTraits.hpp&gt;
+<span class="lineNum">      58 </span>            : #include &lt;scai/common/Math.hpp&gt;
+<span class="lineNum">      59 </span>            : #include &lt;scai/common/macros/print_string.hpp&gt;
+<span class="lineNum">      60 </span>            : #include &lt;scai/common/macros/instantiate.hpp&gt;
+<span class="lineNum">      61 </span>            : #include &lt;scai/common/macros/loop.hpp&gt;
+<span class="lineNum">      62 </span>            : #include &lt;scai/common/macros/unsupported.hpp&gt;
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            : // sqrt for all value types
+<span class="lineNum">      65 </span>            : #include &lt;cmath&gt;
+<span class="lineNum">      66 </span>            : #include &lt;memory&gt;
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            : using std::unique_ptr;
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            : using namespace scai::hmemo;
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            : namespace scai
+<span class="lineNum">      73 </span>            : {
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            : using tasking::SyncToken;
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            : using utilskernel::UtilKernelTrait;
+<span class="lineNum">      78 </span>            : using utilskernel::LAMAKernel;
+<span class="lineNum">      79 </span>            : using utilskernel::HArrayUtils;
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            : using sparsekernel::COOKernelTrait;
+<span class="lineNum">      82 </span>            : using sparsekernel::CSRKernelTrait;
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span>            : using common::BinaryOp;
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            : namespace lama
+<span class="lineNum">      87 </span>            : {
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span><span class="lineCov">         70 : SCAI_LOG_DEF_TEMPLATE_LOGGER( template&lt;typename ValueType&gt;, COOStorage&lt;ValueType&gt;::logger, &quot;MatrixStorage.COOStorage&quot; )</span>
+<span class="lineNum">      92 </span>            : 
+<span class="lineNum">      93 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      96 </span><span class="lineCov">      45404 : COOStorage&lt;ValueType&gt;::COOStorage( ContextPtr ctx ) : </span>
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            :     MatrixStorage&lt;ValueType&gt;( 0, 0, ctx ),
+<span class="lineNum">      99 </span>            :     mIA( ctx ),
+<span class="lineNum">     100 </span>            :     mJA( ctx ),
+<span class="lineNum">     101 </span><span class="lineCov">     363232 :     mValues( ctx )</span>
+<span class="lineNum">     102 </span>            : {
+<span class="lineNum">     103 </span>            :     SCAI_LOG_DEBUG( logger, &quot;COOStorage for matrix &quot; &lt;&lt; getNumRows() 
+<span class="lineNum">     104 </span>            :                              &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns() &lt;&lt; &quot;, no non-zero elements @ &quot; &lt;&lt; *ctx )
+<span class="lineNum">     105 </span>            :    
+<span class="lineNum">     106 </span><span class="lineCov">      45404 :     _MatrixStorage::resetDiagonalProperty();</span>
+<span class="lineNum">     107 </span><span class="lineCov">      45404 : }</span>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     112 </span><span class="lineCov">          2 : COOStorage&lt;ValueType&gt;::COOStorage( IndexType numRows, IndexType numColumns, ContextPtr ctx ) : </span>
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span>            :     MatrixStorage&lt;ValueType&gt;( numRows, numColumns, ctx ),
+<span class="lineNum">     115 </span>            :     mIA( ctx ),
+<span class="lineNum">     116 </span>            :     mJA( ctx ),
+<span class="lineNum">     117 </span><span class="lineCov">         16 :     mValues( ctx )</span>
+<span class="lineNum">     118 </span>            : {
+<span class="lineNum">     119 </span>            :     SCAI_LOG_DEBUG( logger, &quot;COOStorage for matrix &quot; &lt;&lt; getNumRows() 
+<span class="lineNum">     120 </span>            :                              &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns() &lt;&lt; &quot;, no non-zero elements @ &quot; &lt;&lt; *ctx )
+<span class="lineNum">     121 </span>            :    
+<span class="lineNum">     122 </span><span class="lineCov">          2 :     _MatrixStorage::resetDiagonalProperty();</span>
+<span class="lineNum">     123 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     128 </span><span class="lineCov">       4520 : COOStorage&lt;ValueType&gt;::COOStorage( </span>
+<span class="lineNum">     129 </span>            :     const IndexType numRows, 
+<span class="lineNum">     130 </span>            :     const IndexType numColumns,
+<span class="lineNum">     131 </span>            :     HArray&lt;IndexType&gt; ia, 
+<span class="lineNum">     132 </span>            :     HArray&lt;IndexType&gt; ja, 
+<span class="lineNum">     133 </span>            :     HArray&lt;ValueType&gt; values, 
+<span class="lineNum">     134 </span>            :     ContextPtr ctx ) : 
+<span class="lineNum">     135 </span>            : 
+<span class="lineNum">     136 </span>            :     MatrixStorage&lt;ValueType&gt;( numRows, numColumns, ctx ),
+<span class="lineNum">     137 </span>            : 
+<span class="lineNum">     138 </span>            :     mIA( std::move( ia ) ),
+<span class="lineNum">     139 </span>            :     mJA( std::move( ja ) ),
+<span class="lineNum">     140 </span><span class="lineCov">      18080 :     mValues( std::move( values ) )</span>
+<span class="lineNum">     141 </span>            : 
+<span class="lineNum">     142 </span>            : {
+<span class="lineNum">     143 </span><span class="lineCov">       4520 :     SCAI_ASSERT_EQ_ERROR( mIA.size(), mJA.size(), &quot;serious mismatch for sizes of ia, ja&quot; )</span>
+<span class="lineNum">     144 </span><span class="lineCov">       4520 :     SCAI_ASSERT_EQ_ERROR( mIA.size(), mValues.size(), &quot;serious mismatch for sizes of ia, ja&quot; )</span>
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            :     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
+<span class="lineNum">     147 </span>            : 
+<span class="lineNum">     148 </span>            : #ifdef SCAI_ASSERT_LEVEL_DEBUG
+<span class="lineNum">     149 </span>            :     check( &quot;COOStorage( m, n, ia, ja, values)&quot; );
+<span class="lineNum">     150 </span>            : #endif
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span><span class="lineCov">       4520 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     153 </span><span class="lineCov">       4520 : }</span>
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span>            : /* --------------------------------------------------------------------------- */
+<a name="156"><span class="lineNum">     156 </span>            : </a>
+<span class="lineNum">     157 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     158 </span><span class="lineCov">       2145 : COOStorage&lt;ValueType&gt;::COOStorage( const COOStorage&lt;ValueType&gt;&amp; other ) : </span>
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span><span class="lineCov">       2145 :     MatrixStorage&lt;ValueType&gt;( other )</span>
+<span class="lineNum">     161 </span>            : 
+<span class="lineNum">     162 </span>            : {
+<span class="lineNum">     163 </span><span class="lineCov">       2145 :     assignImpl( other );</span>
+<span class="lineNum">     164 </span><span class="lineCov">       2145 : }</span>
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span>            : /* --------------------------------------------------------------------------- */
+<a name="167"><span class="lineNum">     167 </span>            : </a>
+<span class="lineNum">     168 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     169 </span><span class="lineCov">       2207 : COOStorage&lt;ValueType&gt;::COOStorage( COOStorage&lt;ValueType&gt;&amp;&amp; other ) :</span>
+<span class="lineNum">     170 </span>            : 
+<span class="lineNum">     171 </span>            :     MatrixStorage&lt;ValueType&gt;( std::move( other ) ),
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            :     mIA( std::move( other.mIA ) ),
+<span class="lineNum">     174 </span>            :     mJA( std::move( other.mJA ) ),
+<span class="lineNum">     175 </span><span class="lineCov">       6621 :     mValues( std::move( other.mValues ) )</span>
+<span class="lineNum">     176 </span>            : {
+<span class="lineNum">     177 </span><span class="lineCov">       2207 : }</span>
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span>            : /* --------------------------------------------------------------------------- */
+<a name="180"><span class="lineNum">     180 </span>            : </a>
+<span class="lineNum">     181 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     182 </span><span class="lineCov">     100781 : COOStorage&lt;ValueType&gt;::~COOStorage()</span>
+<span class="lineNum">     183 </span>            : {
+<span class="lineNum">     184 </span>            :     SCAI_LOG_DEBUG( logger, &quot;~COOStorage for matrix &quot; &lt;&lt; getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns() )
+<span class="lineNum">     185 </span><span class="lineCov">     155059 : }</span>
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span>            : /* --------------------------------------------------------------------------- */
+<a name="188"><span class="lineNum">     188 </span>            : </a>
+<span class="lineNum">     189 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     190 </span><span class="lineCov">          2 : COOStorage&lt;ValueType&gt;&amp; COOStorage&lt;ValueType&gt;::operator=( const COOStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     191 </span>            : {
+<span class="lineNum">     192 </span><span class="lineCov">          2 :     assignCOO( other );</span>
+<span class="lineNum">     193 </span><span class="lineCov">          2 :     return *this;</span>
+<span class="lineNum">     194 </span>            : }
+<a name="195"><span class="lineNum">     195 </span>            : </a>
+<span class="lineNum">     196 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     197 </span><span class="lineCov">         13 : COOStorage&lt;ValueType&gt;&amp; COOStorage&lt;ValueType&gt;::operator=( COOStorage&lt;ValueType&gt;&amp;&amp; other )</span>
+<span class="lineNum">     198 </span>            : {
+<span class="lineNum">     199 </span>            :     // call of move assignment for base class 
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span><span class="lineCov">         13 :     MatrixStorage&lt;ValueType&gt;::moveImpl( std::move( other ) );</span>
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            :     // move of all member variables
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span>            :     mIA = std::move( other.mIA );
+<span class="lineNum">     206 </span>            :     mJA = std::move( other.mJA );
+<span class="lineNum">     207 </span>            :     mValues = std::move( other.mValues );
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span><span class="lineCov">         13 :     return *this;</span>
+<span class="lineNum">     210 </span>            : }
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            : /* --------------------------------------------------------------------------- */
+<a name="213"><span class="lineNum">     213 </span>            : </a>
+<span class="lineNum">     214 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     215 </span><span class="lineCov">      41285 : void COOStorage&lt;ValueType&gt;::assign( const _MatrixStorage&amp; other )</span>
+<span class="lineNum">     216 </span>            : {
+<span class="lineNum">     217 </span>            :     // translate virtual call to specific template call via wrapper
+<span class="lineNum">     218 </span>            : 
+<span class="lineNum">     219 </span><span class="lineCov">      41285 :     mepr::StorageWrapper&lt;COOStorage, SCAI_NUMERIC_TYPES_HOST_LIST&gt;::assignImpl( this, other );</span>
+<span class="lineNum">     220 </span><span class="lineCov">      41285 : }</span>
+<span class="lineNum">     221 </span>            : 
+<span class="lineNum">     222 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     223 </span>            : 
+<span class="lineNum">     224 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     225 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">     226 </span><span class="lineCov">      43430 : void COOStorage&lt;ValueType&gt;::assignImpl( const MatrixStorage&lt;OtherValueType&gt;&amp; other )</span>
+<span class="lineNum">     227 </span>            : {
+<span class="lineNum">     228 </span>            :     ContextPtr ctx = getContextPtr();   // will force a valid copy in this context
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span><span class="lineCov">      47812 :     if ( other.getFormat() == Format::COO )</span>
+<span class="lineNum">     231 </span>            :     {
+<span class="lineNum">     232 </span>            :         // both storage have COO format, use special method for it
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span><span class="lineCov">      17690 :         assignCOO( static_cast&lt;const COOStorage&lt;OtherValueType&gt; &amp; &gt;( other ) );</span>
+<span class="lineNum">     235 </span>            :     }
+<span class="lineNum">     236 </span><span class="lineCov">      25740 :     else if ( other.getFormat() == Format::CSR )</span>
+<span class="lineNum">     237 </span>            :     {
+<span class="lineNum">     238 </span><span class="lineCov">      21358 :         const auto otherCSR = static_cast&lt;const CSRStorage&lt;OtherValueType&gt; &amp; &gt;( other );</span>
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span><span class="lineCov">      21358 :         setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(), </span>
+<span class="lineNum">     241 </span><span class="lineCov">      42716 :                         otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues(), ctx );</span>
+<span class="lineNum">     242 </span>            :     }
+<span class="lineNum">     243 </span>            :     else 
+<span class="lineNum">     244 </span>            :     {
+<span class="lineNum">     245 </span><span class="lineCov">       8764 :         HArray&lt;IndexType&gt;  csrIA( ctx );</span>
+<span class="lineNum">     246 </span><span class="lineCov">       8764 :         HArray&lt;IndexType&gt;  csrJA( ctx );</span>
+<span class="lineNum">     247 </span><span class="lineCov">       8764 :         HArray&lt;ValueType&gt;  csrValues( ctx );     // might also be OtherValueType, depending on size</span>
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span><span class="lineCov">       4382 :         other.buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span>            :         // just a thought for optimization: use mIA, mJA, mValues instead of csrIA, csrJA, csrValues
+<span class="lineNum">     252 </span>            :         // but does not help much at all as resort of entries requires already temporaries.
+<span class="lineNum">     253 </span>            : 
+<span class="lineNum">     254 </span><span class="lineCov">       8764 :         setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues, ctx );</span>
+<span class="lineNum">     255 </span>            :     }
+<span class="lineNum">     256 </span><span class="lineCov">      43430 : }</span>
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     261 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">     262 </span><span class="lineCov">      17692 : void COOStorage&lt;ValueType&gt;::assignCOO( const COOStorage&lt;OtherValueType&gt;&amp; other )</span>
+<span class="lineNum">     263 </span>            : {
+<span class="lineNum">     264 </span><span class="lineCov">      17692 :     if ( other.getValueType() == getValueType() )</span>
+<span class="lineNum">     265 </span>            :     {
+<span class="lineNum">     266 </span><span class="lineCov">      17374 :         if ( reinterpret_cast&lt;const COOStorage&lt;ValueType&gt;*&gt;( &amp;other ) == this )</span>
+<span class="lineNum">     267 </span>            :         {
+<span class="lineNum">     268 </span><span class="lineCov">      15570 :             SCAI_LOG_INFO( logger, typeName() &lt;&lt; &quot;: self assign, skipped, matrix = &quot; &lt;&lt; other )</span>
+<span class="lineNum">     269 </span><span class="lineCov">      17692 :             return;</span>
+<span class="lineNum">     270 </span>            :         }
+<span class="lineNum">     271 </span>            :     }
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span>            :     auto ctx = getContextPtr();
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span>            :     // both storage have COO format, we can just copy the corresponding arrays to the right context
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span><span class="lineCov">       9907 :     _MatrixStorage::_assign( other );</span>
+<span class="lineNum">     278 </span>            : 
+<span class="lineNum">     279 </span><span class="lineCov">      19814 :     HArrayUtils::setArray( mIA, other.getIA(), common::BinaryOp::COPY, ctx );</span>
+<span class="lineNum">     280 </span><span class="lineCov">      19814 :     HArrayUtils::setArray( mJA, other.getJA(), common::BinaryOp::COPY, ctx );</span>
+<span class="lineNum">     281 </span><span class="lineCov">      19814 :     HArrayUtils::setArray( mValues, other.getValues(), common::BinaryOp::COPY, ctx );</span>
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span><span class="lineCov">       9907 :     _MatrixStorage::resetDiagonalProperty();</span>
+<span class="lineNum">     284 </span>            : }
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span>            : /* --------------------------------------------------------------------------- */
+<a name="287"><span class="lineNum">     287 </span>            : </a>
+<span class="lineNum">     288 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     289 </span><span class="lineCov">      69418 : Format COOStorage&lt;ValueType&gt;::getFormat() const</span>
+<span class="lineNum">     290 </span>            : {
+<span class="lineNum">     291 </span><span class="lineCov">      69418 :     return Format::COO;</span>
+<span class="lineNum">     292 </span>            : }
+<span class="lineNum">     293 </span>            : 
+<span class="lineNum">     294 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     297 </span><span class="lineCov">          8 : void COOStorage&lt;ValueType&gt;::print( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     298 </span>            : {
+<span class="lineNum">     299 </span>            :     using std::endl;
+<span class="lineNum">     300 </span><span class="lineCov">          8 :     stream &lt;&lt; &quot;COOStorage &quot; &lt;&lt; getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns() &lt;&lt; &quot;, #values = &quot; &lt;&lt; getNumValues() &lt;&lt; endl;</span>
+<span class="lineNum">     301 </span>            :     ContextPtr host = Context::getHostPtr();
+<span class="lineNum">     302 </span><span class="lineCov">         16 :     ReadAccess&lt;IndexType&gt; ia( mIA, host );</span>
+<span class="lineNum">     303 </span><span class="lineCov">         16 :     ReadAccess&lt;IndexType&gt; ja( mJA, host );</span>
+<span class="lineNum">     304 </span><span class="lineCov">         16 :     ReadAccess&lt;ValueType&gt; values( mValues, host );</span>
+<span class="lineNum">     305 </span>            : 
+<span class="lineNum">     306 </span><span class="lineCov">         80 :     for ( IndexType i = 0; i &lt; mIA.size(); i++ )</span>
+<span class="lineNum">     307 </span>            :     {
+<span class="lineNum">     308 </span><span class="lineCov">         72 :         stream &lt;&lt; &quot;@[ &quot; &lt;&lt; ia[i] &lt;&lt; &quot;, &quot; &lt;&lt; ja[i] &lt;&lt; &quot; ] = &quot; &lt;&lt; values[i] &lt;&lt; endl;</span>
+<span class="lineNum">     309 </span>            :     }
+<span class="lineNum">     310 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     311 </span>            : 
+<span class="lineNum">     312 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     315 </span><span class="lineCov">     123869 : bool COOStorage&lt;ValueType&gt;::checkDiagonalProperty() const</span>
+<span class="lineNum">     316 </span>            : {
+<span class="lineNum">     317 </span>            :     bool diagonalProperty = true;
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span><span class="lineCov">     126523 :     if ( getNumRows() != getNumColumns() )</span>
+<span class="lineNum">     320 </span>            :     {
+<span class="lineNum">     321 </span>            :         diagonalProperty = false;
+<span class="lineNum">     322 </span>            :     }
+<span class="lineNum">     323 </span><span class="lineCov">      92407 :     else if ( getNumRows() == 0 )</span>
+<span class="lineNum">     324 </span>            :     {
+<span class="lineNum">     325 </span>            :         // zero sized matrix
+<span class="lineNum">     326 </span>            :         diagonalProperty = true;
+<span class="lineNum">     327 </span>            :     }
+<span class="lineNum">     328 </span><span class="lineCov">       3749 :     else if ( mIA.size() == 0 )</span>
+<span class="lineNum">     329 </span>            :     {
+<span class="lineNum">     330 </span>            :         diagonalProperty = false;
+<span class="lineNum">     331 </span>            :     }
+<span class="lineNum">     332 </span>            :     else
+<span class="lineNum">     333 </span>            :     {
+<span class="lineNum">     334 </span>            :         diagonalProperty = true; // intialization for reduction
+<span class="lineNum">     335 </span><span class="lineCov">       2682 :         static LAMAKernel&lt;COOKernelTrait::hasDiagonalProperty&gt; hasDiagonalProperty;</span>
+<span class="lineNum">     336 </span>            :         ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     337 </span><span class="lineCov">       2654 :         hasDiagonalProperty.getSupportedContext( loc );</span>
+<span class="lineNum">     338 </span><span class="lineCov">       5308 :         ReadAccess&lt;IndexType&gt; ia( mIA, loc );</span>
+<span class="lineNum">     339 </span><span class="lineCov">       5308 :         ReadAccess&lt;IndexType&gt; ja( mJA, loc );</span>
+<span class="lineNum">     340 </span><span class="lineCov">       2654 :         diagonalProperty = hasDiagonalProperty[loc]( ia.get(), ja.get(), getNumRows() );</span>
+<span class="lineNum">     341 </span>            :     }
+<span class="lineNum">     342 </span>            : 
+<span class="lineNum">     343 </span><span class="lineCov">     247738 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: checkDiagonalProperty -&gt; &quot; &lt;&lt; diagonalProperty )</span>
+<span class="lineNum">     344 </span><span class="lineCov">     123869 :     return diagonalProperty;</span>
+<span class="lineNum">     345 </span>            : }
+<span class="lineNum">     346 </span>            : 
+<span class="lineNum">     347 </span>            : /* --------------------------------------------------------------------------- */
+<a name="348"><span class="lineNum">     348 </span>            : </a>
+<span class="lineNum">     349 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     350 </span><span class="lineCov">       1390 : void COOStorage&lt;ValueType&gt;::clear()</span>
+<span class="lineNum">     351 </span>            : {
+<span class="lineNum">     352 </span><span class="lineCov">       1390 :     _MatrixStorage::setDimension( 0, 0 );</span>
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span><span class="lineCov">       1390 :     mIA.clear();</span>
+<span class="lineNum">     355 </span><span class="lineCov">       1390 :     mJA.clear();</span>
+<span class="lineNum">     356 </span><span class="lineCov">       1390 :     mValues.clear();</span>
+<span class="lineNum">     357 </span>            : 
+<span class="lineNum">     358 </span><span class="lineCov">       1390 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     359 </span><span class="lineCov">       1390 : }</span>
+<span class="lineNum">     360 </span>            : 
+<span class="lineNum">     361 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     362 </span>            : 
+<span class="lineNum">     363 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     364 </span><span class="lineCov">      25200 : void COOStorage&lt;ValueType&gt;::check( const char* msg ) const</span>
+<span class="lineNum">     365 </span>            : {
+<span class="lineNum">     366 </span><span class="lineCov">      25200 :     SCAI_ASSERT_EQ_ERROR( mIA.size(), mJA.size(), msg &lt;&lt; &quot;: serious mismatch for sizes of ia, ja&quot; )</span>
+<span class="lineNum">     367 </span><span class="lineCov">      25200 :     SCAI_ASSERT_EQ_ERROR( mIA.size(), mValues.size(), msg &lt;&lt; &quot;: serious mismatch for sizes of ia, values&quot; )</span>
+<span class="lineNum">     368 </span>            : 
+<span class="lineNum">     369 </span><span class="lineCov">      25200 :     const IndexType m = getNumRows();</span>
+<span class="lineNum">     370 </span>            :     const IndexType n = getNumColumns();
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span><span class="lineCov">      50416 :     SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mIA, m ), msg &lt;&lt; &quot;: invalid row indexes, #rows = &quot; &lt;&lt; m );</span>
+<span class="lineNum">     373 </span><span class="lineCov">      50400 :     SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mJA, n ), msg &lt;&lt; &quot;: invalid column indexes, #cols = &quot; &lt;&lt; n );</span>
+<span class="lineNum">     374 </span><span class="lineCov">      25184 : }</span>
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     379 </span><span class="lineCov">        147 : void COOStorage&lt;ValueType&gt;::setIdentity( const IndexType size )</span>
+<span class="lineNum">     380 </span>            : {
+<span class="lineNum">     381 </span><span class="lineCov">        147 :     _MatrixStorage::setDimension( size, size );</span>
+<span class="lineNum">     382 </span>            : 
+<span class="lineNum">     383 </span><span class="lineCov">        294 :     SCAI_LOG_INFO( logger, &quot;set identity values for &quot; &lt;&lt; size )</span>
+<span class="lineNum">     384 </span>            : 
+<span class="lineNum">     385 </span><span class="lineCov">        294 :     HArrayUtils::setOrder( mIA, size, getContextPtr() );</span>
+<span class="lineNum">     386 </span><span class="lineCov">        294 :     HArrayUtils::setOrder( mJA, size, getContextPtr() );</span>
+<span class="lineNum">     387 </span>            : 
+<span class="lineNum">     388 </span><span class="lineCov">        294 :     HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), getContextPtr() );</span>
+<span class="lineNum">     389 </span>            : 
+<span class="lineNum">     390 </span><span class="lineCov">        147 :     mDiagonalProperty = true;</span>
+<span class="lineNum">     391 </span><span class="lineCov">        147 : }</span>
+<span class="lineNum">     392 </span>            : 
+<span class="lineNum">     393 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     394 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     395 </span><span class="lineCov">         53 : void COOStorage&lt;ValueType&gt;::assignDiagonal( const HArray&lt;ValueType&gt;&amp; diagonal )</span>
+<span class="lineNum">     396 </span>            : {
+<span class="lineNum">     397 </span><span class="lineCov">         53 :     const IndexType size = diagonal.size();</span>
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span><span class="lineCov">         53 :     _MatrixStorage::setDimension( size, size );</span>
+<span class="lineNum">     400 </span>            : 
+<span class="lineNum">     401 </span><span class="lineCov">        106 :     HArrayUtils::setOrder( mIA, size, getContextPtr() );</span>
+<span class="lineNum">     402 </span><span class="lineCov">        106 :     HArrayUtils::setOrder( mJA, size, getContextPtr() );</span>
+<span class="lineNum">     403 </span>            : 
+<span class="lineNum">     404 </span><span class="lineCov">        106 :     HArrayUtils::setArray( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );</span>
+<span class="lineNum">     405 </span>            : 
+<span class="lineNum">     406 </span><span class="lineCov">         53 :     mDiagonalProperty = true;</span>
+<span class="lineNum">     407 </span><span class="lineCov">         53 : }</span>
+<span class="lineNum">     408 </span>            : 
+<span class="lineNum">     409 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     410 </span>            : 
+<span class="lineNum">     411 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     412 </span><span class="lineCov">         24 : void COOStorage&lt;ValueType&gt;::setCOOData(</span>
+<span class="lineNum">     413 </span>            :     const IndexType numRows,
+<span class="lineNum">     414 </span>            :     const IndexType numColumns,
+<span class="lineNum">     415 </span>            :     const IndexType numValues,
+<span class="lineNum">     416 </span>            :     const HArray&lt;IndexType&gt;&amp; ia,
+<span class="lineNum">     417 </span>            :     const HArray&lt;IndexType&gt;&amp; ja,
+<span class="lineNum">     418 </span><span class="lineCov">         24 :     const _HArray&amp; values )</span>
+<span class="lineNum">     419 </span>            : {
+<span class="lineNum">     420 </span>            :     // check the sizes of the arrays
+<span class="lineNum">     421 </span>            : 
+<span class="lineNum">     422 </span><span class="lineCov">         24 :     SCAI_ASSERT_EQ_ERROR( numValues, ia.size(), &quot;illegal size for ia&quot; )</span>
+<span class="lineNum">     423 </span><span class="lineCov">         24 :     SCAI_ASSERT_EQ_ERROR( numValues, ja.size() , &quot;illegal size for ja&quot; )</span>
+<span class="lineNum">     424 </span><span class="lineCov">         24 :     SCAI_ASSERT_EQ_ERROR( numValues, values.size() , &quot;illegal size for values&quot; )</span>
+<span class="lineNum">     425 </span>            : 
+<span class="lineNum">     426 </span><span class="lineCov">         24 :     _MatrixStorage::setDimension( numRows, numColumns );</span>
+<span class="lineNum">     427 </span>            : 
+<span class="lineNum">     428 </span>            :     ContextPtr loc = getContextPtr();
+<span class="lineNum">     429 </span>            : 
+<span class="lineNum">     430 </span><span class="lineCov">         48 :     HArrayUtils::assign( mIA, ia, loc );</span>
+<span class="lineNum">     431 </span><span class="lineCov">         48 :     HArrayUtils::assign( mJA, ja, loc );</span>
+<span class="lineNum">     432 </span><span class="lineCov">         48 :     HArrayUtils::_assign( mValues, values, loc ); // supports type conversion</span>
+<span class="lineNum">     433 </span>            : 
+<span class="lineNum">     434 </span>            :     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
+<span class="lineNum">     435 </span>            : #ifdef SCAI_ASSERT_LEVEL_DEBUG
+<span class="lineNum">     436 </span>            :     check( &quot;COOStorage.setCOOData&quot; );
+<span class="lineNum">     437 </span>            : #endif
+<span class="lineNum">     438 </span><span class="lineCov">         24 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     439 </span>            :     // Note: no support for row indexes in COO format
+<span class="lineNum">     440 </span><span class="lineCov">         48 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: set COO by arrays ia, ja, values&quot; )</span>
+<span class="lineNum">     441 </span><span class="lineCov">         24 : }</span>
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span>            : /* --------------------------------------------------------------------------- */
+<a name="444"><span class="lineNum">     444 </span>            : </a>
+<span class="lineNum">     445 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     446 </span><span class="lineCov">         28 : void COOStorage&lt;ValueType&gt;::purge()</span>
+<span class="lineNum">     447 </span>            : {
+<span class="lineNum">     448 </span><span class="lineCov">         28 :     _MatrixStorage::setDimension( 0, 0 );</span>
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span>            :     mIA.purge();
+<span class="lineNum">     451 </span>            :     mJA.purge();
+<span class="lineNum">     452 </span>            :     mValues.purge();
+<span class="lineNum">     453 </span>            : 
+<span class="lineNum">     454 </span><span class="lineCov">         28 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     455 </span><span class="lineCov">         28 : }</span>
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span>            : /* --------------------------------------------------------------------------- */
+<a name="458"><span class="lineNum">     458 </span>            : </a>
+<span class="lineNum">     459 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     460 </span><span class="lineCov">      62414 : void COOStorage&lt;ValueType&gt;::allocate( IndexType numRows, IndexType numColumns )</span>
+<span class="lineNum">     461 </span>            : {
+<span class="lineNum">     462 </span><span class="lineCov">     124828 :     SCAI_LOG_INFO( logger, &quot;allocate COO sparse matrix of size &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns )</span>
+<span class="lineNum">     463 </span>            : 
+<span class="lineNum">     464 </span><span class="lineCov">      62414 :     _MatrixStorage::setDimension( numRows, numColumns );</span>
+<span class="lineNum">     465 </span>            : 
+<span class="lineNum">     466 </span><span class="lineCov">      62414 :     mIA.clear();</span>
+<span class="lineNum">     467 </span><span class="lineCov">      62414 :     mJA.clear();</span>
+<span class="lineNum">     468 </span><span class="lineCov">      62414 :     mValues.clear();</span>
+<span class="lineNum">     469 </span>            : 
+<span class="lineNum">     470 </span><span class="lineCov">      62414 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     471 </span><span class="lineCov">      62414 : }</span>
+<span class="lineNum">     472 </span>            : 
+<span class="lineNum">     473 </span>            : /* --------------------------------------------------------------------------- */
+<a name="474"><span class="lineNum">     474 </span>            : </a>
+<span class="lineNum">     475 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     476 </span><span class="lineCov">         52 : void COOStorage&lt;ValueType&gt;::writeAt( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     477 </span>            : {
+<span class="lineNum">     478 </span><span class="lineCov">        104 :     stream &lt;&lt; &quot;COOStorage&lt;&quot; &lt;&lt; common::getScalarType&lt;ValueType&gt;()</span>
+<span class="lineNum">     479 </span><span class="lineCov">        104 :            &lt;&lt; &quot;&gt;( size = &quot; &lt;&lt; getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns()</span>
+<span class="lineNum">     480 </span><span class="lineCov">        104 :            &lt;&lt; &quot;, nnz = &quot; &lt;&lt; getNumValues() &lt;&lt; &quot; )&quot; ;</span>
+<span class="lineNum">     481 </span><span class="lineCov">         52 : }</span>
+<span class="lineNum">     482 </span>            : 
+<span class="lineNum">     483 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     484 </span>            : 
+<span class="lineNum">     485 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     486 </span><span class="lineCov">     149066 : ValueType COOStorage&lt;ValueType&gt;::getValue( const IndexType i, const IndexType j ) const</span>
+<span class="lineNum">     487 </span>            : {
+<span class="lineNum">     488 </span>            :     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), &quot;row index out of range&quot; )
+<span class="lineNum">     489 </span>            :     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), &quot;column index out of range&quot; )
+<span class="lineNum">     490 </span>            : 
+<span class="lineNum">     491 </span>            :     SCAI_LOG_TRACE( logger, &quot;get value (&quot; &lt;&lt; i &lt;&lt; &quot;, &quot; &lt;&lt; j &lt;&lt; &quot;)&quot; )
+<span class="lineNum">     492 </span>            : 
+<span class="lineNum">     493 </span><span class="lineCov">     149094 :     static LAMAKernel&lt;COOKernelTrait::getValuePos&gt; getValuePos;</span>
+<span class="lineNum">     494 </span>            : 
+<span class="lineNum">     495 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     496 </span><span class="lineCov">     149066 :     getValuePos.getSupportedContext( loc );</span>
+<span class="lineNum">     497 </span><span class="lineCov">     447198 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     498 </span>            : 
+<span class="lineNum">     499 </span><span class="lineCov">     298132 :     ReadAccess&lt;IndexType&gt; rIa( mIA, loc );</span>
+<span class="lineNum">     500 </span><span class="lineCov">     298132 :     ReadAccess&lt;IndexType&gt; rJa( mJA, loc );</span>
+<span class="lineNum">     501 </span>            : 
+<span class="lineNum">     502 </span><span class="lineCov">     149066 :     IndexType numValues = mIA.size();</span>
+<span class="lineNum">     503 </span>            : 
+<span class="lineNum">     504 </span><span class="lineCov">     149066 :     IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), numValues );</span>
+<span class="lineNum">     505 </span>            : 
+<span class="lineNum">     506 </span>            :     ValueType val = 0;
+<span class="lineNum">     507 </span>            : 
+<span class="lineNum">     508 </span><span class="lineCov">     149066 :     if ( pos != invalidIndex )</span>
+<span class="lineNum">     509 </span>            :     {
+<span class="lineNum">     510 </span>            :         SCAI_ASSERT_VALID_INDEX_DEBUG( pos, numValues, &quot;illegal value position for ( &quot; &lt;&lt; i &lt;&lt; &quot;, &quot; &lt;&lt; j &lt;&lt; &quot; )&quot; );
+<span class="lineNum">     511 </span>            : 
+<span class="lineNum">     512 </span><span class="lineCov">      24551 :         val = utilskernel::HArrayUtils::getVal&lt;ValueType&gt;( mValues, pos );</span>
+<span class="lineNum">     513 </span>            :     }
+<span class="lineNum">     514 </span>            : 
+<span class="lineNum">     515 </span><span class="lineCov">     149066 :     return val;</span>
+<span class="lineNum">     516 </span>            : }
+<span class="lineNum">     517 </span>            : 
+<span class="lineNum">     518 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     519 </span>            : 
+<span class="lineNum">     520 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     521 </span><span class="lineCov">       8352 : void COOStorage&lt;ValueType&gt;::setValue( const IndexType i,</span>
+<span class="lineNum">     522 </span>            :                                       const IndexType j,
+<span class="lineNum">     523 </span>            :                                       const ValueType val,
+<span class="lineNum">     524 </span>            :                                       const BinaryOp op )
+<span class="lineNum">     525 </span>            : {
+<span class="lineNum">     526 </span>            :     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), &quot;row index out of range&quot; )
+<span class="lineNum">     527 </span>            :     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), &quot;column index out of range&quot; )
+<span class="lineNum">     528 </span>            : 
+<span class="lineNum">     529 </span>            :     SCAI_LOG_TRACE( logger, &quot;get value (&quot; &lt;&lt; i &lt;&lt; &quot;, &quot; &lt;&lt; j &lt;&lt; &quot;)&quot; )
+<span class="lineNum">     530 </span>            : 
+<span class="lineNum">     531 </span><span class="lineCov">       8372 :     static LAMAKernel&lt;COOKernelTrait::getValuePos&gt; getValuePos;</span>
+<span class="lineNum">     532 </span>            : 
+<span class="lineNum">     533 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     534 </span><span class="lineCov">       8352 :     getValuePos.getSupportedContext( loc );</span>
+<span class="lineNum">     535 </span><span class="lineCov">      25056 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     536 </span>            : 
+<span class="lineNum">     537 </span><span class="lineCov">      16704 :     ReadAccess&lt;IndexType&gt; rIa( mIA, loc );</span>
+<span class="lineNum">     538 </span><span class="lineCov">      16704 :     ReadAccess&lt;IndexType&gt; rJa( mJA, loc );</span>
+<span class="lineNum">     539 </span>            : 
+<span class="lineNum">     540 </span><span class="lineCov">       8352 :     IndexType nnz = getNumValues();</span>
+<span class="lineNum">     541 </span><span class="lineCov">       8352 :     IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), nnz );</span>
+<span class="lineNum">     542 </span>            : 
+<span class="lineNum">     543 </span><span class="lineCov">       8352 :     if ( pos == invalidIndex )</span>
+<span class="lineNum">     544 </span>            :     {
+<span class="lineNum">     545 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;COO storage has no entry ( &quot; &lt;&lt; i &lt;&lt; &quot;, &quot; &lt;&lt; j &lt;&lt; &quot; ) &quot; )</span>
+<span class="lineNum">     546 </span>            :     }
+<span class="lineNum">     547 </span>            : 
+<span class="lineNum">     548 </span>            :     SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mValues.size(), &quot;illegal value position for ( &quot; &lt;&lt; i &lt;&lt; &quot;, &quot; &lt;&lt; j &lt;&lt; &quot; )&quot; );
+<span class="lineNum">     549 </span>            : 
+<span class="lineNum">     550 </span><span class="lineCov">       8352 :     utilskernel::HArrayUtils::setVal( mValues, pos, val, op );</span>
+<span class="lineNum">     551 </span><span class="lineCov">       8352 : }</span>
+<span class="lineNum">     552 </span>            : 
+<span class="lineNum">     553 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     554 </span>            : 
+<span class="lineNum">     555 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     556 </span><span class="lineCov">         12 : void COOStorage&lt;ValueType&gt;::prefetch( const ContextPtr location ) const</span>
+<span class="lineNum">     557 </span>            : {
+<span class="lineNum">     558 </span><span class="lineCov">         24 :     mIA.prefetch( location );</span>
+<span class="lineNum">     559 </span><span class="lineCov">         24 :     mJA.prefetch( location );</span>
+<span class="lineNum">     560 </span><span class="lineCov">         24 :     mValues.prefetch( location );</span>
+<span class="lineNum">     561 </span><span class="lineCov">         12 : }</span>
+<span class="lineNum">     562 </span>            : 
+<span class="lineNum">     563 </span>            : /* --------------------------------------------------------------------------- */
+<a name="564"><span class="lineNum">     564 </span>            : </a>
+<span class="lineNum">     565 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     566 </span><span class="lineCov">      14311 : const HArray&lt;IndexType&gt;&amp; COOStorage&lt;ValueType&gt;::getIA() const</span>
+<span class="lineNum">     567 </span>            : {
+<span class="lineNum">     568 </span><span class="lineCov">      14311 :     return mIA;</span>
+<span class="lineNum">     569 </span>            : }
+<span class="lineNum">     570 </span>            : 
+<span class="lineNum">     571 </span>            : /* --------------------------------------------------------------------------- */
+<a name="572"><span class="lineNum">     572 </span>            : </a>
+<span class="lineNum">     573 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     574 </span><span class="lineCov">      14313 : const HArray&lt;IndexType&gt;&amp; COOStorage&lt;ValueType&gt;::getJA() const</span>
+<span class="lineNum">     575 </span>            : {
+<span class="lineNum">     576 </span><span class="lineCov">      14313 :     return mJA;</span>
+<span class="lineNum">     577 </span>            : }
+<span class="lineNum">     578 </span>            : 
+<span class="lineNum">     579 </span>            : /* --------------------------------------------------------------------------- */
+<a name="580"><span class="lineNum">     580 </span>            : </a>
+<span class="lineNum">     581 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     582 </span><span class="lineCov">      14303 : const HArray&lt;ValueType&gt;&amp; COOStorage&lt;ValueType&gt;::getValues() const</span>
+<span class="lineNum">     583 </span>            : {
+<span class="lineNum">     584 </span><span class="lineCov">      14303 :     return mValues;</span>
+<span class="lineNum">     585 </span>            : }
+<span class="lineNum">     586 </span>            : 
+<span class="lineNum">     587 </span>            : /* --------------------------------------------------------------------------- */
+<a name="588"><span class="lineNum">     588 </span>            : </a>
+<span class="lineNum">     589 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     590 </span><span class="lineCov">      61388 : IndexType COOStorage&lt;ValueType&gt;::getNumValues() const</span>
+<span class="lineNum">     591 </span>            : {
+<span class="lineNum">     592 </span><span class="lineCov">      61388 :     return mIA.size();</span>
+<span class="lineNum">     593 </span>            : }
+<span class="lineNum">     594 </span>            : 
+<span class="lineNum">     595 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     596 </span>            : 
+<span class="lineNum">     597 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     598 </span><span class="lineCov">        243 : void COOStorage&lt;ValueType&gt;::setDiagonal( const ValueType value )</span>
+<span class="lineNum">     599 </span>            : {
+<span class="lineNum">     600 </span><span class="lineCov">        486 :     SCAI_ASSERT_ERROR( this-&gt;hasDiagonalProperty(), &quot;cannot set diagonal for COO, no diagonal property&quot; )</span>
+<span class="lineNum">     601 </span>            : 
+<span class="lineNum">     602 </span><span class="lineCov">        729 :     IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );</span>
+<span class="lineNum">     603 </span>            :     ContextPtr loc = Context::getHostPtr();
+<span class="lineNum">     604 </span><span class="lineCov">        486 :     WriteAccess&lt;ValueType&gt; wValues( mValues, loc );</span>
+<span class="lineNum">     605 </span><span class="lineCov">        486 :     ReadAccess&lt;IndexType&gt; rJa( mJA, loc );</span>
+<span class="lineNum">     606 </span><span class="lineCov">        486 :     ReadAccess&lt;IndexType&gt; rIa( mIA, loc );</span>
+<span class="lineNum">     607 </span>            : 
+<span class="lineNum">     608 </span><span class="lineCov">       2134 :     for ( IndexType i = 0; i &lt; numDiagonalElements; ++i )</span>
+<span class="lineNum">     609 </span>            :     {
+<span class="lineNum">     610 </span><span class="lineCov">       1891 :         wValues[i] = value;</span>
+<span class="lineNum">     611 </span>            :     }
+<span class="lineNum">     612 </span><span class="lineCov">        243 : }</span>
+<span class="lineNum">     613 </span>            : 
+<span class="lineNum">     614 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     615 </span>            : 
+<span class="lineNum">     616 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     617 </span><span class="lineCov">          8 : void COOStorage&lt;ValueType&gt;::conj()</span>
+<span class="lineNum">     618 </span>            : {
+<span class="lineNum">     619 </span><span class="lineCov">         16 :     HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     620 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     621 </span>            : 
+<span class="lineNum">     622 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     623 </span>            : 
+<span class="lineNum">     624 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     625 </span><span class="lineCov">       3098 : void COOStorage&lt;ValueType&gt;::scaleRows( const HArray&lt;ValueType&gt;&amp; values )</span>
+<span class="lineNum">     626 </span>            : {
+<span class="lineNum">     627 </span><span class="lineCov">       3120 :     static LAMAKernel&lt;COOKernelTrait::scaleRows&lt;ValueType, ValueType&gt; &gt; cooScaleRows;</span>
+<span class="lineNum">     628 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     629 </span><span class="lineCov">       3098 :     cooScaleRows.getSupportedContext( loc );</span>
+<span class="lineNum">     630 </span><span class="lineCov">       9294 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     631 </span><span class="lineCov">       6196 :     ReadAccess&lt;ValueType&gt; rValues( values, loc );</span>
+<span class="lineNum">     632 </span><span class="lineCov">       6196 :     WriteAccess&lt;ValueType&gt; wValues( mValues, loc );  // update</span>
+<span class="lineNum">     633 </span><span class="lineCov">       6196 :     ReadAccess&lt;IndexType&gt; rIa( mIA, loc );</span>
+<span class="lineNum">     634 </span><span class="lineCov">       3098 :     cooScaleRows[loc]( wValues.get(), rValues.get(), rIa.get(), mValues.size() );</span>
+<span class="lineNum">     635 </span><span class="lineCov">       3098 : }</span>
+<span class="lineNum">     636 </span>            : 
+<span class="lineNum">     637 </span>            : /* --------------------------------------------------------------------------- */
+<a name="638"><span class="lineNum">     638 </span>            : </a>
+<span class="lineNum">     639 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     640 </span><span class="lineCov">          2 : void COOStorage&lt;ValueType&gt;::wait() const</span>
+<span class="lineNum">     641 </span>            : {
+<span class="lineNum">     642 </span>            :     mIA.wait();
+<span class="lineNum">     643 </span>            :     mJA.wait();
+<span class="lineNum">     644 </span>            :     mValues.wait();
+<span class="lineNum">     645 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">     646 </span>            : 
+<span class="lineNum">     647 </span>            : /* --------------------------------------------------------------------------- */
+<a name="648"><span class="lineNum">     648 </span>            : </a>
+<span class="lineNum">     649 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     650 </span><span class="lineCov">        878 : void COOStorage&lt;ValueType&gt;::swap( COOStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     651 </span>            : {
+<span class="lineNum">     652 </span>            :     // swap base class
+<span class="lineNum">     653 </span>            : 
+<span class="lineNum">     654 </span><span class="lineCov">        878 :     MatrixStorage&lt;ValueType&gt;::swap( other );</span>
+<span class="lineNum">     655 </span>            : 
+<span class="lineNum">     656 </span>            :     // swap member varibles
+<span class="lineNum">     657 </span>            : 
+<span class="lineNum">     658 </span>            :     mIA.swap( other.mIA );
+<span class="lineNum">     659 </span>            :     mJA.swap( other.mJA );
+<span class="lineNum">     660 </span>            :     mValues.swap( other.mValues );
+<span class="lineNum">     661 </span>            : 
+<span class="lineNum">     662 </span>            :     // verify that row and column indexes in ia, ja are legal
+<span class="lineNum">     663 </span>            : 
+<span class="lineNum">     664 </span>            : #ifdef SCAI_ASSERT_LEVEL_DEBUG
+<span class="lineNum">     665 </span>            :     check( &quot;COOStorage.swap( ia, ja, values)&quot; );
+<span class="lineNum">     666 </span>            : #endif
+<span class="lineNum">     667 </span>            : 
+<span class="lineNum">     668 </span><span class="lineCov">        878 : }</span>
+<span class="lineNum">     669 </span>            : 
+<span class="lineNum">     670 </span>            : /* --------------------------------------------------------------------------- */
+<a name="671"><span class="lineNum">     671 </span>            : </a>
+<span class="lineNum">     672 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     673 </span><span class="lineCov">       1017 : void COOStorage&lt;ValueType&gt;::splitUp( </span>
+<span class="lineNum">     674 </span>            :     IndexType&amp; numRows, 
+<span class="lineNum">     675 </span>            :     IndexType&amp; numColumns, 
+<span class="lineNum">     676 </span>            :     HArray&lt;IndexType&gt;&amp; ia, 
+<span class="lineNum">     677 </span>            :     HArray&lt;IndexType&gt;&amp; ja, 
+<span class="lineNum">     678 </span>            :     HArray&lt;ValueType&gt;&amp; values )
+<span class="lineNum">     679 </span>            : {
+<span class="lineNum">     680 </span><span class="lineCov">       1017 :     numRows    = getNumRows();</span>
+<span class="lineNum">     681 </span><span class="lineCov">       1017 :     numColumns = getNumColumns();</span>
+<span class="lineNum">     682 </span>            : 
+<span class="lineNum">     683 </span>            :     ia = std::move( mIA );
+<span class="lineNum">     684 </span>            :     ja = std::move( mJA );
+<span class="lineNum">     685 </span>            :     values = std::move( mValues );
+<span class="lineNum">     686 </span>            : 
+<span class="lineNum">     687 </span>            :     // this storage should never be used afterwards, but make it consistent for safety
+<span class="lineNum">     688 </span>            : 
+<span class="lineNum">     689 </span><span class="lineCov">       1017 :     _MatrixStorage::setDimension( 0, 0 );</span>
+<span class="lineNum">     690 </span><span class="lineCov">       1017 : }</span>
+<span class="lineNum">     691 </span>            : 
+<span class="lineNum">     692 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     693 </span>            : 
+<span class="lineNum">     694 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     695 </span><span class="lineCov">         48 : RealType&lt;ValueType&gt; COOStorage&lt;ValueType&gt;::l1Norm() const</span>
+<span class="lineNum">     696 </span>            : {
+<span class="lineNum">     697 </span><span class="lineCov">         96 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: l1Norm()&quot; )</span>
+<span class="lineNum">     698 </span>            :     // asum over the full array mValues
+<span class="lineNum">     699 </span><span class="lineCov">        120 :     return HArrayUtils::asum( mValues, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     700 </span>            : }
+<span class="lineNum">     701 </span>            : 
+<span class="lineNum">     702 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     703 </span>            : 
+<span class="lineNum">     704 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     705 </span><span class="lineCov">         48 : RealType&lt;ValueType&gt; COOStorage&lt;ValueType&gt;::l2Norm() const</span>
+<span class="lineNum">     706 </span>            : {
+<span class="lineNum">     707 </span><span class="lineCov">         96 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: l2Norm()&quot; )</span>
+<span class="lineNum">     708 </span><span class="lineCov">         96 :     ValueType res = HArrayUtils::dotProduct( mValues, mValues, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     709 </span><span class="lineCov">         72 :     return common::Math::sqrt( res );</span>
+<span class="lineNum">     710 </span>            : }
+<span class="lineNum">     711 </span>            : 
+<span class="lineNum">     712 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     713 </span>            : 
+<span class="lineNum">     714 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     715 </span><span class="lineCov">      11495 : RealType&lt;ValueType&gt; COOStorage&lt;ValueType&gt;::maxNorm() const</span>
+<span class="lineNum">     716 </span>            : {
+<span class="lineNum">     717 </span><span class="lineCov">      22990 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: maxNorm()&quot; )</span>
+<span class="lineNum">     718 </span><span class="lineCov">      28670 :     return HArrayUtils::reduce( mValues, BinaryOp::ABS_MAX, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     719 </span>            : }
+<span class="lineNum">     720 </span>            : 
+<span class="lineNum">     721 </span>            : /* --------------------------------------------------------------------------- */
+<a name="722"><span class="lineNum">     722 </span>            : </a>
+<span class="lineNum">     723 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     724 </span><span class="lineCov">         24 : size_t COOStorage&lt;ValueType&gt;::getMemoryUsageImpl() const</span>
+<span class="lineNum">     725 </span>            : {
+<span class="lineNum">     726 </span>            :     size_t memoryUsage = 0;
+<span class="lineNum">     727 </span>            :     memoryUsage += sizeof( IndexType );
+<span class="lineNum">     728 </span><span class="lineCov">         24 :     memoryUsage += sizeof( IndexType ) * mIA.size();</span>
+<span class="lineNum">     729 </span><span class="lineCov">         24 :     memoryUsage += sizeof( IndexType ) * mJA.size();</span>
+<span class="lineNum">     730 </span><span class="lineCov">         24 :     memoryUsage += sizeof( ValueType ) * mValues.size();</span>
+<span class="lineNum">     731 </span><span class="lineCov">         24 :     return memoryUsage;</span>
+<span class="lineNum">     732 </span>            : }
+<span class="lineNum">     733 </span>            : 
+<span class="lineNum">     734 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     735 </span>            : 
+<span class="lineNum">     736 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     737 </span><span class="lineCov">       2961 : SyncToken* COOStorage&lt;ValueType&gt;::incGEMV(</span>
+<span class="lineNum">     738 </span>            :     HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     739 </span>            :     const ValueType alpha,
+<span class="lineNum">     740 </span>            :     const HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     741 </span>            :     const common::MatrixOp op,
+<span class="lineNum">     742 </span>            :     bool async ) const
+<span class="lineNum">     743 </span>            : {
+<span class="lineNum">     744 </span><span class="lineCov">       5922 :     SCAI_LOG_INFO( logger, &quot;incGEMV ( async = &quot; &lt;&lt; async &lt;&lt; &quot; ) , result += &quot; &lt;&lt; alpha &lt;&lt; &quot; * storage * x&quot; )</span>
+<span class="lineNum">     745 </span>            : 
+<span class="lineNum">     746 </span><span class="lineCov">       3009 :     static LAMAKernel&lt;COOKernelTrait::normalGEMV&lt;ValueType&gt; &gt; normalGEMV;</span>
+<span class="lineNum">     747 </span><span class="lineCov">       2961 :     ContextPtr loc = this-&gt;getContextPtr();</span>
+<span class="lineNum">     748 </span><span class="lineCov">       2961 :     normalGEMV.getSupportedContext( loc );</span>
+<span class="lineNum">     749 </span>            :     std::unique_ptr&lt;SyncToken&gt; syncToken;
+<span class="lineNum">     750 </span>            : 
+<span class="lineNum">     751 </span><span class="lineCov">       2961 :     if ( async )</span>
+<span class="lineNum">     752 </span>            :     {
+<span class="lineNum">     753 </span><span class="lineCov">          4 :         syncToken.reset( loc-&gt;getSyncToken() );</span>
+<span class="lineNum">     754 </span>            :     }
+<span class="lineNum">     755 </span>            : 
+<span class="lineNum">     756 </span>            :     SCAI_ASYNCHRONOUS( syncToken.get() );
+<span class="lineNum">     757 </span><span class="lineCov">       8883 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     758 </span><span class="lineCov">       5922 :     ReadAccess&lt;IndexType&gt; cooIA( mIA, loc );</span>
+<span class="lineNum">     759 </span><span class="lineCov">       5922 :     ReadAccess&lt;IndexType&gt; cooJA( mJA, loc );</span>
+<span class="lineNum">     760 </span><span class="lineCov">       5922 :     ReadAccess&lt;ValueType&gt; cooValues( mValues, loc );</span>
+<span class="lineNum">     761 </span><span class="lineCov">       5922 :     ReadAccess&lt;ValueType&gt; rX( x, loc );</span>
+<span class="lineNum">     762 </span><span class="lineCov">       5922 :     WriteAccess&lt;ValueType&gt; wResult( result, loc );</span>
+<span class="lineNum">     763 </span>            :     // use general kernel, might change
+<span class="lineNum">     764 </span>            :     ValueType beta = 1;
+<span class="lineNum">     765 </span><span class="lineCov">       8586 :     normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(),</span>
+<span class="lineNum">     766 </span>            :                      getNumRows(), getNumColumns(), mIA.size(),
+<span class="lineNum">     767 </span>            :                      cooIA.get(), cooJA.get(), cooValues.get(), op );
+<span class="lineNum">     768 </span>            : 
+<span class="lineNum">     769 </span><span class="lineCov">       2961 :     if ( async )</span>
+<span class="lineNum">     770 </span>            :     {
+<span class="lineNum">     771 </span><span class="lineCov">          8 :         syncToken-&gt;pushRoutine( wResult.releaseDelayed() );</span>
+<span class="lineNum">     772 </span><span class="lineCov">          8 :         syncToken-&gt;pushRoutine( rX.releaseDelayed() );</span>
+<span class="lineNum">     773 </span><span class="lineCov">          8 :         syncToken-&gt;pushRoutine( cooValues.releaseDelayed() );</span>
+<span class="lineNum">     774 </span><span class="lineCov">          8 :         syncToken-&gt;pushRoutine( cooIA.releaseDelayed() );</span>
+<span class="lineNum">     775 </span><span class="lineCov">          8 :         syncToken-&gt;pushRoutine( cooJA.releaseDelayed() );</span>
+<span class="lineNum">     776 </span>            :     }
+<span class="lineNum">     777 </span>            : 
+<span class="lineNum">     778 </span><span class="lineCov">       2961 :     return syncToken.release();</span>
+<span class="lineNum">     779 </span>            : }
+<span class="lineNum">     780 </span>            : 
+<span class="lineNum">     781 </span>            : /* --------------------------------------------------------------------------- */
+<a name="782"><span class="lineNum">     782 </span>            : </a>
+<span class="lineNum">     783 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     784 </span><span class="lineCov">       3587 : void COOStorage&lt;ValueType&gt;::matrixTimesVector(</span>
+<span class="lineNum">     785 </span>            :     HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     786 </span>            :     const ValueType alpha,
+<span class="lineNum">     787 </span>            :     const HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     788 </span>            :     const ValueType beta,
+<span class="lineNum">     789 </span>            :     const HArray&lt;ValueType&gt;&amp; y,
+<span class="lineNum">     790 </span>            :     const common::MatrixOp op ) const
+<span class="lineNum">     791 </span>            : 
+<span class="lineNum">     792 </span>            : {
+<span class="lineNum">     793 </span>            :     bool async = false; // synchronously execution, no SyncToken required
+<span class="lineNum">     794 </span><span class="lineCov">       5097 :     SyncToken* token = gemv( result, alpha, x, beta, y, op, async );</span>
+<span class="lineNum">     795 </span><span class="lineCov">       3585 :     SCAI_ASSERT( token == NULL, &quot;There should be no sync token for synchronous execution&quot; )</span>
+<span class="lineNum">     796 </span><span class="lineCov">       3585 : }</span>
+<span class="lineNum">     797 </span>            : 
+<span class="lineNum">     798 </span>            : /* --------------------------------------------------------------------------- */
+<a name="799"><span class="lineNum">     799 </span>            : </a>
+<span class="lineNum">     800 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     801 </span><span class="lineCov">          4 : SyncToken* COOStorage&lt;ValueType&gt;::matrixTimesVectorAsync(</span>
+<span class="lineNum">     802 </span>            :     HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     803 </span>            :     const ValueType alpha,
+<span class="lineNum">     804 </span>            :     const HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     805 </span>            :     const ValueType beta,
+<span class="lineNum">     806 </span>            :     const HArray&lt;ValueType&gt;&amp; y,
+<span class="lineNum">     807 </span>            :     const common::MatrixOp op ) const
+<span class="lineNum">     808 </span>            : {
+<span class="lineNum">     809 </span>            :     bool async = true;
+<span class="lineNum">     810 </span><span class="lineCov">          4 :     SyncToken* token = gemv( result, alpha, x, beta, y, op, async );</span>
+<span class="lineNum">     811 </span><span class="lineCov">          4 :     SCAI_ASSERT( token, &quot;NULL token not allowed for asynchronous execution gemv, alpha = &quot; &lt;&lt; alpha &lt;&lt; &quot;, beta = &quot; &lt;&lt; beta )</span>
+<span class="lineNum">     812 </span><span class="lineCov">          4 :     return token;</span>
+<span class="lineNum">     813 </span>            : }
+<span class="lineNum">     814 </span>            : 
+<span class="lineNum">     815 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     816 </span>            : 
+<span class="lineNum">     817 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     818 </span><span class="lineCov">       3591 : SyncToken* COOStorage&lt;ValueType&gt;::gemv(</span>
+<span class="lineNum">     819 </span>            :     HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     820 </span>            :     const ValueType alpha,
+<span class="lineNum">     821 </span>            :     const HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     822 </span>            :     const ValueType beta,
+<span class="lineNum">     823 </span>            :     const HArray&lt;ValueType&gt;&amp; y,
+<span class="lineNum">     824 </span>            :     const common::MatrixOp op,
+<span class="lineNum">     825 </span>            :     bool async ) const
+<span class="lineNum">     826 </span>            : {
+<span class="lineNum">     827 </span><span class="lineCov">       3591 :     SCAI_REGION( &quot;Storage.COO.gemv&quot; )</span>
+<span class="lineNum">     828 </span>            : 
+<span class="lineNum">     829 </span><span class="lineCov">       3591 :     const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();</span>
+<span class="lineNum">     830 </span>            : 
+<span class="lineNum">     831 </span><span class="lineCov">       7182 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     832 </span>            :                    &quot;GEMV ( op = &quot; &lt;&lt; op &lt;&lt; &quot;, async = &quot; &lt;&lt; async
+<span class="lineNum">     833 </span>            :                    &lt;&lt; &quot; ), result [&quot; &lt;&lt; nTarget &lt;&lt; &quot;] = &quot; &lt;&lt; alpha &lt;&lt; &quot; * A * x + &quot; &lt;&lt; beta &lt;&lt; &quot; * y &quot;
+<span class="lineNum">     834 </span>            :                    &lt;&lt; &quot;, result = &quot; &lt;&lt; result &lt;&lt; &quot;, x = &quot; &lt;&lt; x &lt;&lt; &quot;, y = &quot; &lt;&lt; y
+<span class="lineNum">     835 </span>            :                    &lt;&lt; &quot;, A (this) = &quot; &lt;&lt; *this );
+<span class="lineNum">     836 </span>            : 
+<span class="lineNum">     837 </span><span class="lineCov">       3593 :     if ( alpha == common::Constants::ZERO || getNumValues() == 0 )</span>
+<span class="lineNum">     838 </span>            :     {
+<span class="lineNum">     839 </span>            :         // so we just have result = beta * y, will be done synchronously
+<span class="lineNum">     840 </span>            : 
+<span class="lineNum">     841 </span><span class="lineCov">       1256 :         HArrayUtils::compute( result, beta, BinaryOp::MULT, y, getContextPtr() );</span>
+<span class="lineNum">     842 </span>            : 
+<span class="lineNum">     843 </span><span class="lineCov">        628 :         if ( async )</span>
+<span class="lineNum">     844 </span>            :         {
+<span class="lineNum">     845 </span><span class="lineNoCov">          0 :             return new tasking::NoSyncToken();</span>
+<span class="lineNum">     846 </span>            :         }
+<span class="lineNum">     847 </span>            :         else
+<span class="lineNum">     848 </span>            :         {
+<span class="lineNum">     849 </span>            :             return NULL;
+<span class="lineNum">     850 </span>            :         }
+<span class="lineNum">     851 </span>            :     }
+<span class="lineNum">     852 </span>            : 
+<span class="lineNum">     853 </span>            :     // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
+<span class="lineNum">     854 </span>            : 
+<span class="lineNum">     855 </span>            :     // Step 1: result = beta * y
+<span class="lineNum">     856 </span>            : 
+<span class="lineNum">     857 </span><span class="lineCov">       2965 :     if ( beta == common::Constants::ZERO )</span>
+<span class="lineNum">     858 </span>            :     {
+<span class="lineNum">     859 </span><span class="lineCov">        512 :         HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), getContextPtr() );</span>
+<span class="lineNum">     860 </span>            :     }
+<span class="lineNum">     861 </span>            :     else
+<span class="lineNum">     862 </span>            :     {
+<span class="lineNum">     863 </span>            :         // Note: BinaryOp::MULT will deal with
+<span class="lineNum">     864 </span><span class="lineCov">       2713 :         SCAI_ASSERT_EQUAL( y.size(), nTarget, &quot;size mismatch y, beta = &quot; &lt;&lt; beta )</span>
+<span class="lineNum">     865 </span><span class="lineCov">       5410 :         HArrayUtils::compute( result, beta, BinaryOp::MULT, y, getContextPtr() );</span>
+<span class="lineNum">     866 </span>            :     }
+<span class="lineNum">     867 </span>            : 
+<span class="lineNum">     868 </span><span class="lineCov">       4293 :     return incGEMV( result, alpha, x, op, async );</span>
+<span class="lineNum">     869 </span>            : }
+<span class="lineNum">     870 </span>            : 
+<span class="lineNum">     871 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     872 </span>            : 
+<span class="lineNum">     873 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     874 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">     875 </span><span class="lineCov">      52624 : void COOStorage&lt;ValueType&gt;::setCSRDataImpl(</span>
+<span class="lineNum">     876 </span>            :     const IndexType numRows,
+<span class="lineNum">     877 </span>            :     const IndexType numColumns,
+<span class="lineNum">     878 </span>            :     const hmemo::HArray&lt;IndexType&gt;&amp; ia,
+<span class="lineNum">     879 </span>            :     const hmemo::HArray&lt;IndexType&gt;&amp; ja,
+<span class="lineNum">     880 </span>            :     const hmemo::HArray&lt;OtherValueType&gt;&amp; values,
+<span class="lineNum">     881 </span>            :     const hmemo::ContextPtr prefLoc )
+<span class="lineNum">     882 </span>            : {
+<span class="lineNum">     883 </span><span class="lineCov">      52624 :     IndexType numValues = ja.size();</span>
+<span class="lineNum">     884 </span>            : 
+<span class="lineNum">     885 </span>            :     SCAI_LOG_DEBUG( logger, &quot;set CSR data &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns &lt;&lt; &quot;, nnz = &quot; &lt;&lt; numValues )
+<span class="lineNum">     886 </span>            : 
+<span class="lineNum">     887 </span><span class="lineCov">      52624 :     if ( ia.size() == numRows )</span>
+<span class="lineNum">     888 </span>            :     {
+<span class="lineNum">     889 </span>            :         // offset array required
+<span class="lineNum">     890 </span><span class="lineCov">          7 :         hmemo::HArray&lt;IndexType&gt; offsets;</span>
+<span class="lineNum">     891 </span><span class="lineCov">         14 :         IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );</span>
+<span class="lineNum">     892 </span><span class="lineCov">          7 :         SCAI_ASSERT_EQUAL( numValues, total, &quot;sizes do not sum to number of values&quot; );</span>
+<span class="lineNum">     893 </span><span class="lineCov">         14 :         setCSRDataImpl( numRows, numColumns, offsets, ja, values, prefLoc );</span>
+<span class="lineNum">     894 </span><span class="lineCov">      52624 :         return;</span>
+<span class="lineNum">     895 </span>            :     }
+<span class="lineNum">     896 </span>            : 
+<span class="lineNum">     897 </span><span class="lineCov">     105234 :     _MatrixStorage::setDimension( numRows, numColumns );</span>
+<span class="lineNum">     898 </span>            : 
+<span class="lineNum">     899 </span><span class="lineCov">      52617 :     SCAI_REGION( &quot;Storage.COO.buildCSR&quot; )</span>
+<span class="lineNum">     900 </span>            : 
+<span class="lineNum">     901 </span>            :     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
+<span class="lineNum">     902 </span>            :     SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
+<span class="lineNum">     903 </span>            : 
+<span class="lineNum">     904 </span>            :     hmemo::ContextPtr loc = prefLoc;
+<span class="lineNum">     905 </span>            : 
+<span class="lineNum">     906 </span>            :     // ReadAccess&lt;IndexType&gt; csrJA( ja, loc );
+<span class="lineNum">     907 </span>            :     // ReadAccess&lt;OtherValueType&gt; csrValues( values, loc );
+<span class="lineNum">     908 </span>            : 
+<span class="lineNum">     909 </span>            :     // check if input csr data has the diagonal property and inherit it
+<span class="lineNum">     910 </span><span class="lineCov">      52617 :     int numDiagonals = std::min( numRows, numColumns );</span>
+<span class="lineNum">     911 </span>            :     {
+<span class="lineNum">     912 </span>            :         SCAI_LOG_DEBUG( logger,
+<span class="lineNum">     913 </span>            :                         &quot;check CSR data &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns &lt;&lt; &quot;, nnz = &quot; &lt;&lt; numValues &lt;&lt; &quot; for diagonal property, #diagonals = &quot; &lt;&lt; numDiagonals )
+<span class="lineNum">     914 </span><span class="lineCov">      52720 :         static utilskernel::LAMAKernel&lt;sparsekernel::CSRKernelTrait::hasDiagonalProperty&gt; hasDiagonalProperty;</span>
+<span class="lineNum">     915 </span>            :         hmemo::ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     916 </span><span class="lineCov">      52617 :         hasDiagonalProperty.getSupportedContext( loc );</span>
+<span class="lineNum">     917 </span><span class="lineCov">     105234 :         hmemo::ReadAccess&lt;IndexType&gt; csrIA( ia, loc );</span>
+<span class="lineNum">     918 </span><span class="lineCov">     105234 :         hmemo::ReadAccess&lt;IndexType&gt; csrJA( ja, loc );</span>
+<span class="lineNum">     919 </span><span class="lineCov">     157851 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     920 </span><span class="lineCov">      52617 :         mDiagonalProperty = hasDiagonalProperty[loc] ( numDiagonals, csrIA.get(), csrJA.get() );</span>
+<span class="lineNum">     921 </span>            :     }
+<span class="lineNum">     922 </span>            : 
+<span class="lineNum">     923 </span><span class="lineCov">      52617 :     if ( !mDiagonalProperty )</span>
+<span class="lineNum">     924 </span>            :     {
+<span class="lineNum">     925 </span>            :         numDiagonals = 0; // do not store diagonal data at the beginning in COO data
+<span class="lineNum">     926 </span>            :     }
+<span class="lineNum">     927 </span>            : 
+<span class="lineNum">     928 </span>            :     SCAI_LOG_DEBUG( logger,
+<span class="lineNum">     929 </span>            :                     &quot;input csr data with &quot; &lt;&lt; numValues &lt;&lt; &quot;entries,  has diagonal property = &quot; &lt;&lt; mDiagonalProperty )
+<span class="lineNum">     930 </span>            :     {
+<span class="lineNum">     931 </span><span class="lineCov">      52720 :         static utilskernel::LAMAKernel&lt;sparsekernel::COOKernelTrait::offsets2ia&gt; offsets2ia;</span>
+<span class="lineNum">     932 </span>            :         hmemo::ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     933 </span><span class="lineCov">      52617 :         offsets2ia.getSupportedContext( loc );</span>
+<span class="lineNum">     934 </span><span class="lineCov">     105234 :         hmemo::ReadAccess&lt;IndexType&gt; csrIA( ia, loc );</span>
+<span class="lineNum">     935 </span><span class="lineCov">     157851 :         hmemo::WriteOnlyAccess&lt;IndexType&gt; cooIA( mIA, loc, numValues );</span>
+<span class="lineNum">     936 </span><span class="lineCov">     157851 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     937 </span><span class="lineCov">      52617 :         offsets2ia[loc]( cooIA.get(), numValues, csrIA.get(), numRows, numDiagonals );</span>
+<span class="lineNum">     938 </span>            :     }
+<span class="lineNum">     939 </span>            :     {
+<span class="lineNum">     940 </span><span class="lineCov">      52720 :         static utilskernel::LAMAKernel&lt;sparsekernel::COOKernelTrait::setCSRData&lt;IndexType, IndexType&gt; &gt; setCSRData;</span>
+<span class="lineNum">     941 </span>            :         hmemo::ContextPtr loc = this-&gt;getContextPtr();   // preferred location
+<span class="lineNum">     942 </span><span class="lineCov">      52617 :         setCSRData.getSupportedContext( loc );    // supported location</span>
+<span class="lineNum">     943 </span><span class="lineCov">     105234 :         hmemo::ReadAccess&lt;IndexType&gt; csrIA( ia, loc );</span>
+<span class="lineNum">     944 </span><span class="lineCov">     105234 :         hmemo::ReadAccess&lt;IndexType&gt; csrJA( ja, loc );</span>
+<span class="lineNum">     945 </span><span class="lineCov">     157851 :         hmemo::WriteOnlyAccess&lt;IndexType&gt; cooJA( mJA, loc, numValues );</span>
+<span class="lineNum">     946 </span><span class="lineCov">     157851 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     947 </span><span class="lineCov">      52617 :         setCSRData[loc]( cooJA.get(), csrJA.get(), numValues, csrIA.get(), numRows, numDiagonals );</span>
+<span class="lineNum">     948 </span>            :     }
+<span class="lineNum">     949 </span>            :     {
+<span class="lineNum">     950 </span><span class="lineCov">      52720 :         static utilskernel::LAMAKernel&lt;sparsekernel::COOKernelTrait::setCSRData&lt;ValueType, OtherValueType&gt; &gt; setCSRData;</span>
+<span class="lineNum">     951 </span>            :         hmemo::ContextPtr loc = this-&gt;getContextPtr();   // preferred location
+<span class="lineNum">     952 </span><span class="lineCov">      52617 :         setCSRData.getSupportedContext( loc );    // supported location</span>
+<span class="lineNum">     953 </span><span class="lineCov">     105234 :         hmemo::ReadAccess&lt;IndexType&gt; csrIA( ia, loc );</span>
+<span class="lineNum">     954 </span><span class="lineCov">     105234 :         hmemo::ReadAccess&lt;OtherValueType&gt; csrValues( values, loc );</span>
+<span class="lineNum">     955 </span><span class="lineCov">     157851 :         hmemo::WriteOnlyAccess&lt;ValueType&gt; cooValues( mValues, loc, numValues );</span>
+<span class="lineNum">     956 </span><span class="lineCov">     157851 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     957 </span><span class="lineCov">      52617 :         setCSRData[loc]( cooValues.get(), csrValues.get(), numValues, csrIA.get(), getNumRows(), numDiagonals );</span>
+<span class="lineNum">     958 </span>            :     }
+<span class="lineNum">     959 </span>            : }
+<span class="lineNum">     960 </span>            : 
+<span class="lineNum">     961 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     962 </span><span class="lineCov">        188 : void COOStorage&lt;ValueType&gt;::setDiagonalV( const hmemo::HArray&lt;ValueType&gt;&amp; diagonal )</span>
+<span class="lineNum">     963 </span>            : {
+<span class="lineNum">     964 </span><span class="lineCov">        376 :     SCAI_ASSERT_ERROR( hasDiagonalProperty(), &quot;cannot set diagonal for COO, no diagonal property&quot; )</span>
+<span class="lineNum">     965 </span>            : 
+<span class="lineNum">     966 </span><span class="lineCov">        752 :     const IndexType numDiagonalElements = std::min( diagonal.size(), std::min( getNumColumns(), getNumRows() ) );</span>
+<span class="lineNum">     967 </span><span class="lineCov">        216 :     static utilskernel::LAMAKernel&lt;utilskernel::UtilKernelTrait::set&lt;ValueType, ValueType&gt; &gt; set;</span>
+<span class="lineNum">     968 </span>            :     hmemo::ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     969 </span><span class="lineCov">        188 :     set.getSupportedContext( loc );</span>
+<span class="lineNum">     970 </span><span class="lineCov">        376 :     hmemo::ReadAccess&lt;ValueType&gt; rDiagonal( diagonal, loc );</span>
+<span class="lineNum">     971 </span><span class="lineCov">        376 :     hmemo::WriteAccess&lt;ValueType&gt; wValues( mValues, loc );</span>
+<span class="lineNum">     972 </span><span class="lineCov">        564 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     973 </span>            :     // diagonal elements are the first entries of mValues
+<span class="lineNum">     974 </span><span class="lineCov">        188 :     set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, BinaryOp::COPY );</span>
+<span class="lineNum">     975 </span><span class="lineCov">        188 : }</span>
+<span class="lineNum">     976 </span>            : 
+<span class="lineNum">     977 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     978 </span><span class="lineCov">        198 : void COOStorage&lt;ValueType&gt;::getDiagonal( hmemo::HArray&lt;ValueType&gt;&amp; diagonal ) const</span>
+<span class="lineNum">     979 </span>            : {
+<span class="lineNum">     980 </span>            :     // diagional[0:numDiagonalElements] = mValues[0:numDiagonalElements]
+<span class="lineNum">     981 </span>            :     // Note: using HArrayUtils::setArray not possible, as we only need part of mValues
+<span class="lineNum">     982 </span><span class="lineCov">        396 :     const IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );</span>
+<span class="lineNum">     983 </span><span class="lineCov">        226 :     static utilskernel::LAMAKernel&lt;utilskernel::UtilKernelTrait::set&lt;ValueType, ValueType&gt; &gt; set;</span>
+<span class="lineNum">     984 </span>            :     hmemo::ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     985 </span><span class="lineCov">        198 :     set.getSupportedContext( loc );</span>
+<span class="lineNum">     986 </span><span class="lineCov">        594 :     hmemo::WriteOnlyAccess&lt;ValueType&gt; wDiagonal( diagonal, loc, numDiagonalElements );</span>
+<span class="lineNum">     987 </span><span class="lineCov">        396 :     hmemo::ReadAccess&lt;ValueType&gt; rValues( mValues, loc );</span>
+<span class="lineNum">     988 </span><span class="lineCov">        594 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     989 </span>            :     // diagonal elements are the first entries of mValues
+<span class="lineNum">     990 </span><span class="lineCov">        198 :     set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, BinaryOp::COPY );</span>
+<span class="lineNum">     991 </span><span class="lineCov">        198 : }</span>
+<span class="lineNum">     992 </span>            : 
+<span class="lineNum">     993 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     994 </span>            : 
+<span class="lineNum">     995 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     996 </span><span class="lineCov">      11040 : void COOStorage&lt;ValueType&gt;::getSparseRow( hmemo::HArray&lt;IndexType&gt;&amp; jA, hmemo::HArray&lt;ValueType&gt;&amp; values, const IndexType i ) const</span>
+<span class="lineNum">     997 </span>            : {
+<span class="lineNum">     998 </span><span class="lineCov">      11040 :     SCAI_REGION( &quot;Storage.COO.getSparseRow&quot; )</span>
+<span class="lineNum">     999 </span>            : 
+<span class="lineNum">    1000 </span><span class="lineCov">      33120 :     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), &quot;row index out of range&quot; )</span>
+<span class="lineNum">    1001 </span>            : 
+<span class="lineNum">    1002 </span>            :     // resize the output arrays, invalidate old data before
+<span class="lineNum">    1003 </span>            : 
+<span class="lineNum">    1004 </span><span class="lineCov">      11060 :     static LAMAKernel&lt;COOKernelTrait::getValuePosRow&gt; getValuePosRow;</span>
+<span class="lineNum">    1005 </span>            : 
+<span class="lineNum">    1006 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">    1007 </span><span class="lineCov">      11040 :     getValuePosRow.getSupportedContext( loc );</span>
+<span class="lineNum">    1008 </span>            : 
+<span class="lineNum">    1009 </span><span class="lineCov">      11040 :     HArray&lt;IndexType&gt; valuePos;     // positions in the values array</span>
+<span class="lineNum">    1010 </span>            : 
+<span class="lineNum">    1011 </span>            :     {
+<span class="lineNum">    1012 </span><span class="lineCov">      22080 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">    1013 </span>            : 
+<span class="lineNum">    1014 </span><span class="lineCov">      33120 :         WriteOnlyAccess&lt;IndexType&gt; wColIndexes( jA, loc, getNumColumns() );</span>
+<span class="lineNum">    1015 </span><span class="lineCov">      33120 :         WriteOnlyAccess&lt;IndexType&gt; wValuePos( valuePos, loc, getNumColumns() );</span>
+<span class="lineNum">    1016 </span>            : 
+<span class="lineNum">    1017 </span><span class="lineCov">      22080 :         ReadAccess&lt;IndexType&gt; rIA( mIA, loc );</span>
+<span class="lineNum">    1018 </span><span class="lineCov">      22080 :         ReadAccess&lt;IndexType&gt; rJA( mJA, loc );</span>
+<span class="lineNum">    1019 </span>            : 
+<span class="lineNum">    1020 </span>            :         IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
+<span class="lineNum">    1021 </span><span class="lineCov">      22080 :                                              rIA.get(), getNumColumns(), rJA.get(), getNumValues() );</span>
+<span class="lineNum">    1022 </span>            : 
+<span class="lineNum">    1023 </span><span class="lineCov">      11040 :         wColIndexes.resize( cnt );</span>
+<span class="lineNum">    1024 </span><span class="lineCov">      22080 :         wValuePos.resize( cnt );</span>
+<span class="lineNum">    1025 </span>            :     }
+<span class="lineNum">    1026 </span>            : 
+<span class="lineNum">    1027 </span><span class="lineCov">      11040 :     values.clear();</span>
+<span class="lineNum">    1028 </span><span class="lineCov">      11040 :     values.resize( valuePos.size());</span>
+<span class="lineNum">    1029 </span>            : 
+<span class="lineNum">    1030 </span><span class="lineCov">      22080 :     HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );</span>
+<span class="lineNum">    1031 </span><span class="lineCov">      11040 : }</span>
+<span class="lineNum">    1032 </span>            : 
+<span class="lineNum">    1033 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1034 </span>            : 
+<span class="lineNum">    1035 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1036 </span><span class="lineCov">       3024 : void COOStorage&lt;ValueType&gt;::getRow( hmemo::HArray&lt;ValueType&gt;&amp; row, const IndexType i ) const</span>
+<span class="lineNum">    1037 </span>            : {
+<span class="lineNum">    1038 </span><span class="lineCov">       3024 :     SCAI_REGION( &quot;Storage.COO.getRow&quot; )</span>
+<span class="lineNum">    1039 </span>            : 
+<span class="lineNum">    1040 </span><span class="lineCov">      12096 :     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), &quot;row index out of range&quot; )</span>
+<span class="lineNum">    1041 </span>            : 
+<span class="lineNum">    1042 </span><span class="lineCov">       3044 :     static LAMAKernel&lt;COOKernelTrait::getValuePosRow&gt; getValuePosRow;</span>
+<span class="lineNum">    1043 </span>            : 
+<span class="lineNum">    1044 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">    1045 </span>            : 
+<span class="lineNum">    1046 </span><span class="lineCov">       3024 :     getValuePosRow.getSupportedContext( loc );</span>
+<span class="lineNum">    1047 </span>            : 
+<span class="lineNum">    1048 </span><span class="lineCov">       3024 :     HArray&lt;IndexType&gt; colIndexes;   // row indexes that have entry for column j</span>
+<span class="lineNum">    1049 </span><span class="lineCov">       3024 :     HArray&lt;IndexType&gt; valuePos;     // positions in the values array</span>
+<span class="lineNum">    1050 </span><span class="lineCov">       3024 :     HArray&lt;ValueType&gt; rowValues;    // contains the values of entries belonging to row i</span>
+<span class="lineNum">    1051 </span>            : 
+<span class="lineNum">    1052 </span>            :     {
+<span class="lineNum">    1053 </span><span class="lineCov">       6048 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">    1054 </span>            : 
+<span class="lineNum">    1055 </span><span class="lineCov">       9072 :         WriteOnlyAccess&lt;IndexType&gt; wColIndexes( colIndexes, loc, getNumColumns() );</span>
+<span class="lineNum">    1056 </span><span class="lineCov">       9072 :         WriteOnlyAccess&lt;IndexType&gt; wValuePos( valuePos, loc, getNumColumns() );</span>
+<span class="lineNum">    1057 </span>            : 
+<span class="lineNum">    1058 </span><span class="lineCov">       6048 :         ReadAccess&lt;IndexType&gt; rIA( mIA, loc );</span>
+<span class="lineNum">    1059 </span><span class="lineCov">       6048 :         ReadAccess&lt;IndexType&gt; rJA( mJA, loc );</span>
+<span class="lineNum">    1060 </span>            : 
+<span class="lineNum">    1061 </span>            :         IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
+<span class="lineNum">    1062 </span><span class="lineCov">       6048 :                                              rIA.get(), getNumColumns(), rJA.get(), getNumValues() );</span>
+<span class="lineNum">    1063 </span>            : 
+<span class="lineNum">    1064 </span><span class="lineCov">       3024 :         wColIndexes.resize( cnt );</span>
+<span class="lineNum">    1065 </span><span class="lineCov">       6048 :         wValuePos.resize( cnt );</span>
+<span class="lineNum">    1066 </span>            :     }
+<span class="lineNum">    1067 </span>            : 
+<span class="lineNum">    1068 </span><span class="lineCov">       3024 :     row.setSameValue( getNumColumns(), ValueType( 0 ) );</span>
+<span class="lineNum">    1069 </span>            : 
+<span class="lineNum">    1070 </span>            :     // row[ colIndexes ] = mValues[ pos ];
+<span class="lineNum">    1071 </span>            : 
+<span class="lineNum">    1072 </span><span class="lineCov">       6048 :     HArrayUtils::gather( rowValues, mValues, valuePos, BinaryOp::COPY, loc );</span>
+<span class="lineNum">    1073 </span><span class="lineCov">       6048 :     HArrayUtils::scatter( row, colIndexes, true, rowValues, BinaryOp::COPY, loc );</span>
+<span class="lineNum">    1074 </span><span class="lineCov">       3024 : }</span>
+<span class="lineNum">    1075 </span>            : 
+<span class="lineNum">    1076 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1077 </span>            : 
+<span class="lineNum">    1078 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1079 </span><span class="lineCov">      14024 : void COOStorage&lt;ValueType&gt;::setRow( const HArray&lt;ValueType&gt;&amp; row, const IndexType i,</span>
+<span class="lineNum">    1080 </span>            :                                     const BinaryOp op )
+<span class="lineNum">    1081 </span>            : {
+<span class="lineNum">    1082 </span><span class="lineCov">      14024 :     SCAI_REGION( &quot;Storage.COO.setRow&quot; )</span>
+<span class="lineNum">    1083 </span>            : 
+<span class="lineNum">    1084 </span><span class="lineCov">      42072 :     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), &quot;row index out of range&quot; )</span>
+<span class="lineNum">    1085 </span>            :     SCAI_ASSERT_GE_DEBUG( row.size(), getNumColumns(), &quot;row array to small for set&quot; )
+<span class="lineNum">    1086 </span>            : 
+<span class="lineNum">    1087 </span>            :     // get sparse vector with column indexes and positions
+<span class="lineNum">    1088 </span>            : 
+<span class="lineNum">    1089 </span><span class="lineCov">      14052 :     static LAMAKernel&lt;COOKernelTrait::getValuePosRow&gt; getValuePosRow;</span>
+<span class="lineNum">    1090 </span>            : 
+<span class="lineNum">    1091 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">    1092 </span>            : 
+<span class="lineNum">    1093 </span><span class="lineCov">      14024 :     getValuePosRow.getSupportedContext( loc );</span>
+<span class="lineNum">    1094 </span>            : 
+<span class="lineNum">    1095 </span><span class="lineCov">      14024 :     HArray&lt;IndexType&gt; colIndexes;   // row indexes that have entry for column j</span>
+<span class="lineNum">    1096 </span><span class="lineCov">      14024 :     HArray&lt;IndexType&gt; valuePos;     // positions in the values array</span>
+<span class="lineNum">    1097 </span><span class="lineCov">      14024 :     HArray&lt;ValueType&gt; rowValues;    // contains the values of entries belonging to row i</span>
+<span class="lineNum">    1098 </span>            : 
+<span class="lineNum">    1099 </span>            :     {
+<span class="lineNum">    1100 </span><span class="lineCov">      28048 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">    1101 </span>            : 
+<span class="lineNum">    1102 </span><span class="lineCov">      42072 :         WriteOnlyAccess&lt;IndexType&gt; wColIndexes( colIndexes, loc, getNumColumns() );</span>
+<span class="lineNum">    1103 </span><span class="lineCov">      42072 :         WriteOnlyAccess&lt;IndexType&gt; wValuePos( valuePos, loc, getNumColumns() );</span>
+<span class="lineNum">    1104 </span>            : 
+<span class="lineNum">    1105 </span><span class="lineCov">      28048 :         ReadAccess&lt;IndexType&gt; rIA( mIA, loc );</span>
+<span class="lineNum">    1106 </span><span class="lineCov">      28048 :         ReadAccess&lt;IndexType&gt; rJA( mJA, loc );</span>
+<span class="lineNum">    1107 </span>            : 
+<span class="lineNum">    1108 </span>            :         IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
+<span class="lineNum">    1109 </span><span class="lineCov">      28048 :                                              rIA.get(), getNumColumns(), rJA.get(), getNumValues() );</span>
+<span class="lineNum">    1110 </span>            : 
+<span class="lineNum">    1111 </span><span class="lineCov">      14024 :         wColIndexes.resize( cnt );</span>
+<span class="lineNum">    1112 </span><span class="lineCov">      28048 :         wValuePos.resize( cnt );</span>
+<span class="lineNum">    1113 </span>            :     }
+<span class="lineNum">    1114 </span>            : 
+<span class="lineNum">    1115 </span>            :     // mValues[pos] = row[ colIndexes ]
+<span class="lineNum">    1116 </span>            : 
+<span class="lineNum">    1117 </span><span class="lineCov">      28048 :     HArrayUtils::gather( rowValues, row, colIndexes, BinaryOp::COPY, loc );</span>
+<span class="lineNum">    1118 </span><span class="lineCov">      28048 :     HArrayUtils::scatter( mValues, valuePos, true, rowValues, op, loc );</span>
+<span class="lineNum">    1119 </span><span class="lineCov">      14024 : }</span>
+<span class="lineNum">    1120 </span>            : 
+<span class="lineNum">    1121 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1122 </span>            : 
+<span class="lineNum">    1123 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1124 </span><span class="lineCov">       9698 : void COOStorage&lt;ValueType&gt;::getSparseColumn( hmemo::HArray&lt;IndexType&gt;&amp; iA, hmemo::HArray&lt;ValueType&gt;&amp; values, const IndexType j ) const</span>
+<span class="lineNum">    1125 </span>            : {   
+<span class="lineNum">    1126 </span><span class="lineCov">       9698 :     SCAI_REGION( &quot;Storage.COO.getSparseCol&quot; )</span>
+<span class="lineNum">    1127 </span>            :     
+<span class="lineNum">    1128 </span><span class="lineCov">      29094 :     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), &quot;col index out of range&quot; )</span>
+<span class="lineNum">    1129 </span>            :     
+<span class="lineNum">    1130 </span><span class="lineCov">       9726 :     static LAMAKernel&lt;COOKernelTrait::getValuePosCol&gt; getValuePosCol;</span>
+<span class="lineNum">    1131 </span>            : 
+<span class="lineNum">    1132 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">    1133 </span>            : 
+<span class="lineNum">    1134 </span><span class="lineCov">       9698 :     getValuePosCol.getSupportedContext( loc );</span>
+<span class="lineNum">    1135 </span>            : 
+<span class="lineNum">    1136 </span><span class="lineCov">       9698 :     HArray&lt;IndexType&gt; valuePos;     // positions in the values array</span>
+<span class="lineNum">    1137 </span>            : 
+<span class="lineNum">    1138 </span>            :     {
+<span class="lineNum">    1139 </span><span class="lineCov">      19396 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">    1140 </span>            : 
+<span class="lineNum">    1141 </span><span class="lineCov">      29094 :         WriteOnlyAccess&lt;IndexType&gt; wRowIndexes( iA, loc, getNumRows() );</span>
+<span class="lineNum">    1142 </span><span class="lineCov">      29094 :         WriteOnlyAccess&lt;IndexType&gt; wValuePos( valuePos, loc, getNumRows() );</span>
+<span class="lineNum">    1143 </span>            : 
+<span class="lineNum">    1144 </span><span class="lineCov">      19396 :         ReadAccess&lt;IndexType&gt; rIA( mIA, loc );</span>
+<span class="lineNum">    1145 </span><span class="lineCov">      19396 :         ReadAccess&lt;IndexType&gt; rJA( mJA, loc );</span>
+<span class="lineNum">    1146 </span>            : 
+<span class="lineNum">    1147 </span>            :         IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
+<span class="lineNum">    1148 </span><span class="lineCov">      19396 :                                              rIA.get(), getNumRows(), rJA.get(), getNumValues() );</span>
+<span class="lineNum">    1149 </span>            : 
+<span class="lineNum">    1150 </span><span class="lineCov">       9698 :         wRowIndexes.resize( cnt );</span>
+<span class="lineNum">    1151 </span><span class="lineCov">      19396 :         wValuePos.resize( cnt );</span>
+<span class="lineNum">    1152 </span>            :     }
+<span class="lineNum">    1153 </span>            : 
+<span class="lineNum">    1154 </span>            :     // column[ row ] = mValues[ pos ];
+<span class="lineNum">    1155 </span>            : 
+<span class="lineNum">    1156 </span><span class="lineCov">      19396 :     HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );</span>
+<span class="lineNum">    1157 </span><span class="lineCov">       9698 : }</span>
+<span class="lineNum">    1158 </span>            : 
+<span class="lineNum">    1159 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1160 </span>            : 
+<span class="lineNum">    1161 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1162 </span><span class="lineCov">         56 : void COOStorage&lt;ValueType&gt;::getColumn( HArray&lt;ValueType&gt;&amp; column, const IndexType j ) const</span>
+<span class="lineNum">    1163 </span>            : {
+<span class="lineNum">    1164 </span><span class="lineCov">         56 :     SCAI_REGION( &quot;Storage.COO.getDenseCol&quot; )</span>
+<span class="lineNum">    1165 </span>            : 
+<span class="lineNum">    1166 </span><span class="lineCov">         56 :     HArray&lt;IndexType&gt; rowIndexes;   // row indexes that have entry for column j</span>
+<span class="lineNum">    1167 </span><span class="lineCov">         56 :     HArray&lt;ValueType&gt; colValues;    // contains the values of entries belonging to column j</span>
+<span class="lineNum">    1168 </span>            : 
+<span class="lineNum">    1169 </span><span class="lineCov">         56 :     getSparseColumn( rowIndexes, colValues, j );</span>
+<span class="lineNum">    1170 </span>            : 
+<span class="lineNum">    1171 </span><span class="lineCov">        112 :     HArrayUtils::buildDenseArray( column, getNumRows(), colValues, rowIndexes, ValueType( 0 ) );</span>
+<span class="lineNum">    1172 </span><span class="lineCov">         56 : }</span>
+<span class="lineNum">    1173 </span>            : 
+<span class="lineNum">    1174 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1175 </span>            : 
+<span class="lineNum">    1176 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1177 </span><span class="lineCov">       9658 : void COOStorage&lt;ValueType&gt;::setColumn( const HArray&lt;ValueType&gt;&amp; column, const IndexType j, const BinaryOp op )</span>
+<span class="lineNum">    1178 </span>            : {
+<span class="lineNum">    1179 </span><span class="lineCov">       9658 :     SCAI_REGION( &quot;Storage.COO.setCol&quot; )</span>
+<span class="lineNum">    1180 </span>            : 
+<span class="lineNum">    1181 </span><span class="lineCov">      28974 :     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), &quot;column index out of range&quot; )</span>
+<span class="lineNum">    1182 </span>            :     SCAI_ASSERT_GE_DEBUG( column.size(), getNumRows(), &quot;column array to small for set&quot; )
+<span class="lineNum">    1183 </span>            : 
+<span class="lineNum">    1184 </span><span class="lineCov">       9686 :     static LAMAKernel&lt;COOKernelTrait::getValuePosCol&gt; getValuePosCol;</span>
+<span class="lineNum">    1185 </span>            : 
+<span class="lineNum">    1186 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">    1187 </span>            : 
+<span class="lineNum">    1188 </span><span class="lineCov">       9658 :     getValuePosCol.getSupportedContext( loc );</span>
+<span class="lineNum">    1189 </span>            : 
+<span class="lineNum">    1190 </span><span class="lineCov">       9658 :     HArray&lt;IndexType&gt; rowIndexes;   // row indexes that have entry for column j</span>
+<span class="lineNum">    1191 </span><span class="lineCov">       9658 :     HArray&lt;IndexType&gt; valuePos;     // positions in the values array, are unique</span>
+<span class="lineNum">    1192 </span><span class="lineCov">       9658 :     HArray&lt;ValueType&gt; colValues;    // contains the values of entries belonging to column j</span>
+<span class="lineNum">    1193 </span>            : 
+<span class="lineNum">    1194 </span>            :     {
+<span class="lineNum">    1195 </span><span class="lineCov">      19316 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">    1196 </span>            : 
+<span class="lineNum">    1197 </span><span class="lineCov">      28974 :         WriteOnlyAccess&lt;IndexType&gt; wRowIndexes( rowIndexes, loc, getNumRows() );</span>
+<span class="lineNum">    1198 </span><span class="lineCov">      28974 :         WriteOnlyAccess&lt;IndexType&gt; wValuePos( valuePos, loc, getNumRows() );</span>
+<span class="lineNum">    1199 </span>            : 
+<span class="lineNum">    1200 </span><span class="lineCov">      19316 :         ReadAccess&lt;IndexType&gt; rIA( mIA, loc );</span>
+<span class="lineNum">    1201 </span><span class="lineCov">      19316 :         ReadAccess&lt;IndexType&gt; rJA( mJA, loc );</span>
+<span class="lineNum">    1202 </span>            : 
+<span class="lineNum">    1203 </span>            :         IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
+<span class="lineNum">    1204 </span><span class="lineCov">      19316 :                                              rIA.get(), getNumRows(), rJA.get(), getNumValues() );</span>
+<span class="lineNum">    1205 </span>            : 
+<span class="lineNum">    1206 </span><span class="lineCov">       9658 :         wRowIndexes.resize( cnt );</span>
+<span class="lineNum">    1207 </span><span class="lineCov">      19316 :         wValuePos.resize( cnt );</span>
+<span class="lineNum">    1208 </span>            :     }
+<span class="lineNum">    1209 </span>            : 
+<span class="lineNum">    1210 </span>            :     //  mValues[ pos ] op= column[ rowIndexes ]
+<span class="lineNum">    1211 </span>            : 
+<span class="lineNum">    1212 </span><span class="lineCov">      19316 :     HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, loc );</span>
+<span class="lineNum">    1213 </span><span class="lineCov">      19316 :     HArrayUtils::scatter( mValues, valuePos, true, colValues, op, loc );</span>
+<span class="lineNum">    1214 </span><span class="lineCov">       9658 : }</span>
+<span class="lineNum">    1215 </span>            : 
+<span class="lineNum">    1216 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1217 </span>            : 
+<span class="lineNum">    1218 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1219 </span><span class="lineCov">       3289 : void COOStorage&lt;ValueType&gt;::scale( const ValueType value )</span>
+<span class="lineNum">    1220 </span>            : {
+<span class="lineNum">    1221 </span>            :     // multiply value with each entry of mValues
+<span class="lineNum">    1222 </span><span class="lineCov">       6578 :     utilskernel::HArrayUtils::setScalar( mValues, value, BinaryOp::MULT, this-&gt;getContextPtr() );</span>
+<span class="lineNum">    1223 </span><span class="lineCov">       3289 : }</span>
+<span class="lineNum">    1224 </span>            : 
+<span class="lineNum">    1225 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1226 </span>            : 
+<span class="lineNum">    1227 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1228 </span><span class="lineCov">         18 : void COOStorage&lt;ValueType&gt;::jacobiIterate(</span>
+<span class="lineNum">    1229 </span>            :     HArray&lt;ValueType&gt;&amp; solution,
+<span class="lineNum">    1230 </span>            :     const HArray&lt;ValueType&gt;&amp; oldSolution,
+<span class="lineNum">    1231 </span>            :     const HArray&lt;ValueType&gt;&amp; rhs,
+<span class="lineNum">    1232 </span>            :     const ValueType omega ) const
+<span class="lineNum">    1233 </span>            : {
+<span class="lineNum">    1234 </span><span class="lineCov">         18 :     SCAI_REGION( &quot;Storage.COO.jacobiIterate&quot; )</span>
+<span class="lineNum">    1235 </span><span class="lineCov">         36 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: Jacobi iteration for local matrix data.&quot; )</span>
+<span class="lineNum">    1236 </span><span class="lineCov">         18 :     SCAI_ASSERT_ERROR( mDiagonalProperty, *this &lt;&lt; &quot;: jacobiIterate requires diagonal property&quot; )</span>
+<span class="lineNum">    1237 </span>            : 
+<span class="lineNum">    1238 </span><span class="lineCov">         18 :     if ( &amp;solution == &amp;oldSolution )</span>
+<span class="lineNum">    1239 </span>            :     {
+<span class="lineNum">    1240 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;alias of solution and oldSolution unsupported&quot; )</span>
+<span class="lineNum">    1241 </span>            :     }
+<span class="lineNum">    1242 </span>            : 
+<span class="lineNum">    1243 </span><span class="lineCov">         36 :     SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), oldSolution.size() )</span>
+<span class="lineNum">    1244 </span>            :     SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), rhs.size() )
+<span class="lineNum">    1245 </span>            :     SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), getNumColumns() )              // matrix must be square
+<span class="lineNum">    1246 </span><span class="lineCov">         20 :     static LAMAKernel&lt;COOKernelTrait::jacobi&lt;ValueType&gt; &gt; jacobi;</span>
+<span class="lineNum">    1247 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">    1248 </span><span class="lineCov">         18 :     jacobi.getSupportedContext( loc );</span>
+<span class="lineNum">    1249 </span><span class="lineCov">         36 :     ReadAccess&lt;IndexType&gt; cooIA( mIA, loc );</span>
+<span class="lineNum">    1250 </span><span class="lineCov">         36 :     ReadAccess&lt;IndexType&gt; cooJA( mJA, loc );</span>
+<span class="lineNum">    1251 </span><span class="lineCov">         36 :     ReadAccess&lt;ValueType&gt; cooValues( mValues, loc );</span>
+<span class="lineNum">    1252 </span><span class="lineCov">         36 :     ReadAccess&lt;ValueType&gt; rOldSolution( oldSolution, loc );</span>
+<span class="lineNum">    1253 </span><span class="lineCov">         36 :     ReadAccess&lt;ValueType&gt; rRhs( rhs, loc );</span>
+<span class="lineNum">    1254 </span><span class="lineCov">         54 :     WriteOnlyAccess&lt;ValueType&gt; wSolution( solution, loc, getNumRows() );</span>
+<span class="lineNum">    1255 </span>            :     // Due to diagonal property there is no advantage by taking row indexes
+<span class="lineNum">    1256 </span><span class="lineCov">         54 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">    1257 </span><span class="lineCov">         18 :     jacobi[loc]( wSolution.get(), getNumValues(), cooIA.get(), cooJA.get(), cooValues.get(),</span>
+<span class="lineNum">    1258 </span>            :                  rOldSolution.get(), rRhs.get(), omega, getNumRows() );
+<span class="lineNum">    1259 </span><span class="lineCov">         18 : }</span>
+<span class="lineNum">    1260 </span>            : 
+<span class="lineNum">    1261 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1262 </span>            : 
+<span class="lineNum">    1263 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1264 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">    1265 </span><span class="lineCov">      38705 : void COOStorage&lt;ValueType&gt;::buildCSR(</span>
+<span class="lineNum">    1266 </span>            :     hmemo::HArray&lt;IndexType&gt;&amp; csrIA,
+<span class="lineNum">    1267 </span>            :     hmemo::HArray&lt;IndexType&gt;* csrJA,
+<span class="lineNum">    1268 </span>            :     hmemo::HArray&lt;OtherValueType&gt;* csrValues,
+<span class="lineNum">    1269 </span>            :     const hmemo::ContextPtr preferredLoc ) const
+<span class="lineNum">    1270 </span>            : {
+<span class="lineNum">    1271 </span><span class="lineCov">      38705 :     SCAI_REGION( &quot;Storage.COO.buildCSR&quot; )</span>
+<span class="lineNum">    1272 </span>            : 
+<span class="lineNum">    1273 </span><span class="lineCov">      38705 :     if ( csrJA == NULL || csrValues == NULL )</span>
+<span class="lineNum">    1274 </span>            :     {
+<span class="lineNum">    1275 </span>            :         // number of entries per row, count with buckets for each row
+<span class="lineNum">    1276 </span>            : 
+<span class="lineNum">    1277 </span><span class="lineCov">          4 :         SCAI_LOG_INFO( logger, &quot;build CSR sizes from &quot; &lt;&lt; *this )</span>
+<span class="lineNum">    1278 </span>            : 
+<span class="lineNum">    1279 </span><span class="lineCov">      38707 :         utilskernel::HArrayUtils::bucketCount( csrIA, mIA, getNumRows(), preferredLoc );</span>
+<span class="lineNum">    1280 </span><span class="lineCov">      38695 :         return;</span>
+<span class="lineNum">    1281 </span>            :     }
+<span class="lineNum">    1282 </span>            : 
+<span class="lineNum">    1283 </span><span class="lineCov">      77406 :     SCAI_LOG_INFO( logger, &quot;build CSR data from &quot; &lt;&lt; *this )</span>
+<span class="lineNum">    1284 </span>            : 
+<span class="lineNum">    1285 </span><span class="lineCov">      38703 :     HArray&lt;IndexType&gt; perm;  // help array for resorting the values</span>
+<span class="lineNum">    1286 </span>            : 
+<span class="lineNum">    1287 </span><span class="lineCov">      77406 :     utilskernel::HArrayUtils::bucketSort( csrIA, perm, mIA, getNumRows() );</span>
+<span class="lineNum">    1288 </span>            : 
+<span class="lineNum">    1289 </span>            :     SCAI_ASSERT_EQ_DEBUG( getNumRows() + 1, csrIA.size(), &quot;serious mismatch, should not happen&quot; )
+<span class="lineNum">    1290 </span><span class="lineCov">      38723 :     SCAI_ASSERT_EQ_ERROR( perm.size(), mIA.size(), &quot;Illegal entries in mIA of COO storage&quot; )</span>
+<span class="lineNum">    1291 </span>            : 
+<span class="lineNum">    1292 </span>            :     // CSR array ja, values are the COO arrays resorted
+<span class="lineNum">    1293 </span>            : 
+<span class="lineNum">    1294 </span><span class="lineCov">      77386 :     utilskernel::HArrayUtils::gather( *csrJA, mJA, perm, BinaryOp::COPY, preferredLoc );</span>
+<span class="lineNum">    1295 </span><span class="lineCov">      77386 :     utilskernel::HArrayUtils::gather( *csrValues, mValues, perm, BinaryOp::COPY, preferredLoc );</span>
+<span class="lineNum">    1296 </span>            : 
+<span class="lineNum">    1297 </span>            :     // Note: sort is stable, so diagonal values remain first in each row
+<span class="lineNum">    1298 </span>            : }
+<span class="lineNum">    1299 </span>            : 
+<span class="lineNum">    1300 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1301 </span>            : 
+<span class="lineNum">    1302 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1303 </span><span class="lineCov">        957 : void COOStorage&lt;ValueType&gt;::matrixPlusMatrix(</span>
+<span class="lineNum">    1304 </span>            :     const ValueType alpha,
+<span class="lineNum">    1305 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; a,
+<span class="lineNum">    1306 </span>            :     const ValueType beta,
+<span class="lineNum">    1307 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; b )
+<span class="lineNum">    1308 </span>            : {
+<span class="lineNum">    1309 </span><span class="lineCov">       1914 :     SCAI_LOG_INFO( logger, &quot;this = &quot; &lt;&lt; alpha &lt;&lt; &quot; * A + &quot; &lt;&lt; beta &lt;&lt; &quot; * B&quot; &lt;&lt; &quot;, with A = &quot; &lt;&lt; a &lt;&lt; &quot;, B = &quot; &lt;&lt; b )</span>
+<span class="lineNum">    1310 </span>            : 
+<span class="lineNum">    1311 </span><span class="lineCov">        957 :     SCAI_REGION( &quot;Storage.COO.plusMatrix&quot; )</span>
+<span class="lineNum">    1312 </span>            : 
+<span class="lineNum">    1313 </span><span class="lineCov">        957 :     if ( a.getFormat() != Format::COO )</span>
+<span class="lineNum">    1314 </span>            :     {
+<span class="lineNum">    1315 </span><span class="lineCov">         24 :         matrixPlusMatrix( alpha, convert&lt;COOStorage&lt;ValueType&gt;&gt;( a ), beta, b );</span>
+<span class="lineNum">    1316 </span>            :     } 
+<span class="lineNum">    1317 </span><span class="lineCov">        949 :     else if ( b.getFormat() != Format::COO )</span>
+<span class="lineNum">    1318 </span>            :     {
+<span class="lineNum">    1319 </span><span class="lineNoCov">          0 :         matrixPlusMatrix( alpha, a, beta, convert&lt;COOStorage&lt;ValueType&gt;&gt;( b ) );</span>
+<span class="lineNum">    1320 </span>            :     }
+<span class="lineNum">    1321 </span>            :     else
+<span class="lineNum">    1322 </span>            :     {
+<span class="lineNum">    1323 </span>            :         // a and b have the right format so we just cast it correctly
+<span class="lineNum">    1324 </span>            : 
+<span class="lineNum">    1325 </span><span class="lineCov">        949 :         matrixPlusMatrixImpl( alpha, static_cast&lt;const COOStorage&lt;ValueType&gt;&amp;&gt;( a ), </span>
+<span class="lineNum">    1326 </span><span class="lineCov">        452 :                               beta, static_cast&lt;const COOStorage&lt;ValueType&gt;&amp;&gt;( b ) );</span>
+<span class="lineNum">    1327 </span>            :     }
+<span class="lineNum">    1328 </span><span class="lineCov">        957 : }</span>
+<span class="lineNum">    1329 </span>            : 
+<span class="lineNum">    1330 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1331 </span>            : 
+<span class="lineNum">    1332 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1333 </span><span class="lineCov">       1825 : void COOStorage&lt;ValueType&gt;::matrixPlusMatrixImpl(</span>
+<span class="lineNum">    1334 </span>            :     const ValueType alpha,
+<span class="lineNum">    1335 </span>            :     const COOStorage&lt;ValueType&gt;&amp; a,
+<span class="lineNum">    1336 </span>            :     const ValueType beta,
+<span class="lineNum">    1337 </span>            :     const COOStorage&lt;ValueType&gt;&amp; b )
+<span class="lineNum">    1338 </span>            : {
+<span class="lineNum">    1339 </span><span class="lineCov">       1825 :     if ( &amp;a == this || &amp;b == this )</span>
+<span class="lineNum">    1340 </span>            :     {
+<span class="lineNum">    1341 </span>            :         // due to alias we would get problems with Write/Read access, so use a temporary
+<span class="lineNum">    1342 </span><span class="lineCov">       1752 :         COOStorage&lt;ValueType&gt; tmp;</span>
+<span class="lineNum">    1343 </span><span class="lineCov">        876 :         tmp.matrixPlusMatrixImpl( alpha, a, beta, b );</span>
+<span class="lineNum">    1344 </span>            :         SCAI_LOG_DEBUG( logger, &quot;swap this = &quot; &lt;&lt; *this &lt;&lt; &quot; and tmp = &quot; &lt;&lt; tmp )
+<span class="lineNum">    1345 </span><span class="lineCov">        876 :         swap( tmp ); // safe as tmp will be destroyed afterwards</span>
+<span class="lineNum">    1346 </span><span class="lineCov">       2701 :         return;</span>
+<span class="lineNum">    1347 </span>            :     }
+<span class="lineNum">    1348 </span>            : 
+<span class="lineNum">    1349 </span><span class="lineCov">        949 :     SCAI_REGION( &quot;Storage.COO.plusImpl&quot; )</span>
+<span class="lineNum">    1350 </span>            : 
+<span class="lineNum">    1351 </span>            :     // for COO we do not require that a and b have same size
+<span class="lineNum">    1352 </span>            : 
+<span class="lineNum">    1353 </span><span class="lineCov">        949 :     _MatrixStorage::setDimension( common::Math::max( a.getNumRows(), b.getNumRows() ),</span>
+<span class="lineNum">    1354 </span><span class="lineCov">       2847 :                                   common::Math::max( a.getNumColumns(), b.getNumColumns() ) );</span>
+<span class="lineNum">    1355 </span>            : 
+<span class="lineNum">    1356 </span><span class="lineCov">        949 :     const IndexType nnz1 = a.getNumValues();</span>
+<span class="lineNum">    1357 </span><span class="lineCov">        949 :     const IndexType nnz2 = b.getNumValues();</span>
+<span class="lineNum">    1358 </span>            : 
+<span class="lineNum">    1359 </span><span class="lineCov">       1898 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">    1360 </span>            :                    &quot;this = &quot; &lt;&lt; alpha &lt;&lt; &quot; * A + &quot; &lt;&lt; beta &lt;&lt; &quot; * B, with &quot; &lt;&lt; &quot;A = &quot; &lt;&lt; a &lt;&lt; &quot;, B = &quot; &lt;&lt; b &lt;&lt; &quot;, all are COO&quot; )
+<span class="lineNum">    1361 </span>            : 
+<span class="lineNum">    1362 </span>            :     // concatenae the COO data of both storages
+<span class="lineNum">    1363 </span>            : 
+<span class="lineNum">    1364 </span><span class="lineCov">        949 :     mIA.resize( nnz1 + nnz2 );</span>
+<span class="lineNum">    1365 </span><span class="lineCov">        949 :     mJA.resize( nnz1 + nnz2 );</span>
+<span class="lineNum">    1366 </span><span class="lineCov">        949 :     mValues.resize( nnz1 + nnz2 );</span>
+<span class="lineNum">    1367 </span>            : 
+<span class="lineNum">    1368 </span><span class="lineCov">       1898 :     HArrayUtils::setArraySection( mIA, 0, 1, a.getIA(), 0, 1, nnz1 );</span>
+<span class="lineNum">    1369 </span><span class="lineCov">       1898 :     HArrayUtils::setArraySection( mIA, nnz1, 1, b.getIA(), 0, 1, nnz2 );</span>
+<span class="lineNum">    1370 </span><span class="lineCov">       1898 :     HArrayUtils::setArraySection( mJA, 0, 1, a.getJA(), 0, 1, nnz1 );</span>
+<span class="lineNum">    1371 </span><span class="lineCov">       1898 :     HArrayUtils::setArraySection( mJA, nnz1, 1, b.getJA(), 0, 1, nnz2 );</span>
+<span class="lineNum">    1372 </span>            : 
+<span class="lineNum">    1373 </span><span class="lineCov">        949 :     HArray&lt;ValueType&gt; tmp;</span>
+<span class="lineNum">    1374 </span>            : 
+<span class="lineNum">    1375 </span><span class="lineCov">       1898 :     HArrayUtils::binaryOpScalar( tmp, a.getValues(), alpha, BinaryOp::MULT, false );</span>
+<span class="lineNum">    1376 </span><span class="lineCov">       1898 :     HArrayUtils::setArraySection( mValues, 0, 1, tmp, 0, 1, nnz1 );</span>
+<span class="lineNum">    1377 </span><span class="lineCov">       1898 :     HArrayUtils::binaryOpScalar( tmp, b.getValues(), beta, BinaryOp::MULT, false );</span>
+<span class="lineNum">    1378 </span><span class="lineCov">       1898 :     HArrayUtils::setArraySection( mValues, nnz1, 1, tmp, 0, 1, nnz2 );</span>
+<span class="lineNum">    1379 </span>            : 
+<span class="lineNum">    1380 </span>            :     // sort it and make it unique
+<span class="lineNum">    1381 </span>            : 
+<span class="lineNum">    1382 </span><span class="lineCov">        949 :     COOUtils::sort( mIA, mJA, mValues );</span>
+<span class="lineNum">    1383 </span><span class="lineCov">        949 :     COOUtils::unique( mIA, mJA, mValues, BinaryOp::ADD );</span>
+<span class="lineNum">    1384 </span>            : 
+<span class="lineNum">    1385 </span><span class="lineCov">       1898 :     SCAI_LOG_INFO( logger, &quot;COO matrix add: nnz = &quot; &lt;&lt; getNumValues() &lt;&lt; &quot; from &quot; &lt;&lt; nnz1 &lt;&lt; &quot; + &quot; &lt;&lt; nnz2 )</span>
+<span class="lineNum">    1386 </span>            : }
+<span class="lineNum">    1387 </span>            : 
+<span class="lineNum">    1388 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1389"><span class="lineNum">    1389 </span>            : </a>
+<span class="lineNum">    1390 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1391 </span><span class="lineCov">         18 : COOStorage&lt;ValueType&gt;* COOStorage&lt;ValueType&gt;::copy() const</span>
+<span class="lineNum">    1392 </span>            : {
+<span class="lineNum">    1393 </span><span class="lineCov">         18 :     return new COOStorage&lt;ValueType&gt;( *this );</span>
+<span class="lineNum">    1394 </span>            : }
+<span class="lineNum">    1395 </span>            : 
+<span class="lineNum">    1396 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1397 </span>            : 
+<span class="lineNum">    1398 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1399 </span><span class="lineCov">      23765 : COOStorage&lt;ValueType&gt;* COOStorage&lt;ValueType&gt;::newMatrixStorage( const IndexType numRows, const IndexType numColumns ) const</span>
+<span class="lineNum">    1400 </span>            : {
+<span class="lineNum">    1401 </span><span class="lineCov">      47530 :     std::unique_ptr&lt;COOStorage&lt;ValueType&gt; &gt; storage( new COOStorage&lt;ValueType&gt;( getContextPtr() ) );</span>
+<span class="lineNum">    1402 </span><span class="lineCov">      23765 :     storage-&gt;allocate( numRows, numColumns );</span>
+<span class="lineNum">    1403 </span><span class="lineCov">      23765 :     return storage.release();</span>
+<span class="lineNum">    1404 </span>            : }
+<span class="lineNum">    1405 </span>            : 
+<span class="lineNum">    1406 </span>            : /* ========================================================================= */
+<span class="lineNum">    1407 </span>            : /*  Static fatory methods and related virtual methods                        */
+<span class="lineNum">    1408 </span>            : /* ========================================================================= */
+<a name="1409"><span class="lineNum">    1409 </span>            : </a>
+<span class="lineNum">    1410 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1411 </span><span class="lineCov">          8 : std::string COOStorage&lt;ValueType&gt;::initTypeName()</span>
+<span class="lineNum">    1412 </span>            : {
+<span class="lineNum">    1413 </span><span class="lineCov">          8 :     std::stringstream s;</span>
+<span class="lineNum">    1414 </span><span class="lineCov">         32 :     s &lt;&lt; std::string( &quot;COOStorage&lt;&quot; ) &lt;&lt; common::getScalarType&lt;ValueType&gt;() &lt;&lt; std::string( &quot;&gt;&quot; );</span>
+<span class="lineNum">    1415 </span><span class="lineCov">          8 :     return s.str();</span>
+<span class="lineNum">    1416 </span>            : }
+<a name="1417"><span class="lineNum">    1417 </span>            : </a>
+<span class="lineNum">    1418 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1419 </span><span class="lineCov">         12 : const char* COOStorage&lt;ValueType&gt;::typeName()</span>
+<span class="lineNum">    1420 </span>            : {
+<span class="lineNum">    1421 </span><span class="lineCov">         12 :     static const std::string s = initTypeName();</span>
+<span class="lineNum">    1422 </span><span class="lineCov">         12 :     return  s.c_str();</span>
+<span class="lineNum">    1423 </span>            : }
+<a name="1424"><span class="lineNum">    1424 </span>            : </a>
+<span class="lineNum">    1425 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1426 </span><span class="lineCov">          2 : const char* COOStorage&lt;ValueType&gt;::getTypeName() const</span>
+<span class="lineNum">    1427 </span>            : {
+<span class="lineNum">    1428 </span><span class="lineCov">          2 :     return typeName();</span>
+<span class="lineNum">    1429 </span>            : }
+<a name="1430"><span class="lineNum">    1430 </span>            : </a>
+<span class="lineNum">    1431 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1432 </span><span class="lineCov">        112 : MatrixStorageCreateKeyType COOStorage&lt;ValueType&gt;::createValue()</span>
+<span class="lineNum">    1433 </span>            : {
+<span class="lineNum">    1434 </span><span class="lineCov">        112 :     return MatrixStorageCreateKeyType( Format::COO, common::getScalarType&lt;ValueType&gt;() );</span>
+<span class="lineNum">    1435 </span>            : }
+<a name="1436"><span class="lineNum">    1436 </span>            : </a>
+<span class="lineNum">    1437 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1438 </span><span class="lineNoCov">          0 : MatrixStorageCreateKeyType COOStorage&lt;ValueType&gt;::getCreateValue() const</span>
+<span class="lineNum">    1439 </span>            : {
+<span class="lineNum">    1440 </span><span class="lineNoCov">          0 :     return createValue();</span>
+<span class="lineNum">    1441 </span>            : }
+<span class="lineNum">    1442 </span>            : 
+<span class="lineNum">    1443 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1444 </span><span class="lineCov">        220 : _MatrixStorage* COOStorage&lt;ValueType&gt;::create()</span>
+<span class="lineNum">    1445 </span>            : {
+<span class="lineNum">    1446 </span><span class="lineCov">        440 :     return new COOStorage&lt;ValueType&gt;();</span>
+<span class="lineNum">    1447 </span>            : }
+<span class="lineNum">    1448 </span>            : 
+<span class="lineNum">    1449 </span>            : /* ========================================================================= */
+<span class="lineNum">    1450 </span>            : /*       Template specializations and instantiations                         */
+<span class="lineNum">    1451 </span>            : /* ========================================================================= */
+<span class="lineNum">    1452 </span>            : 
+<span class="lineNum">    1453 </span>            : 
+<span class="lineNum">    1454 </span>            : SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1455 </span>            : 
+<span class="lineNum">    1456 </span>            : #define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                   \
+<span class="lineNum">    1457 </span>            :     template void COOStorage&lt;ValueType&gt;::buildCSR( hmemo::HArray&lt;IndexType&gt;&amp;, hmemo::HArray&lt;IndexType&gt;*,     \
+<span class="lineNum">    1458 </span>            :             hmemo::HArray&lt;OtherValueType&gt;* values,const hmemo::ContextPtr ) const;                           \
+<span class="lineNum">    1459 </span>            :     template void COOStorage&lt;ValueType&gt;::assignImpl( const MatrixStorage&lt;OtherValueType&gt;&amp; other );           \
+<span class="lineNum">    1460 </span>            :     template void COOStorage&lt;ValueType&gt;::setCSRDataImpl( const IndexType, const IndexType,                   \
+<span class="lineNum">    1461 </span>            :             const hmemo::HArray&lt;IndexType&gt;&amp;, const hmemo::HArray&lt;IndexType&gt;&amp;,                                \
+<span class="lineNum">    1462 </span>            :             const hmemo::HArray&lt;OtherValueType&gt;&amp;, const hmemo::ContextPtr );
+<span class="lineNum">    1463 </span>            : 
+<span class="lineNum">    1464 </span>            : #define COO_STORAGE_INST_LVL1( ValueType )                                                                   \
+<span class="lineNum">    1465 </span>            :     SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1466 </span>            : 
+<span class="lineNum">    1467 </span>            : SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1468 </span>            : 
+<span class="lineNum">    1469 </span>            : #undef COO_STORAGE_INST_LVL2
+<span class="lineNum">    1470 </span>            : #undef COO_STORAGE_INST_LVL1
+<span class="lineNum">    1471 </span>            : 
+<a name="1472"><span class="lineNum">    1472 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">    1473 </span>            : 
+<span class="lineNum">    1474 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

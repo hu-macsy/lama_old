@@ -1,0 +1,954 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/matrix/Matrix.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/matrix</a> - Matrix.cpp<span style="font-size: 80%;"> (source / <a href="Matrix.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">209</td>
+            <td class="headerCovTableEntry">254</td>
+            <td class="headerCovTableEntryMed">82.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">108</td>
+            <td class="headerCovTableEntry">146</td>
+            <td class="headerCovTableEntryLo">74.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file Matrix.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of methods for the abstract class Matrix&lt;ValueType&gt;
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 31.10.2017
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #include &lt;scai/lama/matrix/Matrix.hpp&gt;
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : #include &lt;scai/lama/storage/DenseStorage.hpp&gt;
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : #include &lt;scai/tracing.hpp&gt;
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : #include &lt;scai/dmemo/BlockDistribution.hpp&gt;
+<span class="lineNum">      42 </span>            : #include &lt;scai/dmemo/NoDistribution.hpp&gt;
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            : #include &lt;scai/common/macros/unsupported.hpp&gt;
+<span class="lineNum">      45 </span>            : #include &lt;scai/common/mepr/TypeList.hpp&gt;
+<span class="lineNum">      46 </span>            : #include &lt;scai/common/macros/instantiate.hpp&gt;
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : namespace scai
+<span class="lineNum">      49 </span>            : {
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : using common::TypeTraits;
+<span class="lineNum">      52 </span>            : using namespace dmemo;
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : namespace lama
+<span class="lineNum">      55 </span>            : {
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">      58 </span>            : /*    static methods                                                         */
+<span class="lineNum">      59 </span>            : /* ------------------------------------------------------------------------- */
+<a name="60"><span class="lineNum">      60 </span>            : </a>
+<span class="lineNum">      61 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      62 </span><span class="lineCov">      79818 : Matrix&lt;ValueType&gt;* Matrix&lt;ValueType&gt;::getMatrix( Format format )</span>
+<span class="lineNum">      63 </span>            : {
+<span class="lineNum">      64 </span><span class="lineCov">      79818 :     return static_cast&lt;Matrix&lt;ValueType&gt;*&gt;( _Matrix::getMatrix( format, TypeTraits&lt;ValueType&gt;::stype ) );</span>
+<span class="lineNum">      65 </span>            : }
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : /* ------------------------------------------------------------------------- */
+<span class="lineNum">      68 </span>            : /*    Constructors / Destructor                                              */
+<span class="lineNum">      69 </span>            : /* ------------------------------------------------------------------------- */
+<a name="70"><span class="lineNum">      70 </span>            : </a>
+<span class="lineNum">      71 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      72 </span><span class="lineCov">      19335 : Matrix&lt;ValueType&gt;::Matrix() : _Matrix()</span>
+<span class="lineNum">      73 </span>            : {
+<span class="lineNum">      74 </span><span class="lineCov">      19335 : }</span>
+<a name="75"><span class="lineNum">      75 </span>            : </a>
+<span class="lineNum">      76 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      77 </span><span class="lineCov">     125173 : Matrix&lt;ValueType&gt;::Matrix( const IndexType numRows, const IndexType numColumns ) : </span>
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span><span class="lineCov">     125173 :     _Matrix( numRows, numColumns )</span>
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            : {
+<span class="lineNum">      82 </span>            :     SCAI_LOG_DEBUG( logger, &quot;Matrix&lt;&quot; &lt;&lt; TypeTraits&lt;ValueType&gt;::id() &lt;&lt; &quot;&gt; ( &quot;
+<span class="lineNum">      83 </span>            :                             &lt;&lt; _Matrix::getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; _Matrix::getNumColumns() &lt;&lt; &quot; )&quot; )
+<span class="lineNum">      84 </span><span class="lineCov">     125173 : }</span>
+<a name="85"><span class="lineNum">      85 </span>            : </a>
+<span class="lineNum">      86 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      87 </span><span class="lineCov">       7223 : Matrix&lt;ValueType&gt;::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution ) :</span>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span><span class="lineCov">      21669 :     _Matrix( rowDistribution, colDistribution )</span>
+<span class="lineNum">      90 </span>            : {
+<span class="lineNum">      91 </span><span class="lineCov">       7223 : }</span>
+<a name="92"><span class="lineNum">      92 </span>            : </a>
+<span class="lineNum">      93 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 : Matrix&lt;ValueType&gt;::Matrix( const _Matrix&amp; other, </span>
+<span class="lineNum">      95 </span>            :                            DistributionPtr rowDistribution, 
+<span class="lineNum">      96 </span>            :                            DistributionPtr colDistribution ) :
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span><span class="lineNoCov">          0 :     _Matrix( other, rowDistribution, colDistribution )</span>
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span>            : {
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 : }</span>
+<a name="102"><span class="lineNum">     102 </span>            : </a>
+<span class="lineNum">     103 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     104 </span><span class="lineNoCov">          0 : Matrix&lt;ValueType&gt;::Matrix( const _Matrix&amp; other ) :</span>
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :     _Matrix( other )</span>
+<span class="lineNum">     107 </span>            : {
+<span class="lineNum">     108 </span><span class="lineNoCov">          0 : }</span>
+<a name="109"><span class="lineNum">     109 </span>            : </a>
+<span class="lineNum">     110 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     111 </span><span class="lineCov">         75 : Matrix&lt;ValueType&gt;::Matrix( const Matrix&lt;ValueType&gt;&amp; other ) :</span>
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span><span class="lineCov">         75 :     _Matrix( other )</span>
+<span class="lineNum">     114 </span>            : {
+<span class="lineNum">     115 </span><span class="lineCov">         75 : }</span>
+<a name="116"><span class="lineNum">     116 </span>            : </a>
+<span class="lineNum">     117 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     118 </span><span class="lineCov">     151806 : Matrix&lt;ValueType&gt;::~Matrix()</span>
+<span class="lineNum">     119 </span>            : {
+<span class="lineNum">     120 </span>            :     SCAI_LOG_DEBUG( logger, &quot;~Matrix&lt;&quot; &lt;&lt; TypeTraits&lt;ValueType&gt;::id() &lt;&lt; &quot;&gt;&quot; )
+<span class="lineNum">     121 </span><span class="lineCov">     151806 : }</span>
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            : /* ------------------------------------------------------------------------- */
+<a name="124"><span class="lineNum">     124 </span>            : </a>
+<span class="lineNum">     125 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     126 </span><span class="lineNoCov">          0 : ValueType Matrix&lt;ValueType&gt;::operator()( IndexType i, IndexType j ) const</span>
+<span class="lineNum">     127 </span>            : {
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :     return getValue( i, j );</span>
+<span class="lineNum">     129 </span>            : }
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span>            : /* ------------------------------------------------------------------------- */
+<a name="132"><span class="lineNum">     132 </span>            : </a>
+<span class="lineNum">     133 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     134 </span><span class="lineCov">      42828 : common::ScalarType Matrix&lt;ValueType&gt;::getValueType() const</span>
+<span class="lineNum">     135 </span>            : {
+<span class="lineNum">     136 </span><span class="lineCov">      42828 :     return common::getScalarType&lt;ValueType&gt;();</span>
+<span class="lineNum">     137 </span>            : }
+<span class="lineNum">     138 </span>            : 
+<span class="lineNum">     139 </span>            : /* ------------------------------------------------------------------------- */
+<a name="140"><span class="lineNum">     140 </span>            : </a>
+<span class="lineNum">     141 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     142 </span><span class="lineNoCov">          0 : size_t Matrix&lt;ValueType&gt;::getValueTypeSize() const</span>
+<span class="lineNum">     143 </span>            : {
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :     return sizeof( ValueType );</span>
+<span class="lineNum">     145 </span>            : }
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span>            : /* ========================================================================= */
+<a name="148"><span class="lineNum">     148 </span>            : </a>
+<span class="lineNum">     149 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     150 </span><span class="lineCov">       1860 : bool Matrix&lt;ValueType&gt;::checkSymmetry() const</span>
+<span class="lineNum">     151 </span>            : {
+<span class="lineNum">     152 </span>            :     // check symmetry of matrix
+<span class="lineNum">     153 </span>            :     IndexType n = getNumRows();
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span><span class="lineCov">       1860 :     if ( n != getNumColumns() )</span>
+<span class="lineNum">     156 </span>            :     {
+<span class="lineNum">     157 </span>            :         return false;
+<span class="lineNum">     158 </span>            :     }
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span>            :     // Note: this solution is not very efficient
+<span class="lineNum">     161 </span>            : 
+<span class="lineNum">     162 </span><span class="lineCov">       8160 :     for ( IndexType i = 0; i &lt; n; ++i )</span>
+<span class="lineNum">     163 </span>            :     {
+<span class="lineNum">     164 </span><span class="lineCov">      15240 :         for ( IndexType j = 0; j &lt; i; ++j )</span>
+<span class="lineNum">     165 </span>            :         {
+<span class="lineNum">     166 </span><span class="lineCov">      22860 :             if ( getValue( i, j ) != getValue( j, i ) )</span>
+<span class="lineNum">     167 </span>            :             {
+<span class="lineNum">     168 </span>            :                 return false;
+<span class="lineNum">     169 </span>            :             }
+<span class="lineNum">     170 </span>            :         }
+<span class="lineNum">     171 </span>            :     }
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            :     return true;
+<span class="lineNum">     174 </span>            : }
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span>            : /* ========================================================================= */
+<a name="177"><span class="lineNum">     177 </span>            : </a>
+<span class="lineNum">     178 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     179 </span><span class="lineCov">       1620 : Vector&lt;ValueType&gt;* Matrix&lt;ValueType&gt;::newTargetVector() const</span>
+<span class="lineNum">     180 </span>            : {
+<span class="lineNum">     181 </span><span class="lineCov">       3240 :     std::unique_ptr&lt;DenseVector&lt;ValueType&gt; &gt; vector( new DenseVector&lt;ValueType&gt;( getContextPtr() ) );</span>
+<span class="lineNum">     182 </span><span class="lineCov">       3240 :     vector-&gt;setSameValue( this-&gt;getRowDistributionPtr(), 0 );</span>
+<span class="lineNum">     183 </span><span class="lineCov">       1620 :     return vector.release();</span>
+<span class="lineNum">     184 </span>            : }
+<span class="lineNum">     185 </span>            : 
+<span class="lineNum">     186 </span>            : /* ========================================================================= */
+<a name="187"><span class="lineNum">     187 </span>            : </a>
+<span class="lineNum">     188 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     189 </span><span class="lineCov">       1620 : Vector&lt;ValueType&gt;* Matrix&lt;ValueType&gt;::newSourceVector() const</span>
+<span class="lineNum">     190 </span>            : {
+<span class="lineNum">     191 </span><span class="lineCov">       3240 :     std::unique_ptr&lt;DenseVector&lt;ValueType&gt; &gt; vector( new DenseVector&lt;ValueType&gt;( getContextPtr() ) );</span>
+<span class="lineNum">     192 </span><span class="lineCov">       3240 :     vector-&gt;setSameValue( this-&gt;getColDistributionPtr(), 0 );</span>
+<span class="lineNum">     193 </span><span class="lineCov">       1620 :     return vector.release();</span>
+<span class="lineNum">     194 </span>            : }
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            : /* ========================================================================= */
+<a name="197"><span class="lineNum">     197 </span>            : </a>
+<span class="lineNum">     198 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     199 </span><span class="lineCov">      45410 : void Matrix&lt;ValueType&gt;::matrixTimesVector(</span>
+<span class="lineNum">     200 </span>            :     Vector&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     201 </span>            :     const ValueType alpha,
+<span class="lineNum">     202 </span>            :     const Vector&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     203 </span>            :     const ValueType beta,
+<span class="lineNum">     204 </span>            :     const Vector&lt;ValueType&gt;* y,
+<span class="lineNum">     205 </span>            :     common::MatrixOp op ) const
+<span class="lineNum">     206 </span>            : {
+<span class="lineNum">     207 </span><span class="lineCov">      45410 :     SCAI_REGION( &quot;Mat.timesVector&quot; )</span>
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span><span class="lineCov">      90820 :     SCAI_LOG_INFO( logger, </span>
+<span class="lineNum">     210 </span>            :                    &quot;result = &quot; &lt;&lt; alpha &lt;&lt; &quot; * M&lt;&quot; &lt;&lt; this-&gt;getValueType() &lt;&lt; &quot;,&quot;
+<span class="lineNum">     211 </span>            :                    &lt;&lt; op 
+<span class="lineNum">     212 </span>            :                    &lt;&lt; &quot;&gt;[&quot; &lt;&lt; this-&gt;getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; this-&gt;getNumColumns() &lt;&lt; &quot;]&quot;
+<span class="lineNum">     213 </span>            :                    &lt;&lt; &quot; * x[&quot; &lt;&lt; x.size() &lt;&lt; &quot;] + &quot; &lt;&lt; beta &lt;&lt; &quot; * y[]&quot; )
+<span class="lineNum">     214 </span>            : 
+<span class="lineNum">     215 </span><span class="lineCov">      45410 :     if ( beta == common::Constants::ZERO )</span>
+<span class="lineNum">     216 </span>            :     {
+<span class="lineNum">     217 </span><span class="lineCov">      17385 :         if ( y != nullptr )</span>
+<span class="lineNum">     218 </span>            :         {
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :             SCAI_LOG_INFO( logger, &quot;this vector is ignored (beta == 0) : &quot; &lt;&lt; y )</span>
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :             matrixTimesVector( result, alpha, x, beta, nullptr, op );</span>
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :             return;</span>
+<span class="lineNum">     222 </span>            :         }
+<span class="lineNum">     223 </span>            :     }
+<span class="lineNum">     224 </span>            :     else
+<span class="lineNum">     225 </span>            :     {
+<span class="lineNum">     226 </span><span class="lineCov">      28025 :         SCAI_ASSERT_ERROR( y != nullptr, &quot;vector y is null pointer, but beta != 0&quot; )</span>
+<span class="lineNum">     227 </span>            :     }
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span><span class="lineCov">      45410 :     DistributionPtr sourceDist = common::isTranspose( op ) ? getRowDistributionPtr() : getColDistributionPtr();</span>
+<span class="lineNum">     230 </span><span class="lineCov">      45410 :     DistributionPtr targetDist = common::isTranspose( op ) ? getColDistributionPtr() : getRowDistributionPtr();</span>
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span>            :     // temorary X required if not DENSE, distribution does not match or if an alias
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span>            :     bool needsTemporaryX = false;
+<span class="lineNum">     235 </span>            : 
+<span class="lineNum">     236 </span><span class="lineCov">      45410 :     if ( &amp;x == &amp;result )</span>
+<span class="lineNum">     237 </span>            :     {
+<span class="lineNum">     238 </span><span class="lineNoCov">          0 :         SCAI_UNSUPPORTED( &quot;z = alpha * A * x + beta * y: temporary needed for x due to alias with z&quot; );</span>
+<span class="lineNum">     239 </span>            :         needsTemporaryX = true;
+<span class="lineNum">     240 </span>            :     }
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span><span class="lineCov">      45410 :     if ( &amp;x == y ) </span>
+<span class="lineNum">     243 </span>            :     {
+<span class="lineNum">     244 </span><span class="lineCov">        720 :         SCAI_UNSUPPORTED( &quot;z = alpha * A * x + beta * y: temporary needed for x due to alias with y&quot; );</span>
+<span class="lineNum">     245 </span>            :         needsTemporaryX = true;
+<span class="lineNum">     246 </span>            :     }
+<span class="lineNum">     247 </span>            : 
+<span class="lineNum">     248 </span><span class="lineCov">      45410 :     if ( x.getVectorKind() != VectorKind::DENSE )</span>
+<span class="lineNum">     249 </span>            :     {
+<span class="lineNum">     250 </span><span class="lineCov">       1080 :         SCAI_UNSUPPORTED( &quot;z = alpha * A * x + beta * y: temporary needed for x as it is sparse&quot; );</span>
+<span class="lineNum">     251 </span>            :         needsTemporaryX = true;
+<span class="lineNum">     252 </span>            :     }
+<span class="lineNum">     253 </span>            : 
+<span class="lineNum">     254 </span><span class="lineCov">      45410 :     if ( x.getDistribution() != *sourceDist )</span>
+<span class="lineNum">     255 </span>            :     {
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :         SCAI_UNSUPPORTED( &quot;z = alpha * A * x + beta * y: temporary needed for x as distribution does not match&quot; );</span>
+<span class="lineNum">     257 </span>            :         needsTemporaryX = true;
+<span class="lineNum">     258 </span>            :     }
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span><span class="lineCov">      45410 :     if ( needsTemporaryX )</span>
+<span class="lineNum">     261 </span>            :     {
+<span class="lineNum">     262 </span><span class="lineCov">       7920 :         matrixTimesVector( result, alpha, distribute&lt;DenseVector&lt;ValueType&gt;&gt;( x, sourceDist ), beta, y, op );  </span>
+<span class="lineNum">     263 </span><span class="lineCov">       1800 :         return;</span>
+<span class="lineNum">     264 </span>            :     }
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span>            :     bool needsTemporaryY = false;
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span><span class="lineCov">      43610 :     if ( y != nullptr )</span>
+<span class="lineNum">     269 </span>            :     {
+<span class="lineNum">     270 </span><span class="lineCov">      26765 :         if ( y-&gt;getVectorKind() != VectorKind::DENSE )</span>
+<span class="lineNum">     271 </span>            :         {
+<span class="lineNum">     272 </span><span class="lineCov">        540 :             SCAI_UNSUPPORTED( &quot;matrixTimesVector: temporary needed for y as it is sparse vector&quot; );</span>
+<span class="lineNum">     273 </span>            :             needsTemporaryY = true;
+<span class="lineNum">     274 </span>            :         }
+<span class="lineNum">     275 </span>            :     
+<span class="lineNum">     276 </span><span class="lineCov">      26765 :         if ( y-&gt;getDistribution() != *targetDist )</span>
+<span class="lineNum">     277 </span>            :         {
+<span class="lineNum">     278 </span><span class="lineNoCov">          0 :             SCAI_UNSUPPORTED( &quot;matrixTimesVector: temporary needed for y as distribution does not match&quot; );</span>
+<span class="lineNum">     279 </span>            :             needsTemporaryY = true;
+<span class="lineNum">     280 </span>            :         }
+<span class="lineNum">     281 </span>            :     }
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span><span class="lineCov">      43610 :     if ( needsTemporaryY )</span>
+<span class="lineNum">     284 </span>            :     {
+<span class="lineNum">     285 </span><span class="lineCov">       2160 :         auto tmpY = distribute&lt;DenseVector&lt;ValueType&gt;&gt;( *y, targetDist );</span>
+<span class="lineNum">     286 </span><span class="lineCov">        540 :         matrixTimesVector( result, alpha, x, beta, &amp;tmpY, op );</span>
+<span class="lineNum">     287 </span><span class="lineCov">        540 :         return;</span>
+<span class="lineNum">     288 </span>            :     }
+<span class="lineNum">     289 </span>            : 
+<span class="lineNum">     290 </span><span class="lineCov">      43070 :     if ( result.getVectorKind() != VectorKind::DENSE )</span>
+<span class="lineNum">     291 </span>            :     {
+<span class="lineNum">     292 </span><span class="lineCov">       1080 :         SCAI_UNSUPPORTED( &quot;matrixTimesVector: temporary needed for result as not dense&quot; )</span>
+<span class="lineNum">     293 </span><span class="lineCov">       2160 :         DenseVector&lt;ValueType&gt; tmpResult;</span>
+<span class="lineNum">     294 </span><span class="lineCov">       2160 :         tmpResult.allocate( targetDist );            // no initialization required</span>
+<span class="lineNum">     295 </span><span class="lineCov">       1080 :         matrixTimesVector( tmpResult, alpha, x, beta, y, op );</span>
+<span class="lineNum">     296 </span>            :         result = tmpResult;
+<span class="lineNum">     297 </span><span class="lineCov">       1080 :         return;</span>
+<span class="lineNum">     298 </span>            :     }
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span><span class="lineCov">      41990 :     if ( &amp;result == y  )</span>
+<span class="lineNum">     301 </span>            :     {
+<span class="lineNum">     302 </span>            :         SCAI_LOG_DEBUG( logger, &quot;alias: result = y is well handled&quot; )
+<span class="lineNum">     303 </span>            :     }
+<span class="lineNum">     304 </span>            :     else
+<span class="lineNum">     305 </span>            :     {
+<span class="lineNum">     306 </span>            :         // we inherit the row distribution of this matrix to result vector
+<span class="lineNum">     307 </span>            : 
+<span class="lineNum">     308 </span><span class="lineCov">     125970 :         result.allocate( targetDist );</span>
+<span class="lineNum">     309 </span>            :     }
+<span class="lineNum">     310 </span>            : 
+<span class="lineNum">     311 </span>            :     const DenseVector&lt;ValueType&gt;&amp; denseX = static_cast&lt;const DenseVector&lt;ValueType&gt;&amp;&gt;( x );
+<span class="lineNum">     312 </span>            :     const DenseVector&lt;ValueType&gt;* denseY = nullptr;   // optional
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span><span class="lineCov">      41990 :     if ( y != nullptr )</span>
+<span class="lineNum">     315 </span>            :     {
+<span class="lineNum">     316 </span>            :         denseY = static_cast&lt;const DenseVector&lt;ValueType&gt;*&gt;( y );
+<span class="lineNum">     317 </span>            :     }
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span>            :     DenseVector&lt;ValueType&gt;&amp; denseResult = static_cast&lt;DenseVector&lt;ValueType&gt;&amp;&gt;( result );
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span>            :     // Now call the version with dense vector implemented by derived class
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span><span class="lineCov">      60480 :     matrixTimesVectorDense( denseResult, alpha, denseX, beta, denseY, op );</span>
+<span class="lineNum">     324 </span>            : }
+<span class="lineNum">     325 </span>            : 
+<span class="lineNum">     326 </span>            : /* ========================================================================= */
+<a name="327"><span class="lineNum">     327 </span>            : </a>
+<span class="lineNum">     328 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     329 </span><span class="lineCov">     149040 : void Matrix&lt;ValueType&gt;::setRow( </span>
+<span class="lineNum">     330 </span>            :     const Vector&lt;ValueType&gt;&amp; row, 
+<span class="lineNum">     331 </span>            :     const IndexType globalRowIndex,
+<span class="lineNum">     332 </span>            :     const common::BinaryOp op )
+<span class="lineNum">     333 </span>            : {
+<span class="lineNum">     334 </span><span class="lineCov">     149040 :     SCAI_ASSERT_EQ_ERROR( row.size(), this-&gt;getNumColumns(), &quot;row size mismatch&quot; )</span>
+<span class="lineNum">     335 </span>            : 
+<span class="lineNum">     336 </span>            :     SCAI_LOG_DEBUG( logger, &quot;setRow &quot; &lt;&lt; globalRowIndex &lt;&lt; &quot;: row = &quot; &lt;&lt; row &lt;&lt; &quot;, op = &quot; &lt;&lt; op )
+<span class="lineNum">     337 </span>            : 
+<span class="lineNum">     338 </span>            :     bool needsTmp = false;
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span><span class="lineCov">     149040 :     if ( ! row.getDistribution().isReplicated() )</span>
+<span class="lineNum">     341 </span>            :     {
+<span class="lineNum">     342 </span>            :         needsTmp = true;
+<span class="lineNum">     343 </span><span class="lineCov">      51840 :         SCAI_UNSUPPORTED( &quot;setRow, row is not replicated, use temporary&quot; )</span>
+<span class="lineNum">     344 </span>            :     }
+<span class="lineNum">     345 </span><span class="lineCov">     149040 :     if ( row.getVectorKind() != VectorKind::DENSE )</span>
+<span class="lineNum">     346 </span>            :     {
+<span class="lineNum">     347 </span>            :         needsTmp = true;
+<span class="lineNum">     348 </span><span class="lineNoCov">          0 :         SCAI_UNSUPPORTED( &quot;setRow, row is not DENSE vector&quot; )</span>
+<span class="lineNum">     349 </span>            :     }
+<span class="lineNum">     350 </span>            : 
+<span class="lineNum">     351 </span><span class="lineCov">     149040 :     if ( needsTmp )</span>
+<span class="lineNum">     352 </span>            :     {
+<span class="lineNum">     353 </span><span class="lineCov">     103680 :         DenseVector&lt;ValueType&gt; tmpRow;</span>
+<span class="lineNum">     354 </span><span class="lineCov">      51840 :         tmpRow.assign( row );</span>
+<span class="lineNum">     355 </span><span class="lineCov">      51840 :         tmpRow.replicate();</span>
+<span class="lineNum">     356 </span><span class="lineCov">      51840 :         setRow( tmpRow, globalRowIndex, op );</span>
+<span class="lineNum">     357 </span><span class="lineCov">     200880 :         return;</span>
+<span class="lineNum">     358 </span>            :     }
+<span class="lineNum">     359 </span>            : 
+<span class="lineNum">     360 </span><span class="lineCov">      97200 :     SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, this-&gt;getNumRows(), &quot;illegal row index&quot; )</span>
+<span class="lineNum">     361 </span>            : 
+<span class="lineNum">     362 </span>            :     // row should be a DenseVector of same type, otherwise use a temporary
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span>            :     const DenseVector&lt;ValueType&gt;&amp; denseRow = static_cast&lt;const DenseVector&lt;ValueType&gt;&amp;&gt;( row );
+<span class="lineNum">     365 </span>            : 
+<span class="lineNum">     366 </span>            :     // owner sets the row, maybe each processor for replicated row distribution
+<span class="lineNum">     367 </span>            : 
+<span class="lineNum">     368 </span><span class="lineCov">      97200 :     IndexType localRowIndex = this-&gt;getRowDistribution().global2local( globalRowIndex );</span>
+<span class="lineNum">     369 </span>            : 
+<span class="lineNum">     370 </span><span class="lineCov">      97200 :     if ( localRowIndex != invalidIndex )</span>
+<span class="lineNum">     371 </span>            :     {
+<span class="lineNum">     372 </span><span class="lineCov">      62640 :         this-&gt;setLocalRow( denseRow.getLocalValues(), localRowIndex, op );</span>
+<span class="lineNum">     373 </span>            :     }
+<span class="lineNum">     374 </span>            : }
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span>            : /* ========================================================================= */
+<a name="377"><span class="lineNum">     377 </span>            : </a>
+<span class="lineNum">     378 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     379 </span><span class="lineCov">      77760 : void Matrix&lt;ValueType&gt;::setColumn( </span>
+<span class="lineNum">     380 </span>            :     const Vector&lt;ValueType&gt;&amp; column,
+<span class="lineNum">     381 </span>            :     const IndexType colIndex,
+<span class="lineNum">     382 </span>            :     const common::BinaryOp op )
+<span class="lineNum">     383 </span>            : {
+<span class="lineNum">     384 </span>            :     using namespace scai::hmemo;
+<span class="lineNum">     385 </span>            : 
+<span class="lineNum">     386 </span>            :     bool needsTmp = false;
+<span class="lineNum">     387 </span>            : 
+<span class="lineNum">     388 </span><span class="lineCov">      77760 :     if ( column.getDistribution() != this-&gt;getRowDistribution() )</span>
+<span class="lineNum">     389 </span>            :     {
+<span class="lineNum">     390 </span>            :         needsTmp = true;
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :         SCAI_UNSUPPORTED( &quot;setColumn, distribution of col does not match distribution of matrix, use temporary&quot; )</span>
+<span class="lineNum">     392 </span>            :     }
+<span class="lineNum">     393 </span><span class="lineCov">      77760 :     if ( column.getVectorKind() != VectorKind::DENSE )</span>
+<span class="lineNum">     394 </span>            :     {
+<span class="lineNum">     395 </span>            :         needsTmp = true;
+<span class="lineNum">     396 </span><span class="lineNoCov">          0 :         SCAI_UNSUPPORTED( &quot;setColumn, col is not DENSE vector&quot; )</span>
+<span class="lineNum">     397 </span>            :     }
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span><span class="lineCov">      77760 :     if ( needsTmp )</span>
+<span class="lineNum">     400 </span>            :     {
+<span class="lineNum">     401 </span><span class="lineNoCov">          0 :         setColumn( distribute&lt;DenseVector&lt;ValueType&gt;&gt;( column, getRowDistributionPtr() ), colIndex, op );</span>
+<span class="lineNum">     402 </span><span class="lineCov">      77760 :         return;</span>
+<span class="lineNum">     403 </span>            :     }
+<span class="lineNum">     404 </span>            : 
+<span class="lineNum">     405 </span><span class="lineCov">      77760 :     SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, this-&gt;getNumColumns(), &quot;illegal col index&quot; )</span>
+<span class="lineNum">     406 </span>            : 
+<span class="lineNum">     407 </span>            :     const DenseVector&lt;ValueType&gt;&amp; denseColumn = static_cast&lt;const DenseVector&lt;ValueType&gt;&amp;&gt;( column );
+<span class="lineNum">     408 </span>            : 
+<span class="lineNum">     409 </span><span class="lineCov">      77760 :     SCAI_ASSERT_EQ_ERROR( denseColumn.getDistribution(), this-&gt;getRowDistribution(), </span>
+<span class="lineNum">     410 </span>            :                           &quot;distribution of vector to set as column must match distribution of rows&quot; )
+<span class="lineNum">     411 </span>            : 
+<span class="lineNum">     412 </span><span class="lineCov">      77760 :     this-&gt;setLocalColumn( denseColumn.getLocalValues(), colIndex, op );</span>
+<span class="lineNum">     413 </span>            : }
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span>            : /* ========================================================================= */
+<a name="416"><span class="lineNum">     416 </span>            : </a>
+<span class="lineNum">     417 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     418 </span><span class="lineCov">       6540 : void Matrix&lt;ValueType&gt;::vectorTimesMatrixRepCols(</span>
+<span class="lineNum">     419 </span>            :     DenseVector&lt;ValueType&gt;&amp; denseResult,
+<span class="lineNum">     420 </span>            :     const ValueType alpha,
+<span class="lineNum">     421 </span>            :     const DenseVector&lt;ValueType&gt;&amp; denseX,
+<span class="lineNum">     422 </span>            :     const ValueType beta,
+<span class="lineNum">     423 </span>            :     const DenseVector&lt;ValueType&gt;* denseY ) const
+<span class="lineNum">     424 </span>            : {
+<span class="lineNum">     425 </span><span class="lineCov">       6540 :     SCAI_REGION( &quot;Mat.vectorTimesMatrixRepCols&quot; )</span>
+<span class="lineNum">     426 </span>            : 
+<span class="lineNum">     427 </span><span class="lineCov">       6540 :     utilskernel::LArray&lt;ValueType&gt;&amp; localResult = denseResult.getLocalValues();</span>
+<span class="lineNum">     428 </span>            : 
+<span class="lineNum">     429 </span>            :     // be careful: denseY is undefined if beta == 0
+<span class="lineNum">     430 </span>            : 
+<span class="lineNum">     431 </span><span class="lineCov">       6540 :     const utilskernel::LArray&lt;ValueType&gt;&amp; localY = denseY == nullptr ? localResult : denseY-&gt;getLocalValues();</span>
+<span class="lineNum">     432 </span>            :     const utilskernel::LArray&lt;ValueType&gt;&amp; localX = denseX.getLocalValues();
+<span class="lineNum">     433 </span>            : 
+<span class="lineNum">     434 </span>            :     const Distribution&amp; colDist = this-&gt;getColDistribution();
+<span class="lineNum">     435 </span>            : 
+<span class="lineNum">     436 </span>            :     // this routine is only for non-replicated columns, i.e. mHaloData is empty
+<span class="lineNum">     437 </span>            : 
+<span class="lineNum">     438 </span>            :     SCAI_ASSERT( 1, colDist.getNumPartitions() );
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span>            :     const Distribution&amp; rowDist = this-&gt;getRowDistribution();
+<span class="lineNum">     441 </span><span class="lineCov">      19620 :     const Communicator&amp; comm = rowDist.getCommunicator();</span>
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span><span class="lineCov">       6540 :     const MatrixStorage&lt;ValueType&gt;&amp; localData = this-&gt;getLocalStorage();</span>
+<span class="lineNum">     444 </span>            : 
+<span class="lineNum">     445 </span><span class="lineCov">       6540 :     if ( comm.getRank() == 0 )</span>
+<span class="lineNum">     446 </span>            :     {
+<span class="lineNum">     447 </span>            :         // only one single processor adds beta * y
+<span class="lineNum">     448 </span><span class="lineCov">      10696 :         localData.matrixTimesVector( localResult, alpha, localX, beta, localY, common::MatrixOp::TRANSPOSE );</span>
+<span class="lineNum">     449 </span>            :     }
+<span class="lineNum">     450 </span>            :     else
+<span class="lineNum">     451 </span>            :     {
+<span class="lineNum">     452 </span><span class="lineCov">        736 :         localData.matrixTimesVector( localResult, alpha, localX, ValueType( 0 ), localY, common::MatrixOp::TRANSPOSE );</span>
+<span class="lineNum">     453 </span>            :     }
+<span class="lineNum">     454 </span>            : 
+<span class="lineNum">     455 </span><span class="lineCov">       6540 :     if ( comm.getSize() &gt;  1 )</span>
+<span class="lineNum">     456 </span>            :     {
+<span class="lineNum">     457 </span>            :         // Sum up all incarnations of localResult
+<span class="lineNum">     458 </span>            : 
+<span class="lineNum">     459 </span><span class="lineCov">        624 :         comm.sumArray( localResult );</span>
+<span class="lineNum">     460 </span>            :     }
+<span class="lineNum">     461 </span><span class="lineCov">       6540 : }</span>
+<span class="lineNum">     462 </span>            : 
+<span class="lineNum">     463 </span>            : /* ========================================================================= */
+<a name="464"><span class="lineNum">     464 </span>            : </a>
+<span class="lineNum">     465 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     466 </span><span class="lineCov">       1679 : RealType&lt;ValueType&gt; Matrix&lt;ValueType&gt;::maxDiffNorm( const Matrix&lt;ValueType&gt;&amp; other ) const</span>
+<span class="lineNum">     467 </span>            : {
+<span class="lineNum">     468 </span>            :     IndexType nRows = getNumRows();
+<span class="lineNum">     469 </span>            :     IndexType nCols = getNumColumns();
+<span class="lineNum">     470 </span>            : 
+<span class="lineNum">     471 </span><span class="lineCov">       1679 :     SCAI_ASSERT_EQUAL( nRows, other.getNumRows(), &quot;size mismatch&quot; )</span>
+<span class="lineNum">     472 </span><span class="lineCov">       1679 :     SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), &quot;size mismatch&quot; )</span>
+<span class="lineNum">     473 </span>            : 
+<span class="lineNum">     474 </span><span class="lineCov">       3358 :     DenseVector&lt;ValueType&gt; row;</span>
+<span class="lineNum">     475 </span><span class="lineCov">       5037 :     DenseVector&lt;ValueType&gt; rowOther;</span>
+<span class="lineNum">     476 </span>            : 
+<span class="lineNum">     477 </span>            :     RealType&lt;ValueType&gt; diff = 0;
+<span class="lineNum">     478 </span>            : 
+<span class="lineNum">     479 </span>            :     // now traverse  all rows
+<span class="lineNum">     480 </span>            : 
+<span class="lineNum">     481 </span><span class="lineCov">      24133 :     for ( IndexType i = 0; i &lt; nRows; ++i )</span>
+<span class="lineNum">     482 </span>            :     {
+<span class="lineNum">     483 </span>            :         // Note: rows will be broadcast in case of distributed matrices
+<span class="lineNum">     484 </span>            : 
+<span class="lineNum">     485 </span><span class="lineCov">      22454 :         getRow( row, i );</span>
+<span class="lineNum">     486 </span><span class="lineCov">      22454 :         other.getRow( rowOther, i );</span>
+<span class="lineNum">     487 </span>            : 
+<span class="lineNum">     488 </span><span class="lineCov">      22454 :         RealType&lt;ValueType&gt; diffRow = row.maxDiffNorm( rowOther );</span>
+<span class="lineNum">     489 </span>            : 
+<span class="lineNum">     490 </span><span class="lineCov">      22454 :         if ( diffRow &gt; diff )</span>
+<span class="lineNum">     491 </span>            :         {
+<span class="lineNum">     492 </span>            :             diff = diffRow;
+<span class="lineNum">     493 </span>            :         }
+<span class="lineNum">     494 </span>            :     }
+<span class="lineNum">     495 </span>            : 
+<span class="lineNum">     496 </span><span class="lineCov">       1679 :     return diff;</span>
+<span class="lineNum">     497 </span>            : }
+<span class="lineNum">     498 </span>            : 
+<span class="lineNum">     499 </span>            : /* ========================================================================= */
+<a name="500"><span class="lineNum">     500 </span>            : </a>
+<span class="lineNum">     501 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     502 </span><span class="lineCov">      39900 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator=( const Matrix&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     503 </span>            : {
+<span class="lineNum">     504 </span><span class="lineCov">      39900 :     this-&gt;assign( other );</span>
+<span class="lineNum">     505 </span><span class="lineCov">      39900 :     return *this;</span>
+<span class="lineNum">     506 </span>            : }
+<a name="507"><span class="lineNum">     507 </span>            : </a>
+<span class="lineNum">     508 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     509 </span><span class="lineNoCov">          0 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator=( const OpMatrix&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     510 </span>            : {
+<span class="lineNum">     511 </span>            :     const Matrix&lt;ValueType&gt;&amp; matrix = other.getMatrix();
+<span class="lineNum">     512 </span>            :     const common::MatrixOp op = other.getOp();
+<span class="lineNum">     513 </span>            : 
+<span class="lineNum">     514 </span><span class="lineNoCov">          0 :     switch ( op ) </span>
+<span class="lineNum">     515 </span>            :     {
+<span class="lineNum">     516 </span>            :         case common::MatrixOp::NORMAL:  
+<span class="lineNum">     517 </span><span class="lineNoCov">          0 :             this-&gt;assign( matrix ); </span>
+<span class="lineNum">     518 </span>            :             break;
+<span class="lineNum">     519 </span>            :         case common::MatrixOp::TRANSPOSE:  
+<span class="lineNum">     520 </span><span class="lineNoCov">          0 :             this-&gt;assignTranspose( matrix ); </span>
+<span class="lineNum">     521 </span>            :             break;
+<span class="lineNum">     522 </span>            :         default:
+<span class="lineNum">     523 </span><span class="lineNoCov">          0 :             COMMON_THROWEXCEPTION( &quot;matrix = &quot; &lt;&lt; op &lt;&lt; &quot;( matrix ) not supported yet&quot; )</span>
+<span class="lineNum">     524 </span>            :     }
+<span class="lineNum">     525 </span>            : 
+<span class="lineNum">     526 </span><span class="lineNoCov">          0 :     return *this;</span>
+<span class="lineNum">     527 </span>            : }
+<a name="528"><span class="lineNum">     528 </span>            : </a>
+<span class="lineNum">     529 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     530 </span><span class="lineCov">        100 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator=( const Expression_SMM_SM&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     531 </span>            : {
+<span class="lineNum">     532 </span>            :     const Expression_SMM&lt;ValueType&gt;&amp; arg1 = exp.getArg1();
+<span class="lineNum">     533 </span>            :     const Expression_SM&lt;ValueType&gt;&amp; arg11 = arg1.getArg1();
+<span class="lineNum">     534 </span>            :     const Expression_SM&lt;ValueType&gt;&amp; arg2 = exp.getArg2();
+<span class="lineNum">     535 </span>            : 
+<span class="lineNum">     536 </span><span class="lineCov">        200 :     const OpMatrix&lt;ValueType&gt;&amp; opMatA = arg11.getArg2();</span>
+<span class="lineNum">     537 </span><span class="lineCov">        200 :     const OpMatrix&lt;ValueType&gt;&amp; opMatB = arg1.getArg2();</span>
+<span class="lineNum">     538 </span><span class="lineCov">        200 :     const OpMatrix&lt;ValueType&gt;&amp; opMatC = arg2.getArg2();</span>
+<span class="lineNum">     539 </span>            : 
+<span class="lineNum">     540 </span>            :     const Matrix&lt;ValueType&gt;&amp; matA = opMatA.getMatrix();
+<span class="lineNum">     541 </span>            :     const Matrix&lt;ValueType&gt;&amp; matB = opMatB.getMatrix();
+<span class="lineNum">     542 </span>            :     const Matrix&lt;ValueType&gt;&amp; matC = opMatC.getMatrix();
+<span class="lineNum">     543 </span>            : 
+<span class="lineNum">     544 </span>            :     const Scalar&amp; alphaS = arg11.getArg1();
+<span class="lineNum">     545 </span>            :     const Scalar&amp; betaS  = arg2.getArg1();
+<span class="lineNum">     546 </span>            : 
+<span class="lineNum">     547 </span><span class="lineCov">         50 :     const ValueType&amp; alpha = alphaS.getValue&lt;ValueType&gt;();</span>
+<span class="lineNum">     548 </span><span class="lineCov">         50 :     const ValueType&amp; beta  = betaS.getValue&lt;ValueType&gt;();</span>
+<span class="lineNum">     549 </span>            : 
+<span class="lineNum">     550 </span><span class="lineCov">        200 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     551 </span>            :                    &quot;operator=:  &quot; &lt;&lt; alpha &lt;&lt; &quot; * A * B  + &quot; &lt;&lt; beta &lt;&lt; &quot; * C&quot;
+<span class="lineNum">     552 </span>            :                    &lt;&lt; &quot; with A = &quot; &lt;&lt; matA &lt;&lt; &quot;, B = &quot; &lt;&lt; matB &lt;&lt; &quot;, C = &quot; &lt;&lt; matC )
+<span class="lineNum">     553 </span>            : 
+<span class="lineNum">     554 </span><span class="lineCov">        100 :     SCAI_ASSERT_EQ_ERROR( opMatA.getOp(), common::MatrixOp::NORMAL, &quot;unsupported exp&quot; )</span>
+<span class="lineNum">     555 </span><span class="lineCov">        100 :     SCAI_ASSERT_EQ_ERROR( opMatB.getOp(), common::MatrixOp::NORMAL, &quot;unsupported exp&quot; )</span>
+<span class="lineNum">     556 </span><span class="lineCov">        100 :     SCAI_ASSERT_EQ_ERROR( opMatC.getOp(), common::MatrixOp::NORMAL, &quot;unsupported exp&quot; )</span>
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span><span class="lineCov">        150 :     matA.matrixTimesMatrix( *this, alpha, matB, beta, matC );</span>
+<span class="lineNum">     559 </span>            : 
+<span class="lineNum">     560 </span><span class="lineCov">        200 :     SCAI_LOG_INFO( logger, &quot;Context of this after matrixTimesMatrix = &quot; &lt;&lt; *getContextPtr() )</span>
+<span class="lineNum">     561 </span>            : 
+<span class="lineNum">     562 </span><span class="lineCov">        100 :     return *this;</span>
+<span class="lineNum">     563 </span>            : }
+<span class="lineNum">     564 </span>            : 
+<a name="565"><span class="lineNum">     565 </span>            : </a>
+<span class="lineNum">     566 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     567 </span><span class="lineCov">       2130 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator=( const Expression_SM_SM&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     568 </span>            : {
+<span class="lineNum">     569 </span><span class="lineCov">       4260 :     SCAI_LOG_INFO( logger, &quot;operator=:  A * alpha + B * beta &quot; )</span>
+<span class="lineNum">     570 </span>            : 
+<span class="lineNum">     571 </span><span class="lineCov">       4260 :     const OpMatrix&lt;ValueType&gt;&amp; opMatA = exp.getArg1().getArg2();</span>
+<span class="lineNum">     572 </span><span class="lineCov">       4260 :     const OpMatrix&lt;ValueType&gt;&amp; opMatB = exp.getArg2().getArg2();</span>
+<span class="lineNum">     573 </span>            : 
+<span class="lineNum">     574 </span>            :     const Matrix&lt;ValueType&gt;&amp; matA = opMatA.getMatrix();
+<span class="lineNum">     575 </span>            :     const Matrix&lt;ValueType&gt;&amp; matB = opMatB.getMatrix();
+<span class="lineNum">     576 </span>            : 
+<span class="lineNum">     577 </span><span class="lineCov">       2130 :     SCAI_ASSERT_EQ_ERROR( opMatA.getOp(), common::MatrixOp::NORMAL, &quot;unsupported exp&quot; )</span>
+<span class="lineNum">     578 </span><span class="lineCov">       2130 :     SCAI_ASSERT_EQ_ERROR( opMatB.getOp(), common::MatrixOp::NORMAL, &quot;unsupported exp&quot; )</span>
+<span class="lineNum">     579 </span>            : 
+<span class="lineNum">     580 </span>            :     const Scalar&amp; alphaS = exp.getArg1().getArg1();
+<span class="lineNum">     581 </span>            :     const Scalar&amp; betaS = exp.getArg2().getArg1();
+<span class="lineNum">     582 </span>            : 
+<span class="lineNum">     583 </span><span class="lineCov">       1200 :     const ValueType&amp; alpha = alphaS.getValue&lt;ValueType&gt;();</span>
+<span class="lineNum">     584 </span><span class="lineCov">       1200 :     const ValueType&amp; beta = betaS.getValue&lt;ValueType&gt;();</span>
+<span class="lineNum">     585 </span>            : 
+<span class="lineNum">     586 </span>            :     const ValueType zero = 0;
+<span class="lineNum">     587 </span>            : 
+<span class="lineNum">     588 </span><span class="lineCov">       2130 :     if ( beta == zero )</span>
+<span class="lineNum">     589 </span>            :     {
+<span class="lineNum">     590 </span>            :         // second term not needed
+<span class="lineNum">     591 </span><span class="lineNoCov">          0 :         this-&gt;matrixTimesScalar( matA, alpha );</span>
+<span class="lineNum">     592 </span><span class="lineNoCov">          0 :         return *this;</span>
+<span class="lineNum">     593 </span>            :     }
+<span class="lineNum">     594 </span>            : 
+<span class="lineNum">     595 </span><span class="lineCov">       2130 :     if ( alpha == zero )</span>
+<span class="lineNum">     596 </span>            :     {
+<span class="lineNum">     597 </span>            :         // first term not needed
+<span class="lineNum">     598 </span><span class="lineNoCov">          0 :         this-&gt;matrixTimesScalar( matB, beta );</span>
+<span class="lineNum">     599 </span><span class="lineNoCov">          0 :         return *this;</span>
+<span class="lineNum">     600 </span>            :     }
+<span class="lineNum">     601 </span>            : 
+<span class="lineNum">     602 </span>            :     // conformance check of matrices A and B is done in the routines
+<span class="lineNum">     603 </span>            : 
+<span class="lineNum">     604 </span><span class="lineCov">       3060 :     this-&gt;matrixPlusMatrix( alpha, matA, beta, matB );</span>
+<span class="lineNum">     605 </span><span class="lineCov">       2130 :     return *this;</span>
+<span class="lineNum">     606 </span>            : }
+<span class="lineNum">     607 </span>            : 
+<span class="lineNum">     608 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="609"><span class="lineNum">     609 </span>            : </a>
+<span class="lineNum">     610 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     611 </span><span class="lineCov">       2015 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator=( const Expression_SMM&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     612 </span>            : {
+<span class="lineNum">     613 </span>            :     // exp =  ( alpha * A ) * B
+<span class="lineNum">     614 </span>            : 
+<span class="lineNum">     615 </span>            :     const Scalar&amp; alpha = exp.getArg1().getArg1();
+<span class="lineNum">     616 </span>            : 
+<span class="lineNum">     617 </span><span class="lineCov">       4030 :     const OpMatrix&lt;ValueType&gt;&amp; opMatA = exp.getArg1().getArg2();</span>
+<span class="lineNum">     618 </span><span class="lineCov">       4030 :     const OpMatrix&lt;ValueType&gt;&amp; opMatB = exp.getArg2();</span>
+<span class="lineNum">     619 </span>            : 
+<span class="lineNum">     620 </span>            :     const Matrix&lt;ValueType&gt;&amp; matA = opMatA.getMatrix();
+<span class="lineNum">     621 </span>            :     const Matrix&lt;ValueType&gt;&amp; matB = opMatB.getMatrix();
+<span class="lineNum">     622 </span>            : 
+<span class="lineNum">     623 </span><span class="lineCov">       2015 :     SCAI_ASSERT_EQ_ERROR( opMatA.getOp(), common::MatrixOp::NORMAL, &quot;unsupported exp&quot; )</span>
+<span class="lineNum">     624 </span><span class="lineCov">       2015 :     SCAI_ASSERT_EQ_ERROR( opMatB.getOp(), common::MatrixOp::NORMAL, &quot;unsupported exp&quot; )</span>
+<span class="lineNum">     625 </span>            : 
+<span class="lineNum">     626 </span><span class="lineCov">       4030 :     matA.matrixTimesMatrix( *this, alpha.getValue&lt;ValueType&gt;(), matB, ValueType( 0 ), *this );</span>
+<span class="lineNum">     627 </span>            : 
+<span class="lineNum">     628 </span><span class="lineCov">       2015 :     return *this;</span>
+<span class="lineNum">     629 </span>            : }
+<span class="lineNum">     630 </span>            : 
+<span class="lineNum">     631 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="632"><span class="lineNum">     632 </span>            : </a>
+<span class="lineNum">     633 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     634 </span><span class="lineCov">        275 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator=( const Expression_SM&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     635 </span>            : {
+<span class="lineNum">     636 </span>            :     // exp is Expression object that stands for s * A
+<span class="lineNum">     637 </span>            : 
+<span class="lineNum">     638 </span><span class="lineCov">        550 :     const OpMatrix&lt;ValueType&gt;&amp; opA = exp.getArg2();</span>
+<span class="lineNum">     639 </span>            : 
+<span class="lineNum">     640 </span>            :     common::MatrixOp op = opA.getOp();
+<span class="lineNum">     641 </span><span class="lineCov">        275 :     SCAI_ASSERT_EQ_ERROR( op, common::MatrixOp::NORMAL, &quot;matrix op = &quot; &lt;&lt; op &lt;&lt; &quot; unsupported in matrixA = alpha * op( matrixB )&quot; )</span>
+<span class="lineNum">     642 </span>            :     const Scalar&amp; s = exp.getArg1();
+<span class="lineNum">     643 </span><span class="lineCov">        550 :     this-&gt;matrixTimesScalar( opA.getMatrix(), s.getValue&lt;ValueType&gt;() );</span>
+<span class="lineNum">     644 </span><span class="lineCov">        275 :     return *this;</span>
+<span class="lineNum">     645 </span>            : }
+<span class="lineNum">     646 </span>            : 
+<span class="lineNum">     647 </span>            : 
+<span class="lineNum">     648 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="649"><span class="lineNum">     649 </span>            : </a>
+<span class="lineNum">     650 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     651 </span><span class="lineCov">        120 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator+=( const Matrix&lt;ValueType&gt;&amp; mat )</span>
+<span class="lineNum">     652 </span>            : {
+<span class="lineNum">     653 </span>            :     // this += A  -&gt; this = 1.0 * A + 1.0 * this
+<span class="lineNum">     654 </span>            : 
+<span class="lineNum">     655 </span><span class="lineCov">        180 :     this-&gt;matrixPlusMatrix( ValueType( 1 ), *this, ValueType( 1 ), mat );</span>
+<span class="lineNum">     656 </span>            : 
+<span class="lineNum">     657 </span><span class="lineCov">        120 :     return *this;</span>
+<span class="lineNum">     658 </span>            : }
+<span class="lineNum">     659 </span>            : 
+<span class="lineNum">     660 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="661"><span class="lineNum">     661 </span>            : </a>
+<span class="lineNum">     662 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     663 </span><span class="lineCov">       4728 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator-=( const Matrix&lt;ValueType&gt;&amp; mat )</span>
+<span class="lineNum">     664 </span>            : {
+<span class="lineNum">     665 </span>            :     // this -= A  -&gt; this = -1.0 * A + 1.0 * this
+<span class="lineNum">     666 </span>            : 
+<span class="lineNum">     667 </span><span class="lineCov">       7092 :     this-&gt;matrixPlusMatrix( ValueType( 1 ), *this, ValueType( -1 ), mat );</span>
+<span class="lineNum">     668 </span>            : 
+<span class="lineNum">     669 </span><span class="lineCov">       4728 :     return *this;</span>
+<span class="lineNum">     670 </span>            : }
+<span class="lineNum">     671 </span>            : 
+<span class="lineNum">     672 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="673"><span class="lineNum">     673 </span>            : </a>
+<span class="lineNum">     674 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     675 </span><span class="lineCov">        120 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator+=( const Expression_SM&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     676 </span>            : {
+<span class="lineNum">     677 </span>            :     // this += alpha * A  -&gt; this = alpha * A + 1.0 * this
+<span class="lineNum">     678 </span>            : 
+<span class="lineNum">     679 </span><span class="lineCov">        240 :     const OpMatrix&lt;ValueType&gt;&amp; opMat = exp.getArg2();</span>
+<span class="lineNum">     680 </span>            : 
+<span class="lineNum">     681 </span><span class="lineCov">        120 :     SCAI_ASSERT_EQ_ERROR( opMat.getOp(), common::MatrixOp::NORMAL, &quot;unsupported matrix op&quot; )</span>
+<span class="lineNum">     682 </span>            : 
+<span class="lineNum">     683 </span>            :     const Scalar&amp; s = exp.getArg1();
+<span class="lineNum">     684 </span>            : 
+<span class="lineNum">     685 </span><span class="lineCov">        240 :     this-&gt;matrixPlusMatrix( ValueType( 1 ), *this, s.getValue&lt;ValueType&gt;(), opMat.getMatrix() );</span>
+<span class="lineNum">     686 </span>            : 
+<span class="lineNum">     687 </span><span class="lineCov">        120 :     return *this;</span>
+<span class="lineNum">     688 </span>            : }
+<span class="lineNum">     689 </span>            : 
+<span class="lineNum">     690 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="691"><span class="lineNum">     691 </span>            : </a>
+<span class="lineNum">     692 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     693 </span><span class="lineCov">        120 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator-=( const Expression_SM&lt;ValueType&gt;&amp; exp )</span>
+<span class="lineNum">     694 </span>            : {
+<span class="lineNum">     695 </span>            :     // this -= alpha * A  -&gt; this = 1.0 * this + ( - alpha ) * A
+<span class="lineNum">     696 </span>            : 
+<span class="lineNum">     697 </span><span class="lineCov">        240 :     const OpMatrix&lt;ValueType&gt;&amp; opMat = exp.getArg2();</span>
+<span class="lineNum">     698 </span>            : 
+<span class="lineNum">     699 </span><span class="lineCov">        120 :     SCAI_ASSERT_EQ_ERROR( opMat.getOp(), common::MatrixOp::NORMAL, &quot;unsupported matrix op&quot; )</span>
+<span class="lineNum">     700 </span>            : 
+<span class="lineNum">     701 </span>            :     const Scalar&amp; s = exp.getArg1();
+<span class="lineNum">     702 </span>            : 
+<span class="lineNum">     703 </span><span class="lineCov">        240 :     this-&gt;matrixPlusMatrix( ValueType( 1 ), *this, -s.getValue&lt;ValueType&gt;(), opMat.getMatrix() );</span>
+<span class="lineNum">     704 </span>            : 
+<span class="lineNum">     705 </span><span class="lineCov">        120 :     return *this;</span>
+<span class="lineNum">     706 </span>            : }
+<span class="lineNum">     707 </span>            : 
+<span class="lineNum">     708 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="709"><span class="lineNum">     709 </span>            : </a>
+<span class="lineNum">     710 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     711 </span><span class="lineCov">        780 : Matrix&lt;ValueType&gt;&amp; Matrix&lt;ValueType&gt;::operator*=( const ValueType alpha )</span>
+<span class="lineNum">     712 </span>            : {
+<span class="lineNum">     713 </span><span class="lineCov">        780 :     this-&gt;scale( alpha );</span>
+<span class="lineNum">     714 </span><span class="lineCov">        780 :     return *this;</span>
+<span class="lineNum">     715 </span>            : }
+<span class="lineNum">     716 </span>            : 
+<span class="lineNum">     717 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="718"><span class="lineNum">     718 </span>            : </a>
+<span class="lineNum">     719 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     720 </span><span class="lineCov">        920 : void Matrix&lt;ValueType&gt;::concatenate( </span>
+<span class="lineNum">     721 </span>            :     DistributionPtr rowDist, 
+<span class="lineNum">     722 </span>            :     DistributionPtr colDist, 
+<span class="lineNum">     723 </span><span class="lineCov">       2760 :     const std::vector&lt;const Matrix&lt;ValueType&gt;*&gt;&amp; matrices )</span>
+<span class="lineNum">     724 </span>            : {
+<span class="lineNum">     725 </span><span class="lineCov">       1840 :     SCAI_LOG_INFO( logger, &quot;Concatenate &quot; &lt;&lt; matrices.size() &lt;&lt; &quot; matrices into  a new matrix.&quot; )</span>
+<span class="lineNum">     726 </span>            : 
+<span class="lineNum">     727 </span>            :     // Each processor assembles the local part of each input matrix for the result matrix
+<span class="lineNum">     728 </span>            : 
+<span class="lineNum">     729 </span><span class="lineCov">       1840 :     MatrixAssembly&lt;ValueType&gt; assembly;</span>
+<span class="lineNum">     730 </span>            : 
+<span class="lineNum">     731 </span>            :     IndexType offsetRow = 0;    // row offset where input matrix is set in result matrix
+<span class="lineNum">     732 </span>            :     IndexType offsetCol = 0;    // col offset where input matrix is set in result matrix
+<span class="lineNum">     733 </span>            : 
+<span class="lineNum">     734 </span><span class="lineCov">       5520 :     for ( size_t k = 0; k &lt; matrices.size(); ++k )</span>
+<span class="lineNum">     735 </span>            :     {
+<span class="lineNum">     736 </span><span class="lineCov">       1840 :         const Matrix&lt;ValueType&gt;&amp; m = *matrices[k];</span>
+<span class="lineNum">     737 </span>            : 
+<span class="lineNum">     738 </span>            :         SCAI_LOG_DEBUG( logger, &quot;dissassemble this matrix: &quot; &lt;&lt; m )
+<span class="lineNum">     739 </span>            : 
+<span class="lineNum">     740 </span><span class="lineCov">       1840 :         if ( offsetRow + m.getNumRows() &gt; rowDist-&gt;getGlobalSize() )</span>
+<span class="lineNum">     741 </span>            :         {
+<span class="lineNum">     742 </span><span class="lineNoCov">          0 :             COMMON_THROWEXCEPTION( &quot;concatenation fails, this arg fails: &quot; &lt;&lt; m )</span>
+<span class="lineNum">     743 </span>            :         }
+<span class="lineNum">     744 </span>            : 
+<span class="lineNum">     745 </span><span class="lineCov">       4600 :         if ( offsetCol + m.getNumColumns() &gt; colDist-&gt;getGlobalSize() )</span>
+<span class="lineNum">     746 </span>            :         {
+<span class="lineNum">     747 </span><span class="lineNoCov">          0 :             COMMON_THROWEXCEPTION( &quot;concatenation fails, arg &quot; &lt;&lt; k &lt;&lt; &quot; fails: &quot; &lt;&lt; m )</span>
+<span class="lineNum">     748 </span>            :         }
+<span class="lineNum">     749 </span>            : 
+<span class="lineNum">     750 </span><span class="lineCov">       1840 :         m.disassemble( assembly, offsetRow, offsetCol );</span>
+<span class="lineNum">     751 </span>            : 
+<span class="lineNum">     752 </span><span class="lineCov">       1840 :         offsetCol += m.getNumColumns();</span>
+<span class="lineNum">     753 </span>            : 
+<span class="lineNum">     754 </span>            :         // decide by the sizes where (horizontally or vertically)  we concatenate the next 
+<span class="lineNum">     755 </span>            : 
+<span class="lineNum">     756 </span><span class="lineCov">       1840 :         if ( offsetCol == colDist-&gt;getGlobalSize() )</span>
+<span class="lineNum">     757 </span>            :         {
+<span class="lineNum">     758 </span>            :             offsetCol = 0;
+<span class="lineNum">     759 </span><span class="lineCov">       1840 :             offsetRow = offsetRow + m.getNumRows();</span>
+<span class="lineNum">     760 </span>            :         }
+<span class="lineNum">     761 </span>            : 
+<span class="lineNum">     762 </span>            :         SCAI_LOG_DEBUG( logger, &quot;offsets for next disassembling: row &quot; &lt;&lt; offsetRow &lt;&lt; &quot;, col &quot; &lt;&lt; offsetCol)
+<span class="lineNum">     763 </span>            :     }
+<span class="lineNum">     764 </span>            : 
+<span class="lineNum">     765 </span><span class="lineCov">       1840 :     auto repColDist = std::make_shared&lt;NoDistribution&gt;( colDist-&gt;getGlobalSize() );</span>
+<span class="lineNum">     766 </span>            : 
+<span class="lineNum">     767 </span><span class="lineCov">       3680 :     allocate( rowDist, colDist ); </span>
+<span class="lineNum">     768 </span>            :     
+<span class="lineNum">     769 </span><span class="lineCov">        920 :     fillFromAssembly( assembly );</span>
+<span class="lineNum">     770 </span>            : 
+<span class="lineNum">     771 </span><span class="lineCov">       4600 :     redistribute( rowDist, colDist );  // apply column distribution for halo computation</span>
+<span class="lineNum">     772 </span><span class="lineCov">        920 : }</span>
+<span class="lineNum">     773 </span>            : 
+<span class="lineNum">     774 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="775"><span class="lineNum">     775 </span>            : </a>
+<span class="lineNum">     776 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     777 </span><span class="lineNoCov">          0 : void Matrix&lt;ValueType&gt;::vcat( const Matrix&lt;ValueType&gt;&amp; m1, const Matrix&lt;ValueType&gt;&amp; m2 )</span>
+<span class="lineNum">     778 </span>            : {
+<span class="lineNum">     779 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( m1.getRowDistribution(), m2.getRowDistribution(), &quot;vcat: matrices must have same row distribution&quot; )</span>
+<span class="lineNum">     780 </span>            : 
+<span class="lineNum">     781 </span>            :     DistributionPtr rowDist = m1.getRowDistributionPtr();
+<span class="lineNum">     782 </span>            : 
+<span class="lineNum">     783 </span><span class="lineNoCov">          0 :     DistributionPtr colDist( new NoDistribution( m1.getNumColumns() + m2.getNumColumns() ) );</span>
+<span class="lineNum">     784 </span>            : 
+<span class="lineNum">     785 </span>            :     std::vector&lt;const Matrix&lt;ValueType&gt;*&gt; matrices;
+<span class="lineNum">     786 </span>            : 
+<span class="lineNum">     787 </span><span class="lineNoCov">          0 :     matrices.push_back( &amp;m1 );</span>
+<span class="lineNum">     788 </span><span class="lineNoCov">          0 :     matrices.push_back( &amp;m2 );</span>
+<span class="lineNum">     789 </span>            : 
+<span class="lineNum">     790 </span><span class="lineNoCov">          0 :     concatenate( rowDist, colDist, matrices );</span>
+<span class="lineNum">     791 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     792 </span>            : 
+<span class="lineNum">     793 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="794"><span class="lineNum">     794 </span>            : </a>
+<span class="lineNum">     795 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     796 </span><span class="lineCov">        920 : void Matrix&lt;ValueType&gt;::hcat( const Matrix&lt;ValueType&gt;&amp; m1, const Matrix&lt;ValueType&gt;&amp; m2 )</span>
+<span class="lineNum">     797 </span>            : {
+<span class="lineNum">     798 </span><span class="lineCov">        920 :     SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), &quot;No horizontal cut possible due to different column sizes&quot; )</span>
+<span class="lineNum">     799 </span>            : 
+<span class="lineNum">     800 </span><span class="lineCov">        920 :     CommunicatorPtr comm = Communicator::getCommunicatorPtr();</span>
+<span class="lineNum">     801 </span>            : 
+<span class="lineNum">     802 </span><span class="lineCov">       2760 :     DistributionPtr rowDist( new BlockDistribution( m1.getNumRows() + m2.getNumRows(), comm ) );</span>
+<span class="lineNum">     803 </span><span class="lineCov">        920 :     DistributionPtr colDist( new NoDistribution( m1.getNumColumns() ) );</span>
+<span class="lineNum">     804 </span>            : 
+<span class="lineNum">     805 </span>            :     std::vector&lt;const Matrix&lt;ValueType&gt;*&gt; matrices;
+<span class="lineNum">     806 </span>            : 
+<span class="lineNum">     807 </span><span class="lineCov">       1840 :     matrices.push_back( &amp;m1 );</span>
+<span class="lineNum">     808 </span><span class="lineCov">       1840 :     matrices.push_back( &amp;m2 );</span>
+<span class="lineNum">     809 </span>            : 
+<span class="lineNum">     810 </span><span class="lineCov">       3680 :     concatenate( rowDist, colDist, matrices );</span>
+<span class="lineNum">     811 </span><span class="lineCov">        920 : }</span>
+<span class="lineNum">     812 </span>            : 
+<span class="lineNum">     813 </span>            : /* ---------------------------------------------------------------------------------*/
+<a name="814"><span class="lineNum">     814 </span>            : </a>
+<span class="lineNum">     815 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     816 </span><span class="lineNoCov">          0 : void Matrix&lt;ValueType&gt;::setRawDenseData( const IndexType n, const IndexType m, const ValueType* values )</span>
+<span class="lineNum">     817 </span>            : {
+<span class="lineNum">     818 </span>            :     // Note: by using HArrayRef a copy of the input data is completely avoided.
+<span class="lineNum">     819 </span>            : 
+<span class="lineNum">     820 </span><span class="lineNoCov">          0 :     DenseStorage&lt;ValueType&gt; denseStorage( n, m, hmemo::HArrayRef&lt;ValueType&gt;( n * m, values ) );</span>
+<span class="lineNum">     821 </span>            : 
+<span class="lineNum">     822 </span>            :     // virtual method makes sure that each matrix class uses his own efficient way of assignment conversion
+<span class="lineNum">     823 </span>            : 
+<span class="lineNum">     824 </span><span class="lineNoCov">          0 :     assign( denseStorage );</span>
+<span class="lineNum">     825 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     826 </span>            : 
+<span class="lineNum">     827 </span>            : /* ========================================================================= */
+<a name="828"><span class="lineNum">     828 </span>            : </a>
+<span class="lineNum">     829 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     830 </span><span class="lineCov">        965 : void Matrix&lt;ValueType&gt;::fillFromAssembly( const MatrixAssembly&lt;ValueType&gt;&amp; assembly, common::BinaryOp op )</span>
+<span class="lineNum">     831 </span>            : {
+<span class="lineNum">     832 </span>            :     DistributionPtr colDist = getColDistributionPtr();
+<span class="lineNum">     833 </span>            :     DistributionPtr rowDist = getRowDistributionPtr();
+<span class="lineNum">     834 </span>            : 
+<span class="lineNum">     835 </span><span class="lineCov">        965 :     IndexType numColumns = colDist-&gt;getGlobalSize();</span>
+<span class="lineNum">     836 </span>            : 
+<span class="lineNum">     837 </span><span class="lineCov">        965 :     if ( !colDist-&gt;isReplicated() )</span>
+<span class="lineNum">     838 </span>            :     {
+<span class="lineNum">     839 </span>            :         // join local/halo 
+<span class="lineNum">     840 </span>            : 
+<span class="lineNum">     841 </span><span class="lineNoCov">          0 :         redistribute( rowDist, std::make_shared&lt;NoDistribution&gt;( numColumns ) );</span>
+<span class="lineNum">     842 </span>            :     }
+<span class="lineNum">     843 </span>            : 
+<span class="lineNum">     844 </span>            :     // Note: local storage contains all owned elements
+<span class="lineNum">     845 </span>            : 
+<span class="lineNum">     846 </span><span class="lineCov">        965 :     MatrixStorage&lt;ValueType&gt;&amp; localStorage = const_cast&lt;MatrixStorage&lt;ValueType&gt;&amp;&gt;( getLocalStorage() );</span>
+<span class="lineNum">     847 </span>            : 
+<span class="lineNum">     848 </span><span class="lineCov">       1930 :     COOStorage&lt;ValueType&gt; cooLocal = assembly.buildLocalCOO( *rowDist, numColumns );</span>
+<span class="lineNum">     849 </span>            : 
+<span class="lineNum">     850 </span><span class="lineCov">        965 :     hmemo::HArray&lt;IndexType&gt; cooIA;</span>
+<span class="lineNum">     851 </span><span class="lineCov">        965 :     hmemo::HArray&lt;IndexType&gt; cooJA;</span>
+<span class="lineNum">     852 </span><span class="lineCov">        965 :     hmemo::HArray&lt;ValueType&gt; cooValues;</span>
+<span class="lineNum">     853 </span>            : 
+<span class="lineNum">     854 </span>            :     IndexType dummyM;
+<span class="lineNum">     855 </span>            :     IndexType dummyN;
+<span class="lineNum">     856 </span>            : 
+<span class="lineNum">     857 </span><span class="lineCov">        965 :     cooLocal.splitUp( dummyM, dummyN, cooIA, cooJA, cooValues );</span>
+<span class="lineNum">     858 </span>            : 
+<span class="lineNum">     859 </span><span class="lineCov">       4825 :     localStorage.fillCOO( std::move( cooIA ), std::move( cooJA ), std::move( cooValues ), op );</span>
+<span class="lineNum">     860 </span>            : 
+<span class="lineNum">     861 </span><span class="lineCov">        965 :     if ( !colDist-&gt;isReplicated() )</span>
+<span class="lineNum">     862 </span>            :     {
+<span class="lineNum">     863 </span>            :         // split local/halo 
+<span class="lineNum">     864 </span>            : 
+<span class="lineNum">     865 </span><span class="lineNoCov">          0 :         redistribute( rowDist, colDist );</span>
+<span class="lineNum">     866 </span>            :     }
+<span class="lineNum">     867 </span><span class="lineCov">        965 : }</span>
+<span class="lineNum">     868 </span>            : 
+<span class="lineNum">     869 </span>            : /* ========================================================================= */
+<span class="lineNum">     870 </span>            : /*       Template specializations and instantiations                         */
+<span class="lineNum">     871 </span>            : /* ========================================================================= */
+<span class="lineNum">     872 </span>            : 
+<span class="lineNum">     873 </span>            : SCAI_COMMON_INST_CLASS( Matrix, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">     874 </span>            : 
+<a name="875"><span class="lineNum">     875 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">     876 </span>            : 
+<span class="lineNum">     877 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+<span class="lineNum">     878 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

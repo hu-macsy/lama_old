@@ -1,0 +1,1134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - dmemo/Communicator.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">dmemo</a> - Communicator.hpp<span style="font-size: 80%;"> (source / <a href="Communicator.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">37</td>
+            <td class="headerCovTableEntry">38</td>
+            <td class="headerCovTableEntryHi">97.4 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-04 18:51:09</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">17</td>
+            <td class="headerCovTableEntry">23</td>
+            <td class="headerCovTableEntryLo">73.9 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file Communicator.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Base and interface class for communicators used in LAMA
+<span class="lineNum">      31 </span>            :  * @author Jiri Kraus, Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 23.02.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : #pragma once
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : // for dll_import
+<span class="lineNum">      37 </span>            : #include &lt;scai/common/config.hpp&gt;
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : // base classes
+<span class="lineNum">      40 </span>            : #include &lt;scai/common/NonCopyable.hpp&gt;
+<span class="lineNum">      41 </span>            : #include &lt;scai/common/Factory.hpp&gt;
+<span class="lineNum">      42 </span>            : #include &lt;scai/common/Printable.hpp&gt;
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            : #include &lt;scai/dmemo/CommunicationPlan.hpp&gt;
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : // internal scai libraris
+<span class="lineNum">      47 </span>            : #include &lt;scai/hmemo.hpp&gt;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : #include &lt;scai/tasking/SyncToken.hpp&gt;
+<span class="lineNum">      50 </span>            : #include &lt;scai/tasking/NoSyncToken.hpp&gt;
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : #include &lt;scai/logging.hpp&gt;
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : #include &lt;scai/common/macros/assert.hpp&gt;
+<span class="lineNum">      55 </span>            : #include &lt;scai/common/macros/count.hpp&gt;
+<span class="lineNum">      56 </span>            : #include &lt;scai/common/SCAITypes.hpp&gt;
+<span class="lineNum">      57 </span>            : #include &lt;scai/common/Math.hpp&gt;
+<span class="lineNum">      58 </span>            : #include &lt;scai/common/macros/loop.hpp&gt;
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            : // std
+<span class="lineNum">      61 </span>            : #include &lt;memory&gt;
+<span class="lineNum">      62 </span>            : #include &lt;vector&gt;
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            : //#include &lt;cmath&gt;
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : namespace scai
+<span class="lineNum">      67 </span>            : {
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : namespace hmemo
+<span class="lineNum">      70 </span>            : {
+<span class="lineNum">      71 </span>            : template&lt;typename ValueType&gt; class HArray;
+<span class="lineNum">      72 </span>            : }
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            : /** @brief The namespace dmemo contains all stuff belonging to project dmemo (distributed memory). */
+<span class="lineNum">      75 </span>            : 
+<span class="lineNum">      76 </span>            : namespace dmemo
+<span class="lineNum">      77 </span>            : {
+<span class="lineNum">      78 </span>            : 
+<span class="lineNum">      79 </span>            : // Forward declaration of all classes that are used in the interface
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            : class Distribution;
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span>            : class Halo;
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            : class Communicator;
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            : typedef std::shared_ptr&lt;const Communicator&gt; CommunicatorPtr;
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span>            : /** @brief Own namespace for the enum type CommunicatorKind and its values */
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span>            : struct _Communicator
+<span class="lineNum">      92 </span>            : {
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            :     typedef enum
+<span class="lineNum">      95 </span>            :     {
+<span class="lineNum">      96 </span>            :         NO,                  //!&lt; No communicator
+<span class="lineNum">      97 </span>            :         MPI,                 //!&lt; MPI communicator
+<span class="lineNum">      98 </span>            :         MAX_COMMUNICATOR     //!&lt; dummy value for number of communicators
+<span class="lineNum">      99 </span>            :     } CommunicatorKind;
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span>            : };
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span>            : COMMON_DLL_IMPORTEXPORT std::ostream&amp; operator&lt;&lt;( std::ostream&amp; stream, const _Communicator::CommunicatorKind&amp; kind );
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span>            : /**
+<span class="lineNum">     106 </span>            :  * @brief Base and interface class for communicators used in LAMA
+<span class="lineNum">     107 </span>            :  *
+<span class="lineNum">     108 </span>            :  * This base class defines pure methods for communication and data exchange
+<span class="lineNum">     109 </span>            :  * between the different partitions of a distributed application. These pure
+<span class="lineNum">     110 </span>            :  * methods must be provided by base classes that implement a full communicator.
+<span class="lineNum">     111 </span>            :  *
+<span class="lineNum">     112 </span>            :  * Furthermore, this class provides also some higher functionality communication methods
+<span class="lineNum">     113 </span>            :  * especially for LAMA arrays that will use the pure virtual methods.
+<span class="lineNum">     114 </span>            :  *
+<span class="lineNum">     115 </span>            :  * Communicator objects will be managed by the Communicator factory. All
+<span class="lineNum">     116 </span>            :  * operations on a communicator are const methods. Communicators are referenced
+<span class="lineNum">     117 </span>            :  * via shared pointers so that resources are freed only if no more reference
+<span class="lineNum">     118 </span>            :  * to the communicator exists.
+<span class="lineNum">     119 </span>            :  *
+<span class="lineNum">     120 </span>            :  * Default copy constructor and assignment operator are disabled.
+<span class="lineNum">     121 </span>            :  *
+<span class="lineNum">     122 </span>            :  */
+<span class="lineNum">     123 </span>            : class COMMON_DLL_IMPORTEXPORT Communicator:
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            :     public  _Communicator,
+<span class="lineNum">     126 </span>            :     public  scai::common::Printable,
+<span class="lineNum">     127 </span>            :     public  scai::common::Factory&lt;_Communicator::CommunicatorKind, CommunicatorPtr&gt;,
+<span class="lineNum">     128 </span>            :     private scai::common::NonCopyable
+<span class="lineNum">     129 </span>            : {
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span>            : public:
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            :     /** Get a communicator of a certain type from the factory.
+<span class="lineNum">     134 </span>            :      *
+<span class="lineNum">     135 </span>            :      *  @param type specifies the required communicator.
+<span class="lineNum">     136 </span>            :      *  @returns shared pointer to the queried communicator
+<span class="lineNum">     137 </span>            :      *
+<span class="lineNum">     138 </span>            :      *  @throws common::Exception for unsupported type
+<span class="lineNum">     139 </span>            :      */
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span>            :     static CommunicatorPtr getCommunicatorPtr( const CommunicatorKind&amp; type );
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span>            :     /** Get communicator from the factory.
+<span class="lineNum">     144 </span>            :      *
+<span class="lineNum">     145 </span>            :      *  @returns shared pointer to the default communicator.
+<span class="lineNum">     146 </span>            :      *
+<span class="lineNum">     147 </span>            :      *  The rules for choosing the default communicator are as follows:
+<span class="lineNum">     148 </span>            :      *   - take the one specified by environment/argument SCAI_COMMUNICATOR
+<span class="lineNum">     149 </span>            :      *   - if not specified take the default one
+<span class="lineNum">     150 </span>            :      */
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span>            :     static CommunicatorPtr getCommunicatorPtr();
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span>            :     /** Get a default communicator from the factory.
+<span class="lineNum">     155 </span>            :      *
+<span class="lineNum">     156 </span>            :      *  @returns shared pointer to the default communicator.
+<span class="lineNum">     157 </span>            :      *
+<span class="lineNum">     158 </span>            :      *  The rules for choosing the default communicator are as follows:
+<span class="lineNum">     159 </span>            :      *   - If MPI is available, use the MPI communicator.
+<span class="lineNum">     160 </span>            :      *   - Otherwise, use no communicator.
+<span class="lineNum">     161 </span>            :      */
+<span class="lineNum">     162 </span>            : 
+<span class="lineNum">     163 </span>            :     static CommunicatorPtr getDefaultCommunicatorPtr();
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span>            :     /** Enumeration type for supported thread safety levels. */
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span>            :     enum ThreadSafetyLevel
+<span class="lineNum">     168 </span>            :     {
+<span class="lineNum">     169 </span>            :         Funneled = 1,   //!&lt; The Program can be multithreaded but only the master thread should communicate
+<span class="lineNum">     170 </span>            :         Serialized = 2, //!&lt; The Program can be multithreaded but the communicator usage is serialized
+<span class="lineNum">     171 </span>            :         Multiple = 3    //!&lt; The Program can be multithreaded and the communicator can be used by all threads concurrently
+<span class="lineNum">     172 </span>            :     };
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span>            :     virtual ~Communicator();
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span>            :     /** @brief Find a facotorization of size with two factors
+<span class="lineNum">     177 </span>            :      *
+<span class="lineNum">     178 </span>            :      *  @param[in] sizeX      weight for the first dimension
+<span class="lineNum">     179 </span>            :      *  @param[in] sizeY      weight for the second dimension
+<span class="lineNum">     180 </span>            :      *  @param[out] procgrid   array of size 2 with the two factors
+<span class="lineNum">     181 </span>            :      */
+<span class="lineNum">     182 </span>            :     void factorize2( PartitionId procgrid[2], const double sizeX, const double sizeY ) const;
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span>            :     /** @brief Find a factorization of size with three factors
+<span class="lineNum">     185 </span>            :      *
+<span class="lineNum">     186 </span>            :      *  @param[out] procgrid   array of size 3 with the three factors
+<span class="lineNum">     187 </span>            :      *  @param[in] sizeX      weight for the first dimension
+<span class="lineNum">     188 </span>            :      *  @param[in] sizeY      weight for the second dimension
+<span class="lineNum">     189 </span>            :      *  @param[in] sizeZ      weight for the third dimension
+<span class="lineNum">     190 </span>            :      */
+<span class="lineNum">     191 </span>            :     void factorize3( PartitionId procgrid[3], const double sizeX, const double sizeY, const double sizeZ ) const;
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span>            :     /** @brief Get the position of this processor in a two-dimensional processor grid
+<span class="lineNum">     194 </span>            :      *
+<span class="lineNum">     195 </span>            :      *  @param[out] pos       my position
+<span class="lineNum">     196 </span>            :      *  @param[in]  procgrid  sizes of the two dimensions
+<span class="lineNum">     197 </span>            :      */
+<span class="lineNum">     198 </span>            :     void getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const;
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span>            :     /** @brief Get the position of this processor in a three-dimensional processor grid
+<span class="lineNum">     201 </span>            :      *
+<span class="lineNum">     202 </span>            :      *  @param[out] pos       my position
+<span class="lineNum">     203 </span>            :      *  @param[in]  procgrid  sizes of the three dimensions
+<span class="lineNum">     204 </span>            :      */
+<span class="lineNum">     205 </span>            :     void getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const;
+<span class="lineNum">     206 </span>            : 
+<span class="lineNum">     207 </span>            :     /** @brief Equality operator for two communicators.
+<span class="lineNum">     208 </span>            :      *
+<span class="lineNum">     209 </span>            :      *  @param[in] other   communicator for comparison
+<span class="lineNum">     210 </span>            :      *  @return            true if this communicator is equal to other communicator.
+<span class="lineNum">     211 </span>            :      *
+<span class="lineNum">     212 </span>            :      *  Note: Logic of this operator is implemented via the virtual function
+<span class="lineNum">     213 </span>            :      *  isEqual.
+<span class="lineNum">     214 </span>            :      */
+<span class="lineNum">     215 </span>            :     bool operator==( const Communicator&amp; other ) const;
+<span class="lineNum">     216 </span>            : 
+<span class="lineNum">     217 </span>            :     /** @brief Diversity operator for two communicators.
+<span class="lineNum">     218 </span>            :      *
+<span class="lineNum">     219 </span>            :      *  @param[in] other   communicator for comparison
+<span class="lineNum">     220 </span>            :      *  @returns           true if this communicator is unequal to other communicator.
+<span class="lineNum">     221 </span>            :      *
+<span class="lineNum">     222 </span>            :      *  Note: Logic of this operator is implemented via the virtual function
+<span class="lineNum">     223 </span>            :      *  isEqual.
+<span class="lineNum">     224 </span>            :      */
+<span class="lineNum">     225 </span>            :     bool operator!=( const Communicator&amp; other ) const;
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span>            :     /** @brief Virtual method used for the equality operator. */
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span>            :     virtual bool isEqual( const Communicator&amp; other ) const = 0;
+<span class="lineNum">     230 </span>            : 
+<span class="lineNum">     231 </span>            :     /** @brief Getter function for the thread safety level.
+<span class="lineNum">     232 </span>            :      *
+<span class="lineNum">     233 </span>            :      *  @return   the thread safety level.
+<span class="lineNum">     234 </span>            :      */
+<span class="lineNum">     235 </span>            : 
+<span class="lineNum">     236 </span>            :     virtual ThreadSafetyLevel getThreadSafetyLevel() const = 0;
+<span class="lineNum">     237 </span>            : 
+<span class="lineNum">     238 </span>            :     /** @brief Getter of the number of partitions.
+<span class="lineNum">     239 </span>            :      *
+<span class="lineNum">     240 </span>            :      * @return number of partitions.
+<span class="lineNum">     241 </span>            :      */
+<span class="lineNum">     242 </span>            : 
+<span class="lineNum">     243 </span>            :     inline PartitionId getSize() const;
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            :     /** @brief Getter of rank of this partition.
+<span class="lineNum">     246 </span>            :      *
+<span class="lineNum">     247 </span>            :      * @return rank of this partition, 0 &lt;= rank &lt; getSize()
+<span class="lineNum">     248 </span>            :      */
+<span class="lineNum">     249 </span>            :     inline PartitionId getRank() const;
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span>            :     /** @brief Getter of the number of partitions on same node.
+<span class="lineNum">     252 </span>            :      *
+<span class="lineNum">     253 </span>            :      * @return number of partitions on same node as this partition.
+<span class="lineNum">     254 </span>            :      */
+<span class="lineNum">     255 </span>            :     inline PartitionId getNodeSize() const;
+<span class="lineNum">     256 </span>            : 
+<span class="lineNum">     257 </span>            :     /** @brief Getter of node rank
+<span class="lineNum">     258 </span>            :      *
+<span class="lineNum">     259 </span>            :      * @return rank of this partition on its node, 0 &lt;= rank &lt; getNodeSize()
+<span class="lineNum">     260 </span>            :      */
+<span class="lineNum">     261 </span>            :     inline PartitionId getNodeRank() const;
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span>            :     /**
+<span class="lineNum">     264 </span>            :      * Help routine to get the rank of a neighbored position.
+<span class="lineNum">     265 </span>            :      *
+<span class="lineNum">     266 </span>            :      * @param[in] pos   is the distance to the neighbor (also negative)
+<span class="lineNum">     267 </span>            :      * @return          rank of the neighbored processor
+<span class="lineNum">     268 </span>            :      *
+<span class="lineNum">     269 </span>            :      * This method assumes a circular ring formed by all processors.
+<span class="lineNum">     270 </span>            :      */
+<span class="lineNum">     271 </span>            :     inline PartitionId getNeighbor( int pos ) const;
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span>            :     /**************************************************************************************
+<span class="lineNum">     274 </span>            :      *                                                                                    *
+<span class="lineNum">     275 </span>            :      *  Virtual routines provided by derived class for each supported TypeID              *
+<span class="lineNum">     276 </span>            :      *                                                                                    *
+<span class="lineNum">     277 </span>            :      *************************************************************************************/
+<span class="lineNum">     278 </span>            : 
+<span class="lineNum">     279 </span>            :     /* @brief Exchange of data between all processors by communication plans.
+<span class="lineNum">     280 </span>            :      *
+<span class="lineNum">     281 </span>            :      *  @param[out] recvVals   buffer for data received from other processors
+<span class="lineNum">     282 </span>            :      *  @param[in]  recvPlan   number of elements and offsets for receiving
+<span class="lineNum">     283 </span>            :      *  @param[in]  sendVals   buffer for data to send to other processors
+<span class="lineNum">     284 </span>            :      *  @param[in]  sendPlan   contains number of elements and offsets for sending data
+<span class="lineNum">     285 </span>            :      *
+<span class="lineNum">     286 </span>            :      *  All send and receive data between each pair of processors must be a contiguous
+<span class="lineNum">     287 </span>            :      *  part of the sendData or recvData.
+<span class="lineNum">     288 </span>            :      *
+<span class="lineNum">     289 </span>            :      *  The size of recvData must be recvPlan.totalQuantity().
+<span class="lineNum">     290 </span>            :      *  The size of sendData must be sendPlan.totalQuantity().
+<span class="lineNum">     291 </span>            :      */
+<span class="lineNum">     292 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     293 </span>            :     void exchangeByPlan(
+<span class="lineNum">     294 </span>            :         ValueType recvVals[],
+<span class="lineNum">     295 </span>            :         const CommunicationPlan&amp; recvPlan,
+<span class="lineNum">     296 </span>            :         const ValueType sendVals[],
+<span class="lineNum">     297 </span>            :         const CommunicationPlan&amp; sendPlan ) const;
+<span class="lineNum">     298 </span>            : 
+<span class="lineNum">     299 </span>            :     /** Pure virtual routine, no template arguments as ValueType is coded via ScalarType */
+<span class="lineNum">     300 </span>            : 
+<span class="lineNum">     301 </span>            :     virtual void exchangeByPlanImpl(
+<span class="lineNum">     302 </span>            :         void* recvData,
+<span class="lineNum">     303 </span>            :         const CommunicationPlan&amp; recvPlan,
+<span class="lineNum">     304 </span>            :         const void* sendData,
+<span class="lineNum">     305 </span>            :         const CommunicationPlan&amp; sendPlan,
+<span class="lineNum">     306 </span>            :         const common::ScalarType stype ) const = 0;
+<span class="lineNum">     307 </span>            : 
+<span class="lineNum">     308 </span>            :     /* @brief Asynchronous exchange of data between all processors by communication plans.
+<span class="lineNum">     309 </span>            :      *
+<span class="lineNum">     310 </span>            :      *  @param[out] recvVals   buffer for data received from other processors
+<span class="lineNum">     311 </span>            :      *  @param[in]  recvPlan   number of elements and offsets for receiving
+<span class="lineNum">     312 </span>            :      *  @param[in]  sendVals   buffer for data to send to other processors
+<span class="lineNum">     313 </span>            :      *  @param[in]  sendPlan   contains number of elements and offsets for sending data
+<span class="lineNum">     314 </span>            :      *
+<span class="lineNum">     315 </span>            :      *  @return SyncToken that can be used to wait for completion
+<span class="lineNum">     316 </span>            :      *
+<span class="lineNum">     317 </span>            :      *  All send and receive data between each pair of processors must be a contiguous
+<span class="lineNum">     318 </span>            :      *  part of the sendData or recvData.
+<span class="lineNum">     319 </span>            :      *
+<span class="lineNum">     320 </span>            :      *  The size of recvData must be recvPlan.totalQuantity().
+<span class="lineNum">     321 </span>            :      *  The size of sendData must be sendPlan.totalQuantity().
+<span class="lineNum">     322 </span>            :      */
+<span class="lineNum">     323 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     324 </span>            :     tasking::SyncToken* exchangeByPlanAsync(
+<span class="lineNum">     325 </span>            :         ValueType recvVals[],
+<span class="lineNum">     326 </span>            :         const CommunicationPlan&amp; recvPlan,
+<span class="lineNum">     327 </span>            :         const ValueType sendVals[],
+<span class="lineNum">     328 </span>            :         const CommunicationPlan&amp; sendPlan ) const;
+<span class="lineNum">     329 </span>            : 
+<span class="lineNum">     330 </span>            :     /** Non-template version with coded ValueType is pure routine to be implemented by derived classes. */
+<span class="lineNum">     331 </span>            : 
+<span class="lineNum">     332 </span>            :     virtual tasking::SyncToken* exchangeByPlanAsyncImpl(
+<span class="lineNum">     333 </span>            :         void* recvData,
+<span class="lineNum">     334 </span>            :         const CommunicationPlan&amp; recvPlan,
+<span class="lineNum">     335 </span>            :         const void* sendData,
+<span class="lineNum">     336 </span>            :         const CommunicationPlan&amp; sendPlan,
+<span class="lineNum">     337 </span>            :         const common::ScalarType stype ) const = 0;
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span>            :     /* @brief Scatter of an array of values from root to all other processors.
+<span class="lineNum">     340 </span>            :      *
+<span class="lineNum">     341 </span>            :      *  @param[out]   myVals values that I receive
+<span class="lineNum">     342 </span>            :      *  @param[in]    n      number of elements in vector val
+<span class="lineNum">     343 </span>            :      *  @param[in]    root   processor with values for all processors
+<span class="lineNum">     344 </span>            :      *  @param[in]    allVals values for all processors (size must be n * size() )
+<span class="lineNum">     345 </span>            :      */
+<span class="lineNum">     346 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     347 </span>            :     void scatter( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[] ) const;
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span>            :     /** Non-template version with coded ValueType is pure routine to be implemented by derived classes. */
+<span class="lineNum">     350 </span>            : 
+<span class="lineNum">     351 </span>            :     virtual void scatterImpl( void* myVals, const IndexType n, const PartitionId root,
+<span class="lineNum">     352 </span>            :                               const void* allVals, common::ScalarType stype ) const = 0;
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            :     /* @brief Scatter of an array of values from root to all other processors.
+<span class="lineNum">     355 </span>            :      *
+<span class="lineNum">     356 </span>            :      *  @param[out]   myVals values that I receive
+<span class="lineNum">     357 </span>            :      *  @param[in]    n      number of elements in vector val
+<span class="lineNum">     358 </span>            :      *  @param[in]    root   processor with values for all processors
+<span class="lineNum">     359 </span>            :      *  @param[in]    allVals values for all processors (size must be sum(sizes) )
+<span class="lineNum">     360 </span>            :      *  @param[in]    sizes   number of total values for all processors
+<span class="lineNum">     361 </span>            :      */
+<span class="lineNum">     362 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     363 </span>            :     void scatterV( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[], const IndexType sizes[] ) const;
+<span class="lineNum">     364 </span>            : 
+<span class="lineNum">     365 </span>            :     virtual void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
+<span class="lineNum">     366 </span>            :                                const void* allVals, const IndexType sizes[], common::ScalarType stype ) const = 0;
+<span class="lineNum">     367 </span>            : 
+<span class="lineNum">     368 </span>            :     /* @brief Gather of an array of values from all processors to root.
+<span class="lineNum">     369 </span>            :      *
+<span class="lineNum">     370 </span>            :      *  @param[out]   allVals values that I receive (size must be n * size() )
+<span class="lineNum">     371 </span>            :      *  @param[in]    n      number of elements in vector val
+<span class="lineNum">     372 </span>            :      *  @param[in]    root   processor with values for all processors
+<span class="lineNum">     373 </span>            :      *  @param[in]    myVals values that this processor contributes
+<span class="lineNum">     374 </span>            :      *  @param[in]    stype  specifies the data type used
+<span class="lineNum">     375 </span>            :      */
+<span class="lineNum">     376 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     377 </span>            :     void gather( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[] ) const;
+<span class="lineNum">     378 </span>            : 
+<span class="lineNum">     379 </span>            :     virtual void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::ScalarType stype ) const = 0;
+<span class="lineNum">     380 </span>            : 
+<span class="lineNum">     381 </span>            :     /* @brief Gather of an array of double values from all processors to root.
+<span class="lineNum">     382 </span>            :      *
+<span class="lineNum">     383 </span>            :      *  @param[out]   allVals values that I receive (size must be sum(sizes) )
+<span class="lineNum">     384 </span>            :      *  @param[in]    n      number of elements in myvals
+<span class="lineNum">     385 </span>            :      *  @param[in]    root   processor with values for all processors
+<span class="lineNum">     386 </span>            :      *  @param[in]    myVals values on this processor
+<span class="lineNum">     387 </span>            :      *  @param[in]    sizes  array with sizes from each processor
+<span class="lineNum">     388 </span>            :      *
+<span class="lineNum">     389 </span>            :      *  The array sizes must only be valid on the root processor. The
+<span class="lineNum">     390 </span>            :      *  output array allvals will only be valid on the root processor.
+<span class="lineNum">     391 </span>            :      */
+<span class="lineNum">     392 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     393 </span>            :     void gatherV( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[], const IndexType sizes[] ) const;
+<span class="lineNum">     394 </span>            : 
+<span class="lineNum">     395 </span>            :     virtual void gatherVImpl(
+<span class="lineNum">     396 </span>            :         void* allvals,
+<span class="lineNum">     397 </span>            :         const IndexType n,
+<span class="lineNum">     398 </span>            :         const PartitionId root,
+<span class="lineNum">     399 </span>            :         const void* myvals,
+<span class="lineNum">     400 </span>            :         const IndexType sizes[],
+<span class="lineNum">     401 </span>            :         common::ScalarType stype ) const = 0;
+<span class="lineNum">     402 </span>            : 
+<span class="lineNum">     403 </span>            :     /* @brief Swap of an array with another processor.
+<span class="lineNum">     404 </span>            :      *
+<span class="lineNum">     405 </span>            :      * @param[in,out] val is the data array to be swapped
+<span class="lineNum">     406 </span>            :      * @param[in] n is the number of entries in array val
+<span class="lineNum">     407 </span>            :      * @param[in] partner is the rank of partition with which this partition swaps
+<span class="lineNum">     408 </span>            :      *
+<span class="lineNum">     409 </span>            :      * This method can also be used if partner is same as this processor.
+<span class="lineNum">     410 </span>            :      */
+<span class="lineNum">     411 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     412 </span>            :     void swap( ValueType val[], const IndexType n, const PartitionId partner ) const;
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span>            :     virtual void swapImpl(
+<span class="lineNum">     415 </span>            :         void* val,
+<span class="lineNum">     416 </span>            :         const IndexType n,
+<span class="lineNum">     417 </span>            :         PartitionId partner,
+<span class="lineNum">     418 </span>            :         common::ScalarType stype ) const = 0;
+<span class="lineNum">     419 </span>            : 
+<span class="lineNum">     420 </span>            :     /* @brief This routine shifts data between neighbored processors.
+<span class="lineNum">     421 </span>            :      *
+<span class="lineNum">     422 </span>            :      *  @param[out] newVals  array with data this partition get from neighbored partition
+<span class="lineNum">     423 </span>            :      *  @param[in]  newSize  allocated size of array newVals
+<span class="lineNum">     424 </span>            :      *  @param[in]  oldVals  array with data this partition sends to neighbored partition
+<span class="lineNum">     425 </span>            :      *  @param[in]  oldSize  number of elements of array oldVals that will be sent
+<span class="lineNum">     426 </span>            :      *  @param[in]  direction specifies the neighbored partitions to send and receive
+<span class="lineNum">     427 </span>            :      *
+<span class="lineNum">     428 </span>            :      *  @returns number of values received in newVals (newSize must have been larger before)
+<span class="lineNum">     429 </span>            :      *
+<span class="lineNum">     430 </span>            :      *  Each partition sends to rank() + direction and receives from rank() - direction.
+<span class="lineNum">     431 </span>            :      */
+<span class="lineNum">     432 </span>            : 
+<span class="lineNum">     433 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     434 </span>            :     IndexType shift( ValueType newVals[], const IndexType newSize,
+<span class="lineNum">     435 </span>            :                      const ValueType oldVals[], const IndexType oldSize,
+<span class="lineNum">     436 </span>            :                      const int direction ) const;
+<span class="lineNum">     437 </span>            : 
+<span class="lineNum">     438 </span>            :     virtual IndexType shiftImpl(
+<span class="lineNum">     439 </span>            :         void* newVals,
+<span class="lineNum">     440 </span>            :         const IndexType newSize,
+<span class="lineNum">     441 </span>            :         const PartitionId source,
+<span class="lineNum">     442 </span>            :         const void* oldVals,
+<span class="lineNum">     443 </span>            :         const IndexType oldSize,
+<span class="lineNum">     444 </span>            :         const PartitionId dest,
+<span class="lineNum">     445 </span>            :         common::ScalarType stype ) const = 0;
+<span class="lineNum">     446 </span>            : 
+<span class="lineNum">     447 </span>            :     /* @brief Asynchronous version of shift.
+<span class="lineNum">     448 </span>            :      *
+<span class="lineNum">     449 </span>            :      *  @param[out] newVals  array with data this partition get from neighbored partition
+<span class="lineNum">     450 </span>            :      *  @param[in]  oldVals  array with data this partition sends to neighbored partition
+<span class="lineNum">     451 </span>            :      *  @param[in]  size  number of elements of array oldVals to be sent andd newVals to receive
+<span class="lineNum">     452 </span>            :      *  @param[in]  direction specifies the neighbored partitions to send and receive
+<span class="lineNum">     453 </span>            :      *
+<span class="lineNum">     454 </span>            :      *  As there is no information about the received size this routine can only be called for
+<span class="lineNum">     455 </span>            :      *  arrays that have the same size on all partitions.
+<span class="lineNum">     456 </span>            :      *
+<span class="lineNum">     457 </span>            :      *  A default implementation is provided that returns a NoSyncToken. Derived classes
+<span class="lineNum">     458 </span>            :      *  should override this method if there is a benefit of using asynchronous transfers.
+<span class="lineNum">     459 </span>            :      */
+<span class="lineNum">     460 </span>            : 
+<span class="lineNum">     461 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     462 </span>            :     tasking::SyncToken* shiftAsync(
+<span class="lineNum">     463 </span>            :         ValueType recvVals[],
+<span class="lineNum">     464 </span>            :         const ValueType sendVals[],
+<span class="lineNum">     465 </span>            :         const IndexType size,
+<span class="lineNum">     466 </span>            :         const int direction ) const;
+<span class="lineNum">     467 </span>            : 
+<span class="lineNum">     468 </span>            :     /** Pure method that provides the wanted functionality for each communicator */
+<span class="lineNum">     469 </span>            : 
+<span class="lineNum">     470 </span>            :     virtual tasking::SyncToken* shiftAsyncImpl(
+<span class="lineNum">     471 </span>            :         void* newVals,
+<span class="lineNum">     472 </span>            :         const PartitionId source,
+<span class="lineNum">     473 </span>            :         const void* oldVals,
+<span class="lineNum">     474 </span>            :         const PartitionId dest,
+<span class="lineNum">     475 </span>            :         const IndexType size,
+<span class="lineNum">     476 </span>            :         common::ScalarType stype ) const = 0;
+<span class="lineNum">     477 </span>            : 
+<span class="lineNum">     478 </span>            :     /** All-to-all exchange of an IndexType value between all processors.
+<span class="lineNum">     479 </span>            :      *
+<span class="lineNum">     480 </span>            :      * @param[out] recvValues   will contain one value from each processor
+<span class="lineNum">     481 </span>            :      * @param[in]  sendValues   must contain one value for each processor
+<span class="lineNum">     482 </span>            :      *
+<span class="lineNum">     483 </span>            :      * recvValues and sendValues must both have a size of communicator size.
+<span class="lineNum">     484 </span>            :      * recvValues[i] on processor j contains sendValues[j] of processor i.
+<span class="lineNum">     485 </span>            :      */
+<span class="lineNum">     486 </span>            :     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
+<span class="lineNum">     487 </span>            : 
+<span class="lineNum">     488 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     489 </span>            :     void all2allv( ValueType* recvVal[], IndexType recvCount[],
+<span class="lineNum">     490 </span>            :                    ValueType* sendVal[], IndexType sendCount[] ) const;
+<span class="lineNum">     491 </span>            : 
+<span class="lineNum">     492 </span>            :     /** Same routine but uses void pointers and codes the ValueType so it can
+<span class="lineNum">     493 </span>            :      *  become a virtual method that is provided by all derived communicator classes.
+<span class="lineNum">     494 </span>            :      */
+<span class="lineNum">     495 </span>            : 
+<span class="lineNum">     496 </span>            :     virtual void all2allvImpl(
+<span class="lineNum">     497 </span>            :         void* recvBuffer[], IndexType recvCount[],
+<span class="lineNum">     498 </span>            :         void* sendBuffer[], IndexType sendCount[],
+<span class="lineNum">     499 </span>            :         common::ScalarType stype ) const = 0;
+<span class="lineNum">     500 </span>            : 
+<span class="lineNum">     501 </span>            :     /** Pure method for bcast
+<span class="lineNum">     502 </span>            :      *
+<span class="lineNum">     503 </span>            :      *  @param[in,out] values  in on root, out on all other processors
+<span class="lineNum">     504 </span>            :      *  @param[in]     n    number of elements in vector val
+<span class="lineNum">     505 </span>            :      *  @param[in]     root processor with correct values of val
+<span class="lineNum">     506 </span>            :      *  @param[in]     stype codes the used data type of values
+<span class="lineNum">     507 </span>            :      */
+<span class="lineNum">     508 </span>            :     virtual void bcastImpl( void* values, const IndexType n, const PartitionId root, common::ScalarType stype ) const = 0;
+<span class="lineNum">     509 </span>            : 
+<span class="lineNum">     510 </span>            :     /**************************************************************************************
+<span class="lineNum">     511 </span>            :      *                                                                                    *
+<span class="lineNum">     512 </span>            :      *  Other Virtual routines provided by derived class                                  *
+<span class="lineNum">     513 </span>            :      *                                                                                    *
+<span class="lineNum">     514 </span>            :      *************************************************************************************/
+<span class="lineNum">     515 </span>            : 
+<span class="lineNum">     516 </span>            :     /** @brief Barrier synchronization between all processors. */
+<span class="lineNum">     517 </span>            : 
+<span class="lineNum">     518 </span>            :     virtual void synchronize() const = 0;
+<span class="lineNum">     519 </span>            : 
+<span class="lineNum">     520 </span>            :     /**************************************************************************************
+<span class="lineNum">     521 </span>            :      *                                                                                    *
+<span class="lineNum">     522 </span>            :      *  Communication routines provided by this base class using other routines           *
+<span class="lineNum">     523 </span>            :      *                                                                                    *
+<span class="lineNum">     524 </span>            :      *************************************************************************************/
+<span class="lineNum">     525 </span>            : 
+<span class="lineNum">     526 </span>            :     // Boolean global reduction operations are implemented by using the sum reduction.
+<span class="lineNum">     527 </span>            :     virtual bool all( const bool flag ) const;
+<span class="lineNum">     528 </span>            :     virtual bool any( const bool flag ) const;
+<span class="lineNum">     529 </span>            : 
+<span class="lineNum">     530 </span>            :     /* @brief Broadcast a typed array from root to all other processors.
+<span class="lineNum">     531 </span>            :      *
+<span class="lineNum">     532 </span>            :      *  @tparam ValueType  is the data type
+<span class="lineNum">     533 </span>            :      *  @param[in,out] val  in on root, out on all other processors
+<span class="lineNum">     534 </span>            :      *  @param[in]     n    number of elements in vector val
+<span class="lineNum">     535 </span>            :      *  @param[in]     root processor with correct values of val
+<span class="lineNum">     536 </span>            :      *
+<span class="lineNum">     537 </span>            :      *  Note: implementation uses pure method bcastImpl without template argument
+<span class="lineNum">     538 </span>            :      */
+<span class="lineNum">     539 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     540 </span>            :     void bcast( ValueType val[], const IndexType n, const PartitionId root ) const;
+<span class="lineNum">     541 </span>            : 
+<span class="lineNum">     542 </span>            :     /** Broadcast of a string.
+<span class="lineNum">     543 </span>            :      *
+<span class="lineNum">     544 </span>            :      *  This class provides one implementation, but derived classes might override it.
+<span class="lineNum">     545 </span>            :      */
+<span class="lineNum">     546 </span>            :     virtual void bcast( std::string&amp;, const PartitionId root ) const;
+<span class="lineNum">     547 </span>            : 
+<span class="lineNum">     548 </span>            :     /* @brief Sum  up one single value from each partition to a global value.
+<span class="lineNum">     549 </span>            :      *
+<span class="lineNum">     550 </span>            :      *  @param[in] localValue  value on the calling partition
+<span class="lineNum">     551 </span>            :      *  @returns   global value, available for all partitions.
+<span class="lineNum">     552 </span>            :      *
+<span class="lineNum">     553 </span>            :      *  Implementation uses pure virtual method sumImpl (without template arguments)
+<span class="lineNum">     554 </span>            :      */
+<span class="lineNum">     555 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     556 </span>            :     inline ValueType sum( const ValueType localValue ) const;
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     559 </span>            :     inline ValueType min( const ValueType localValue ) const;
+<span class="lineNum">     560 </span>            : 
+<span class="lineNum">     561 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     562 </span>            :     inline ValueType max( const ValueType localValue ) const;
+<span class="lineNum">     563 </span>            : 
+<span class="lineNum">     564 </span>            :     /**  Sum values from all processes and distributes the result back to all processes.
+<span class="lineNum">     565 </span>            :      *
+<span class="lineNum">     566 </span>            :      *   @param[out] outValues array with the result values, same on all processes
+<span class="lineNum">     567 </span>            :      *   @param[in]  inValues individual contributions on each process
+<span class="lineNum">     568 </span>            :      *   @param[in]  n is the number of values in arrays inValues and outValues
+<span class="lineNum">     569 </span>            :      *   @param[in]  stype specifies the data type of the data
+<span class="lineNum">     570 </span>            :      */
+<span class="lineNum">     571 </span>            :     virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const = 0;
+<span class="lineNum">     572 </span>            : 
+<span class="lineNum">     573 </span>            :     /**  Find minimal values from all processes and distributes the result back to all processes. */
+<span class="lineNum">     574 </span>            : 
+<span class="lineNum">     575 </span>            :     virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const = 0;
+<span class="lineNum">     576 </span>            : 
+<span class="lineNum">     577 </span>            :     /**  Find maximal values from all processes and distributes the result back to all processes. */
+<span class="lineNum">     578 </span>            : 
+<span class="lineNum">     579 </span>            :     virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const = 0;
+<span class="lineNum">     580 </span>            : 
+<span class="lineNum">     581 </span>            :     /* @brief Maximal value combined with a location value where maximum was found.
+<span class="lineNum">     582 </span>            :      *
+<span class="lineNum">     583 </span>            :      *  @param[in,out] val        is a value on each processor, only out for root with maximal value
+<span class="lineNum">     584 </span>            :      *  @param[in,out] location   is an additional int value, only out for root
+<span class="lineNum">     585 </span>            :      *  @param[in]     root       rank of processor that has valid results at end of the routine
+<span class="lineNum">     586 </span>            :      *
+<span class="lineNum">     587 </span>            :      *  Only root processor will contain the maximal value and the location loc,
+<span class="lineNum">     588 </span>            :      *
+<span class="lineNum">     589 </span>            :      * virtual void maxloc( TypeId&amp; val, IndexType&amp; location, const PartitionId root ) const = 0;
+<span class="lineNum">     590 </span>            :      */
+<span class="lineNum">     591 </span>            : 
+<span class="lineNum">     592 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     593 </span>            :     void maxloc( ValueType&amp; val, IndexType&amp; location, const PartitionId root ) const;
+<span class="lineNum">     594 </span>            : 
+<span class="lineNum">     595 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     596 </span>            :     void minloc( ValueType&amp; val, IndexType&amp; location, const PartitionId root ) const;
+<span class="lineNum">     597 </span>            : 
+<span class="lineNum">     598 </span>            :     virtual void maxlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const = 0;
+<span class="lineNum">     599 </span>            : 
+<span class="lineNum">     600 </span>            :     virtual void minlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const = 0;
+<span class="lineNum">     601 </span>            : 
+<span class="lineNum">     602 </span>            :     /** Scan values among the processor belonging to this communicator. */
+<span class="lineNum">     603 </span>            : 
+<span class="lineNum">     604 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     605 </span>            :     ValueType scan( const ValueType localValue ) const;
+<span class="lineNum">     606 </span>            : 
+<span class="lineNum">     607 </span>            :     /** Inclusive scan, similiar to sum but each processor has partial sums */
+<span class="lineNum">     608 </span>            : 
+<span class="lineNum">     609 </span>            :     virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const = 0;
+<span class="lineNum">     610 </span>            : 
+<span class="lineNum">     611 </span>            :     /** Default implementation */
+<span class="lineNum">     612 </span>            : 
+<span class="lineNum">     613 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     614 </span>            :     ValueType scanDefault( const ValueType localValue ) const;
+<span class="lineNum">     615 </span>            : 
+<span class="lineNum">     616 </span>            :     /**
+<span class="lineNum">     617 </span>            :      *  Predicate that returns true if (derived) Communicator class supports minloc/maxlocImpl for a
+<span class="lineNum">     618 </span>            :      *  given value type.
+<span class="lineNum">     619 </span>            :      *
+<span class="lineNum">     620 </span>            :      *  @param[in] vType specifies the type of the reduction array values
+<span class="lineNum">     621 </span>            :      *  @param[in] iType specifies the index type used
+<span class="lineNum">     622 </span>            :      */
+<span class="lineNum">     623 </span>            :     virtual bool supportsLocReduction( common::ScalarType vType, common::ScalarType iType ) const = 0;
+<span class="lineNum">     624 </span>            : 
+<span class="lineNum">     625 </span>            :     /** Default implementation for maxloc that uses a gather operation instead of reduction. */
+<span class="lineNum">     626 </span>            : 
+<span class="lineNum">     627 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     628 </span>            :     void maxlocDefault( ValueType&amp; val, IndexType&amp; location, const PartitionId root ) const;
+<span class="lineNum">     629 </span>            : 
+<span class="lineNum">     630 </span>            :     /** Default implementation for minloc that uses a gather operation instead of reduction. */
+<span class="lineNum">     631 </span>            : 
+<span class="lineNum">     632 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     633 </span>            :     void minlocDefault( ValueType&amp; val, IndexType&amp; location, const PartitionId root ) const;
+<span class="lineNum">     634 </span>            : 
+<span class="lineNum">     635 </span>            :     /** @brief allgather is combination of gather and broadcast
+<span class="lineNum">     636 </span>            :      *
+<span class="lineNum">     637 </span>            :      *  @param[out]  allvals result array with values from all processors ( allocated for at least n * getSize() )
+<span class="lineNum">     638 </span>            :      *  @param[in]   n      number of elements in myvals
+<span class="lineNum">     639 </span>            :      *  @param[in]   myvals array with n values that this processor contributes
+<span class="lineNum">     640 </span>            :      *
+<span class="lineNum">     641 </span>            :      *  This routine will be implemented by other available routines.
+<a name="642"><span class="lineNum">     642 </span>            :      */</a>
+<span class="lineNum">     643 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     644 </span><span class="lineCov">        968 :     void allgather( ValueType allvals[], const IndexType n, const ValueType myvals[] ) const</span>
+<span class="lineNum">     645 </span>            :     {
+<span class="lineNum">     646 </span>            :         PartitionId root = 0;
+<span class="lineNum">     647 </span>            :         gather( allvals, n, root, myvals );
+<span class="lineNum">     648 </span><span class="lineCov">        484 :         bcast( allvals, n * getSize(), root );</span>
+<span class="lineNum">     649 </span>            :         // @ToDo: implement this by a circular shift
+<span class="lineNum">     650 </span><span class="lineCov">        484 :     }</span>
+<span class="lineNum">     651 </span>            : 
+<span class="lineNum">     652 </span>            :     /** Ownership computation for indexes where only each partition
+<span class="lineNum">     653 </span>            :      * individually can determine whether an index is local or not.
+<span class="lineNum">     654 </span>            :      *
+<span class="lineNum">     655 </span>            :      * This method should not be called for distributions where the
+<span class="lineNum">     656 </span>            :      * owner can be computed by a closed formula.
+<span class="lineNum">     657 </span>            :      */
+<span class="lineNum">     658 </span>            :     void computeOwners(
+<span class="lineNum">     659 </span>            :         PartitionId owners[],
+<span class="lineNum">     660 </span>            :         const Distribution&amp; distribution,
+<span class="lineNum">     661 </span>            :         const IndexType requiredIndexes[],
+<span class="lineNum">     662 </span>            :         const IndexType n ) const;
+<span class="lineNum">     663 </span>            : 
+<span class="lineNum">     664 </span>            :     void computeOwners(
+<span class="lineNum">     665 </span>            :         const std::vector&lt;IndexType&gt;&amp; requiredIndexes,
+<span class="lineNum">     666 </span>            :         const Distribution&amp; distribution,
+<span class="lineNum">     667 </span>            :         std::vector&lt;PartitionId&gt;&amp; owners ) const
+<span class="lineNum">     668 </span>            :     {
+<span class="lineNum">     669 </span>            :         IndexType n = requiredIndexes.size();
+<span class="lineNum">     670 </span>            :         owners.resize( n );
+<span class="lineNum">     671 </span>            :         computeOwners( &amp;owners[0], distribution, &amp;requiredIndexes[0], n );
+<span class="lineNum">     672 </span>            :     }
+<span class="lineNum">     673 </span>            : 
+<span class="lineNum">     674 </span>            :     void computeOwners(
+<span class="lineNum">     675 </span>            :         hmemo::HArray&lt;PartitionId&gt;&amp; owners,
+<span class="lineNum">     676 </span>            :         const Distribution&amp; distribution,
+<span class="lineNum">     677 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; requiredIndexes ) const;
+<span class="lineNum">     678 </span>            : 
+<span class="lineNum">     679 </span>            :     /**************************************************************************************
+<span class="lineNum">     680 </span>            :      *                                                                                    *
+<span class="lineNum">     681 </span>            :      *  Communication routines for HArrays for convenience                             *
+<span class="lineNum">     682 </span>            :      *                                                                                    *
+<span class="lineNum">     683 </span>            :      *************************************************************************************/
+<span class="lineNum">     684 </span>            : 
+<span class="lineNum">     685 </span>            :     /** Broadcast of a heterogeneous array */
+<span class="lineNum">     686 </span>            : 
+<span class="lineNum">     687 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     688 </span>            :     void bcastArray( hmemo::HArray&lt;ValueType&gt;&amp; array, const PartitionId root ) const;
+<span class="lineNum">     689 </span>            : 
+<span class="lineNum">     690 </span>            :     /** Broadcast of a heterogeneous array with known size
+<span class="lineNum">     691 </span>            :      *
+<span class="lineNum">     692 </span>            :      *  If the size of the array is known, an additional broadcast of the size is not required.
+<span class="lineNum">     693 </span>            :      */
+<span class="lineNum">     694 </span>            : 
+<span class="lineNum">     695 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     696 </span>            :     void bcastArray( hmemo::HArray&lt;ValueType&gt;&amp; array, const IndexType n, const PartitionId root ) const;
+<span class="lineNum">     697 </span>            : 
+<span class="lineNum">     698 </span>            :     /** exchangeByPlan for HArrays instead of usual array */
+<span class="lineNum">     699 </span>            : 
+<span class="lineNum">     700 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     701 </span>            :     void exchangeByPlan(
+<span class="lineNum">     702 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; recvArray,
+<span class="lineNum">     703 </span>            :         const CommunicationPlan&amp; recvPlan,
+<span class="lineNum">     704 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; sendArray,
+<span class="lineNum">     705 </span>            :         const CommunicationPlan&amp; sendPlan ) const;
+<span class="lineNum">     706 </span>            : 
+<span class="lineNum">     707 </span>            :     /** Asynchronous exchange of HArrays. */
+<span class="lineNum">     708 </span>            : 
+<span class="lineNum">     709 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     710 </span>            :     tasking::SyncToken* exchangeByPlanAsync(
+<span class="lineNum">     711 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; recvArray,
+<span class="lineNum">     712 </span>            :         const CommunicationPlan&amp; recvPlan,
+<span class="lineNum">     713 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; sendArray,
+<span class="lineNum">     714 </span>            :         const CommunicationPlan&amp; sendPlan ) const;
+<span class="lineNum">     715 </span>            : 
+<span class="lineNum">     716 </span>            :     /** @brief Update of halo array via Halo object.
+<span class="lineNum">     717 </span>            :      *
+<span class="lineNum">     718 </span>            :      *  @tparam     ValueType             arithmetic type of involved arrays
+<span class="lineNum">     719 </span>            :      *  @param[out] haloValues    will contain the non-local values from other processors
+<span class="lineNum">     720 </span>            :      *  @param[in]  localValues   is the local part of the array on each processor
+<span class="lineNum">     721 </span>            :      *  @param[in]  halo is the   Halo object containing all information about exchange
+<span class="lineNum">     722 </span>            :      *
+<span class="lineNum">     723 </span>            :      *  This method is not virtual but will use the pure virtual methods of base classes.
+<span class="lineNum">     724 </span>            :      */
+<span class="lineNum">     725 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     726 </span>            :     void updateHalo(
+<span class="lineNum">     727 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; haloValues,
+<span class="lineNum">     728 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; localValues,
+<span class="lineNum">     729 </span>            :         const Halo&amp; halo ) const;
+<span class="lineNum">     730 </span>            : 
+<span class="lineNum">     731 </span>            :     /** @brief Asynchronous update of halo array via Halo object. */
+<span class="lineNum">     732 </span>            : 
+<span class="lineNum">     733 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     734 </span>            :     tasking::SyncToken* updateHaloAsync(
+<span class="lineNum">     735 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; haloValues,
+<span class="lineNum">     736 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; localValues,
+<span class="lineNum">     737 </span>            :         const Halo&amp; halo ) const;
+<span class="lineNum">     738 </span>            : 
+<span class="lineNum">     739 </span>            :     /** @brief Shift on LAMA arrays.
+<span class="lineNum">     740 </span>            :      *
+<span class="lineNum">     741 </span>            :      *  @tparam     ValueType           type of data to be shifted
+<span class="lineNum">     742 </span>            :      *  @param[out] recv        array to receive  this partition
+<span class="lineNum">     743 </span>            :      *  @param[in]  send        array to send from this partition
+<span class="lineNum">     744 </span>            :      *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
+<span class="lineNum">     745 </span>            :      *
+<span class="lineNum">     746 </span>            :      *  Note: The recv array must have a capacity that is sufficent to
+<span class="lineNum">     747 </span>            :      *        receive all the data.
+<span class="lineNum">     748 </span>            :      */
+<span class="lineNum">     749 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     750 </span>            :     void shiftArray( hmemo::HArray&lt;ValueType&gt;&amp; recv, const hmemo::HArray&lt;ValueType&gt;&amp; send, const int direction ) const;
+<span class="lineNum">     751 </span>            : 
+<span class="lineNum">     752 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     753 </span>            :     void joinArray( hmemo::HArray&lt;ValueType&gt;&amp; global, const hmemo::HArray&lt;ValueType&gt;&amp; local ) const;
+<span class="lineNum">     754 </span>            : 
+<span class="lineNum">     755 </span>            :     /** @brief Asychronous shift on LAMA arrays.
+<span class="lineNum">     756 </span>            :      *
+<span class="lineNum">     757 </span>            :      *  @tparam     ValueType   stands for the data type of the arrays
+<span class="lineNum">     758 </span>            :      *  @param[out] recvArray   array to receive for this partition
+<span class="lineNum">     759 </span>            :      *  @param[in]  sendArray   array to send from this partition
+<span class="lineNum">     760 </span>            :      *  @param[in]  direction   number of positions to shift, e.g. 1 or -1
+<span class="lineNum">     761 </span>            :      *
+<span class="lineNum">     762 </span>            :      *  Note: All partitions must have the same size for send/recv array
+<span class="lineNum">     763 </span>            :      */
+<span class="lineNum">     764 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     765 </span>            :     tasking::SyncToken* shiftAsync(
+<span class="lineNum">     766 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; recvArray,
+<span class="lineNum">     767 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; sendArray,
+<span class="lineNum">     768 </span>            :         const int direction ) const;
+<span class="lineNum">     769 </span>            : 
+<span class="lineNum">     770 </span>            :     /** @brief Sum up values of an array
+<span class="lineNum">     771 </span>            :      *
+<span class="lineNum">     772 </span>            :      *  @tparam        ValueType   specifies the type of the array data
+<span class="lineNum">     773 </span>            :      *  @param[in,out] array       in are the local values, out are the global summed values
+<span class="lineNum">     774 </span>            :      *
+<span class="lineNum">     775 </span>            :      *  Note: All partitions must have the same size for the array
+<span class="lineNum">     776 </span>            :      */
+<span class="lineNum">     777 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     778 </span>            :     void sumArray( hmemo::HArray&lt;ValueType&gt;&amp; array ) const;
+<span class="lineNum">     779 </span>            : 
+<span class="lineNum">     780 </span>            :     /** Override routine of base class Printable. */
+<span class="lineNum">     781 </span>            : 
+<span class="lineNum">     782 </span>            :     virtual void writeAt( std::ostream&amp; stream ) const;
+<span class="lineNum">     783 </span>            : 
+<span class="lineNum">     784 </span>            :     /** @brief Getter for the type of a communicator. */
+<span class="lineNum">     785 </span>            : 
+<span class="lineNum">     786 </span>            :     inline CommunicatorKind getType() const;
+<span class="lineNum">     787 </span>            : 
+<span class="lineNum">     788 </span>            :     /** This routine provides a context that might be most efficient for
+<span class="lineNum">     789 </span>            :      *  the communication of data.
+<span class="lineNum">     790 </span>            :      *
+<span class="lineNum">     791 </span>            :      * @param[in] array is a LAMA array that is used for communication
+<span class="lineNum">     792 </span>            :      * @returns a context pointer where data should be available for communication
+<span class="lineNum">     793 </span>            :      *
+<span class="lineNum">     794 </span>            :      * Note: this routine is mainly used for sending of values; in case of CUDA aware
+<span class="lineNum">     795 </span>            :      *       communication it might return a CUDA context if the array has valid data there.
+<span class="lineNum">     796 </span>            :      */
+<span class="lineNum">     797 </span>            :     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray&amp; array ) const = 0;
+<span class="lineNum">     798 </span>            : 
+<span class="lineNum">     799 </span>            :     /** Read in the environment variable SCAI_NP for user processor array.
+<span class="lineNum">     800 </span>            :      *
+<span class="lineNum">     801 </span>            :      * @param[out] userProcArray specifies the user processor array.
+<span class="lineNum">     802 </span>            :      *
+<span class="lineNum">     803 </span>            :      */
+<span class="lineNum">     804 </span>            :     static void getUserProcArray( PartitionId userProcArray[3] );
+<span class="lineNum">     805 </span>            : 
+<span class="lineNum">     806 </span>            :     void setSeed( int seed ) const;
+<span class="lineNum">     807 </span>            : 
+<span class="lineNum">     808 </span>            : protected:
+<span class="lineNum">     809 </span>            : 
+<span class="lineNum">     810 </span>            :     /** Constructor of abstract classes are always protected. */
+<span class="lineNum">     811 </span>            : 
+<span class="lineNum">     812 </span>            :     Communicator( const CommunicatorKind&amp; type );
+<span class="lineNum">     813 </span>            : 
+<span class="lineNum">     814 </span>            :     /** This method determines node rank and node size by comparing the names. */
+<span class="lineNum">     815 </span>            : 
+<span class="lineNum">     816 </span>            :     void setNodeData();
+<span class="lineNum">     817 </span>            : 
+<span class="lineNum">     818 </span>            :     void setSizeAndRank( PartitionId size, PartitionId rank );
+<span class="lineNum">     819 </span>            : 
+<span class="lineNum">     820 </span>            :     /** Get the processor name.
+<span class="lineNum">     821 </span>            :      *
+<span class="lineNum">     822 </span>            :      *  @param[out] name is the processor name, allocated with at least maxProcessorName
+<span class="lineNum">     823 </span>            :      */
+<span class="lineNum">     824 </span>            :     virtual void getProcessorName( char* name ) const = 0;
+<span class="lineNum">     825 </span>            : 
+<span class="lineNum">     826 </span>            :     /** Pure method that returns the maximal length of string set by getProcessorName */
+<span class="lineNum">     827 </span>            : 
+<span class="lineNum">     828 </span>            :     virtual size_t maxProcessorName() const = 0;
+<span class="lineNum">     829 </span>            : 
+<span class="lineNum">     830 </span>            :     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+<span class="lineNum">     831 </span>            : 
+<span class="lineNum">     832 </span>            :     /** Shift implementation for direction == 0, just copies values. */
+<span class="lineNum">     833 </span>            : 
+<span class="lineNum">     834 </span>            :     template&lt;typename ValueType&gt;
+<span class="lineNum">     835 </span>            :     IndexType shift0( ValueType newVals[], const IndexType newSize,
+<span class="lineNum">     836 </span>            :                       const ValueType oldVals[], const IndexType oldSize ) const;
+<span class="lineNum">     837 </span>            : 
+<span class="lineNum">     838 </span>            : private:
+<span class="lineNum">     839 </span>            :     CommunicatorKind mCommunicatorType; //!&lt; type of this communicator
+<span class="lineNum">     840 </span>            : 
+<span class="lineNum">     841 </span>            :     PartitionId mRank; //!&lt; rank of this processor
+<span class="lineNum">     842 </span>            : 
+<span class="lineNum">     843 </span>            :     PartitionId mSize; //!&lt; number of processors in this communicator
+<span class="lineNum">     844 </span>            : 
+<span class="lineNum">     845 </span>            :     PartitionId mNodeRank; //!&lt; rank of this processor on its node
+<span class="lineNum">     846 </span>            : 
+<span class="lineNum">     847 </span>            :     PartitionId mNodeSize; //!&lt; number of processors on same node
+<span class="lineNum">     848 </span>            : 
+<span class="lineNum">     849 </span>            :     mutable int mSeed;
+<span class="lineNum">     850 </span>            : };
+<span class="lineNum">     851 </span>            : 
+<span class="lineNum">     852 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     853 </span>            : /*  Implementation of inline methods                                          */
+<span class="lineNum">     854 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     855 </span>            : 
+<span class="lineNum">     856 </span>            : PartitionId Communicator::getSize() const
+<span class="lineNum">     857 </span>            : {
+<span class="lineNum">     858 </span>            :     return mSize;
+<span class="lineNum">     859 </span>            : }
+<span class="lineNum">     860 </span>            : 
+<span class="lineNum">     861 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     862 </span>            : 
+<span class="lineNum">     863 </span>            : PartitionId Communicator::getRank() const
+<span class="lineNum">     864 </span>            : {
+<span class="lineNum">     865 </span>            :     return mRank;
+<span class="lineNum">     866 </span>            : }
+<span class="lineNum">     867 </span>            : 
+<span class="lineNum">     868 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     869 </span>            : 
+<span class="lineNum">     870 </span>            : PartitionId Communicator::getNodeSize() const
+<span class="lineNum">     871 </span>            : {
+<span class="lineNum">     872 </span>            :     return mNodeSize;
+<span class="lineNum">     873 </span>            : }
+<span class="lineNum">     874 </span>            : 
+<span class="lineNum">     875 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     876 </span>            : 
+<span class="lineNum">     877 </span>            : PartitionId Communicator::getNodeRank() const
+<span class="lineNum">     878 </span>            : {
+<span class="lineNum">     879 </span>            :     return mNodeRank;
+<span class="lineNum">     880 </span>            : }
+<span class="lineNum">     881 </span>            : 
+<span class="lineNum">     882 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     883 </span>            : 
+<span class="lineNum">     884 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     885 </span>            : ValueType Communicator::sum( ValueType localValue ) const
+<span class="lineNum">     886 </span>            : {
+<span class="lineNum">     887 </span>            :     ValueType globalValue;
+<span class="lineNum">     888 </span>            : 
+<span class="lineNum">     889 </span>            :     // general routine uses typeless pointers void*, type is coded via ScalarType
+<span class="lineNum">     890 </span>            : 
+<span class="lineNum">     891 </span><span class="lineCov">        865 :     sumImpl( &amp;globalValue, &amp;localValue, 1, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     892 </span>            : 
+<span class="lineNum">     893 </span><span class="lineCov">        843 :     return globalValue;</span>
+<span class="lineNum">     894 </span>            : }
+<span class="lineNum">     895 </span>            : 
+<span class="lineNum">     896 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     897 </span>            : 
+<span class="lineNum">     898 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     899 </span>            : ValueType Communicator::min( ValueType localValue ) const
+<span class="lineNum">     900 </span>            : {
+<span class="lineNum">     901 </span>            :     ValueType globalValue;
+<span class="lineNum">     902 </span>            : 
+<span class="lineNum">     903 </span>            :     // general routine uses typeless pointers void*, type is coded via ScalarType
+<span class="lineNum">     904 </span>            : 
+<span class="lineNum">     905 </span><span class="lineCov">        210 :     minImpl( &amp;globalValue, &amp;localValue, 1, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     906 </span>            : 
+<span class="lineNum">     907 </span><span class="lineCov">        210 :     return globalValue;</span>
+<span class="lineNum">     908 </span>            : }
+<span class="lineNum">     909 </span>            : 
+<span class="lineNum">     910 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     911 </span>            : 
+<span class="lineNum">     912 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     913 </span>            : ValueType Communicator::max( ValueType localValue ) const
+<span class="lineNum">     914 </span>            : {
+<span class="lineNum">     915 </span>            :     ValueType globalValue;
+<span class="lineNum">     916 </span>            : 
+<span class="lineNum">     917 </span>            :     // general routine uses typeless pointers void*, type is coded via ScalarType
+<span class="lineNum">     918 </span>            : 
+<span class="lineNum">     919 </span><span class="lineCov">        896 :     maxImpl( &amp;globalValue, &amp;localValue, 1, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     920 </span>            : 
+<span class="lineNum">     921 </span><span class="lineCov">        896 :     return globalValue;</span>
+<span class="lineNum">     922 </span>            : }
+<span class="lineNum">     923 </span>            : 
+<span class="lineNum">     924 </span>            : /* -------------------------------------------------------------------------- */
+<a name="925"><span class="lineNum">     925 </span>            : </a>
+<span class="lineNum">     926 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     927 </span><span class="lineCov">       1871 : void Communicator::bcast( ValueType val[], const IndexType n, const PartitionId root ) const</span>
+<span class="lineNum">     928 </span>            : {
+<span class="lineNum">     929 </span><span class="lineCov">       1893 :     SCAI_ASSERT_LT_ERROR( root, getSize(), *this &lt;&lt; &quot;: Illegal root &quot; &lt;&lt; root )</span>
+<span class="lineNum">     930 </span>            : 
+<span class="lineNum">     931 </span>            :     // general pure routine uses typeless pointers void*, type is coded via ScalarType
+<span class="lineNum">     932 </span>            : 
+<span class="lineNum">     933 </span><span class="lineCov">       1849 :     bcastImpl( val, n, root, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     934 </span><span class="lineCov">       1849 : }</span>
+<span class="lineNum">     935 </span>            : 
+<span class="lineNum">     936 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     937 </span>            : 
+<span class="lineNum">     938 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     939 </span>            : void Communicator::gather( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[] ) const
+<span class="lineNum">     940 </span>            : {
+<span class="lineNum">     941 </span><span class="lineCov">        648 :     gatherImpl( allVals, n, root, myVals, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     942 </span>            : }
+<span class="lineNum">     943 </span>            : 
+<span class="lineNum">     944 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     945 </span>            : void Communicator::scatter( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[] ) const
+<span class="lineNum">     946 </span>            : {
+<span class="lineNum">     947 </span><span class="lineCov">        286 :     scatterImpl( myVals, n, root, allVals, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     948 </span>            : }
+<span class="lineNum">     949 </span>            : 
+<span class="lineNum">     950 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     951 </span>            : void Communicator::gatherV( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[], const IndexType sizes[] ) const
+<span class="lineNum">     952 </span>            : {
+<span class="lineNum">     953 </span><span class="lineCov">         55 :     gatherVImpl( allVals, n, root, myVals, sizes, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     954 </span>            : }
+<span class="lineNum">     955 </span>            : 
+<span class="lineNum">     956 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     957 </span>            : void Communicator::scatterV( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[], const IndexType sizes[] ) const
+<span class="lineNum">     958 </span>            : {
+<span class="lineNum">     959 </span><span class="lineCov">        286 :     scatterVImpl( myVals, n, root, allVals, sizes, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     960 </span>            : }
+<span class="lineNum">     961 </span>            : 
+<span class="lineNum">     962 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     963 </span>            : 
+<span class="lineNum">     964 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     965 </span>            : tasking::SyncToken* Communicator::exchangeByPlanAsync(
+<span class="lineNum">     966 </span>            :     ValueType recvVals[],
+<span class="lineNum">     967 </span>            :     const CommunicationPlan&amp; recvPlan,
+<span class="lineNum">     968 </span>            :     const ValueType sendVals[],
+<span class="lineNum">     969 </span>            :     const CommunicationPlan&amp; sendPlan ) const
+<span class="lineNum">     970 </span>            : {
+<span class="lineNum">     971 </span><span class="lineCov">        124 :     return exchangeByPlanAsyncImpl( recvVals, recvPlan, sendVals, sendPlan, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     972 </span>            : }
+<span class="lineNum">     973 </span>            : 
+<a name="974"><span class="lineNum">     974 </span>            : /* -------------------------------------------------------------------------- */</a>
+<span class="lineNum">     975 </span>            : 
+<span class="lineNum">     976 </span><span class="lineCov">       3920 : PartitionId Communicator::getNeighbor( int pos ) const</span>
+<span class="lineNum">     977 </span>            : {
+<span class="lineNum">     978 </span>            :     PartitionId size = getSize();
+<span class="lineNum">     979 </span>            :     PartitionId rank = getRank();
+<span class="lineNum">     980 </span>            :     PartitionId apos = common::Math::abs( pos );
+<span class="lineNum">     981 </span><span class="lineCov">       3920 :     SCAI_ASSERT( apos &lt;= size, &quot;neighbor pos &quot; &lt;&lt; pos &lt;&lt; &quot; out of range (&quot; &lt;&lt; size &lt;&lt; &quot;)&quot; )</span>
+<span class="lineNum">     982 </span><span class="lineCov">       3920 :     return ( size + rank + pos ) % size;</span>
+<span class="lineNum">     983 </span>            : }
+<span class="lineNum">     984 </span>            : 
+<span class="lineNum">     985 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     986 </span>            : 
+<span class="lineNum">     987 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     988 </span>            : void Communicator::swap( ValueType val[], const IndexType n, const PartitionId partner ) const
+<span class="lineNum">     989 </span>            : {
+<span class="lineNum">     990 </span><span class="lineCov">         44 :     swapImpl( val, n, partner, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">     991 </span>            : }
+<span class="lineNum">     992 </span>            : 
+<span class="lineNum">     993 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     994 </span>            : 
+<span class="lineNum">     995 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     996 </span>            : void Communicator::exchangeByPlan(
+<span class="lineNum">     997 </span>            :     ValueType recvVals[],
+<span class="lineNum">     998 </span>            :     const CommunicationPlan&amp; recvPlan,
+<span class="lineNum">     999 </span>            :     const ValueType sendVals[],
+<span class="lineNum">    1000 </span>            :     const CommunicationPlan&amp; sendPlan ) const
+<span class="lineNum">    1001 </span>            : {
+<span class="lineNum">    1002 </span><span class="lineCov">        404 :     exchangeByPlanImpl( recvVals, recvPlan, sendVals, sendPlan, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">    1003 </span>            : }
+<span class="lineNum">    1004 </span>            : 
+<span class="lineNum">    1005 </span>            : /* -------------------------------------------------------------------------- */
+<a name="1006"><span class="lineNum">    1006 </span>            : </a>
+<span class="lineNum">    1007 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1008 </span><span class="lineCov">       1760 : IndexType Communicator::shift(</span>
+<span class="lineNum">    1009 </span>            :     ValueType newVals[], const IndexType newSize,
+<span class="lineNum">    1010 </span>            :     const ValueType oldVals[], const IndexType oldSize,
+<span class="lineNum">    1011 </span><span class="lineCov">       1760 :     const int direction ) const</span>
+<span class="lineNum">    1012 </span>            : {
+<span class="lineNum">    1013 </span><span class="lineCov">       1760 :     if ( direction % getSize() == 0 )</span>
+<span class="lineNum">    1014 </span>            :     {
+<span class="lineNum">    1015 </span>            :         // source and dest are the same processor
+<span class="lineNum">    1016 </span>            : 
+<span class="lineNum">    1017 </span><span class="lineNoCov">          0 :         return shift0( newVals, newSize, oldVals, oldSize );</span>
+<span class="lineNum">    1018 </span>            :     }
+<span class="lineNum">    1019 </span>            : 
+<span class="lineNum">    1020 </span><span class="lineCov">       1760 :     PartitionId dest = getNeighbor( direction );</span>
+<span class="lineNum">    1021 </span><span class="lineCov">       1760 :     PartitionId source = getNeighbor( -direction );</span>
+<span class="lineNum">    1022 </span>            : 
+<span class="lineNum">    1023 </span><span class="lineCov">       1760 :     return shiftImpl( newVals, newSize, source, oldVals, oldSize, dest, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">    1024 </span>            : }
+<span class="lineNum">    1025 </span>            : 
+<span class="lineNum">    1026 </span>            : /* -------------------------------------------------------------------------- */
+<a name="1027"><span class="lineNum">    1027 </span>            : </a>
+<span class="lineNum">    1028 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1029 </span><span class="lineCov">        132 : tasking::SyncToken* Communicator::shiftAsync(</span>
+<span class="lineNum">    1030 </span>            :     ValueType recvVals[],
+<span class="lineNum">    1031 </span>            :     const ValueType sendVals[],
+<span class="lineNum">    1032 </span>            :     const IndexType size,
+<span class="lineNum">    1033 </span><span class="lineCov">        132 :     const int direction ) const</span>
+<span class="lineNum">    1034 </span>            : {
+<span class="lineNum">    1035 </span><span class="lineCov">        132 :     if ( direction % getSize() == 0 )</span>
+<span class="lineNum">    1036 </span>            :     {
+<span class="lineNum">    1037 </span>            :         // source and dest are the same processor
+<span class="lineNum">    1038 </span>            : 
+<span class="lineNum">    1039 </span><span class="lineCov">         60 :         shift0( recvVals, size, sendVals, size );</span>
+<span class="lineNum">    1040 </span><span class="lineCov">        120 :         return new tasking::NoSyncToken();</span>
+<span class="lineNum">    1041 </span>            :     }
+<span class="lineNum">    1042 </span>            : 
+<span class="lineNum">    1043 </span><span class="lineCov">         72 :     PartitionId dest = getNeighbor( direction );</span>
+<span class="lineNum">    1044 </span><span class="lineCov">         72 :     PartitionId source = getNeighbor( -direction );</span>
+<span class="lineNum">    1045 </span>            : 
+<span class="lineNum">    1046 </span><span class="lineCov">         72 :     return shiftAsyncImpl( recvVals, source, sendVals, dest, size, common::TypeTraits&lt;ValueType&gt;::stype );</span>
+<span class="lineNum">    1047 </span>            : }
+<span class="lineNum">    1048 </span>            : 
+<span class="lineNum">    1049 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">    1050 </span>            : 
+<span class="lineNum">    1051 </span>            : Communicator::CommunicatorKind Communicator::getType() const
+<span class="lineNum">    1052 </span>            : {
+<span class="lineNum">    1053 </span>            :     return mCommunicatorType;
+<span class="lineNum">    1054 </span>            : }
+<span class="lineNum">    1055 </span>            : 
+<span class="lineNum">    1056 </span>            : } /* end namespace dmemo */
+<span class="lineNum">    1057 </span>            : 
+<span class="lineNum">    1058 </span>            : } /* end namespace scai */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

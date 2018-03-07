@@ -1,0 +1,894 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/matrix/_Matrix.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/matrix</a> - _Matrix.hpp<span style="font-size: 80%;"> (source / <a href="_Matrix.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntryHi">-</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file _Matrix.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Abstract base class for all matrices supported by LAMA.
+<span class="lineNum">      31 </span>            :  * @author Jiri Kraus, Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 22.02.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : #pragma once
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : // for dll_import
+<span class="lineNum">      37 </span>            : #include &lt;scai/common/config.hpp&gt;
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : // base classes
+<span class="lineNum">      40 </span>            : #include &lt;scai/dmemo/Distributed.hpp&gt;
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span>            : // local library
+<span class="lineNum">      43 </span>            : #include &lt;scai/lama/Scalar.hpp&gt;
+<span class="lineNum">      44 </span>            : #include &lt;scai/lama/DenseVector.hpp&gt;
+<span class="lineNum">      45 </span>            : #include &lt;scai/lama/io/FileIO.hpp&gt;
+<span class="lineNum">      46 </span>            : #include &lt;scai/lama/matrix/MatrixKind.hpp&gt;
+<span class="lineNum">      47 </span>            : #include &lt;scai/lama/matrix/SyncKind.hpp&gt;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : #include &lt;scai/lama/expression/Expression.hpp&gt;
+<span class="lineNum">      50 </span>            : #include &lt;scai/lama/storage/_MatrixStorage.hpp&gt;
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : // internal scai libraries
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : #include &lt;scai/common/BinaryOp.hpp&gt;
+<span class="lineNum">      55 </span>            : #include &lt;scai/dmemo/Distribution.hpp&gt;
+<span class="lineNum">      56 </span>            : #include &lt;scai/dmemo/NoDistribution.hpp&gt;
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            : #include &lt;scai/hmemo.hpp&gt;
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            : #include &lt;scai/logging.hpp&gt;
+<span class="lineNum">      61 </span>            : 
+<span class="lineNum">      62 </span>            : #include &lt;scai/common/Factory.hpp&gt;
+<span class="lineNum">      63 </span>            : #include &lt;scai/common/ScalarType.hpp&gt;
+<span class="lineNum">      64 </span>            : #include &lt;scai/common/SCAITypes.hpp&gt;
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : namespace scai
+<span class="lineNum">      67 </span>            : {
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : namespace lama
+<span class="lineNum">      70 </span>            : {
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            : /** Pointer class for a matrix, always use of a shared pointer. */
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            : typedef std::shared_ptr&lt;class _Matrix&gt; _MatrixPtr;
+<span class="lineNum">      75 </span>            : 
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            : /** Key type used for the _Matrix factory.
+<span class="lineNum">      78 </span>            :  *
+<span class="lineNum">      79 </span>            :  *  Note: own struct instead of std::pair to allow definition of operator &lt;&lt;
+<span class="lineNum">      80 </span>            :  */
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            : typedef MatrixStorageCreateKeyType MatrixCreateKeyType;
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span>            : /**
+<span class="lineNum">      85 </span>            :  * @brief The class _Matrix is a abstract type that represents a distributed 2D real or complex matrix.
+<span class="lineNum">      86 </span>            :  *
+<span class="lineNum">      87 </span>            :  * _Matrix is one of the LAMA Base Types and should be used in all situations where it is not necessary to access a
+<span class="lineNum">      88 </span>            :  * single element or to create a new _Matrix.
+<span class="lineNum">      89 </span>            :  */
+<span class="lineNum">      90 </span>            : class COMMON_DLL_IMPORTEXPORT _Matrix:
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span>            :     public common::Factory&lt;MatrixCreateKeyType, _Matrix*&gt;,
+<span class="lineNum">      93 </span>            :     public dmemo::Distributed
+<span class="lineNum">      94 </span>            : {
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span>            : public:
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            :     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
+<span class="lineNum">      99 </span>            :      */
+<span class="lineNum">     100 </span>            :     static _Matrix* getMatrix( const Format format, const common::ScalarType valueType );
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            :     /**
+<span class="lineNum">     103 </span>            :      * @brief Destructor, releases all allocated resources.
+<span class="lineNum">     104 </span>            :      */
+<span class="lineNum">     105 </span>            :     virtual ~_Matrix();
+<span class="lineNum">     106 </span>            : 
+<span class="lineNum">     107 </span>            :     /**
+<span class="lineNum">     108 </span>            :      * @brief write the matrix to an output file
+<span class="lineNum">     109 </span>            :      *
+<span class="lineNum">     110 </span>            :      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
+<span class="lineNum">     111 </span>            :      * @param[in] fileType format of the output file (SAMG, _MatrixMarket), default is to decide by suffix
+<span class="lineNum">     112 </span>            :      * @param[in] dataType representation type for output values, default is same type as matrix values
+<span class="lineNum">     113 </span>            :      * @param[in] indexType representation type for col/row index values
+<span class="lineNum">     114 </span>            :      * @param[in] fileMode can be used to forche BINARY or FORMATTED output
+<span class="lineNum">     115 </span>            :      */
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span>            :     void writeToFile(
+<span class="lineNum">     118 </span>            :         const std::string&amp; fileName,
+<span class="lineNum">     119 </span>            :         const std::string&amp; fileType = &quot;&quot;,
+<span class="lineNum">     120 </span>            :         const common::ScalarType dataType = common::ScalarType::UNKNOWN,
+<span class="lineNum">     121 </span>            :         const common::ScalarType indexType = common::ScalarType::UNKNOWN,
+<span class="lineNum">     122 </span>            :         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
+<span class="lineNum">     123 </span>            : 
+<span class="lineNum">     124 </span>            :     /**
+<span class="lineNum">     125 </span>            :      * @brief Checks for a given matrix whether the content of its data is sound.
+<span class="lineNum">     126 </span>            :      *
+<span class="lineNum">     127 </span>            :      * @return false if any of the internal data structures is not okay
+<span class="lineNum">     128 </span>            :      *
+<span class="lineNum">     129 </span>            :      * This method returns the same value on all processors.
+<span class="lineNum">     130 </span>            :      *
+<span class="lineNum">     131 </span>            :      * If any inconsistency has been found an error message should be logged, but it should
+<span class="lineNum">     132 </span>            :      * not throw an exception. This might be done by the caller of this routine to avoid
+<span class="lineNum">     133 </span>            :      * working with inconsistent matrices.
+<span class="lineNum">     134 </span>            :      *
+<span class="lineNum">     135 </span>            :      * \code
+<span class="lineNum">     136 </span>            :      * SCAI_ASSERT_DEBUG( a.isConsistent(), a &lt;&lt; &quot;: is invalid matrix after reading&quot; )
+<span class="lineNum">     137 </span>            :      * \endcode
+<span class="lineNum">     138 </span>            :      */
+<span class="lineNum">     139 </span>            : 
+<span class="lineNum">     140 </span>            :     virtual bool isConsistent() const = 0;
+<span class="lineNum">     141 </span>            : 
+<span class="lineNum">     142 </span>            :     /**
+<span class="lineNum">     143 </span>            :      *  @brief Virtual method that delivers a unique identification of the class name to which a matrix belongs.
+<span class="lineNum">     144 </span>            :      *
+<span class="lineNum">     145 </span>            :      *  This method is mainly used for error messages but might also be used to verify
+<span class="lineNum">     146 </span>            :      *  correctness when a base class pointer/reference is statically casted to a derived class.
+<span class="lineNum">     147 </span>            :      */
+<span class="lineNum">     148 </span>            :     virtual const char* getTypeName() const = 0;
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span>            :     /**
+<span class="lineNum">     151 </span>            :      * @brief Clears the full matrix, resets global and local sizes to 0.
+<span class="lineNum">     152 </span>            :      *
+<span class="lineNum">     153 </span>            :      * \code
+<span class="lineNum">     154 </span>            :      *     CSRSparseMatrix&lt;double&gt; a ( ... )
+<span class="lineNum">     155 </span>            :      *     a = CSRSparseMatrix&lt;double&gt; ();     \\ will free all arrays
+<span class="lineNum">     156 </span>            :      *     a.clear();                          \\ same functionality, clears involved arrays
+<span class="lineNum">     157 </span>            :      *
+<span class="lineNum">     158 </span>            :      * \endcode
+<span class="lineNum">     159 </span>            :      *
+<span class="lineNum">     160 </span>            :      * This routine will not free any allocated memory. It is especially helpful to invalidate
+<span class="lineNum">     161 </span>            :      * all data before it is defined again.
+<span class="lineNum">     162 </span>            :      */
+<span class="lineNum">     163 </span>            :     virtual void clear() = 0;
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span>            :     /**
+<span class="lineNum">     166 </span>            :      * @brief Same as clear but here all data is freed.
+<span class="lineNum">     167 </span>            :      */
+<span class="lineNum">     168 </span>            :     virtual void purge() = 0;
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span>            :     /** @brief Reallocates this matrix to a replicated zero-matrix of the given shape.
+<span class="lineNum">     171 </span>            :      *
+<span class="lineNum">     172 </span>            :      * @param[in] numRows      number of rows, must be non-negative.
+<span class="lineNum">     173 </span>            :      * @param[in] numColumns   number of columns, must be non-negative.
+<span class="lineNum">     174 </span>            :      *
+<span class="lineNum">     175 </span>            :      *  @remark The call allocate( 0, 0 ) implies a clear on all arrays used internally
+<span class="lineNum">     176 </span>            :      *          for the presentation of the matrix data.
+<span class="lineNum">     177 </span>            :      */
+<span class="lineNum">     178 </span>            :     virtual void allocate( const IndexType numRows, const IndexType numColumns ) = 0;
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span>            :     /** @brief Reallocates this matrix to a distributed zero-matrix by the given distributions.
+<span class="lineNum">     181 </span>            :      *
+<span class="lineNum">     182 </span>            :      *  @param[in] rowDistribution is row distribution, number of rows given by getGlobalSize()
+<span class="lineNum">     183 </span>            :      *  @param[in] colDistribution is col distribution, number of columns given by getGlobalSize()
+<span class="lineNum">     184 </span>            :      *
+<span class="lineNum">     185 </span>            :      *  The distributions specify the new global and the new local sizes for a distributed matrix.
+<span class="lineNum">     186 </span>            :      */
+<span class="lineNum">     187 </span>            :     virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) = 0;
+<span class="lineNum">     188 </span>            : 
+<span class="lineNum">     189 </span>            :     /**
+<span class="lineNum">     190 </span>            :      * @brief Operator that sets the matrix to the identity matrix.
+<span class="lineNum">     191 </span>            :      *
+<span class="lineNum">     192 </span>            :      * \code
+<span class="lineNum">     193 </span>            :      * void sub( ..., _Matrix&amp; a, ... )
+<span class="lineNum">     194 </span>            :      * ...
+<span class="lineNum">     195 </span>            :      * SCAI_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
+<span class="lineNum">     196 </span>            :      * a.setIdentity( a.getRowDistribution() );
+<span class="lineNum">     197 </span>            :      * \endcode
+<span class="lineNum">     198 </span>            :      */
+<span class="lineNum">     199 </span>            :     /** Set matrix to a identity square matrix with same row and column distribution. */
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span>            :     virtual void setIdentity( dmemo::DistributionPtr distribution ) = 0;
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            :     /** Set matrix to a (replicated) identity matrix with same row and column distribution.
+<span class="lineNum">     204 </span>            :      *
+<span class="lineNum">     205 </span>            :      *  \code
+<span class="lineNum">     206 </span>            :      *    m.setIdentitiy( n ) -&gt;  m.setIdentity( DistributionPtr( new NoDistribution( n ) ) );
+<span class="lineNum">     207 </span>            :      *  \endcode
+<span class="lineNum">     208 </span>            :      */
+<span class="lineNum">     209 </span>            :     void setIdentity( const IndexType n );
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span>            :     /**
+<span class="lineNum">     212 </span>            :      * This method sets a matrix by reading its values from one or multiple files.
+<span class="lineNum">     213 </span>            :      *
+<span class="lineNum">     214 </span>            :      * @param[in] fileName      the filename to read from
+<span class="lineNum">     215 </span>            :      * @param[in] rowDist       optional, if set it is the distribution of the matrix
+<span class="lineNum">     216 </span>            :      *
+<span class="lineNum">     217 </span>            :      *   \code
+<span class="lineNum">     218 </span>            :      *      CSRSparseMatrix&lt;double&gt; matrix;
+<span class="lineNum">     219 </span>            :      *      matrix.readFromFile( &quot;matrix.mtx&quot; )                    ! matrix only on processor 0
+<span class="lineNum">     220 </span>            :      *      matrix.readFromFile( &quot;matrix_%r.mtx&quot; )                 ! general block distributed matrix, each processor reads it own file
+<span class="lineNum">     221 </span>            :      *      matrix.readFromFile( &quot;matrix.mtx&quot;, rowDist )           ! each processor gets its local part of the matrix in one file
+<span class="lineNum">     222 </span>            :      *      matrix.readFromFile( &quot;matrix_%r.mtx&quot;, rowDist )        ! read a partitioned matrix with the given distribution
+<span class="lineNum">     223 </span>            :      *   \endcode
+<span class="lineNum">     224 </span>            :      */
+<span class="lineNum">     225 </span>            :     void readFromFile( const std::string&amp; fileName, dmemo::DistributionPtr rowDist = dmemo::DistributionPtr() );
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span>            :     /**
+<span class="lineNum">     228 </span>            :      *  This method sets a matrix a reading its values from one or multiple files and also the distribution from a file
+<span class="lineNum">     229 </span>            :      *
+<span class="lineNum">     230 </span>            :      * @param[in] matrixFileName the single or partitioned filename to read from
+<span class="lineNum">     231 </span>            :      * @param[in] distributionFileName the single or partitioned filename with the row distribution of the matrix
+<span class="lineNum">     232 </span>            :      *
+<span class="lineNum">     233 </span>            :      *   \code
+<span class="lineNum">     234 </span>            :      *      CSRSparseMatrix&lt;double&gt; matrix;
+<span class="lineNum">     235 </span>            :      *      matrix.readFromFile( &quot;matrix.mtx&quot;, &quot;owners.mtx&quot; )
+<span class="lineNum">     236 </span>            :      *      matrix.readFromFile( &quot;matrix_%r.mtx&quot;, &quot;owners.mtx&quot; )
+<span class="lineNum">     237 </span>            :      *      matrix.readFromFile( &quot;matrix.mtx&quot;, &quot;rows%r.mtx&quot; )
+<span class="lineNum">     238 </span>            :      *      matrix.readFromFile( &quot;matrix_%r.mtx&quot;, &quot;rows%r.mtx&quot; )
+<span class="lineNum">     239 </span>            :      *   \endcode
+<span class="lineNum">     240 </span>            :      */
+<span class="lineNum">     241 </span>            :     void readFromFile( const std::string&amp; matrixFileName, const std::string&amp; distributionFileName );
+<span class="lineNum">     242 </span>            : 
+<span class="lineNum">     243 </span>            :     /** This method resorts column indexes in such a way that the diagonal element is always the
+<span class="lineNum">     244 </span>            :      *  first one in a row.
+<span class="lineNum">     245 </span>            :      *
+<span class="lineNum">     246 </span>            :      *  This method throws an exception if row and column distribution are not equal. Furhtermore
+<span class="lineNum">     247 </span>            :      *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
+<span class="lineNum">     248 </span>            :      *  element in a sparse format.
+<span class="lineNum">     249 </span>            :      */
+<span class="lineNum">     250 </span>            :     void setDiagonalProperty();
+<span class="lineNum">     251 </span>            : 
+<span class="lineNum">     252 </span>            :     /** @brief Assignment of a matrix to this matrix
+<span class="lineNum">     253 </span>            :      *
+<span class="lineNum">     254 </span>            :      * Assignment of a matrix to this matrix with automatic conversion
+<span class="lineNum">     255 </span>            :      * to the matrix type and the current row / column distribution of *this
+<span class="lineNum">     256 </span>            :      *
+<span class="lineNum">     257 </span>            :      *  Note: other.getNumRows() == getNumRows(), other.getNumColumns() == getNumColumns() is mandatory
+<span class="lineNum">     258 </span>            :      *
+<span class="lineNum">     259 </span>            :      *  @param[in] other   the matrix to be converted.
+<span class="lineNum">     260 </span>            :      */
+<span class="lineNum">     261 </span>            :     virtual void assign( const _Matrix&amp; other ) = 0;
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span>            :     /** @brief Assignment of a transposed matrix to this matrix
+<span class="lineNum">     264 </span>            :      *
+<span class="lineNum">     265 </span>            :      *  @param[in] other   the matrix to be assigned.
+<span class="lineNum">     266 </span>            :      */
+<span class="lineNum">     267 </span>            :     virtual void assignTranspose( const _Matrix&amp; other ) = 0;
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            :     /**
+<span class="lineNum">     270 </span>            :      * @brief Setting (distributed) matrix with any replicated/global matrix storage data.
+<span class="lineNum">     271 </span>            :      *
+<span class="lineNum">     272 </span>            :      * @param[in] other   replicated matrix data containing all values to be set.
+<span class="lineNum">     273 </span>            :      *
+<span class="lineNum">     274 </span>            :      * Note: Size of other matrix must be exactly the same as this matrix. This routine might imply type and storage format
+<span class="lineNum">     275 </span>            :      * conversions as well as distributing the data according to the current distribution of this matrix.
+<span class="lineNum">     276 </span>            :      * The current matrix data will be overridden.
+<span class="lineNum">     277 </span>            :      */
+<span class="lineNum">     278 </span>            :     virtual void assign( const _MatrixStorage&amp; other ) = 0;
+<span class="lineNum">     279 </span>            : 
+<span class="lineNum">     280 </span>            :     /** @brief Assignment of local storage that fits a given row distribution.
+<span class="lineNum">     281 </span>            :      *
+<span class="lineNum">     282 </span>            :      *  The columns of the local storage will be splitted according to the column distribution.
+<span class="lineNum">     283 </span>            :      *
+<span class="lineNum">     284 </span>            :      *  @param[in] storage   local part of the matrix on this processor
+<span class="lineNum">     285 </span>            :      *  @param[in] rowDist   the given row distribution.
+<span class="lineNum">     286 </span>            :      *  @param[in] colDist   storage will be splitted according to the column distribution.
+<span class="lineNum">     287 </span>            :      */
+<span class="lineNum">     288 </span>            :     virtual void assignDistribute( const _MatrixStorage&amp; storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
+<span class="lineNum">     289 </span>            : 
+<span class="lineNum">     290 </span>            :     virtual void assignDistribute( const _Matrix&amp; other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span>            :     virtual void assignLocal( const _MatrixStorage&amp; storage, dmemo::DistributionPtr rowDist ) = 0;
+<span class="lineNum">     293 </span>            : 
+<span class="lineNum">     294 </span>            :     /** @brief Gets the local part (no splitted columns) of a matrix as if the distribution of columns is replicated.
+<span class="lineNum">     295 </span>            :      *
+<span class="lineNum">     296 </span>            :      *  @param[out] storage  will contain the local part of the matrix with all columns.
+<span class="lineNum">     297 </span>            :      *
+<span class="lineNum">     298 </span>            :      *  As splitting of columns is differently handled for sparse and dense matrices,
+<span class="lineNum">     299 </span>            :      *  this method is useful for conversion between them. An alternative solution
+<span class="lineNum">     300 </span>            :      *  of copying the whole matrix and replication of columns might be too expensive.
+<span class="lineNum">     301 </span>            :      */
+<span class="lineNum">     302 </span>            :     virtual void buildLocalStorage( _MatrixStorage&amp; storage ) const = 0;
+<span class="lineNum">     303 </span>            : 
+<span class="lineNum">     304 </span>            :     /** @brief Get access to the local storage of this matrix according to row and column distribution.
+<span class="lineNum">     305 </span>            :      *
+<span class="lineNum">     306 </span>            :      *  Derived classes might return covariant types.
+<span class="lineNum">     307 </span>            :      */
+<span class="lineNum">     308 </span>            : 
+<span class="lineNum">     309 </span>            :     virtual const _MatrixStorage&amp; getLocalStorage() const = 0;
+<span class="lineNum">     310 </span>            : 
+<span class="lineNum">     311 </span>            :     /** @brief This method allows any arbitrary redistribution of the matrix.
+<span class="lineNum">     312 </span>            :      *
+<span class="lineNum">     313 </span>            :      *  @param[in] rowDistributionPtr is new distribution of rows, global size must be getNumRows()
+<span class="lineNum">     314 </span>            :      *  @param[in] colDistributionPtr is new distribution of columns, global size must be getNumColumns()
+<span class="lineNum">     315 </span>            :      *
+<span class="lineNum">     316 </span>            :      *  For sparse matrices it might be allowed that the new number of columns might become larger with the
+<span class="lineNum">     317 </span>            :      *  new column distribution. 
+<span class="lineNum">     318 </span>            :      */
+<span class="lineNum">     319 </span>            :     virtual void redistribute( dmemo::DistributionPtr rowDistributionPtr, dmemo::DistributionPtr colDistributionPtr ) = 0;
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span>            :     /**
+<span class="lineNum">     322 </span>            :      *  @brief Redistribute this matrix with a redistributor 
+<span class="lineNum">     323 </span>            :      *
+<span class="lineNum">     324 </span>            :      *  @param[in] redistributor      object that supports redistribution of rows from old to new distribution
+<span class="lineNum">     325 </span>            :      *  @param[in] colDistributionPtr is new distribution of columns, global size must be getNumColumns()
+<span class="lineNum">     326 </span>            :      *
+<span class="lineNum">     327 </span>            :      *  Note: redistributor.getSourceDistribution() == this-&gt;getRowDistribution() must be valid
+<span class="lineNum">     328 </span>            :      *        this-&gt;getDistribution() == redistributor.getTargetDistribution() is valid after the call.
+<span class="lineNum">     329 </span>            :      *
+<span class="lineNum">     330 </span>            :      *  This call is more efficient than redistribute( redistributor.getTargetDistributionPtr(), colDistribution )
+<span class="lineNum">     331 </span>            :      *  as the communication schedule is already available and can be reused.
+<span class="lineNum">     332 </span>            :      */
+<span class="lineNum">     333 </span>            :     virtual void redistribute( const dmemo::Redistributor&amp; redistributor, dmemo::DistributionPtr colDistributionPtr ) = 0;
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span>            :     /**
+<span class="lineNum">     336 </span>            :      *  @brief Redistribute this matrix with a redistribution, columns are eiter replicated or have same dist as rows
+<span class="lineNum">     337 </span>            :      */
+<span class="lineNum">     338 </span>            :     virtual void redistribute( const dmemo::Redistributor&amp; redistributor );
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span>            :     /** @brief This method replaces all elements with its conjugate value. */
+<span class="lineNum">     341 </span>            : 
+<span class="lineNum">     342 </span>            :     virtual void conj() = 0;
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span>            :     virtual void writeAt( std::ostream&amp; stream ) const;
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span>            :     /**
+<span class="lineNum">     347 </span>            :      * @brief Returns the number of global rows.
+<span class="lineNum">     348 </span>            :      *
+<span class="lineNum">     349 </span>            :      * @return the number of rows.
+<span class="lineNum">     350 </span>            :      */
+<span class="lineNum">     351 </span>            :     inline IndexType getNumRows() const;
+<span class="lineNum">     352 </span>            : 
+<span class="lineNum">     353 </span>            :     /**
+<span class="lineNum">     354 </span>            :      * @brief Returns the number of columns.
+<span class="lineNum">     355 </span>            :      *
+<span class="lineNum">     356 </span>            :      * @return the number of columns.
+<span class="lineNum">     357 </span>            :      */
+<span class="lineNum">     358 </span>            :     inline IndexType getNumColumns() const;
+<span class="lineNum">     359 </span>            : 
+<span class="lineNum">     360 </span>            :     /** @brief Gets the total number of non-zero values in the matrix.
+<span class="lineNum">     361 </span>            :      *
+<span class="lineNum">     362 </span>            :      *  An element is considered to be non-zero if its absolute value
+<span class="lineNum">     363 </span>            :      *  is greater equal than mEpsilon. Zero diagonal elements are also
+<span class="lineNum">     364 </span>            :      *  counted if this-&gt;hasDiagonalProperty() is given.
+<span class="lineNum">     365 </span>            :      *
+<span class="lineNum">     366 </span>            :      *  This routine does not count zero elements even if they are stored
+<span class="lineNum">     367 </span>            :      *  (e.g. for dense or dia storage data).
+<span class="lineNum">     368 </span>            :      *
+<span class="lineNum">     369 </span>            :      * @return the number of non-zero values in this matrix.
+<span class="lineNum">     370 </span>            :      */
+<span class="lineNum">     371 </span>            :     virtual IndexType getNumValues() const = 0;
+<span class="lineNum">     372 </span>            : 
+<span class="lineNum">     373 </span>            :     /**
+<span class="lineNum">     374 </span>            :      * @brief Returns the sparsity rate of the matrix.
+<span class="lineNum">     375 </span>            :      *
+<span class="lineNum">     376 </span>            :      * @return the sparsity rate ( numValues / (numRows * numColumns)) of the whole matrix.
+<span class="lineNum">     377 </span>            :      */
+<span class="lineNum">     378 </span>            :     double getSparsityRate() const;
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span>            :     /** Getter routine for the local number of stored values. */
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span>            :     virtual IndexType getLocalNumValues() const = 0;
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span>            :     /** Getter routine for the local number of rows. */
+<span class="lineNum">     385 </span>            : 
+<span class="lineNum">     386 </span>            :     virtual IndexType getLocalNumRows() const = 0;
+<span class="lineNum">     387 </span>            : 
+<span class="lineNum">     388 </span>            :     /** Getter routine for the local number of columns. */
+<span class="lineNum">     389 </span>            : 
+<span class="lineNum">     390 </span>            :     virtual IndexType getLocalNumColumns() const = 0;
+<span class="lineNum">     391 </span>            : 
+<span class="lineNum">     392 </span>            :     /**
+<span class="lineNum">     393 </span>            :      * @brief Gets a constant reference to the column distribution.
+<span class="lineNum">     394 </span>            :      *
+<span class="lineNum">     395 </span>            :      * @return a constant reference to the column distribution.
+<span class="lineNum">     396 </span>            :      */
+<span class="lineNum">     397 </span>            :     inline const dmemo::Distribution&amp; getColDistribution() const;
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span>            :     /**
+<span class="lineNum">     400 </span>            :      * @brief Gets a pointer to the column distribution.
+<span class="lineNum">     401 </span>            :      *
+<span class="lineNum">     402 </span>            :      * @return a pointer to the column distribution.
+<span class="lineNum">     403 </span>            :      */
+<span class="lineNum">     404 </span>            :     inline dmemo::DistributionPtr getColDistributionPtr() const;
+<span class="lineNum">     405 </span>            : 
+<span class="lineNum">     406 </span>            :     /**
+<span class="lineNum">     407 </span>            :      * @brief Gets a constant reference to the row distribution.
+<span class="lineNum">     408 </span>            :      *
+<span class="lineNum">     409 </span>            :      * @return a constant reference to the row distribution.
+<span class="lineNum">     410 </span>            :      *
+<span class="lineNum">     411 </span>            :      * Note: same as getDistribution()
+<span class="lineNum">     412 </span>            :      */
+<span class="lineNum">     413 </span>            :     inline const dmemo::Distribution&amp; getRowDistribution() const;
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span>            :     /**
+<span class="lineNum">     416 </span>            :      * @brief Gets a pointer to the row distribution.
+<span class="lineNum">     417 </span>            :      *
+<span class="lineNum">     418 </span>            :      * @return a pointer to the row distribution.
+<span class="lineNum">     419 </span>            :      *
+<span class="lineNum">     420 </span>            :      * Note: same as getDistribution()
+<span class="lineNum">     421 </span>            :      */
+<span class="lineNum">     422 </span>            :     inline dmemo::DistributionPtr getRowDistributionPtr() const;
+<span class="lineNum">     423 </span>            : 
+<span class="lineNum">     424 </span>            :     /**
+<span class="lineNum">     425 </span>            :      * @brief Specifies on which compute back end the matrix operations should take place.
+<span class="lineNum">     426 </span>            :      *
+<span class="lineNum">     427 </span>            :      * @param[in] context  the compute back to use for calculations with matrix
+<span class="lineNum">     428 </span>            :      *
+<span class="lineNum">     429 </span>            :      * Note: Only for sparse matrices it is possible to specify separate locations for
+<span class="lineNum">     430 </span>            :      *       local and halo computations.
+<span class="lineNum">     431 </span>            :      */
+<span class="lineNum">     432 </span>            :     virtual void setContextPtr( const hmemo::ContextPtr context ) = 0;
+<span class="lineNum">     433 </span>            : 
+<span class="lineNum">     434 </span>            :     /**
+<span class="lineNum">     435 </span>            :      *  @brief Getter routine for the context.
+<span class="lineNum">     436 </span>            :      */
+<span class="lineNum">     437 </span>            :     virtual hmemo::ContextPtr getContextPtr() const = 0;
+<span class="lineNum">     438 </span>            : 
+<span class="lineNum">     439 </span>            :     /** Each derived matrix must give info about its kind (DENSE or SPARSE). */
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span>            :     virtual MatrixKind getMatrixKind() const = 0;
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span>            :     /**
+<span class="lineNum">     444 </span>            :      * @brief Getter routine for the communication kind.
+<span class="lineNum">     445 </span>            :      *
+<span class="lineNum">     446 </span>            :      * @return the communication kind.
+<span class="lineNum">     447 </span>            :      */
+<span class="lineNum">     448 </span>            :     inline SyncKind getCommunicationKind() const;
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span>            :     /**
+<span class="lineNum">     451 </span>            :      * @brief Setter routine for the communication kind.
+<span class="lineNum">     452 </span>            :      *
+<span class="lineNum">     453 </span>            :      * @param[in] communicationKind the communication kind.
+<span class="lineNum">     454 </span>            :      */
+<span class="lineNum">     455 </span>            :     void setCommunicationKind( SyncKind communicationKind );
+<span class="lineNum">     456 </span>            : 
+<span class="lineNum">     457 </span>            :     /**
+<span class="lineNum">     458 </span>            :      * @brief Inherits context and kind arguments from another matrix.
+<span class="lineNum">     459 </span>            :      *
+<span class="lineNum">     460 </span>            :      * @param[in] other   is the input matrix.
+<span class="lineNum">     461 </span>            :      *
+<span class="lineNum">     462 </span>            :      * This routine will also be used by copy constructors in base classes.
+<span class="lineNum">     463 </span>            :      *
+<span class="lineNum">     464 </span>            :      */
+<span class="lineNum">     465 </span>            :     void inheritAttributes( const _Matrix&amp; other );
+<span class="lineNum">     466 </span>            : 
+<span class="lineNum">     467 </span>            :     /**
+<span class="lineNum">     468 </span>            :      * @brief Prefetches matrix data to its 'preferred' context location.
+<span class="lineNum">     469 </span>            :      */
+<span class="lineNum">     470 </span>            :     virtual void prefetch() const = 0;
+<span class="lineNum">     471 </span>            : 
+<span class="lineNum">     472 </span>            :     /**
+<span class="lineNum">     473 </span>            :      * @brief Waits for a possibly running prefetch.
+<span class="lineNum">     474 </span>            :      */
+<span class="lineNum">     475 </span>            :     virtual void wait() const = 0;
+<span class="lineNum">     476 </span>            : 
+<span class="lineNum">     477 </span>            :     /**
+<span class="lineNum">     478 </span>            :      * @brief Computes the inverse of a matrix.
+<span class="lineNum">     479 </span>            :      *
+<span class="lineNum">     480 </span>            :      * @param[in] other   another matrix with the same shape as this matrix
+<span class="lineNum">     481 </span>            :      *
+<span class="lineNum">     482 </span>            :      * Set this matrix with the inverse of another square matrix.
+<span class="lineNum">     483 </span>            :      * This matrix will have afterwards the same distribution as the
+<span class="lineNum">     484 </span>            :      * other matrix.
+<span class="lineNum">     485 </span>            :      */
+<span class="lineNum">     486 </span>            :     virtual void invert( const _Matrix&amp; other ) = 0;
+<span class="lineNum">     487 </span>            : 
+<span class="lineNum">     488 </span>            :     /**
+<span class="lineNum">     489 </span>            :      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
+<span class="lineNum">     490 </span>            :      *
+<span class="lineNum">     491 </span>            :      * \code
+<span class="lineNum">     492 </span>            :      * void sub( ..., const _Matrix&amp; matrix, ...)
+<span class="lineNum">     493 </span>            :      * {
+<span class="lineNum">     494 </span>            :      *     ...
+<span class="lineNum">     495 </span>            :      *     // Create a copy of the input matrix
+<span class="lineNum">     496 </span>            :      *
+<span class="lineNum">     497 </span>            :      *     std::unique_ptr&lt;Matrix&gt; newmatrix ( matrix.newMatrix() );
+<span class="lineNum">     498 </span>            :      *     *newmatrix = matrix;
+<span class="lineNum">     499 </span>            :      *
+<span class="lineNum">     500 </span>            :      *     // Create a unity matrix of same type and same row distribution as matrix
+<span class="lineNum">     501 </span>            :      *
+<span class="lineNum">     502 </span>            :      *     std::unique_ptr&lt;Matrix&gt; newmatrix ( matrix.newMatrix() );
+<span class="lineNum">     503 </span>            :      *     newmatrix-&gt;allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
+<span class="lineNum">     504 </span>            :      *     newmatrix-&gt;setIdentity();
+<span class="lineNum">     505 </span>            :      *     ...
+<span class="lineNum">     506 </span>            :      * }
+<span class="lineNum">     507 </span>            :      * \endcode
+<span class="lineNum">     508 </span>            :      *
+<span class="lineNum">     509 </span>            :      * This method is a workaround to call the constructor of a derived matrix class
+<span class="lineNum">     510 </span>            :      * where the derived class is not known at compile time.
+<span class="lineNum">     511 </span>            :      */
+<span class="lineNum">     512 </span>            :     virtual _Matrix* newMatrix( void ) const = 0;
+<span class="lineNum">     513 </span>            : 
+<span class="lineNum">     514 </span>            :     /**
+<span class="lineNum">     515 </span>            :      * @brief Constructor function which creates a copy of this matrix.
+<span class="lineNum">     516 </span>            :      *
+<span class="lineNum">     517 </span>            :      * \code
+<span class="lineNum">     518 </span>            :      * _MatrixPtr newmatrix = matrix.copy();
+<span class="lineNum">     519 </span>            :      * // More convenient to use, but exactly same as follows:
+<span class="lineNum">     520 </span>            :      * _MatrixPtr newmatrix = _Matrix::create( matrix.getCreateValue() ); *newmatrix = matrix;
+<span class="lineNum">     521 </span>            :      * \endcode
+<span class="lineNum">     522 </span>            :      *
+<span class="lineNum">     523 </span>            :      * This method is a workaround to call the copy constructor of a derived matrix class
+<span class="lineNum">     524 </span>            :      * where the derived class is not known at compile time.
+<span class="lineNum">     525 </span>            :      */
+<span class="lineNum">     526 </span>            :     virtual _Matrix* copy() const = 0;
+<span class="lineNum">     527 </span>            : 
+<span class="lineNum">     528 </span>            :     /**
+<span class="lineNum">     529 </span>            :      * @brief Copy this matrix with a new distribution
+<span class="lineNum">     530 </span>            :      *
+<span class="lineNum">     531 </span>            :      * @param[in] rowDistribution   new distribution of the rows
+<span class="lineNum">     532 </span>            :      * @param[in] colDistribution   new distribution of the columns
+<span class="lineNum">     533 </span>            :      */
+<span class="lineNum">     534 </span>            :     virtual _Matrix* copy( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
+<span class="lineNum">     535 </span>            : 
+<span class="lineNum">     536 </span>            :     /**
+<span class="lineNum">     537 </span>            :      * @brief Queries the keytype to create matrix from factory with same valuetype and storagetype
+<span class="lineNum">     538 </span>            :      */
+<span class="lineNum">     539 </span>            :     MatrixCreateKeyType getCreateValue() const;
+<span class="lineNum">     540 </span>            : 
+<span class="lineNum">     541 </span>            :     /**
+<span class="lineNum">     542 </span>            :      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
+<span class="lineNum">     543 </span>            :      */
+<span class="lineNum">     544 </span>            :     virtual common::ScalarType getValueType() const = 0;
+<span class="lineNum">     545 </span>            : 
+<span class="lineNum">     546 </span>            :     /**
+<span class="lineNum">     547 </span>            :      * @brief Query the storage format of the used matrix format, e.g. CSR or ELL.
+<span class="lineNum">     548 </span>            :      */
+<span class="lineNum">     549 </span>            :     virtual Format getFormat() const = 0;
+<span class="lineNum">     550 </span>            : 
+<span class="lineNum">     551 </span>            :     /**
+<span class="lineNum">     552 </span>            :      * @brief Query the size of one matrix element
+<span class="lineNum">     553 </span>            :      */
+<span class="lineNum">     554 </span>            :     virtual size_t getValueTypeSize() const = 0;
+<span class="lineNum">     555 </span>            : 
+<span class="lineNum">     556 </span>            :     /** Returns the diagonalProperty of the local storage.
+<span class="lineNum">     557 </span>            :      *
+<span class="lineNum">     558 </span>            :      * @return if the diagonal property is full filled.
+<span class="lineNum">     559 </span>            :      */
+<span class="lineNum">     560 </span>            :     virtual bool hasDiagonalProperty() const = 0;
+<span class="lineNum">     561 </span>            : 
+<span class="lineNum">     562 </span>            :     /**
+<span class="lineNum">     563 </span>            :      * @brief Rechecks the storages for their diagonal property.
+<span class="lineNum">     564 </span>            :      *
+<span class="lineNum">     565 </span>            :      * Usually each matrix has a flag that indicates if the diagonal property is given.
+<span class="lineNum">     566 </span>            :      * This makes the query hasDiagonalProperty very efficient. Therefore matrices
+<span class="lineNum">     567 </span>            :      * keep track of this flag for all their operations and reset it if necessary.
+<span class="lineNum">     568 </span>            :      *
+<span class="lineNum">     569 </span>            :      * This routine is only available to have a workaround if matrix or storage data
+<span class="lineNum">     570 </span>            :      * has been modified by the user outside of the class (NOT RECOMMENDED).
+<span class="lineNum">     571 </span>            :      */
+<span class="lineNum">     572 </span>            : 
+<span class="lineNum">     573 </span>            :     virtual void resetDiagonalProperty() = 0;
+<span class="lineNum">     574 </span>            : 
+<span class="lineNum">     575 </span>            :     /**
+<span class="lineNum">     576 </span>            :      * @brief Returns the global memory that is allocated to hold this matrix.
+<span class="lineNum">     577 </span>            :      *
+<span class="lineNum">     578 </span>            :      * getMemoryUsage returns the global memory that is allocated to hold this matrix. For a distributed matrix
+<span class="lineNum">     579 </span>            :      * all partitions are summed together.
+<span class="lineNum">     580 </span>            :      *
+<span class="lineNum">     581 </span>            :      * @return the memory consumption of this matrix.
+<span class="lineNum">     582 </span>            :      */
+<span class="lineNum">     583 </span>            :     virtual size_t getMemoryUsage() const = 0;
+<span class="lineNum">     584 </span>            : 
+<span class="lineNum">     585 </span>            : protected:
+<span class="lineNum">     586 </span>            : 
+<span class="lineNum">     587 </span>            :     /**
+<span class="lineNum">     588 </span>            :      * @brief Constructs a matrix by corresponding distributions.
+<span class="lineNum">     589 </span>            :      *
+<span class="lineNum">     590 </span>            :      * @param[in] rowDistribution   specifies number of rows and how the rows of the matrix are
+<span class="lineNum">     591 </span>            :      *                              distributed among the available partitions.
+<span class="lineNum">     592 </span>            :      * @param[in] colDistribution   specifies number of columns and the distribution of a vector
+<span class="lineNum">     593 </span>            :      *                              when matrix is applied to a matrix-vector multiplication.
+<span class="lineNum">     594 </span>            :      *
+<span class="lineNum">     595 </span>            :      *  The colDstribution is used to setup a communication pattern (e.g. halo)
+<span class="lineNum">     596 </span>            :      *  that can be reused for multiple matrix-vector operations. It might also be
+<span class="lineNum">     597 </span>            :      *  used to split the matrix data on one partition into a local and non-local
+<span class="lineNum">     598 </span>            :      *  part.
+<span class="lineNum">     599 </span>            :      *
+<span class="lineNum">     600 </span>            :      *  The number of rows and columns is given implicitly by the global sizes of the distributions.
+<span class="lineNum">     601 </span>            :      */
+<span class="lineNum">     602 </span>            :     _Matrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+<span class="lineNum">     603 </span>            : 
+<span class="lineNum">     604 </span>            :     /**
+<span class="lineNum">     605 </span>            :      * @brief Constructs a matrix of a given size replicated on each partition.
+<span class="lineNum">     606 </span>            :      *
+<span class="lineNum">     607 </span>            :      * @param[in] numRows      number of rows, must be non-negative.
+<span class="lineNum">     608 </span>            :      * @param[in] numColumns   number of columns, must be non-negative.
+<span class="lineNum">     609 </span>            :      *
+<span class="lineNum">     610 </span>            :      * Same as _Matrix( NoDistribution(numRows), NoDistribution(numColumns) )
+<span class="lineNum">     611 </span>            :      */
+<span class="lineNum">     612 </span>            :     _Matrix( const IndexType numRows, const IndexType numColumns );
+<span class="lineNum">     613 </span>            : 
+<span class="lineNum">     614 </span>            :     /**
+<span class="lineNum">     615 </span>            :      * @brief Constructs a square matrix with the given size and the specified distribution.
+<span class="lineNum">     616 </span>            :      *
+<span class="lineNum">     617 </span>            :      * @param[in] distribution      specifies how the rows of the matrix are distributed among
+<span class="lineNum">     618 </span>            :      *                              the available partitions.
+<span class="lineNum">     619 </span>            :      *
+<span class="lineNum">     620 </span>            :      * Same as _Matrix( distribution, distribution ); column distribution will be same as that of rows.
+<span class="lineNum">     621 </span>            :      */
+<span class="lineNum">     622 </span>            :     _Matrix( dmemo::DistributionPtr distribution );
+<span class="lineNum">     623 </span>            : 
+<span class="lineNum">     624 </span>            :     /**
+<span class="lineNum">     625 </span>            :      * @brief Constructs a square matrix with a replicated distribution.
+<span class="lineNum">     626 </span>            :      *
+<span class="lineNum">     627 </span>            :      * @param[in] size              is the number of rows
+<span class="lineNum">     628 </span>            :      *
+<span class="lineNum">     629 </span>            :      * Same as _Matrix(size, size ).
+<span class="lineNum">     630 </span>            :      */
+<span class="lineNum">     631 </span>            :     explicit _Matrix( const IndexType size );
+<span class="lineNum">     632 </span>            : 
+<span class="lineNum">     633 </span>            :     /**
+<span class="lineNum">     634 </span>            :      * @brief Default constructor, creates a replicated matrix of size 0 x 0.
+<span class="lineNum">     635 </span>            :      */
+<span class="lineNum">     636 </span>            :     _Matrix();
+<span class="lineNum">     637 </span>            : 
+<span class="lineNum">     638 </span>            :     /**
+<span class="lineNum">     639 </span>            :      * @brief Redistribute the given matrix with the specified distributions.
+<span class="lineNum">     640 </span>            :      *
+<span class="lineNum">     641 </span>            :      * @param[in] other            the matrix to redistribute
+<span class="lineNum">     642 </span>            :      * @param[in] rowDistribution  specifies how the rows of the matrix are distributed among
+<span class="lineNum">     643 </span>            :      *                             the available partitions.
+<span class="lineNum">     644 </span>            :      * @param[in] colDistribution  specifies the distribution of a vector when matrix is
+<span class="lineNum">     645 </span>            :      *                             applied to a matrix-vector multiplication.
+<span class="lineNum">     646 </span>            :      *
+<span class="lineNum">     647 </span>            :      * The following relations must hold:
+<span class="lineNum">     648 </span>            :      *
+<span class="lineNum">     649 </span>            :      *   - other.getNumRows() == distribution-&gt;getGlobalSize()
+<span class="lineNum">     650 </span>            :      *   - other.getNumColumns() == colDistribution-&gt;getGlobalSize()
+<span class="lineNum">     651 </span>            :      */
+<span class="lineNum">     652 </span>            :     _Matrix( const _Matrix&amp; other, dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+<span class="lineNum">     653 </span>            : 
+<span class="lineNum">     654 </span>            :     /**
+<span class="lineNum">     655 </span>            :      * @brief Copies a matrix to a new matrix with the same distribution.
+<span class="lineNum">     656 </span>            :      *
+<span class="lineNum">     657 </span>            :      * @param[in] other  the matrix to take a copy from
+<span class="lineNum">     658 </span>            :      *
+<span class="lineNum">     659 </span>            :      */
+<span class="lineNum">     660 </span>            :     _Matrix( const _Matrix&amp; other );
+<span class="lineNum">     661 </span>            : 
+<span class="lineNum">     662 </span>            :     /**
+<span class="lineNum">     663 </span>            :      * @brief Sets the global/local size of replicated matrix.
+<span class="lineNum">     664 </span>            :      *
+<span class="lineNum">     665 </span>            :      * @param[in] numRows      number of rows, must be non-negative.
+<span class="lineNum">     666 </span>            :      * @param[in] numColumns   number of columns, must be non-negative.
+<span class="lineNum">     667 </span>            :      */
+<span class="lineNum">     668 </span>            :     void setReplicatedMatrix( const IndexType numRows, const IndexType numColumns );
+<span class="lineNum">     669 </span>            : 
+<span class="lineNum">     670 </span>            :     /**
+<span class="lineNum">     671 </span>            :      * @brief Sets the global and local size of distributed matrix.
+<span class="lineNum">     672 </span>            :      *
+<span class="lineNum">     673 </span>            :      * @param[in] distribution is distribution for rows
+<span class="lineNum">     674 </span>            :      * @param[in] colDistribution is distribution for columns
+<span class="lineNum">     675 </span>            :      *
+<span class="lineNum">     676 </span>            :      * Global and local size is given implicitly by the distributions itself.
+<span class="lineNum">     677 </span>            :      */
+<span class="lineNum">     678 </span>            :     void setDistributedMatrix( dmemo::DistributionPtr distribution, dmemo::DistributionPtr colDistribution );
+<span class="lineNum">     679 </span>            : 
+<span class="lineNum">     680 </span>            :     /** 
+<span class="lineNum">     681 </span>            :      *   @brief Assignment operator for base class _Matrix is explicitly disabled.
+<span class="lineNum">     682 </span>            :      * 
+<span class="lineNum">     683 </span>            :      *   \code
+<span class="lineNum">     684 </span>            :      *       void copyIt( _Matrix&amp; a, const _Matrix&amp; b )
+<span class="lineNum">     685 </span>            :      *       {
+<span class="lineNum">     686 </span>            :      *           a = b;           // NOT allowed
+<span class="lineNum">     687 </span>            :      *           a.assign( b );   // can be used as workaround
+<span class="lineNum">     688 </span>            :      *       }
+<span class="lineNum">     689 </span>            :      *
+<span class="lineNum">     690 </span>            :      *       template&lt;typename ValueType&gt;
+<span class="lineNum">     691 </span>            :      *       void copyIt( Matrix&lt;ValueType&gt;&amp; a, const Matrix&lt;ValueType&gt;&amp; b )
+<span class="lineNum">     692 </span>            :      *       {
+<span class="lineNum">     693 </span>            :      *           a = b;           // This is supported
+<span class="lineNum">     694 </span>            :      *       }
+<span class="lineNum">     695 </span>            :      *   \endcode
+<span class="lineNum">     696 </span>            :      *
+<span class="lineNum">     697 </span>            :      *   Note: assignment operations with expressions are also not supported for the base class _Matrix.
+<span class="lineNum">     698 </span>            :      */
+<span class="lineNum">     699 </span>            :     _Matrix&amp; operator=( const _Matrix&amp; other ) = delete;
+<span class="lineNum">     700 </span>            : 
+<span class="lineNum">     701 </span>            :     /**
+<span class="lineNum">     702 </span>            :      *   @brief Move assignment operator for base class _Matrix is explicitly disabled.
+<span class="lineNum">     703 </span>            :      *
+<span class="lineNum">     704 </span>            :      *   \code
+<span class="lineNum">     705 </span>            :      *       _Matrix&amp; a = ...
+<span class="lineNum">     706 </span>            :      *       _Matrix&amp; b = ...
+<span class="lineNum">     707 </span>            :      *       a = std::move( b );           // NOT allowed
+<span class="lineNum">     708 </span>            :      *   \endcode
+<span class="lineNum">     709 </span>            :      *
+<span class="lineNum">     710 </span>            :      *   Note: move assignment operator is supported for full matrix classes.
+<span class="lineNum">     711 </span>            :      */
+<span class="lineNum">     712 </span>            :     _Matrix&amp; operator=( _Matrix&amp;&amp; other ) = delete;
+<span class="lineNum">     713 </span>            : 
+<span class="lineNum">     714 </span>            :     void readFromSingleFile( const std::string&amp; fileName );
+<span class="lineNum">     715 </span>            : 
+<span class="lineNum">     716 </span>            :     void readFromSingleFile( const std::string&amp; fileName, dmemo::DistributionPtr distribution );
+<span class="lineNum">     717 </span>            : 
+<span class="lineNum">     718 </span>            :     void readFromPartitionedFile( const std::string&amp; fileName );
+<span class="lineNum">     719 </span>            : 
+<span class="lineNum">     720 </span>            :     void resetRowDistribution( dmemo::DistributionPtr distribution );
+<span class="lineNum">     721 </span>            : 
+<span class="lineNum">     722 </span>            :     void resetRowDistributionByFirstColumn();
+<span class="lineNum">     723 </span>            : 
+<span class="lineNum">     724 </span>            :     void checkSettings() const; // check valid member variables
+<span class="lineNum">     725 </span>            : 
+<span class="lineNum">     726 </span>            :     void swapMatrix( _Matrix&amp; other ); // swap member variables of _Matrix
+<span class="lineNum">     727 </span>            : 
+<span class="lineNum">     728 </span>            :     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+<span class="lineNum">     729 </span>            : 
+<span class="lineNum">     730 </span>            : protected:
+<span class="lineNum">     731 </span>            : 
+<span class="lineNum">     732 </span>            :     /**
+<span class="lineNum">     733 </span>            :      *  @brief Provide move assignment operator for base class, disable default one 
+<span class="lineNum">     734 </span>            :      *
+<span class="lineNum">     735 </span>            :      *  This method moves only member variables of this base class.
+<span class="lineNum">     736 </span>            :      */
+<span class="lineNum">     737 </span>            :     void moveImpl( _Matrix&amp;&amp; other );
+<span class="lineNum">     738 </span>            : 
+<span class="lineNum">     739 </span>            :     /**
+<span class="lineNum">     740 </span>            :      *  @brief Check that size of local storage fits the distributions
+<span class="lineNum">     741 </span>            :      */
+<span class="lineNum">     742 </span>            :     static void checkLocalStorageSizes( const  _MatrixStorage&amp; localStorage, const dmemo::Distribution&amp; rowDist );
+<span class="lineNum">     743 </span>            : 
+<span class="lineNum">     744 </span>            : private:
+<span class="lineNum">     745 </span>            : 
+<span class="lineNum">     746 </span>            :     /* ============================================================= */
+<span class="lineNum">     747 </span>            :     /*    new member variables of class _Matrix                      */
+<span class="lineNum">     748 </span>            :     /* ============================================================= */
+<span class="lineNum">     749 </span>            : 
+<span class="lineNum">     750 </span>            :     dmemo::DistributionPtr mColDistribution;
+<span class="lineNum">     751 </span>            : 
+<span class="lineNum">     752 </span>            :     SyncKind mCommunicationKind;//!&lt; synchronous/asynchronous communication
+<span class="lineNum">     753 </span>            : 
+<span class="lineNum">     754 </span>            :     using Distributed::getDistribution;
+<span class="lineNum">     755 </span>            : 
+<span class="lineNum">     756 </span>            :     using Distributed::getDistributionPtr;
+<span class="lineNum">     757 </span>            : 
+<span class="lineNum">     758 </span>            :     void setDefaultKind(); // set default values for communication and compute kind
+<span class="lineNum">     759 </span>            : 
+<span class="lineNum">     760 </span>            :     static SyncKind getDefaultSyncKind();  // get default kind as set by environment
+<span class="lineNum">     761 </span>            : 
+<span class="lineNum">     762 </span>            :     void writeToSingleFile(
+<span class="lineNum">     763 </span>            :         const std::string&amp; fileName,
+<span class="lineNum">     764 </span>            :         const std::string&amp; fileType,
+<span class="lineNum">     765 </span>            :         const common::ScalarType dataType,
+<span class="lineNum">     766 </span>            :         const common::ScalarType indexType,
+<span class="lineNum">     767 </span>            :         const FileIO::FileMode fileMode ) const;
+<span class="lineNum">     768 </span>            : 
+<span class="lineNum">     769 </span>            :     void writeToPartitionedFile(
+<span class="lineNum">     770 </span>            :         const std::string&amp; fileName,
+<span class="lineNum">     771 </span>            :         const std::string&amp; fileType,
+<span class="lineNum">     772 </span>            :         const common::ScalarType dataType,
+<span class="lineNum">     773 </span>            :         const common::ScalarType indexType,
+<span class="lineNum">     774 </span>            :         const FileIO::FileMode fileMode ) const;
+<span class="lineNum">     775 </span>            : };
+<span class="lineNum">     776 </span>            : 
+<span class="lineNum">     777 </span>            : /* ======================================================================== */
+<span class="lineNum">     778 </span>            : /*             Inline methods                                               */
+<span class="lineNum">     779 </span>            : /* ======================================================================== */
+<span class="lineNum">     780 </span>            : 
+<span class="lineNum">     781 </span>            : inline IndexType _Matrix::getNumRows() const
+<span class="lineNum">     782 </span>            : {
+<span class="lineNum">     783 </span><span class="lineCov">     573579 :     return getDistribution().getGlobalSize();</span>
+<span class="lineNum">     784 </span>            : }
+<span class="lineNum">     785 </span>            : 
+<span class="lineNum">     786 </span>            : inline IndexType _Matrix::getNumColumns() const
+<span class="lineNum">     787 </span>            : {
+<span class="lineNum">     788 </span><span class="lineCov">    2334704 :     return mColDistribution-&gt;getGlobalSize();</span>
+<span class="lineNum">     789 </span>            : }
+<span class="lineNum">     790 </span>            : 
+<span class="lineNum">     791 </span>            : inline SyncKind _Matrix::getCommunicationKind() const
+<span class="lineNum">     792 </span>            : {
+<span class="lineNum">     793 </span>            :     return mCommunicationKind;
+<span class="lineNum">     794 </span>            : }
+<span class="lineNum">     795 </span>            : 
+<span class="lineNum">     796 </span>            : inline const dmemo::Distribution&amp; _Matrix::getColDistribution() const
+<span class="lineNum">     797 </span>            : {
+<span class="lineNum">     798 </span><span class="lineCov">    3261099 :     return *mColDistribution;</span>
+<span class="lineNum">     799 </span>            : }
+<span class="lineNum">     800 </span>            : 
+<span class="lineNum">     801 </span>            : inline dmemo::DistributionPtr _Matrix::getColDistributionPtr() const
+<span class="lineNum">     802 </span>            : {
+<span class="lineNum">     803 </span>            :     return mColDistribution;
+<span class="lineNum">     804 </span>            : }
+<span class="lineNum">     805 </span>            : 
+<span class="lineNum">     806 </span>            : inline const dmemo::Distribution&amp; _Matrix::getRowDistribution() const
+<span class="lineNum">     807 </span>            : {
+<span class="lineNum">     808 </span>            :     return getDistribution();
+<span class="lineNum">     809 </span>            : }
+<span class="lineNum">     810 </span>            : 
+<span class="lineNum">     811 </span>            : inline dmemo::DistributionPtr _Matrix::getRowDistributionPtr() const
+<span class="lineNum">     812 </span>            : {
+<span class="lineNum">     813 </span>            :     return getDistributionPtr();
+<span class="lineNum">     814 </span>            : }
+<span class="lineNum">     815 </span>            : 
+<span class="lineNum">     816 </span>            : } /* end namespace lama */
+<span class="lineNum">     817 </span>            : 
+<span class="lineNum">     818 </span>            : } /* end namespace scai */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/storage/DenseStorage.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/storage</a> - DenseStorage.hpp<span style="font-size: 80%;"> (source / <a href="DenseStorage.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">21</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntryHi">95.5 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">17</td>
+            <td class="headerCovTableEntry">24</td>
+            <td class="headerCovTableEntryLo">70.8 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file DenseStorage.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Definition of a structure for a dense matrix.
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes, Lauretta Schubert
+<span class="lineNum">      32 </span>            :  * @date 27.04.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #pragma once
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : // for dll_import
+<span class="lineNum">      38 </span>            : #include &lt;scai/common/config.hpp&gt;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : // base classes
+<span class="lineNum">      41 </span>            : #include &lt;scai/lama/storage/MatrixStorage.hpp&gt;
+<span class="lineNum">      42 </span>            : #include &lt;scai/lama/mepr/StorageWrapper.hpp&gt;
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            : // internal scai libraries
+<span class="lineNum">      45 </span>            : #include &lt;scai/hmemo.hpp&gt;
+<span class="lineNum">      46 </span>            : #include &lt;scai/utilskernel/LArray.hpp&gt;
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : namespace scai
+<span class="lineNum">      49 </span>            : {
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : namespace lama
+<span class="lineNum">      52 </span>            : {
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : template&lt;typename ValueType&gt; class DenseStorage;
+<span class="lineNum">      55 </span>            : 
+<span class="lineNum">      56 </span>            : /**
+<span class="lineNum">      57 </span>            :  * Storage format for a Dense matrix.
+<span class="lineNum">      58 </span>            :  *
+<span class="lineNum">      59 </span>            :  *  @tparam ValueType is the value type of the matrix values.
+<span class="lineNum">      60 </span>            :  */
+<span class="lineNum">      61 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      62 </span>            : class COMMON_DLL_IMPORTEXPORT DenseStorage:
+<span class="lineNum">      63 </span>            :     public MatrixStorage&lt;ValueType&gt;,
+<span class="lineNum">      64 </span>            :     public _MatrixStorage::Register&lt;DenseStorage&lt;ValueType&gt; &gt;    // register at factory
+<span class="lineNum">      65 </span>            : {
+<span class="lineNum">      66 </span>            : public:
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            :     /* ==================================================================== */
+<span class="lineNum">      69 </span>            :     /*  static getter methods and corresponding pure methods                */
+<span class="lineNum">      70 </span>            :     /* ==================================================================== */
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            :     /** Static method that returns a unique name for this storage class */
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            :     static const char* typeName();
+<span class="lineNum">      75 </span>            : 
+<span class="lineNum">      76 </span>            :     /** Implementation of pure method _MatrixStorage:getTypeName    */
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :     virtual const char* getTypeName() const;
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            :     /** Statitc method that return the unique key for matrix storage factory. */
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            :     static MatrixStorageCreateKeyType createValue();
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span>            :     /** Implementation of pure method _MatrixStorage:getCreateValue    */
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            :     virtual MatrixStorageCreateKeyType getCreateValue() const;
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span>            :     /** Static method to create a new object of this storage type, used by factory. */
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            :     static _MatrixStorage* create();
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span>            :     /* ==================================================================== */
+<span class="lineNum">      93 </span>            :     /*   Constructor / Destructor                                           */
+<span class="lineNum">      94 </span>            :     /* ==================================================================== */
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span>            :     /** @brief Default constructor for a dense storage of 0 x 0  */
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            :     DenseStorage( hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span>            :     /**
+<span class="lineNum">     101 </span>            :      * @brief Create a storage of a certain size 
+<span class="lineNum">     102 </span>            :      *
+<span class="lineNum">     103 </span>            :      * @param[in] numRows    number of rows
+<span class="lineNum">     104 </span>            :      * @param[in] numColumns number of columns
+<span class="lineNum">     105 </span>            :      * @param[in] context    specifies optionally the context where storage is located
+<span class="lineNum">     106 </span>            :      *
+<span class="lineNum">     107 </span>            :      * Attention: DEPRECATED
+<span class="lineNum">     108 </span>            :      *
+<span class="lineNum">     109 </span>            :      *  \code
+<span class="lineNum">     110 </span>            :      *   DenseStorage&lt;ValueType&gt; dense( m, n, ctx );
+<span class="lineNum">     111 </span>            :      *   auto dense = undefined&lt;DenseStorage&lt;ValueType&gt;&gt;( m, n, ctx );
+<span class="lineNum">     112 </span>            :      *   DenseStorage&lt;ValueType&gt; dense( m, n, ctx );
+<span class="lineNum">     113 </span>            :      *   dense.setZero();
+<span class="lineNum">     114 </span>            :      *   auto dense = zero&lt;DenseStorage&lt;ValueType&gt;&gt;( m, n, ctx );
+<span class="lineNum">     115 </span>            :      *  \endcode
+<span class="lineNum">     116 </span>            :      */
+<span class="lineNum">     117 </span>            :     DenseStorage( const IndexType numRows, const IndexType numColumns, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
+<span class="lineNum">     118 </span>            : 
+<span class="lineNum">     119 </span>            :     /** Constructor for dense storage by passing the shape and the 'dense' array with values 
+<span class="lineNum">     120 </span>            :      *
+<span class="lineNum">     121 </span>            :      *  @param[in] numRows number of rows
+<span class="lineNum">     122 </span>            :      *  @param[in] numColumns number of columns
+<span class="lineNum">     123 </span>            :      *  @param[in] data contains linearized matrix values (row major order), data.size() = numRows * numColumns
+<span class="lineNum">     124 </span>            :      *  @param[in] ctx  is the context of the new constructed storage
+<span class="lineNum">     125 </span>            :      *
+<span class="lineNum">     126 </span>            :      *  The data array might also be passed via the move operator in which case the allocated
+<span class="lineNum">     127 </span>            :      *  data is taken over by the constructed dense storage.
+<span class="lineNum">     128 </span>            :      */
+<span class="lineNum">     129 </span>            :     DenseStorage( 
+<span class="lineNum">     130 </span>            :         const IndexType numRows, 
+<span class="lineNum">     131 </span>            :         const IndexType numColumns, 
+<span class="lineNum">     132 </span>            :         hmemo::HArray&lt;ValueType&gt; data,
+<span class="lineNum">     133 </span>            :         hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            :     /** Default copy constructor is overridden */
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span>            :     DenseStorage( const DenseStorage&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     138 </span>            : 
+<span class="lineNum">     139 </span>            :     /** Default move constructor is overridden */
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span>            :     DenseStorage( DenseStorage&lt;ValueType&gt;&amp;&amp; other );
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span>            :     /** Destructor of Dense matrix reference. */
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span>            :     virtual ~DenseStorage();
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span>            :     /* ==================================================================== */
+<span class="lineNum">     148 </span>            :     /*   assignment operator=                                               */
+<span class="lineNum">     149 </span>            :     /* ==================================================================== */
+<span class="lineNum">     150 </span>            : 
+<span class="lineNum">     151 </span>            :     /**
+<span class="lineNum">     152 </span>            :      *  Override default assignment operator.
+<span class="lineNum">     153 </span>            :      */
+<span class="lineNum">     154 </span>            :     DenseStorage&lt;ValueType&gt;&amp; operator=( const DenseStorage&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span>            :     /**
+<span class="lineNum">     157 </span>            :      *  Move assignment operator, reuses allocated data.
+<span class="lineNum">     158 </span>            :      *
+<span class="lineNum">     159 </span>            :      *  The input argument other becomes a zero matrix after successful completion.
+<span class="lineNum">     160 </span>            :      */
+<span class="lineNum">     161 </span>            :     DenseStorage&amp; operator=( DenseStorage&lt;ValueType&gt;&amp;&amp; other );
+<span class="lineNum">     162 </span>            : 
+<span class="lineNum">     163 </span>            :     /** Implementation of pure method _MatrixStorage::assign */
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span>            :     virtual void assign( const _MatrixStorage&amp; other );
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span>            :     /**
+<span class="lineNum">     168 </span>            :      * @brief Implemenation of pure method MatrixStorage&lt;ValueType&gt;::assignDiagonal
+<span class="lineNum">     169 </span>            :      */
+<span class="lineNum">     170 </span>            :     virtual void assignDiagonal( const hmemo::HArray&lt;ValueType&gt;&amp; diagonal );
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span>            :     /**
+<span class="lineNum">     173 </span>            :      *  @brief Implemenation of assignments for this class
+<span class="lineNum">     174 </span>            :      */
+<span class="lineNum">     175 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     176 </span>            :     void assignImpl( const MatrixStorage&lt;OtherValueType&gt;&amp; other );
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span>            :     /**
+<span class="lineNum">     179 </span>            :      *  @brief Implementation of assign method for same storage type. 
+<span class="lineNum">     180 </span>            :      */
+<span class="lineNum">     181 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     182 </span>            :     void assignDense( const DenseStorage&lt;OtherValueType&gt;&amp; other );
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span>            :     /* ==================================================================== */
+<span class="lineNum">     185 </span>            :     /*   Split up for reuse of member variables                             */
+<span class="lineNum">     186 </span>            :     /* ==================================================================== */
+<span class="lineNum">     187 </span>            : 
+<span class="lineNum">     188 </span>            :     /**
+<span class="lineNum">     189 </span>            :      *  @brief extract data values from dense storage 
+<span class="lineNum">     190 </span>            :      *
+<span class="lineNum">     191 </span>            :      *  This dense storage itself behaves afterwards in the same way as it has been moved.
+<span class="lineNum">     192 </span>            :      */
+<span class="lineNum">     193 </span>            :     void splitUp( IndexType&amp; numRows, IndexType&amp; numColumns, hmemo::HArray&lt;ValueType&gt;&amp; data );
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span>            :     /* ==================================================================== */
+<span class="lineNum">     196 </span>            :     /*   Dynamic (virtual) constructors                                     */
+<span class="lineNum">     197 </span>            :     /* ==================================================================== */
+<span class="lineNum">     198 </span>            : 
+<span class="lineNum">     199 </span>            :     /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
+<span class="lineNum">     200 </span>            : 
+<a name="201"><span class="lineNum">     201 </span>            :     virtual DenseStorage&lt;ValueType&gt;* newMatrixStorage( const IndexType numRows, const IndexType numColumns ) const;</a>
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :     DenseStorage* newMatrixStorage() const</span>
+<span class="lineNum">     204 </span>            :     {
+<span class="lineNum">     205 </span><span class="lineCov">        770 :         return newMatrixStorage( getNumRows(), getNumColumns() );</span>
+<span class="lineNum">     206 </span>            :     }
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span>            :     /** Implementation of MatrixStorage::copy for derived class. */
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span>            :     virtual DenseStorage&lt;ValueType&gt;* copy() const;
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            :     /** Test the storage data for inconsistencies.
+<span class="lineNum">     213 </span>            :      *
+<span class="lineNum">     214 </span>            :      *  @param[in] msg is additional message string that should be used to identify calling routine
+<span class="lineNum">     215 </span>            :      *  @throws Exception in case of any inconsistency.
+<span class="lineNum">     216 </span>            :      */
+<span class="lineNum">     217 </span>            :     void check( const char* msg ) const;
+<span class="lineNum">     218 </span>            : 
+<span class="lineNum">     219 </span>            :     void transposeImpl();
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span>            :     /** Getter routine for the data type of the elements. */
+<span class="lineNum">     222 </span>            : 
+<span class="lineNum">     223 </span>            :     virtual common::ScalarType getValueType() const;
+<span class="lineNum">     224 </span>            : 
+<span class="lineNum">     225 </span>            :     /** Getter routine for the enum value that stands for this format. */
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span>            :     virtual Format getFormat() const;
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span>            :     /**
+<span class="lineNum">     230 </span>            :      * @brief sets data for identity matrix.
+<span class="lineNum">     231 </span>            :      *
+<span class="lineNum">     232 </span>            :      * @param[in] size is the size of the square matrix
+<span class="lineNum">     233 </span>            :      */
+<span class="lineNum">     234 </span>            :     void setIdentity( const IndexType size );
+<span class="lineNum">     235 </span>            : 
+<span class="lineNum">     236 </span>            :     /**
+<span class="lineNum">     237 </span>            :      *  @brief Sets allocated dense matrix to zero
+<span class="lineNum">     238 </span>            :      */
+<span class="lineNum">     239 </span>            :     void setZero();
+<span class="lineNum">     240 </span>            : 
+<span class="lineNum">     241 </span>            :     /* ==================================================================== */
+<span class="lineNum">     242 </span>            :     /*  set / get CSR data                                                  */
+<span class="lineNum">     243 </span>            :     /* ==================================================================== */
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            :     /** Implementation of _MatrixStorage::setCSRData for this class.  */
+<span class="lineNum">     246 </span>            : 
+<span class="lineNum">     247 </span><span class="lineCov">        957 :     void setCSRData(</span>
+<span class="lineNum">     248 </span>            :         const IndexType numRows,
+<span class="lineNum">     249 </span>            :         const IndexType numColumns,
+<span class="lineNum">     250 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; ia,
+<span class="lineNum">     251 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; ja,
+<span class="lineNum">     252 </span>            :         const hmemo::_HArray&amp; values )
+<span class="lineNum">     253 </span>            :     {
+<span class="lineNum">     254 </span><span class="lineCov">        957 :         mepr::StorageWrapper&lt;DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST&gt;::</span>
+<span class="lineNum">     255 </span><span class="lineCov">        957 :             setCSRDataImpl( this, numRows, numColumns, ia, ja, values, getContextPtr() );</span>
+<span class="lineNum">     256 </span><span class="lineCov">        957 :     }</span>
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span>            :     /**
+<span class="lineNum">     259 </span>            :      * @brief template (non-virtual) version of setCSRData with explicit other value type.
+<span class="lineNum">     260 </span>            :      *
+<span class="lineNum">     261 </span>            :      * @param[in] numRows    number of rows
+<span class="lineNum">     262 </span>            :      * @param[in] numColumns number of columns
+<span class="lineNum">     263 </span>            :      * @param[in] ia         row pointer of the input csr sparse matrix
+<span class="lineNum">     264 </span>            :      * @param[in] ja         column indexes of the input csr sparse matrix
+<span class="lineNum">     265 </span>            :      * @param[in] values     the data values of the input csr sparse matrix
+<span class="lineNum">     266 </span>            :      * @param[in] loc        is the context where filling takes place
+<span class="lineNum">     267 </span>            :      */
+<span class="lineNum">     268 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     269 </span>            :     void setCSRDataImpl(
+<span class="lineNum">     270 </span>            :         const IndexType numRows,
+<span class="lineNum">     271 </span>            :         const IndexType numColumns,
+<span class="lineNum">     272 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; ia,
+<span class="lineNum">     273 </span>            :         const hmemo::HArray&lt;IndexType&gt;&amp; ja,
+<span class="lineNum">     274 </span>            :         const hmemo::HArray&lt;OtherValueType&gt;&amp; values,
+<span class="lineNum">     275 </span>            :         const hmemo::ContextPtr loc );
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span>            :     /* ==================================================================== */
+<span class="lineNum">     278 </span>            :     /*  build CSR data                                                      */
+<span class="lineNum">     279 </span>            :     /* ==================================================================== */
+<span class="lineNum">     280 </span>            : 
+<span class="lineNum">     281 </span>            :     /** Implementation for _MatrixStorage::buildCSRSizes */
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span><span class="lineCov">          2 :     void buildCSRSizes( hmemo::HArray&lt;IndexType&gt;&amp; ia ) const</span>
+<span class="lineNum">     284 </span>            :     {
+<span class="lineNum">     285 </span>            :         hmemo::HArray&lt;IndexType&gt;* ja = NULL;
+<span class="lineNum">     286 </span>            :         hmemo::HArray&lt;ValueType&gt;* values = NULL;
+<span class="lineNum">     287 </span><span class="lineCov">          4 :         buildCSR( ia, ja, values, getContextPtr() );</span>
+<span class="lineNum">     288 </span><span class="lineCov">          2 :     }</span>
+<span class="lineNum">     289 </span>            : 
+<span class="lineNum">     290 </span>            :     /** Implementation for _MatrixStorage::buildCSRData */
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span><span class="lineCov">      25685 :     void buildCSRData( hmemo::HArray&lt;IndexType&gt;&amp; csrIA, hmemo::HArray&lt;IndexType&gt;&amp; csrJA, hmemo::_HArray&amp; csrValues ) const</span>
+<span class="lineNum">     293 </span>            :     {
+<span class="lineNum">     294 </span><span class="lineCov">      25685 :         mepr::StorageWrapper&lt;DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST&gt;::</span>
+<span class="lineNum">     295 </span><span class="lineCov">      25685 :             buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );</span>
+<span class="lineNum">     296 </span><span class="lineCov">      25685 :     }</span>
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span>            :     /** 
+<span class="lineNum">     299 </span>            :      *  @brief Template (non-virtual) version of building CSR data
+<span class="lineNum">     300 </span>            :      *
+<span class="lineNum">     301 </span>            :      *  @param[out] ia is the CSR offset array
+<span class="lineNum">     302 </span>            :      *  @param[out] ja is the array with the column indexes (optional)
+<span class="lineNum">     303 </span>            :      *  @param[out] values is the array with the non-zero matrix values (optional)
+<span class="lineNum">     304 </span>            :      *  @param[in]  loc is the Context where conversion should be done
+<span class="lineNum">     305 </span>            :      */
+<span class="lineNum">     306 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     307 </span>            :     void buildCSR(
+<span class="lineNum">     308 </span>            :         hmemo::HArray&lt;IndexType&gt;&amp; ia,
+<span class="lineNum">     309 </span>            :         hmemo::HArray&lt;IndexType&gt;* ja,
+<span class="lineNum">     310 </span>            :         hmemo::HArray&lt;OtherValueType&gt;* values,
+<span class="lineNum">     311 </span>            :         const hmemo::ContextPtr loc ) const;
+<span class="lineNum">     312 </span>            : 
+<span class="lineNum">     313 </span>            :     /* Print relevant information about matrix storage format. */
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span>            :     virtual void writeAt( std::ostream&amp; stream ) const;
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            :     /** Get a value of the matrix.
+<span class="lineNum">     318 </span>            :      *
+<span class="lineNum">     319 </span>            :      * @param[in] i is the row index, 0 &lt;= i &lt; getNumRows
+<span class="lineNum">     320 </span>            :      * @param[in] j is the colum index, 0 &lt;= j &lt; mNumColumns
+<span class="lineNum">     321 </span>            :      *
+<span class="lineNum">     322 </span>            :      * Out-of-range check is enabled for DEBUG version.
+<span class="lineNum">     323 </span>            :      */
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span>            :     ValueType getValue( const IndexType i, const IndexType j ) const;
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::setValue for dense storage */
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span>            :     void setValue( const IndexType i, const IndexType j, const ValueType val,
+<span class="lineNum">     330 </span>            :                    const common::BinaryOp op = common::BinaryOp::COPY );
+<span class="lineNum">     331 </span>            : 
+<span class="lineNum">     332 </span>            :     /** Initiate an asynchronous data transfer to a specified location. */
+<span class="lineNum">     333 </span>            : 
+<span class="lineNum">     334 </span>            :     void prefetch( const hmemo::ContextPtr location ) const;
+<span class="lineNum">     335 </span>            : 
+<span class="lineNum">     336 </span>            :     /** Will wait for all outstanding asynchronous data transfers. */
+<span class="lineNum">     337 </span>            : 
+<span class="lineNum">     338 </span>            :     void wait() const;
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span>            :     /** Getter routine for the matrix data array (write). */
+<span class="lineNum">     341 </span>            : 
+<span class="lineNum">     342 </span>            :     hmemo::HArray&lt;ValueType&gt;&amp; getData();
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span>            :     /** Getter routine for the matrix data array (read-only). */
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span>            :     // const hmemo::HArray&lt;ValueType&gt;&amp; getData() const;
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span>            :     const hmemo::HArray&lt;ValueType&gt;&amp; getValues() const;
+<span class="lineNum">     349 </span>            : 
+<span class="lineNum">     350 </span>            :     /** Getter routine for the number of stored values. */
+<span class="lineNum">     351 </span>            : 
+<span class="lineNum">     352 </span>            :     virtual IndexType getNumValues() const;
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            :     /**
+<a name="355"><span class="lineNum">     355 </span>            :      *  Implementation of pure method of _MatrixStorage::clear</a>
+<span class="lineNum">     356 </span>            :      */
+<span class="lineNum">     357 </span><span class="lineCov">        417 :     virtual void clear()</span>
+<span class="lineNum">     358 </span>            :     {
+<span class="lineNum">     359 </span><span class="lineCov">        417 :         _MatrixStorage::setDimension( 0, 0 );</span>
+<span class="lineNum">     360 </span><span class="lineCov">        417 :         mData.clear();</span>
+<span class="lineNum">     361 </span><span class="lineCov">        417 :         mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     362 </span><span class="lineCov">        417 :     }</span>
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span>            :     /**
+<a name="365"><span class="lineNum">     365 </span>            :      *  IImplementation of pure method of class _MatrixStorage::purge</a>
+<span class="lineNum">     366 </span>            :      */
+<span class="lineNum">     367 </span><span class="lineCov">         23 :     virtual void purge()</span>
+<span class="lineNum">     368 </span>            :     {
+<span class="lineNum">     369 </span><span class="lineCov">         23 :         _MatrixStorage::setDimension( 0, 0 );</span>
+<span class="lineNum">     370 </span>            :         mData.purge();
+<span class="lineNum">     371 </span><span class="lineCov">         23 :         mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     372 </span><span class="lineCov">         23 :     }</span>
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span>            :     /** Override MatrixStorage&lt;ValueType&gt;::getFirstColumnIndexes */
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span>            :     virtual void getFirstColumnIndexes( hmemo::HArray&lt;IndexType&gt;&amp; colIndexes ) const;
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span>            :     /* ========================================================================= */
+<span class="lineNum">     379 </span>            :     /*       Filling dense storage with assembled COO data                      */
+<span class="lineNum">     380 </span>            :     /* ========================================================================= */
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span>            :     /**
+<span class="lineNum">     383 </span>            :      *  @brief Override MatrixStorage&lt;ValueType&gt;::fillCOO 
+<span class="lineNum">     384 </span>            :      *
+<span class="lineNum">     385 </span>            :      *  Default implementation (conversion to CSR and back) is very inefficient
+<span class="lineNum">     386 </span>            :      */
+<span class="lineNum">     387 </span>            :     virtual void fillCOO(
+<span class="lineNum">     388 </span>            :         hmemo::HArray&lt;IndexType&gt; ia,
+<span class="lineNum">     389 </span>            :         hmemo::HArray&lt;IndexType&gt; ja,
+<span class="lineNum">     390 </span>            :         hmemo::HArray&lt;ValueType&gt; values,
+<span class="lineNum">     391 </span>            :         const common::BinaryOp op = common::BinaryOp::COPY );
+<span class="lineNum">     392 </span>            : 
+<span class="lineNum">     393 </span>            :     /******************************************************************
+<span class="lineNum">     394 </span>            :      *   invert                                                        *
+<span class="lineNum">     395 </span>            :      ******************************************************************/
+<span class="lineNum">     396 </span>            : 
+<span class="lineNum">     397 </span>            :     /** @brief Implementation of MatrixStorage::invert for dense storage
+<span class="lineNum">     398 </span>            :      *
+<span class="lineNum">     399 </span>            :      *  Note: other matrix storage can be aliased with this storage.
+<span class="lineNum">     400 </span>            :      */
+<span class="lineNum">     401 </span>            :     virtual void invert( const MatrixStorage&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     402 </span>            : 
+<span class="lineNum">     403 </span>            :     /** Implementation of MatrixStorage::matrixTimesVector for Dense */
+<span class="lineNum">     404 </span>            : 
+<span class="lineNum">     405 </span>            :     virtual void matrixTimesVector(
+<span class="lineNum">     406 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     407 </span>            :         const ValueType alpha,
+<span class="lineNum">     408 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     409 </span>            :         const ValueType beta,
+<span class="lineNum">     410 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; y,
+<span class="lineNum">     411 </span>            :         const common::MatrixOp op ) const;
+<span class="lineNum">     412 </span>            : 
+<span class="lineNum">     413 </span>            :     /** Implementation of MatrixStorage::matrixTimesTimes for Dense */
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span>            :     virtual void matrixTimesMatrix(
+<span class="lineNum">     416 </span>            :         const ValueType alpha,
+<span class="lineNum">     417 </span>            :         const MatrixStorage&lt;ValueType&gt;&amp; a,
+<span class="lineNum">     418 </span>            :         const MatrixStorage&lt;ValueType&gt;&amp; b,
+<span class="lineNum">     419 </span>            :         const ValueType beta,
+<span class="lineNum">     420 </span>            :         const MatrixStorage&lt;ValueType&gt;&amp; c );
+<span class="lineNum">     421 </span>            : 
+<span class="lineNum">     422 </span>            :     /** Implementation for MatrixStorage::l1Norm */
+<span class="lineNum">     423 </span>            : 
+<span class="lineNum">     424 </span>            :     virtual RealType&lt;ValueType&gt; l1Norm() const;
+<span class="lineNum">     425 </span>            : 
+<span class="lineNum">     426 </span>            :     /** Implementation for MatrixStorage::l2Norm */
+<span class="lineNum">     427 </span>            : 
+<span class="lineNum">     428 </span>            :     virtual RealType&lt;ValueType&gt; l2Norm() const;
+<span class="lineNum">     429 </span>            : 
+<span class="lineNum">     430 </span>            :     /** Implementation for MatrixStorage::maxNorm */
+<span class="lineNum">     431 </span>            : 
+<span class="lineNum">     432 </span>            :     virtual RealType&lt;ValueType&gt; maxNorm() const;
+<span class="lineNum">     433 </span>            : 
+<span class="lineNum">     434 </span>            :     /** Implementation for MatrixStorage::maxDiffNorm */
+<span class="lineNum">     435 </span>            : 
+<span class="lineNum">     436 </span>            :     virtual RealType&lt;ValueType&gt; maxDiffNorm( const MatrixStorage&lt;ValueType&gt;&amp; other ) const;
+<span class="lineNum">     437 </span>            : 
+<span class="lineNum">     438 </span>            :     /** Implementation of maxDiffNorm for dense matrices */
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span>            :     virtual RealType&lt;ValueType&gt; maxDiffNormImpl( const DenseStorage&lt;ValueType&gt;&amp; other ) const;
+<span class="lineNum">     441 </span>            : 
+<span class="lineNum">     442 </span>            :     /******************************************************************/
+<span class="lineNum">     443 </span>            :     /*  set - get  row - column                                       */
+<span class="lineNum">     444 </span>            :     /******************************************************************/
+<span class="lineNum">     445 </span>            : 
+<span class="lineNum">     446 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::getRow */
+<span class="lineNum">     447 </span>            : 
+<span class="lineNum">     448 </span>            :     virtual void getRow( hmemo::HArray&lt;ValueType&gt;&amp; row, const IndexType i ) const;
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::getColumn */
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span>            :     virtual void getColumn( hmemo::HArray&lt;ValueType&gt;&amp; column, const IndexType j ) const;
+<span class="lineNum">     453 </span>            : 
+<span class="lineNum">     454 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::getSparseRow */
+<span class="lineNum">     455 </span>            : 
+<span class="lineNum">     456 </span>            :     virtual void getSparseRow( hmemo::HArray&lt;IndexType&gt;&amp; jA, hmemo::HArray&lt;ValueType&gt;&amp; values, const IndexType i ) const;
+<span class="lineNum">     457 </span>            : 
+<span class="lineNum">     458 </span>            :     /** Implementation of pure method MatrixStorage::getSparseColumn */
+<span class="lineNum">     459 </span>            : 
+<span class="lineNum">     460 </span>            :     virtual void getSparseColumn( hmemo::HArray&lt;IndexType&gt;&amp; iA, hmemo::HArray&lt;ValueType&gt;&amp; values, const IndexType j ) const;
+<span class="lineNum">     461 </span>            : 
+<span class="lineNum">     462 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::setRow */
+<span class="lineNum">     463 </span>            : 
+<span class="lineNum">     464 </span>            :     virtual void setRow( const hmemo::HArray&lt;ValueType&gt;&amp; row, const IndexType i, const common::BinaryOp op );
+<span class="lineNum">     465 </span>            : 
+<span class="lineNum">     466 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::setColumn */
+<span class="lineNum">     467 </span>            : 
+<span class="lineNum">     468 </span>            :     virtual void setColumn( const hmemo::HArray&lt;ValueType&gt;&amp; column, const IndexType j, const common::BinaryOp op );
+<span class="lineNum">     469 </span>            : 
+<span class="lineNum">     470 </span>            :     /******************************************************************/
+<span class="lineNum">     471 </span>            :     /*  set / get diagonal                                            */
+<span class="lineNum">     472 </span>            :     /******************************************************************/
+<span class="lineNum">     473 </span>            : 
+<span class="lineNum">     474 </span>            :     /** 
+<span class="lineNum">     475 </span>            :      * Implementation of pure method MatrixStorage&lt;ValueType&gt;::getDiagonal
+<span class="lineNum">     476 </span>            :      */
+<span class="lineNum">     477 </span>            :     virtual void getDiagonal( hmemo::HArray&lt;ValueType&gt;&amp; diagonal ) const;
+<span class="lineNum">     478 </span>            : 
+<span class="lineNum">     479 </span>            :     /** 
+<span class="lineNum">     480 </span>            :      * Implementation of pure method MatrixStorage&lt;ValueType&gt;::setDiagonalV
+<span class="lineNum">     481 </span>            :      */
+<span class="lineNum">     482 </span>            :     virtual void setDiagonalV( const hmemo::HArray&lt;ValueType&gt;&amp; diagonal );
+<span class="lineNum">     483 </span>            : 
+<span class="lineNum">     484 </span>            :     /** 
+<span class="lineNum">     485 </span>            :      * Implementation of pure method MatrixStorage&lt;ValueType&gt;::setDiagonal
+<span class="lineNum">     486 </span>            :      */
+<span class="lineNum">     487 </span>            :     virtual void setDiagonal( const ValueType value );
+<span class="lineNum">     488 </span>            : 
+<span class="lineNum">     489 </span>            :     /******************************************************************
+<span class="lineNum">     490 </span>            :      *  Scaling of elements in a matrix                                *
+<span class="lineNum">     491 </span>            :      ******************************************************************/
+<span class="lineNum">     492 </span>            : 
+<span class="lineNum">     493 </span>            :     /** Template version used for virtual routine scale with known value type. */
+<span class="lineNum">     494 </span>            : 
+<span class="lineNum">     495 </span>            :     void scaleRows( const hmemo::HArray&lt;ValueType&gt;&amp; values );
+<span class="lineNum">     496 </span>            : 
+<span class="lineNum">     497 </span>            :     /** Implementation of pure method.  */
+<span class="lineNum">     498 </span>            : 
+<span class="lineNum">     499 </span>            :     virtual void scale( const ValueType value );
+<span class="lineNum">     500 </span>            : 
+<span class="lineNum">     501 </span>            :     /** Implementation of pure method.  */
+<span class="lineNum">     502 </span>            : 
+<span class="lineNum">     503 </span>            :     virtual void conj();
+<span class="lineNum">     504 </span>            : 
+<span class="lineNum">     505 </span>            :     virtual size_t getMemoryUsageImpl() const;
+<span class="lineNum">     506 </span>            : 
+<span class="lineNum">     507 </span>            :     void swap( DenseStorage&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     508 </span>            : 
+<span class="lineNum">     509 </span>            :     /** Implementation of pure method _MatrixStorage::allocate */
+<span class="lineNum">     510 </span>            : 
+<span class="lineNum">     511 </span>            :     void allocate( const IndexType numRows, const IndexType numColumns );
+<span class="lineNum">     512 </span>            : 
+<span class="lineNum">     513 </span>            :     /** Print dense matrix on output; use it carefully */
+<span class="lineNum">     514 </span>            : 
+<span class="lineNum">     515 </span>            :     virtual void print( std::ostream&amp; ) const;
+<span class="lineNum">     516 </span>            : 
+<span class="lineNum">     517 </span>            :     using MatrixStorage&lt;ValueType&gt;::prefetch;
+<span class="lineNum">     518 </span>            :     using MatrixStorage&lt;ValueType&gt;::assign;
+<span class="lineNum">     519 </span>            :     using MatrixStorage&lt;ValueType&gt;::getContextPtr;
+<span class="lineNum">     520 </span>            : 
+<span class="lineNum">     521 </span>            :     using _MatrixStorage::getNumRows;
+<span class="lineNum">     522 </span>            :     using _MatrixStorage::getNumColumns;
+<span class="lineNum">     523 </span>            : 
+<span class="lineNum">     524 </span>            : protected:
+<span class="lineNum">     525 </span>            : 
+<span class="lineNum">     526 </span>            :     using MatrixStorage&lt;ValueType&gt;::mDiagonalProperty;
+<span class="lineNum">     527 </span>            :     using MatrixStorage&lt;ValueType&gt;::mContext;
+<span class="lineNum">     528 </span>            : 
+<span class="lineNum">     529 </span>            :     utilskernel::LArray&lt;ValueType&gt; mData;  //!&lt;  matrix data as LArray, stored row-wise
+<span class="lineNum">     530 </span>            : 
+<span class="lineNum">     531 </span>            :     /** Logger just for this class / matrix format. */
+<span class="lineNum">     532 </span>            : 
+<span class="lineNum">     533 </span>            :     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+<span class="lineNum">     534 </span>            : 
+<span class="lineNum">     535 </span>            :     /** Override MatrixStorage::checkDiagonalProperty method. */
+<span class="lineNum">     536 </span>            : 
+<span class="lineNum">     537 </span>            :     virtual    bool checkDiagonalProperty() const;
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span>            : private:
+<span class="lineNum">     540 </span>            : 
+<span class="lineNum">     541 </span>            :     /** Implementation of matrix times matrix for dense matrices. */
+<span class="lineNum">     542 </span>            : 
+<span class="lineNum">     543 </span>            :     void matrixTimesMatrixDense( const ValueType alpha,
+<span class="lineNum">     544 </span>            :                                  const DenseStorage&lt;ValueType&gt;&amp; a,
+<span class="lineNum">     545 </span>            :                                  const DenseStorage&lt;ValueType&gt;&amp; b,
+<span class="lineNum">     546 </span>            :                                  const ValueType beta,
+<span class="lineNum">     547 </span>            :                                  const DenseStorage&lt;ValueType&gt;&amp; c );
+<span class="lineNum">     548 </span>            : 
+<span class="lineNum">     549 </span>            :     /** @brief invert only for DenseStorage. */
+<span class="lineNum">     550 </span>            : 
+<span class="lineNum">     551 </span>            :     void invertDense( const DenseStorage&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     552 </span>            : 
+<span class="lineNum">     553 </span>            :     static std::string initTypeName();
+<span class="lineNum">     554 </span>            : };
+<span class="lineNum">     555 </span>            : 
+<span class="lineNum">     556 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span>            : } /* end namespace lama */
+<span class="lineNum">     559 </span>            : 
+<span class="lineNum">     560 </span>            : } /* end namespace scai */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

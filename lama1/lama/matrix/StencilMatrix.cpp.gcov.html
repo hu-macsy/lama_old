@@ -1,0 +1,397 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/matrix/StencilMatrix.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/matrix</a> - StencilMatrix.cpp<span style="font-size: 80%;"> (source / <a href="StencilMatrix.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">29</td>
+            <td class="headerCovTableEntry">88</td>
+            <td class="headerCovTableEntryLo">33.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">70</td>
+            <td class="headerCovTableEntryLo">11.4 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file StencilMatrix.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of methods and constructors for template class StencilMatrix.
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 13.04.2017
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // hpp
+<span class="lineNum">      36 </span>            : #include &quot;StencilMatrix.hpp&quot;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : #include &lt;scai/lama/storage/StorageMethods.hpp&gt;
+<span class="lineNum">      39 </span>            : #include &lt;scai/utilskernel/HArrayUtils.hpp&gt;
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : #include &lt;scai/sparsekernel/openmp/OpenMPStencilKernel.hpp&gt;
+<span class="lineNum">      42 </span>            : #include &lt;scai/common/macros/print_string.hpp&gt;
+<span class="lineNum">      43 </span>            : #include &lt;scai/common/macros/instantiate.hpp&gt;
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : #include &lt;memory&gt;
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : using std::shared_ptr;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : namespace scai
+<span class="lineNum">      50 </span>            : {
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : using common::Stencil;
+<span class="lineNum">      53 </span>            : using namespace dmemo;
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : namespace lama
+<span class="lineNum">      56 </span>            : {
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span><span class="lineCov">         70 : SCAI_LOG_DEF_TEMPLATE_LOGGER( template&lt;typename ValueType&gt;, StencilMatrix&lt;ValueType&gt;::logger,</span>
+<span class="lineNum">      61 </span>            :                               &quot;Matrix.SparseMatrix.StencilMatrix&quot; )
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      66 </span><span class="lineCov">          5 : StencilMatrix&lt;ValueType&gt;::StencilMatrix() : SparseMatrix&lt;ValueType&gt;()</span>
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            : {
+<span class="lineNum">      69 </span><span class="lineCov">         10 :     SCAI_LOG_INFO( logger, &quot;create default stencil matrix&quot; )</span>
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span><span class="lineCov">          5 :     mLocalData.reset( new StencilStorage&lt;ValueType&gt;() );</span>
+<span class="lineNum">      72 </span><span class="lineCov">         10 :     mHaloData.reset( new CSRStorage&lt;ValueType&gt;() );</span>
+<span class="lineNum">      73 </span><span class="lineCov">          5 : }</span>
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      78 </span><span class="lineCov">         25 : void StencilMatrix&lt;ValueType&gt;::define( const common::Grid&amp; grid, const Stencil&lt;ValueType&gt;&amp; stencil )</span>
+<span class="lineNum">      79 </span>            : {
+<span class="lineNum">      80 </span>            :     const IndexType N = grid.size();   // shape of matrix is N x N
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span><span class="lineCov">         25 :     _Matrix::setReplicatedMatrix( grid.size(), grid.size() );</span>
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span><span class="lineCov">         50 :     SCAI_LOG_INFO( logger, &quot;create stencil matrix, grid = &quot; &lt;&lt; grid &lt;&lt; &quot;, stencil = &quot; &lt;&lt; stencil )</span>
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span><span class="lineCov">         25 :     mLocalData.reset( new StencilStorage&lt;ValueType&gt;( grid, stencil ) );</span>
+<span class="lineNum">      87 </span><span class="lineCov">         50 :     mHaloData.reset( new CSRStorage&lt;ValueType&gt;() );</span>
+<span class="lineNum">      88 </span><span class="lineCov">         25 :     mHaloData-&gt;allocate( N, 0 );</span>
+<span class="lineNum">      89 </span><span class="lineCov">         25 : }</span>
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span>            : /* -------------------------------------------------------------------------- */
+<a name="92"><span class="lineNum">      92 </span>            : </a>
+<span class="lineNum">      93 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      94 </span><span class="lineCov">         25 : StencilMatrix&lt;ValueType&gt;::StencilMatrix( const common::Grid&amp; grid, const Stencil&lt;ValueType&gt;&amp; stencil ) : </span>
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span><span class="lineCov">         25 :     SparseMatrix&lt;ValueType&gt;()</span>
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            : {
+<span class="lineNum">      99 </span>            :     // own method needed as halo storage will be of CSR format
+<span class="lineNum">     100 </span><span class="lineCov">         25 :     define( grid, stencil );</span>
+<span class="lineNum">     101 </span><span class="lineCov">         25 : }</span>
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 : void StencilMatrix&lt;ValueType&gt;::buildStencilHaloStorage(</span>
+<span class="lineNum">     107 </span>            :     hmemo::HArray&lt;IndexType&gt;&amp; haloIA,
+<span class="lineNum">     108 </span>            :     hmemo::HArray&lt;IndexType&gt;&amp; haloJA,
+<span class="lineNum">     109 </span>            :     hmemo::HArray&lt;ValueType&gt;&amp; haloValues,
+<span class="lineNum">     110 </span>            :     const dmemo::GridDistribution&amp; gridDist,
+<span class="lineNum">     111 </span><span class="lineNoCov">          0 :     const Stencil&lt;ValueType&gt;&amp; stencil )</span>
+<span class="lineNum">     112 </span>            : {
+<span class="lineNum">     113 </span>            :     // Determine all non-local grid points of the boundaries
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span>            :     const common::Grid&amp; localGrid  = gridDist.getLocalGrid();
+<span class="lineNum">     116 </span>            :     const common::Grid&amp; globalGrid = gridDist.getGlobalGrid();
+<span class="lineNum">     117 </span>            : 
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :     const IndexType n     = gridDist.getLocalSize();</span>
+<span class="lineNum">     119 </span>            :     const IndexType nDims = stencil.nDims();
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span>            :     IndexType localGridDistances[ SCAI_GRID_MAX_DIMENSION ];
+<span class="lineNum">     122 </span>            :     IndexType globalGridDistances[ SCAI_GRID_MAX_DIMENSION ];
+<span class="lineNum">     123 </span>            : 
+<span class="lineNum">     124 </span>            :     localGrid.getDistances( localGridDistances );
+<span class="lineNum">     125 </span>            :     globalGrid.getDistances( globalGridDistances );
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span>            :     // get the offsets of the stencil points in the global grid 
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :     std::unique_ptr&lt;int[]&gt; stencilOffsets( new int[ stencil.nPoints() ] );</span>
+<span class="lineNum">     130 </span><span class="lineNoCov">          0 :     stencil.getLinearOffsets( stencilOffsets.get(), globalGridDistances );</span>
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            :     {
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :         hmemo::WriteOnlyAccess&lt;IndexType&gt; wIA( haloIA, n + 1 );</span>
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :         sparsekernel::OpenMPStencilKernel::stencilHaloSizes( </span>
+<span class="lineNum">     136 </span>            :             wIA.get(), nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :             globalGrid.sizes(), globalGrid.borders(), stencil.nPoints(), stencil.positions() );</span>
+<span class="lineNum">     138 </span>            : 
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :         wIA.resize( n );</span>
+<span class="lineNum">     140 </span>            :     }
+<span class="lineNum">     141 </span>            : 
+<span class="lineNum">     142 </span>            :     // scan of IA 
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :     const IndexType nnz = utilskernel::HArrayUtils::scan1( haloIA );</span>
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            :     {
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         hmemo::WriteOnlyAccess&lt;IndexType&gt; wJA( haloJA, nnz );</span>
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :         hmemo::WriteOnlyAccess&lt;ValueType&gt; wValues( haloValues, nnz );</span>
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :         hmemo::ReadAccess&lt;IndexType&gt; rIA( haloIA );</span>
+<span class="lineNum">     150 </span>            : 
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :         sparsekernel::OpenMPStencilKernel::stencilHaloCSR(</span>
+<span class="lineNum">     152 </span>            :             wJA.get(), wValues.get(), rIA.get(),
+<span class="lineNum">     153 </span>            :             nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
+<span class="lineNum">     154 </span>            :             globalGrid.sizes(), globalGridDistances, globalGrid.borders(),
+<span class="lineNum">     155 </span>            :             stencil.nPoints(), stencil.positions(),
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :             stencil.values(), stencilOffsets.get() );</span>
+<span class="lineNum">     157 </span>            :     }
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     161 </span>            : 
+<span class="lineNum">     162 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 : void StencilMatrix&lt;ValueType&gt;::define( dmemo::DistributionPtr dist, const Stencil&lt;ValueType&gt;&amp; stencil )</span>
+<span class="lineNum">     164 </span>            : {
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( dist.get(), &quot;NULL dist&quot; )</span>
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span>            :     using namespace dmemo;
+<span class="lineNum">     168 </span>            : 
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :     const GridDistribution* gridDist = dynamic_cast&lt;const GridDistribution*&gt;( dist.get() );</span>
+<span class="lineNum">     170 </span>            :   
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( gridDist, &quot;not grid distribution: dist = &quot; &lt;&lt; *dist )</span>
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 :     _Matrix::setDistributedMatrix( dist, dist );</span>
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span>            :     // const common::Grid&amp; globalGrid = gridDist-&gt;getGlobalGrid();
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :     const common::Grid&amp; localGrid  = gridDist-&gt;getLocalGrid();</span>
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :     mLocalData.reset( new StencilStorage&lt;ValueType&gt;( localGrid, stencil ) );</span>
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span><span class="lineNoCov">          0 :     CSRStorage&lt;ValueType&gt;* haloStorage = new CSRStorage&lt;ValueType&gt;();</span>
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :     mHaloData.reset( haloStorage );   </span>
+<span class="lineNum">     182 </span>            : 
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :     hmemo::HArray&lt;IndexType&gt; haloIA;</span>
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :     hmemo::HArray&lt;IndexType&gt; haloJA;</span>
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :     hmemo::HArray&lt;ValueType&gt; haloValues;</span>
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span>            :     // ToDo: build halo storage and halo 
+<span class="lineNum">     188 </span>            : 
+<span class="lineNum">     189 </span><span class="lineNoCov">          0 :     buildStencilHaloStorage( haloIA, haloJA, haloValues, *gridDist, stencil );</span>
+<span class="lineNum">     190 </span>            :     
+<span class="lineNum">     191 </span>            :     SCAI_LOG_DEBUG( logger, &quot;haloStorage, haloIA = &quot; &lt;&lt; haloIA )
+<span class="lineNum">     192 </span>            :     SCAI_LOG_DEBUG( logger, &quot;haloStorage, haloJA = &quot; &lt;&lt; haloJA )
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span>            :     IndexType haloNumColumns;
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :     _StorageMethods::buildHalo( mHalo, haloJA, haloNumColumns, *gridDist );</span>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span>            :     SCAI_LOG_DEBUG( logger, &quot;halo = &quot; &lt;&lt; mHalo )
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span><span class="lineNoCov">          0 :     haloStorage-&gt;allocate( haloIA.size() - 1, haloNumColumns );</span>
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :     haloStorage-&gt;swap( haloIA, haloJA, haloValues );</span>
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     203 </span>            : 
+<span class="lineNum">     204 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 : StencilMatrix&lt;ValueType&gt;::StencilMatrix( dmemo::DistributionPtr dist, const Stencil&lt;ValueType&gt;&amp; stencil )</span>
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :     : SparseMatrix&lt;ValueType&gt;()</span>
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span>            : {
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :     define( dist, stencil );</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     214 </span>            : 
+<span class="lineNum">     215 </span>            : /* -------------------------------------------------------------------------- */
+<a name="216"><span class="lineNum">     216 </span>            : </a>
+<span class="lineNum">     217 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     218 </span><span class="lineCov">         35 : StencilMatrix&lt;ValueType&gt;::~StencilMatrix()</span>
+<span class="lineNum">     219 </span>            : {
+<span class="lineNum">     220 </span><span class="lineCov">         70 :     SCAI_LOG_INFO( logger, &quot;~StencilMatrix&quot; )</span>
+<span class="lineNum">     221 </span><span class="lineCov">         70 : }</span>
+<span class="lineNum">     222 </span>            : 
+<span class="lineNum">     223 </span>            : /* -------------------------------------------------------------------------- */
+<a name="224"><span class="lineNum">     224 </span>            : </a>
+<span class="lineNum">     225 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     226 </span><span class="lineCov">         45 : const StencilStorage&lt;ValueType&gt;&amp; StencilMatrix&lt;ValueType&gt;::getLocalStorage() const</span>
+<span class="lineNum">     227 </span>            : {
+<span class="lineNum">     228 </span>            :     // here we need a dynamic cast as for any stupid reasons somebody
+<span class="lineNum">     229 </span>            :     // has modified the underlying storage type
+<span class="lineNum">     230 </span><span class="lineCov">         45 :     const StencilStorage&lt;ValueType&gt;* local = dynamic_cast&lt;const StencilStorage&lt;ValueType&gt;*&gt;( this-&gt;mLocalData.get() );</span>
+<span class="lineNum">     231 </span><span class="lineCov">         45 :     SCAI_ASSERT_ERROR( local, &quot;StencilMatrix: local storage is no more Stencil: &quot; &lt;&lt; *this-&gt;mLocalData )</span>
+<span class="lineNum">     232 </span><span class="lineCov">         45 :     return *local;</span>
+<span class="lineNum">     233 </span>            : }
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            : /* -------------------------------------------------------------------------- */
+<a name="236"><span class="lineNum">     236 </span>            : </a>
+<span class="lineNum">     237 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     238 </span><span class="lineNoCov">          0 : const CSRStorage&lt;ValueType&gt;&amp; StencilMatrix&lt;ValueType&gt;::getHaloStorage() const</span>
+<span class="lineNum">     239 </span>            : {
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 :     const CSRStorage&lt;ValueType&gt;* halo = dynamic_cast&lt;const CSRStorage&lt;ValueType&gt;*&gt;( this-&gt;mHaloData.get() );</span>
+<span class="lineNum">     241 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( halo, &quot;StencilMatrix: local storage is no more CSR: &quot; &lt;&lt; *this-&gt;mHaloData )</span>
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :     return *halo;</span>
+<span class="lineNum">     243 </span>            : }
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            : /* -------------------------------------------------------------------------- */
+<a name="246"><span class="lineNum">     246 </span>            : </a>
+<span class="lineNum">     247 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     248 </span><span class="lineNoCov">          0 : StencilMatrix&lt;ValueType&gt;* StencilMatrix&lt;ValueType&gt;::newMatrix() const</span>
+<span class="lineNum">     249 </span>            : {
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :     return new StencilMatrix&lt;ValueType&gt;();</span>
+<span class="lineNum">     251 </span>            : }
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span>            : /* -------------------------------------------------------------------------- */
+<a name="254"><span class="lineNum">     254 </span>            : </a>
+<span class="lineNum">     255 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 : const Stencil&lt;ValueType&gt;&amp; StencilMatrix&lt;ValueType&gt;::getStencil() const</span>
+<span class="lineNum">     257 </span>            : {
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( mLocalData.get(), &quot;no local data available&quot; )</span>
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 :     const StencilStorage&lt;ValueType&gt;* localStencilStorage = dynamic_cast&lt;const StencilStorage&lt;ValueType&gt;*&gt;( mLocalData.get() );</span>
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( localStencilStorage, &quot;local data no stencil storage: &quot; &lt;&lt; mLocalData )</span>
+<span class="lineNum">     263 </span>            : 
+<span class="lineNum">     264 </span><span class="lineNoCov">          0 :     return localStencilStorage-&gt;getStencil();</span>
+<span class="lineNum">     265 </span>            : }
+<span class="lineNum">     266 </span>            : 
+<span class="lineNum">     267 </span>            : /* -------------------------------------------------------------------------- */
+<a name="268"><span class="lineNum">     268 </span>            : </a>
+<span class="lineNum">     269 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     270 </span><span class="lineCov">          5 : StencilMatrix&lt;ValueType&gt;::StencilMatrix( const StencilMatrix&lt;ValueType&gt;&amp; other ) :</span>
+<span class="lineNum">     271 </span>            : 
+<span class="lineNum">     272 </span><span class="lineCov">          5 :     SparseMatrix&lt;ValueType&gt;( other )</span>
+<span class="lineNum">     273 </span>            : 
+<span class="lineNum">     274 </span>            : {
+<span class="lineNum">     275 </span>            :     // copy constructor of sparse matrix should have already done all 
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span><span class="lineCov">         10 :     SCAI_LOG_INFO( logger, &quot;copy constructed stencil matrix. &quot; &lt;&lt; *this )</span>
+<span class="lineNum">     278 </span><span class="lineCov">          5 : }</span>
+<span class="lineNum">     279 </span>            : 
+<span class="lineNum">     280 </span>            : /* -------------------------------------------------------------------------- */
+<a name="281"><span class="lineNum">     281 </span>            : </a>
+<span class="lineNum">     282 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     283 </span><span class="lineNoCov">          0 : StencilMatrix&lt;ValueType&gt;* StencilMatrix&lt;ValueType&gt;::copy() const</span>
+<span class="lineNum">     284 </span>            : {
+<span class="lineNum">     285 </span><span class="lineNoCov">          0 :     return new StencilMatrix&lt;ValueType&gt;( *this );</span>
+<span class="lineNum">     286 </span>            : }
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span>            : /* -------------------------------------------------------------------------- */
+<a name="289"><span class="lineNum">     289 </span>            : </a>
+<span class="lineNum">     290 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 : const char* StencilMatrix&lt;ValueType&gt;::getTypeName() const</span>
+<span class="lineNum">     292 </span>            : {
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :     return typeName();</span>
+<span class="lineNum">     294 </span>            : }
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span>            : /* -------------------------------------------------------------------------- */
+<a name="297"><span class="lineNum">     297 </span>            : </a>
+<span class="lineNum">     298 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 : std::string StencilMatrix&lt;ValueType&gt;::initTypeName()</span>
+<span class="lineNum">     300 </span>            : {
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :     std::stringstream s;</span>
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :     s &lt;&lt; std::string( &quot;StencilMatrix&lt;&quot; ) &lt;&lt; common::getScalarType&lt;ValueType&gt;() &lt;&lt; std::string( &quot;&gt;&quot; );</span>
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 :     return s.str();</span>
+<span class="lineNum">     304 </span>            : }
+<a name="305"><span class="lineNum">     305 </span>            : </a>
+<span class="lineNum">     306 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 : const char* StencilMatrix&lt;ValueType&gt;::typeName()</span>
+<span class="lineNum">     308 </span>            : {
+<span class="lineNum">     309 </span><span class="lineNoCov">          0 :     static const std::string s = initTypeName();</span>
+<span class="lineNum">     310 </span><span class="lineNoCov">          0 :     return  s.c_str();</span>
+<span class="lineNum">     311 </span>            : }
+<span class="lineNum">     312 </span>            : 
+<span class="lineNum">     313 </span>            : /* ========================================================================= */
+<span class="lineNum">     314 </span>            : /*       Template specializations and nstantiations                          */
+<span class="lineNum">     315 </span>            : /* ========================================================================= */
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            : SCAI_COMMON_INST_CLASS( StencilMatrix, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">     318 </span>            : 
+<a name="319"><span class="lineNum">     319 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

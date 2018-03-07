@@ -1,0 +1,1460 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/storage/DenseStorage.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/storage</a> - DenseStorage.cpp<span style="font-size: 80%;"> (source / <a href="DenseStorage.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">420</td>
+            <td class="headerCovTableEntry">453</td>
+            <td class="headerCovTableEntryHi">92.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">283</td>
+            <td class="headerCovTableEntry">318</td>
+            <td class="headerCovTableEntryMed">89.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file DenseStorage.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Instantiation for template class DenseStorage.
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes, Michael Drost
+<span class="lineNum">      32 </span>            :  * @date 04.06.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // hpp
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/storage/DenseStorage.hpp&gt;
+<span class="lineNum">      37 </span>            : #include &lt;scai/lama/storage/CSRStorage.hpp&gt;
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : // internal scai libraries
+<span class="lineNum">      40 </span>            : #include &lt;scai/sparsekernel/DenseKernelTrait.hpp&gt;
+<span class="lineNum">      41 </span>            : #include &lt;scai/sparsekernel/CSRKernelTrait.hpp&gt;
+<span class="lineNum">      42 </span>            : #include &lt;scai/utilskernel/HArrayUtils.hpp&gt;
+<span class="lineNum">      43 </span>            : #include &lt;scai/utilskernel/UtilKernelTrait.hpp&gt;
+<span class="lineNum">      44 </span>            : #include &lt;scai/utilskernel/LAMAKernel.hpp&gt;
+<span class="lineNum">      45 </span>            : #include &lt;scai/blaskernel/BLASKernelTrait.hpp&gt;
+<span class="lineNum">      46 </span>            : #include &lt;scai/hmemo/ContextAccess.hpp&gt;
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : #include &lt;scai/tracing.hpp&gt;
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : #include &lt;scai/common/Constants.hpp&gt;
+<span class="lineNum">      51 </span>            : #include &lt;scai/common/TypeTraits.hpp&gt;
+<span class="lineNum">      52 </span>            : #include &lt;scai/common/Math.hpp&gt;
+<span class="lineNum">      53 </span>            : #include &lt;scai/common/macros/print_string.hpp&gt;
+<span class="lineNum">      54 </span>            : #include &lt;scai/common/macros/unsupported.hpp&gt;
+<span class="lineNum">      55 </span>            : #include &lt;scai/common/macros/instantiate.hpp&gt;
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : #include &lt;memory&gt;
+<span class="lineNum">      58 </span>            : #include &lt;cmath&gt;
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span>            : using std::abs;
+<span class="lineNum">      62 </span>            : // so we can use abs for float and double and own abs for Complex
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            : using std::shared_ptr;
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : namespace scai
+<span class="lineNum">      67 </span>            : {
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : using common::TypeTraits;
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            : using namespace hmemo;
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            : using utilskernel::LAMAKernel;
+<span class="lineNum">      74 </span>            : using utilskernel::HArrayUtils;
+<span class="lineNum">      75 </span>            : using utilskernel::UtilKernelTrait;
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            : using sparsekernel::DenseKernelTrait;
+<span class="lineNum">      78 </span>            : using sparsekernel::CSRKernelTrait;
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            : using common::BinaryOp;
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            : namespace lama
+<span class="lineNum">      83 </span>            : {
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span><span class="lineCov">         70 : SCAI_LOG_DEF_TEMPLATE_LOGGER( template&lt;typename ValueType&gt;, DenseStorage&lt;ValueType&gt;::logger,</span>
+<span class="lineNum">      88 </span>            :                               &quot;MatrixStorage.DenseStorage&quot; )
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            : /* --------------------------------------------------------------------------- */
+<a name="91"><span class="lineNum">      91 </span>            : </a>
+<span class="lineNum">      92 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      93 </span><span class="lineCov">      42202 : HArray&lt;ValueType&gt;&amp; DenseStorage&lt;ValueType&gt;::getData()</span>
+<span class="lineNum">      94 </span>            : {
+<span class="lineNum">      95 </span><span class="lineCov">      42202 :     return mData;</span>
+<span class="lineNum">      96 </span>            : }
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            : /* --------------------------------------------------------------------------- */
+<a name="99"><span class="lineNum">      99 </span>            : </a>
+<span class="lineNum">     100 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     101 </span><span class="lineCov">      41276 : const HArray&lt;ValueType&gt;&amp; DenseStorage&lt;ValueType&gt;::getValues() const</span>
+<span class="lineNum">     102 </span>            : {
+<span class="lineNum">     103 </span><span class="lineCov">      41276 :     return mData;</span>
+<span class="lineNum">     104 </span>            : }
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     107 </span>            : 
+<span class="lineNum">     108 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     109 </span><span class="lineCov">         20 : IndexType DenseStorage&lt;ValueType&gt;::getNumValues() const</span>
+<span class="lineNum">     110 </span>            : {
+<span class="lineNum">     111 </span><span class="lineCov">         28 :     static LAMAKernel&lt;DenseKernelTrait::nonZeroValues&lt;ValueType&gt; &gt; nonZeroValues;</span>
+<span class="lineNum">     112 </span><span class="lineCov">         20 :     ContextPtr loc = getContextPtr();</span>
+<span class="lineNum">     113 </span><span class="lineCov">         20 :     nonZeroValues.getSupportedContext( loc );</span>
+<span class="lineNum">     114 </span><span class="lineCov">         60 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     115 </span><span class="lineCov">         40 :     ReadAccess&lt;ValueType&gt; values( mData, loc );</span>
+<span class="lineNum">     116 </span>            :     ValueType zero = 0;
+<span class="lineNum">     117 </span><span class="lineCov">         20 :     IndexType count = nonZeroValues[loc]( values.get(), getNumRows(), getNumColumns(), zero );</span>
+<span class="lineNum">     118 </span><span class="lineCov">         40 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: #non-zero values = &quot; &lt;&lt; count )</span>
+<span class="lineNum">     119 </span><span class="lineCov">         20 :     return count;</span>
+<span class="lineNum">     120 </span>            : }
+<span class="lineNum">     121 </span>            : 
+<span class="lineNum">     122 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     123 </span>            : 
+<span class="lineNum">     124 </span>            : #ifdef SCAI_ASSERT_LEVEL_OFF
+<span class="lineNum">     125 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     126 </span>            : void DenseStorage&lt;ValueType&gt;::check( const char* ) const
+<span class="lineNum">     127 </span>            : {}
+<a name="128"><span class="lineNum">     128 </span>            : #else</a>
+<span class="lineNum">     129 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     130 </span><span class="lineCov">        247 : void DenseStorage&lt;ValueType&gt;::check( const char* /* msg */ ) const</span>
+<span class="lineNum">     131 </span>            : {
+<span class="lineNum">     132 </span><span class="lineCov">        247 :     SCAI_ASSERT_EQUAL_ERROR( getNumRows() * getNumColumns(), mData.size() )</span>
+<span class="lineNum">     133 </span><span class="lineCov">        247 : }</span>
+<span class="lineNum">     134 </span>            : #endif
+<span class="lineNum">     135 </span>            : 
+<span class="lineNum">     136 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     137 </span>            : 
+<span class="lineNum">     138 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 : void DenseStorage&lt;ValueType&gt;::getSparseRow( hmemo::HArray&lt;IndexType&gt;&amp; jA, hmemo::HArray&lt;ValueType&gt;&amp; values, const IndexType i ) const</span>
+<span class="lineNum">     140 </span>            : {
+<span class="lineNum">     141 </span>            :     // ToDo: avoid temporary array row by new version buildSparseArray with offs and inc argument
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :     HArray&lt;ValueType&gt; row;</span>
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :     getRow( row, i );</span>
+<span class="lineNum">     145 </span>            :     ValueType zero = 0;
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :     HArrayUtils::buildSparseArray( values, jA, row, zero, mContext );</span>
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     150 </span>            : 
+<span class="lineNum">     151 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 : void DenseStorage&lt;ValueType&gt;::getSparseColumn( hmemo::HArray&lt;IndexType&gt;&amp; iA, hmemo::HArray&lt;ValueType&gt;&amp; values, const IndexType j ) const</span>
+<span class="lineNum">     153 </span>            : {
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :     HArray&lt;ValueType&gt; col;</span>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :     getColumn( col, j );</span>
+<span class="lineNum">     156 </span>            :     ValueType zero = 0;
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :     HArrayUtils::buildSparseArray( values, iA, col, zero, mContext );</span>
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     159 </span>            : 
+<span class="lineNum">     160 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     161 </span>            : 
+<span class="lineNum">     162 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     163 </span><span class="lineCov">      37024 : void DenseStorage&lt;ValueType&gt;::getRow( HArray&lt;ValueType&gt;&amp; row, const IndexType rowIndex ) const</span>
+<span class="lineNum">     164 </span>            : {
+<span class="lineNum">     165 </span><span class="lineCov">     111072 :     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, getNumRows(), &quot;row index out of range&quot; )</span>
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span><span class="lineCov">      37024 :     row.clear();                    // make all data invalid</span>
+<span class="lineNum">     168 </span><span class="lineCov">      37024 :     row.resize( getNumColumns() );      // resize it</span>
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span>            :     // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+<span class="lineNum">     171 </span>            :     // first = denseindex( rowIndex, 0, numRows, numColumns )
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            :     const IndexType inc   = 1;
+<span class="lineNum">     174 </span><span class="lineCov">      37024 :     const IndexType first = rowIndex * getNumColumns();</span>
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span><span class="lineCov">      37024 :     HArrayUtils::setArraySection( row, 0, 1,             // row (:)</span>
+<span class="lineNum">     177 </span>            :                                   mData, first, inc,
+<span class="lineNum">     178 </span><span class="lineCov">      74048 :                                   getNumColumns(), BinaryOp::COPY, getContextPtr() );</span>
+<span class="lineNum">     179 </span><span class="lineCov">      37024 : }</span>
+<span class="lineNum">     180 </span>            : 
+<span class="lineNum">     181 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     182 </span>            : 
+<span class="lineNum">     183 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     184 </span><span class="lineCov">      17544 : void DenseStorage&lt;ValueType&gt;::setRow( const HArray&lt;ValueType&gt;&amp; row, const IndexType rowIndex,</span>
+<span class="lineNum">     185 </span>            :         const BinaryOp op )
+<span class="lineNum">     186 </span>            : {
+<span class="lineNum">     187 </span><span class="lineCov">      35088 :     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, getNumRows(), &quot;row index out of range&quot; )</span>
+<span class="lineNum">     188 </span>            : 
+<span class="lineNum">     189 </span>            :     // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+<span class="lineNum">     190 </span>            :     // first = denseindex( i, 0, numRows, numColumns )
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span>            :     const IndexType inc   = 1;
+<span class="lineNum">     193 </span><span class="lineCov">      17544 :     const IndexType first = rowIndex * getNumColumns();</span>
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span><span class="lineCov">      17544 :     HArrayUtils::setArraySection( mData, first, inc,</span>
+<span class="lineNum">     196 </span>            :                                   row, 0, 1,
+<span class="lineNum">     197 </span>            :                                   getNumColumns(),
+<span class="lineNum">     198 </span>            :                                   op,
+<span class="lineNum">     199 </span><span class="lineCov">      35088 :                                   getContextPtr() );</span>
+<span class="lineNum">     200 </span><span class="lineCov">      17544 : }</span>
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     203 </span>            : 
+<span class="lineNum">     204 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     205 </span><span class="lineCov">      13256 : void DenseStorage&lt;ValueType&gt;::getColumn( HArray&lt;ValueType&gt;&amp; column, const IndexType j ) const</span>
+<span class="lineNum">     206 </span>            : {
+<span class="lineNum">     207 </span><span class="lineCov">      39768 :     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), &quot;column index out of range&quot; )</span>
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span><span class="lineCov">      13256 :     column.clear();                 // make all data invalid</span>
+<span class="lineNum">     210 </span><span class="lineCov">      13256 :     column.resize( getNumRows() );      // resize it</span>
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            :     // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+<span class="lineNum">     213 </span>            :     // first = denseindex( 0, j, numRows, numColumns )
+<span class="lineNum">     214 </span>            : 
+<span class="lineNum">     215 </span>            :     const IndexType inc   = getNumColumns();
+<span class="lineNum">     216 </span>            :     const IndexType first = j;
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span><span class="lineCov">      13256 :     HArrayUtils::setArraySection( column, 0, 1,</span>
+<span class="lineNum">     219 </span>            :                                   mData, first, inc,
+<span class="lineNum">     220 </span>            :                                   getNumRows(),
+<span class="lineNum">     221 </span>            :                                   BinaryOp::COPY,
+<span class="lineNum">     222 </span><span class="lineCov">      26512 :                                   getContextPtr() );</span>
+<span class="lineNum">     223 </span><span class="lineCov">      13256 : }</span>
+<span class="lineNum">     224 </span>            : 
+<span class="lineNum">     225 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     228 </span><span class="lineCov">      12976 : void DenseStorage&lt;ValueType&gt;::setColumn( const HArray&lt;ValueType&gt;&amp; column, const IndexType j, const BinaryOp op )</span>
+<span class="lineNum">     229 </span>            : {
+<span class="lineNum">     230 </span><span class="lineCov">      25952 :     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), &quot;column index out of range&quot; )</span>
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span>            :     // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+<span class="lineNum">     233 </span>            :     // first = denseindex( 0, j, numRows, numColumns )
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            :     const IndexType inc   = getNumColumns();
+<span class="lineNum">     236 </span>            :     const IndexType first = j;
+<span class="lineNum">     237 </span>            : 
+<span class="lineNum">     238 </span><span class="lineCov">      12976 :     HArrayUtils::setArraySection( mData, first, inc ,</span>
+<span class="lineNum">     239 </span>            :                                   column, 0, 1,
+<span class="lineNum">     240 </span>            :                                   getNumRows(),
+<span class="lineNum">     241 </span>            :                                   op,
+<span class="lineNum">     242 </span><span class="lineCov">      25952 :                                   getContextPtr() );</span>
+<span class="lineNum">     243 </span><span class="lineCov">      12976 : }</span>
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     246 </span>            : 
+<span class="lineNum">     247 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     248 </span><span class="lineCov">        198 : void DenseStorage&lt;ValueType&gt;::getDiagonal( HArray&lt;ValueType&gt;&amp; diagonal ) const</span>
+<span class="lineNum">     249 </span>            : {
+<span class="lineNum">     250 </span><span class="lineCov">        396 :     IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );</span>
+<span class="lineNum">     251 </span>            : 
+<span class="lineNum">     252 </span><span class="lineCov">        198 :     diagonal.clear();                       // make all data invalid</span>
+<span class="lineNum">     253 </span><span class="lineCov">        198 :     diagonal.resize( numDiagonalValues );   // resize it</span>
+<span class="lineNum">     254 </span>            : 
+<span class="lineNum">     255 </span>            :     // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+<span class="lineNum">     256 </span>            :     // first = denseindex( 0, 0, numRows, numColumns )
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span><span class="lineCov">        198 :     const IndexType inc   = getNumRows() + 1;</span>
+<span class="lineNum">     259 </span>            :     const IndexType first = 0;
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span><span class="lineCov">        198 :     HArrayUtils::setArraySection( diagonal, 0, 1,</span>
+<span class="lineNum">     262 </span>            :                                   mData, first, inc,
+<span class="lineNum">     263 </span>            :                                   numDiagonalValues,
+<span class="lineNum">     264 </span>            :                                   BinaryOp::COPY,
+<span class="lineNum">     265 </span><span class="lineCov">        594 :                                   mData.getValidContext() );</span>
+<span class="lineNum">     266 </span><span class="lineCov">        198 : }</span>
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     269 </span>            : 
+<span class="lineNum">     270 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     271 </span><span class="lineCov">        365 : void DenseStorage&lt;ValueType&gt;::setDiagonal( const ValueType value )</span>
+<span class="lineNum">     272 </span>            : {
+<span class="lineNum">     273 </span>            :     // Note: dense storage has always diagonal property
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span><span class="lineCov">        393 :     static LAMAKernel&lt;DenseKernelTrait::setDiagonalValue&lt;ValueType&gt; &gt; setDiagonalValue;</span>
+<span class="lineNum">     276 </span><span class="lineCov">        365 :     ContextPtr loc = getContextPtr();</span>
+<span class="lineNum">     277 </span><span class="lineCov">        365 :     setDiagonalValue.getSupportedContext( loc );</span>
+<span class="lineNum">     278 </span><span class="lineCov">       1095 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     279 </span><span class="lineCov">        730 :     WriteAccess&lt;ValueType&gt; wData( mData, loc ); // use existing data</span>
+<span class="lineNum">     280 </span><span class="lineCov">        365 :     setDiagonalValue[loc]( wData.get(), getNumRows(), getNumColumns(), value );</span>
+<span class="lineNum">     281 </span><span class="lineCov">        365 : }</span>
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     284 </span>            : 
+<span class="lineNum">     285 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     286 </span><span class="lineCov">        241 : void DenseStorage&lt;ValueType&gt;::setDiagonalV( const HArray&lt;ValueType&gt;&amp; diagonal )</span>
+<span class="lineNum">     287 </span>            : {
+<span class="lineNum">     288 </span><span class="lineCov">        241 :     IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );</span>
+<span class="lineNum">     289 </span>            : 
+<span class="lineNum">     290 </span>            :     SCAI_ASSERT_GE_DEBUG( diagonal.size(), numDiagonalValues, &quot;diagonal array has insufficient size&quot; )
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span>            :     // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+<span class="lineNum">     293 </span>            :     // first = denseindex( 0, 0, numRows, numColumns )
+<span class="lineNum">     294 </span>            : 
+<span class="lineNum">     295 </span><span class="lineCov">        241 :     const IndexType inc   = getNumRows() + 1;</span>
+<span class="lineNum">     296 </span>            :     const IndexType first = 0;
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span><span class="lineCov">        241 :     HArrayUtils::setArraySection( mData, first, inc,</span>
+<span class="lineNum">     299 </span>            :                                   diagonal, 0, 1,
+<span class="lineNum">     300 </span>            :                                   numDiagonalValues,
+<span class="lineNum">     301 </span>            :                                   BinaryOp::COPY,
+<span class="lineNum">     302 </span><span class="lineCov">        723 :                                   mData.getValidContext() );</span>
+<span class="lineNum">     303 </span><span class="lineCov">        241 : }</span>
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     308 </span><span class="lineCov">       3483 : void DenseStorage&lt;ValueType&gt;::scale( const ValueType value )</span>
+<span class="lineNum">     309 </span>            : {
+<span class="lineNum">     310 </span>            :     // not used here: HArrayUtils::scale( mData, value, this-&gt;getContextPtr() )
+<span class="lineNum">     311 </span>            :     // reasoning:     workload distribution would not fit to distribution of rows
+<span class="lineNum">     312 </span><span class="lineCov">       3511 :     static LAMAKernel&lt;DenseKernelTrait::setValue&lt;ValueType&gt; &gt; setValue;</span>
+<span class="lineNum">     313 </span><span class="lineCov">       3483 :     ContextPtr loc = getContextPtr();</span>
+<span class="lineNum">     314 </span><span class="lineCov">       3483 :     setValue.getSupportedContext( loc );</span>
+<span class="lineNum">     315 </span><span class="lineCov">      10449 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     316 </span><span class="lineCov">       6966 :     WriteAccess&lt;ValueType&gt; wData( mData, loc );</span>
+<span class="lineNum">     317 </span><span class="lineCov">       3483 :     setValue[loc]( wData.get(), getNumRows(), getNumColumns(), value, BinaryOp::MULT );</span>
+<span class="lineNum">     318 </span><span class="lineCov">       3483 : }</span>
+<span class="lineNum">     319 </span>            : 
+<span class="lineNum">     320 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     321 </span>            : 
+<span class="lineNum">     322 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     323 </span><span class="lineCov">          8 : void DenseStorage&lt;ValueType&gt;::conj()</span>
+<span class="lineNum">     324 </span>            : {
+<span class="lineNum">     325 </span><span class="lineCov">         16 :     HArrayUtils::unaryOp( mData, mData, common::UnaryOp::CONJ, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     326 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     327 </span>            : 
+<span class="lineNum">     328 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     329 </span>            : 
+<span class="lineNum">     330 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     331 </span><span class="lineCov">       3350 : void DenseStorage&lt;ValueType&gt;::scaleRows( const HArray&lt;ValueType&gt;&amp; values )</span>
+<span class="lineNum">     332 </span>            : {
+<span class="lineNum">     333 </span><span class="lineCov">       3372 :     static LAMAKernel&lt;DenseKernelTrait::scaleRows&lt;ValueType&gt; &gt; denseScaleRows;</span>
+<span class="lineNum">     334 </span><span class="lineCov">       3350 :     ContextPtr loc = this-&gt;getContextPtr();</span>
+<span class="lineNum">     335 </span><span class="lineCov">       3350 :     denseScaleRows.getSupportedContext( loc );</span>
+<span class="lineNum">     336 </span><span class="lineCov">      10050 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     337 </span><span class="lineCov">       6700 :     ReadAccess&lt;ValueType&gt; rDiagonal( values, loc );</span>
+<span class="lineNum">     338 </span><span class="lineCov">       6700 :     WriteAccess&lt;ValueType&gt; wData( mData, loc );</span>
+<span class="lineNum">     339 </span><span class="lineCov">       6700 :     denseScaleRows[loc]( wData.get(), getNumRows(), getNumColumns(), rDiagonal.get() );</span>
+<span class="lineNum">     340 </span><span class="lineCov">       3350 : }</span>
+<span class="lineNum">     341 </span>            : 
+<span class="lineNum">     342 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     345 </span><span class="lineCov">       1384 : void DenseStorage&lt;ValueType&gt;::transposeImpl()</span>
+<span class="lineNum">     346 </span>            : {
+<span class="lineNum">     347 </span><span class="lineCov">       1384 :     SCAI_REGION( &quot;Storage.Dense.transpose&quot; )</span>
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span>            :     // Compute transpostion A^t of A via A^t = A^t * I, where * is implemented by LAPACK
+<span class="lineNum">     350 </span>            :     ContextPtr context = Context::getHostPtr();
+<span class="lineNum">     351 </span><span class="lineCov">       2768 :     WriteAccess&lt;ValueType&gt; wData( mData, context );</span>
+<span class="lineNum">     352 </span>            : 
+<span class="lineNum">     353 </span>            :     // transpose quadratic matrix
+<span class="lineNum">     354 </span>            :     // quadratic implementation is a special case of the rectangular one but this specific one might be faster
+<span class="lineNum">     355 </span><span class="lineCov">      24888 :     if ( getNumColumns() == getNumRows() )</span>
+<span class="lineNum">     356 </span>            :     {
+<span class="lineNum">     357 </span><span class="lineCov">        508 :         for ( IndexType i = 0; i &lt; getNumColumns(); ++i )</span>
+<span class="lineNum">     358 </span>            :         {
+<span class="lineNum">     359 </span><span class="lineCov">        832 :             for ( IndexType j = i + 1; j &lt; getNumColumns(); ++j )</span>
+<span class="lineNum">     360 </span>            :             {
+<span class="lineNum">     361 </span><span class="lineCov">        384 :                 std::swap( wData[i + getNumColumns() * j], wData[j + getNumColumns() * i] );</span>
+<span class="lineNum">     362 </span>            :             }
+<span class="lineNum">     363 </span>            :         }
+<span class="lineNum">     364 </span>            :     }
+<span class="lineNum">     365 </span>            :     else //tranpose rectangular matrix
+<span class="lineNum">     366 </span>            :     {
+<span class="lineNum">     367 </span><span class="lineCov">      17324 :         for ( IndexType start = 0; start &lt; getNumColumns() * getNumRows(); ++start )</span>
+<span class="lineNum">     368 </span>            :         {
+<span class="lineNum">     369 </span>            :             IndexType next = start;
+<span class="lineNum">     370 </span>            :             IndexType i = 0;
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span><span class="lineCov">      16793 :             do</span>
+<span class="lineNum">     373 </span>            :             {
+<span class="lineNum">     374 </span><span class="lineCov">      16793 :                 ++i;</span>
+<span class="lineNum">     375 </span><span class="lineCov">      16793 :                 next = ( next % getNumRows() ) * getNumColumns() + next / getNumRows();</span>
+<span class="lineNum">     376 </span>            :             }
+<span class="lineNum">     377 </span>            :             while ( next &gt; start );
+<span class="lineNum">     378 </span>            : 
+<span class="lineNum">     379 </span><span class="lineCov">       8080 :             if ( next &gt;= start &amp;&amp; i != 1 )</span>
+<span class="lineNum">     380 </span>            :             {
+<span class="lineNum">     381 </span><span class="lineCov">       1024 :                 const ValueType tmp = wData[start];</span>
+<span class="lineNum">     382 </span>            :                 next = start;
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span><span class="lineCov">       5848 :                 do</span>
+<span class="lineNum">     385 </span>            :                 {
+<span class="lineNum">     386 </span><span class="lineCov">      11696 :                     i = ( next % getNumRows() ) * getNumColumns() + next / getNumRows();</span>
+<span class="lineNum">     387 </span><span class="lineCov">       5848 :                     wData[next] = ( i == start ) ? tmp :  wData[i];</span>
+<span class="lineNum">     388 </span>            :                     next = i;
+<span class="lineNum">     389 </span>            :                 }
+<span class="lineNum">     390 </span>            :                 while ( next &gt; start );
+<span class="lineNum">     391 </span>            :             }
+<span class="lineNum">     392 </span>            :         }
+<span class="lineNum">     393 </span>            :     }
+<span class="lineNum">     394 </span>            : 
+<span class="lineNum">     395 </span>            :     // swap dimensions of transposed matrix
+<span class="lineNum">     396 </span>            : 
+<span class="lineNum">     397 </span><span class="lineCov">       1384 :     _MatrixStorage::setDimension( getNumColumns(), getNumRows() );</span>
+<span class="lineNum">     398 </span><span class="lineCov">       1384 : };</span>
+<span class="lineNum">     399 </span>            : 
+<span class="lineNum">     400 </span>            : /* --------------------------------------------------------------------------- */
+<a name="401"><span class="lineNum">     401 </span>            : </a>
+<span class="lineNum">     402 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     403 </span><span class="lineCov">     177492 : bool DenseStorage&lt;ValueType&gt;::checkDiagonalProperty() const</span>
+<span class="lineNum">     404 </span>            : {
+<span class="lineNum">     405 </span><span class="lineCov">     177492 :     return getNumRows() == getNumColumns();</span>
+<span class="lineNum">     406 </span>            : }
+<span class="lineNum">     407 </span>            : 
+<span class="lineNum">     408 </span>            : /* --------------------------------------------------------------------------- */
+<a name="409"><span class="lineNum">     409 </span>            : </a>
+<span class="lineNum">     410 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     411 </span><span class="lineCov">         24 : size_t DenseStorage&lt;ValueType&gt;::getMemoryUsageImpl() const</span>
+<span class="lineNum">     412 </span>            : {
+<span class="lineNum">     413 </span>            :     size_t memoryUsage = 0;
+<span class="lineNum">     414 </span><span class="lineCov">         24 :     memoryUsage += sizeof( ValueType ) * mData.size();</span>
+<span class="lineNum">     415 </span><span class="lineCov">         24 :     return memoryUsage;</span>
+<span class="lineNum">     416 </span>            : }
+<span class="lineNum">     417 </span>            : 
+<span class="lineNum">     418 </span>            : /* --------------------------------------------------------------------------- */
+<a name="419"><span class="lineNum">     419 </span>            : </a>
+<span class="lineNum">     420 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     421 </span><span class="lineCov">      58749 : common::ScalarType DenseStorage&lt;ValueType&gt;::getValueType() const</span>
+<span class="lineNum">     422 </span>            : {
+<span class="lineNum">     423 </span><span class="lineCov">      58749 :     return common::getScalarType&lt;ValueType&gt;();</span>
+<span class="lineNum">     424 </span>            : }
+<span class="lineNum">     425 </span>            : 
+<span class="lineNum">     426 </span>            : /* --------------------------------------------------------------------------- */
+<a name="427"><span class="lineNum">     427 </span>            : </a>
+<span class="lineNum">     428 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     429 </span><span class="lineCov">      49741 : Format DenseStorage&lt;ValueType&gt;::getFormat() const</span>
+<span class="lineNum">     430 </span>            : {
+<span class="lineNum">     431 </span><span class="lineCov">      49741 :     return Format::DENSE;</span>
+<span class="lineNum">     432 </span>            : }
+<span class="lineNum">     433 </span>            : 
+<span class="lineNum">     434 </span>            : /* --------------------------------------------------------------------------- */
+<a name="435"><span class="lineNum">     435 </span>            : </a>
+<span class="lineNum">     436 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     437 </span><span class="lineCov">         22 : void DenseStorage&lt;ValueType&gt;::setIdentity( const IndexType size )</span>
+<span class="lineNum">     438 </span>            : {
+<span class="lineNum">     439 </span><span class="lineCov">         22 :     allocate( size, size );            // sets also all values to zero</span>
+<span class="lineNum">     440 </span><span class="lineCov">         26 :     setDiagonal( ValueType( 1 ) );</span>
+<span class="lineNum">     441 </span><span class="lineCov">         22 : }</span>
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span>            : /* --------------------------------------------------------------------------- */
+<a name="444"><span class="lineNum">     444 </span>            : </a>
+<span class="lineNum">     445 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     446 </span><span class="lineCov">         53 : void DenseStorage&lt;ValueType&gt;::assignDiagonal( const HArray&lt;ValueType&gt;&amp; diagonal )</span>
+<span class="lineNum">     447 </span>            : {
+<span class="lineNum">     448 </span><span class="lineCov">         53 :     const IndexType size = diagonal.size();</span>
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span><span class="lineCov">         53 :     allocate( size, size );     // sets also all values to zero</span>
+<span class="lineNum">     451 </span><span class="lineCov">         53 :     setDiagonalV( diagonal );</span>
+<span class="lineNum">     452 </span><span class="lineCov">         53 : }</span>
+<span class="lineNum">     453 </span>            : 
+<span class="lineNum">     454 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     455 </span>            : 
+<span class="lineNum">     456 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     457 </span><span class="lineCov">      73746 : void DenseStorage&lt;ValueType&gt;::setZero()</span>
+<span class="lineNum">     458 </span>            : {
+<span class="lineNum">     459 </span>            :     SCAI_ASSERT_EQ_DEBUG( mData.size(), getNumRows() * getNumColumns(), 
+<span class="lineNum">     460 </span>            :                           &quot;illegal data size for DenseStorage &quot; &lt;&lt; getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns() )
+<span class="lineNum">     461 </span>            :     ValueType zero = 0;
+<span class="lineNum">     462 </span>            : 
+<span class="lineNum">     463 </span><span class="lineCov">     147492 :     HArrayUtils::setScalar( mData, zero, common::BinaryOp::COPY, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     464 </span>            : 
+<span class="lineNum">     465 </span>            :     SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot; has been set to zero&quot; )
+<span class="lineNum">     466 </span><span class="lineCov">      73746 : }</span>
+<span class="lineNum">     467 </span>            : 
+<span class="lineNum">     468 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     469 </span>            : 
+<span class="lineNum">     470 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     471 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">     472 </span><span class="lineCov">      25687 : void DenseStorage&lt;ValueType&gt;::buildCSR(</span>
+<span class="lineNum">     473 </span>            :     HArray&lt;IndexType&gt;&amp; csrIA,
+<span class="lineNum">     474 </span>            :     HArray&lt;IndexType&gt;* csrJA,
+<span class="lineNum">     475 </span>            :     HArray&lt;OtherValueType&gt;* csrValues,
+<span class="lineNum">     476 </span>            :     const ContextPtr context ) const
+<span class="lineNum">     477 </span>            : {
+<span class="lineNum">     478 </span><span class="lineCov">      25800 :     static LAMAKernel&lt;DenseKernelTrait::getCSRSizes&lt;ValueType&gt; &gt; getCSRSizes;</span>
+<span class="lineNum">     479 </span><span class="lineCov">      25800 :     static LAMAKernel&lt;DenseKernelTrait::getCSRValues&lt;OtherValueType, ValueType&gt; &gt; getCSRValues;</span>
+<span class="lineNum">     480 </span><span class="lineCov">      25800 :     static LAMAKernel&lt;CSRKernelTrait::sizes2offsets&gt; sizes2offsets;</span>
+<span class="lineNum">     481 </span>            :     // check if context provides all implementations, otherwise go back to Host
+<span class="lineNum">     482 </span>            :     ContextPtr loc = context;
+<span class="lineNum">     483 </span><span class="lineCov">      25687 :     getCSRValues.getSupportedContext( loc, getCSRSizes, sizes2offsets );</span>
+<span class="lineNum">     484 </span><span class="lineCov">      77059 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     485 </span><span class="lineCov">      51374 :     ReadAccess&lt;ValueType&gt; denseValues( mData, loc );</span>
+<span class="lineNum">     486 </span><span class="lineCov">     179805 :     WriteOnlyAccess&lt;IndexType&gt; wIA( csrIA, loc, getNumRows() + 1 );</span>
+<span class="lineNum">     487 </span>            :     ValueType eps = 0;
+<span class="lineNum">     488 </span>            :     // Note: mDiagonalProperty == ( getNumRows() == getNumColumns() )
+<span class="lineNum">     489 </span><span class="lineCov">      51374 :     getCSRSizes[loc]( wIA.get(), mDiagonalProperty, getNumRows(), getNumColumns(), denseValues.get(), eps );</span>
+<span class="lineNum">     490 </span>            : 
+<span class="lineNum">     491 </span><span class="lineCov">      25687 :     if ( csrJA == NULL || csrValues == NULL )</span>
+<span class="lineNum">     492 </span>            :     {
+<span class="lineNum">     493 </span><span class="lineCov">          2 :         wIA.resize( getNumRows() );</span>
+<span class="lineNum">     494 </span><span class="lineCov">      25689 :         return;</span>
+<span class="lineNum">     495 </span>            :     }
+<span class="lineNum">     496 </span>            : 
+<span class="lineNum">     497 </span>            :     // build offset array, get number of non-zero values for size of ja, values
+<span class="lineNum">     498 </span><span class="lineCov">      25685 :     IndexType numValues = sizes2offsets[loc]( wIA.get(), getNumRows() );</span>
+<span class="lineNum">     499 </span><span class="lineCov">      77055 :     WriteOnlyAccess&lt;IndexType&gt; wJA( *csrJA, loc, numValues );</span>
+<span class="lineNum">     500 </span><span class="lineCov">      77055 :     WriteOnlyAccess&lt;OtherValueType&gt; wValues( *csrValues, loc, numValues );</span>
+<span class="lineNum">     501 </span><span class="lineCov">      51370 :     getCSRValues[loc]( wJA.get(), wValues.get(), wIA.get(), mDiagonalProperty, getNumRows(), getNumColumns(),</span>
+<span class="lineNum">     502 </span>            :                        denseValues.get(), eps );
+<span class="lineNum">     503 </span>            : }
+<span class="lineNum">     504 </span>            : 
+<span class="lineNum">     505 </span>            : /* --------------------------------------------------------------------------- */
+<a name="506"><span class="lineNum">     506 </span>            : </a>
+<span class="lineNum">     507 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     508 </span><span class="lineCov">          2 : void DenseStorage&lt;ValueType&gt;::getFirstColumnIndexes( hmemo::HArray&lt;IndexType&gt;&amp; ) const</span>
+<span class="lineNum">     509 </span>            : {
+<span class="lineNum">     510 </span><span class="lineCov">          6 :     COMMON_THROWEXCEPTION( &quot;getFirstColumnIndexes not possible for DENSE format&quot; )</span>
+<span class="lineNum">     511 </span>            : }
+<span class="lineNum">     512 </span>            : 
+<span class="lineNum">     513 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     514 </span>            : 
+<span class="lineNum">     515 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     516 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">     517 </span><span class="lineCov">      39107 : void DenseStorage&lt;ValueType&gt;::setCSRDataImpl(</span>
+<span class="lineNum">     518 </span>            :     const IndexType numRows,
+<span class="lineNum">     519 </span>            :     const IndexType numColumns,
+<span class="lineNum">     520 </span>            :     const HArray&lt;IndexType&gt;&amp; ia,
+<span class="lineNum">     521 </span>            :     const HArray&lt;IndexType&gt;&amp; ja,
+<span class="lineNum">     522 </span>            :     const HArray&lt;OtherValueType&gt;&amp; values,
+<span class="lineNum">     523 </span>            :     const ContextPtr context )
+<span class="lineNum">     524 </span>            : {
+<span class="lineNum">     525 </span><span class="lineCov">      39107 :     IndexType numValues = ja.size();</span>
+<span class="lineNum">     526 </span>            : 
+<span class="lineNum">     527 </span><span class="lineCov">      39211 :     static LAMAKernel&lt;DenseKernelTrait::setCSRValues&lt;ValueType, OtherValueType&gt; &gt; setCSRValues;</span>
+<span class="lineNum">     528 </span><span class="lineCov">      39211 :     static LAMAKernel&lt;CSRKernelTrait::validOffsets&gt; validOffsets;</span>
+<span class="lineNum">     529 </span><span class="lineCov">      39211 :     static LAMAKernel&lt;UtilKernelTrait::validIndexes&gt; validIndexes;</span>
+<span class="lineNum">     530 </span>            : 
+<span class="lineNum">     531 </span>            :     // check if context provides all implementations, otherwise go back to Host
+<span class="lineNum">     532 </span>            : 
+<span class="lineNum">     533 </span>            :     ContextPtr loc = context;
+<span class="lineNum">     534 </span><span class="lineCov">      39107 :     setCSRValues.getSupportedContext( loc, validOffsets, validIndexes );</span>
+<span class="lineNum">     535 </span>            : 
+<span class="lineNum">     536 </span><span class="lineCov">      78214 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     537 </span>            :                    &quot;setCRSData for dense storage &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns &lt;&lt; &quot;, nnz = &quot; &lt;&lt; numValues )
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span><span class="lineCov">     117321 :     _MatrixStorage::setDimension( numRows, numColumns );</span>
+<span class="lineNum">     540 </span>            : 
+<span class="lineNum">     541 </span>            :     std::unique_ptr&lt;HArray&lt;IndexType&gt; &gt; tmpOffsets;
+<span class="lineNum">     542 </span>            : 
+<span class="lineNum">     543 </span>            :     const HArray&lt;IndexType&gt;* offsets = &amp;ia;
+<span class="lineNum">     544 </span>            : 
+<span class="lineNum">     545 </span><span class="lineCov">      39107 :     if ( ia.size() == numRows )</span>
+<span class="lineNum">     546 </span>            :     {
+<span class="lineNum">     547 </span><span class="lineCov">          7 :         tmpOffsets.reset( ia.copy() );</span>
+<span class="lineNum">     548 </span><span class="lineCov">         14 :         IndexType total = HArrayUtils::scan1( *tmpOffsets, loc );</span>
+<span class="lineNum">     549 </span><span class="lineCov">          7 :         SCAI_ASSERT_EQUAL( total, numValues, &quot;sizes do not sum up correctly&quot; )</span>
+<span class="lineNum">     550 </span>            :         offsets = tmpOffsets.get();
+<span class="lineNum">     551 </span>            :     }
+<span class="lineNum">     552 </span>            :     else
+<span class="lineNum">     553 </span>            :     {
+<span class="lineNum">     554 </span><span class="lineCov">      39100 :         SCAI_ASSERT_EQ_ERROR( ia.size(), numRows + 1, &quot;size mismatch of csr IA array&quot; )</span>
+<span class="lineNum">     555 </span>            :     }
+<span class="lineNum">     556 </span>            : 
+<span class="lineNum">     557 </span>            :     {
+<span class="lineNum">     558 </span><span class="lineCov">      78214 :         ReadAccess&lt;IndexType&gt; csrIA( *offsets, loc );</span>
+<span class="lineNum">     559 </span><span class="lineCov">      78214 :         ReadAccess&lt;IndexType&gt; csrJA( ja, loc );</span>
+<span class="lineNum">     560 </span><span class="lineCov">      78214 :         ReadAccess&lt;OtherValueType&gt; csrValues( values, loc );</span>
+<span class="lineNum">     561 </span><span class="lineCov">     117321 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     562 </span>            : 
+<span class="lineNum">     563 </span><span class="lineCov">      39107 :         if ( !validOffsets[loc]( csrIA.get(), numRows, numValues ) )</span>
+<span class="lineNum">     564 </span>            :         {
+<span class="lineNum">     565 </span><span class="lineNoCov">          0 :             COMMON_THROWEXCEPTION( &quot;invalid offset array&quot; )</span>
+<span class="lineNum">     566 </span>            :         }
+<span class="lineNum">     567 </span>            : 
+<span class="lineNum">     568 </span><span class="lineCov">      39107 :         if ( !validIndexes[loc]( csrJA.get(), numValues, numColumns ) )</span>
+<span class="lineNum">     569 </span>            :         {
+<span class="lineNum">     570 </span><span class="lineNoCov">          0 :             COMMON_THROWEXCEPTION( &quot;invalid column indexes, #columns = &quot; &lt;&lt; numColumns )</span>
+<span class="lineNum">     571 </span>            :         }
+<span class="lineNum">     572 </span>            : 
+<span class="lineNum">     573 </span><span class="lineCov">     156428 :         WriteOnlyAccess&lt;ValueType&gt; data( mData, loc, getNumRows() * getNumColumns() );</span>
+<span class="lineNum">     574 </span><span class="lineCov">      78214 :         setCSRValues[loc]( data.get(), getNumRows(), getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );</span>
+<span class="lineNum">     575 </span>            :     }
+<span class="lineNum">     576 </span>            : 
+<span class="lineNum">     577 </span><span class="lineCov">      39107 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     578 </span>            :     // dense storage does not care about diagonal property, is always okay
+<span class="lineNum">     579 </span><span class="lineCov">      39107 : }</span>
+<span class="lineNum">     580 </span>            : 
+<span class="lineNum">     581 </span>            : /* --------------------------------------------------------------------------- */
+<a name="582"><span class="lineNum">     582 </span>            : </a>
+<span class="lineNum">     583 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     584 </span><span class="lineCov">         56 : void DenseStorage&lt;ValueType&gt;::invert( const MatrixStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     585 </span>            : {
+<span class="lineNum">     586 </span><span class="lineCov">        112 :     SCAI_LOG_INFO( logger, &quot;invert( &quot; &lt;&lt; other &lt;&lt; &quot;) to a dense storage&quot; )</span>
+<span class="lineNum">     587 </span>            : 
+<span class="lineNum">     588 </span><span class="lineCov">         56 :     if ( other.getFormat() == Format::DENSE )</span>
+<span class="lineNum">     589 </span>            :     {
+<span class="lineNum">     590 </span><span class="lineCov">         56 :         const DenseStorage&lt;ValueType&gt;* otherDense = dynamic_cast&lt;const DenseStorage&lt;ValueType&gt;*&gt;( &amp;other );</span>
+<span class="lineNum">     591 </span><span class="lineCov">         56 :         SCAI_ASSERT_ERROR( otherDense, &quot;Internal error: dynamic cast Dense&quot; )</span>
+<span class="lineNum">     592 </span><span class="lineCov">         56 :         invertDense( *otherDense );</span>
+<span class="lineNum">     593 </span>            :     }
+<span class="lineNum">     594 </span>            :     else
+<span class="lineNum">     595 </span>            :     {
+<span class="lineNum">     596 </span><span class="lineNoCov">          0 :         SCAI_UNSUPPORTED( &quot;invert (&quot; &lt;&lt; other &lt;&lt; &quot;) requires conversion to dense storage&quot; )</span>
+<span class="lineNum">     597 </span><span class="lineNoCov">          0 :         assignImpl( other );</span>
+<span class="lineNum">     598 </span><span class="lineNoCov">          0 :         invertDense( *this ); // is always done in place</span>
+<span class="lineNum">     599 </span>            :     }
+<span class="lineNum">     600 </span><span class="lineCov">         56 : }</span>
+<span class="lineNum">     601 </span>            : 
+<span class="lineNum">     602 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     603 </span>            : 
+<span class="lineNum">     604 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     605 </span><span class="lineCov">         56 : void DenseStorage&lt;ValueType&gt;::invertDense( const DenseStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">     606 </span>            : {
+<span class="lineNum">     607 </span><span class="lineCov">        112 :     SCAI_LOG_INFO( logger, &quot;invertDense: &quot; &lt;&lt; other )</span>
+<span class="lineNum">     608 </span>            : 
+<span class="lineNum">     609 </span>            :     // invert is always done in place, so assign other to this
+<span class="lineNum">     610 </span>            : 
+<span class="lineNum">     611 </span><span class="lineCov">         56 :     if ( &amp;other != this )</span>
+<span class="lineNum">     612 </span>            :     {
+<span class="lineNum">     613 </span><span class="lineCov">          8 :         SCAI_LOG_INFO( logger, &quot;invertDense: copy input matrix to this matrix&quot; )</span>
+<span class="lineNum">     614 </span><span class="lineCov">          4 :         assignDense( other );</span>
+<span class="lineNum">     615 </span>            :     }
+<span class="lineNum">     616 </span>            : 
+<span class="lineNum">     617 </span><span class="lineCov">         56 :     int nRows = this-&gt;getNumRows();</span>
+<span class="lineNum">     618 </span>            :     int nCols = this-&gt;getNumColumns();
+<span class="lineNum">     619 </span><span class="lineCov">         56 :     SCAI_ASSERT_EQUAL_ERROR( nRows, nCols )</span>
+<span class="lineNum">     620 </span><span class="lineCov">         78 :     static LAMAKernel&lt;blaskernel::BLASKernelTrait::getinv&lt;ValueType&gt; &gt; getinv;</span>
+<span class="lineNum">     621 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     622 </span><span class="lineCov">         56 :     getinv.getSupportedContext( loc );</span>
+<span class="lineNum">     623 </span><span class="lineCov">        112 :     WriteAccess&lt;ValueType&gt; denseValues( mData, loc );</span>
+<span class="lineNum">     624 </span><span class="lineCov">        168 :     SCAI_CONTEXT_ACCESS( loc );</span>
+<span class="lineNum">     625 </span><span class="lineCov">         56 :     getinv[loc]( nRows, denseValues.get(), nCols );</span>
+<span class="lineNum">     626 </span><span class="lineCov">        112 :     SCAI_LOG_INFO( logger, &quot;invertDense: this = &quot; &lt;&lt; *this )</span>
+<span class="lineNum">     627 </span><span class="lineCov">         56 : }</span>
+<span class="lineNum">     628 </span>            : 
+<span class="lineNum">     629 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     630 </span>            : 
+<span class="lineNum">     631 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     632 </span><span class="lineCov">       5384 : void DenseStorage&lt;ValueType&gt;::matrixTimesVector(</span>
+<span class="lineNum">     633 </span>            :     HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     634 </span>            :     const ValueType alpha,
+<span class="lineNum">     635 </span>            :     const HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     636 </span>            :     const ValueType beta,
+<span class="lineNum">     637 </span>            :     const HArray&lt;ValueType&gt;&amp; y,
+<span class="lineNum">     638 </span>            :     const common::MatrixOp op ) const
+<span class="lineNum">     639 </span>            : {
+<span class="lineNum">     640 </span><span class="lineCov">      10768 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     641 </span>            :                    &quot;Computing z = &quot; &lt;&lt; alpha &lt;&lt; &quot; * A * x + &quot; &lt;&lt; beta &lt;&lt; &quot; * y&quot; &lt;&lt; &quot;, with A = &quot; &lt;&lt; *this &lt;&lt; &quot;, x = &quot; &lt;&lt; x &lt;&lt; &quot;, y = &quot; &lt;&lt; y &lt;&lt; &quot;, z = &quot; &lt;&lt; result )
+<span class="lineNum">     642 </span>            : 
+<span class="lineNum">     643 </span><span class="lineCov">      14119 :     const IndexType nSource = common::isTranspose( op ) ? getNumRows() : getNumColumns();</span>
+<span class="lineNum">     644 </span><span class="lineCov">       5384 :     const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();</span>
+<span class="lineNum">     645 </span>            : 
+<span class="lineNum">     646 </span><span class="lineCov">       5384 :     if ( alpha == common::Constants::ZERO )</span>
+<span class="lineNum">     647 </span>            :     {
+<span class="lineNum">     648 </span>            :         // so we just have result = beta * y, will be done synchronously
+<span class="lineNum">     649 </span>            : 
+<span class="lineNum">     650 </span><span class="lineCov">          2 :         if ( beta == common::Constants::ZERO )</span>
+<span class="lineNum">     651 </span>            :         {
+<span class="lineNum">     652 </span><span class="lineNoCov">          0 :             HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), this-&gt;getContextPtr() );</span>
+<span class="lineNum">     653 </span>            :         }
+<span class="lineNum">     654 </span>            :         else
+<span class="lineNum">     655 </span>            :         {
+<span class="lineNum">     656 </span><span class="lineCov">          4 :             HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     657 </span>            :         }
+<span class="lineNum">     658 </span>            : 
+<span class="lineNum">     659 </span>            :         return;
+<span class="lineNum">     660 </span>            :     }
+<span class="lineNum">     661 </span>            : 
+<span class="lineNum">     662 </span><span class="lineCov">       5382 :     SCAI_ASSERT_EQ_ERROR( x.size(), nSource, &quot;vector x in A * x has illegal size&quot; )</span>
+<span class="lineNum">     663 </span>            : 
+<span class="lineNum">     664 </span><span class="lineCov">      10764 :     if ( beta != common::Constants::ZERO )</span>
+<span class="lineNum">     665 </span>            :     {
+<span class="lineNum">     666 </span><span class="lineCov">       5148 :         SCAI_ASSERT_EQ_ERROR( y.size(), nTarget, &quot;size mismatch y, beta = &quot; &lt;&lt; beta )</span>
+<span class="lineNum">     667 </span>            :     }
+<span class="lineNum">     668 </span>            : 
+<span class="lineNum">     669 </span><span class="lineCov">       5380 :     if ( nTarget == 0 )</span>
+<span class="lineNum">     670 </span>            :     {
+<span class="lineNum">     671 </span><span class="lineCov">        805 :         result.clear();  // result will get size zero</span>
+<span class="lineNum">     672 </span><span class="lineCov">        805 :         return;          // nothing to do</span>
+<span class="lineNum">     673 </span>            :     }
+<span class="lineNum">     674 </span>            : 
+<span class="lineNum">     675 </span><span class="lineCov">       9150 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: matrixTimesVector, try on &quot; &lt;&lt; *mContext )</span>
+<span class="lineNum">     676 </span>            : 
+<span class="lineNum">     677 </span>            :     // using BLAS2 interface requires result and y to be aliased
+<span class="lineNum">     678 </span>            : 
+<span class="lineNum">     679 </span><span class="lineCov">       4575 :     if ( beta == common::Constants::ZERO )</span>
+<span class="lineNum">     680 </span>            :     {
+<span class="lineNum">     681 </span><span class="lineCov">        440 :         utilskernel::HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), getContextPtr() );</span>
+<span class="lineNum">     682 </span>            :     }
+<span class="lineNum">     683 </span><span class="lineCov">       4355 :     else if ( &amp;result != &amp;y )</span>
+<span class="lineNum">     684 </span>            :     {
+<span class="lineNum">     685 </span><span class="lineCov">       4330 :         utilskernel::HArrayUtils::assign( result, y, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     686 </span>            :     }
+<span class="lineNum">     687 </span>            :     else
+<span class="lineNum">     688 </span>            :     {
+<span class="lineNum">     689 </span><span class="lineCov">       4380 :         SCAI_LOG_INFO( logger, &quot;alias of result and y, can use it&quot; )</span>
+<span class="lineNum">     690 </span>            :     }
+<span class="lineNum">     691 </span>            : 
+<span class="lineNum">     692 </span>            :     // now we have: result = alpha * A * x + beta * result
+<span class="lineNum">     693 </span>            : 
+<span class="lineNum">     694 </span><span class="lineCov">       4575 :     if ( nSource == 0 )</span>
+<span class="lineNum">     695 </span>            :     {
+<span class="lineNum">     696 </span><span class="lineCov">       1248 :         SCAI_LOG_INFO( logger, &quot;empty matrix, so compute result = &quot; &lt;&lt; beta &lt;&lt; &quot; * result &quot; )</span>
+<span class="lineNum">     697 </span>            : 
+<span class="lineNum">     698 </span><span class="lineCov">        624 :         if ( beta == common::Constants::ZERO )</span>
+<span class="lineNum">     699 </span>            :         {
+<span class="lineNum">     700 </span>            :             // nothing more to do, y is already 0
+<span class="lineNum">     701 </span>            :         }
+<span class="lineNum">     702 </span><span class="lineCov">        616 :         else if ( beta == common::Constants::ONE )</span>
+<span class="lineNum">     703 </span>            :         {
+<span class="lineNum">     704 </span>            :             // no scaling required
+<span class="lineNum">     705 </span>            :         }
+<span class="lineNum">     706 </span>            :         else
+<span class="lineNum">     707 </span>            :         {
+<span class="lineNum">     708 </span><span class="lineCov">        344 :             HArrayUtils::compute( result, beta, BinaryOp::MULT, result, this-&gt;getContextPtr() );</span>
+<span class="lineNum">     709 </span>            :         }
+<span class="lineNum">     710 </span>            :     }
+<span class="lineNum">     711 </span>            :     else
+<span class="lineNum">     712 </span>            :     {
+<span class="lineNum">     713 </span>            :         // mNumColums &gt; 0, mnumRows &gt; 0, so we avoid problems for gemv with m==0 or n==0
+<span class="lineNum">     714 </span><span class="lineCov">       3999 :         static LAMAKernel&lt;blaskernel::BLASKernelTrait::gemv&lt;ValueType&gt; &gt; gemv;</span>
+<span class="lineNum">     715 </span>            :         ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     716 </span><span class="lineCov">       3951 :         gemv.getSupportedContext( loc );</span>
+<span class="lineNum">     717 </span><span class="lineCov">       7902 :         ReadAccess&lt;ValueType&gt; denseValues( mData, loc );</span>
+<span class="lineNum">     718 </span><span class="lineCov">       7902 :         ReadAccess&lt;ValueType&gt; rX( x, loc );</span>
+<span class="lineNum">     719 </span>            :         int lda = getNumColumns(); // stride for denseValues between rows
+<span class="lineNum">     720 </span><span class="lineCov">       7902 :         WriteAccess&lt;ValueType&gt; wResult( result, loc );</span>
+<span class="lineNum">     721 </span><span class="lineCov">      11853 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     722 </span>            :         // gemv:  result = alpha * this * x + beta * result
+<span class="lineNum">     723 </span><span class="lineCov">       9600 :         gemv[loc]( CblasRowMajor, common::isTranspose( op ) ? CblasTrans : CblasNoTrans, </span>
+<span class="lineNum">     724 </span>            :                    getNumRows(), getNumColumns(), alpha, denseValues.get(), lda, rX.get(),
+<span class="lineNum">     725 </span>            :                    1, beta, wResult.get(), 1 );
+<span class="lineNum">     726 </span>            :     }
+<span class="lineNum">     727 </span>            : }
+<span class="lineNum">     728 </span>            : 
+<span class="lineNum">     729 </span>            : /* --------------------------------------------------------------------------- */
+<a name="730"><span class="lineNum">     730 </span>            : </a>
+<span class="lineNum">     731 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     732 </span><span class="lineCov">          8 : void DenseStorage&lt;ValueType&gt;::print( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     733 </span>            : {
+<span class="lineNum">     734 </span>            :     using std::endl;
+<span class="lineNum">     735 </span><span class="lineCov">          8 :     ReadAccess&lt;ValueType&gt; values( mData );</span>
+<span class="lineNum">     736 </span><span class="lineCov">        400 :     stream &lt;&lt; &quot;DenseStorage &quot; &lt;&lt; getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns() &lt;&lt; &quot;, addr  = &quot; &lt;&lt; values.get() &lt;&lt; endl;</span>
+<span class="lineNum">     737 </span>            : 
+<span class="lineNum">     738 </span><span class="lineCov">         72 :     for ( IndexType i = 0; i &lt; getNumRows(); i++ )</span>
+<span class="lineNum">     739 </span>            :     {
+<span class="lineNum">     740 </span><span class="lineCov">         32 :         stream &lt;&lt; &quot;Row &quot; &lt;&lt; i &lt;&lt; &quot; :&quot;;</span>
+<span class="lineNum">     741 </span>            : 
+<span class="lineNum">     742 </span><span class="lineCov">        352 :         for ( IndexType j = 0; j &lt; getNumColumns(); j++ )</span>
+<span class="lineNum">     743 </span>            :         {
+<span class="lineNum">     744 </span><span class="lineCov">        320 :             stream &lt;&lt; &quot; &quot; &lt;&lt; values[i * getNumColumns() + j];</span>
+<span class="lineNum">     745 </span>            :         }
+<span class="lineNum">     746 </span>            : 
+<span class="lineNum">     747 </span>            :         stream &lt;&lt; endl;
+<span class="lineNum">     748 </span>            :     }
+<span class="lineNum">     749 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     750 </span>            : 
+<span class="lineNum">     751 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     752 </span>            : 
+<span class="lineNum">     753 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     754 </span><span class="lineCov">         33 : void DenseStorage&lt;ValueType&gt;::matrixTimesMatrix(</span>
+<span class="lineNum">     755 </span>            :     const ValueType alpha,
+<span class="lineNum">     756 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; a,
+<span class="lineNum">     757 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; b,
+<span class="lineNum">     758 </span>            :     const ValueType beta,
+<span class="lineNum">     759 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; c )
+<span class="lineNum">     760 </span>            : {
+<span class="lineNum">     761 </span><span class="lineCov">         66 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     762 </span>            :                    *this &lt;&lt; &quot;: = &quot; &lt;&lt; alpha &lt;&lt; &quot; * A * B + &quot; &lt;&lt; beta &lt;&lt; &quot; * C&quot; &lt;&lt; &quot;, with A = &quot; &lt;&lt; a &lt;&lt; &quot;, B = &quot; &lt;&lt; b &lt;&lt; &quot;, C = &quot; &lt;&lt; c )
+<span class="lineNum">     763 </span>            : 
+<span class="lineNum">     764 </span><span class="lineCov">         33 :     if ( a.getFormat() != Format::DENSE )</span>
+<span class="lineNum">     765 </span>            :     {
+<span class="lineNum">     766 </span><span class="lineNoCov">          0 :         matrixTimesMatrix( alpha, convert&lt;DenseStorage&lt;ValueType&gt;&gt;( a ), b, beta, c );</span>
+<span class="lineNum">     767 </span>            :     }
+<span class="lineNum">     768 </span><span class="lineCov">         33 :     else if ( b.getFormat() != Format::DENSE )</span>
+<span class="lineNum">     769 </span>            :     {
+<span class="lineNum">     770 </span><span class="lineNoCov">          0 :         matrixTimesMatrix( alpha, a, convert&lt;DenseStorage&lt;ValueType&gt;&gt;( b ), beta, c );</span>
+<span class="lineNum">     771 </span>            :     }
+<span class="lineNum">     772 </span><span class="lineCov">         33 :     else if ( c.getFormat() != Format::DENSE )</span>
+<span class="lineNum">     773 </span>            :     {
+<span class="lineNum">     774 </span><span class="lineNoCov">          0 :         if ( beta == 0 )</span>
+<span class="lineNum">     775 </span>            :         {
+<span class="lineNum">     776 </span><span class="lineNoCov">          0 :             matrixTimesMatrix( alpha, a, b, beta, zero&lt;DenseStorage&lt;ValueType&gt;&gt;( a.getNumRows(), b.getNumColumns() )  );</span>
+<span class="lineNum">     777 </span>            :         }
+<span class="lineNum">     778 </span>            :         else
+<span class="lineNum">     779 </span>            :         {
+<span class="lineNum">     780 </span><span class="lineNoCov">          0 :             matrixTimesMatrix( alpha, a, b, beta, convert&lt;DenseStorage&lt;ValueType&gt;&gt;( c )  );</span>
+<span class="lineNum">     781 </span>            :         }
+<span class="lineNum">     782 </span>            :     }
+<span class="lineNum">     783 </span>            :     else
+<span class="lineNum">     784 </span>            :     {
+<span class="lineNum">     785 </span>            :         // all matrices are now dense
+<span class="lineNum">     786 </span><span class="lineCov">         33 :         matrixTimesMatrixDense( alpha, static_cast&lt;const DenseStorage&lt;ValueType&gt;&amp;&gt;( a ), </span>
+<span class="lineNum">     787 </span>            :                                        static_cast&lt;const DenseStorage&lt;ValueType&gt;&amp;&gt;( b ),
+<span class="lineNum">     788 </span><span class="lineCov">         10 :                                 beta,  static_cast&lt;const DenseStorage&lt;ValueType&gt;&amp;&gt;( c ) );</span>
+<span class="lineNum">     789 </span>            :     }
+<span class="lineNum">     790 </span><span class="lineCov">         33 : }</span>
+<span class="lineNum">     791 </span>            : 
+<span class="lineNum">     792 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     793 </span>            : 
+<span class="lineNum">     794 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     795 </span><span class="lineCov">         33 : void DenseStorage&lt;ValueType&gt;::matrixTimesMatrixDense(</span>
+<span class="lineNum">     796 </span>            :     const ValueType alpha,
+<span class="lineNum">     797 </span>            :     const DenseStorage&lt;ValueType&gt;&amp; a,
+<span class="lineNum">     798 </span>            :     const DenseStorage&lt;ValueType&gt;&amp; b,
+<span class="lineNum">     799 </span>            :     const ValueType beta,
+<span class="lineNum">     800 </span>            :     const DenseStorage&lt;ValueType&gt;&amp; c )
+<span class="lineNum">     801 </span>            : {
+<span class="lineNum">     802 </span>            :     // shape(a) = m x k,  shape(b) = k x n
+<span class="lineNum">     803 </span>            :     const DenseStorage&lt;ValueType&gt;* ptrA = &amp;a;
+<span class="lineNum">     804 </span>            :     const DenseStorage&lt;ValueType&gt;* ptrB = &amp;b;
+<span class="lineNum">     805 </span>            :     std::shared_ptr&lt;DenseStorage&lt;ValueType&gt; &gt; tmpA;
+<span class="lineNum">     806 </span>            :     std::shared_ptr&lt;DenseStorage&lt;ValueType&gt; &gt; tmpB;
+<span class="lineNum">     807 </span><span class="lineCov">         66 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     808 </span>            :                    &quot;matrixTimesMatrixDense: &quot; &lt;&lt; alpha &lt;&lt; &quot; * a * b + &quot; &lt;&lt; beta &lt;&lt; &quot; * c, with a = &quot; &lt;&lt; a &lt;&lt; &quot;, b = &quot; &lt;&lt; b &lt;&lt; &quot;, c = &quot; &lt;&lt; c )
+<span class="lineNum">     809 </span>            : 
+<span class="lineNum">     810 </span><span class="lineCov">         33 :     if ( &amp;a == this )</span>
+<span class="lineNum">     811 </span>            :     {
+<span class="lineNum">     812 </span><span class="lineNoCov">          0 :         SCAI_LOG_INFO( logger, &quot;temporary for A in A * B ( dense storages) needed&quot; )</span>
+<span class="lineNum">     813 </span><span class="lineNoCov">          0 :         tmpA = std::shared_ptr&lt;DenseStorage&lt;ValueType&gt; &gt;( new DenseStorage&lt;ValueType&gt;( a ) );</span>
+<span class="lineNum">     814 </span>            :         ptrA = tmpA.get();
+<span class="lineNum">     815 </span>            :     }
+<span class="lineNum">     816 </span>            : 
+<span class="lineNum">     817 </span><span class="lineCov">         33 :     if ( &amp;b == this )</span>
+<span class="lineNum">     818 </span>            :     {
+<span class="lineNum">     819 </span>            :         // avoid two temporaries
+<span class="lineNum">     820 </span><span class="lineNoCov">          0 :         if ( &amp;a == &amp;b )</span>
+<span class="lineNum">     821 </span>            :         {
+<span class="lineNum">     822 </span><span class="lineNoCov">          0 :             SCAI_LOG_INFO( logger, &quot;same temporary for A and B in A * B ( dense storages) needed&quot; )</span>
+<span class="lineNum">     823 </span>            :             ptrB = tmpA.get();
+<span class="lineNum">     824 </span>            :         }
+<span class="lineNum">     825 </span>            :         else
+<span class="lineNum">     826 </span>            :         {
+<span class="lineNum">     827 </span><span class="lineNoCov">          0 :             SCAI_LOG_INFO( logger, &quot;temporary for B in A * B ( dense storages) needed&quot; )</span>
+<span class="lineNum">     828 </span><span class="lineNoCov">          0 :             tmpB = std::shared_ptr&lt;DenseStorage&lt;ValueType&gt; &gt;( new DenseStorage&lt;ValueType&gt;( b ) );</span>
+<span class="lineNum">     829 </span>            :             ptrB = tmpB.get();
+<span class="lineNum">     830 </span>            :         }
+<span class="lineNum">     831 </span>            :     }
+<span class="lineNum">     832 </span>            : 
+<span class="lineNum">     833 </span><span class="lineCov">         99 :     IndexType m = a.getNumRows();</span>
+<span class="lineNum">     834 </span><span class="lineCov">         66 :     IndexType k = b.getNumRows();</span>
+<span class="lineNum">     835 </span>            :     IndexType n = b.getNumColumns();
+<span class="lineNum">     836 </span>            : 
+<span class="lineNum">     837 </span><span class="lineCov">         33 :     SCAI_ASSERT_EQUAL_ERROR( k, a.getNumColumns() )</span>
+<span class="lineNum">     838 </span>            :  
+<span class="lineNum">     839 </span><span class="lineCov">         66 :     _MatrixStorage::setDimension( m, n );</span>
+<span class="lineNum">     840 </span>            : 
+<span class="lineNum">     841 </span><span class="lineCov">         33 :     if ( beta == common::Constants::ZERO )</span>
+<span class="lineNum">     842 </span>            :     {
+<span class="lineNum">     843 </span>            :         // do not care at all about C as it might be any dummy, or aliased to result
+<span class="lineNum">     844 </span><span class="lineCov">         53 :         static LAMAKernel&lt;UtilKernelTrait::setVal&lt;ValueType&gt; &gt; setVal;</span>
+<span class="lineNum">     845 </span>            :         ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     846 </span><span class="lineCov">         31 :         setVal.getSupportedContext( loc );</span>
+<span class="lineNum">     847 </span><span class="lineCov">         62 :         SCAI_LOG_INFO( logger, &quot;init this result with 0, size = &quot; &lt;&lt; m * n )</span>
+<span class="lineNum">     848 </span><span class="lineCov">        124 :         WriteOnlyAccess&lt;ValueType&gt; resAccess( mData, loc, m * n );</span>
+<span class="lineNum">     849 </span><span class="lineCov">         93 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     850 </span><span class="lineCov">         31 :         setVal[loc]( resAccess.get(), m * n, ValueType( 0 ), BinaryOp::COPY );</span>
+<span class="lineNum">     851 </span>            :     }
+<span class="lineNum">     852 </span><span class="lineCov">          2 :     else if ( this != &amp;c )</span>
+<span class="lineNum">     853 </span>            :     {
+<span class="lineNum">     854 </span>            :         // force result = C
+<span class="lineNum">     855 </span><span class="lineCov">          2 :         SCAI_ASSERT_EQUAL_ERROR( m, c.getNumRows() )</span>
+<span class="lineNum">     856 </span><span class="lineCov">          2 :         SCAI_ASSERT_EQUAL_ERROR( n, c.getNumColumns() )</span>
+<span class="lineNum">     857 </span>            : 
+<span class="lineNum">     858 </span><span class="lineCov">          2 :         _MatrixStorage::setDimension( m, n );</span>
+<span class="lineNum">     859 </span>            : 
+<span class="lineNum">     860 </span><span class="lineCov">          4 :         static LAMAKernel&lt;blaskernel::BLASKernelTrait::copy&lt;ValueType&gt; &gt; copy;</span>
+<span class="lineNum">     861 </span>            :         ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     862 </span><span class="lineCov">          2 :         copy.getSupportedContext( loc );</span>
+<span class="lineNum">     863 </span><span class="lineCov">          4 :         ReadAccess&lt;ValueType&gt; cAccess( c.getValues(), loc );</span>
+<span class="lineNum">     864 </span><span class="lineCov">          8 :         WriteOnlyAccess&lt;ValueType&gt; resAccess( mData, loc, m * n );</span>
+<span class="lineNum">     865 </span>            :         SCAI_LOG_TRACE( logger, &quot;Copying: res = c &quot; )
+<span class="lineNum">     866 </span><span class="lineCov">          6 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     867 </span><span class="lineCov">          2 :         copy[loc]( n * m, cAccess.get(), 1, resAccess.get(), 1 );</span>
+<span class="lineNum">     868 </span>            :     }
+<span class="lineNum">     869 </span>            :     else
+<span class="lineNum">     870 </span>            :     {
+<span class="lineNum">     871 </span><span class="lineNoCov">          0 :         SCAI_LOG_INFO( logger, &quot;results is aliased with C as required for gemm, beta = &quot; &lt;&lt; beta )</span>
+<span class="lineNum">     872 </span>            :     }
+<span class="lineNum">     873 </span>            : 
+<span class="lineNum">     874 </span>            :     // now C used for BLAS3 call of GEMM is this matrix
+<span class="lineNum">     875 </span>            :     int lda = a.getNumColumns();
+<span class="lineNum">     876 </span>            :     int ldb = b.getNumColumns();
+<span class="lineNum">     877 </span>            :     int ldc = getNumColumns();
+<span class="lineNum">     878 </span>            :     // Now  C = alpha * A * B + beta * C, can use GEMM of BLAS3
+<span class="lineNum">     879 </span>            :     SCAI_LOG_TRACE( logger,
+<span class="lineNum">     880 </span>            :                     &quot;GEMM( CblasRowMajor, CblasNoTrans, CblasNoTrans, m:&quot; &lt;&lt; m &lt;&lt; &quot;, n:&quot; &lt;&lt; n &lt;&lt; &quot;, k:&quot; &lt;&lt; k &lt;&lt; &quot;, alpha:&quot; &lt;&lt; alpha &lt;&lt; &quot;, A , lda:&quot; &lt;&lt; lda &lt;&lt; &quot; ,B ,ldb:&quot; &lt;&lt; ldb &lt;&lt; &quot; ,beta:&quot; &lt;&lt; beta &lt;&lt; &quot; C ,ldc:&quot; &lt;&lt; ldc &lt;&lt; &quot; )&quot; )
+<span class="lineNum">     881 </span>            : 
+<span class="lineNum">     882 </span><span class="lineCov">         33 :     if ( lda != 0 &amp;&amp; n != 0 &amp;&amp; m != 0 )</span>
+<span class="lineNum">     883 </span>            :     {
+<span class="lineNum">     884 </span><span class="lineCov">         55 :         static LAMAKernel&lt;blaskernel::BLASKernelTrait::gemm&lt;ValueType&gt; &gt; gemm;</span>
+<span class="lineNum">     885 </span>            :         ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     886 </span><span class="lineCov">         33 :         gemm.getSupportedContext( loc );</span>
+<span class="lineNum">     887 </span><span class="lineCov">         66 :         ReadAccess&lt;ValueType&gt; aAccess( ptrA-&gt;getValues(), loc );</span>
+<span class="lineNum">     888 </span><span class="lineCov">         66 :         ReadAccess&lt;ValueType&gt; bAccess( ptrB-&gt;getValues(), loc );</span>
+<span class="lineNum">     889 </span><span class="lineCov">         66 :         WriteAccess&lt;ValueType&gt; resAccess( mData, loc );</span>
+<span class="lineNum">     890 </span><span class="lineCov">         99 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     891 </span><span class="lineCov">         53 :         gemm[loc]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,</span>
+<span class="lineNum">     892 </span>            :                    resAccess.get(), ldc );
+<span class="lineNum">     893 </span>            :     }
+<span class="lineNum">     894 </span><span class="lineCov">         33 : }</span>
+<span class="lineNum">     895 </span>            : 
+<span class="lineNum">     896 </span>            : /* --------------------------------------------------------------------------- */
+<a name="897"><span class="lineNum">     897 </span>            : </a>
+<span class="lineNum">     898 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     899 </span><span class="lineCov">     197472 : DenseStorage&lt;ValueType&gt;::~DenseStorage()</span>
+<span class="lineNum">     900 </span>            : {
+<span class="lineNum">     901 </span>            :     SCAI_LOG_DEBUG( logger, &quot;~DenseStorage for matrix &quot; &lt;&lt; getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; getNumColumns() )
+<span class="lineNum">     902 </span><span class="lineCov">     316578 : }</span>
+<span class="lineNum">     903 </span>            : 
+<span class="lineNum">     904 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     905 </span>            : 
+<span class="lineNum">     906 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     907 </span><span class="lineCov">         33 : RealType&lt;ValueType&gt; DenseStorage&lt;ValueType&gt;::l1Norm() const</span>
+<span class="lineNum">     908 </span>            : {
+<span class="lineNum">     909 </span><span class="lineCov">         33 :     IndexType n = getNumRows() * getNumColumns();</span>
+<span class="lineNum">     910 </span>            : 
+<span class="lineNum">     911 </span><span class="lineCov">         33 :     if ( n == 0 )</span>
+<span class="lineNum">     912 </span>            :     {
+<span class="lineNum">     913 </span>            :         return static_cast&lt;ValueType&gt;( 0 );
+<span class="lineNum">     914 </span>            :     }
+<span class="lineNum">     915 </span>            : 
+<span class="lineNum">     916 </span><span class="lineCov">         66 :     static LAMAKernel&lt;blaskernel::BLASKernelTrait::asum&lt;ValueType&gt; &gt; asum;</span>
+<span class="lineNum">     917 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     918 </span><span class="lineCov">         33 :     asum.getSupportedContext( loc );</span>
+<span class="lineNum">     919 </span><span class="lineCov">         66 :     ReadAccess&lt;ValueType&gt; data( mData, loc );</span>
+<span class="lineNum">     920 </span><span class="lineCov">         99 :     SCAI_CONTEXT_ACCESS( loc );</span>
+<span class="lineNum">     921 </span>            :     IndexType inc = 1;
+<span class="lineNum">     922 </span><span class="lineCov">         47 :     return asum[loc]( n, data.get(), inc );</span>
+<span class="lineNum">     923 </span>            : }
+<span class="lineNum">     924 </span>            : 
+<span class="lineNum">     925 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     926 </span>            : 
+<span class="lineNum">     927 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     928 </span><span class="lineCov">         33 : RealType&lt;ValueType&gt; DenseStorage&lt;ValueType&gt;::l2Norm() const</span>
+<span class="lineNum">     929 </span>            : {
+<span class="lineNum">     930 </span><span class="lineCov">         33 :     IndexType n = getNumRows() * getNumColumns();</span>
+<span class="lineNum">     931 </span>            : 
+<span class="lineNum">     932 </span><span class="lineCov">         33 :     if ( n == 0 )</span>
+<span class="lineNum">     933 </span>            :     {
+<span class="lineNum">     934 </span>            :         return static_cast&lt;ValueType&gt;( 0 );
+<span class="lineNum">     935 </span>            :     }
+<span class="lineNum">     936 </span>            : 
+<span class="lineNum">     937 </span><span class="lineCov">         66 :     static LAMAKernel&lt;blaskernel::BLASKernelTrait::dot&lt;ValueType&gt; &gt; dot;</span>
+<span class="lineNum">     938 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     939 </span><span class="lineCov">         33 :     dot.getSupportedContext( loc );</span>
+<span class="lineNum">     940 </span><span class="lineCov">         66 :     ReadAccess&lt;ValueType&gt; data( mData, loc );</span>
+<span class="lineNum">     941 </span><span class="lineCov">         99 :     SCAI_CONTEXT_ACCESS( loc );</span>
+<span class="lineNum">     942 </span><span class="lineCov">         47 :     return common::Math::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );</span>
+<span class="lineNum">     943 </span>            : }
+<span class="lineNum">     944 </span>            : 
+<span class="lineNum">     945 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     946 </span>            : 
+<span class="lineNum">     947 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     948 </span><span class="lineCov">      11019 : RealType&lt;ValueType&gt; DenseStorage&lt;ValueType&gt;::maxNorm() const</span>
+<span class="lineNum">     949 </span>            : {
+<span class="lineNum">     950 </span><span class="lineCov">      11019 :     IndexType n = getNumRows() * getNumColumns();</span>
+<span class="lineNum">     951 </span>            : 
+<span class="lineNum">     952 </span><span class="lineCov">      11019 :     if ( n == 0 )</span>
+<span class="lineNum">     953 </span>            :     {
+<span class="lineNum">     954 </span>            :         return ValueType( 0 );
+<span class="lineNum">     955 </span>            :     }
+<span class="lineNum">     956 </span>            : 
+<span class="lineNum">     957 </span><span class="lineCov">       8318 :     static LAMAKernel&lt;UtilKernelTrait::reduce&lt;ValueType&gt; &gt; reduce;</span>
+<span class="lineNum">     958 </span>            :     ContextPtr loc = this-&gt;getContextPtr();
+<span class="lineNum">     959 </span><span class="lineCov">       8285 :     reduce.getSupportedContext( loc );</span>
+<span class="lineNum">     960 </span><span class="lineCov">      16570 :     ReadAccess&lt;ValueType&gt; read1( mData, loc );</span>
+<span class="lineNum">     961 </span><span class="lineCov">      24855 :     SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">     962 </span>            :     ValueType zero   = 0;
+<span class="lineNum">     963 </span><span class="lineCov">      12367 :     RealType&lt;ValueType&gt; maxval = reduce[loc]( read1.get(), n, zero, BinaryOp::ABS_MAX );</span>
+<span class="lineNum">     964 </span>            :     return maxval;
+<span class="lineNum">     965 </span>            : }
+<span class="lineNum">     966 </span>            : 
+<span class="lineNum">     967 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     968 </span>            : 
+<span class="lineNum">     969 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     970 </span><span class="lineCov">      15059 : RealType&lt;ValueType&gt; DenseStorage&lt;ValueType&gt;::maxDiffNorm( const MatrixStorage&lt;ValueType&gt;&amp; other ) const</span>
+<span class="lineNum">     971 </span>            : {
+<span class="lineNum">     972 </span><span class="lineCov">      15059 :     SCAI_REGION( &quot;Storage.Dense.maxDiffNorm&quot; )</span>
+<span class="lineNum">     973 </span>            : 
+<span class="lineNum">     974 </span><span class="lineCov">      15059 :     SCAI_ASSERT_EQ_ERROR( getNumRows(), other.getNumRows(), &quot;row size mismatch for maxDiffNorm&quot; )</span>
+<span class="lineNum">     975 </span><span class="lineCov">      15059 :     SCAI_ASSERT_EQ_ERROR( getNumColumns(), other.getNumColumns(), &quot;col size mismatch for maxDiffNorm&quot; )</span>
+<span class="lineNum">     976 </span>            : 
+<span class="lineNum">     977 </span><span class="lineCov">      30118 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: maxDiffNorm( &quot; &lt;&lt; other &lt;&lt; &quot; )&quot; )</span>
+<span class="lineNum">     978 </span>            : 
+<span class="lineNum">     979 </span><span class="lineCov">      15059 :     if ( other.getFormat() == Format::DENSE )</span>
+<span class="lineNum">     980 </span>            :     {
+<span class="lineNum">     981 </span><span class="lineCov">       5989 :         return maxDiffNormImpl( static_cast&lt;const DenseStorage&lt;ValueType&gt;&amp;&gt;( other ) );</span>
+<span class="lineNum">     982 </span>            :     }
+<span class="lineNum">     983 </span>            :     else
+<span class="lineNum">     984 </span>            :     {
+<span class="lineNum">     985 </span><span class="lineCov">       9070 :         SCAI_UNSUPPORTED( other &lt;&lt; &quot;: converted to &quot; &lt;&lt; typeName() &lt;&lt; &quot; for maxDiffNorm&quot; )</span>
+<span class="lineNum">     986 </span>            : 
+<span class="lineNum">     987 </span><span class="lineCov">      18140 :         return maxDiffNormImpl( convert&lt;DenseStorage&lt;ValueType&gt;&gt;( other ) );</span>
+<span class="lineNum">     988 </span>            :     }
+<span class="lineNum">     989 </span>            : }
+<span class="lineNum">     990 </span>            : 
+<span class="lineNum">     991 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">     992 </span>            : 
+<span class="lineNum">     993 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     994 </span><span class="lineCov">      15059 : RealType&lt;ValueType&gt; DenseStorage&lt;ValueType&gt;::maxDiffNormImpl( const DenseStorage&lt;ValueType&gt;&amp; other ) const</span>
+<span class="lineNum">     995 </span>            : {
+<span class="lineNum">     996 </span>            :     // no more checks needed here
+<span class="lineNum">     997 </span>            : 
+<span class="lineNum">     998 </span><span class="lineCov">      15059 :     IndexType n = getNumRows() * getNumColumns();</span>
+<span class="lineNum">     999 </span>            : 
+<span class="lineNum">    1000 </span><span class="lineCov">      15059 :     if ( n == 0 )</span>
+<span class="lineNum">    1001 </span>            :     {
+<span class="lineNum">    1002 </span>            :         return static_cast&lt;RealType&lt;ValueType&gt; &gt;( 0 );
+<span class="lineNum">    1003 </span>            :     }
+<span class="lineNum">    1004 </span>            : 
+<span class="lineNum">    1005 </span><span class="lineCov">      26410 :     return HArrayUtils::absMaxDiffVal( mData, other.mData, this-&gt;getContextPtr() );</span>
+<span class="lineNum">    1006 </span>            : }
+<span class="lineNum">    1007 </span>            : 
+<span class="lineNum">    1008 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1009 </span>            : 
+<span class="lineNum">    1010 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1011 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">    1012 </span><span class="lineCov">      17108 : void DenseStorage&lt;ValueType&gt;::assignDense( const DenseStorage&lt;OtherValueType&gt;&amp; other )</span>
+<span class="lineNum">    1013 </span>            : {
+<span class="lineNum">    1014 </span><span class="lineCov">      17108 :     if ( static_cast&lt;const _MatrixStorage*&gt;( &amp;other ) == this )</span>
+<span class="lineNum">    1015 </span>            :     {
+<span class="lineNum">    1016 </span><span class="lineCov">       7772 :         SCAI_LOG_INFO( logger, typeName() &lt;&lt; &quot;: self assign, skipped, matrix = &quot; &lt;&lt; other )</span>
+<span class="lineNum">    1017 </span><span class="lineCov">       3886 :         return;</span>
+<span class="lineNum">    1018 </span>            :     }
+<span class="lineNum">    1019 </span>            : 
+<span class="lineNum">    1020 </span>            :     // actualize member variables of base class
+<span class="lineNum">    1021 </span>            : 
+<span class="lineNum">    1022 </span><span class="lineCov">      39666 :     _MatrixStorage::_assign( other ); // copy sizes, flags</span>
+<span class="lineNum">    1023 </span>            : 
+<span class="lineNum">    1024 </span>            :     LAMAKernel&lt;DenseKernelTrait::set&lt;ValueType, OtherValueType&gt; &gt; set;
+<span class="lineNum">    1025 </span>            : 
+<span class="lineNum">    1026 </span>            :     ContextPtr loc = getContextPtr();
+<span class="lineNum">    1027 </span>            : 
+<span class="lineNum">    1028 </span><span class="lineCov">      13222 :     set.getSupportedContext( loc );</span>
+<span class="lineNum">    1029 </span>            : 
+<span class="lineNum">    1030 </span>            :     {
+<span class="lineNum">    1031 </span><span class="lineCov">      26444 :         SCAI_CONTEXT_ACCESS( loc )</span>
+<span class="lineNum">    1032 </span><span class="lineCov">      52888 :         WriteOnlyAccess&lt;ValueType&gt; data( mData, loc, getNumRows() * getNumColumns() );</span>
+<span class="lineNum">    1033 </span><span class="lineCov">      26444 :         ReadAccess&lt;OtherValueType&gt; otherData( other.getValues(), loc );</span>
+<span class="lineNum">    1034 </span><span class="lineCov">      39666 :         set[loc]( data.get(), getNumRows(), getNumColumns(), otherData.get(), BinaryOp::COPY );</span>
+<span class="lineNum">    1035 </span>            :     }
+<span class="lineNum">    1036 </span>            : 
+<span class="lineNum">    1037 </span><span class="lineCov">      26444 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: assigned dense storage &quot; &lt;&lt; other )</span>
+<span class="lineNum">    1038 </span>            : 
+<span class="lineNum">    1039 </span><span class="lineCov">      13222 :     _MatrixStorage::resetDiagonalProperty();</span>
+<span class="lineNum">    1040 </span>            : }
+<span class="lineNum">    1041 </span>            : 
+<span class="lineNum">    1042 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1043"><span class="lineNum">    1043 </span>            : </a>
+<span class="lineNum">    1044 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1045 </span><span class="lineCov">      47360 : void DenseStorage&lt;ValueType&gt;::assign( const _MatrixStorage&amp; other )</span>
+<span class="lineNum">    1046 </span>            : {
+<span class="lineNum">    1047 </span>            :     // translate virtual call to specific template call via wrapper
+<span class="lineNum">    1048 </span>            : 
+<span class="lineNum">    1049 </span><span class="lineCov">      47360 :     mepr::StorageWrapper&lt;DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST&gt;::assignImpl( this, other );</span>
+<span class="lineNum">    1050 </span><span class="lineCov">      47360 : }</span>
+<span class="lineNum">    1051 </span>            : 
+<span class="lineNum">    1052 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1053 </span>            : 
+<span class="lineNum">    1054 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1055 </span>            : template&lt;typename OtherValueType&gt;
+<span class="lineNum">    1056 </span><span class="lineCov">      47360 : void DenseStorage&lt;ValueType&gt;::assignImpl( const MatrixStorage&lt;OtherValueType&gt;&amp; other )</span>
+<span class="lineNum">    1057 </span>            : {
+<span class="lineNum">    1058 </span>            :     ContextPtr ctx = getContextPtr();   // will force a valid copy in this context
+<span class="lineNum">    1059 </span>            : 
+<span class="lineNum">    1060 </span><span class="lineCov">      69625 :     if ( other.getFormat() == Format::DENSE )</span>
+<span class="lineNum">    1061 </span>            :     {
+<span class="lineNum">    1062 </span>            :         // both storage have COO format, use special method for it
+<span class="lineNum">    1063 </span>            : 
+<span class="lineNum">    1064 </span><span class="lineCov">       9210 :         assignDense( static_cast&lt;const DenseStorage&lt;OtherValueType&gt; &amp; &gt;( other ) );</span>
+<span class="lineNum">    1065 </span>            :     }
+<span class="lineNum">    1066 </span><span class="lineCov">      38150 :     else if ( other.getFormat() == Format::CSR )</span>
+<span class="lineNum">    1067 </span>            :     {
+<span class="lineNum">    1068 </span><span class="lineCov">      15885 :         const auto otherCSR = static_cast&lt;const CSRStorage&lt;OtherValueType&gt; &amp; &gt;( other );</span>
+<span class="lineNum">    1069 </span>            : 
+<span class="lineNum">    1070 </span><span class="lineCov">      15885 :         setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(),</span>
+<span class="lineNum">    1071 </span><span class="lineCov">      31770 :                         otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues(), ctx );</span>
+<span class="lineNum">    1072 </span>            : 
+<span class="lineNum">    1073 </span><span class="lineCov">      31770 :         SCAI_LOG_INFO( logger, &quot;DenseStorage: assign CSR : &quot; &lt;&lt; other &lt;&lt; &quot;, this = &quot; &lt;&lt; *this );</span>
+<span class="lineNum">    1074 </span>            :     }
+<span class="lineNum">    1075 </span>            :     else
+<span class="lineNum">    1076 </span>            :     {
+<span class="lineNum">    1077 </span><span class="lineCov">      44530 :         HArray&lt;IndexType&gt;  csrIA( ctx );</span>
+<span class="lineNum">    1078 </span><span class="lineCov">      44530 :         HArray&lt;IndexType&gt;  csrJA( ctx );</span>
+<span class="lineNum">    1079 </span><span class="lineCov">      44530 :         HArray&lt;ValueType&gt;  csrValues( ctx );     // might also be OtherValueType, depending on size</span>
+<span class="lineNum">    1080 </span>            : 
+<span class="lineNum">    1081 </span><span class="lineCov">      22265 :         other.buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">    1082 </span>            : 
+<span class="lineNum">    1083 </span>            :         // just a thought for optimization: use mIA, mJA, mValues instead of csrIA, csrJA, csrValues
+<span class="lineNum">    1084 </span>            :         // but does not help much at all as resort of entries requires already temporaries.
+<span class="lineNum">    1085 </span>            : 
+<span class="lineNum">    1086 </span><span class="lineCov">      44530 :         setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues, ctx );</span>
+<span class="lineNum">    1087 </span>            : 
+<span class="lineNum">    1088 </span><span class="lineCov">      44530 :         SCAI_LOG_INFO( logger, &quot;DenseStorage: assign &quot; &lt;&lt; other &lt;&lt; &quot;, built CSR tmp data with ia = &quot; </span>
+<span class="lineNum">    1089 </span>            :                                 &lt;&lt; csrIA &lt;&lt; &quot;, ja = &quot; &lt;&lt; csrJA &lt;&lt; &quot;, values = &quot; &lt;&lt; csrValues &lt;&lt; &quot;, this = &quot; &lt;&lt; *this )
+<span class="lineNum">    1090 </span>            : 
+<span class="lineNum">    1091 </span>            :     }
+<span class="lineNum">    1092 </span><span class="lineCov">      47360 : }</span>
+<span class="lineNum">    1093 </span>            : 
+<span class="lineNum">    1094 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1095"><span class="lineNum">    1095 </span>            : </a>
+<span class="lineNum">    1096 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1097 </span><span class="lineCov">      11891 : void DenseStorage&lt;ValueType&gt;::allocate( IndexType numRows, IndexType numColumns )</span>
+<span class="lineNum">    1098 </span>            : {
+<span class="lineNum">    1099 </span><span class="lineCov">      23782 :     SCAI_LOG_INFO( logger, &quot;allocate dense storage of size &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns )</span>
+<span class="lineNum">    1100 </span>            :   
+<span class="lineNum">    1101 </span><span class="lineCov">      11891 :     _MatrixStorage::setDimension( numRows, numColumns );</span>
+<span class="lineNum">    1102 </span>            : 
+<span class="lineNum">    1103 </span><span class="lineCov">      11891 :     mData.resize( getNumRows() * getNumColumns() );</span>
+<span class="lineNum">    1104 </span>            : 
+<span class="lineNum">    1105 </span><span class="lineCov">      11891 :     setZero();</span>
+<span class="lineNum">    1106 </span>            : 
+<span class="lineNum">    1107 </span><span class="lineCov">      11891 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">    1108 </span>            : 
+<span class="lineNum">    1109 </span>            :     SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot; allocated, #values = &quot; &lt;&lt; getNumRows() * getNumColumns() &lt;&lt; &quot;, not initialized&quot; )
+<span class="lineNum">    1110 </span><span class="lineCov">      11891 : }</span>
+<span class="lineNum">    1111 </span>            : 
+<span class="lineNum">    1112 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1113"><span class="lineNum">    1113 </span>            : </a>
+<span class="lineNum">    1114 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1115 </span><span class="lineCov">         12 : void DenseStorage&lt;ValueType&gt;::writeAt( std::ostream&amp; stream ) const</span>
+<span class="lineNum">    1116 </span>            : {
+<span class="lineNum">    1117 </span><span class="lineCov">         12 :     stream &lt;&lt; getTypeName() &lt;&lt; &quot;( rows = &quot; &lt;&lt; getNumRows() &lt;&lt; &quot;, cols = &quot; &lt;&lt; getNumColumns() &lt;&lt; &quot; )&quot;;</span>
+<span class="lineNum">    1118 </span><span class="lineCov">         12 : }</span>
+<span class="lineNum">    1119 </span>            : 
+<span class="lineNum">    1120 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1121"><span class="lineNum">    1121 </span>            : </a>
+<span class="lineNum">    1122 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1123 </span><span class="lineCov">     173292 : ValueType DenseStorage&lt;ValueType&gt;::getValue( const IndexType i, const IndexType j ) const</span>
+<span class="lineNum">    1124 </span>            : {
+<span class="lineNum">    1125 </span><span class="lineCov">     173292 :     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), &quot;row index out of range&quot; )</span>
+<span class="lineNum">    1126 </span>            :     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), &quot;column index out of range&quot; )
+<span class="lineNum">    1127 </span>            : 
+<span class="lineNum">    1128 </span><span class="lineCov">     173292 :     const IndexType pos = i * getNumColumns() + j;</span>
+<span class="lineNum">    1129 </span>            : 
+<span class="lineNum">    1130 </span><span class="lineCov">     173292 :     return utilskernel::HArrayUtils::getVal&lt;ValueType&gt;( mData, pos );</span>
+<span class="lineNum">    1131 </span>            : }
+<span class="lineNum">    1132 </span>            : 
+<span class="lineNum">    1133 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1134"><span class="lineNum">    1134 </span>            : </a>
+<span class="lineNum">    1135 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1136 </span><span class="lineCov">       8952 : void DenseStorage&lt;ValueType&gt;::setValue( const IndexType i,</span>
+<span class="lineNum">    1137 </span>            :                                         const IndexType j,
+<span class="lineNum">    1138 </span>            :                                         const ValueType val,
+<span class="lineNum">    1139 </span>            :                                         const BinaryOp op )
+<span class="lineNum">    1140 </span>            : {
+<span class="lineNum">    1141 </span><span class="lineCov">       8952 :     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), &quot;row index out of range&quot; )</span>
+<span class="lineNum">    1142 </span>            :     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), &quot;column index out of range&quot; )
+<span class="lineNum">    1143 </span>            : 
+<span class="lineNum">    1144 </span><span class="lineCov">       8952 :     const IndexType pos = i * getNumColumns() + j;</span>
+<span class="lineNum">    1145 </span>            : 
+<span class="lineNum">    1146 </span><span class="lineCov">       8952 :     utilskernel::HArrayUtils::setVal( mData, pos, val, op );</span>
+<span class="lineNum">    1147 </span><span class="lineCov">       8952 : }</span>
+<span class="lineNum">    1148 </span>            : 
+<span class="lineNum">    1149 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1150 </span>            : 
+<span class="lineNum">    1151 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1152 </span><span class="lineCov">       2287 : void DenseStorage&lt;ValueType&gt;::prefetch( const ContextPtr location ) const</span>
+<span class="lineNum">    1153 </span>            : {
+<span class="lineNum">    1154 </span><span class="lineCov">       4574 :     mData.prefetch( location );</span>
+<span class="lineNum">    1155 </span><span class="lineCov">       2287 : }</span>
+<span class="lineNum">    1156 </span>            : 
+<span class="lineNum">    1157 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1158"><span class="lineNum">    1158 </span>            : </a>
+<span class="lineNum">    1159 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1160 </span><span class="lineCov">          2 : void DenseStorage&lt;ValueType&gt;::wait() const</span>
+<span class="lineNum">    1161 </span>            : {
+<span class="lineNum">    1162 </span>            :     mData.wait();
+<span class="lineNum">    1163 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">    1164 </span>            : 
+<span class="lineNum">    1165 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1166 </span>            : /*  Constructors for DenseStorage                                              */
+<span class="lineNum">    1167 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1168 </span>            : 
+<span class="lineNum">    1169 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1170 </span><span class="lineCov">      46392 : DenseStorage&lt;ValueType&gt;::DenseStorage( ContextPtr ctx ) :</span>
+<span class="lineNum">    1171 </span>            : 
+<span class="lineNum">    1172 </span>            :     MatrixStorage&lt;ValueType&gt;( 0, 0, ctx ),
+<span class="lineNum">    1173 </span><span class="lineCov">     185568 :     mData( ctx )</span>
+<span class="lineNum">    1174 </span>            : 
+<span class="lineNum">    1175 </span>            : {
+<span class="lineNum">    1176 </span><span class="lineCov">      46392 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">    1177 </span><span class="lineCov">      46392 : }</span>
+<span class="lineNum">    1178 </span>            : 
+<span class="lineNum">    1179 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1180 </span><span class="lineCov">      61839 : DenseStorage&lt;ValueType&gt;::DenseStorage( const IndexType numRows, const IndexType numColumns, ContextPtr ctx ) :</span>
+<span class="lineNum">    1181 </span>            : 
+<span class="lineNum">    1182 </span><span class="lineCov">     123678 :     MatrixStorage&lt;ValueType&gt;( numRows, numColumns, ctx )</span>
+<span class="lineNum">    1183 </span>            : 
+<span class="lineNum">    1184 </span>            : {
+<span class="lineNum">    1185 </span><span class="lineCov">      61839 :     mData.resize( numRows * numColumns );</span>
+<span class="lineNum">    1186 </span><span class="lineCov">      61839 :     this-&gt;setZero();</span>
+<span class="lineNum">    1187 </span><span class="lineCov">      61839 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">    1188 </span><span class="lineCov">      61839 : }</span>
+<span class="lineNum">    1189 </span>            : 
+<span class="lineNum">    1190 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1191 </span>            : 
+<span class="lineNum">    1192 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1193 </span><span class="lineCov">       4601 : DenseStorage&lt;ValueType&gt;::DenseStorage(</span>
+<span class="lineNum">    1194 </span>            :     const IndexType numRows,
+<span class="lineNum">    1195 </span>            :     const IndexType numColumns,
+<span class="lineNum">    1196 </span>            :     HArray&lt;ValueType&gt; denseData, 
+<span class="lineNum">    1197 </span>            :     ContextPtr ctx ) :
+<span class="lineNum">    1198 </span>            : 
+<span class="lineNum">    1199 </span>            :     MatrixStorage&lt;ValueType&gt;( numRows, numColumns, ctx ),
+<span class="lineNum">    1200 </span><span class="lineCov">       9202 :     mData( std::move( denseData ) )</span>
+<span class="lineNum">    1201 </span>            : 
+<span class="lineNum">    1202 </span>            : {
+<span class="lineNum">    1203 </span><span class="lineCov">       4601 :     SCAI_ASSERT_EQ_ERROR( mData.size(), numRows * numColumns, </span>
+<span class="lineNum">    1204 </span>            :                           &quot;size of array does not fit the shape &quot; &lt;&lt; numRows &lt;&lt; &quot; x &quot; &lt;&lt; numColumns )
+<span class="lineNum">    1205 </span>            : 
+<span class="lineNum">    1206 </span><span class="lineCov">       4601 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">    1207 </span><span class="lineCov">       4601 : }</span>
+<span class="lineNum">    1208 </span>            : 
+<span class="lineNum">    1209 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1210"><span class="lineNum">    1210 </span>            : </a>
+<span class="lineNum">    1211 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1212 </span><span class="lineCov">       4017 : DenseStorage&lt;ValueType&gt;::DenseStorage( const DenseStorage&lt;ValueType&gt;&amp; other ) :</span>
+<span class="lineNum">    1213 </span>            : 
+<span class="lineNum">    1214 </span><span class="lineCov">       4017 :     MatrixStorage&lt;ValueType&gt;( other )</span>
+<span class="lineNum">    1215 </span>            : 
+<span class="lineNum">    1216 </span>            : {
+<span class="lineNum">    1217 </span><span class="lineCov">       4017 :     assignDense( other );</span>
+<span class="lineNum">    1218 </span><span class="lineCov">       4017 : }</span>
+<span class="lineNum">    1219 </span>            : 
+<span class="lineNum">    1220 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1221"><span class="lineNum">    1221 </span>            : </a>
+<span class="lineNum">    1222 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1223 </span><span class="lineCov">       2257 : DenseStorage&lt;ValueType&gt;::DenseStorage( DenseStorage&lt;ValueType&gt;&amp;&amp; other ) :</span>
+<span class="lineNum">    1224 </span>            : 
+<span class="lineNum">    1225 </span>            :    MatrixStorage&lt;ValueType&gt;( std::move( other ) ),
+<span class="lineNum">    1226 </span><span class="lineCov">       2257 :    mData( std::move( other.mData ) )</span>
+<span class="lineNum">    1227 </span>            : {
+<span class="lineNum">    1228 </span><span class="lineCov">       2257 : }</span>
+<span class="lineNum">    1229 </span>            : 
+<span class="lineNum">    1230 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1231"><span class="lineNum">    1231 </span>            : </a>
+<span class="lineNum">    1232 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1233 </span><span class="lineCov">       3877 : DenseStorage&lt;ValueType&gt;&amp; DenseStorage&lt;ValueType&gt;::operator=( const DenseStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">    1234 </span>            : {
+<span class="lineNum">    1235 </span><span class="lineCov">       3877 :     assignDense( other );</span>
+<span class="lineNum">    1236 </span><span class="lineCov">       3877 :     return *this;</span>
+<span class="lineNum">    1237 </span>            : }
+<span class="lineNum">    1238 </span>            : 
+<span class="lineNum">    1239 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1240"><span class="lineNum">    1240 </span>            : </a>
+<span class="lineNum">    1241 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1242 </span><span class="lineNoCov">          0 : DenseStorage&lt;ValueType&gt;&amp; DenseStorage&lt;ValueType&gt;::operator=( DenseStorage&lt;ValueType&gt;&amp;&amp; other )</span>
+<span class="lineNum">    1243 </span>            : {
+<span class="lineNum">    1244 </span>            :     // move of all member variables
+<span class="lineNum">    1245 </span>            :     
+<span class="lineNum">    1246 </span>            :     mData = std::move( other.mData );
+<span class="lineNum">    1247 </span>            : 
+<span class="lineNum">    1248 </span>            :     // call of move assignment for base class 
+<span class="lineNum">    1249 </span>            : 
+<span class="lineNum">    1250 </span><span class="lineNoCov">          0 :     MatrixStorage&lt;ValueType&gt;::moveImpl( std::move( other ) );</span>
+<span class="lineNum">    1251 </span>            : 
+<span class="lineNum">    1252 </span>            :     // Note: other ends up in a zero storage
+<span class="lineNum">    1253 </span>            : 
+<span class="lineNum">    1254 </span><span class="lineNoCov">          0 :     return *this;</span>
+<span class="lineNum">    1255 </span>            : }
+<span class="lineNum">    1256 </span>            : 
+<span class="lineNum">    1257 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1258"><span class="lineNum">    1258 </span>            : </a>
+<span class="lineNum">    1259 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1260 </span><span class="lineCov">      11387 : void DenseStorage&lt;ValueType&gt;::swap( DenseStorage&lt;ValueType&gt;&amp; other )</span>
+<span class="lineNum">    1261 </span>            : {
+<span class="lineNum">    1262 </span><span class="lineCov">      11387 :     MatrixStorage&lt;ValueType&gt;::swap( other ); // swap member variable of base class</span>
+<span class="lineNum">    1263 </span>            : 
+<span class="lineNum">    1264 </span>            :     mData.swap( other.mData );               // swap data
+<span class="lineNum">    1265 </span><span class="lineCov">      11387 : }</span>
+<span class="lineNum">    1266 </span>            : 
+<span class="lineNum">    1267 </span>            : /* --------------------------------------------------------------------------- */
+<a name="1268"><span class="lineNum">    1268 </span>            : </a>
+<span class="lineNum">    1269 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1270 </span><span class="lineCov">          2 : void DenseStorage&lt;ValueType&gt;::splitUp( IndexType&amp; numRows, IndexType&amp; numColumns, HArray&lt;ValueType&gt;&amp; values )</span>
+<span class="lineNum">    1271 </span>            : {
+<span class="lineNum">    1272 </span>            :     values = std::move( mData );
+<span class="lineNum">    1273 </span><span class="lineCov">          2 :     _MatrixStorage::splitUp( numRows, numColumns );</span>
+<span class="lineNum">    1274 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">    1275 </span>            : 
+<span class="lineNum">    1276 </span>            : /* --------------------------------------------------------------------------- */
+<span class="lineNum">    1277 </span>            : 
+<a name="1278"><span class="lineNum">    1278 </span>            : template&lt;typename ValueType&gt;</a>
+<span class="lineNum">    1279 </span>            : DenseStorage&lt;ValueType&gt;*
+<span class="lineNum">    1280 </span><span class="lineCov">       1803 : DenseStorage&lt;ValueType&gt;::copy() const</span>
+<span class="lineNum">    1281 </span>            : {
+<span class="lineNum">    1282 </span><span class="lineCov">       1803 :     return new DenseStorage&lt;ValueType&gt;( *this );</span>
+<span class="lineNum">    1283 </span>            : }
+<span class="lineNum">    1284 </span>            : 
+<span class="lineNum">    1285 </span>            : /* ------------------------------------------------------------------------------------------------------------------ */
+<span class="lineNum">    1286 </span>            : 
+<span class="lineNum">    1287 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1288 </span><span class="lineCov">        821 : DenseStorage&lt;ValueType&gt;* DenseStorage&lt;ValueType&gt;::newMatrixStorage( const IndexType numRows, const IndexType numColumns ) const</span>
+<span class="lineNum">    1289 </span>            : {
+<span class="lineNum">    1290 </span><span class="lineCov">       1642 :     std::unique_ptr&lt;DenseStorage&lt;ValueType&gt; &gt; storage( new DenseStorage&lt;ValueType&gt;( getContextPtr() ) );</span>
+<span class="lineNum">    1291 </span><span class="lineCov">        821 :     storage-&gt;allocate( numRows, numColumns );</span>
+<span class="lineNum">    1292 </span><span class="lineCov">        821 :     return storage.release();</span>
+<span class="lineNum">    1293 </span>            : }
+<span class="lineNum">    1294 </span>            : 
+<span class="lineNum">    1295 </span>            : /* ========================================================================= */
+<span class="lineNum">    1296 </span>            : /*  Static fatory methods and related virtual methods                        */
+<span class="lineNum">    1297 </span>            : /* ========================================================================= */
+<a name="1298"><span class="lineNum">    1298 </span>            : </a>
+<span class="lineNum">    1299 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1300 </span><span class="lineCov">          8 : std::string DenseStorage&lt;ValueType&gt;::initTypeName()</span>
+<span class="lineNum">    1301 </span>            : {
+<span class="lineNum">    1302 </span><span class="lineCov">          8 :     std::stringstream s;</span>
+<span class="lineNum">    1303 </span><span class="lineCov">         32 :     s &lt;&lt; std::string( &quot;DenseStorage&lt;&quot; ) &lt;&lt; common::getScalarType&lt;ValueType&gt;() &lt;&lt; std::string( &quot;&gt;&quot; );</span>
+<span class="lineNum">    1304 </span><span class="lineCov">          8 :     return s.str();</span>
+<span class="lineNum">    1305 </span>            : }
+<a name="1306"><span class="lineNum">    1306 </span>            : </a>
+<span class="lineNum">    1307 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1308 </span><span class="lineCov">         24 : const char* DenseStorage&lt;ValueType&gt;::typeName()</span>
+<span class="lineNum">    1309 </span>            : {
+<span class="lineNum">    1310 </span><span class="lineCov">         24 :     static const std::string s = initTypeName();</span>
+<span class="lineNum">    1311 </span><span class="lineCov">         24 :     return  s.c_str();</span>
+<span class="lineNum">    1312 </span>            : }
+<a name="1313"><span class="lineNum">    1313 </span>            : </a>
+<span class="lineNum">    1314 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1315 </span><span class="lineCov">         14 : const char* DenseStorage&lt;ValueType&gt;::getTypeName() const</span>
+<span class="lineNum">    1316 </span>            : {
+<span class="lineNum">    1317 </span><span class="lineCov">         14 :     return typeName();</span>
+<span class="lineNum">    1318 </span>            : }
+<a name="1319"><span class="lineNum">    1319 </span>            : </a>
+<span class="lineNum">    1320 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1321 </span><span class="lineCov">        112 : MatrixStorageCreateKeyType DenseStorage&lt;ValueType&gt;::createValue()</span>
+<span class="lineNum">    1322 </span>            : {
+<span class="lineNum">    1323 </span><span class="lineCov">        112 :     return MatrixStorageCreateKeyType( Format::DENSE, common::getScalarType&lt;ValueType&gt;() );</span>
+<span class="lineNum">    1324 </span>            : }
+<a name="1325"><span class="lineNum">    1325 </span>            : </a>
+<span class="lineNum">    1326 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1327 </span><span class="lineNoCov">          0 : MatrixStorageCreateKeyType DenseStorage&lt;ValueType&gt;::getCreateValue() const</span>
+<span class="lineNum">    1328 </span>            : {
+<span class="lineNum">    1329 </span><span class="lineNoCov">          0 :     return createValue();</span>
+<span class="lineNum">    1330 </span>            : }
+<span class="lineNum">    1331 </span>            : 
+<span class="lineNum">    1332 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1333 </span><span class="lineCov">        220 : _MatrixStorage* DenseStorage&lt;ValueType&gt;::create()</span>
+<span class="lineNum">    1334 </span>            : {
+<span class="lineNum">    1335 </span><span class="lineCov">        440 :     return new DenseStorage&lt;ValueType&gt;();</span>
+<span class="lineNum">    1336 </span>            : }
+<span class="lineNum">    1337 </span>            : 
+<span class="lineNum">    1338 </span>            : /* ========================================================================= */
+<span class="lineNum">    1339 </span>            : 
+<span class="lineNum">    1340 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">    1341 </span><span class="lineCov">         10 : void DenseStorage&lt;ValueType&gt;::fillCOO(</span>
+<span class="lineNum">    1342 </span>            :     hmemo::HArray&lt;IndexType&gt; ia,
+<span class="lineNum">    1343 </span>            :     hmemo::HArray&lt;IndexType&gt; ja,
+<span class="lineNum">    1344 </span>            :     hmemo::HArray&lt;ValueType&gt; values,
+<span class="lineNum">    1345 </span>            :     const common::BinaryOp op )
+<span class="lineNum">    1346 </span>            : {
+<span class="lineNum">    1347 </span><span class="lineCov">         12 :     SCAI_ASSERT_EQ_ERROR( ia.size(), ja.size(), &quot;COO data: ia and ja must have same size&quot; )</span>
+<span class="lineNum">    1348 </span><span class="lineCov">         16 :     SCAI_ASSERT_EQ_ERROR( ia.size(), values.size(), &quot;COO data: ia and values must have same size&quot; )</span>
+<span class="lineNum">    1349 </span>            : 
+<span class="lineNum">    1350 </span><span class="lineCov">         30 :     SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( ia, getNumRows() ), &quot;illegal index in ia of COO data&quot; )</span>
+<span class="lineNum">    1351 </span><span class="lineCov">         16 :     SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( ja, getNumColumns() ), &quot;illegal index in ja of COO data&quot; )</span>
+<span class="lineNum">    1352 </span>            : 
+<span class="lineNum">    1353 </span><span class="lineCov">          4 :     hmemo::HArray&lt;IndexType&gt; pos;  // becomes: ia * numColumns + ja, positions for dense data</span>
+<span class="lineNum">    1354 </span>            : 
+<span class="lineNum">    1355 </span>            :     bool unique = false;    // there might be multiple entries in the COO data
+<span class="lineNum">    1356 </span>            : 
+<span class="lineNum">    1357 </span><span class="lineCov">          8 :     HArrayUtils::arrayPlusArray&lt;IndexType&gt;( pos, getNumColumns(), ia, 1, ja, getContextPtr() );</span>
+<span class="lineNum">    1358 </span><span class="lineCov">          8 :     HArrayUtils::scatter&lt;ValueType, ValueType&gt;( mData, pos, unique, values, op, getContextPtr() );</span>
+<span class="lineNum">    1359 </span><span class="lineCov">          4 : }</span>
+<span class="lineNum">    1360 </span>            : 
+<span class="lineNum">    1361 </span>            : /* ========================================================================= */
+<span class="lineNum">    1362 </span>            : /*       Template Instantiations                                             */
+<span class="lineNum">    1363 </span>            : /* ========================================================================= */
+<span class="lineNum">    1364 </span>            : 
+<span class="lineNum">    1365 </span>            : SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1366 </span>            : 
+<span class="lineNum">    1367 </span>            : #define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                   \
+<span class="lineNum">    1368 </span>            :     template void DenseStorage&lt;ValueType&gt;::setCSRDataImpl( const IndexType, const IndexType,                   \
+<span class="lineNum">    1369 </span>            :             const hmemo::HArray&lt;IndexType&gt;&amp;, const hmemo::HArray&lt;IndexType&gt;&amp;,                                  \
+<span class="lineNum">    1370 </span>            :             const hmemo::HArray&lt;OtherValueType&gt;&amp;, const hmemo::ContextPtr );                                   \
+<span class="lineNum">    1371 </span>            :     template void DenseStorage&lt;ValueType&gt;::buildCSR( hmemo::HArray&lt;IndexType&gt;&amp;, hmemo::HArray&lt;IndexType&gt;*,     \
+<span class="lineNum">    1372 </span>            :             hmemo::HArray&lt;OtherValueType&gt;*, const hmemo::ContextPtr ) const;                                   \
+<span class="lineNum">    1373 </span>            :      
+<span class="lineNum">    1374 </span>            : #define DENSE_STORAGE_INST_LVL1( ValueType )                                                                  \
+<span class="lineNum">    1375 </span>            :     SCAI_COMMON_LOOP_LVL2( ValueType, DENSE_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1376 </span>            : 
+<span class="lineNum">    1377 </span>            : SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">    1378 </span>            : 
+<span class="lineNum">    1379 </span>            : #undef DENSE_STORAGE_INST_LVL2
+<span class="lineNum">    1380 </span>            : #undef DENSE_STORAGE_INST_LVL1
+<span class="lineNum">    1381 </span>            : 
+<a name="1382"><span class="lineNum">    1382 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">    1383 </span>            : 
+<span class="lineNum">    1384 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

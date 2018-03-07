@@ -1,0 +1,669 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/io/PETScIO.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/io</a> - PETScIO.cpp<span style="font-size: 80%;"> (source / <a href="PETScIO.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">122</td>
+            <td class="headerCovTableEntry">146</td>
+            <td class="headerCovTableEntryMed">83.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">40</td>
+            <td class="headerCovTableEntry">47</td>
+            <td class="headerCovTableEntryMed">85.1 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            :  * @file PETScIO.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of IO methods for PETSc format
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 10.06.2016
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/io/PETScIO.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : #include &lt;scai/utilskernel/LAMAKernel.hpp&gt;
+<span class="lineNum">      39 </span>            : #include &lt;scai/utilskernel/LArray.hpp&gt;
+<span class="lineNum">      40 </span>            : #include &lt;scai/sparsekernel/CSRKernelTrait.hpp&gt;
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span>            : #include &lt;scai/lama/io/IOStream.hpp&gt;
+<span class="lineNum">      43 </span>            : #include &lt;scai/lama/io/IOWrapper.hpp&gt;
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : #include &lt;scai/tracing.hpp&gt;
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : #include &lt;scai/common/TypeTraits.hpp&gt;
+<span class="lineNum">      48 </span>            : #include &lt;scai/common/Settings.hpp&gt;
+<span class="lineNum">      49 </span>            : #include &lt;scai/common/Grid.hpp&gt;
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : #define PETSC_SUFFIX &quot;.psc&quot;
+<span class="lineNum">      52 </span>            : 
+<span class="lineNum">      53 </span>            : /** Internal id as specified by PETSc */
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : #define MAT_FILE_CLASSID 1211216
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : /** Internal id as specified by PETSc */
+<span class="lineNum">      58 </span>            : 
+<span class="lineNum">      59 </span>            : #define VEC_FILE_CLASSID 1211214
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span>            : namespace scai
+<span class="lineNum">      62 </span>            : {
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            : using namespace hmemo;
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span>            : namespace lama
+<span class="lineNum">      67 </span>            : {
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span><span class="lineCov">         28 : SCAI_LOG_DEF_LOGGER( PETScIO::logger, &quot;FileIO.PETScIO&quot; )</span>
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">      74 </span>            : /*    Implementation of Factory methods                                              */
+<a name="75"><span class="lineNum">      75 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span><span class="lineCov">        250 : FileIO* PETScIO::create()</span>
+<span class="lineNum">      78 </span>            : {
+<span class="lineNum">      79 </span><span class="lineCov">        250 :     return new PETScIO();</span>
+<a name="80"><span class="lineNum">      80 </span>            : }</a>
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span><span class="lineCov">        148 : std::string PETScIO::createValue()</span>
+<span class="lineNum">      83 </span>            : {
+<span class="lineNum">      84 </span><span class="lineCov">        148 :     return PETSC_SUFFIX;</span>
+<span class="lineNum">      85 </span>            : }
+<span class="lineNum">      86 </span>            : 
+<a name="87"><span class="lineNum">      87 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span><span class="lineCov">         32 : bool PETScIO::isSupportedMode( const FileMode mode ) const</span>
+<span class="lineNum">      90 </span>            : {
+<span class="lineNum">      91 </span>            :     // only binary is supported
+<span class="lineNum">      92 </span>            : 
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span><span class="lineCov">         32 :     if ( mode == FORMATTED )</span>
+<span class="lineNum">      95 </span>            :     {
+<span class="lineNum">      96 </span>            :         return false;
+<span class="lineNum">      97 </span>            :     }
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span><span class="lineCov">         16 :     return true;</span>
+<span class="lineNum">     100 </span>            : }
+<span class="lineNum">     101 </span>            : 
+<a name="102"><span class="lineNum">     102 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span><span class="lineCov">          2 : void PETScIO::writeAt( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     105 </span>            : {
+<span class="lineNum">     106 </span><span class="lineCov">          2 :     stream &lt;&lt; &quot;PETScIO ( &quot;;</span>
+<span class="lineNum">     107 </span><span class="lineCov">          2 :     stream &lt;&lt; &quot;suffix = &quot; &lt;&lt; PETSC_SUFFIX &lt;&lt; &quot;, &quot;;</span>
+<span class="lineNum">     108 </span><span class="lineCov">          2 :     writeMode( stream );</span>
+<span class="lineNum">     109 </span><span class="lineCov">          2 :     stream &lt;&lt; &quot;, only binary, BIG Endian )&quot;;</span>
+<span class="lineNum">     110 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">     111 </span>            : 
+<a name="112"><span class="lineNum">     112 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span><span class="lineCov">        250 : PETScIO::PETScIO()</span>
+<span class="lineNum">     115 </span>            : {
+<span class="lineNum">     116 </span><span class="lineCov">        248 : }</span>
+<span class="lineNum">     117 </span>            : 
+<span class="lineNum">     118 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     121 </span><span class="lineCov">         36 : void PETScIO::writeArrayImpl(</span>
+<span class="lineNum">     122 </span>            :     const hmemo::HArray&lt;ValueType&gt;&amp; array,
+<span class="lineNum">     123 </span>            :     const std::string&amp; fileName )
+<span class="lineNum">     124 </span>            : {
+<span class="lineNum">     125 </span><span class="lineCov">         36 :     SCAI_ASSERT( mFileMode != FORMATTED, &quot;Formatted output not available for PETScIO&quot; )</span>
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span>            :     // int    VEC_FILE_CLASSID
+<span class="lineNum">     128 </span>            :     // int    number of rows
+<span class="lineNum">     129 </span>            :     // type   values
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span><span class="lineCov">         36 :     IndexType nrows = array.size();</span>
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            :     std::ios::openmode flags = std::ios::out | std::ios::binary;
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span><span class="lineCov">         36 :     if ( mAppendMode )</span>
+<span class="lineNum">     136 </span>            :     {
+<span class="lineNum">     137 </span>            :         flags |= std::ios::app;
+<span class="lineNum">     138 </span>            :     }
+<span class="lineNum">     139 </span>            :     else
+<span class="lineNum">     140 </span>            :     {
+<span class="lineNum">     141 </span>            :         flags |= std::ios::trunc;
+<span class="lineNum">     142 </span>            :     }
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span><span class="lineCov">         36 :     IOStream outFile( fileName, flags, IOStream::BIG );</span>
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span><span class="lineCov">         72 :     SCAI_LOG_INFO( logger, &quot;File &quot; &lt;&lt; fileName &lt;&lt; &quot; now open for binary write, append = &quot; &lt;&lt; mAppendMode )</span>
+<span class="lineNum">     147 </span>            : 
+<span class="lineNum">     148 </span><span class="lineCov">         72 :     utilskernel::LArray&lt;IndexType&gt; headValues( 2 );</span>
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span>            :     headValues[0] = VEC_FILE_CLASSID;
+<span class="lineNum">     151 </span>            :     headValues[1] = nrows;
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span><span class="lineCov">         36 :     outFile.writeBinary( headValues, mScalarTypeIndex );</span>
+<span class="lineNum">     154 </span><span class="lineCov">         72 :     outFile.writeBinary( array, mScalarTypeData );</span>
+<span class="lineNum">     155 </span><span class="lineCov">         36 : }</span>
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span>            : /* --------------------------------------------------------------------------------- */
+<a name="158"><span class="lineNum">     158 </span>            : </a>
+<span class="lineNum">     159 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     160 </span><span class="lineCov">          8 : void PETScIO::writeSparseImpl(</span>
+<span class="lineNum">     161 </span>            :     const IndexType size,
+<span class="lineNum">     162 </span>            :     const HArray&lt;IndexType&gt;&amp; indexes,
+<span class="lineNum">     163 </span>            :     const HArray&lt;ValueType&gt;&amp; values,
+<span class="lineNum">     164 </span>            :     const std::string&amp; fileName )
+<span class="lineNum">     165 </span>            : {
+<span class="lineNum">     166 </span>            :     // sparse unsupported for this file format, write it dense
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span><span class="lineCov">          8 :     HArray&lt;ValueType&gt; denseArray;</span>
+<span class="lineNum">     169 </span>            :     ValueType zero = 0;
+<span class="lineNum">     170 </span><span class="lineCov">         16 :     utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );</span>
+<span class="lineNum">     171 </span><span class="lineCov">          8 :     writeArrayImpl( denseArray, fileName );</span>
+<span class="lineNum">     172 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span><span class="lineCov">          8 : void PETScIO::readArrayInfo( IndexType&amp; size, const std::string&amp; fileName )</span>
+<span class="lineNum">     177 </span>            : {
+<span class="lineNum">     178 </span><span class="lineCov">          8 :     SCAI_REGION( &quot;IO.PETSc.readArrayInfo&quot; )</span>
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span>            :     // int    VEC_FILE_CLASSID
+<span class="lineNum">     181 </span>            :     // int    number of rows
+<span class="lineNum">     182 </span>            :     // type   values
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span>            :     std::ios::openmode flags = std::ios::in | std::ios::binary;
+<span class="lineNum">     185 </span>            : 
+<span class="lineNum">     186 </span><span class="lineCov">         16 :     SCAI_LOG_INFO( logger, &quot;Read array info from file &quot; &lt;&lt; fileName )</span>
+<span class="lineNum">     187 </span>            : 
+<span class="lineNum">     188 </span><span class="lineCov">         16 :     IOStream inFile( fileName, flags, IOStream::BIG );</span>
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            :     utilskernel::LArray&lt;IndexType&gt; headerVals;
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span><span class="lineCov">          8 :     inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );</span>
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span>            :     IndexType classid = headerVals[0];
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span><span class="lineCov">          8 :     SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, &quot;illegal VEC_FILE_CLASSID&quot; )</span>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineCov">          8 :     size = headerVals[1];</span>
+<span class="lineNum">     199 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     204 </span><span class="lineCov">         36 : void PETScIO::readArrayImpl(</span>
+<span class="lineNum">     205 </span>            :     hmemo::HArray&lt;ValueType&gt;&amp; array,
+<span class="lineNum">     206 </span>            :     const std::string&amp; fileName,
+<span class="lineNum">     207 </span>            :     const IndexType first,
+<span class="lineNum">     208 </span>            :     const IndexType n )
+<span class="lineNum">     209 </span>            : {
+<span class="lineNum">     210 </span><span class="lineCov">         36 :     SCAI_REGION( &quot;IO.PETSc.readArray&quot; )</span>
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            :     // int    VEC_FILE_CLASSID
+<span class="lineNum">     213 </span>            :     // int    number of rows
+<span class="lineNum">     214 </span>            :     // type   values
+<span class="lineNum">     215 </span>            : 
+<span class="lineNum">     216 </span>            :     std::ios::openmode flags = std::ios::in | std::ios::binary;
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span><span class="lineCov">         72 :     SCAI_LOG_INFO( logger, &quot;Read array&lt;&quot; &lt;&lt; common::TypeTraits&lt;ValueType&gt;::id()</span>
+<span class="lineNum">     219 </span>            :                    &lt;&lt; &quot;&gt; from file &quot; &lt;&lt; fileName &lt;&lt; &quot;, type = &quot; &lt;&lt; mScalarTypeData )
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span><span class="lineCov">         64 :     IOStream inFile( fileName, flags, IOStream::BIG );</span>
+<span class="lineNum">     222 </span>            : 
+<span class="lineNum">     223 </span>            :     utilskernel::LArray&lt;IndexType&gt; headerVals;
+<span class="lineNum">     224 </span>            : 
+<span class="lineNum">     225 </span><span class="lineCov">         36 :     inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );</span>
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span>            :     IndexType classid = headerVals[0];
+<span class="lineNum">     228 </span>            :     IndexType size    = headerVals[1];
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span><span class="lineCov">         72 :     SCAI_LOG_INFO( logger, &quot;Read: id = &quot; &lt;&lt; classid &lt;&lt; &quot;, size = &quot; &lt;&lt; size )</span>
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span><span class="lineCov">         36 :     SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, &quot;illegal VEC_FILE_CLASSID&quot; )</span>
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span><span class="lineCov">         36 :     if ( ! common::Utils::validIndex( first, size ) )</span>
+<span class="lineNum">     235 </span>            :     {
+<span class="lineNum">     236 </span><span class="lineCov">         36 :         array.clear();</span>
+<span class="lineNum">     237 </span><span class="lineCov">         36 :         return;</span>
+<span class="lineNum">     238 </span>            :     }
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span>            :     IndexType nEntries = n;
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span><span class="lineCov">         28 :     if ( n == invalidIndex )</span>
+<span class="lineNum">     243 </span>            :     {
+<span class="lineNum">     244 </span><span class="lineCov">         28 :         nEntries = size - first;</span>
+<span class="lineNum">     245 </span>            :     }
+<span class="lineNum">     246 </span>            :     else
+<span class="lineNum">     247 </span>            :     {
+<span class="lineNum">     248 </span><span class="lineNoCov">          0 :         SCAI_ASSERT_LE_ERROR( first + n, size, &quot;array block size &quot; &lt;&lt; n &lt;&lt; &quot; invalid&quot; )</span>
+<span class="lineNum">     249 </span>            :     }
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span>            :     // check if the specified data size fits the expected data type
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span><span class="lineCov">         28 :     inFile.readBinary( array, size, mScalarTypeData );</span>
+<span class="lineNum">     254 </span>            : 
+<span class="lineNum">     255 </span><span class="lineCov">         28 :     inFile.close();</span>
+<span class="lineNum">     256 </span>            : 
+<span class="lineNum">     257 </span><span class="lineCov">         28 :     if ( nEntries != array.size() )</span>
+<span class="lineNum">     258 </span>            :     {
+<span class="lineNum">     259 </span><span class="lineNoCov">          0 :         hmemo::HArray&lt;ValueType&gt; block( nEntries );</span>
+<span class="lineNum">     260 </span>            :         hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+<span class="lineNum">     261 </span>            :         SCAI_LOG_DEBUG( logger, &quot;read block first = &quot; &lt;&lt; first &lt;&lt; &quot;, n = &quot; &lt;&lt; nEntries &lt;&lt; &quot; from array &quot; &lt;&lt; array )
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span>            :         IndexType inc = 1;
+<span class="lineNum">     264 </span><span class="lineNoCov">          0 :         utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );</span>
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span>            :         array.swap( block );
+<span class="lineNum">     267 </span>            :     }
+<span class="lineNum">     268 </span>            : }
+<span class="lineNum">     269 </span>            : 
+<span class="lineNum">     270 </span>            : /* --------------------------------------------------------------------------------- */
+<a name="271"><span class="lineNum">     271 </span>            : </a>
+<span class="lineNum">     272 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     273 </span><span class="lineCov">          8 : void PETScIO::readSparseImpl(</span>
+<span class="lineNum">     274 </span>            :     IndexType&amp; size,
+<span class="lineNum">     275 </span>            :     HArray&lt;IndexType&gt;&amp; indexes,
+<span class="lineNum">     276 </span>            :     HArray&lt;ValueType&gt;&amp; values,
+<span class="lineNum">     277 </span>            :     const std::string&amp; fileName )
+<span class="lineNum">     278 </span>            : {
+<span class="lineNum">     279 </span><span class="lineCov">          8 :     SCAI_REGION( &quot;IO.PETSc.readSparse&quot; )</span>
+<span class="lineNum">     280 </span>            : 
+<span class="lineNum">     281 </span>            :     // sparse array not supported for this file format, uses a temporary dense array of same type
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span><span class="lineCov">          8 :     HArray&lt;ValueType&gt; denseArray;</span>
+<span class="lineNum">     284 </span>            : 
+<span class="lineNum">     285 </span><span class="lineCov">          8 :     readArray( denseArray, fileName, 0, invalidIndex );</span>
+<span class="lineNum">     286 </span><span class="lineCov">          8 :     size = denseArray.size();</span>
+<span class="lineNum">     287 </span>            :     ValueType zero = 0;
+<span class="lineNum">     288 </span><span class="lineCov">         16 :     utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );</span>
+<span class="lineNum">     289 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     290 </span>            : 
+<span class="lineNum">     291 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     294 </span><span class="lineCov">         44 : void PETScIO::writeStorageImpl(</span>
+<span class="lineNum">     295 </span>            :     const MatrixStorage&lt;ValueType&gt;&amp; storage,
+<span class="lineNum">     296 </span>            :     const std::string&amp; fileName )
+<span class="lineNum">     297 </span>            : {
+<span class="lineNum">     298 </span><span class="lineCov">         44 :     SCAI_REGION( &quot;IO.PETSc.writeStorage&quot; )</span>
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span><span class="lineCov">         44 :     SCAI_ASSERT( mFileMode != FORMATTED, &quot;Formatted output not available for PETScIO&quot; )</span>
+<span class="lineNum">     301 </span>            : 
+<span class="lineNum">     302 </span>            :     // int    MAT_FILE_CLASSID
+<span class="lineNum">     303 </span>            :     // int    number of rows
+<span class="lineNum">     304 </span>            :     // int    number of columns
+<span class="lineNum">     305 </span>            :     // int    total number of nonzeros
+<span class="lineNum">     306 </span>            :     // int    *number nonzeros in each row
+<span class="lineNum">     307 </span>            :     // int    *column indices of all nonzeros (starting index is zero)
+<span class="lineNum">     308 </span>            : 
+<span class="lineNum">     309 </span><span class="lineCov">         44 :     IndexType nrows = storage.getNumRows();</span>
+<span class="lineNum">     310 </span>            :     IndexType ncols = storage.getNumColumns();
+<span class="lineNum">     311 </span>            : 
+<span class="lineNum">     312 </span><span class="lineCov">         44 :     HArray&lt;IndexType&gt; csrIA;    // first offsets, later sizes</span>
+<span class="lineNum">     313 </span><span class="lineCov">         44 :     HArray&lt;IndexType&gt; csrJA;</span>
+<span class="lineNum">     314 </span><span class="lineCov">         44 :     HArray&lt;ValueType&gt; csrValues;</span>
+<span class="lineNum">     315 </span>            : 
+<span class="lineNum">     316 </span><span class="lineCov">         44 :     storage.buildCSRData( csrIA, csrJA, csrValues );</span>
+<span class="lineNum">     317 </span>            : 
+<span class="lineNum">     318 </span><span class="lineCov">         44 :     IndexType nnz = csrJA.size();</span>
+<span class="lineNum">     319 </span>            : 
+<span class="lineNum">     320 </span>            :     // we need the CSR sizes, not the offsets
+<span class="lineNum">     321 </span>            : 
+<span class="lineNum">     322 </span><span class="lineCov">         88 :     utilskernel::HArrayUtils::unscan( csrIA );</span>
+<span class="lineNum">     323 </span>            : 
+<span class="lineNum">     324 </span>            :     std::ios::openmode flags = std::ios::out | std::ios::binary;
+<span class="lineNum">     325 </span>            : 
+<span class="lineNum">     326 </span><span class="lineCov">         44 :     if ( mAppendMode )</span>
+<span class="lineNum">     327 </span>            :     {
+<span class="lineNum">     328 </span>            :         flags |= std::ios::app;
+<span class="lineNum">     329 </span>            :     }
+<span class="lineNum">     330 </span>            :     else
+<span class="lineNum">     331 </span>            :     {
+<span class="lineNum">     332 </span>            :         flags |= std::ios::trunc;
+<span class="lineNum">     333 </span>            :     }
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span><span class="lineCov">         88 :     IOStream outFile( fileName, flags, IOStream::BIG );</span>
+<span class="lineNum">     336 </span>            : 
+<span class="lineNum">     337 </span><span class="lineCov">         88 :     SCAI_LOG_INFO( logger, &quot;File &quot; &lt;&lt; fileName &lt;&lt; &quot; now open for binary write, append = &quot; &lt;&lt; mAppendMode )</span>
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span>            :     // Note: PETSc starts indexing with 0
+<span class="lineNum">     340 </span>            : 
+<span class="lineNum">     341 </span><span class="lineCov">         88 :     utilskernel::LArray&lt;IndexType&gt; headValues( 4 );</span>
+<span class="lineNum">     342 </span>            : 
+<span class="lineNum">     343 </span>            :     headValues[0] = MAT_FILE_CLASSID;
+<span class="lineNum">     344 </span>            :     headValues[1] = nrows;
+<span class="lineNum">     345 </span>            :     headValues[2] = ncols;
+<span class="lineNum">     346 </span>            :     headValues[3] = nnz;
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span>            :     // for binary output we make conversions to mScalarTypeData, mScalarTypeIndex
+<span class="lineNum">     349 </span>            : 
+<span class="lineNum">     350 </span><span class="lineCov">         44 :     outFile.writeBinary( headValues, mScalarTypeIndex );</span>
+<span class="lineNum">     351 </span><span class="lineCov">         44 :     outFile.writeBinary( csrIA, mScalarTypeIndex );</span>
+<span class="lineNum">     352 </span><span class="lineCov">         44 :     outFile.writeBinary( csrJA , mScalarTypeIndex );</span>
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            :     // output of values is skipped for PATTERN
+<span class="lineNum">     355 </span>            : 
+<span class="lineNum">     356 </span><span class="lineCov">         44 :     if ( mScalarTypeData != common::ScalarType::PATTERN )</span>
+<span class="lineNum">     357 </span>            :     {
+<span class="lineNum">     358 </span><span class="lineCov">         42 :         outFile.writeBinary( csrValues, mScalarTypeData );</span>
+<span class="lineNum">     359 </span>            :     }
+<span class="lineNum">     360 </span><span class="lineCov">         44 : }</span>
+<span class="lineNum">     361 </span>            : 
+<span class="lineNum">     362 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span><span class="lineNoCov">          0 : void PETScIO::readStorageInfo( IndexType&amp; numRows, IndexType&amp; numColumns, IndexType&amp; numValues, const std::string&amp; fileName )</span>
+<span class="lineNum">     365 </span>            : {
+<span class="lineNum">     366 </span><span class="lineNoCov">          0 :     SCAI_REGION( &quot;IO.PETSc.readStorageInfo&quot; )</span>
+<span class="lineNum">     367 </span>            : 
+<span class="lineNum">     368 </span>            :     std::ios::openmode flags = std::ios::in | std::ios::binary;
+<span class="lineNum">     369 </span>            : 
+<span class="lineNum">     370 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;Read storage info from file &quot; &lt;&lt; fileName )</span>
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 :     IOStream inFile( fileName, flags, IOStream::BIG );</span>
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span>            :     utilskernel::LArray&lt;IndexType&gt; headerVals;
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span><span class="lineNoCov">          0 :     inFile.readBinary( headerVals, 4, common::TypeTraits&lt;IndexType&gt;::stype );</span>
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span>            :     IndexType classid = headerVals[0];
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, &quot;illegal MAT_FILE_CLASSID&quot; )</span>
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span><span class="lineNoCov">          0 :     numRows      = headerVals[1];</span>
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 :     numColumns   = headerVals[2];</span>
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 :     numValues    = headerVals[3];</span>
+<span class="lineNum">     385 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     388 </span>            : 
+<span class="lineNum">     389 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     390 </span><span class="lineCov">         46 : void PETScIO::readStorageImpl(</span>
+<span class="lineNum">     391 </span>            :     MatrixStorage&lt;ValueType&gt;&amp; storage,
+<span class="lineNum">     392 </span>            :     const std::string&amp; fileName,
+<span class="lineNum">     393 </span>            :     const IndexType firstRow,
+<span class="lineNum">     394 </span>            :     const IndexType nRows )
+<span class="lineNum">     395 </span>            : {
+<span class="lineNum">     396 </span><span class="lineCov">         46 :     SCAI_REGION( &quot;IO.PETSc.readStorage&quot; )</span>
+<span class="lineNum">     397 </span>            : 
+<span class="lineNum">     398 </span>            :     // int    MAT_FILE_CLASSID
+<span class="lineNum">     399 </span>            :     // int    number of rows
+<span class="lineNum">     400 </span>            :     // int    number of columns
+<span class="lineNum">     401 </span>            :     // int    total number of nonzeros
+<span class="lineNum">     402 </span>            :     // int    *number nonzeros in each row
+<span class="lineNum">     403 </span>            :     // int    *column indices of all nonzeros (starting index is zero)
+<span class="lineNum">     404 </span>            : 
+<span class="lineNum">     405 </span>            :     std::ios::openmode flags = std::ios::in | std::ios::binary;
+<span class="lineNum">     406 </span>            : 
+<span class="lineNum">     407 </span><span class="lineCov">         92 :     SCAI_LOG_INFO( logger, &quot;Read storage&lt;&quot; &lt;&lt; common::TypeTraits&lt;ValueType&gt;::id() &lt;&lt; &quot;&gt; from file &quot; &lt;&lt; fileName )</span>
+<span class="lineNum">     408 </span>            : 
+<span class="lineNum">     409 </span><span class="lineCov">         92 :     IOStream inFile( fileName, flags, IOStream::BIG );</span>
+<span class="lineNum">     410 </span>            : 
+<span class="lineNum">     411 </span>            :     utilskernel::LArray&lt;IndexType&gt; headerVals;
+<span class="lineNum">     412 </span>            : 
+<span class="lineNum">     413 </span><span class="lineCov">         46 :     inFile.readBinary( headerVals, 4, common::TypeTraits&lt;IndexType&gt;::stype );</span>
+<span class="lineNum">     414 </span>            : 
+<span class="lineNum">     415 </span>            :     IndexType classid = headerVals[0];
+<span class="lineNum">     416 </span>            :     IndexType numRows   = headerVals[1];
+<span class="lineNum">     417 </span>            :     IndexType numCols   = headerVals[2];
+<span class="lineNum">     418 </span>            :     IndexType nnz     = headerVals[3];
+<span class="lineNum">     419 </span>            : 
+<span class="lineNum">     420 </span><span class="lineCov">         92 :     SCAI_LOG_INFO( logger, &quot;Read: id = &quot; &lt;&lt; MAT_FILE_CLASSID &lt;&lt; &quot;, #rows = &quot; &lt;&lt; numRows</span>
+<span class="lineNum">     421 </span>            :                    &lt;&lt; &quot;, #cols = &quot; &lt;&lt; numCols &lt;&lt; &quot;, #nnz = &quot; &lt;&lt; nnz )
+<span class="lineNum">     422 </span>            : 
+<span class="lineNum">     423 </span><span class="lineCov">         46 :     SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, &quot;illegal MAT_FILE_CLASSID&quot; )</span>
+<span class="lineNum">     424 </span>            : 
+<span class="lineNum">     425 </span><span class="lineCov">         46 :     HArray&lt;IndexType&gt; csrSizes;</span>
+<span class="lineNum">     426 </span><span class="lineCov">         46 :     HArray&lt;IndexType&gt; csrJA;</span>
+<span class="lineNum">     427 </span><span class="lineCov">         46 :     HArray&lt;ValueType&gt; csrValues;</span>
+<span class="lineNum">     428 </span>            : 
+<span class="lineNum">     429 </span><span class="lineCov">         46 :     inFile.readBinary( csrSizes, numRows, mScalarTypeIndex );</span>
+<span class="lineNum">     430 </span><span class="lineCov">         46 :     inFile.readBinary( csrJA, nnz, mScalarTypeIndex );</span>
+<span class="lineNum">     431 </span>            : 
+<span class="lineNum">     432 </span><span class="lineCov">         46 :     if ( mScalarTypeData != common::ScalarType::PATTERN )</span>
+<span class="lineNum">     433 </span>            :     {
+<span class="lineNum">     434 </span><span class="lineCov">         44 :         inFile.readBinary( csrValues, nnz, mScalarTypeData );</span>
+<span class="lineNum">     435 </span>            :     }
+<span class="lineNum">     436 </span>            :     else
+<span class="lineNum">     437 </span>            :     {
+<span class="lineNum">     438 </span><span class="lineCov">          2 :         csrValues.setSameValue( nnz, ValueType( 1 ) );</span>
+<span class="lineNum">     439 </span>            :     }
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span><span class="lineCov">         44 :     if ( firstRow == 0 &amp;&amp; nRows == invalidIndex )</span>
+<span class="lineNum">     442 </span>            :     {
+<span class="lineNum">     443 </span><span class="lineCov">         44 :         storage.setCSRData( numRows, numCols, csrSizes, csrJA, csrValues );</span>
+<span class="lineNum">     444 </span>            :     }
+<span class="lineNum">     445 </span>            :     else
+<span class="lineNum">     446 </span>            :     {
+<span class="lineNum">     447 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;read block not yet available&quot; )</span>
+<span class="lineNum">     448 </span>            :     }
+<span class="lineNum">     449 </span><span class="lineCov">         44 : }</span>
+<span class="lineNum">     450 </span>            : 
+<span class="lineNum">     451 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span><span class="lineNoCov">          0 : void PETScIO::writeGridArray( const hmemo::_HArray&amp; data, const common::Grid&amp; grid, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     454 </span>            : {
+<span class="lineNum">     455 </span><span class="lineNoCov">          0 :     if ( grid.nDims() &gt; 1 )</span>
+<span class="lineNum">     456 </span>            :     {
+<span class="lineNum">     457 </span><span class="lineNoCov">          0 :         SCAI_LOG_WARN( logger, &quot;Grid shape information is lost for array when writing to file&quot; )</span>
+<span class="lineNum">     458 </span>            :     }
+<span class="lineNum">     459 </span>            : 
+<span class="lineNum">     460 </span><span class="lineNoCov">          0 :     writeArray( data, outputFileName );</span>
+<span class="lineNum">     461 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     462 </span>            : 
+<span class="lineNum">     463 </span><span class="lineNoCov">          0 : void PETScIO::readGridArray( hmemo::_HArray&amp; data, common::Grid&amp; grid, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     464 </span>            : {
+<span class="lineNum">     465 </span><span class="lineNoCov">          0 :     readArray( data, inputFileName );</span>
+<span class="lineNum">     466 </span><span class="lineNoCov">          0 :     grid = common::Grid1D( data.size() );</span>
+<span class="lineNum">     467 </span><span class="lineNoCov">          0 :     SCAI_LOG_WARN( logger, &quot;PETSc does not support multidimensional array, take default shape &quot; &lt;&lt; grid )</span>
+<span class="lineNum">     468 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     469 </span>            : 
+<a name="470"><span class="lineNum">     470 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     471 </span>            : 
+<span class="lineNum">     472 </span><span class="lineCov">         44 : void PETScIO::writeStorage( const _MatrixStorage&amp; storage, const std::string&amp; fileName )</span>
+<span class="lineNum">     473 </span>            : {
+<span class="lineNum">     474 </span><span class="lineCov">         44 :     IOWrapper&lt;PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST&gt;::writeStorageImpl( ( PETScIO&amp; ) *this, storage, fileName );</span>
+<span class="lineNum">     475 </span><span class="lineCov">         44 : }</span>
+<span class="lineNum">     476 </span>            : 
+<a name="477"><span class="lineNum">     477 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     478 </span>            : 
+<span class="lineNum">     479 </span><span class="lineCov">         46 : void PETScIO::readStorage(</span>
+<span class="lineNum">     480 </span>            :     _MatrixStorage&amp; storage,
+<span class="lineNum">     481 </span>            :     const std::string&amp; fileName,
+<span class="lineNum">     482 </span>            :     const IndexType offsetRow,
+<span class="lineNum">     483 </span>            :     const IndexType nRows )
+<span class="lineNum">     484 </span>            : {
+<span class="lineNum">     485 </span>            :     // use IOWrapper to called the typed version of this routine
+<span class="lineNum">     486 </span>            : 
+<span class="lineNum">     487 </span><span class="lineCov">         46 :     IOWrapper&lt;PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST&gt;::readStorageImpl( ( PETScIO&amp; ) *this, storage, fileName, offsetRow, nRows );</span>
+<span class="lineNum">     488 </span><span class="lineCov">         44 : }</span>
+<span class="lineNum">     489 </span>            : 
+<a name="490"><span class="lineNum">     490 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     491 </span>            : 
+<span class="lineNum">     492 </span><span class="lineCov">         28 : void PETScIO::writeArray( const hmemo::_HArray&amp; array, const std::string&amp; fileName )</span>
+<span class="lineNum">     493 </span>            : {
+<span class="lineNum">     494 </span>            :     // use IOWrapper to called the typed version of this routine
+<span class="lineNum">     495 </span>            : 
+<span class="lineNum">     496 </span><span class="lineCov">         28 :     IOWrapper&lt;PETScIO, SCAI_ARRAY_TYPES_HOST_LIST&gt;::writeArrayImpl( ( PETScIO&amp; ) *this, array, fileName );</span>
+<span class="lineNum">     497 </span><span class="lineCov">         28 : }</span>
+<span class="lineNum">     498 </span>            : 
+<a name="499"><span class="lineNum">     499 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     500 </span>            : 
+<span class="lineNum">     501 </span><span class="lineCov">          8 : void PETScIO::writeSparse( const IndexType n, const hmemo::HArray&lt;IndexType&gt;&amp; indexes, const hmemo::_HArray&amp; values, const std::string&amp; fileName )</span>
+<span class="lineNum">     502 </span>            : {
+<span class="lineNum">     503 </span>            :     // use IOWrapper to called the typed version of this routine
+<span class="lineNum">     504 </span>            : 
+<span class="lineNum">     505 </span><span class="lineCov">          8 :     IOWrapper&lt;PETScIO, SCAI_ARRAY_TYPES_HOST_LIST&gt;::writeSparseImpl( ( PETScIO&amp; ) *this, n, indexes, values, fileName );</span>
+<span class="lineNum">     506 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     507 </span>            : 
+<a name="508"><span class="lineNum">     508 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     509 </span>            : 
+<span class="lineNum">     510 </span><span class="lineCov">         36 : void PETScIO::readArray( hmemo::_HArray&amp; array, const std::string&amp; fileName, const IndexType offset, const IndexType n )</span>
+<span class="lineNum">     511 </span>            : {
+<span class="lineNum">     512 </span>            :     // use IOWrapper to called the typed version of this routine
+<span class="lineNum">     513 </span>            : 
+<span class="lineNum">     514 </span><span class="lineCov">         36 :     IOWrapper&lt;PETScIO, SCAI_ARRAY_TYPES_HOST_LIST&gt;::readArrayImpl( ( PETScIO&amp; ) *this, array, fileName, offset, n );</span>
+<span class="lineNum">     515 </span><span class="lineCov">         36 : }</span>
+<span class="lineNum">     516 </span>            : 
+<a name="517"><span class="lineNum">     517 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     518 </span>            : 
+<span class="lineNum">     519 </span><span class="lineCov">          8 : void PETScIO::readSparse( IndexType&amp; size, hmemo::HArray&lt;IndexType&gt;&amp; indexes, hmemo::_HArray&amp; values, const std::string&amp; fileName )</span>
+<span class="lineNum">     520 </span>            : {
+<span class="lineNum">     521 </span>            :     // use IOWrapper to called the typed version of this routine
+<span class="lineNum">     522 </span>            : 
+<span class="lineNum">     523 </span><span class="lineCov">          8 :     IOWrapper&lt;PETScIO, SCAI_ARRAY_TYPES_HOST_LIST&gt;::readSparseImpl( ( PETScIO&amp; ) *this, size, indexes, values, fileName );</span>
+<span class="lineNum">     524 </span><span class="lineCov">          8 : }</span>
+<span class="lineNum">     525 </span>            : 
+<a name="526"><span class="lineNum">     526 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     527 </span>            : 
+<span class="lineNum">     528 </span><span class="lineCov">         96 : std::string PETScIO::getMatrixFileSuffix() const</span>
+<span class="lineNum">     529 </span>            : {
+<span class="lineNum">     530 </span><span class="lineCov">         96 :     return PETScIO::createValue();</span>
+<span class="lineNum">     531 </span>            : }
+<span class="lineNum">     532 </span>            : 
+<a name="533"><span class="lineNum">     533 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     534 </span>            : 
+<span class="lineNum">     535 </span><span class="lineCov">         24 : std::string PETScIO::getVectorFileSuffix() const</span>
+<span class="lineNum">     536 </span>            : {
+<span class="lineNum">     537 </span><span class="lineCov">         24 :     return PETScIO::createValue();</span>
+<span class="lineNum">     538 </span>            : }
+<span class="lineNum">     539 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     540 </span>            : 
+<span class="lineNum">     541 </span>            : #define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )           \
+<span class="lineNum">     542 </span>            :                                                             \
+<span class="lineNum">     543 </span>            :     template COMMON_DLL_IMPORTEXPORT                        \
+<span class="lineNum">     544 </span>            :     void PETScIO::writeArrayImpl(                           \
+<span class="lineNum">     545 </span>            :         const hmemo::HArray&lt;_type&gt;&amp; array,                  \
+<span class="lineNum">     546 </span>            :         const std::string&amp; fileName );                      \
+<span class="lineNum">     547 </span>            :                                                             \
+<span class="lineNum">     548 </span>            :     template COMMON_DLL_IMPORTEXPORT                        \
+<span class="lineNum">     549 </span>            :     void PETScIO::readArrayImpl(                            \
+<span class="lineNum">     550 </span>            :         hmemo::HArray&lt;_type&gt;&amp; array,                        \
+<span class="lineNum">     551 </span>            :         const std::string&amp; arrayFileName,                   \
+<span class="lineNum">     552 </span>            :         const IndexType ,                                   \
+<span class="lineNum">     553 </span>            :         const IndexType );                                  \
+<span class="lineNum">     554 </span>            :                                                             \
+<span class="lineNum">     555 </span>            :     template COMMON_DLL_IMPORTEXPORT                        \
+<span class="lineNum">     556 </span>            :     void PETScIO::writeSparseImpl(                          \
+<span class="lineNum">     557 </span>            :         const IndexType size,                               \
+<span class="lineNum">     558 </span>            :         const HArray&lt;IndexType&gt;&amp; index,                     \
+<span class="lineNum">     559 </span>            :         const HArray&lt;_type&gt;&amp; values,                        \
+<span class="lineNum">     560 </span>            :         const std::string&amp; fileName );                      \
+<span class="lineNum">     561 </span>            :                                                             \
+<span class="lineNum">     562 </span>            :     template COMMON_DLL_IMPORTEXPORT                        \
+<span class="lineNum">     563 </span>            :     void PETScIO::readSparseImpl(                           \
+<span class="lineNum">     564 </span>            :         IndexType&amp; size,                                    \
+<span class="lineNum">     565 </span>            :         HArray&lt;IndexType&gt;&amp; indexes,                         \
+<span class="lineNum">     566 </span>            :         HArray&lt;_type&gt;&amp; values,                              \
+<span class="lineNum">     567 </span>            :         const std::string&amp; fileName );         
+<span class="lineNum">     568 </span>            : 
+<span class="lineNum">     569 </span>            : SCAI_COMMON_LOOP( SCAI_PETSC_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
+<span class="lineNum">     570 </span>            : 
+<span class="lineNum">     571 </span>            : #undef SCAI_PETSC_METHOD_INSTANTIATIONS
+<span class="lineNum">     572 </span>            : 
+<span class="lineNum">     573 </span>            : #define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )       \
+<span class="lineNum">     574 </span>            :                                                         \
+<span class="lineNum">     575 </span>            :     template COMMON_DLL_IMPORTEXPORT                    \
+<span class="lineNum">     576 </span>            :     void PETScIO::writeStorageImpl(                     \
+<span class="lineNum">     577 </span>            :         const MatrixStorage&lt;_type&gt;&amp; storage,            \
+<span class="lineNum">     578 </span>            :         const std::string&amp; fileName );                  \
+<span class="lineNum">     579 </span>            :                                                         \
+<span class="lineNum">     580 </span>            :     template COMMON_DLL_IMPORTEXPORT                    \
+<span class="lineNum">     581 </span>            :     void PETScIO::readStorageImpl(                      \
+<span class="lineNum">     582 </span>            :         MatrixStorage&lt;_type&gt;&amp; storage,                  \
+<span class="lineNum">     583 </span>            :         const std::string&amp; matrixFileName,              \
+<span class="lineNum">     584 </span>            :         const IndexType firstRow,                       \
+<span class="lineNum">     585 </span>            :         const IndexType nRows );                     
+<span class="lineNum">     586 </span>            : 
+<span class="lineNum">     587 </span>            : SCAI_COMMON_LOOP( SCAI_PETSC_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">     588 </span>            : 
+<span class="lineNum">     589 </span>            : #undef SCAI_PETSC_METHOD_INSTANTIATIONS
+<span class="lineNum">     590 </span>            : 
+<a name="591"><span class="lineNum">     591 </span>            : }  // lama</a>
+<span class="lineNum">     592 </span>            : 
+<span class="lineNum">     593 </span><span class="lineCov">         42 : }  // scai</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

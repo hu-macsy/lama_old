@@ -1,0 +1,463 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/storage/_MatrixStorage.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/storage</a> - _MatrixStorage.cpp<span style="font-size: 80%;"> (source / <a href="_MatrixStorage.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">107</td>
+            <td class="headerCovTableEntry">125</td>
+            <td class="headerCovTableEntryMed">85.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">23</td>
+            <td class="headerCovTableEntry">27</td>
+            <td class="headerCovTableEntryMed">85.2 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file _MatrixStorage.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of methods for common base class of all matrix storage formats.
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 27.04.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // hpp
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/storage/_MatrixStorage.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : #include &lt;scai/dmemo/Distribution.hpp&gt;
+<span class="lineNum">      39 </span>            : #include &lt;scai/hmemo/Context.hpp&gt;
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : #include &lt;scai/utilskernel/LAMAKernel.hpp&gt;
+<span class="lineNum">      42 </span>            : #include &lt;scai/utilskernel/UtilKernelTrait.hpp&gt;
+<span class="lineNum">      43 </span>            : #include &lt;scai/utilskernel/HArrayUtils.hpp&gt;
+<span class="lineNum">      44 </span>            : #include &lt;scai/utilskernel/openmp/OpenMPUtils.hpp&gt;
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : #include &lt;scai/sparsekernel/openmp/OpenMPCSRUtils.hpp&gt;
+<span class="lineNum">      47 </span>            : #include &lt;scai/sparsekernel/CSRKernelTrait.hpp&gt;
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : namespace scai
+<span class="lineNum">      50 </span>            : {
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : using namespace hmemo;
+<span class="lineNum">      53 </span>            : using namespace dmemo;
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : using common::BinaryOp;
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : using utilskernel::LAMAKernel;
+<span class="lineNum">      58 </span>            : using utilskernel::UtilKernelTrait;
+<span class="lineNum">      59 </span>            : using utilskernel::OpenMPUtils;
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span>            : using sparsekernel::CSRKernelTrait;
+<span class="lineNum">      62 </span>            : using sparsekernel::OpenMPCSRUtils;
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            : namespace lama
+<span class="lineNum">      65 </span>            : {
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span><span class="lineCov">         28 : SCAI_LOG_DEF_LOGGER( _MatrixStorage::logger, &quot;MatrixStorage&quot; )</span>
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : /* ---------------------------------------------------------------------------------- */
+<span class="lineNum">      70 </span>            : /*   Constructors                                                                     */
+<a name="71"><span class="lineNum">      71 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span><span class="lineCov">     398935 : _MatrixStorage::_MatrixStorage( IndexType numRows, IndexType numColumns, ContextPtr ctx ) :</span>
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span>            :     mNumRows( numRows ),
+<span class="lineNum">      76 </span>            :     mNumColumns( numColumns ),
+<span class="lineNum">      77 </span>            :     mRowIndexes(), 
+<span class="lineNum">      78 </span>            :     mCompressThreshold( 0.0f ), 
+<span class="lineNum">      79 </span>            :     mDiagonalProperty( false ), 
+<span class="lineNum">      80 </span><span class="lineCov">     398935 :     mContext( ctx )</span>
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            : {
+<span class="lineNum">      83 </span><span class="lineCov">     398935 :     SCAI_ASSERT_ERROR( ctx, &quot;Null context not allowed for storage&quot; )</span>
+<span class="lineNum">      84 </span>            :     SCAI_LOG_DEBUG( logger, &quot;constructed MatrixStorage( &quot; &lt;&lt; mNumRows &lt;&lt; &quot; x &quot; &lt;&lt; mNumColumns &lt;&lt; &quot; ) @ &quot; &lt;&lt; *mContext )
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">     398935 : }</span></a>
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span><span class="lineCov">     119078 : _MatrixStorage::_MatrixStorage( const _MatrixStorage&amp; other ) :</span>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span>            :     mNumRows( other.mNumRows ),
+<span class="lineNum">      90 </span>            :     mNumColumns( other.mNumColumns ),
+<span class="lineNum">      91 </span>            :     mRowIndexes(),
+<span class="lineNum">      92 </span>            :     mCompressThreshold( other.mCompressThreshold ),
+<span class="lineNum">      93 </span>            :     mDiagonalProperty( other.mDiagonalProperty ),
+<span class="lineNum">      94 </span><span class="lineCov">     119078 :     mContext( other.mContext )</span>
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span>            : {
+<span class="lineNum">      97 </span>            :     SCAI_LOG_DEBUG( logger, &quot;_MatrixStorage( &quot; &lt;&lt; mNumRows &lt;&lt; &quot; x &quot; &lt;&lt; mNumColumns &lt;&lt; &quot; copied&quot; )
+<a name="98"><span class="lineNum">      98 </span><span class="lineCov">     119078 : }</span></a>
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span><span class="lineCov">      14934 : _MatrixStorage::_MatrixStorage( _MatrixStorage&amp;&amp; other ) noexcept :</span>
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            :     mNumRows( other.mNumRows ),
+<span class="lineNum">     103 </span>            :     mNumColumns( other.mNumColumns ),
+<span class="lineNum">     104 </span>            :     mRowIndexes( std::move( other.mRowIndexes ) ),
+<span class="lineNum">     105 </span>            :     mCompressThreshold( other.mCompressThreshold ),
+<span class="lineNum">     106 </span>            :     mDiagonalProperty( other.mDiagonalProperty ),
+<span class="lineNum">     107 </span><span class="lineCov">      29868 :     mContext( other.mContext )</span>
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            : {
+<span class="lineNum">     110 </span>            :     // reset the shape of the moved input storage
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span><span class="lineCov">      14934 :     other.mNumRows = 0;</span>
+<span class="lineNum">     113 </span><span class="lineCov">      14934 :     other.mNumColumns = 0;</span>
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span>            :     SCAI_LOG_DEBUG( logger, &quot;_MatrixStorage( &quot; &lt;&lt; mNumRows &lt;&lt; &quot; x &quot; &lt;&lt; mNumColumns &lt;&lt; &quot; moved&quot; )
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">      14934 : }</span></a>
+<span class="lineNum">     117 </span>            : 
+<span class="lineNum">     118 </span><span class="lineCov">    1065894 : _MatrixStorage::~_MatrixStorage()</span>
+<span class="lineNum">     119 </span>            : {
+<span class="lineNum">     120 </span>            :     SCAI_LOG_DEBUG( logger, &quot;~_MatrixStorage&quot; )
+<span class="lineNum">     121 </span><span class="lineCov">     532947 : }</span>
+<span class="lineNum">     122 </span>            : 
+<a name="123"><span class="lineNum">     123 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span><span class="lineCov">    1332696 : void _MatrixStorage::setDimension( const IndexType numRows, const IndexType numColumns )</span>
+<span class="lineNum">     126 </span>            : {
+<span class="lineNum">     127 </span>            :     // in any case set dimensions
+<span class="lineNum">     128 </span><span class="lineCov">    1332696 :     mNumRows = numRows;</span>
+<span class="lineNum">     129 </span><span class="lineCov">    1332696 :     mNumColumns = numColumns;</span>
+<span class="lineNum">     130 </span>            :     // due to new settings assume that diagonalProperty, rowIndexes become invalid
+<span class="lineNum">     131 </span><span class="lineCov">    1332696 :     mDiagonalProperty = false;</span>
+<span class="lineNum">     132 </span><span class="lineCov">    1332696 :     mRowIndexes.clear();</span>
+<span class="lineNum">     133 </span>            :     // but do not reset threshold
+<span class="lineNum">     134 </span><span class="lineCov">    1332696 : }</span>
+<span class="lineNum">     135 </span>            : 
+<a name="136"><span class="lineNum">     136 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     137 </span>            : 
+<span class="lineNum">     138 </span><span class="lineCov">        744 : void _MatrixStorage::splitUp( IndexType&amp; numRows, IndexType&amp; numColumns )</span>
+<span class="lineNum">     139 </span>            : {
+<span class="lineNum">     140 </span><span class="lineCov">        744 :     numRows = mNumRows;</span>
+<span class="lineNum">     141 </span><span class="lineCov">        744 :     numColumns = mNumColumns;</span>
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span><span class="lineCov">        744 :     mNumRows = 0;</span>
+<span class="lineNum">     144 </span><span class="lineCov">        744 :     mNumColumns = 0;</span>
+<span class="lineNum">     145 </span><span class="lineCov">        744 :     mRowIndexes.clear();</span>
+<span class="lineNum">     146 </span><span class="lineCov">        744 : }</span>
+<span class="lineNum">     147 </span>            : 
+<a name="148"><span class="lineNum">     148 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span><span class="lineCov">      70410 : void _MatrixStorage::resetNumColumns( const IndexType numColumns )</span>
+<span class="lineNum">     151 </span>            : {
+<span class="lineNum">     152 </span><span class="lineCov">      70410 :     SCAI_ASSERT_GE_ERROR( numColumns, mNumColumns, &quot;Number of columns cannot be decreased&quot; )</span>
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span><span class="lineCov">      70410 :     if ( numColumns != mNumColumns )</span>
+<span class="lineNum">     155 </span>            :     {
+<span class="lineNum">     156 </span><span class="lineCov">         27 :         SCAI_ASSERT_NE_ERROR( getFormat(), Format::DENSE, &quot;number of columns cannot be changed for dense storage.&quot; )</span>
+<span class="lineNum">     157 </span>            :     }
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span><span class="lineCov">      70410 :     mNumColumns = numColumns;</span>
+<span class="lineNum">     160 </span><span class="lineCov">      70410 : }</span>
+<span class="lineNum">     161 </span>            : 
+<a name="162"><span class="lineNum">     162 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 : void _MatrixStorage::writeAt( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     165 </span>            : {
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :     stream &lt;&lt; &quot; MatrixStorage: (&quot; &lt;&lt; mNumRows &lt;&lt; &quot; x &quot; &lt;&lt; mNumColumns &lt;&lt; &quot;)&quot;;</span>
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     168 </span>            : 
+<a name="169"><span class="lineNum">     169 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     170 </span>            : 
+<span class="lineNum">     171 </span><span class="lineCov">      54819 : void _MatrixStorage::setCompressThreshold( float ratio )</span>
+<span class="lineNum">     172 </span>            : {
+<span class="lineNum">     173 </span><span class="lineCov">      54819 :     if ( ratio &lt; 0.0f || ratio &gt; 1.0f )</span>
+<span class="lineNum">     174 </span>            :     {
+<span class="lineNum">     175 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Illegal threshold &quot; &lt;&lt; ratio &lt;&lt; &quot;, must be from 0.0 to 1.0&quot; )</span>
+<span class="lineNum">     176 </span>            :     }
+<span class="lineNum">     177 </span>            : 
+<span class="lineNum">     178 </span><span class="lineCov">      54819 :     mCompressThreshold = ratio;</span>
+<span class="lineNum">     179 </span><span class="lineCov">     109638 :     SCAI_LOG_INFO( logger, &quot;set compress threshold, ratio = &quot; &lt;&lt; ratio &lt;&lt; &quot; : &quot; &lt;&lt; *this )</span>
+<span class="lineNum">     180 </span><span class="lineCov">      54819 : }</span>
+<span class="lineNum">     181 </span>            : 
+<a name="182"><span class="lineNum">     182 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span><span class="lineCov">      17099 : void _MatrixStorage::swap( _MatrixStorage&amp; other )</span>
+<span class="lineNum">     185 </span>            : {
+<span class="lineNum">     186 </span>            :     std::swap( mNumRows, other.mNumRows );
+<span class="lineNum">     187 </span>            :     std::swap( mNumColumns, other.mNumColumns );
+<span class="lineNum">     188 </span>            :     mRowIndexes.swap( other.mRowIndexes );
+<span class="lineNum">     189 </span>            :     std::swap( mCompressThreshold, other.mCompressThreshold );
+<span class="lineNum">     190 </span>            :     std::swap( mDiagonalProperty, other.mDiagonalProperty );
+<span class="lineNum">     191 </span>            :     std::swap( mContext, other.mContext );
+<span class="lineNum">     192 </span><span class="lineCov">      17099 : }</span>
+<span class="lineNum">     193 </span>            : 
+<a name="194"><span class="lineNum">     194 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span><span class="lineCov">       2113 : void _MatrixStorage::_assignTranspose( const _MatrixStorage&amp; other )</span>
+<span class="lineNum">     197 </span>            : {
+<span class="lineNum">     198 </span>            :     // make it safe also for other == &amp;this
+<span class="lineNum">     199 </span><span class="lineCov">       2113 :     IndexType tmpNumRows = other.mNumRows;</span>
+<span class="lineNum">     200 </span><span class="lineCov">       2113 :     mNumRows = other.mNumColumns;</span>
+<span class="lineNum">     201 </span><span class="lineCov">       2113 :     mNumColumns = tmpNumRows;</span>
+<span class="lineNum">     202 </span><span class="lineCov">       2113 :     mRowIndexes.clear();</span>
+<span class="lineNum">     203 </span>            :     // remains unchanged: mCompressThreshold = other.mCompressThreshold;
+<span class="lineNum">     204 </span><span class="lineCov">       2113 :     mDiagonalProperty = false;</span>
+<span class="lineNum">     205 </span><span class="lineCov">       2113 : }</span>
+<span class="lineNum">     206 </span>            : 
+<a name="207"><span class="lineNum">     207 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span><span class="lineCov">      50192 : void _MatrixStorage::_assign( const _MatrixStorage&amp; other )</span>
+<span class="lineNum">     210 </span>            : {
+<span class="lineNum">     211 </span><span class="lineCov">      50192 :     mNumRows = other.mNumRows;</span>
+<span class="lineNum">     212 </span><span class="lineCov">      50192 :     mNumColumns = other.mNumColumns;</span>
+<span class="lineNum">     213 </span><span class="lineCov">      50192 :     mRowIndexes.clear();</span>
+<span class="lineNum">     214 </span>            :     // remains unchanged: mCompressThreshold = other.mCompressThreshold;
+<span class="lineNum">     215 </span><span class="lineCov">      50192 :     mDiagonalProperty = false;</span>
+<span class="lineNum">     216 </span><span class="lineCov">      50192 : }</span>
+<span class="lineNum">     217 </span>            : 
+<a name="218"><span class="lineNum">     218 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     219 </span>            : 
+<span class="lineNum">     220 </span><span class="lineCov">      38319 : _MatrixStorage&amp; _MatrixStorage::operator=( const _MatrixStorage&amp; other )</span>
+<span class="lineNum">     221 </span>            : {
+<span class="lineNum">     222 </span><span class="lineCov">      38319 :     assign( other ); // assign can deal with all kind of storage formats/types</span>
+<span class="lineNum">     223 </span><span class="lineCov">      38319 :     return *this;</span>
+<span class="lineNum">     224 </span>            : }
+<span class="lineNum">     225 </span>            : 
+<a name="226"><span class="lineNum">     226 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     227 </span>            : 
+<span class="lineNum">     228 </span><span class="lineCov">         15 : void _MatrixStorage::moveImpl( _MatrixStorage&amp;&amp; other )</span>
+<span class="lineNum">     229 </span>            : {
+<span class="lineNum">     230 </span>            :     SCAI_LOG_DEBUG( logger, &quot;move assignment: other = &quot; &lt;&lt; other &lt;&lt; &quot; is moved to this = &quot; &lt;&lt; *this )
+<span class="lineNum">     231 </span>            : 
+<span class="lineNum">     232 </span><span class="lineCov">         15 :     mNumRows    = other.mNumRows;</span>
+<span class="lineNum">     233 </span><span class="lineCov">         15 :     mNumColumns = other.mNumColumns;</span>
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span>            :     // reset the shape of the moved input storage
+<span class="lineNum">     236 </span>            : 
+<span class="lineNum">     237 </span><span class="lineCov">         15 :     other.mNumRows    = 0;</span>
+<span class="lineNum">     238 </span><span class="lineCov">         15 :     other.mNumColumns = 0;</span>
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span>            :     mContext = other.mContext;
+<span class="lineNum">     241 </span>            : 
+<span class="lineNum">     242 </span><span class="lineCov">         15 :     mDiagonalProperty = other.mDiagonalProperty;</span>
+<span class="lineNum">     243 </span>            :     mRowIndexes = std::move( other.mRowIndexes );
+<span class="lineNum">     244 </span><span class="lineCov">         15 :     mCompressThreshold = other.mCompressThreshold;</span>
+<span class="lineNum">     245 </span><span class="lineCov">         15 : }</span>
+<span class="lineNum">     246 </span>            : 
+<a name="247"><span class="lineNum">     247 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span><span class="lineCov">        540 : void _MatrixStorage::setDiagonalProperty()</span>
+<span class="lineNum">     250 </span>            : {
+<span class="lineNum">     251 </span>            :     // default implementation just throw an exception if diagonal property is not given
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span><span class="lineCov">        540 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     254 </span>            : 
+<span class="lineNum">     255 </span><span class="lineCov">        540 :     if ( !mDiagonalProperty )</span>
+<span class="lineNum">     256 </span>            :     {
+<span class="lineNum">     257 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( *this &lt;&lt; &quot;: has not diagonal property, cannot set it&quot; )</span>
+<span class="lineNum">     258 </span>            :     }
+<span class="lineNum">     259 </span><span class="lineCov">        540 : }</span>
+<span class="lineNum">     260 </span>            : 
+<a name="261"><span class="lineNum">     261 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span><span class="lineCov">     452196 : void _MatrixStorage::resetDiagonalProperty()</span>
+<span class="lineNum">     264 </span>            : {
+<span class="lineNum">     265 </span><span class="lineCov">     452196 :     mDiagonalProperty = checkDiagonalProperty();</span>
+<span class="lineNum">     266 </span>            :     SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot;: diagonal property = &quot; &lt;&lt; mDiagonalProperty )
+<span class="lineNum">     267 </span><span class="lineCov">     452196 : }</span>
+<span class="lineNum">     268 </span>            : 
+<a name="269"><span class="lineNum">     269 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span><span class="lineCov">     486060 : void _MatrixStorage::setContextPtr( ContextPtr context )</span>
+<span class="lineNum">     272 </span>            : {
+<span class="lineNum">     273 </span>            :     if ( context.get() != mContext.get() )
+<span class="lineNum">     274 </span>            :     {
+<span class="lineNum">     275 </span>            :         SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot;: new location = &quot; &lt;&lt; *context &lt;&lt; &quot;, old location = &quot; &lt;&lt; *mContext )
+<span class="lineNum">     276 </span>            :     }
+<span class="lineNum">     277 </span>            : 
+<span class="lineNum">     278 </span>            :     mContext = context;
+<span class="lineNum">     279 </span><span class="lineCov">     486060 : }</span>
+<span class="lineNum">     280 </span>            : 
+<a name="281"><span class="lineNum">     281 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span><span class="lineNoCov">          0 : void _MatrixStorage::localize( const _MatrixStorage&amp; global, const Distribution&amp; rowDist )</span>
+<span class="lineNum">     284 </span>            : {
+<span class="lineNum">     285 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), global.getNumColumns() )</span>
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQUAL_ERROR( global.getNumRows(), rowDist.getGlobalSize() )</span>
+<span class="lineNum">     287 </span><span class="lineNoCov">          0 :     COMMON_THROWEXCEPTION( &quot;No default implementation for localize available, matrix = &quot; &lt;&lt; *this )</span>
+<span class="lineNum">     288 </span>            : }
+<span class="lineNum">     289 </span>            : 
+<a name="290"><span class="lineNum">     290 </span>            : /* --------------------------------------------------------------------------- */</a>
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span><span class="lineCov">         20 : IndexType _MatrixStorage::getNumValues() const</span>
+<span class="lineNum">     293 </span>            : {
+<span class="lineNum">     294 </span>            :     // Default implementation builds sum of row sizes, derived classes have more efficient routines
+<span class="lineNum">     295 </span><span class="lineCov">         20 :     HArray&lt;IndexType&gt; sizes;</span>
+<span class="lineNum">     296 </span><span class="lineCov">         20 :     buildCSRSizes( sizes );</span>
+<span class="lineNum">     297 </span><span class="lineCov">         22 :     static LAMAKernel&lt;UtilKernelTrait::reduce&lt;IndexType&gt; &gt; reduce;</span>
+<span class="lineNum">     298 </span><span class="lineCov">         40 :     ContextPtr loc = sizes.getValidContext();</span>
+<span class="lineNum">     299 </span><span class="lineCov">         20 :     reduce.getSupportedContext( loc );</span>
+<span class="lineNum">     300 </span><span class="lineCov">         40 :     ReadAccess&lt;IndexType&gt; csrSizes( sizes, loc );</span>
+<span class="lineNum">     301 </span><span class="lineCov">         20 :     IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, BinaryOp::ADD );</span>
+<span class="lineNum">     302 </span><span class="lineCov">         20 :     return numValues;</span>
+<span class="lineNum">     303 </span>            : }
+<span class="lineNum">     304 </span>            : 
+<a name="305"><span class="lineNum">     305 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 : void _MatrixStorage::offsets2sizes( HArray&lt;IndexType&gt;&amp; offsets )</span>
+<span class="lineNum">     308 </span>            : {
+<span class="lineNum">     309 </span><span class="lineNoCov">          0 :     const IndexType n = offsets.size() - 1;</span>
+<span class="lineNum">     310 </span><span class="lineNoCov">          0 :     WriteAccess&lt;IndexType&gt; writeSizes( offsets );</span>
+<span class="lineNum">     311 </span>            : 
+<span class="lineNum">     312 </span>            :     // the following loop  is not parallel
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span><span class="lineNoCov">          0 :     for ( IndexType i = 0; i &lt; n; i++ )</span>
+<span class="lineNum">     315 </span>            :     {
+<span class="lineNum">     316 </span><span class="lineNoCov">          0 :         writeSizes[i] = writeSizes[i + 1] - writeSizes[i];</span>
+<span class="lineNum">     317 </span>            :     }
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span><span class="lineNoCov">          0 :     writeSizes.resize( n );</span>
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     321 </span>            : 
+<a name="322"><span class="lineNum">     322 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     323 </span>            : 
+<span class="lineNum">     324 </span><span class="lineCov">       1140 : void _MatrixStorage::offsets2sizes( HArray&lt;IndexType&gt;&amp; sizes, const HArray&lt;IndexType&gt;&amp; offsets )</span>
+<span class="lineNum">     325 </span>            : {
+<span class="lineNum">     326 </span><span class="lineCov">       1140 :     if ( &amp;sizes == &amp;offsets )</span>
+<span class="lineNum">     327 </span>            :     {
+<span class="lineNum">     328 </span><span class="lineNoCov">          0 :         SCAI_LOG_WARN( logger, &quot;offset2sizes: sizes and offsets are same array&quot; )</span>
+<span class="lineNum">     329 </span><span class="lineNoCov">          0 :         offsets2sizes( sizes );</span>
+<span class="lineNum">     330 </span><span class="lineCov">       1140 :         return;</span>
+<span class="lineNum">     331 </span>            :     }
+<span class="lineNum">     332 </span>            : 
+<span class="lineNum">     333 </span><span class="lineCov">       1140 :     const IndexType n = offsets.size() - 1;</span>
+<span class="lineNum">     334 </span>            : 
+<span class="lineNum">     335 </span><span class="lineCov">       1140 :     ReadAccess&lt;IndexType&gt; readOffsets( offsets );</span>
+<span class="lineNum">     336 </span>            : 
+<span class="lineNum">     337 </span><span class="lineCov">       1140 :     WriteAccess&lt;IndexType&gt; writeSizes( sizes );</span>
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span><span class="lineCov">       1140 :     writeSizes.clear(); // old values are not used</span>
+<span class="lineNum">     340 </span>            : 
+<span class="lineNum">     341 </span><span class="lineCov">       1140 :     writeSizes.resize( n );</span>
+<span class="lineNum">     342 </span>            : 
+<span class="lineNum">     343 </span><span class="lineCov">       2685 :     for ( IndexType i = 0; i &lt; n; i++ )</span>
+<span class="lineNum">     344 </span>            :     {
+<span class="lineNum">     345 </span><span class="lineCov">       1545 :         writeSizes[i] = readOffsets[i + 1] - readOffsets[i];</span>
+<span class="lineNum">     346 </span>            :     }
+<span class="lineNum">     347 </span>            : }
+<span class="lineNum">     348 </span>            : 
+<a name="349"><span class="lineNum">     349 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     350 </span>            : 
+<span class="lineNum">     351 </span><span class="lineCov">       1152 : IndexType _MatrixStorage::sizes2offsets( HArray&lt;IndexType&gt;&amp; sizes )</span>
+<span class="lineNum">     352 </span>            : {
+<span class="lineNum">     353 </span><span class="lineCov">       1152 :     IndexType n = sizes.size();</span>
+<span class="lineNum">     354 </span><span class="lineCov">       1152 :     WriteAccess&lt;IndexType&gt; writeOffsets( sizes );</span>
+<span class="lineNum">     355 </span><span class="lineCov">       1152 :     writeOffsets.resize( n + 1 );</span>
+<span class="lineNum">     356 </span><span class="lineCov">       2304 :     return OpenMPCSRUtils::sizes2offsets( writeOffsets, n );</span>
+<span class="lineNum">     357 </span>            : }
+<span class="lineNum">     358 </span>            : 
+<a name="359"><span class="lineNum">     359 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     360 </span>            : 
+<span class="lineNum">     361 </span><span class="lineCov">         21 : IndexType _MatrixStorage::sizes2offsets( HArray&lt;IndexType&gt;&amp; offsets, const HArray&lt;IndexType&gt;&amp; sizes, ContextPtr loc )</span>
+<span class="lineNum">     362 </span>            : {
+<span class="lineNum">     363 </span>            :     {
+<span class="lineNum">     364 </span>            :         // allocate offsets with one more element that sizes
+<span class="lineNum">     365 </span><span class="lineCov">         63 :         WriteOnlyAccess&lt;IndexType&gt; wOffsets( offsets, loc, sizes.size() + 1 );</span>
+<span class="lineNum">     366 </span>            :     }
+<span class="lineNum">     367 </span><span class="lineCov">         42 :     utilskernel::HArrayUtils::assign( offsets, sizes, loc );</span>
+<span class="lineNum">     368 </span><span class="lineCov">         42 :     return utilskernel::HArrayUtils::scan1( offsets, loc );</span>
+<span class="lineNum">     369 </span>            : }
+<span class="lineNum">     370 </span>            : 
+<a name="371"><span class="lineNum">     371 </span>            : /* ---------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     372 </span>            : 
+<span class="lineNum">     373 </span><span class="lineCov">        144 : size_t _MatrixStorage::getMemoryUsage() const</span>
+<span class="lineNum">     374 </span>            : {
+<span class="lineNum">     375 </span>            :     size_t memoryUsage = 0;
+<span class="lineNum">     376 </span>            :     memoryUsage += 2 * sizeof( IndexType );
+<span class="lineNum">     377 </span>            :     memoryUsage += sizeof( bool );
+<span class="lineNum">     378 </span>            :     memoryUsage += sizeof( float );
+<span class="lineNum">     379 </span><span class="lineCov">        144 :     memoryUsage += sizeof( IndexType ) * mRowIndexes.size();</span>
+<span class="lineNum">     380 </span><span class="lineCov">        144 :     memoryUsage += getMemoryUsageImpl();</span>
+<span class="lineNum">     381 </span>            :     SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot;: used memory = &quot; &lt;&lt; memoryUsage )
+<span class="lineNum">     382 </span><span class="lineCov">        144 :     return memoryUsage;</span>
+<span class="lineNum">     383 </span>            : }
+<span class="lineNum">     384 </span>            : 
+<a name="385"><span class="lineNum">     385 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

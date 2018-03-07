@@ -1,0 +1,538 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/io/BitmapIO.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/io</a> - BitmapIO.cpp<span style="font-size: 80%;"> (source / <a href="BitmapIO.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">26</td>
+            <td class="headerCovTableEntry">159</td>
+            <td class="headerCovTableEntryLo">16.4 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntryLo">50.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file BitmapIO.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of routines to read/write image data
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 04.05.2017
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #include &lt;scai/lama/GridVector.hpp&gt;
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : #include &lt;scai/lama/io/BitmapIO.hpp&gt;
+<span class="lineNum">      38 </span>            : #include &lt;scai/lama/io/IOWrapper.hpp&gt;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : #include &lt;scai/common/exception/UnsupportedException.hpp&gt;
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span>            : #include&lt;fstream&gt;
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            : #define MAT_SUFFIX &quot;.bmp&quot; 
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : namespace scai
+<span class="lineNum">      47 </span>            : {
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : using namespace utilskernel;
+<span class="lineNum">      50 </span>            : using namespace hmemo;
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : namespace lama
+<span class="lineNum">      53 </span>            : {
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span><span class="lineCov">         28 : SCAI_LOG_DEF_LOGGER( BitmapIO::logger, &quot;ImageIO.Bitmap&quot; )</span>
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">      58 </span>            : /*    Implementation of Factory methods                                              */
+<a name="59"><span class="lineNum">      59 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span><span class="lineCov">         86 : FileIO* BitmapIO::create()</span>
+<span class="lineNum">      62 </span>            : {
+<span class="lineNum">      63 </span><span class="lineCov">         86 :     return new BitmapIO();</span>
+<a name="64"><span class="lineNum">      64 </span>            : }</a>
+<span class="lineNum">      65 </span>            : 
+<span class="lineNum">      66 </span><span class="lineCov">         68 : std::string BitmapIO::createValue()</span>
+<span class="lineNum">      67 </span>            : {
+<span class="lineNum">      68 </span><span class="lineCov">         68 :     return MAT_SUFFIX;</span>
+<span class="lineNum">      69 </span>            : }
+<span class="lineNum">      70 </span>            : 
+<a name="71"><span class="lineNum">      71 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span><span class="lineCov">         32 : bool BitmapIO::isSupportedMode( const FileMode mode ) const</span>
+<span class="lineNum">      74 </span>            : {
+<span class="lineNum">      75 </span>            :     // binary is not supported
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span><span class="lineCov">         32 :     if ( mode == BINARY )</span>
+<span class="lineNum">      78 </span>            :     {
+<span class="lineNum">      79 </span>            :         return false;
+<span class="lineNum">      80 </span>            :     }
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span><span class="lineCov">         16 :     return true;</span>
+<span class="lineNum">      83 </span>            : }
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">      86 </span>            : /*   Data structures for BITMAP file                                                    */
+<span class="lineNum">      87 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span>            : #pragma pack(2)
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span>            : struct BITMAPFILEHEADER
+<span class="lineNum">      92 </span>            : {
+<span class="lineNum">      93 </span>            :     unsigned short int bfType;
+<span class="lineNum">      94 </span>            :     unsigned int bfSize;
+<span class="lineNum">      95 </span>            :     unsigned int bfReserved;
+<span class="lineNum">      96 </span>            :     unsigned int bfOffBits;
+<span class="lineNum">      97 </span>            : };
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span>            : struct BITMAPINFOHEADER
+<span class="lineNum">     100 </span>            : {
+<span class="lineNum">     101 </span>            :     unsigned int biSize;
+<span class="lineNum">     102 </span>            :     int biWidth;
+<span class="lineNum">     103 </span>            :     int biHeight;
+<span class="lineNum">     104 </span>            :     unsigned short int biPlanes;
+<span class="lineNum">     105 </span>            :     unsigned short int biBitCount;
+<span class="lineNum">     106 </span>            :     unsigned int biCompression;
+<span class="lineNum">     107 </span>            :     unsigned int biSizeImage;
+<span class="lineNum">     108 </span>            :     int biXPelsPerMeter;
+<span class="lineNum">     109 </span>            :     int biYPelsPerMeter;
+<span class="lineNum">     110 </span>            :     unsigned int biClrUsed;
+<span class="lineNum">     111 </span>            :     unsigned int biClrImportant;
+<span class="lineNum">     112 </span>            : };
+<span class="lineNum">     113 </span>            : 
+<span class="lineNum">     114 </span>            : #pragma pack()
+<span class="lineNum">     115 </span>            : 
+<span class="lineNum">     116 </span>            : struct COLORMASKS
+<span class="lineNum">     117 </span>            : {
+<span class="lineNum">     118 </span>            :     unsigned int red;
+<span class="lineNum">     119 </span>            :     unsigned int green;
+<span class="lineNum">     120 </span>            :     unsigned int blue;
+<span class="lineNum">     121 </span>            : };
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            : struct COLORTABLE
+<span class="lineNum">     124 </span>            : {
+<span class="lineNum">     125 </span>            :     unsigned int* colors;
+<span class="lineNum">     126 </span>            : };
+<span class="lineNum">     127 </span>            : 
+<span class="lineNum">     128 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">     129 </span>            : /*   Read Bitmap File                                                                   */
+<span class="lineNum">     130 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 : void BitmapIO::readGridImpl( HArray&lt;ValueType&gt;&amp; data, common::Grid&amp; grid, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     134 </span>            : {
+<span class="lineNum">     135 </span>            :     FILE* file;
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :     file = fopen( inputFileName.c_str(), &quot;rb&quot; );</span>
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :     SCAI_ASSERT( file, &quot;Could not open file &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     138 </span>            :     BITMAPFILEHEADER fileHeader;
+<span class="lineNum">     139 </span>            :     BITMAPINFOHEADER infoHeader;
+<span class="lineNum">     140 </span>            :     // COLORMASKS colorMasks;
+<span class="lineNum">     141 </span>            :     // COLORTABLE colorTable;
+<span class="lineNum">     142 </span>            :     size_t nRecords = fread( &amp;fileHeader, sizeof( fileHeader ), 1, file );
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 1, nRecords, &quot;failed to read header&quot; )</span>
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( fileHeader.bfType, 0x4D42, &quot;not bitmap file&quot; )</span>
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span>            : 
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;fileHeader, bfSize = &quot; &lt;&lt; fileHeader.bfSize</span>
+<span class="lineNum">     149 </span>            :                            &lt;&lt; &quot;, bfReserved = &quot; &lt;&lt; fileHeader.bfReserved 
+<span class="lineNum">     150 </span>            :                            &lt;&lt; &quot;, bfOffBits = &quot; &lt;&lt; fileHeader.bfOffBits )
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            :     nRecords = fread( &amp;infoHeader, sizeof( infoHeader ), 1, file );
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biSize = &quot; &lt;&lt; infoHeader.biSize )</span>
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biWidth = &quot; &lt;&lt; infoHeader.biWidth )</span>
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biHeight = &quot; &lt;&lt; infoHeader.biHeight )</span>
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biCompression = &quot; &lt;&lt; infoHeader.biCompression )</span>
+<span class="lineNum">     159 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biPlanes = &quot; &lt;&lt; infoHeader.biPlanes )</span>
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biBitCount = &quot; &lt;&lt; infoHeader.biBitCount )</span>
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biCompression = &quot; &lt;&lt; infoHeader.biCompression )</span>
+<span class="lineNum">     162 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biSizeImage = &quot; &lt;&lt; infoHeader.biSizeImage )</span>
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biXPelsPerMeter = &quot; &lt;&lt; infoHeader.biXPelsPerMeter )</span>
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biYPelsPerMeter = &quot; &lt;&lt; infoHeader.biYPelsPerMeter )</span>
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biClrUsed = &quot; &lt;&lt; infoHeader.biClrUsed )</span>
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;infoHeader, biClrImportant = &quot; &lt;&lt; infoHeader.biClrImportant )</span>
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span><span class="lineNoCov">          0 :     IndexType imageSize = infoHeader.biSizeImage;</span>
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :     if ( imageSize == 0 )</span>
+<span class="lineNum">     171 </span>            :     {
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :         imageSize = fileHeader.bfSize - fileHeader.bfOffBits;</span>
+<span class="lineNum">     173 </span><span class="lineNoCov">          0 :         SCAI_LOG_INFO( logger, &quot;Take image size = &quot; &lt;&lt; imageSize &lt;&lt; &quot; from fileHeader&quot; )</span>
+<span class="lineNum">     174 </span>            :     }
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :     IndexType width = infoHeader.biWidth;</span>
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :     IndexType height = infoHeader.biHeight;</span>
+<span class="lineNum">     178 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;BMP file, imag is &quot; &lt;&lt; width &lt;&lt; &quot; x &quot; &lt;&lt; height )</span>
+<span class="lineNum">     179 </span>            : 
+<span class="lineNum">     180 </span>            :     if ( infoHeader.biCompression == 3 )
+<span class="lineNum">     181 </span>            :     {
+<span class="lineNum">     182 </span>            :         // file.read( colorMasks, sizeof( colorMasks ) );
+<span class="lineNum">     183 </span>            :     }
+<span class="lineNum">     184 </span>            : 
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :     if ( infoHeader.biBitCount == 24 )</span>
+<span class="lineNum">     186 </span>            :     {
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :         grid = common::Grid3D( height, width, 3 );</span>
+<span class="lineNum">     188 </span>            : 
+<span class="lineNum">     189 </span>            :         // due to alignment: imageSize might be slightly higher
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 :         SCAI_ASSERT_GE_ERROR( imageSize, grid.size(), &quot;size mismatch&quot; )</span>
+<span class="lineNum">     192 </span><span class="lineNoCov">          0 :         std::unique_ptr&lt;unsigned char[]&gt; tmp( new unsigned char[ imageSize ] );</span>
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :         IndexType nBytes = fread( tmp.get(), 1, imageSize, file );</span>
+<span class="lineNum">     194 </span><span class="lineNoCov">          0 :         SCAI_ASSERT_EQ_ERROR( imageSize, nBytes, &quot;could not read all expected image pixels&quot; )</span>
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            :         // Image lines are always stored as a multiple of 4
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :         IndexType widthAligned = ( ( width + 3 ) / 4 ) * 4;</span>
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span>            :         // SCAI_ASSERT_EQ_ERROR( imageSize, widthAligned * height * 3, &quot;unexpected image size, widthAligned = &quot; &lt;&lt; widthAligned )
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span>            :         {
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :             WriteOnlyAccess&lt;ValueType&gt; wData( data, grid.size() );</span>
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :             for ( IndexType i = 0; i &lt; height; ++i )</span>
+<span class="lineNum">     206 </span>            :             {
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :                 for ( IndexType j = 0; j &lt; width; ++j )</span>
+<span class="lineNum">     208 </span>            :                 {
+<span class="lineNum">     209 </span>            :                     // BMP has data from top to bottom, but we need the inverse
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :                     IndexType bmpPos = 3 * ( i * ( widthAligned )  + j );</span>
+<span class="lineNum">     211 </span><span class="lineNoCov">          0 :                     IndexType imgPos = 3 * ( ( height - 1 - i ) * width + j );</span>
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :                     wData[ imgPos   ] = static_cast&lt;ValueType&gt;( tmp[bmpPos + 2] );</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :                     wData[ imgPos + 1 ] = static_cast&lt;ValueType&gt;( tmp[bmpPos + 1] );</span>
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :                     wData[ imgPos + 2 ] = static_cast&lt;ValueType&gt;( tmp[bmpPos] );</span>
+<span class="lineNum">     215 </span>            :                 }
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :             }</span>
+<span class="lineNum">     217 </span>            :         }
+<span class="lineNum">     218 </span>            :     }
+<span class="lineNum">     219 </span><span class="lineNoCov">          0 :     else if ( infoHeader.biBitCount == 32 )</span>
+<span class="lineNum">     220 </span>            :     {
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;32-bit not supported&quot; )</span>
+<span class="lineNum">     222 </span>            :     }
+<span class="lineNum">     223 </span><span class="lineNoCov">          0 :     else if ( infoHeader.biBitCount == 8 )</span>
+<span class="lineNum">     224 </span>            :     {
+<span class="lineNum">     225 </span><span class="lineNoCov">          0 :         grid = common::Grid3D( height, width, 3 );</span>
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span>            :         // indexed colors, read in color table
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span>            :         unsigned char ColorMasks [256][4];
+<span class="lineNum">     230 </span>            : 
+<span class="lineNum">     231 </span><span class="lineNoCov">          0 :         IndexType nBytes = fread( ColorMasks, 1, sizeof( ColorMasks) , file );</span>
+<span class="lineNum">     232 </span><span class="lineNoCov">          0 :         SCAI_LOG_ERROR( logger, &quot;read color mask, nbytes = &quot; &lt;&lt; nBytes )</span>
+<span class="lineNum">     233 </span><span class="lineNoCov">          0 :         std::unique_ptr&lt;unsigned char[]&gt; tmp( new unsigned char[ width * height ] );</span>
+<span class="lineNum">     234 </span><span class="lineNoCov">          0 :         nBytes = fread( tmp.get(), 1, width * height, file );</span>
+<span class="lineNum">     235 </span><span class="lineNoCov">          0 :         SCAI_LOG_ERROR( logger, &quot;read bitmap data, nbytes = &quot; &lt;&lt; nBytes )</span>
+<span class="lineNum">     236 </span><span class="lineNoCov">          0 :         SCAI_LOG_ERROR( logger, &quot;allocate data, size = &quot; &lt;&lt; grid.size() )</span>
+<span class="lineNum">     237 </span>            : 
+<span class="lineNum">     238 </span><span class="lineNoCov">          0 :         WriteOnlyAccess&lt;ValueType&gt; wData( data, grid.size() );</span>
+<span class="lineNum">     239 </span>            :         {
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 :             for ( IndexType i = 0; i &lt; height; ++i )</span>
+<span class="lineNum">     241 </span>            :             {
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :                 for ( IndexType j = 0; j &lt; width; ++j )</span>
+<span class="lineNum">     243 </span>            :                 {
+<span class="lineNum">     244 </span>            :                     // BMP has data from top to bottom, but we need the inverse
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 :                     IndexType bmpPos = i * width + j;</span>
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :                     unsigned char colorIndex = tmp[ bmpPos ];</span>
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :                     IndexType imgPos = 3 * ( ( height - 1 - i ) * width + j );</span>
+<span class="lineNum">     248 </span><span class="lineNoCov">          0 :                     wData[ imgPos   ] = static_cast&lt;ValueType&gt;( ColorMasks[colorIndex][2]);</span>
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :                     wData[ imgPos + 1 ] = static_cast&lt;ValueType&gt;( ColorMasks[colorIndex][1] );</span>
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :                     wData[ imgPos + 2 ] = static_cast&lt;ValueType&gt;( ColorMasks[colorIndex][0] );</span>
+<span class="lineNum">     251 </span>            :                 }
+<span class="lineNum">     252 </span>            :             }
+<span class="lineNum">     253 </span>            :         }
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :         SCAI_LOG_ERROR( logger, &quot;set full colo values&quot; )</span>
+<span class="lineNum">     255 </span>            :     }
+<span class="lineNum">     256 </span>            :     else 
+<span class="lineNum">     257 </span>            :     {
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Unsupported biBitCount = &quot; &lt;&lt; infoHeader.biBitCount )</span>
+<span class="lineNum">     259 </span>            :     }
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     261 </span>            : 
+<span class="lineNum">     262 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     263 </span><span class="lineNoCov">          0 : void BitmapIO::writeGridImpl( const HArray&lt;ValueType&gt;&amp; data, const common::Grid&amp; grid, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     264 </span>            : {
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :     FILE* f = fopen( outputFileName.c_str(), &quot;wb&quot; );</span>
+<span class="lineNum">     266 </span>            : 
+<span class="lineNum">     267 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 3, grid.nDims(), &quot;image data must be 3-dimensional grid data&quot; )</span>
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            :     IndexType height  = grid.size( 0 );
+<span class="lineNum">     270 </span>            :     IndexType width   = grid.size( 1 );
+<span class="lineNum">     271 </span>            :     IndexType nColor  = grid.size( 2 );
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 3, nColor, &quot;only RGB images are supported&quot; )</span>
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span>            :     IndexType alignSize    = 4;
+<span class="lineNum">     276 </span><span class="lineNoCov">          0 :     IndexType widthAligned = ( ( width * nColor  + alignSize - 1 ) / alignSize ) * alignSize;</span>
+<span class="lineNum">     277 </span>            : 
+<span class="lineNum">     278 </span><span class="lineNoCov">          0 :     SCAI_LOG_ERROR( logger, &quot;row size = &quot; &lt;&lt; width * nColor &lt;&lt; &quot;, aligned = &quot; &lt;&lt; widthAligned )</span>
+<span class="lineNum">     279 </span>            : 
+<span class="lineNum">     280 </span>            :     BITMAPFILEHEADER fileHeader;
+<span class="lineNum">     281 </span>            :     BITMAPINFOHEADER infoHeader;
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span>            :     IndexType headerBytes = sizeof( fileHeader ) + sizeof( infoHeader );
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 :     IndexType imageBytes  = widthAligned * height;</span>
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :     fileHeader.bfType     = 0x4D42;</span>
+<span class="lineNum">     287 </span><span class="lineNoCov">          0 :     fileHeader.bfSize     = imageBytes + headerBytes;</span>
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :     fileHeader.bfReserved = 0;</span>
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :     fileHeader.bfOffBits  = headerBytes;</span>
+<span class="lineNum">     290 </span>            : 
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :     infoHeader.biSize = sizeof( infoHeader );</span>
+<span class="lineNum">     292 </span><span class="lineNoCov">          0 :     infoHeader.biWidth = width;</span>
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :     infoHeader.biHeight = height;</span>
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :     infoHeader.biPlanes = 1;</span>
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :     infoHeader.biBitCount = 24;</span>
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :     infoHeader.biCompression = 0;</span>
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :     infoHeader.biSizeImage = imageBytes;</span>
+<span class="lineNum">     298 </span><span class="lineNoCov">          0 :     infoHeader.biXPelsPerMeter = 13780;</span>
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 :     infoHeader.biYPelsPerMeter = 13780;</span>
+<span class="lineNum">     300 </span><span class="lineNoCov">          0 :     infoHeader.biClrUsed = 0;</span>
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :     infoHeader.biClrImportant = 0;</span>
+<span class="lineNum">     302 </span>            : 
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 :     fwrite( &amp;fileHeader, 1, sizeof( fileHeader ), f );</span>
+<span class="lineNum">     304 </span><span class="lineNoCov">          0 :     fwrite( &amp;infoHeader, 1, sizeof( infoHeader ), f );</span>
+<span class="lineNum">     305 </span>            : 
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :     std::unique_ptr&lt;unsigned char[]&gt; tmpData( new unsigned char[ imageBytes ] );</span>
+<span class="lineNum">     307 </span>            : 
+<span class="lineNum">     308 </span><span class="lineNoCov">          0 :     ReadAccess&lt;ValueType&gt; rPixelData( data );</span>
+<span class="lineNum">     309 </span>            : 
+<span class="lineNum">     310 </span><span class="lineNoCov">          0 :     for ( IndexType i = 0; i &lt; height; ++i )</span>
+<span class="lineNum">     311 </span>            :     {
+<span class="lineNum">     312 </span><span class="lineNoCov">          0 :         for ( IndexType j = 0; j &lt; width; ++j )</span>
+<span class="lineNum">     313 </span>            :         {
+<span class="lineNum">     314 </span>            :             // BMP has data from top to bottom, but we need the inverse
+<span class="lineNum">     315 </span>            : 
+<span class="lineNum">     316 </span><span class="lineNoCov">          0 :             IndexType bmpPos = i * widthAligned + nColor * j ;</span>
+<span class="lineNum">     317 </span><span class="lineNoCov">          0 :             IndexType imgPos = nColor * ( ( height - 1 - i ) * width + j );</span>
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span><span class="lineNoCov">          0 :             tmpData[ bmpPos   ] = static_cast&lt;unsigned char&gt;( rPixelData[imgPos + 2] );</span>
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 :             tmpData[ bmpPos + 1 ] = static_cast&lt;unsigned char&gt;( rPixelData[imgPos + 1] );</span>
+<span class="lineNum">     321 </span><span class="lineNoCov">          0 :             tmpData[ bmpPos + 2 ] = static_cast&lt;unsigned char&gt;( rPixelData[imgPos] );</span>
+<span class="lineNum">     322 </span>            :         }
+<span class="lineNum">     323 </span>            :     }
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span><span class="lineNoCov">          0 :     IndexType nBytes = fwrite( tmpData.get(), 1, imageBytes, f );</span>
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( nBytes, imageBytes, &quot;could not write all image data&quot; )</span>
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span><span class="lineNoCov">          0 :     fclose( f );</span>
+<span class="lineNum">     330 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     331 </span>            : 
+<a name="332"><span class="lineNum">     332 </span>            : /* ------------------------------------------------------------------------------------ */</a>
+<span class="lineNum">     333 </span>            : 
+<span class="lineNum">     334 </span><span class="lineNoCov">          0 : void BitmapIO::readGridArray( _HArray&amp; data, common::Grid&amp; grid, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     335 </span>            : {
+<span class="lineNum">     336 </span><span class="lineNoCov">          0 :     IOWrapper&lt;BitmapIO, SCAI_TYPELIST( float, double )&gt;::readGridImpl( ( BitmapIO&amp; ) *this, data, grid, inputFileName );</span>
+<a name="337"><span class="lineNum">     337 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     338 </span>            : 
+<span class="lineNum">     339 </span><span class="lineNoCov">          0 : void BitmapIO::writeGridArray( const _HArray&amp; data, const common::Grid&amp; grid, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     340 </span>            : {
+<span class="lineNum">     341 </span><span class="lineNoCov">          0 :     IOWrapper&lt;BitmapIO, SCAI_TYPELIST( float, double )&gt;::writeGridImpl( ( BitmapIO&amp; ) *this, data, grid, outputFileName );</span>
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span><span class="lineCov">         26 : void BitmapIO::writeStorage( const _MatrixStorage&amp; storage, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     347 </span>            : {
+<span class="lineNum">     348 </span>            :     // todo: write dense storage as bitmap, maybe greyscale 
+<span class="lineNum">     349 </span>            : 
+<span class="lineNum">     350 </span><span class="lineCov">        156 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     351 </span><span class="lineCov">         52 :                          &quot;write storage &quot; &lt;&lt; storage &lt;&lt; &quot; to &quot; &lt;&lt; outputFileName )</span>
+<span class="lineNum">     352 </span>            : }
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     355 </span>            : 
+<span class="lineNum">     356 </span><span class="lineNoCov">          0 : void BitmapIO::readStorage(</span>
+<span class="lineNum">     357 </span>            :     _MatrixStorage&amp; storage,
+<span class="lineNum">     358 </span>            :     const std::string&amp; inputFileName,
+<span class="lineNum">     359 </span>            :     const IndexType offsetRow,
+<span class="lineNum">     360 </span>            :     const IndexType nRows )
+<span class="lineNum">     361 </span>            : {
+<span class="lineNum">     362 </span><span class="lineNoCov">          0 :     storage.clear();</span>
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 0, offsetRow, &quot;No chunk read for bitmap file&quot; )</span>
+<span class="lineNum">     365 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( invalidIndex, nRows, &quot;No chunk read for bitmap file&quot; )</span>
+<span class="lineNum">     366 </span>            : 
+<span class="lineNum">     367 </span><span class="lineNoCov">          0 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     368 </span><span class="lineNoCov">          0 :                          &quot;Unsupported for bitmap file: read storage from &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     369 </span>            : }
+<span class="lineNum">     370 </span>            : 
+<a name="371"><span class="lineNum">     371 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     372 </span>            : 
+<span class="lineNum">     373 </span><span class="lineCov">         16 : std::string BitmapIO::getMatrixFileSuffix() const</span>
+<span class="lineNum">     374 </span>            : {
+<span class="lineNum">     375 </span><span class="lineCov">         16 :     return createValue();</span>
+<span class="lineNum">     376 </span>            : }
+<span class="lineNum">     377 </span>            : 
+<a name="378"><span class="lineNum">     378 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span><span class="lineCov">         24 : std::string BitmapIO::getVectorFileSuffix() const</span>
+<span class="lineNum">     381 </span>            : {
+<span class="lineNum">     382 </span><span class="lineCov">         24 :     return createValue();</span>
+<span class="lineNum">     383 </span>            : }
+<span class="lineNum">     384 </span>            : 
+<span class="lineNum">     385 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span><span class="lineCov">         16 : void BitmapIO::writeArray( const hmemo::_HArray&amp; array, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     388 </span>            : {
+<span class="lineNum">     389 </span><span class="lineCov">         96 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     390 </span><span class="lineCov">         32 :                          &quot;Unsupported for bitmap file: write array &quot; &lt;&lt; array &lt;&lt; &quot; to &quot; &lt;&lt; outputFileName )</span>
+<span class="lineNum">     391 </span>            : }
+<span class="lineNum">     392 </span>            : 
+<span class="lineNum">     393 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     394 </span>            : 
+<span class="lineNum">     395 </span><span class="lineCov">          8 : void BitmapIO::writeSparse( </span>
+<span class="lineNum">     396 </span>            :     const IndexType n, 
+<span class="lineNum">     397 </span>            :     const hmemo::HArray&lt;IndexType&gt;&amp; indexes, 
+<span class="lineNum">     398 </span>            :     const hmemo::_HArray&amp; values, 
+<span class="lineNum">     399 </span>            :     const std::string&amp; outputFileName )
+<span class="lineNum">     400 </span>            : {
+<span class="lineNum">     401 </span><span class="lineCov">         48 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     402 </span>            :                          &quot;Unsupported for bitmap file: write spare array ( n = &quot; &lt;&lt; n 
+<span class="lineNum">     403 </span><span class="lineCov">         16 :                          &lt;&lt; &quot;, indexes = &quot; &lt;&lt; indexes &lt;&lt; &quot;, values = &quot; &lt;&lt; values &lt;&lt; &quot; ) to &quot; &lt;&lt; outputFileName )</span>
+<span class="lineNum">     404 </span>            : }
+<span class="lineNum">     405 </span>            : 
+<span class="lineNum">     406 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     407 </span>            : 
+<span class="lineNum">     408 </span><span class="lineNoCov">          0 : void BitmapIO::readStorageInfo( IndexType&amp; numRows, IndexType&amp; numColumns, IndexType&amp; numValues, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     409 </span>            : {
+<span class="lineNum">     410 </span><span class="lineNoCov">          0 :     numRows    = 0;</span>
+<span class="lineNum">     411 </span><span class="lineNoCov">          0 :     numColumns = 0;</span>
+<span class="lineNum">     412 </span><span class="lineNoCov">          0 :     numValues  = 0;</span>
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span><span class="lineNoCov">          0 :     COMMON_THROWEXCEPTION( &quot;Unsupported for bitmap file: read storage info from file &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     415 </span>            : }
+<span class="lineNum">     416 </span>            : 
+<span class="lineNum">     417 </span><span class="lineNoCov">          0 : void BitmapIO::readArrayInfo( IndexType&amp; size, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     418 </span>            : {
+<span class="lineNum">     419 </span><span class="lineNoCov">          0 :     size = 0;</span>
+<span class="lineNum">     420 </span>            : 
+<span class="lineNum">     421 </span><span class="lineNoCov">          0 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     422 </span><span class="lineNoCov">          0 :                          &quot;Unsupported for bitmap file: read array info from file &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     423 </span>            : }
+<span class="lineNum">     424 </span>            : 
+<span class="lineNum">     425 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     426 </span>            : 
+<span class="lineNum">     427 </span><span class="lineNoCov">          0 : void BitmapIO::readArray( hmemo::_HArray&amp; array, const std::string&amp; inputFileName, const IndexType offset, const IndexType n )</span>
+<span class="lineNum">     428 </span>            : {
+<span class="lineNum">     429 </span><span class="lineNoCov">          0 :     array.clear();</span>
+<span class="lineNum">     430 </span>            : 
+<span class="lineNum">     431 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 0, offset, &quot;chunk read not supported&quot; )</span>
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( n, invalidIndex, &quot;chunk read not supported&quot; )</span>
+<span class="lineNum">     433 </span>            : 
+<span class="lineNum">     434 </span><span class="lineNoCov">          0 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     435 </span><span class="lineNoCov">          0 :                          &quot;Unsupported for bitmap file: read array ( offset = &quot; &lt;&lt; offset &lt;&lt; &quot;, n = &quot; &lt;&lt; &quot; ) from file &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     436 </span>            : }
+<span class="lineNum">     437 </span>            : 
+<span class="lineNum">     438 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     439 </span>            : 
+<span class="lineNum">     440 </span><span class="lineNoCov">          0 : void BitmapIO::readSparse( IndexType&amp; size, hmemo::HArray&lt;IndexType&gt;&amp; indexes, hmemo::_HArray&amp; values, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     441 </span>            : {
+<span class="lineNum">     442 </span><span class="lineNoCov">          0 :     size = 0;</span>
+<span class="lineNum">     443 </span><span class="lineNoCov">          0 :     indexes.clear();</span>
+<span class="lineNum">     444 </span><span class="lineNoCov">          0 :     values.clear();</span>
+<span class="lineNum">     445 </span>            : 
+<span class="lineNum">     446 </span><span class="lineNoCov">          0 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     447 </span><span class="lineNoCov">          0 :                          &quot;Unsupported for bitmap file: read sparse array from &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     448 </span>            : }
+<span class="lineNum">     449 </span>            : 
+<a name="450"><span class="lineNum">     450 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span><span class="lineCov">          2 : void BitmapIO::writeAt( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     453 </span>            : {
+<span class="lineNum">     454 </span><span class="lineCov">          2 :     stream &lt;&lt; &quot;BitmapIO ( suffix = &quot; &lt;&lt; MAT_SUFFIX &lt;&lt; &quot;, &quot;;</span>
+<span class="lineNum">     455 </span><span class="lineCov">          2 :     stream &lt;&lt; &quot;, only image data )&quot;;</span>
+<span class="lineNum">     456 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">     457 </span>            : 
+<span class="lineNum">     458 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     459 </span>            : 
+<a name="460"><span class="lineNum">     460 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">     461 </span>            : 
+<span class="lineNum">     462 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

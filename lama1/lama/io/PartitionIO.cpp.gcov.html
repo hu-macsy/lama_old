@@ -1,0 +1,546 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/io/PartitionIO.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/io</a> - PartitionIO.cpp<span style="font-size: 80%;"> (source / <a href="PartitionIO.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">113</td>
+            <td class="headerCovTableEntry">140</td>
+            <td class="headerCovTableEntryMed">80.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntryMed">84.6 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file lama/io/PartitionIO.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief IO support for partitioned read/write of vectors, matrices, distributions
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 19.06.2016
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #include &lt;scai/lama/io/PartitionIO.hpp&gt;
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/io/FileIO.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : #include &lt;scai/utilskernel/LArray.hpp&gt;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : #include &lt;scai/dmemo/GenBlockDistribution.hpp&gt;
+<span class="lineNum">      41 </span>            : #include &lt;scai/dmemo/GeneralDistribution.hpp&gt;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : #include &lt;iostream&gt;
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : using namespace std;
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : namespace scai
+<span class="lineNum">      48 </span>            : {
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span>            : using namespace dmemo;
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : namespace lama
+<span class="lineNum">      53 </span>            : {
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span><span class="lineCov">         28 : SCAI_LOG_DEF_LOGGER( PartitionIO::logger, &quot;PartitionIO&quot; )</span>
+<span class="lineNum">      58 </span>            : 
+<a name="59"><span class="lineNum">      59 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span><span class="lineNoCov">          0 : void PartitionIO::getPartitionFileName( string&amp; fileName, bool&amp; isPartitioned, const PartitionId rank, const PartitionId size )</span>
+<span class="lineNum">      62 </span>            : {
+<span class="lineNum">      63 </span><span class="lineNoCov">          0 :     size_t pos = fileName.find( &quot;%r&quot; );</span>
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :     isPartitioned = false;</span>
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span><span class="lineNoCov">          0 :     if ( pos == string::npos )</span>
+<span class="lineNum">      68 </span>            :     {
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">      70 </span>            :     }
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :     ostringstream rankStr;</span>
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :     if ( size &gt; 1 )</span>
+<span class="lineNum">      75 </span>            :     {
+<span class="lineNum">      76 </span><span class="lineNoCov">          0 :         rankStr &lt;&lt; rank &lt;&lt; &quot;.&quot; &lt;&lt; size;</span>
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 :         isPartitioned = true;</span>
+<span class="lineNum">      78 </span>            :     }
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :     fileName.replace( pos, 2, rankStr.str() );</span>
+<span class="lineNum">      81 </span>            : }
+<span class="lineNum">      82 </span>            : 
+<a name="83"><span class="lineNum">      83 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span><span class="lineCov">       3110 : void PartitionIO::getPartitionFileName( string&amp; fileName, bool&amp; isPartitioned, const Communicator&amp; comm )</span>
+<span class="lineNum">      86 </span>            : {
+<span class="lineNum">      87 </span><span class="lineCov">       1812 :     size_t pos = fileName.find( &quot;%r&quot; );</span>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span><span class="lineCov">       1812 :     isPartitioned = false;</span>
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span><span class="lineCov">       1812 :     if ( pos == string::npos )</span>
+<span class="lineNum">      92 </span>            :     {
+<span class="lineNum">      93 </span><span class="lineCov">       1812 :         return;</span>
+<span class="lineNum">      94 </span>            :     }
+<span class="lineNum">      95 </span>            :     else
+<span class="lineNum">      96 </span>            :     {
+<span class="lineNum">      97 </span><span class="lineCov">        794 :         ostringstream rankStr;</span>
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span><span class="lineCov">        794 :         if ( comm.getSize() &gt; 1 )</span>
+<span class="lineNum">     100 </span>            :         {
+<span class="lineNum">     101 </span><span class="lineCov">        504 :             rankStr &lt;&lt; comm.getRank() &lt;&lt; &quot;.&quot; &lt;&lt; comm.getSize();</span>
+<span class="lineNum">     102 </span><span class="lineCov">        504 :             isPartitioned = true;</span>
+<span class="lineNum">     103 </span>            :         }
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span><span class="lineCov">        794 :         fileName.replace( pos, 2, rankStr.str() );</span>
+<span class="lineNum">     106 </span>            :     }
+<span class="lineNum">     107 </span>            : }
+<span class="lineNum">     108 </span>            : 
+<a name="109"><span class="lineNum">     109 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span><span class="lineNoCov">          0 : bool PartitionIO::isPartitionFileName( const string&amp; fileName )</span>
+<span class="lineNum">     112 </span>            : {
+<span class="lineNum">     113 </span><span class="lineNoCov">          0 :     size_t pos = fileName.find( &quot;%r&quot; );</span>
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :     if ( pos == string::npos )</span>
+<span class="lineNum">     116 </span>            :     {
+<span class="lineNum">     117 </span>            :         return false;
+<span class="lineNum">     118 </span>            :     }
+<span class="lineNum">     119 </span>            :     else
+<span class="lineNum">     120 </span>            :     {
+<span class="lineNum">     121 </span><span class="lineNoCov">          0 :         return true;</span>
+<span class="lineNum">     122 </span>            :     }
+<span class="lineNum">     123 </span>            : }
+<span class="lineNum">     124 </span>            : 
+<a name="125"><span class="lineNum">     125 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span><span class="lineCov">        738 : int PartitionIO::removeFile( const std::string&amp; fileName, const dmemo::Communicator&amp; comm )</span>
+<span class="lineNum">     128 </span>            : {
+<span class="lineNum">     129 </span><span class="lineCov">        429 :     int rc = 0;</span>
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span><span class="lineCov">        429 :     std::string pFileName = fileName;</span>
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            :     bool isPartitioned;
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span><span class="lineCov">        429 :     getPartitionFileName( pFileName, isPartitioned, comm );</span>
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span><span class="lineCov">        429 :     if ( isPartitioned )</span>
+<span class="lineNum">     138 </span>            :     {
+<span class="lineNum">     139 </span>            :         // partitoned file name, each processor deletes its part, sync results
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span><span class="lineCov">        120 :         rc = FileIO::removeFile( pFileName );</span>
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span><span class="lineCov">        120 :         bool okay = rc == 0;</span>
+<span class="lineNum">     144 </span>            : 
+<span class="lineNum">     145 </span><span class="lineCov">        120 :         okay = comm.all( okay );</span>
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span><span class="lineCov">        120 :         if ( !okay )</span>
+<span class="lineNum">     148 </span>            :         {
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :             rc = -1;</span>
+<span class="lineNum">     150 </span>            :         }
+<span class="lineNum">     151 </span>            :     }
+<span class="lineNum">     152 </span>            :     else
+<span class="lineNum">     153 </span>            :     {
+<span class="lineNum">     154 </span>            :         // serial file name, only root processor deletes and bcasts the result
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span>            :         const PartitionId root = 0;
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span><span class="lineCov">        309 :         if ( comm.getRank() == root )</span>
+<span class="lineNum">     159 </span>            :         {
+<span class="lineNum">     160 </span><span class="lineCov">        211 :             rc = FileIO::removeFile( pFileName );</span>
+<span class="lineNum">     161 </span>            :         }
+<span class="lineNum">     162 </span>            : 
+<span class="lineNum">     163 </span><span class="lineCov">        309 :         comm.bcast( &amp;rc, 1, root );</span>
+<span class="lineNum">     164 </span>            :     }
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span><span class="lineCov">        858 :     return rc;</span>
+<span class="lineNum">     167 </span>            : }
+<span class="lineNum">     168 </span>            : 
+<a name="169"><span class="lineNum">     169 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     170 </span>            : 
+<span class="lineNum">     171 </span><span class="lineCov">        738 : bool PartitionIO::fileExists( const std::string&amp; fileName, const dmemo::Communicator&amp; comm )</span>
+<span class="lineNum">     172 </span>            : {
+<span class="lineNum">     173 </span>            :     bool exists = true;
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span><span class="lineCov">        429 :     std::string pFileName = fileName;</span>
+<span class="lineNum">     176 </span>            : 
+<span class="lineNum">     177 </span>            :     bool isPartitioned;
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span><span class="lineCov">        429 :     getPartitionFileName( pFileName, isPartitioned, comm );</span>
+<span class="lineNum">     180 </span>            : 
+<span class="lineNum">     181 </span><span class="lineCov">        429 :     if ( isPartitioned )</span>
+<span class="lineNum">     182 </span>            :     {
+<span class="lineNum">     183 </span>            :         // partitoned file name, each processor deletes its part, sync results
+<span class="lineNum">     184 </span>            : 
+<span class="lineNum">     185 </span><span class="lineCov">        120 :         exists = FileIO::fileExists( pFileName );</span>
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span><span class="lineCov">        120 :         exists = comm.all( exists );</span>
+<span class="lineNum">     188 </span>            :     }
+<span class="lineNum">     189 </span>            :     else
+<span class="lineNum">     190 </span>            :     {
+<span class="lineNum">     191 </span><span class="lineCov">        309 :         int iExists = 0;   // help variable as not bcast&lt;bool&gt; available</span>
+<span class="lineNum">     192 </span>            : 
+<span class="lineNum">     193 </span>            :         const PartitionId root = 0;
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span><span class="lineCov">        309 :         if ( comm.getRank() == root )</span>
+<span class="lineNum">     196 </span>            :         {
+<span class="lineNum">     197 </span><span class="lineCov">        211 :             exists = FileIO::fileExists( pFileName );</span>
+<span class="lineNum">     198 </span><span class="lineCov">        211 :             iExists = exists ? 1 : 0 ;</span>
+<span class="lineNum">     199 </span>            :         }
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span><span class="lineCov">        309 :         comm.bcast( &amp;iExists, 1, root );</span>
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span><span class="lineCov">        309 :         exists = iExists == 1;</span>
+<span class="lineNum">     204 </span>            :     }
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span><span class="lineCov">        429 :     return exists;</span>
+<span class="lineNum">     207 </span>            : }
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span><span class="lineCov">        153 : DistributionPtr PartitionIO::readSDistribution( const string&amp; inFileName, CommunicatorPtr comm )</span>
+<span class="lineNum">     212 </span>            : {
+<span class="lineNum">     213 </span><span class="lineCov">        306 :     SCAI_LOG_INFO( logger, &quot;read distribution from one single file &quot; &lt;&lt; inFileName )</span>
+<span class="lineNum">     214 </span>            : 
+<span class="lineNum">     215 </span>            :     utilskernel::LArray&lt;IndexType&gt; owners;
+<span class="lineNum">     216 </span><span class="lineCov">        306 :     utilskernel::LArray&lt;IndexType&gt; localSizes( 1, 0 );  // at least one entry</span>
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span>            :     typedef enum
+<span class="lineNum">     219 </span>            :     {
+<span class="lineNum">     220 </span>            :         FAIL,    //!&lt; read was not successul, all processes will throw an exception
+<span class="lineNum">     221 </span>            :         BLOCKED, //!&lt; owners are ascending, a general block distribution is constructed
+<span class="lineNum">     222 </span>            :         GENERAL  //!&lt; owners are arbitrary, a general distribution is construcuted
+<span class="lineNum">     223 </span>            :     } Status;
+<span class="lineNum">     224 </span>            : 
+<span class="lineNum">     225 </span><span class="lineCov">        153 :     Status status = FAIL;</span>
+<span class="lineNum">     226 </span>            : 
+<span class="lineNum">     227 </span><span class="lineCov">        648 :     if ( comm-&gt;getRank() == MASTER )</span>
+<span class="lineNum">     228 </span>            :     {
+<span class="lineNum">     229 </span>            :         try
+<span class="lineNum">     230 </span>            :         {
+<span class="lineNum">     231 </span><span class="lineCov">         87 :             FileIO::read( owners, inFileName );</span>
+<span class="lineNum">     232 </span>            : 
+<span class="lineNum">     233 </span>            :             // Bucketsort of owners gives info about illegal values
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span><span class="lineCov">        174 :             utilskernel::HArrayUtils::bucketCount( localSizes, owners, comm-&gt;getSize() );</span>
+<span class="lineNum">     236 </span>            : 
+<span class="lineNum">     237 </span><span class="lineCov">         87 :             IndexType nLegalValues = localSizes.sum();</span>
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span><span class="lineCov">        174 :             SCAI_LOG_INFO( logger, *comm &lt;&lt; &quot;: read owners = &quot; &lt;&lt; owners &lt;&lt; &quot;, #legal values = &quot; &lt;&lt; nLegalValues )</span>
+<span class="lineNum">     240 </span>            : 
+<span class="lineNum">     241 </span><span class="lineCov">         87 :             SCAI_ASSERT_EQ_ERROR( nLegalValues, owners.size(),</span>
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :                                   *comm &lt;&lt; &quot;: mapping file &quot; &lt;&lt; inFileName &lt;&lt; &quot; contains illegal owners&quot; )</span>
+<span class="lineNum">     243 </span>            :         }
+<span class="lineNum">     244 </span><span class="lineNoCov">          0 :         catch ( common::Exception&amp; e )</span>
+<span class="lineNum">     245 </span>            :         {
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :             SCAI_LOG_ERROR( logger, &quot;Reading distribution from file &quot; &lt;&lt; inFileName &lt;&lt; &quot; failed: &quot; &lt;&lt; e.what() )</span>
+<span class="lineNum">     247 </span>            :         }
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span><span class="lineCov">        174 :         bool isAscending = utilskernel::HArrayUtils::isSorted( owners, common::CompareOp::LE );</span>
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span><span class="lineCov">         87 :         if ( isAscending )</span>
+<span class="lineNum">     252 </span>            :         {
+<span class="lineNum">     253 </span><span class="lineCov">         70 :             status = BLOCKED;</span>
+<span class="lineNum">     254 </span>            :         }
+<span class="lineNum">     255 </span>            :         else
+<span class="lineNum">     256 </span>            :         {
+<span class="lineNum">     257 </span><span class="lineCov">         17 :             status = GENERAL;</span>
+<span class="lineNum">     258 </span>            :         }
+<span class="lineNum">     259 </span>            :     }
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span>            :     // now broadcast status
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span><span class="lineCov">        153 :     comm-&gt;bcast( reinterpret_cast&lt;int*&gt;( &amp;status ), 1, MASTER );</span>
+<span class="lineNum">     264 </span>            : 
+<span class="lineNum">     265 </span><span class="lineCov">        153 :     if ( status == FAIL )</span>
+<span class="lineNum">     266 </span>            :     {
+<span class="lineNum">     267 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Reading distribution failed&quot; )</span>
+<span class="lineNum">     268 </span>            :     }
+<span class="lineNum">     269 </span>            : 
+<span class="lineNum">     270 </span><span class="lineCov">        153 :     IndexType globalSize = owners.size();</span>
+<span class="lineNum">     271 </span><span class="lineCov">        153 :     comm-&gt;bcast( &amp;globalSize, 1, MASTER );</span>
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span><span class="lineCov">        153 :     DistributionPtr dist;</span>
+<span class="lineNum">     274 </span>            : 
+<span class="lineNum">     275 </span><span class="lineCov">        153 :     if ( status == BLOCKED )</span>
+<span class="lineNum">     276 </span>            :     {
+<span class="lineNum">     277 </span>            :         IndexType localSize;
+<span class="lineNum">     278 </span><span class="lineCov">        102 :         hmemo::ReadAccess&lt;IndexType&gt; rSizes( localSizes );</span>
+<span class="lineNum">     279 </span><span class="lineCov">        102 :         comm-&gt;scatter( &amp;localSize, 1, MASTER, rSizes.get() );</span>
+<span class="lineNum">     280 </span><span class="lineCov">        204 :         dist.reset( new GenBlockDistribution ( globalSize, localSize, comm ) );</span>
+<span class="lineNum">     281 </span>            :     }
+<span class="lineNum">     282 </span>            :     else
+<span class="lineNum">     283 </span>            :     {
+<span class="lineNum">     284 </span>            :         // general distribution can be
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span><span class="lineCov">        102 :         dist.reset( new GeneralDistribution( owners, comm ) );</span>
+<span class="lineNum">     287 </span>            :     }
+<span class="lineNum">     288 </span>            : 
+<span class="lineNum">     289 </span><span class="lineCov">        153 :     return dist;</span>
+<span class="lineNum">     290 </span>            : }
+<span class="lineNum">     291 </span>            : 
+<span class="lineNum">     292 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     293 </span>            : 
+<span class="lineNum">     294 </span><span class="lineCov">         24 : DistributionPtr PartitionIO::readPDistribution( const string&amp; inFileName, CommunicatorPtr comm )</span>
+<span class="lineNum">     295 </span>            : {
+<span class="lineNum">     296 </span>            :     utilskernel::LArray&lt;IndexType&gt; owners;
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span><span class="lineCov">         96 :     SCAI_LOG_INFO( logger, *comm &lt;&lt; &quot;, read partitioned distribution from &quot; &lt;&lt; inFileName )</span>
+<span class="lineNum">     299 </span>            : 
+<span class="lineNum">     300 </span><span class="lineCov">         24 :     hmemo::HArray&lt;IndexType&gt; myIndexes;</span>
+<span class="lineNum">     301 </span>            : 
+<span class="lineNum">     302 </span>            :     // Some logic needed here to guarantee that all processors will throw an exception
+<span class="lineNum">     303 </span>            :     // if any read fails
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            :     bool errorFlag = false;
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            :     try
+<span class="lineNum">     308 </span>            :     {
+<span class="lineNum">     309 </span><span class="lineCov">         24 :         FileIO::read( myIndexes, inFileName );</span>
+<span class="lineNum">     310 </span>            :     }
+<span class="lineNum">     311 </span><span class="lineNoCov">          0 :     catch ( common::Exception&amp; e )</span>
+<span class="lineNum">     312 </span>            :     {
+<span class="lineNum">     313 </span>            :         errorFlag = true;
+<span class="lineNum">     314 </span>            :     }
+<span class="lineNum">     315 </span>            : 
+<span class="lineNum">     316 </span><span class="lineCov">         24 :     errorFlag = comm-&gt;any( errorFlag );</span>
+<span class="lineNum">     317 </span>            : 
+<span class="lineNum">     318 </span><span class="lineCov">         24 :     if ( errorFlag )</span>
+<span class="lineNum">     319 </span>            :     {
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Could not read partitioned distribution&quot; )</span>
+<span class="lineNum">     321 </span>            :     }
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span><span class="lineCov">         24 :     IndexType globalSize = comm-&gt;sum( myIndexes.size() );</span>
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span><span class="lineCov">         48 :     DistributionPtr dist( new GeneralDistribution( globalSize, myIndexes, comm ) );</span>
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span><span class="lineCov">         24 :     return dist;</span>
+<span class="lineNum">     328 </span>            : }
+<span class="lineNum">     329 </span>            : 
+<span class="lineNum">     330 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     331 </span>            : 
+<span class="lineNum">     332 </span><span class="lineCov">        177 : DistributionPtr PartitionIO::readDistribution( const string&amp; inFileName, CommunicatorPtr comm )</span>
+<span class="lineNum">     333 </span>            : {
+<span class="lineNum">     334 </span><span class="lineCov">        177 :     bool isPartitioned = false;</span>
+<span class="lineNum">     335 </span>            : 
+<span class="lineNum">     336 </span><span class="lineCov">        177 :     string mapFileName = inFileName;</span>
+<span class="lineNum">     337 </span>            : 
+<span class="lineNum">     338 </span><span class="lineCov">        177 :     getPartitionFileName( mapFileName, isPartitioned, *comm );</span>
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span><span class="lineCov">        177 :     if ( isPartitioned )</span>
+<span class="lineNum">     341 </span>            :     {
+<span class="lineNum">     342 </span><span class="lineCov">         48 :         return readPDistribution( mapFileName, comm );</span>
+<span class="lineNum">     343 </span>            :     }
+<span class="lineNum">     344 </span>            :     else
+<span class="lineNum">     345 </span>            :     {
+<span class="lineNum">     346 </span><span class="lineCov">        306 :         return readSDistribution( mapFileName, comm );</span>
+<span class="lineNum">     347 </span>            :     }
+<span class="lineNum">     348 </span>            : }
+<span class="lineNum">     349 </span>            : 
+<a name="350"><span class="lineNum">     350 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     351 </span>            : 
+<span class="lineNum">     352 </span><span class="lineCov">        177 : void PartitionIO::write( const Distribution&amp; distribution, const string&amp; fileName )</span>
+<span class="lineNum">     353 </span>            : {
+<span class="lineNum">     354 </span><span class="lineCov">        177 :     string distFileName = fileName;</span>
+<span class="lineNum">     355 </span>            : 
+<span class="lineNum">     356 </span>            :     bool writePartitions;
+<span class="lineNum">     357 </span>            : 
+<span class="lineNum">     358 </span><span class="lineCov">        177 :     getPartitionFileName( distFileName, writePartitions, distribution.getCommunicator() );</span>
+<span class="lineNum">     359 </span>            : 
+<span class="lineNum">     360 </span><span class="lineCov">        354 :     SCAI_LOG_INFO( logger, distribution.getCommunicator() &lt;&lt; &quot;: write ( partitioned = &quot; &lt;&lt; writePartitions &lt;&lt; &quot; ) to &quot; &lt;&lt; distFileName )</span>
+<span class="lineNum">     361 </span>            : 
+<span class="lineNum">     362 </span><span class="lineCov">        177 :     if ( writePartitions )</span>
+<span class="lineNum">     363 </span>            :     {
+<span class="lineNum">     364 </span><span class="lineCov">         24 :         writePDistribution( distribution, distFileName );</span>
+<span class="lineNum">     365 </span>            :     }
+<span class="lineNum">     366 </span>            :     else
+<span class="lineNum">     367 </span>            :     {
+<span class="lineNum">     368 </span><span class="lineCov">        153 :         writeSDistribution( distribution, distFileName );</span>
+<span class="lineNum">     369 </span>            :     }
+<span class="lineNum">     370 </span><span class="lineCov">        177 : }</span>
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span><span class="lineCov">        240 : void PartitionIO::writeSDistribution( const Distribution&amp; distribution, const string&amp; fileName )</span>
+<span class="lineNum">     375 </span>            : {
+<span class="lineNum">     376 </span>            :     using namespace hmemo;
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span><span class="lineCov">        153 :     CommunicatorPtr comm = Communicator::getCommunicatorPtr();</span>
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span><span class="lineCov">        153 :     PartitionId rank = comm-&gt;getRank();</span>
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span><span class="lineCov">        306 :     SCAI_LOG_INFO( logger, &quot;write distribution to single file &quot; &lt;&lt; fileName )</span>
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span><span class="lineCov">        153 :     HArray&lt;IndexType&gt; indexes;</span>
+<span class="lineNum">     385 </span>            : 
+<span class="lineNum">     386 </span><span class="lineCov">        153 :     if ( rank == MASTER )</span>
+<span class="lineNum">     387 </span>            :     {
+<span class="lineNum">     388 </span>            :         // we need the owners only on the host processor
+<span class="lineNum">     389 </span>            :         // indexes = 0, 1, 2, ..., globalSize - 1
+<span class="lineNum">     390 </span>            : 
+<span class="lineNum">     391 </span><span class="lineCov">        174 :         utilskernel::HArrayUtils::setOrder( indexes, distribution.getGlobalSize() );</span>
+<span class="lineNum">     392 </span>            :     }
+<span class="lineNum">     393 </span>            : 
+<span class="lineNum">     394 </span><span class="lineCov">        153 :     HArray&lt;IndexType&gt; owners;</span>
+<span class="lineNum">     395 </span>            : 
+<span class="lineNum">     396 </span>            :     // Note: gather all owners on master process
+<span class="lineNum">     397 </span>            : 
+<span class="lineNum">     398 </span><span class="lineCov">        153 :     distribution.allOwners( owners, MASTER );</span>
+<span class="lineNum">     399 </span>            : 
+<span class="lineNum">     400 </span><span class="lineCov">        306 :     SCAI_LOG_INFO( logger, *comm &lt;&lt; &quot;, owner computation for &quot; &lt;&lt; distribution &lt;&lt; &quot; finished, owners = &quot; &lt;&lt; owners )</span>
+<span class="lineNum">     401 </span>            : 
+<span class="lineNum">     402 </span><span class="lineCov">        153 :     int errorFlag = 0;</span>
+<span class="lineNum">     403 </span>            : 
+<span class="lineNum">     404 </span><span class="lineCov">        153 :     if ( rank == MASTER )</span>
+<span class="lineNum">     405 </span>            :     {
+<span class="lineNum">     406 </span><span class="lineCov">        174 :         SCAI_LOG_INFO( logger, *comm &lt;&lt; &quot;, MASTER, write distribution to &quot; &lt;&lt; fileName )</span>
+<span class="lineNum">     407 </span>            : 
+<span class="lineNum">     408 </span>            :         try
+<span class="lineNum">     409 </span>            :         {
+<span class="lineNum">     410 </span><span class="lineCov">         87 :             FileIO::write( owners, fileName );</span>
+<span class="lineNum">     411 </span>            :         }
+<span class="lineNum">     412 </span><span class="lineNoCov">          0 :         catch ( common::Exception&amp; e )</span>
+<span class="lineNum">     413 </span>            :         {
+<span class="lineNum">     414 </span><span class="lineNoCov">          0 :             SCAI_LOG_ERROR( logger, &quot;master process could not write owner file &quot; &lt;&lt; fileName &lt;&lt; &quot;\n&quot; &lt;&lt; e.what() )</span>
+<span class="lineNum">     415 </span><span class="lineNoCov">          0 :             errorFlag = 1;</span>
+<span class="lineNum">     416 </span>            :         }
+<span class="lineNum">     417 </span>            :     }
+<span class="lineNum">     418 </span>            : 
+<span class="lineNum">     419 </span>            :     // bcast error status, implies also synchronization
+<span class="lineNum">     420 </span>            : 
+<span class="lineNum">     421 </span><span class="lineCov">        153 :     comm-&gt;bcast( &amp;errorFlag, 1, MASTER );</span>
+<span class="lineNum">     422 </span>            : 
+<span class="lineNum">     423 </span><span class="lineCov">        153 :     if ( errorFlag )</span>
+<span class="lineNum">     424 </span>            :     {
+<span class="lineNum">     425 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Error @ writing distrubution to &quot; &lt;&lt; fileName )</span>
+<span class="lineNum">     426 </span>            :     }
+<span class="lineNum">     427 </span><span class="lineCov">        153 : }</span>
+<span class="lineNum">     428 </span>            : 
+<a name="429"><span class="lineNum">     429 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     430 </span>            : 
+<span class="lineNum">     431 </span><span class="lineCov">         24 : void PartitionIO::writePDistribution( const Distribution&amp; distribution, const string&amp; fileName )</span>
+<span class="lineNum">     432 </span>            : {
+<span class="lineNum">     433 </span><span class="lineCov">         48 :     SCAI_LOG_INFO( logger, distribution.getCommunicator() &lt;&lt; &quot;: write distribution to partition file &quot; &lt;&lt; fileName )</span>
+<span class="lineNum">     434 </span>            : 
+<span class="lineNum">     435 </span>            :     // each processor writes a file with its global indexes
+<span class="lineNum">     436 </span>            : 
+<span class="lineNum">     437 </span>            :     using namespace hmemo;
+<span class="lineNum">     438 </span>            : 
+<span class="lineNum">     439 </span><span class="lineCov">         24 :     HArray&lt;IndexType&gt; myGlobalIndexes;</span>
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span><span class="lineCov">         24 :     distribution.getOwnedIndexes( myGlobalIndexes );</span>
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span>            :     bool errorFlag = false;
+<span class="lineNum">     444 </span>            : 
+<span class="lineNum">     445 </span>            :     try
+<span class="lineNum">     446 </span>            :     {
+<span class="lineNum">     447 </span><span class="lineCov">         24 :         FileIO::write( myGlobalIndexes, fileName );</span>
+<span class="lineNum">     448 </span>            :     }
+<span class="lineNum">     449 </span><span class="lineNoCov">          0 :     catch ( common::Exception&amp; e )</span>
+<span class="lineNum">     450 </span>            :     {
+<span class="lineNum">     451 </span>            :         errorFlag = true;
+<span class="lineNum">     452 </span>            :     }
+<span class="lineNum">     453 </span>            : 
+<span class="lineNum">     454 </span>            :     // in case of error: all processors should throw an exception
+<span class="lineNum">     455 </span>            : 
+<span class="lineNum">     456 </span><span class="lineCov">         24 :     const Communicator&amp; comm = distribution.getCommunicator();</span>
+<span class="lineNum">     457 </span>            : 
+<span class="lineNum">     458 </span><span class="lineCov">         24 :     errorFlag = comm.any( errorFlag );</span>
+<span class="lineNum">     459 </span>            : 
+<span class="lineNum">     460 </span><span class="lineCov">         24 :     if ( errorFlag )</span>
+<span class="lineNum">     461 </span>            :     {
+<span class="lineNum">     462 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Could not write partitioned distribution&quot; )</span>
+<span class="lineNum">     463 </span>            :     }
+<span class="lineNum">     464 </span><span class="lineCov">         24 : }</span>
+<span class="lineNum">     465 </span>            : 
+<span class="lineNum">     466 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     467 </span>            : 
+<a name="468"><span class="lineNum">     468 </span>            : }  // namespace</a>
+<span class="lineNum">     469 </span>            : 
+<span class="lineNum">     470 </span><span class="lineCov">         42 : }  // namespace</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

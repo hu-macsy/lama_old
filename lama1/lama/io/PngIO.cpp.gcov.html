@@ -1,0 +1,470 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/io/PngIO.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/io</a> - PngIO.cpp<span style="font-size: 80%;"> (source / <a href="PngIO.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">29</td>
+            <td class="headerCovTableEntry">135</td>
+            <td class="headerCovTableEntryLo">21.5 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">23</td>
+            <td class="headerCovTableEntryLo">52.2 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file PngIO.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of routines to read/write image data
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 04.05.2017
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #include &lt;scai/lama/io/PngIO.hpp&gt;
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/io/IOWrapper.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : #include &lt;scai/common/exception/UnsupportedException.hpp&gt;
+<span class="lineNum">      39 </span>            : #include &lt;scai/common/Grid.hpp&gt;
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : #include&lt;png.h&gt;
+<span class="lineNum">      42 </span>            : #include&lt;fstream&gt;
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            : #define MAT_SUFFIX &quot;.png&quot; 
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : namespace scai
+<span class="lineNum">      47 </span>            : {
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : using namespace hmemo;
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : namespace lama
+<span class="lineNum">      52 </span>            : {
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span><span class="lineCov">         28 : SCAI_LOG_DEF_LOGGER( PngIO::logger, &quot;FileIO.Png&quot; )</span>
+<span class="lineNum">      55 </span>            : 
+<span class="lineNum">      56 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">      57 </span>            : /*    Implementation of Factory methods                                              */
+<a name="58"><span class="lineNum">      58 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span><span class="lineCov">         86 : FileIO* PngIO::create()</span>
+<span class="lineNum">      61 </span>            : {
+<span class="lineNum">      62 </span><span class="lineCov">         86 :     return new PngIO();</span>
+<a name="63"><span class="lineNum">      63 </span>            : }</a>
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span><span class="lineCov">         68 : std::string PngIO::createValue()</span>
+<span class="lineNum">      66 </span>            : {
+<span class="lineNum">      67 </span><span class="lineCov">         68 :     return MAT_SUFFIX;</span>
+<span class="lineNum">      68 </span>            : }
+<span class="lineNum">      69 </span>            : 
+<a name="70"><span class="lineNum">      70 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span><span class="lineCov">         32 : bool PngIO::isSupportedMode( const FileMode mode ) const</span>
+<span class="lineNum">      73 </span>            : {
+<span class="lineNum">      74 </span>            :     // binary is not supported
+<span class="lineNum">      75 </span>            : 
+<span class="lineNum">      76 </span><span class="lineCov">         32 :     if ( mode == BINARY )</span>
+<span class="lineNum">      77 </span>            :     {
+<span class="lineNum">      78 </span>            :         return false;
+<span class="lineNum">      79 </span>            :     }
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span><span class="lineCov">         16 :     return true;</span>
+<span class="lineNum">      82 </span>            : }
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span><span class="lineCov">         86 : PngIO::PngIO()</span>
+<span class="lineNum">      87 </span>            : {
+<span class="lineNum">      88 </span><span class="lineCov">        168 :     SCAI_LOG_INFO( logger, &quot;PngIO uses libpng version &quot; &lt;&lt; png_libpng_ver );</span>
+<span class="lineNum">      89 </span><span class="lineCov">         84 : }</span>
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">      92 </span>            : /*   Read PNG File                                                                   */
+<span class="lineNum">      93 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      96 </span><span class="lineNoCov">          0 : void PngIO::readGridImpl( HArray&lt;ValueType&gt;&amp; imageData, common::Grid&amp; imageSize, const std::string&amp; inputFileName )</span>
+<span class="lineNum">      97 </span>            : {
+<span class="lineNum">      98 </span>            :     char header[8];    // 8 is the maximum size that can be checked
+<span class="lineNum">      99 </span>            :     /* open file and test for it being a png */
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 :     FILE* fp = fopen( inputFileName.c_str(), &quot;rb&quot; );</span>
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( fp, inputFileName &lt;&lt; &quot; could not be opened for reading &quot; )</span>
+<span class="lineNum">     102 </span>            :     size_t readBytes = fread( header, 1, 8, fp );
+<span class="lineNum">     103 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 8, readBytes, &quot;Could not read header&quot; )</span>
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 :     if ( png_sig_cmp( reinterpret_cast&lt;png_byte*&gt;( header ), 0, 8 ) )</span>
+<span class="lineNum">     106 </span>            :     {
+<span class="lineNum">     107 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( inputFileName &lt;&lt; &quot; is not recognized as a PNG file&quot; )</span>
+<span class="lineNum">     108 </span>            :     }
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span>            :     /* read basic infomation */
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 :     png_structp png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );</span>
+<span class="lineNum">     113 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( png_ptr, &quot;png_create_read_struct failed&quot; )</span>
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :     png_infop info_ptr = png_create_info_struct( png_ptr );</span>
+<span class="lineNum">     116 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( info_ptr, &quot;png_create_info_struct failed&quot; )</span>
+<span class="lineNum">     117 </span>            : 
+<span class="lineNum">     118 </span>            :     // prepare error handling, i.e. define code that is used for error handling
+<span class="lineNum">     119 </span>            : 
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span><span class="lineNoCov">          0 :     if ( setjmp( png_jmpbuf( png_ptr ) ) )</span>
+<span class="lineNum">     122 </span>            :     {
+<span class="lineNum">     123 </span><span class="lineNoCov">          0 :         png_destroy_read_struct( &amp;png_ptr, &amp;info_ptr, NULL );</span>
+<span class="lineNum">     124 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Serious error during reading png file &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     125 </span>            :     }
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :     png_init_io( png_ptr, fp );</span>
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :     png_set_sig_bytes( png_ptr, 8 );</span>
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :     png_read_info( png_ptr, info_ptr );</span>
+<span class="lineNum">     130 </span><span class="lineNoCov">          0 :     IndexType width = png_get_image_width( png_ptr, info_ptr );</span>
+<span class="lineNum">     131 </span><span class="lineNoCov">          0 :     IndexType height = png_get_image_height( png_ptr, info_ptr );</span>
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;read image of &quot; &lt;&lt; height &lt;&lt; &quot; x &quot; &lt;&lt; width &lt;&lt; &quot; ( height x width )&quot; )</span>
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :     png_byte color_type = png_get_color_type( png_ptr, info_ptr );</span>
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :     png_byte png_bit_depth = png_get_bit_depth( png_ptr, info_ptr );</span>
+<span class="lineNum">     137 </span>            : 
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :     int number_of_passes = png_set_interlace_handling( png_ptr );</span>
+<span class="lineNum">     139 </span>            : 
+<span class="lineNum">     140 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;color_type = &quot; &lt;&lt; static_cast&lt;int&gt;( color_type )</span>
+<span class="lineNum">     141 </span>            :                     &lt;&lt; &quot;, png_bit_depth = &quot; &lt;&lt; static_cast&lt;int&gt;( png_bit_depth )
+<span class="lineNum">     142 </span>            :                     &lt;&lt; &quot;, passes = &quot; &lt;&lt; number_of_passes )
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 8, png_bit_depth, &quot;read only 8-bit depth supported&quot; )</span>
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :     if ( number_of_passes != 1 )</span>
+<span class="lineNum">     147 </span>            :     {
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :         SCAI_LOG_WARN( logger, &quot;Reading &quot; &lt;&lt; inputFileName &lt;&lt; &quot;: multiple passes not supported&quot;</span>
+<span class="lineNum">     149 </span>            :                                &lt;&lt; &quot;, #passes = &quot; &lt;&lt; number_of_passes )
+<span class="lineNum">     150 </span>            :     }
+<span class="lineNum">     151 </span>            : 
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :     png_read_update_info( png_ptr, info_ptr );</span>
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span>            :     /* read file */
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :     png_bytep* row_pointers = new png_bytep[ height ];</span>
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :     for ( IndexType y = 0; y &lt; height; y++ )</span>
+<span class="lineNum">     159 </span>            :     {
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :         row_pointers[y] = new png_byte[ png_get_rowbytes( png_ptr, info_ptr ) ];</span>
+<span class="lineNum">     161 </span>            :     }
+<span class="lineNum">     162 </span>            : 
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :     png_read_image( png_ptr, row_pointers );</span>
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :     fclose( fp );</span>
+<span class="lineNum">     166 </span>            : 
+<span class="lineNum">     167 </span>            :     IndexType valsPerPixel;
+<span class="lineNum">     168 </span>            : 
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :     switch ( color_type )</span>
+<span class="lineNum">     170 </span>            :     {  
+<span class="lineNum">     171 </span>            :         case PNG_COLOR_TYPE_RGBA :  valsPerPixel = 4; 
+<span class="lineNum">     172 </span>            :                                     break;
+<span class="lineNum">     173 </span>            :         case PNG_COLOR_TYPE_RGB  :  valsPerPixel = 3;
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :                                     break;</span>
+<span class="lineNum">     175 </span>            : 
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :         default: COMMON_THROWEXCEPTION( &quot;color type = &quot; &lt;&lt; ( int ) color_type &lt;&lt; &quot; not supported&quot; )</span>
+<span class="lineNum">     177 </span>            :     }
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :     imageSize = common::Grid3D( height, width, 3 );</span>
+<span class="lineNum">     180 </span>            :     {
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :         WriteOnlyAccess&lt;ValueType&gt; wX( imageData, imageSize.size() );</span>
+<span class="lineNum">     182 </span>            : 
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :         for ( IndexType i = 0; i &lt; height; ++i )</span>
+<span class="lineNum">     184 </span>            :         {
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :             png_bytep row_ptr = row_pointers[ i ];</span>
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :             for ( IndexType j = 0; j &lt; width; ++j )</span>
+<span class="lineNum">     188 </span>            :             {
+<span class="lineNum">     189 </span><span class="lineNoCov">          0 :                 wX[ 3 * width * i + 3 * j ] = row_ptr[ valsPerPixel * j ];</span>
+<span class="lineNum">     190 </span><span class="lineNoCov">          0 :                 wX[ 3 * width * i + 3 * j + 1 ] = row_ptr[ valsPerPixel * j + 1 ];</span>
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 :                 wX[ 3 * width * i + 3 * j + 2 ] = row_ptr[ valsPerPixel * j + 2 ];</span>
+<span class="lineNum">     192 </span>            :             }
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     194 </span>            :     }
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">     198 </span>            : /*   Write Png file                                                                     */
+<span class="lineNum">     199 </span>            : /* ------------------------------------------------------------------------------------ */
+<span class="lineNum">     200 </span>            : 
+<span class="lineNum">     201 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 : void PngIO::writeGridImpl( const HArray&lt;ValueType&gt;&amp; data, const common::Grid&amp; grid, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     203 </span>            : {
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, &quot;write image, shape = &quot; &lt;&lt; grid )</span>
+<span class="lineNum">     205 </span>            :     const IndexType height = grid.size( 0 );
+<span class="lineNum">     206 </span>            :     const IndexType width  = grid.size( 1 );
+<span class="lineNum">     207 </span>            :     const IndexType ncolor = grid.size( 2 );
+<span class="lineNum">     208 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 3, ncolor, &quot;3 values per pixel expected&quot; )</span>
+<span class="lineNum">     209 </span>            :     // convert the array data to png data
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :     png_bytep* row_pointers = new png_bytep[ height ];</span>
+<span class="lineNum">     211 </span>            :     {
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :         ReadAccess&lt;ValueType&gt; rX( data );</span>
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :         for ( IndexType y = 0; y &lt; height; y++ )</span>
+<span class="lineNum">     215 </span>            :         {
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :             row_pointers[y] = new png_byte[ 4 * width ];</span>
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :             for ( IndexType x = 0; x &lt; width; ++x )</span>
+<span class="lineNum">     219 </span>            :             {
+<span class="lineNum">     220 </span>            :                 // png_bitmap requires r, g, b, opaque value
+<span class="lineNum">     221 </span><span class="lineNoCov">          0 :                 row_pointers[y][ 4 * x ]     = static_cast&lt;png_byte&gt;( rX[ 3 * width * y + 3 * x ] );</span>
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :                 row_pointers[y][ 4 * x + 1 ] = static_cast&lt;png_byte&gt;( rX[ 3 * width * y + 3 * x + 1 ] );</span>
+<span class="lineNum">     223 </span><span class="lineNoCov">          0 :                 row_pointers[y][ 4 * x + 2 ] = static_cast&lt;png_byte&gt;( rX[ 3 * width * y + 3 * x + 2 ] );</span>
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :                 row_pointers[y][ 4 * x + 3 ] = static_cast&lt;png_byte&gt;( 255 );</span>
+<span class="lineNum">     225 </span>            :             }
+<span class="lineNum">     226 </span>            :         }
+<span class="lineNum">     227 </span>            :     }
+<span class="lineNum">     228 </span>            :     png_structp png_ptr;
+<span class="lineNum">     229 </span><span class="lineNoCov">          0 :     FILE* fp = fopen( outputFileName.c_str(), &quot;wb&quot; );</span>
+<span class="lineNum">     230 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( fp, &quot;File &quot; &lt;&lt; outputFileName &lt;&lt; &quot; could not be opened for writing&quot; )</span>
+<span class="lineNum">     231 </span>            :     /* initialize stuff */
+<span class="lineNum">     232 </span><span class="lineNoCov">          0 :     png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );</span>
+<span class="lineNum">     233 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( png_ptr, &quot;png_create_write_struct failed&quot; );</span>
+<span class="lineNum">     234 </span><span class="lineNoCov">          0 :     png_infop info_ptr = png_create_info_struct( png_ptr );</span>
+<span class="lineNum">     235 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_ERROR( info_ptr, &quot;png_create_info_struct failed&quot; );</span>
+<span class="lineNum">     236 </span>            : 
+<span class="lineNum">     237 </span>            :     // prepare error handling, i.e. define code that is used for error handling
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span><span class="lineNoCov">          0 :     if ( setjmp( png_jmpbuf( png_ptr ) ) )</span>
+<span class="lineNum">     241 </span>            :     {
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;Serious error during writing png file &quot; &lt;&lt; outputFileName )</span>
+<span class="lineNum">     243 </span>            :     }
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            : 
+<span class="lineNum">     246 </span><span class="lineNoCov">          0 :     png_init_io( png_ptr, fp );</span>
+<span class="lineNum">     247 </span>            : 
+<span class="lineNum">     248 </span>            :     /* write header */
+<span class="lineNum">     249 </span>            :     png_byte bit_depth = 8;
+<span class="lineNum">     250 </span>            :     png_byte color_type = PNG_COLOR_TYPE_RGBA;
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :     png_set_IHDR( png_ptr, info_ptr, width, height,</span>
+<span class="lineNum">     252 </span>            :                   bit_depth, color_type, PNG_INTERLACE_NONE,
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :                   PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE );</span>
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :     png_write_info( png_ptr, info_ptr );</span>
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :     png_write_image( png_ptr, row_pointers );</span>
+<span class="lineNum">     257 </span>            : 
+<span class="lineNum">     258 </span><span class="lineNoCov">          0 :     png_write_end( png_ptr, NULL );</span>
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 :     fclose( fp );</span>
+<span class="lineNum">     261 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span>            : /* ------------------------------------------------------------------------------------ */
+<a name="264"><span class="lineNum">     264 </span>            : /* ------------------------------------------------------------------------------------ */</a>
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span><span class="lineNoCov">          0 : void PngIO::readGridArray( _HArray&amp; data, common::Grid&amp; grid, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     267 </span>            : {
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :     IOWrapper&lt;PngIO, SCAI_TYPELIST( float, double )&gt;::readGridImpl( ( PngIO&amp; ) *this, data, grid, inputFileName );</span>
+<a name="269"><span class="lineNum">     269 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     270 </span>            : 
+<span class="lineNum">     271 </span><span class="lineNoCov">          0 : void PngIO::writeGridArray( const _HArray&amp; data, const common::Grid&amp; grid, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     272 </span>            : {
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :     IOWrapper&lt;PngIO, SCAI_TYPELIST( float, double )&gt;::writeGridImpl( ( PngIO&amp; ) *this, data, grid, outputFileName );</span>
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     275 </span>            : 
+<span class="lineNum">     276 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     277 </span>            : 
+<span class="lineNum">     278 </span><span class="lineCov">         26 : void PngIO::writeStorage( const _MatrixStorage&amp; storage, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     279 </span>            : {
+<span class="lineNum">     280 </span>            :     // todo: write dense storage as bitmap, maybe greyscale 
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span><span class="lineCov">        156 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     283 </span><span class="lineCov">         52 :                          &quot;write storage &quot; &lt;&lt; storage &lt;&lt; &quot; to &quot; &lt;&lt; outputFileName )</span>
+<span class="lineNum">     284 </span>            : }
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 : void PngIO::readStorage(</span>
+<span class="lineNum">     289 </span>            :     _MatrixStorage&amp; storage,
+<span class="lineNum">     290 </span>            :     const std::string&amp; inputFileName,
+<span class="lineNum">     291 </span>            :     const IndexType offsetRow,
+<span class="lineNum">     292 </span>            :     const IndexType nRows )
+<span class="lineNum">     293 </span>            : {
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :     storage.clear();</span>
+<span class="lineNum">     295 </span>            : 
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 0, offsetRow, &quot;No chunk read for bitmap file&quot; )</span>
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( invalidIndex, nRows, &quot;No chunk read for bitmap file&quot; )</span>
+<span class="lineNum">     298 </span>            : 
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     300 </span><span class="lineNoCov">          0 :                          &quot;Unsupported for bitmap file: read storage from &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     301 </span>            : }
+<span class="lineNum">     302 </span>            : 
+<a name="303"><span class="lineNum">     303 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span><span class="lineCov">         16 : std::string PngIO::getMatrixFileSuffix() const</span>
+<span class="lineNum">     306 </span>            : {
+<span class="lineNum">     307 </span><span class="lineCov">         16 :     return createValue();</span>
+<span class="lineNum">     308 </span>            : }
+<span class="lineNum">     309 </span>            : 
+<a name="310"><span class="lineNum">     310 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     311 </span>            : 
+<span class="lineNum">     312 </span><span class="lineCov">         24 : std::string PngIO::getVectorFileSuffix() const</span>
+<span class="lineNum">     313 </span>            : {
+<span class="lineNum">     314 </span><span class="lineCov">         24 :     return createValue();</span>
+<span class="lineNum">     315 </span>            : }
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span><span class="lineCov">         16 : void PngIO::writeArray( const hmemo::_HArray&amp; array, const std::string&amp; outputFileName )</span>
+<span class="lineNum">     320 </span>            : {
+<span class="lineNum">     321 </span><span class="lineCov">         96 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     322 </span><span class="lineCov">         32 :                          &quot;Unsupported for bitmap file: write array &quot; &lt;&lt; array &lt;&lt; &quot; to &quot; &lt;&lt; outputFileName )</span>
+<span class="lineNum">     323 </span>            : }
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span><span class="lineCov">          8 : void PngIO::writeSparse( </span>
+<span class="lineNum">     328 </span>            :     const IndexType n, 
+<span class="lineNum">     329 </span>            :     const hmemo::HArray&lt;IndexType&gt;&amp; indexes, 
+<span class="lineNum">     330 </span>            :     const hmemo::_HArray&amp; values, 
+<span class="lineNum">     331 </span>            :     const std::string&amp; outputFileName )
+<span class="lineNum">     332 </span>            : {
+<span class="lineNum">     333 </span><span class="lineCov">         48 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     334 </span>            :                          &quot;Unsupported for bitmap file: write spare array ( n = &quot; &lt;&lt; n 
+<span class="lineNum">     335 </span><span class="lineCov">         16 :                          &lt;&lt; &quot;, indexes = &quot; &lt;&lt; indexes &lt;&lt; &quot;, values = &quot; &lt;&lt; values &lt;&lt; &quot; ) to &quot; &lt;&lt; outputFileName )</span>
+<span class="lineNum">     336 </span>            : }
+<span class="lineNum">     337 </span>            : 
+<span class="lineNum">     338 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 : void PngIO::readStorageInfo( IndexType&amp; numRows, IndexType&amp; numColumns, IndexType&amp; numValues, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     341 </span>            : {
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :     numRows    = 0;</span>
+<span class="lineNum">     343 </span><span class="lineNoCov">          0 :     numColumns = 0;</span>
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :     numValues  = 0;</span>
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span><span class="lineNoCov">          0 :     COMMON_THROWEXCEPTION( &quot;Unsupported for bitmap file: read storage info from file &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     347 </span>            : }
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span><span class="lineNoCov">          0 : void PngIO::readArrayInfo( IndexType&amp; size, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     350 </span>            : {
+<span class="lineNum">     351 </span><span class="lineNoCov">          0 :     size = 0;</span>
+<span class="lineNum">     352 </span>            : 
+<span class="lineNum">     353 </span><span class="lineNoCov">          0 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     354 </span><span class="lineNoCov">          0 :                          &quot;Unsupported for bitmap file: read array info from file &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     355 </span>            : }
+<span class="lineNum">     356 </span>            : 
+<span class="lineNum">     357 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     358 </span>            : 
+<span class="lineNum">     359 </span><span class="lineNoCov">          0 : void PngIO::readArray( hmemo::_HArray&amp; array, const std::string&amp; inputFileName, const IndexType offset, const IndexType n )</span>
+<span class="lineNum">     360 </span>            : {
+<span class="lineNum">     361 </span><span class="lineNoCov">          0 :     array.clear();</span>
+<span class="lineNum">     362 </span>            : 
+<span class="lineNum">     363 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( 0, offset, &quot;chunk read not supported&quot; )</span>
+<span class="lineNum">     364 </span><span class="lineNoCov">          0 :     SCAI_ASSERT_EQ_ERROR( n, invalidIndex, &quot;chunk read not supported&quot; )</span>
+<span class="lineNum">     365 </span>            : 
+<span class="lineNum">     366 </span><span class="lineNoCov">          0 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     367 </span><span class="lineNoCov">          0 :                          &quot;Unsupported for bitmap file: read array ( offset = &quot; &lt;&lt; offset &lt;&lt; &quot;, n = &quot; &lt;&lt; &quot; ) from file &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     368 </span>            : }
+<span class="lineNum">     369 </span>            : 
+<span class="lineNum">     370 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     371 </span>            : 
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 : void PngIO::readSparse( IndexType&amp; size, hmemo::HArray&lt;IndexType&gt;&amp; indexes, hmemo::_HArray&amp; values, const std::string&amp; inputFileName )</span>
+<span class="lineNum">     373 </span>            : {
+<span class="lineNum">     374 </span><span class="lineNoCov">          0 :     size = 0;</span>
+<span class="lineNum">     375 </span><span class="lineNoCov">          0 :     indexes.clear();</span>
+<span class="lineNum">     376 </span><span class="lineNoCov">          0 :     values.clear();</span>
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span><span class="lineNoCov">          0 :     SCAI_THROWEXCEPTION( common::UnsupportedException, </span>
+<span class="lineNum">     379 </span><span class="lineNoCov">          0 :                          &quot;Unsupported for bitmap file: read sparse array from &quot; &lt;&lt; inputFileName )</span>
+<span class="lineNum">     380 </span>            : }
+<span class="lineNum">     381 </span>            : 
+<a name="382"><span class="lineNum">     382 </span>            : /* --------------------------------------------------------------------------------- */</a>
+<span class="lineNum">     383 </span>            : 
+<span class="lineNum">     384 </span><span class="lineCov">          2 : void PngIO::writeAt( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     385 </span>            : {
+<span class="lineNum">     386 </span><span class="lineCov">          2 :     stream &lt;&lt; &quot;PngIO ( suffix = &quot; &lt;&lt; MAT_SUFFIX &lt;&lt; &quot;, &quot;;</span>
+<span class="lineNum">     387 </span><span class="lineCov">          2 :     stream &lt;&lt; &quot;, only image data )&quot;;</span>
+<span class="lineNum">     388 </span><span class="lineCov">          2 : }</span>
+<span class="lineNum">     389 </span>            : 
+<span class="lineNum">     390 </span>            : /* --------------------------------------------------------------------------------- */
+<span class="lineNum">     391 </span>            : 
+<a name="392"><span class="lineNum">     392 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">     393 </span>            : 
+<span class="lineNum">     394 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

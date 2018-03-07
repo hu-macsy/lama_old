@@ -1,0 +1,428 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/freeFunction.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">lama</a> - freeFunction.hpp<span style="font-size: 80%;"> (source / <a href="freeFunction.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">48</td>
+            <td class="headerCovTableEntry">48</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">194</td>
+            <td class="headerCovTableEntry">239</td>
+            <td class="headerCovTableEntryMed">81.2 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file freeFunction.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Definiton of free functions to construct objects
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes, Andreas Borgen Longva
+<span class="lineNum">      32 </span>            :  * @date 25.01.18
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : #pragma once
+<span class="lineNum">      35 </span>            : 
+<span class="lineNum">      36 </span>            : #include &lt;scai/hmemo/Context.hpp&gt;
+<span class="lineNum">      37 </span>            : #include &lt;scai/dmemo/Distribution.hpp&gt;
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            : namespace scai
+<span class="lineNum">      40 </span>            : {
+<span class="lineNum">      41 </span>            : 
+<span class="lineNum">      42 </span>            : namespace lama
+<span class="lineNum">      43 </span>            : {
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : /** 
+<span class="lineNum">      46 </span>            :  *  @brief Function that returns a vector/matrix by evaluation of an expression
+<span class="lineNum">      47 </span>            :  * 
+<span class="lineNum">      48 </span>            :  *  @tparam    ObjectType can be any derived Vector or Matrix class
+<span class="lineNum">      49 </span>            :  *  @param[in] exp        is a vector or matrix expression
+<span class="lineNum">      50 </span>            :  *  @param[in] ctx        context for the new created object
+<span class="lineNum">      51 </span>            :  *  @returns              a new object, distribution is implicitly given by the expression
+<span class="lineNum">      52 </span>            :  *
+<span class="lineNum">      53 </span>            :  *  \code
+<span class="lineNum">      54 </span>            :  *     const auto vector = eval&lt;DenseVector&lt;double&gt;&gt;( a, b );
+<span class="lineNum">      55 </span>            :  *  \endcode
+<span class="lineNum">      56 </span>            :  *
+<span class="lineNum">      57 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">      58 </span>            :  *  Please keep in mind that the function requires the result type as template argument.
+<a name="59"><span class="lineNum">      59 </span>            :  */</a>
+<span class="lineNum">      60 </span>            : template&lt;typename ObjectType, typename expression&gt;
+<span class="lineNum">      61 </span><span class="lineCov">      30500 : ObjectType eval( expression exp, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">      62 </span>            : {
+<span class="lineNum">      63 </span><span class="lineCov">      61000 :     ObjectType obj( ctx );</span>
+<span class="lineNum">      64 </span><span class="lineCov">      30500 :     obj = exp;</span>
+<span class="lineNum">      65 </span><span class="lineCov">      30500 :     return obj;</span>
+<span class="lineNum">      66 </span>            : }
+<span class="lineNum">      67 </span>            : 
+<span class="lineNum">      68 </span>            : /** 
+<span class="lineNum">      69 </span>            :  *  @brief Function that returns a zero matrix or storage for a given size 
+<span class="lineNum">      70 </span>            :  * 
+<span class="lineNum">      71 </span>            :  *  @tparam    ObjectType can be any derived MatrixStorage or Matrix class.
+<span class="lineNum">      72 </span>            :  *  @param[in] numRows    number of rows
+<span class="lineNum">      73 </span>            :  *  @param[in] numColumns number of columns
+<span class="lineNum">      74 </span>            :  *  @param[in] ctx        context where operations on matrix will be execued
+<span class="lineNum">      75 </span>            :  *  @returns              a zero matrix of given size
+<span class="lineNum">      76 </span>            :  *
+<span class="lineNum">      77 </span>            :  *  \code
+<span class="lineNum">      78 </span>            :  *     const auto storage = zero&lt;CSRStorage&lt;double&gt;&gt;( m, n );
+<span class="lineNum">      79 </span>            :  *     const auto matrix  = zero&lt;CSRSparseMatrix&lt;double&gt;&gt;( m, n );
+<span class="lineNum">      80 </span>            :  *  \endcode
+<span class="lineNum">      81 </span>            :  *
+<span class="lineNum">      82 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">      83 </span>            :  *  Please keep in mind the function requires the result type as template argument.
+<a name="84"><span class="lineNum">      84 </span>            :  */</a>
+<span class="lineNum">      85 </span>            : template&lt;typename ObjectType&gt;
+<span class="lineNum">      86 </span><span class="lineCov">        329 : ObjectType zero( const IndexType numRows, const IndexType numColumns, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">      87 </span>            : {
+<span class="lineNum">      88 </span><span class="lineCov">        658 :     ObjectType obj( ctx );</span>
+<span class="lineNum">      89 </span><span class="lineCov">        329 :     obj.allocate( numRows, numColumns );</span>
+<span class="lineNum">      90 </span><span class="lineCov">        329 :     return obj;</span>
+<span class="lineNum">      91 </span>            : }
+<span class="lineNum">      92 </span>            : 
+<span class="lineNum">      93 </span>            : /** 
+<span class="lineNum">      94 </span>            :  *  @brief Function that returns a zero matrix with a given distribution
+<span class="lineNum">      95 </span>            :  * 
+<span class="lineNum">      96 </span>            :  *  @tparam    ObjectType can be any derived Matrix class.
+<span class="lineNum">      97 </span>            :  *  @param[in] rowDist    distribution of rows
+<span class="lineNum">      98 </span>            :  *  @param[in] colDist    distribution of columns
+<span class="lineNum">      99 </span>            :  *  @param[in] ctx        context where operations on matrix will be execued
+<span class="lineNum">     100 </span>            :  *  @returns              a zero matrix of given size
+<span class="lineNum">     101 </span>            :  *
+<span class="lineNum">     102 </span>            :  *  \code
+<span class="lineNum">     103 </span>            :  *     const auto rowDist = std::make_shared&lt;BlockDistribution&gt;( m, comm );
+<span class="lineNum">     104 </span>            :  *     const auto colDist = std::make_shared&lt;BlockDistribution&gt;( n, comm );
+<span class="lineNum">     105 </span>            :  *     const auto storage = zero&lt;CSRStorage&lt;double&gt;&gt;( rowDist, colDist );
+<span class="lineNum">     106 </span>            :  *     const auto matrix  = zero&lt;CSRSparseMatrix&lt;double&gt;&gt;( rowDist, colDist );
+<span class="lineNum">     107 </span>            :  *  \endcode
+<span class="lineNum">     108 </span>            :  *
+<span class="lineNum">     109 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">     110 </span>            :  *  Please keep in mind the function requires the result type as template argument.
+<a name="111"><span class="lineNum">     111 </span>            :  */</a>
+<span class="lineNum">     112 </span>            : template&lt;typename ObjectType&gt;
+<span class="lineNum">     113 </span><span class="lineCov">       2964 : ObjectType zero( </span>
+<span class="lineNum">     114 </span>            :     dmemo::DistributionPtr rowDist,
+<span class="lineNum">     115 </span>            :     dmemo::DistributionPtr colDist,
+<span class="lineNum">     116 </span>            :     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr()  )
+<span class="lineNum">     117 </span>            : {
+<span class="lineNum">     118 </span><span class="lineCov">       5928 :     ObjectType obj( ctx );</span>
+<span class="lineNum">     119 </span><span class="lineCov">       8892 :     obj.allocate( rowDist, colDist );</span>
+<span class="lineNum">     120 </span><span class="lineCov">       2964 :     return obj;</span>
+<span class="lineNum">     121 </span>            : }
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            : /** 
+<span class="lineNum">     124 </span>            :  *  @brief Function that returns a identy matrix or storage for a given size 
+<span class="lineNum">     125 </span>            :  * 
+<span class="lineNum">     126 </span>            :  *  @tparam    ObjectType can be any derived MatrixStorage or Matrix class.
+<span class="lineNum">     127 </span>            :  *  @param[in] size       number of rows and columns
+<span class="lineNum">     128 </span>            :  *  @param[in] ctx        context where operations on matrix will be execued
+<span class="lineNum">     129 </span>            :  *  @returns              a zero matrix of given size
+<span class="lineNum">     130 </span>            :  *
+<span class="lineNum">     131 </span>            :  *  \code
+<span class="lineNum">     132 </span>            :  *     const auto storage = identity&lt;CSRStorage&lt;double&gt;&gt;( n );
+<span class="lineNum">     133 </span>            :  *     const auto matrix  = identity&lt;CSRSparseMatrix&lt;double&gt;&gt;( n );
+<span class="lineNum">     134 </span>            :  *  \endcode
+<span class="lineNum">     135 </span>            :  *
+<span class="lineNum">     136 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">     137 </span>            :  *  Please keep in mind the function requires the result type as template argument.
+<span class="lineNum">     138 </span>            :  */
+<span class="lineNum">     139 </span>            : template&lt;typename ObjectType&gt;
+<span class="lineNum">     140 </span><span class="lineCov">         20 : ObjectType identity( const IndexType size, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">     141 </span>            : {
+<span class="lineNum">     142 </span><span class="lineCov">         40 :     ObjectType obj( ctx );</span>
+<span class="lineNum">     143 </span><span class="lineCov">         20 :     obj.setIdentity( size );</span>
+<span class="lineNum">     144 </span><span class="lineCov">         20 :     return obj;</span>
+<span class="lineNum">     145 </span>            : }
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span>            : /** 
+<span class="lineNum">     148 </span>            :  *  @brief Function that returns a identy matrix for a given distributon
+<span class="lineNum">     149 </span>            :  * 
+<span class="lineNum">     150 </span>            :  *  @tparam    ObjectType can be any derived MatrixStorage or Matrix class.
+<span class="lineNum">     151 </span>            :  *  @param[in] dist       row and column distribution (must be the same)
+<span class="lineNum">     152 </span>            :  *  @param[in] ctx        context where operations on matrix will be execued
+<span class="lineNum">     153 </span>            :  *  @returns              a zero matrix of given size
+<span class="lineNum">     154 </span>            :  *
+<span class="lineNum">     155 </span>            :  *  \code
+<span class="lineNum">     156 </span>            :  *     const auto dist   = std::make_shared&lt;BlockDistribution&gt;( n, comm );
+<span class="lineNum">     157 </span>            :  *     const auto matrix = identity&lt;CSRSparseMatrix&lt;double&gt;&gt;( dist );
+<span class="lineNum">     158 </span>            :  *  \endcode
+<span class="lineNum">     159 </span>            :  *
+<span class="lineNum">     160 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">     161 </span>            :  *  Please keep in mind the function requires the result type as template argument.
+<a name="162"><span class="lineNum">     162 </span>            :  */</a>
+<span class="lineNum">     163 </span>            : template&lt;typename ObjectType&gt;
+<span class="lineNum">     164 </span><span class="lineCov">        360 : ObjectType identity( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">     165 </span>            : {
+<span class="lineNum">     166 </span><span class="lineCov">        720 :     ObjectType obj( ctx );</span>
+<span class="lineNum">     167 </span><span class="lineCov">       1080 :     obj.setIdentity( dist );</span>
+<span class="lineNum">     168 </span><span class="lineCov">        360 :     return obj;</span>
+<span class="lineNum">     169 </span>            : }
+<span class="lineNum">     170 </span>            : 
+<span class="lineNum">     171 </span>            : /** 
+<span class="lineNum">     172 </span>            :  *  @brief Function that returns an object (storage, matrix, array) read in from a file.
+<span class="lineNum">     173 </span>            :  * 
+<span class="lineNum">     174 </span>            :  *  @tparam    ObjectType can be any derived MatrixStorage or Matrix class.
+<span class="lineNum">     175 </span>            :  *  @param[in] fileName   specifies the name of the file from which the object is read.
+<span class="lineNum">     176 </span>            :  *  @param[in] ctx        context where operations on matrix will be execued
+<span class="lineNum">     177 </span>            :  *  @returns              a zero matrix of given size
+<span class="lineNum">     178 </span>            :  *
+<span class="lineNum">     179 </span>            :  *  \code
+<span class="lineNum">     180 </span>            :  *     const auto matrix = read&lt;CSRSparseMatrix&lt;double&gt;&gt;( &quot;Emilia_923.mtx&quot; );
+<span class="lineNum">     181 </span>            :  *  \endcode
+<span class="lineNum">     182 </span>            :  *
+<span class="lineNum">     183 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">     184 </span>            :  *  Please keep in mind the function requires the result type as template argument.
+<a name="185"><span class="lineNum">     185 </span>            :  */</a>
+<span class="lineNum">     186 </span>            : template&lt;typename ObjectType&gt;
+<span class="lineNum">     187 </span><span class="lineCov">         50 : ObjectType read( const std::string&amp; fileName, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">     188 </span>            : {
+<span class="lineNum">     189 </span><span class="lineCov">        100 :     ObjectType obj( ctx );</span>
+<span class="lineNum">     190 </span><span class="lineCov">        100 :     obj.readFromFile( fileName );</span>
+<span class="lineNum">     191 </span><span class="lineCov">         50 :     return obj;</span>
+<span class="lineNum">     192 </span>            : }
+<span class="lineNum">     193 </span>            : 
+<span class="lineNum">     194 </span>            : /** 
+<span class="lineNum">     195 </span>            :  *  @brief Function that returns a vector of a given size initialized with the same value.
+<span class="lineNum">     196 </span>            :  * 
+<span class="lineNum">     197 </span>            :  *  @tparam    ObjectType can be any derived vector class.
+<span class="lineNum">     198 </span>            :  *  @param[in] n          specifies the size of the vector                             
+<span class="lineNum">     199 </span>            :  *  @param[in] value      is the vector assigned to all elements of the vector
+<span class="lineNum">     200 </span>            :  *  @param[in] ctx        Context that is used for the filling and the generated vector
+<span class="lineNum">     201 </span>            :  *  @returns              a new object of type ObjectType
+<span class="lineNum">     202 </span>            :  *
+<span class="lineNum">     203 </span>            :  *  \code
+<span class="lineNum">     204 </span>            :  *     const auto v1 = fill&lt;SparseVector&lt;double&gt;&gt;( n, 10 );
+<span class="lineNum">     205 </span>            :  *     const auto v2 = fill&lt;DenseVector&lt;double&gt;&gt;( n, 10 );
+<span class="lineNum">     206 </span>            :  *  \endcode
+<span class="lineNum">     207 </span>            :  *
+<span class="lineNum">     208 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">     209 </span>            :  *  Please keep in mind the function requires the result type as template argument.
+<a name="210"><span class="lineNum">     210 </span>            :  */</a>
+<span class="lineNum">     211 </span>            : template&lt;typename ObjectType&gt;
+<span class="lineNum">     212 </span><span class="lineCov">        210 : ObjectType fill( const IndexType n, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">     213 </span>            : {
+<span class="lineNum">     214 </span><span class="lineCov">        420 :     ObjectType obj( ctx );</span>
+<span class="lineNum">     215 </span><span class="lineCov">        270 :     obj.setSameValue( n, value );</span>
+<span class="lineNum">     216 </span><span class="lineCov">        210 :     return obj;</span>
+<span class="lineNum">     217 </span>            : }
+<span class="lineNum">     218 </span>            : 
+<span class="lineNum">     219 </span>            : /** 
+<span class="lineNum">     220 </span>            :  *  @brief Function that returns a vector for a given distribution initialized with the same value.
+<span class="lineNum">     221 </span>            :  * 
+<span class="lineNum">     222 </span>            :  *  @tparam    ObjectType can be any derived vector class.
+<span class="lineNum">     223 </span>            :  *  @param[in] dist       specifies the distribution of the new vector                             
+<span class="lineNum">     224 </span>            :  *  @param[in] value      is the vector assigned to all elements of the vector
+<span class="lineNum">     225 </span>            :  *  @param[in] ctx        Context that is used for the filling and the generated vector
+<span class="lineNum">     226 </span>            :  *  @returns              a new object of type ObjectType
+<span class="lineNum">     227 </span>            :  *
+<span class="lineNum">     228 </span>            :  *  \code
+<span class="lineNum">     229 </span>            :  *     const auto dist = std::make_shared&lt;BlockDistribution&gt;( n );
+<span class="lineNum">     230 </span>            :  *     const auto v1 = fill&lt;SparseVector&lt;double&gt;&gt;( dist, 10 );
+<span class="lineNum">     231 </span>            :  *     const auto v2 = fill&lt;DenseVector&lt;double&gt;&gt;( dist, 10 );
+<span class="lineNum">     232 </span>            :  *  \endcode
+<span class="lineNum">     233 </span>            :  *
+<span class="lineNum">     234 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">     235 </span>            :  *  Please keep in mind the function requires the result type as template argument.
+<a name="236"><span class="lineNum">     236 </span>            :  */</a>
+<span class="lineNum">     237 </span>            : template&lt;typename ObjectType&gt;
+<span class="lineNum">     238 </span><span class="lineCov">       5975 : ObjectType fill( const dmemo::DistributionPtr dist, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">     239 </span>            : {
+<span class="lineNum">     240 </span><span class="lineCov">      11950 :     ObjectType obj( ctx );</span>
+<span class="lineNum">     241 </span><span class="lineCov">      11950 :     obj.setSameValue( dist, value );</span>
+<span class="lineNum">     242 </span><span class="lineCov">       5975 :     return obj;</span>
+<span class="lineNum">     243 </span>            : }
+<a name="244"><span class="lineNum">     244 </span>            : </a>
+<span class="lineNum">     245 </span>            : template&lt;typename TargetType, typename SourceType&gt;
+<span class="lineNum">     246 </span><span class="lineCov">      51717 : TargetType convert( const SourceType&amp; input, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">     247 </span>            : {
+<span class="lineNum">     248 </span><span class="lineCov">     103434 :     TargetType obj( ctx );</span>
+<span class="lineNum">     249 </span><span class="lineCov">      51717 :     obj.assign( input );</span>
+<span class="lineNum">     250 </span><span class="lineCov">      51717 :     return obj;</span>
+<span class="lineNum">     251 </span>            : }
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span>            : template&lt;typename TargetType, typename ValueType&gt;
+<span class="lineNum">     254 </span>            : TargetType convertRawCSR(
+<span class="lineNum">     255 </span>            :     const IndexType numRows,
+<span class="lineNum">     256 </span>            :     const IndexType numColumns,
+<span class="lineNum">     257 </span>            :     const IndexType numValues,
+<span class="lineNum">     258 </span>            :     const IndexType* const ia,
+<span class="lineNum">     259 </span>            :     const IndexType* const ja,
+<span class="lineNum">     260 </span>            :     const ValueType* const values,
+<span class="lineNum">     261 </span>            :     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+<span class="lineNum">     262 </span>            : {
+<span class="lineNum">     263 </span>            :     // wrap the pointer data into LAMA arrays ( without copies )
+<span class="lineNum">     264 </span>            :     hmemo::HArrayRef&lt;IndexType&gt; csrIA( numRows + 1, ia );
+<span class="lineNum">     265 </span>            :     hmemo::HArrayRef&lt;IndexType&gt; csrJA( numValues, ja );
+<span class="lineNum">     266 </span>            :     hmemo::HArrayRef&lt;ValueType&gt; csrValues( numValues, values );
+<span class="lineNum">     267 </span>            :     // now set the data on the context of this storage via virtual method
+<span class="lineNum">     268 </span>            :     TargetType obj( ctx );
+<span class="lineNum">     269 </span>            :     obj.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
+<span class="lineNum">     270 </span>            :     return obj;
+<span class="lineNum">     271 </span>            : }
+<span class="lineNum">     272 </span>            : 
+<span class="lineNum">     273 </span>            : /** 
+<span class="lineNum">     274 </span>            :  *  @brief Function that returns a copy of a (sparse, dense) vector with a new distribution
+<span class="lineNum">     275 </span>            :  * 
+<span class="lineNum">     276 </span>            :  *  @tparam    ObjectType can be any derived vector class.
+<span class="lineNum">     277 </span>            :  *  @param[in] input      is the vector that is copied
+<span class="lineNum">     278 </span>            :  *  @param[in] dist       is the distribution of the new vector
+<span class="lineNum">     279 </span>            :  *  @param[in] ctx        is the context of the new vector
+<span class="lineNum">     280 </span>            :  *  @returns              a new object of type ObjectType
+<span class="lineNum">     281 </span>            :  *
+<span class="lineNum">     282 </span>            :  *  \code
+<span class="lineNum">     283 </span>            :  *     auto repV  = read&lt;DenseVector&lt;double&gt;&gt;( &quot;vector.txt&quot; );
+<span class="lineNum">     284 </span>            :  *     auto distV = distribute( repV, std::make_shared&lt;BlockDistribution&gt;( repV.size() ), repV.getContextPtr() );
+<span class="lineNum">     285 </span>            :  *  \endcode
+<span class="lineNum">     286 </span>            :  *
+<span class="lineNum">     287 </span>            :  *  This template function can be considered as a syntactical help for code abbreviation.
+<span class="lineNum">     288 </span>            :  *  In contrary to the other routines the template argument and return type can be deduced from the input vector.
+<a name="289"><span class="lineNum">     289 </span>            :  */</a>
+<span class="lineNum">     290 </span>            : template&lt;typename DistObjType, typename GlobalObjType&gt;
+<span class="lineNum">     291 </span><span class="lineCov">      28229 : DistObjType distribute( const GlobalObjType&amp; input, dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )</span>
+<span class="lineNum">     292 </span>            : {
+<span class="lineNum">     293 </span><span class="lineCov">      56458 :     DistObjType obj( ctx );</span>
+<span class="lineNum">     294 </span><span class="lineCov">      56458 :     obj.assignDistribute( input, dist );</span>
+<span class="lineNum">     295 </span><span class="lineCov">      28229 :     return obj;</span>
+<span class="lineNum">     296 </span>            : }
+<span class="lineNum">     297 </span>            : 
+<span class="lineNum">     298 </span>            : /** 
+<span class="lineNum">     299 </span>            :  *  @brief Function that (re-)distributes a global matrix/storage 
+<span class="lineNum">     300 </span>            :  * 
+<span class="lineNum">     301 </span>            :  *  @tparam    DistObjType   type of the distributed object, should be a matrix class
+<span class="lineNum">     302 </span>            :  *  @tparam    GlobalObjType type of the input storage/matrix that will be distributed
+<span class="lineNum">     303 </span>            :  *  @param[in] input         is the matrix/storage that will be distributed
+<span class="lineNum">     304 </span>            :  *  @param[in] rowDist       is the row distribution of the new matrix
+<span class="lineNum">     305 </span>            :  *  @param[in] colDist       is the column distribution of the new matrix
+<span class="lineNum">     306 </span>            :  *  @param[in] ctx           is the context of the new matrix
+<span class="lineNum">     307 </span>            :  *  @returns                 a copy of the orginal matrix that is now distributed as specified
+<span class="lineNum">     308 </span>            :  *
+<span class="lineNum">     309 </span>            :  *  The following relations must hold:
+<span class="lineNum">     310 </span>            :  *
+<span class="lineNum">     311 </span>            :  *   - input.getNumRows() == rowDist-&gt;getGlboalSize()
+<span class="lineNum">     312 </span>            :  *   - input.getNumColumns() == colDist-&gt;getGlboalSize()
+<span class="lineNum">     313 </span>            :  *
+<span class="lineNum">     314 </span>            :  *  \code
+<span class="lineNum">     315 </span>            :  *      auto globalStorage = read&lt;CSRStorage&lt;double&gt;&gt;( &quot;input.mtx&quot; );
+<span class="lineNum">     316 </span>            :  *      auto rowDist = std::make_shared&lt;BlockDistribution&gt;( globalStorage.getNumRows() );
+<span class="lineNum">     317 </span>            :  *      auto colDist = std::make_shared&lt;BlockDistribution&gt;( globalStorage.getNumColumns() );
+<span class="lineNum">     318 </span>            :  *      auto matrix  = distribute&lt;CSRSparseMatrix&lt;double&gt;&gt;( globalStorage, rowDist, colDist );
+<span class="lineNum">     319 </span>            :  *      auto rowDist1 = std::make_shared&lt;CyclicDistribution&gt;( globalStorage.getNumRows() );
+<span class="lineNum">     320 </span>            :  *      auto colDist1 = std::make_shared&lt;CyclicDistribution&gt;( globalStorage.getNumColumns() );
+<span class="lineNum">     321 </span>            :  *      auto matrix1  = distribute&lt;CSRSparseMatrix&lt;double&gt;&gt;( matrix, rowDist1, colDist1 );
+<span class="lineNum">     322 </span>            :  *  \endcode
+<span class="lineNum">     323 </span>            :  *
+<span class="lineNum">     324 </span>            :  *  Please keep in mind that for a matrix the row distribution specifies the distribution
+<span class="lineNum">     325 </span>            :  *  of the target vector and the column distribution the distribution of the source vector.
+<a name="326"><span class="lineNum">     326 </span>            :  */</a>
+<span class="lineNum">     327 </span>            : template&lt;typename DistObjType, typename GlobalObjType&gt;
+<span class="lineNum">     328 </span><span class="lineCov">      15502 : DistObjType distribute( </span>
+<span class="lineNum">     329 </span>            :     const GlobalObjType&amp; input, 
+<span class="lineNum">     330 </span>            :     dmemo::DistributionPtr rowDist, 
+<span class="lineNum">     331 </span>            :     dmemo::DistributionPtr colDist, 
+<span class="lineNum">     332 </span>            :     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+<span class="lineNum">     333 </span>            : {
+<span class="lineNum">     334 </span><span class="lineCov">      31004 :     DistObjType obj( ctx );</span>
+<span class="lineNum">     335 </span><span class="lineCov">      46506 :     obj.assignDistribute( input, rowDist, colDist );</span>
+<span class="lineNum">     336 </span><span class="lineCov">      15502 :     return obj;</span>
+<span class="lineNum">     337 </span>            : }
+<a name="338"><span class="lineNum">     338 </span>            : </a>
+<span class="lineNum">     339 </span>            : template&lt;typename MatrixType, typename ArrayType&gt;
+<span class="lineNum">     340 </span><span class="lineCov">        282 : MatrixType diagonal(</span>
+<span class="lineNum">     341 </span>            :     const ArrayType&amp; diag,
+<span class="lineNum">     342 </span>            :     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+<span class="lineNum">     343 </span>            : {
+<span class="lineNum">     344 </span><span class="lineCov">        564 :     MatrixType obj( ctx );</span>
+<span class="lineNum">     345 </span><span class="lineCov">        282 :     obj.assignDiagonal( diag );</span>
+<span class="lineNum">     346 </span><span class="lineCov">        282 :     return obj;</span>
+<span class="lineNum">     347 </span>            : }
+<span class="lineNum">     348 </span>            : 
+<span class="lineNum">     349 </span>            : } /* end namespace lama */
+<span class="lineNum">     350 </span>            : 
+<span class="lineNum">     351 </span>            : } /* end namespace scai */
+<span class="lineNum">     352 </span>            : 
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,754 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - dmemo/Distribution.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">dmemo</a> - Distribution.cpp<span style="font-size: 80%;"> (source / <a href="Distribution.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">204</td>
+            <td class="headerCovTableEntry">216</td>
+            <td class="headerCovTableEntryHi">94.4 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-04 18:51:09</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">25</td>
+            <td class="headerCovTableEntry">84</td>
+            <td class="headerCovTableEntryLo">29.8 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file Distribution.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of methods for base class Distribution.
+<span class="lineNum">      31 </span>            :  * @author Jiri Kraus
+<span class="lineNum">      32 </span>            :  * @date 22.02.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // hpp
+<span class="lineNum">      36 </span>            : #include &lt;scai/dmemo/Distribution.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : // local library
+<span class="lineNum">      39 </span>            : #include &lt;scai/dmemo/Distributed.hpp&gt;
+<span class="lineNum">      40 </span>            : 
+<span class="lineNum">      41 </span>            : // internal scai libraries
+<span class="lineNum">      42 </span>            : #include &lt;scai/hmemo.hpp&gt;
+<span class="lineNum">      43 </span>            : #include &lt;scai/utilskernel.hpp&gt;
+<span class="lineNum">      44 </span>            : 
+<span class="lineNum">      45 </span>            : #include &lt;scai/tracing.hpp&gt;
+<span class="lineNum">      46 </span>            : 
+<span class="lineNum">      47 </span>            : #include &lt;scai/common/macros/assert.hpp&gt;
+<span class="lineNum">      48 </span>            : #include &lt;scai/common/TypeTraits.hpp&gt;
+<span class="lineNum">      49 </span>            : #include &lt;scai/common/macros/loop.hpp&gt;
+<span class="lineNum">      50 </span>            : #include &lt;scai/common/SCAITypes.hpp&gt;
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : namespace scai
+<span class="lineNum">      53 </span>            : {
+<span class="lineNum">      54 </span>            : 
+<span class="lineNum">      55 </span>            : using namespace hmemo;
+<span class="lineNum">      56 </span>            : using common::TypeTraits;
+<span class="lineNum">      57 </span>            : 
+<span class="lineNum">      58 </span>            : namespace dmemo
+<span class="lineNum">      59 </span>            : {
+<span class="lineNum">      60 </span>            : 
+<span class="lineNum">      61 </span>            : /* ------  Static class variables --------------------------------------- */
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span><span class="lineCov">         22 : SCAI_LOG_DEF_LOGGER( Distribution::logger, &quot;Distribution&quot; )</span>
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span>            : /* ------  Constructor  ------------------------------------------------- */
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span><span class="lineCov">        319 : Distribution::Distribution( const IndexType globalSize )</span>
+<span class="lineNum">      68 </span><span class="lineCov">        319 :     : mGlobalSize( globalSize ), mCommunicator( Communicator::getCommunicatorPtr( Communicator::NO ) )</span>
+<span class="lineNum">      69 </span>            : {
+<span class="lineNum">      70 </span><span class="lineCov">       1276 :     SCAI_LOG_INFO( logger, &quot;Distribution(&quot; &lt;&lt; mGlobalSize &lt;&lt; &quot;) onto NoCommunicator&quot; )</span>
+<span class="lineNum">      71 </span><span class="lineCov">        319 : }</span>
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span>            : /* ------  Constructor  ------------------------------------------------- */
+<span class="lineNum">      74 </span>            : 
+<span class="lineNum">      75 </span><span class="lineCov">       3442 : Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr communicator )</span>
+<span class="lineNum">      76 </span><span class="lineCov">       3475 :     : mGlobalSize( globalSize ), mCommunicator( communicator )</span>
+<span class="lineNum">      77 </span>            : {
+<span class="lineNum">      78 </span><span class="lineCov">       6851 :     if ( !mCommunicator )</span>
+<span class="lineNum">      79 </span>            :     {
+<span class="lineNum">      80 </span><span class="lineCov">         99 :         COMMON_THROWEXCEPTION( &quot;Distribution without a Communicator is not allowed&quot; )</span>
+<span class="lineNum">      81 </span>            :     }
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span><span class="lineCov">      17045 :     SCAI_LOG_INFO( logger, &quot;Distribution( size = &quot; &lt;&lt; globalSize &lt;&lt; &quot;, comm = &quot; &lt;&lt; *mCommunicator &lt;&lt; &quot; )&quot; )</span>
+<span class="lineNum">      84 </span><span class="lineCov">       3409 : }</span>
+<span class="lineNum">      85 </span>            : 
+<a name="86"><span class="lineNum">      86 </span>            : /* -------  Destructor  ------------------------------------------------- */</a>
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span><span class="lineCov">       7456 : Distribution::~Distribution()</span>
+<span class="lineNum">      89 </span>            : {
+<span class="lineNum">      90 </span>            :     SCAI_LOG_DEBUG( logger, &quot;~Distribution, global size &quot; &lt;&lt; mGlobalSize &lt;&lt; &quot;, communicator = &quot; &lt;&lt; mCommunicator )
+<span class="lineNum">      91 </span><span class="lineCov">       3728 : }</span>
+<span class="lineNum">      92 </span>            : 
+<a name="93"><span class="lineNum">      93 </span>            : /* ---------------------------------------------------------------------- */</a>
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span><span class="lineCov">        953 : bool Distribution::proveEquality( bool&amp; isSame, const Distribution&amp; other ) const</span>
+<span class="lineNum">      96 </span>            : {
+<span class="lineNum">      97 </span>            :     // In many cases equality or inequality is given rather straightforward
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span>            :     bool proved = true;
+<span class="lineNum">     100 </span>            : 
+<span class="lineNum">     101 </span><span class="lineCov">        603 :     if ( this == &amp;other )</span>
+<span class="lineNum">     102 </span>            :     {
+<span class="lineNum">     103 </span><span class="lineCov">        253 :         isSame = true;</span>
+<span class="lineNum">     104 </span>            :         SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot; == &quot; &lt;&lt; other &lt;&lt; &quot;: pointer equal&quot; )
+<span class="lineNum">     105 </span>            :     }
+<span class="lineNum">     106 </span><span class="lineCov">        350 :     else if ( getGlobalSize() != other.getGlobalSize() )</span>
+<span class="lineNum">     107 </span>            :     {
+<span class="lineNum">     108 </span><span class="lineCov">        154 :         isSame = false;</span>
+<span class="lineNum">     109 </span>            :         SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot; != &quot; &lt;&lt; other &lt;&lt; &quot;: different global size&quot; )
+<span class="lineNum">     110 </span>            :     }
+<span class="lineNum">     111 </span><span class="lineCov">        248 :     else if ( isReplicated() &amp;&amp; other.isReplicated() )</span>
+<span class="lineNum">     112 </span>            :     {
+<span class="lineNum">     113 </span>            :         // on a single processor all distributions are the same
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span><span class="lineCov">         52 :         isSame = true;</span>
+<span class="lineNum">     116 </span>            :         SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot; == &quot; &lt;&lt; other &lt;&lt; &quot;: both are replicated, same size&quot; )
+<span class="lineNum">     117 </span>            :     }
+<span class="lineNum">     118 </span><span class="lineCov">        144 :     else if ( other.getCommunicator() != getCommunicator() )</span>
+<span class="lineNum">     119 </span>            :     {
+<span class="lineNum">     120 </span><span class="lineNoCov">          0 :         isSame = false;</span>
+<span class="lineNum">     121 </span>            :         SCAI_LOG_DEBUG( logger, *this &lt;&lt; &quot; != &quot; &lt;&lt; other &lt;&lt; &quot;: different communicators&quot; )
+<span class="lineNum">     122 </span>            :     }
+<span class="lineNum">     123 </span>            :     else
+<span class="lineNum">     124 </span>            :     {
+<span class="lineNum">     125 </span>            :         // more detailed checks are required, here nothing has been proved
+<span class="lineNum">     126 </span>            :         proved = false;
+<span class="lineNum">     127 </span>            :     }
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span><span class="lineCov">        603 :     return proved;</span>
+<span class="lineNum">     130 </span>            : }
+<span class="lineNum">     131 </span>            : 
+<a name="132"><span class="lineNum">     132 </span>            : /* ---------------------------------------------------------------------- */</a>
+<span class="lineNum">     133 </span>            : 
+<span class="lineNum">     134 </span><span class="lineCov">        407 : bool Distribution::operator==( const Distribution&amp; other ) const</span>
+<span class="lineNum">     135 </span>            : {
+<span class="lineNum">     136 </span>            :     // call the virtual method of derived class
+<span class="lineNum">     137 </span>            : 
+<span class="lineNum">     138 </span><span class="lineCov">        407 :     return isEqual( other );</span>
+<span class="lineNum">     139 </span>            : }
+<span class="lineNum">     140 </span>            : 
+<a name="141"><span class="lineNum">     141 </span>            : /* ---------------------------------------------------------------------- */</a>
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span><span class="lineCov">         99 : bool Distribution::operator!=( const Distribution&amp; other ) const</span>
+<span class="lineNum">     144 </span>            : {
+<span class="lineNum">     145 </span><span class="lineCov">         99 :     return !( *this == other );</span>
+<span class="lineNum">     146 </span>            : }
+<span class="lineNum">     147 </span>            : 
+<span class="lineNum">     148 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     149 </span>            : 
+<span class="lineNum">     150 </span><span class="lineCov">       3190 : const Communicator&amp; Distribution::getCommunicator() const</span>
+<span class="lineNum">     151 </span>            : {
+<span class="lineNum">     152 </span>            :     SCAI_ASSERT_DEBUG( mCommunicator, &quot;Distribution has NULL communicator&quot; )
+<span class="lineNum">     153 </span>            : 
+<span class="lineNum">     154 </span><span class="lineCov">       3190 :     return *mCommunicator;</span>
+<span class="lineNum">     155 </span>            : }
+<span class="lineNum">     156 </span>            : 
+<span class="lineNum">     157 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     158 </span>            : 
+<span class="lineNum">     159 </span><span class="lineCov">        191 : CommunicatorPtr Distribution::getCommunicatorPtr() const</span>
+<span class="lineNum">     160 </span>            : {
+<span class="lineNum">     161 </span><span class="lineCov">        191 :     return mCommunicator;</span>
+<span class="lineNum">     162 </span>            : }
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     165 </span>            : 
+<span class="lineNum">     166 </span><span class="lineCov">        420 : PartitionId Distribution::getNumPartitions() const</span>
+<span class="lineNum">     167 </span>            : {
+<span class="lineNum">     168 </span>            :     SCAI_ASSERT_DEBUG( mCommunicator, &quot;Distribution has NULL communicator&quot; )
+<span class="lineNum">     169 </span>            : 
+<span class="lineNum">     170 </span><span class="lineCov">        420 :     return mCommunicator-&gt;getSize();</span>
+<span class="lineNum">     171 </span>            : }
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span><span class="lineCov">         44 : IndexType Distribution::getMaxLocalSize() const</span>
+<span class="lineNum">     176 </span>            : {
+<span class="lineNum">     177 </span>            :     SCAI_ASSERT_DEBUG( mCommunicator, &quot;Distribution has NULL communicator&quot; )
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span><span class="lineCov">         88 :     return mCommunicator-&gt;max( getLocalSize() );</span>
+<span class="lineNum">     180 </span>            : }
+<span class="lineNum">     181 </span>            : 
+<a name="182"><span class="lineNum">     182 </span>            : /* ---------------------------------------------------------------------- */</a>
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span><span class="lineCov">         99 : void Distribution::writeAt( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     185 </span>            : {
+<span class="lineNum">     186 </span>            :     // write identification of this object
+<span class="lineNum">     187 </span><span class="lineCov">         99 :     stream &lt;&lt; &quot;Distribution&quot;;</span>
+<span class="lineNum">     188 </span><span class="lineCov">         99 : }</span>
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span><span class="lineCov">        191 : void Distribution::computeOwners( HArray&lt;PartitionId&gt;&amp; owners, const HArray&lt;IndexType&gt;&amp; indexes ) const</span>
+<span class="lineNum">     193 </span>            : {
+<span class="lineNum">     194 </span>            :     // Note: this default implementation requires communication
+<span class="lineNum">     195 </span>            : 
+<span class="lineNum">     196 </span>            :     ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineCov">        191 :     const IndexType n = indexes.size();</span>
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span><span class="lineCov">        764 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: computeOwners for &quot; &lt;&lt; n &lt;&lt; &quot; indexes&quot; )</span>
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span><span class="lineCov">        382 :     ReadAccess&lt;IndexType&gt; rIndexes( indexes, ctx );</span>
+<span class="lineNum">     203 </span><span class="lineCov">        573 :     WriteOnlyAccess&lt;PartitionId&gt; wOwners( owners, ctx, n );</span>
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span><span class="lineCov">        191 :     mCommunicator-&gt;computeOwners( wOwners, *this, rIndexes, n );</span>
+<span class="lineNum">     206 </span><span class="lineCov">        191 : }</span>
+<span class="lineNum">     207 </span>            : 
+<a name="208"><span class="lineNum">     208 </span>            : /* ---------------------------------------------------------------------- */</a>
+<span class="lineNum">     209 </span>            : 
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 : PartitionId  Distribution::findOwner( const IndexType globalIndex ) const</span>
+<span class="lineNum">     211 </span>            : {
+<span class="lineNum">     212 </span>            :     // sum reduction required for owner as other processors do not know it
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span>            :     IndexType owner = 0;
+<span class="lineNum">     215 </span>            : 
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :     IndexType localIndex = global2local( globalIndex );</span>
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :     if ( localIndex != invalidIndex )</span>
+<span class="lineNum">     219 </span>            :     {
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :         SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     221 </span>            :                        *this &lt;&lt; &quot;: owner of &quot; &lt;&lt; globalIndex &lt;&lt; &quot;, local index = &quot; &lt;&lt; localIndex )
+<span class="lineNum">     222 </span>            : 
+<span class="lineNum">     223 </span><span class="lineNoCov">          0 :         owner = mCommunicator-&gt;getRank() + 1;</span>
+<span class="lineNum">     224 </span>            :     }
+<span class="lineNum">     225 </span>            : 
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :     owner = mCommunicator-&gt;sum( owner ) - 1;</span>
+<span class="lineNum">     227 </span>            : 
+<span class="lineNum">     228 </span><span class="lineNoCov">          0 :     SCAI_LOG_INFO( logger, *mCommunicator &lt;&lt; &quot;: owner of &quot; &lt;&lt; globalIndex &lt;&lt; &quot; = &quot; &lt;&lt; owner )</span>
+<span class="lineNum">     229 </span>            : 
+<span class="lineNum">     230 </span><span class="lineNoCov">          0 :     return owner;</span>
+<span class="lineNum">     231 </span>            : }
+<span class="lineNum">     232 </span>            : 
+<span class="lineNum">     233 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     234 </span>            : 
+<span class="lineNum">     235 </span><span class="lineCov">        134 : void Distribution::allOwners( HArray&lt;PartitionId&gt;&amp; owners, PartitionId root ) const</span>
+<span class="lineNum">     236 </span>            : {
+<span class="lineNum">     237 </span><span class="lineCov">         88 :     HArray&lt;IndexType&gt; indexes;</span>
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span><span class="lineCov">         88 :     if ( getCommunicator().getRank()  == root )</span>
+<span class="lineNum">     240 </span>            :     {
+<span class="lineNum">     241 </span>            :         // we need the owners only on the host processor
+<span class="lineNum">     242 </span>            :         // indexes = 0, 1, 2, ..., globalSize - 1
+<span class="lineNum">     243 </span>            : 
+<span class="lineNum">     244 </span><span class="lineCov">         92 :         utilskernel::HArrayUtils::setOrder( indexes, getGlobalSize() );</span>
+<span class="lineNum">     245 </span>            :     }
+<span class="lineNum">     246 </span>            : 
+<span class="lineNum">     247 </span>            :     // Note: only master process asks for owners, other processes have 0 indexes
+<span class="lineNum">     248 </span>            : 
+<span class="lineNum">     249 </span><span class="lineCov">        352 :     SCAI_LOG_INFO( logger, *this &lt;&lt; &quot;: computeOwners for indexes = &quot; &lt;&lt; indexes )</span>
+<span class="lineNum">     250 </span>            : 
+<span class="lineNum">     251 </span><span class="lineCov">         88 :     computeOwners( owners, indexes );</span>
+<span class="lineNum">     252 </span><span class="lineCov">         88 : }</span>
+<span class="lineNum">     253 </span>            : 
+<a name="254"><span class="lineNum">     254 </span>            : /* ---------------------------------------------------------------------- */</a>
+<span class="lineNum">     255 </span>            : 
+<span class="lineNum">     256 </span><span class="lineCov">        143 : void Distribution::getOwnedIndexes( hmemo::HArray&lt;IndexType&gt;&amp; myGlobalIndexes ) const</span>
+<span class="lineNum">     257 </span>            : {
+<span class="lineNum">     258 </span><span class="lineCov">        143 :     const IndexType nLocal  = getLocalSize();</span>
+<span class="lineNum">     259 </span><span class="lineCov">        143 :     const IndexType nGlobal = mGlobalSize;</span>
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span><span class="lineCov">        572 :     SCAI_LOG_INFO( logger, getCommunicator() &lt;&lt; &quot;: getOwnedIndexes, have &quot; &lt;&lt; nLocal &lt;&lt; &quot; of &quot; &lt;&lt; nGlobal )</span>
+<span class="lineNum">     262 </span>            : 
+<span class="lineNum">     263 </span><span class="lineCov">        143 :     WriteOnlyAccess&lt;IndexType&gt; wGlobalIndexes( myGlobalIndexes, nLocal );</span>
+<span class="lineNum">     264 </span>            : 
+<span class="lineNum">     265 </span>            :     IndexType k = 0;
+<span class="lineNum">     266 </span>            : 
+<span class="lineNum">     267 </span>            :     // This routine works for all distributions, but might not be the most efficient one
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span><span class="lineCov">       3451 :     for ( IndexType i = 0; i &lt; nGlobal; ++i )</span>
+<span class="lineNum">     270 </span>            :     {
+<span class="lineNum">     271 </span><span class="lineCov">       3451 :         if ( isLocal( i ) )</span>
+<span class="lineNum">     272 </span>            :         {
+<span class="lineNum">     273 </span><span class="lineCov">       1615 :             wGlobalIndexes[k++] = i;</span>
+<span class="lineNum">     274 </span>            :         }
+<span class="lineNum">     275 </span>            :     }
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span><span class="lineCov">        143 :     SCAI_ASSERT_EQ_ERROR( k, nLocal, &quot;serious local mismatch&quot; );</span>
+<span class="lineNum">     278 </span><span class="lineCov">        143 : }</span>
+<span class="lineNum">     279 </span>            : 
+<a name="280"><span class="lineNum">     280 </span>            : /* ---------------------------------------------------------------------- */</a>
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span><span class="lineCov">         88 : void Distribution::global2localV( hmemo::HArray&lt;IndexType&gt;&amp; localIndexes, const hmemo::HArray&lt;IndexType&gt;&amp; globalIndexes ) const</span>
+<span class="lineNum">     283 </span>            : {
+<span class="lineNum">     284 </span><span class="lineCov">         88 :     SCAI_REGION( &quot;Distribution.global2localV&quot; )</span>
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span>            :     // fallback implementation calls global2local for each array element
+<span class="lineNum">     287 </span>            : 
+<span class="lineNum">     288 </span><span class="lineCov">         88 :     IndexType nnz = globalIndexes.size();</span>
+<span class="lineNum">     289 </span>            : 
+<span class="lineNum">     290 </span><span class="lineCov">         88 :     ReadAccess&lt;IndexType&gt; rGlobal( globalIndexes );</span>
+<a name="291"><span class="lineNum">     291 </span><span class="lineCov">        176 :     WriteOnlyAccess&lt;IndexType&gt; wLocal( localIndexes, nnz );</span></a>
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span><span class="lineCov">        176 :     #pragma omp parallel for</span>
+<span class="lineNum">     294 </span>            : 
+<span class="lineNum">     295 </span><span class="lineCov">         88 :     for ( IndexType i = 0; i &lt; nnz; ++i )</span>
+<span class="lineNum">     296 </span>            :     {
+<span class="lineNum">     297 </span><span class="lineCov">       1496 :         wLocal[i] = global2local( rGlobal[i] );</span>
+<span class="lineNum">     298 </span>            :     }
+<span class="lineNum">     299 </span><span class="lineCov">         88 : }</span>
+<span class="lineNum">     300 </span>            : 
+<span class="lineNum">     301 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     302 </span>            : 
+<span class="lineNum">     303 </span><span class="lineCov">       2970 : void Distribution::getAnyLocal2Global( HArray&lt;IndexType&gt;&amp; offsets, HArray&lt;IndexType&gt;&amp; local2global ) const</span>
+<span class="lineNum">     304 </span>            : {
+<span class="lineNum">     305 </span><span class="lineCov">        198 :     HArray&lt;PartitionId&gt; owners;</span>
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            :     IndexType n = getGlobalSize();
+<span class="lineNum">     308 </span>            : 
+<span class="lineNum">     309 </span>            :     {
+<span class="lineNum">     310 </span><span class="lineCov">        198 :         WriteOnlyAccess&lt;IndexType&gt; wOwners( owners, n );</span>
+<span class="lineNum">     311 </span>            : 
+<span class="lineNum">     312 </span><span class="lineCov">       4950 :         for ( IndexType i = 0; i &lt; getGlobalSize(); ++i )</span>
+<span class="lineNum">     313 </span>            :         {
+<span class="lineNum">     314 </span><span class="lineCov">       2376 :             wOwners[i] = getAnyOwner( i );</span>
+<span class="lineNum">     315 </span><span class="lineCov">        198 :         }</span>
+<span class="lineNum">     316 </span>            :     }
+<span class="lineNum">     317 </span>            : 
+<span class="lineNum">     318 </span><span class="lineCov">        396 :     utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, mCommunicator-&gt;getSize() );</span>
+<span class="lineNum">     319 </span><span class="lineCov">        198 : }</span>
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     322 </span>            : 
+<span class="lineNum">     323 </span><span class="lineCov">         99 : void Distribution::getAnyGlobal2Local( HArray&lt;IndexType&gt;&amp; offsets, HArray&lt;IndexType&gt;&amp; global2local ) const</span>
+<span class="lineNum">     324 </span>            : {
+<span class="lineNum">     325 </span><span class="lineCov">         99 :     HArray&lt;IndexType&gt; local2global;              // temporary array to keep the inverse permutation</span>
+<span class="lineNum">     326 </span><span class="lineCov">         99 :     getAnyLocal2Global( offsets, local2global );</span>
+<span class="lineNum">     327 </span><span class="lineCov">        198 :     utilskernel::HArrayUtils::inversePerm( global2local, local2global );</span>
+<span class="lineNum">     328 </span><span class="lineCov">         99 : }</span>
+<span class="lineNum">     329 </span>            : 
+<span class="lineNum">     330 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     331 </span>            : 
+<span class="lineNum">     332 </span>            : template&lt;typename T1, typename T2&gt;
+<span class="lineNum">     333 </span><span class="lineCov">        198 : void Distribution::replicate( T1* allValues, const T2* localValues ) const</span>
+<span class="lineNum">     334 </span>            : {
+<span class="lineNum">     335 </span><span class="lineCov">         99 :     SCAI_REGION( &quot;Distribution.replicate&quot; )</span>
+<span class="lineNum">     336 </span><span class="lineCov">        198 :     const Communicator&amp; comm = getCommunicator();</span>
+<span class="lineNum">     337 </span><span class="lineCov">         99 :     IndexType currentSize = getLocalSize();</span>
+<span class="lineNum">     338 </span>            :     // Implemenation via cyclic shifting of the vector data and distribution
+<span class="lineNum">     339 </span>            :     IndexType maxLocalSize = comm.max( currentSize );
+<span class="lineNum">     340 </span><span class="lineCov">        495 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     341 </span>            :                    comm &lt;&lt; &quot;: replicate localValues&lt;&quot; &lt;&lt; TypeTraits&lt;T2&gt;::id() &lt;&lt; &quot;&gt;[ &quot; &lt;&lt; currentSize
+<span class="lineNum">     342 </span>            :                    &lt;&lt; &quot;, max = &quot; &lt;&lt; maxLocalSize &lt;&lt; &quot; ] &quot; &lt;&lt; &quot; to allValues&lt;&quot; &lt;&lt; TypeTraits&lt;T1&gt;::id() &lt;&lt; &quot;&gt;[ &quot; &lt;&lt; getGlobalSize() &lt;&lt; &quot; ]&quot; )
+<span class="lineNum">     343 </span>            :     // Only allocate the needed size of the Arrays
+<span class="lineNum">     344 </span><span class="lineCov">         99 :     HArray&lt;T1&gt; valuesSend;</span>
+<span class="lineNum">     345 </span><span class="lineCov">         99 :     HArray&lt;T1&gt; valuesReceive;</span>
+<span class="lineNum">     346 </span><span class="lineCov">         99 :     HArray&lt;IndexType&gt; indexesSend;</span>
+<span class="lineNum">     347 </span><span class="lineCov">         99 :     HArray&lt;IndexType&gt; indexesReceive;</span>
+<span class="lineNum">     348 </span>            :     IndexType countValues = 0; // count values set in the global vector
+<span class="lineNum">     349 </span>            :     // set my owned indexes and my values
+<span class="lineNum">     350 </span><span class="lineCov">         99 :     ContextPtr commContext = comm.getCommunicationContext( valuesSend );</span>
+<span class="lineNum">     351 </span>            :     // capacity of send arrays should also be sufficient for receiving data
+<span class="lineNum">     352 </span><span class="lineCov">        198 :     indexesSend.reserve( commContext, maxLocalSize );</span>
+<span class="lineNum">     353 </span><span class="lineCov">        198 :     valuesSend.reserve( commContext, maxLocalSize );</span>
+<span class="lineNum">     354 </span><span class="lineCov">        396 :     SCAI_LOG_INFO( logger, &quot;replicate on this communication context: &quot; &lt;&lt; *commContext )</span>
+<span class="lineNum">     355 </span>            :     {
+<span class="lineNum">     356 </span><span class="lineCov">        198 :         WriteOnlyAccess&lt;IndexType&gt; wIndexesSend( indexesSend, commContext, currentSize );</span>
+<span class="lineNum">     357 </span><span class="lineCov">        297 :         WriteOnlyAccess&lt;T1&gt; wValuesSend( valuesSend, commContext, currentSize );</span>
+<span class="lineNum">     358 </span>            :         // current workaround as commContext works like HostContext
+<span class="lineNum">     359 </span><span class="lineCov">         99 :         IndexType* pIndexesSend = wIndexesSend.get();</span>
+<span class="lineNum">     360 </span><span class="lineCov">         99 :         T1* pValuesSend = wValuesSend.get();</span>
+<span class="lineNum">     361 </span>            : 
+<span class="lineNum">     362 </span><span class="lineCov">       1530 :         for ( IndexType i = 0; i &lt; currentSize; i++ )</span>
+<span class="lineNum">     363 </span>            :         {
+<span class="lineNum">     364 </span><span class="lineCov">       1530 :             IndexType globalIndex = local2global( i );</span>
+<span class="lineNum">     365 </span>            :             SCAI_ASSERT_DEBUG( globalIndex &lt; getGlobalSize(), *this &lt;&lt; &quot;: global index &quot; &lt;&lt; globalIndex &lt;&lt; &quot; illegal&quot; )
+<span class="lineNum">     366 </span><span class="lineCov">       1530 :             pIndexesSend[i] = globalIndex;</span>
+<span class="lineNum">     367 </span><span class="lineCov">       1530 :             pValuesSend[i] = static_cast&lt;T1&gt;( localValues[i] ); // type conversion here</span>
+<span class="lineNum">     368 </span><span class="lineCov">       1530 :             allValues[globalIndex] = static_cast&lt;T1&gt;( localValues[i] ); // type conversion here</span>
+<span class="lineNum">     369 </span><span class="lineCov">         99 :         }</span>
+<span class="lineNum">     370 </span>            :     }
+<span class="lineNum">     371 </span>            :     // capacity of receive arrays should be sufficient for receiving data to avoid reallocations
+<span class="lineNum">     372 </span><span class="lineCov">        198 :     indexesReceive.reserve( commContext, maxLocalSize );</span>
+<span class="lineNum">     373 </span><span class="lineCov">        198 :     valuesReceive.reserve( commContext, maxLocalSize );</span>
+<span class="lineNum">     374 </span>            :     countValues += currentSize;
+<span class="lineNum">     375 </span>            :     // now nproc - 1 steps for cyclic shifting
+<span class="lineNum">     376 </span>            :     PartitionId np = comm.getSize(); // number partitions
+<span class="lineNum">     377 </span>            : 
+<span class="lineNum">     378 </span><span class="lineCov">        259 :     for ( PartitionId ip = 0; ip &lt; np - 1; ++ip )</span>
+<span class="lineNum">     379 </span>            :     {
+<span class="lineNum">     380 </span><span class="lineCov">        160 :         comm.shiftArray( indexesReceive, indexesSend, 1 );</span>
+<span class="lineNum">     381 </span><span class="lineCov">        160 :         comm.shiftArray( valuesReceive, valuesSend, 1 );</span>
+<span class="lineNum">     382 </span>            :         SCAI_ASSERT_EQ_DEBUG( valuesReceive.size(), indexesReceive.size(), &quot;size mismatch&quot; )
+<span class="lineNum">     383 </span><span class="lineCov">        160 :         currentSize = valuesReceive.size();</span>
+<span class="lineNum">     384 </span>            :         // sort in the received values
+<span class="lineNum">     385 </span>            :         {
+<span class="lineNum">     386 </span><span class="lineCov">        320 :             ReadAccess&lt;IndexType&gt; readIndexesReceive( indexesReceive, commContext );</span>
+<span class="lineNum">     387 </span><span class="lineCov">        320 :             ReadAccess&lt;T1&gt; readValuesReceive( valuesReceive, commContext );</span>
+<span class="lineNum">     388 </span>            :             // current workaround as commContext works like HostContext
+<span class="lineNum">     389 </span><span class="lineCov">        160 :             const IndexType* rIndexesReceive = readIndexesReceive.get();</span>
+<span class="lineNum">     390 </span><span class="lineCov">        160 :             const T1* rValuesReceive = readValuesReceive.get();</span>
+<span class="lineNum">     391 </span>            : 
+<span class="lineNum">     392 </span><span class="lineCov">       1440 :             for ( IndexType i = 0; i &lt; currentSize; i++ )</span>
+<span class="lineNum">     393 </span>            :             {
+<span class="lineNum">     394 </span><span class="lineCov">       1440 :                 const IndexType globalIndex = rIndexesReceive[i];</span>
+<span class="lineNum">     395 </span>            :                 SCAI_ASSERT_DEBUG( globalIndex &lt; getGlobalSize(),
+<span class="lineNum">     396 </span>            :                                    *this &lt;&lt; &quot;: global index &quot; &lt;&lt; globalIndex &lt;&lt; &quot; illegal&quot; )
+<span class="lineNum">     397 </span><span class="lineCov">       1440 :                 allValues[globalIndex] = rValuesReceive[i]; // implicit type conversion done here</span>
+<span class="lineNum">     398 </span>            :             }
+<span class="lineNum">     399 </span>            :         }
+<span class="lineNum">     400 </span>            :         countValues += currentSize;
+<span class="lineNum">     401 </span>            :         indexesReceive.swap( indexesSend );
+<span class="lineNum">     402 </span>            :         valuesReceive.swap( valuesSend );
+<span class="lineNum">     403 </span>            :     }
+<span class="lineNum">     404 </span>            : 
+<span class="lineNum">     405 </span><span class="lineCov">        396 :     SCAI_LOG_INFO( logger, &quot;replicated by &quot; &lt;&lt; ( np - 1 ) &lt;&lt; &quot; array shifts&quot; )</span>
+<span class="lineNum">     406 </span>            :     // # globalSize values must have been counted
+<span class="lineNum">     407 </span>            :     SCAI_ASSERT_EQ_DEBUG( countValues, getGlobalSize(), &quot;&quot; )
+<span class="lineNum">     408 </span><span class="lineCov">         99 : }</span>
+<span class="lineNum">     409 </span>            : 
+<span class="lineNum">     410 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     411 </span>            : 
+<span class="lineNum">     412 </span>            : template&lt;typename T1, typename T2&gt;
+<span class="lineNum">     413 </span><span class="lineCov">        198 : void Distribution::replicateN( T1* allValues, const T2* localValues, const IndexType n ) const</span>
+<span class="lineNum">     414 </span>            : {
+<span class="lineNum">     415 </span><span class="lineCov">         99 :     SCAI_REGION( &quot;Distribution.replicateN&quot; )</span>
+<span class="lineNum">     416 </span>            : 
+<span class="lineNum">     417 </span><span class="lineCov">        198 :     const Communicator&amp; comm = getCommunicator();</span>
+<span class="lineNum">     418 </span>            : 
+<span class="lineNum">     419 </span>            :     // Implemenation via cyclic shifting of the vector data and distribution
+<span class="lineNum">     420 </span>            :     // maximal number of elements needed to allocate sufficient receive buffer but also to avoid reallocations
+<span class="lineNum">     421 </span>            : 
+<span class="lineNum">     422 </span><span class="lineCov">         99 :     IndexType currentSize = getLocalSize();</span>
+<span class="lineNum">     423 </span>            :     IndexType maxLocalSize = comm.max( currentSize );
+<span class="lineNum">     424 </span>            : 
+<span class="lineNum">     425 </span><span class="lineCov">        495 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     426 </span>            :                    comm &lt;&lt; &quot;: replicateN, n = &quot; &lt;&lt; n &lt;&lt;
+<span class="lineNum">     427 </span>            :                    &quot;, localValues&lt;&quot; &lt;&lt; common::getScalarType&lt;T2&gt;() &lt;&lt; &quot;&gt;[ &quot; &lt;&lt; currentSize &lt;&lt; &quot;]&quot; &lt;&lt;
+<span class="lineNum">     428 </span>            :                    &quot;, max = &quot; &lt;&lt; maxLocalSize &lt;&lt; &quot; ] &quot; &lt;&lt; &quot; to allValues&lt;&quot; &lt;&lt; common::getScalarType&lt;T1&gt;() &lt;&lt; &quot;&gt;[ &quot; &lt;&lt; getGlobalSize() &lt;&lt; &quot; ]&quot; )
+<span class="lineNum">     429 </span>            : 
+<span class="lineNum">     430 </span><span class="lineCov">         99 :     HArray&lt;T1&gt; valuesSend;</span>
+<span class="lineNum">     431 </span><span class="lineCov">         99 :     HArray&lt;T1&gt; valuesReceive;</span>
+<span class="lineNum">     432 </span><span class="lineCov">         99 :     HArray&lt;IndexType&gt; indexesSend;</span>
+<span class="lineNum">     433 </span><span class="lineCov">         99 :     HArray&lt;IndexType&gt; indexesReceive;</span>
+<span class="lineNum">     434 </span>            : 
+<span class="lineNum">     435 </span>            :     // set my owned indexes and my values
+<span class="lineNum">     436 </span>            : 
+<span class="lineNum">     437 </span><span class="lineCov">         99 :     ContextPtr commContext = comm.getCommunicationContext( valuesSend );</span>
+<span class="lineNum">     438 </span>            : 
+<span class="lineNum">     439 </span>            :     // capacity of send arrays should also be sufficient for receiving data
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span><span class="lineCov">        198 :     indexesSend.reserve( commContext, maxLocalSize );</span>
+<span class="lineNum">     442 </span><span class="lineCov">        297 :     valuesSend.reserve( commContext, maxLocalSize * n );</span>
+<span class="lineNum">     443 </span>            : 
+<span class="lineNum">     444 </span><span class="lineCov">        396 :     SCAI_LOG_INFO( logger, &quot;replicate on this communication context: &quot; &lt;&lt; *commContext )</span>
+<span class="lineNum">     445 </span>            : 
+<span class="lineNum">     446 </span>            :     {
+<span class="lineNum">     447 </span><span class="lineCov">        198 :         WriteOnlyAccess&lt;IndexType&gt; wIndexesSend( indexesSend, commContext, currentSize );</span>
+<span class="lineNum">     448 </span><span class="lineCov">        396 :         WriteOnlyAccess&lt;T1&gt;        wValuesSend ( valuesSend, commContext, currentSize * n );</span>
+<span class="lineNum">     449 </span>            : 
+<span class="lineNum">     450 </span>            :         // current workaround as commContext works like HostContext
+<span class="lineNum">     451 </span>            : 
+<span class="lineNum">     452 </span><span class="lineCov">         99 :         IndexType* pIndexesSend = wIndexesSend.get();</span>
+<span class="lineNum">     453 </span><span class="lineCov">         99 :         T1* pValuesSend = wValuesSend.get();</span>
+<span class="lineNum">     454 </span>            : 
+<span class="lineNum">     455 </span><span class="lineCov">        867 :         for ( IndexType i = 0; i &lt; currentSize; i++ )</span>
+<span class="lineNum">     456 </span>            :         {
+<span class="lineNum">     457 </span><span class="lineCov">        867 :             IndexType globalIndex = local2global( i );</span>
+<span class="lineNum">     458 </span>            :             SCAI_ASSERT_DEBUG( globalIndex &lt; getGlobalSize(), *this &lt;&lt; &quot;: global index &quot; &lt;&lt; globalIndex &lt;&lt; &quot; illegal&quot; )
+<span class="lineNum">     459 </span><span class="lineCov">        867 :             pIndexesSend[i] = globalIndex;</span>
+<span class="lineNum">     460 </span>            : 
+<span class="lineNum">     461 </span><span class="lineCov">       4335 :             for ( IndexType j = 0; j &lt; n; j++ )</span>
+<span class="lineNum">     462 </span>            :             {
+<span class="lineNum">     463 </span><span class="lineCov">       3468 :                 pValuesSend[i * n + j] = static_cast&lt;T1&gt;( localValues[i * n + j] ); // type conversion here</span>
+<span class="lineNum">     464 </span><span class="lineCov">       3468 :                 allValues[globalIndex * n + j] = static_cast&lt;T1&gt;( localValues[i * n + j] ); // type conversion here</span>
+<span class="lineNum">     465 </span>            :             }
+<span class="lineNum">     466 </span><span class="lineCov">         99 :         }</span>
+<span class="lineNum">     467 </span>            :     }
+<span class="lineNum">     468 </span>            : 
+<span class="lineNum">     469 </span>            :     IndexType countLines = currentSize; // count values set in the global vector, currentSize has been done
+<span class="lineNum">     470 </span>            :     // capacity of receive arrays should be sufficient for receiving data to avoid reallocations
+<span class="lineNum">     471 </span><span class="lineCov">        198 :     indexesReceive.reserve( commContext, maxLocalSize );</span>
+<span class="lineNum">     472 </span><span class="lineCov">        198 :     valuesReceive.reserve( commContext, maxLocalSize * n );</span>
+<span class="lineNum">     473 </span>            :     // now nproc - 1 steps for cyclic shifting
+<span class="lineNum">     474 </span>            :     PartitionId np = comm.getSize(); // number partitions
+<span class="lineNum">     475 </span>            : 
+<span class="lineNum">     476 </span><span class="lineCov">        259 :     for ( PartitionId ip = 0; ip &lt; np - 1; ++ip )</span>
+<span class="lineNum">     477 </span>            :     {
+<span class="lineNum">     478 </span><span class="lineCov">        160 :         comm.shiftArray( indexesReceive, indexesSend, 1 );</span>
+<span class="lineNum">     479 </span><span class="lineCov">        160 :         currentSize = indexesReceive.size(); // next numbe of lines to deal with</span>
+<span class="lineNum">     480 </span><span class="lineCov">        160 :         comm.shiftArray( valuesReceive, valuesSend, 1 );</span>
+<span class="lineNum">     481 </span>            :         SCAI_ASSERT_EQ_DEBUG( currentSize * n, valuesReceive.size(), &quot;size mismatch for replicate n = &quot; &lt;&lt; n )
+<span class="lineNum">     482 </span>            :         // sort in the received values
+<span class="lineNum">     483 </span>            :         {
+<span class="lineNum">     484 </span><span class="lineCov">        320 :             ReadAccess&lt;IndexType&gt; readIndexesReceive( indexesReceive, commContext );</span>
+<span class="lineNum">     485 </span><span class="lineCov">        320 :             ReadAccess&lt;T1&gt; readValuesReceive( valuesReceive, commContext );</span>
+<span class="lineNum">     486 </span>            :             // current workaround as commContext works like HostContext
+<span class="lineNum">     487 </span><span class="lineCov">        160 :             const IndexType* rIndexesReceive = readIndexesReceive.get();</span>
+<span class="lineNum">     488 </span><span class="lineCov">        160 :             const T1* rValuesReceive = readValuesReceive.get();</span>
+<span class="lineNum">     489 </span>            : 
+<span class="lineNum">     490 </span><span class="lineCov">        816 :             for ( IndexType i = 0; i &lt; currentSize; i++ )</span>
+<span class="lineNum">     491 </span>            :             {
+<span class="lineNum">     492 </span><span class="lineCov">        816 :                 const IndexType globalIndex = rIndexesReceive[i];</span>
+<span class="lineNum">     493 </span>            :                 SCAI_ASSERT_DEBUG( globalIndex &lt; getGlobalSize(),
+<span class="lineNum">     494 </span>            :                                    *this &lt;&lt; &quot;: global index &quot; &lt;&lt; globalIndex &lt;&lt; &quot; illegal&quot; )
+<span class="lineNum">     495 </span>            : 
+<span class="lineNum">     496 </span><span class="lineCov">       4080 :                 for ( IndexType j = 0; j &lt; n; j++ )</span>
+<span class="lineNum">     497 </span>            :                 {
+<span class="lineNum">     498 </span><span class="lineCov">       3264 :                     allValues[globalIndex * n + j] = rValuesReceive[i * n + j];</span>
+<span class="lineNum">     499 </span>            :                 }
+<span class="lineNum">     500 </span>            :             }
+<span class="lineNum">     501 </span>            :         }
+<span class="lineNum">     502 </span>            :         countLines += currentSize;
+<span class="lineNum">     503 </span>            :         indexesReceive.swap( indexesSend );
+<span class="lineNum">     504 </span>            :         valuesReceive.swap( valuesSend );
+<span class="lineNum">     505 </span>            :     }
+<span class="lineNum">     506 </span>            : 
+<span class="lineNum">     507 </span>            :     SCAI_ASSERT_EQ_DEBUG( countLines, getGlobalSize(), &quot;not all lines seen&quot; )
+<span class="lineNum">     508 </span><span class="lineCov">         99 : }</span>
+<span class="lineNum">     509 </span>            : 
+<span class="lineNum">     510 </span>            : /* ---------------------------------------------------------------------- */
+<a name="511"><span class="lineNum">     511 </span>            : </a>
+<span class="lineNum">     512 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     513 </span><span class="lineCov">        259 : static IndexType fillGlobal(</span>
+<span class="lineNum">     514 </span>            :     ValueType* allValues,
+<span class="lineNum">     515 </span>            :     const IndexType* allOffsets,
+<span class="lineNum">     516 </span>            :     const IndexType* indexes,
+<span class="lineNum">     517 </span>            :     const IndexType numIndexes,
+<span class="lineNum">     518 </span>            :     const ValueType* values )
+<span class="lineNum">     519 </span>            : {
+<span class="lineNum">     520 </span>            :     IndexType counter = 0; // traverses values, counts the number of filled values
+<span class="lineNum">     521 </span>            : 
+<span class="lineNum">     522 </span><span class="lineCov">       1942 :     for ( IndexType i = 0; i &lt; numIndexes; i++ )</span>
+<span class="lineNum">     523 </span>            :     {
+<span class="lineNum">     524 </span><span class="lineCov">       1683 :         const IndexType allIndex = indexes[i];</span>
+<span class="lineNum">     525 </span><span class="lineCov">       1683 :         const IndexType offset = allOffsets[allIndex];</span>
+<span class="lineNum">     526 </span><span class="lineCov">       1683 :         const IndexType size = allOffsets[allIndex + 1] - offset;</span>
+<span class="lineNum">     527 </span>            : 
+<span class="lineNum">     528 </span>            :         /* No logger available here:
+<span class="lineNum">     529 </span>            : 
+<span class="lineNum">     530 </span>            :          std::cout &lt;&lt; &quot;fill index &quot; &lt;&lt; i &lt;&lt; &quot; of &quot; &lt;&lt; numIndexes &lt;&lt; &quot;: global = &quot;
+<span class="lineNum">     531 </span>            :          &lt;&lt; allIndex &lt;&lt; &quot;, size = &quot; &lt;&lt; size &lt;&lt; &quot;, offset = &quot; &lt;&lt; offset  &lt;&lt; std::endl;
+<span class="lineNum">     532 </span>            :          */
+<span class="lineNum">     533 </span>            : 
+<span class="lineNum">     534 </span><span class="lineCov">       8415 :         for ( IndexType j = 0; j &lt; size; j++ )</span>
+<span class="lineNum">     535 </span>            :         {
+<span class="lineNum">     536 </span><span class="lineCov">       6732 :             allValues[offset + j] = values[counter + j];</span>
+<span class="lineNum">     537 </span>            :         }
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span><span class="lineCov">       1683 :         counter += size;</span>
+<span class="lineNum">     540 </span>            :     }
+<span class="lineNum">     541 </span>            : 
+<span class="lineNum">     542 </span><span class="lineCov">        259 :     return counter; // number of filled elements</span>
+<span class="lineNum">     543 </span>            : }
+<span class="lineNum">     544 </span>            : 
+<span class="lineNum">     545 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     546 </span>            : 
+<span class="lineNum">     547 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     548 </span><span class="lineCov">         99 : void Distribution::replicateRagged(</span>
+<span class="lineNum">     549 </span>            :     ValueType allValues[],
+<span class="lineNum">     550 </span>            :     const ValueType localValues[],
+<span class="lineNum">     551 </span><span class="lineCov">         99 :     const IndexType allOffsets[] ) const</span>
+<span class="lineNum">     552 </span>            : {
+<span class="lineNum">     553 </span><span class="lineCov">         99 :     IndexType currentElemSize = getLocalSize();</span>
+<span class="lineNum">     554 </span><span class="lineCov">        198 :     const Communicator&amp; comm = getCommunicator();</span>
+<span class="lineNum">     555 </span>            :     // we need the offsets for allValues to store directly the values
+<span class="lineNum">     556 </span>            :     IndexType maxLocalSize = comm.max( currentElemSize );
+<span class="lineNum">     557 </span><span class="lineCov">         99 :     HArray&lt;IndexType&gt; indexesSend;</span>
+<span class="lineNum">     558 </span><span class="lineCov">         99 :     HArray&lt;IndexType&gt; indexesReceive;</span>
+<span class="lineNum">     559 </span><span class="lineCov">         99 :     ContextPtr commContext = comm.getCommunicationContext( indexesSend );</span>
+<span class="lineNum">     560 </span><span class="lineCov">        198 :     indexesReceive.reserve( commContext, maxLocalSize );</span>
+<span class="lineNum">     561 </span><span class="lineCov">        198 :     indexesSend.reserve( commContext, maxLocalSize );</span>
+<span class="lineNum">     562 </span>            :     IndexType currentDataSize = 0;
+<span class="lineNum">     563 </span>            :     {
+<span class="lineNum">     564 </span>            :         // due to currentElemSize &lt;= maxLocalSize
+<span class="lineNum">     565 </span><span class="lineCov">        198 :         WriteOnlyAccess&lt;IndexType&gt; wIndexesSend( indexesSend, commContext, currentElemSize );</span>
+<span class="lineNum">     566 </span><span class="lineCov">         99 :         IndexType* pIndexesSend = wIndexesSend.get(); // is a HostContext</span>
+<span class="lineNum">     567 </span>            : 
+<span class="lineNum">     568 </span>            :         // pack my indexes, work as global indexes for allValues
+<span class="lineNum">     569 </span>            : 
+<span class="lineNum">     570 </span><span class="lineCov">        867 :         for ( IndexType i = 0; i &lt; currentElemSize; i++ )</span>
+<span class="lineNum">     571 </span>            :         {
+<span class="lineNum">     572 </span><span class="lineCov">        867 :             pIndexesSend[i] = local2global( i );</span>
+<span class="lineNum">     573 </span>            :         }
+<span class="lineNum">     574 </span>            : 
+<span class="lineNum">     575 </span>            :         // fill my local values in all values
+<span class="lineNum">     576 </span><span class="lineCov">         99 :         currentDataSize = fillGlobal( allValues, allOffsets, pIndexesSend, currentElemSize, localValues );</span>
+<span class="lineNum">     577 </span>            :     }
+<span class="lineNum">     578 </span>            :     SCAI_LOG_DEBUG( logger,
+<span class="lineNum">     579 </span>            :                     comm &lt;&lt; &quot;: filled my local data: &quot; &lt;&lt; currentElemSize &lt;&lt; &quot; buckets with &quot; &lt;&lt; currentDataSize &lt;&lt; &quot; values&quot; )
+<span class="lineNum">     580 </span>            :     // get maximal size of data values and allocate send buffer
+<span class="lineNum">     581 </span>            :     IndexType maxLocalDataSize = comm.max( currentDataSize );
+<span class="lineNum">     582 </span>            :     // Implemenation via cyclic shifting of the vector data and distribution
+<span class="lineNum">     583 </span>            :     SCAI_LOG_DEBUG( logger, &quot;maximal data size for exchange = &quot; &lt;&lt; maxLocalDataSize )
+<span class="lineNum">     584 </span><span class="lineCov">        495 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     585 </span>            :                    comm &lt;&lt; &quot;: replicateRagged&lt;&quot; &lt;&lt; common::getScalarType&lt;ValueType&gt;() &lt;&lt; &quot;&gt;, localValues[ &quot; &lt;&lt; currentDataSize &lt;&lt; &quot;, max = &quot; &lt;&lt; maxLocalDataSize &lt;&lt; &quot; ] &quot; &lt;&lt; &quot; to allValues [ allOffsets[ &quot; &lt;&lt; getGlobalSize() &lt;&lt; &quot; ] ]&quot; )
+<span class="lineNum">     586 </span><span class="lineCov">         99 :     HArray&lt;ValueType&gt; valuesSend;</span>
+<span class="lineNum">     587 </span><span class="lineCov">         99 :     HArray&lt;ValueType&gt; valuesReceive;</span>
+<span class="lineNum">     588 </span><span class="lineCov">        198 :     valuesSend.reserve( commContext, maxLocalDataSize );</span>
+<span class="lineNum">     589 </span><span class="lineCov">        198 :     valuesReceive.reserve( commContext, maxLocalDataSize );</span>
+<span class="lineNum">     590 </span>            :     {
+<span class="lineNum">     591 </span><span class="lineCov">        198 :         WriteOnlyAccess&lt;ValueType&gt; wValuesSend( valuesSend, commContext, currentDataSize );</span>
+<span class="lineNum">     592 </span><span class="lineCov">         99 :         ValueType* pValuesSend = wValuesSend.get();</span>
+<span class="lineNum">     593 </span>            : 
+<span class="lineNum">     594 </span>            :         // fill my local values in send buffer
+<span class="lineNum">     595 </span>            : 
+<span class="lineNum">     596 </span><span class="lineCov">       3468 :         for ( IndexType i = 0; i &lt; currentDataSize; i++ )</span>
+<span class="lineNum">     597 </span>            :         {
+<span class="lineNum">     598 </span><span class="lineCov">       3468 :             pValuesSend[i] = localValues[i];</span>
+<span class="lineNum">     599 </span><span class="lineCov">         99 :         }</span>
+<span class="lineNum">     600 </span>            :     }
+<span class="lineNum">     601 </span>            :     // Define counters for exchanged values
+<span class="lineNum">     602 </span>            :     IndexType countElemValues = currentElemSize;
+<span class="lineNum">     603 </span>            :     IndexType countDataValues = currentDataSize;
+<span class="lineNum">     604 </span>            :     // now nproc - 1 steps for cyclic shifting
+<span class="lineNum">     605 </span>            :     PartitionId np = comm.getSize(); // number partitions
+<span class="lineNum">     606 </span>            : 
+<span class="lineNum">     607 </span><span class="lineCov">        259 :     for ( PartitionId ip = 0; ip &lt; np - 1; ++ip )</span>
+<span class="lineNum">     608 </span>            :     {
+<span class="lineNum">     609 </span><span class="lineCov">        160 :         comm.shiftArray( indexesReceive, indexesSend, 1 );</span>
+<span class="lineNum">     610 </span><span class="lineCov">        160 :         comm.shiftArray( valuesReceive, valuesSend, 1 );</span>
+<span class="lineNum">     611 </span><span class="lineCov">        160 :         IndexType newSize1 = indexesReceive.size();</span>
+<span class="lineNum">     612 </span>            :         IndexType newSize2 = valuesReceive.size();
+<span class="lineNum">     613 </span>            :         // copy the received values in allValues at the right place
+<span class="lineNum">     614 </span>            :         {
+<span class="lineNum">     615 </span><span class="lineCov">        320 :             ReadAccess&lt;IndexType&gt; rIndexesReceive( indexesReceive, commContext );</span>
+<span class="lineNum">     616 </span><span class="lineCov">        320 :             ReadAccess&lt;ValueType&gt; rValuesReceive( valuesReceive, commContext );</span>
+<span class="lineNum">     617 </span>            :             IndexType size = invalidIndex;
+<span class="lineNum">     618 </span><span class="lineCov">        160 :             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );</span>
+<span class="lineNum">     619 </span>            :             SCAI_LOG_DEBUG( logger,
+<span class="lineNum">     620 </span>            :                             comm &lt;&lt; &quot;: filled received data: &quot; &lt;&lt; newSize1 &lt;&lt; &quot; buckets with &quot; &lt;&lt; size &lt;&lt; &quot; values&quot; )
+<span class="lineNum">     621 </span>            :             SCAI_ASSERT_EQ_DEBUG( size, newSize2, &quot;size mismatch&quot; )
+<span class="lineNum">     622 </span>            :         }
+<span class="lineNum">     623 </span>            :         currentElemSize = newSize1;
+<span class="lineNum">     624 </span>            :         currentDataSize = newSize2;
+<span class="lineNum">     625 </span>            :         countElemValues += currentElemSize;
+<span class="lineNum">     626 </span>            :         countDataValues += currentDataSize;
+<span class="lineNum">     627 </span>            :         // swap the send and receive buffer
+<span class="lineNum">     628 </span>            :         indexesReceive.swap( indexesSend );
+<span class="lineNum">     629 </span>            :         valuesReceive.swap( valuesSend );
+<span class="lineNum">     630 </span>            :     }
+<span class="lineNum">     631 </span>            : 
+<span class="lineNum">     632 </span>            :     // verify that all values are available
+<span class="lineNum">     633 </span>            :     SCAI_ASSERT_EQ_DEBUG( countElemValues, getGlobalSize(), &quot;not all elems seen&quot; )
+<span class="lineNum">     634 </span>            :     SCAI_ASSERT_EQ_DEBUG( countDataValues, allOffsets[getGlobalSize()], &quot;not all data seen&quot; )
+<span class="lineNum">     635 </span><span class="lineCov">         99 : }</span>
+<span class="lineNum">     636 </span>            : 
+<span class="lineNum">     637 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     638 </span>            : 
+<span class="lineNum">     639 </span><span class="lineCov">       1518 : Distribution* Distribution::getDistributionPtr(</span>
+<span class="lineNum">     640 </span>            :     const std::string&amp; kind,
+<span class="lineNum">     641 </span>            :     CommunicatorPtr comm,
+<span class="lineNum">     642 </span>            :     const IndexType globalSize,
+<span class="lineNum">     643 </span>            :     const float weight )
+<span class="lineNum">     644 </span>            : {
+<span class="lineNum">     645 </span><span class="lineCov">       6072 :     return Distribution::create( kind, DistributionArguments( comm, globalSize, NULL, weight ) );</span>
+<span class="lineNum">     646 </span>            : }
+<span class="lineNum">     647 </span>            : 
+<span class="lineNum">     648 </span><span class="lineNoCov">          0 : Distribution* Distribution::getDistributionPtr(</span>
+<span class="lineNum">     649 </span>            :     const std::string&amp; kind,
+<span class="lineNum">     650 </span>            :     CommunicatorPtr comm,
+<span class="lineNum">     651 </span>            :     const Distributed&amp; matrix,
+<span class="lineNum">     652 </span>            :     const float weight )
+<span class="lineNum">     653 </span>            : {
+<span class="lineNum">     654 </span><span class="lineNoCov">          0 :     IndexType globalSize = matrix.getDistribution().getGlobalSize();</span>
+<span class="lineNum">     655 </span><span class="lineNoCov">          0 :     return Distribution::create( kind, DistributionArguments( comm, globalSize, &amp;matrix, weight ) );</span>
+<span class="lineNum">     656 </span>            : }
+<span class="lineNum">     657 </span>            : 
+<span class="lineNum">     658 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     659 </span>            : 
+<span class="lineNum">     660 </span>            : #define DMEMO_DISTRIBUTE2_INST( ValueType, OtherValueType )                                                                         \
+<span class="lineNum">     661 </span>            :     template void Distribution::replicateN&lt;ValueType, OtherValueType&gt;( ValueType*, const OtherValueType*, const IndexType ) const;  \
+<span class="lineNum">     662 </span>            :     template void Distribution::replicate&lt;ValueType, OtherValueType&gt;( ValueType*, const OtherValueType* ) const;
+<span class="lineNum">     663 </span>            : 
+<span class="lineNum">     664 </span>            : #define DMEMO_DISTRIBUTE_INST( ValueType )  \
+<span class="lineNum">     665 </span>            :     template void Distribution::replicateRagged&lt;ValueType&gt;( ValueType*, const ValueType*, const IndexType* ) const;                 \
+<span class="lineNum">     666 </span>            :     SCAI_COMMON_LOOP_LVL2( ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARRAY_TYPES_HOST )
+<span class="lineNum">     667 </span>            : 
+<span class="lineNum">     668 </span>            : SCAI_COMMON_LOOP( DMEMO_DISTRIBUTE_INST, SCAI_ARRAY_TYPES_HOST )
+<span class="lineNum">     669 </span>            : 
+<span class="lineNum">     670 </span>            : // template instantiation for the supported data types
+<span class="lineNum">     671 </span>            : 
+<span class="lineNum">     672 </span>            : #undef DMEMO_DISTRIBUTE2_INST
+<span class="lineNum">     673 </span>            : #undef DMEMO_DISTRIBUTE_INST
+<span class="lineNum">     674 </span>            : /* ---------------------------------------------------------------------- */
+<span class="lineNum">     675 </span>            : 
+<a name="676"><span class="lineNum">     676 </span>            : } /* end namespace dmemo */</a>
+<span class="lineNum">     677 </span>            : 
+<span class="lineNum">     678 </span><span class="lineCov">         33 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

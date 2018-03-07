@@ -1,0 +1,576 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/storage/StencilStorage.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/storage</a> - StencilStorage.hpp<span style="font-size: 80%;"> (source / <a href="StencilStorage.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">60</td>
+            <td class="headerCovTableEntryLo">8.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">112</td>
+            <td class="headerCovTableEntryLo">7.1 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file StencilStorage.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Definition of a structure for a (non-distributed) sparse matrix based on a grid and a stencil on it
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 13.04.2017
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #pragma once
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : // for dll_import
+<span class="lineNum">      38 </span>            : #include &lt;scai/common/config.hpp&gt;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : // base classes
+<span class="lineNum">      41 </span>            : #include &lt;scai/lama/storage/MatrixStorage.hpp&gt;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : #include &lt;scai/common/Grid.hpp&gt;
+<span class="lineNum">      44 </span>            : #include &lt;scai/common/Stencil.hpp&gt;
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : namespace scai
+<span class="lineNum">      47 </span>            : {
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : namespace lama
+<span class="lineNum">      50 </span>            : {
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : /** Storage format for a stencil matrix
+<span class="lineNum">      53 </span>            :  *
+<span class="lineNum">      54 </span>            :  *  The Stencil storage contains the following data:
+<span class="lineNum">      55 </span>            :  *
+<span class="lineNum">      56 </span>            :  *  - grid specifies the grid elements that will be connected
+<span class="lineNum">      57 </span>            :  *  - stencil specifies the pattern how elements are connected
+<span class="lineNum">      58 </span>            :  *
+<span class="lineNum">      59 </span>            :  *  Keep in mind that the elements of the grid are linearized.
+<span class="lineNum">      60 </span>            :  *
+<span class="lineNum">      61 </span>            :  *  @tparam ValueType is the value type of the matrix values.
+<span class="lineNum">      62 </span>            :  *
+<span class="lineNum">      63 </span>            :  *  Note: StencilStorage is not registed at factory at can only be
+<span class="lineNum">      64 </span>            :  *        created with a grid and a stencil
+<span class="lineNum">      65 </span>            :  *
+<span class="lineNum">      66 </span>            :  *  In contrary to the other matrix storage formats many operations are
+<span class="lineNum">      67 </span>            :  *  not supported:
+<span class="lineNum">      68 </span>            :  * 
+<span class="lineNum">      69 </span>            :  *  - copy constrcuctor with any other storage, e.g. StencilStorage s( csrStorage );
+<span class="lineNum">      70 </span>            :  *    but StencilStrage csr( stencilStorage ) is allowed
+<span class="lineNum">      71 </span>            :  */
+<span class="lineNum">      72 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      73 </span>            : class COMMON_DLL_IMPORTEXPORT StencilStorage: public MatrixStorage&lt;ValueType&gt;
+<span class="lineNum">      74 </span>            : {
+<span class="lineNum">      75 </span>            : public:
+<span class="lineNum">      76 </span>            : 
+<span class="lineNum">      77 </span>            :     /* ==================================================================== */
+<span class="lineNum">      78 </span>            :     /*  static getter methods and corresponding pure methods                */
+<span class="lineNum">      79 </span>            :     /* ==================================================================== */
+<span class="lineNum">      80 </span>            : 
+<span class="lineNum">      81 </span>            :     /** Static method that returns a unique name for this storage class */
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span>            :     static const char* typeName();
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            :     /** Implementation of pure method _MatrixStorage:getTypeName    */
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            :     virtual const char* getTypeName() const;
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span>            :     /** Implementation of pure method _MatrixStorage:getCreateValue    */
+<span class="lineNum">      90 </span>            : 
+<span class="lineNum">      91 </span>            :     virtual MatrixStorageCreateKeyType getCreateValue() const;
+<span class="lineNum">      92 </span>            : 
+<span class="lineNum">      93 </span>            :     /* ==================================================================== */
+<span class="lineNum">      94 </span>            :     /*  Constructor / Destructor                                            */
+<span class="lineNum">      95 </span>            :     /* ==================================================================== */
+<span class="lineNum">      96 </span>            : 
+<span class="lineNum">      97 </span>            :     StencilStorage();
+<span class="lineNum">      98 </span>            : 
+<span class="lineNum">      99 </span>            :     /** Constructor of a stencil stroage
+<span class="lineNum">     100 </span>            :      *
+<span class="lineNum">     101 </span>            :      */
+<span class="lineNum">     102 </span>            :     StencilStorage( const common::Grid&amp; grid, const common::Stencil&lt;ValueType&gt;&amp;  stencil );
+<span class="lineNum">     103 </span>            : 
+<a name="104"><span class="lineNum">     104 </span>            :     /** Override default copy constructor to guarantee same behavior */</a>
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span><span class="lineCov">         26 :     StencilStorage( const StencilStorage&lt;ValueType&gt;&amp; other ) : </span>
+<span class="lineNum">     107 </span>            : 
+<span class="lineNum">     108 </span>            :         MatrixStorage&lt;ValueType&gt;( other ),
+<span class="lineNum">     109 </span>            :         mGrid( other.mGrid ),
+<span class="lineNum">     110 </span><span class="lineCov">         26 :         mStencil( other.mStencil )</span>
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            :     {
+<span class="lineNum">     113 </span><span class="lineCov">         26 :     }</span>
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span>            :     /** 
+<a name="116"><span class="lineNum">     116 </span>            :      * @brief Implementation of pure method _MatrixStorage::allocate</a>
+<span class="lineNum">     117 </span>            :      */
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :     void allocate( const IndexType /* numRows */, const IndexType /* numColumns */ )</span>
+<span class="lineNum">     119 </span>            :     {
+<span class="lineNum">     120 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;unsupported&quot; )</span>
+<span class="lineNum">     121 </span>            :     }
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            :     /**
+<a name="124"><span class="lineNum">     124 </span>            :      * @brief Implementation of pure method for _MatrixStorage.</a>
+<span class="lineNum">     125 </span>            :      */
+<span class="lineNum">     126 </span><span class="lineNoCov">          0 :     virtual void clear()</span>
+<span class="lineNum">     127 </span>            :     {
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;unsupported&quot; )</span>
+<span class="lineNum">     129 </span>            :     }
+<span class="lineNum">     130 </span>            : 
+<a name="131"><span class="lineNum">     131 </span>            :     /** Implementation of pure method of class MatrixStorage. */</a>
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :     virtual void purge()</span>
+<span class="lineNum">     134 </span>            :     {
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;unsupported&quot; )</span>
+<span class="lineNum">     136 </span>            :     }
+<span class="lineNum">     137 </span>            : 
+<span class="lineNum">     138 </span>            :     /** Implementation of MatrixStorage::copy for derived class. */
+<span class="lineNum">     139 </span>            : 
+<span class="lineNum">     140 </span>            :     virtual StencilStorage* copy() const;
+<span class="lineNum">     141 </span>            : 
+<a name="142"><span class="lineNum">     142 </span>            :     /** Implementation of MatrixStorage::newMatrixStorage for derived class. */</a>
+<span class="lineNum">     143 </span>            : 
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :     virtual StencilStorage* newMatrixStorage( const IndexType, const IndexType ) const</span>
+<span class="lineNum">     145 </span>            :     {
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;unsupported&quot; )</span>
+<span class="lineNum">     147 </span>            :     }
+<span class="lineNum">     148 </span>            : 
+<span class="lineNum">     149 </span>            :     /** Destructor of Stencil sparse storage. */
+<span class="lineNum">     150 </span>            : 
+<span class="lineNum">     151 </span>            :     virtual ~StencilStorage();
+<span class="lineNum">     152 </span>            : 
+<span class="lineNum">     153 </span>            :     /** Test the storage data for inconsistencies.
+<span class="lineNum">     154 </span>            :      *
+<span class="lineNum">     155 </span>            :      *  @param[in] msg is additional message string that should be used to identify calling routine
+<a name="156"><span class="lineNum">     156 </span>            :      *  @throws Exception in case of any inconsistency.</a>
+<span class="lineNum">     157 </span>            :      */
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :     void check( const char* msg ) const</span>
+<span class="lineNum">     159 </span>            :     {
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;check: &quot; &lt;&lt; msg );</span>
+<span class="lineNum">     161 </span>            :     }
+<span class="lineNum">     162 </span>            : 
+<a name="163"><span class="lineNum">     163 </span>            :     /** Getter routine for the enum value that stands for this format. */</a>
+<span class="lineNum">     164 </span>            : 
+<span class="lineNum">     165 </span><span class="lineCov">         66 :     virtual Format getFormat() const</span>
+<span class="lineNum">     166 </span>            :     {
+<span class="lineNum">     167 </span><span class="lineCov">         66 :         return Format::STENCIL;</span>
+<span class="lineNum">     168 </span>            :     }
+<span class="lineNum">     169 </span>            : 
+<a name="170"><span class="lineNum">     170 </span>            :     /** Getter routine for the stencil used to construct this stencil storage. */</a>
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :     const common::Stencil&lt;ValueType&gt;&amp; getStencil() const</span>
+<span class="lineNum">     173 </span>            :     {
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :         return mStencil;</span>
+<span class="lineNum">     175 </span>            :     }
+<span class="lineNum">     176 </span>            : 
+<a name="177"><span class="lineNum">     177 </span>            :     /** Getter routine for the grid used to construct this stencil storage. */</a>
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 :     const common::Grid&amp; getGrid() const</span>
+<span class="lineNum">     180 </span>            :     {
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :         return mGrid;</span>
+<span class="lineNum">     182 </span>            :     }
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span>            :     /** Set identity uses trivial stencil for the given grid. */
+<span class="lineNum">     185 </span>            : 
+<span class="lineNum">     186 </span>            :     void setIdentity( const common::Grid&amp; grid );
+<span class="lineNum">     187 </span>            : 
+<a name="188"><span class="lineNum">     188 </span>            :     /** Implementation of pure method MatrixStorage::setIdentity */</a>
+<span class="lineNum">     189 </span>            : 
+<span class="lineNum">     190 </span><span class="lineNoCov">          0 :     virtual void setIdentity( const IndexType n )</span>
+<span class="lineNum">     191 </span>            :     {
+<span class="lineNum">     192 </span><span class="lineNoCov">          0 :         setIdentity( common::Grid1D( n ) );</span>
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     194 </span>            : 
+<a name="195"><span class="lineNum">     195 </span>            :     /** Implementation of pure method _MatrixStorage::checkDiagonalProperty */</a>
+<span class="lineNum">     196 </span>            : 
+<span class="lineNum">     197 </span><span class="lineNoCov">          0 :     virtual bool checkDiagonalProperty() const</span>
+<span class="lineNum">     198 </span>            :     {
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;checkDiagonalProperty unsuported&quot; )</span>
+<span class="lineNum">     200 </span>            :     }
+<span class="lineNum">     201 </span>            : 
+<span class="lineNum">     202 </span>            :     /******************************************************************/
+<span class="lineNum">     203 </span>            :     /*  set / get diagonal                                            */
+<span class="lineNum">     204 </span>            :     /******************************************************************/
+<span class="lineNum">     205 </span>            : 
+<span class="lineNum">     206 </span>            :     /** 
+<span class="lineNum">     207 </span>            :      * Implementation of pure method MatrixStorage&lt;ValueType&gt;::getDiagonal
+<span class="lineNum">     208 </span>            :      */
+<span class="lineNum">     209 </span>            :     virtual void getDiagonal( hmemo::HArray&lt;ValueType&gt;&amp; diagonal ) const;
+<span class="lineNum">     210 </span>            : 
+<span class="lineNum">     211 </span>            :     /** 
+<a name="212"><span class="lineNum">     212 </span>            :      * Implementation of pure method MatrixStorage&lt;ValueType&gt;::setDiagonalV</a>
+<span class="lineNum">     213 </span>            :      */
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :     virtual void setDiagonalV( const hmemo::HArray&lt;ValueType&gt;&amp; )</span>
+<span class="lineNum">     215 </span>            :     {
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;setDiagonal unsuported for stencil storage&quot; )</span>
+<span class="lineNum">     217 </span>            :     }
+<span class="lineNum">     218 </span>            : 
+<span class="lineNum">     219 </span>            :     /** 
+<a name="220"><span class="lineNum">     220 </span>            :      * Implementation of pure method MatrixStorage&lt;ValueType&gt;::setDiagonal</a>
+<span class="lineNum">     221 </span>            :      */
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :     virtual void setDiagonal( const ValueType )</span>
+<span class="lineNum">     223 </span>            :     {
+<span class="lineNum">     224 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;setDiagonal unsuported for stencil storage&quot; )</span>
+<span class="lineNum">     225 </span>            :     }
+<span class="lineNum">     226 </span>            : 
+<a name="227"><span class="lineNum">     227 </span>            :     /** _MatrixStorage */</a>
+<span class="lineNum">     228 </span>            : 
+<span class="lineNum">     229 </span><span class="lineNoCov">          0 :         virtual void scaleRows(const scai::hmemo::HArray&lt;ValueType&gt;&amp;)</span>
+<span class="lineNum">     230 </span>            :     {
+<span class="lineNum">     231 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;scaleRows cannot be applied for stencil storage&quot; )</span>
+<span class="lineNum">     232 </span>            :     }
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span>            :     /** Implementation of _MatrixStorage::buildCSRSizes */
+<span class="lineNum">     235 </span>            : 
+<span class="lineNum">     236 </span>            :         virtual void buildCSRSizes( scai::hmemo::HArray&lt;IndexType&gt;&amp; sizeIA ) const;
+<span class="lineNum">     237 </span>            : 
+<span class="lineNum">     238 </span>            :     /** Implementation of _MatrixStorage::buildCSRData */
+<span class="lineNum">     239 </span>            : 
+<span class="lineNum">     240 </span>            :         virtual void buildCSRData(
+<span class="lineNum">     241 </span>            :        scai::hmemo::HArray&lt;IndexType&gt;&amp; csrIA, 
+<span class="lineNum">     242 </span>            :        scai::hmemo::HArray&lt;IndexType&gt;&amp; csrJA, 
+<span class="lineNum">     243 </span>            :        scai::hmemo::_HArray&amp; csrValues ) const;
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span>            :     /** Implementation of _MatrixStorage::setCSRData i
+<span class="lineNum">     246 </span>            :      *
+<a name="247"><span class="lineNum">     247 </span>            :      *  This method throws an exception as arbitrary CSR data cannot be converted to a stencil storage</a>
+<span class="lineNum">     248 </span>            :      */
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :         virtual void setCSRData( </span>
+<span class="lineNum">     250 </span>            :         IndexType, 
+<span class="lineNum">     251 </span>            :         IndexType, 
+<span class="lineNum">     252 </span>            :         const scai::hmemo::HArray&lt;IndexType&gt;&amp;, 
+<span class="lineNum">     253 </span>            :         const scai::hmemo::HArray&lt;IndexType&gt;&amp;, 
+<span class="lineNum">     254 </span>            :         const scai::hmemo::_HArray&amp;)
+<span class="lineNum">     255 </span>            :     {
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;setcSRData unsuported&quot; )</span>
+<span class="lineNum">     257 </span>            :     }
+<span class="lineNum">     258 </span>            : 
+<a name="259"><span class="lineNum">     259 </span>            :     /** _MatrixStorage */</a>
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span><span class="lineNoCov">          0 :         virtual void setDIAData( IndexType, IndexType, IndexType, const scai::hmemo::HArray&lt;IndexType&gt;&amp;, const scai::hmemo::_HArray&amp; )</span>
+<span class="lineNum">     262 </span>            :     {
+<span class="lineNum">     263 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;setDIAData cannot be applied for stencil storage&quot; )</span>
+<span class="lineNum">     264 </span>            :     }
+<span class="lineNum">     265 </span>            : 
+<span class="lineNum">     266 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::scale
+<span class="lineNum">     267 </span>            :      *
+<span class="lineNum">     268 </span>            :      *  This operation is supported as scale is available for a stencil.
+<span class="lineNum">     269 </span>            :      */
+<span class="lineNum">     270 </span>            :         void scale( const ValueType factor );
+<span class="lineNum">     271 </span>            : 
+<a name="272"><span class="lineNum">     272 </span>            :     /* Print relevant information about matrix storage format. */</a>
+<span class="lineNum">     273 </span>            : 
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 :     virtual void writeAt( std::ostream&amp; stream ) const</span>
+<span class="lineNum">     275 </span>            :     {
+<span class="lineNum">     276 </span><span class="lineNoCov">          0 :         stream &lt;&lt; &quot;StencilStorage( &quot; &lt;&lt; this-&gt;getNumRows() &lt;&lt; &quot; x &quot; &lt;&lt; this-&gt;getNumColumns() </span>
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 :                &lt;&lt; &quot;, grid = &quot; &lt;&lt; mGrid &lt;&lt; &quot;, stencil = &quot; &lt;&lt; mStencil &lt;&lt; &quot;)&quot;;</span>
+<span class="lineNum">     278 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     279 </span>            : 
+<a name="280"><span class="lineNum">     280 </span>            :     /** Getter routine for the number of stored values. */</a>
+<span class="lineNum">     281 </span>            : 
+<span class="lineNum">     282 </span><span class="lineNoCov">          0 :     IndexType getNumValues() const</span>
+<span class="lineNum">     283 </span>            :     {
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 :         return 1;</span>
+<span class="lineNum">     285 </span>            :     }
+<span class="lineNum">     286 </span>            : 
+<span class="lineNum">     287 </span>            :     /******************************************************************/
+<span class="lineNum">     288 </span>            :     /*  set - get  row - column                                       */
+<span class="lineNum">     289 </span>            :     /******************************************************************/
+<span class="lineNum">     290 </span>            : 
+<span class="lineNum">     291 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::getRow */
+<span class="lineNum">     292 </span>            : 
+<span class="lineNum">     293 </span>            :     virtual void getRow( hmemo::HArray&lt;ValueType&gt;&amp; row, const IndexType i ) const;
+<span class="lineNum">     294 </span>            : 
+<span class="lineNum">     295 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::getColumn */
+<span class="lineNum">     296 </span>            : 
+<span class="lineNum">     297 </span>            :     virtual void getColumn( hmemo::HArray&lt;ValueType&gt;&amp; column, const IndexType j ) const;
+<span class="lineNum">     298 </span>            : 
+<span class="lineNum">     299 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::getSparseRow */
+<span class="lineNum">     300 </span>            : 
+<span class="lineNum">     301 </span>            :     virtual void getSparseRow( hmemo::HArray&lt;IndexType&gt;&amp; jA, hmemo::HArray&lt;ValueType&gt;&amp; values, const IndexType i ) const;
+<span class="lineNum">     302 </span>            : 
+<span class="lineNum">     303 </span>            :     /** Implementation of pure method MatrixStorage::getSparseColumn */
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            :     virtual void getSparseColumn( hmemo::HArray&lt;IndexType&gt;&amp; iA, hmemo::HArray&lt;ValueType&gt;&amp; values, const IndexType j ) const;
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::setRow */
+<span class="lineNum">     308 </span>            : 
+<span class="lineNum">     309 </span>            :     virtual void setRow( const hmemo::HArray&lt;ValueType&gt;&amp; row, const IndexType i, const common::BinaryOp op );
+<span class="lineNum">     310 </span>            : 
+<span class="lineNum">     311 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::setColumn */
+<span class="lineNum">     312 </span>            : 
+<span class="lineNum">     313 </span>            :     virtual void setColumn( const hmemo::HArray&lt;ValueType&gt;&amp; column, const IndexType j, const common::BinaryOp op );
+<span class="lineNum">     314 </span>            : 
+<span class="lineNum">     315 </span>            :     /** Implementation of pure method.  */
+<span class="lineNum">     316 </span>            : 
+<span class="lineNum">     317 </span>            :     void conj();
+<span class="lineNum">     318 </span>            : 
+<span class="lineNum">     319 </span>            :     /** Implementation of pure method MatrixStorage::getValue */
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span>            :     ValueType getValue( const IndexType i, const IndexType j ) const;
+<span class="lineNum">     322 </span>            : 
+<a name="323"><span class="lineNum">     323 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::setValue for Stencil storage */</a>
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span><span class="lineNoCov">          0 :     void setValue( const IndexType, const IndexType, const ValueType,</span>
+<span class="lineNum">     326 </span>            :                    const common::BinaryOp = common::BinaryOp::COPY )
+<span class="lineNum">     327 </span>            :     {
+<span class="lineNum">     328 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;setValue cannot be applied for stencil storage&quot; )</span>
+<span class="lineNum">     329 </span>            :     }
+<span class="lineNum">     330 </span>            : 
+<a name="331"><span class="lineNum">     331 </span>            :     /** Initiate an asynchronous data transfer to a specified location. */</a>
+<span class="lineNum">     332 </span>            : 
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :     virtual void prefetch( const hmemo::ContextPtr ) const</span>
+<span class="lineNum">     334 </span>            :     {
+<span class="lineNum">     335 </span>            :         // nothing to do here
+<span class="lineNum">     336 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     337 </span>            : 
+<a name="338"><span class="lineNum">     338 </span>            :     /** Will wait for all outstanding asynchronous data transfers. */</a>
+<span class="lineNum">     339 </span>            : 
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 :     void wait() const</span>
+<span class="lineNum">     341 </span>            :     {
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     343 </span>            : 
+<span class="lineNum">     344 </span>            :     /** Implementation for pure method is provided. */
+<span class="lineNum">     345 </span>            : 
+<span class="lineNum">     346 </span>            :     virtual size_t getMemoryUsageImpl() const;
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span>            :     /** Override splitHalo with version that avoids unnecessary conversions.
+<span class="lineNum">     349 </span>            :      *
+<span class="lineNum">     350 </span>            :      *  This routine expects localData to be a StencilStorage and haloData to be
+<span class="lineNum">     351 </span>            :      *  a CSRStroage. Furthermore, colDist must be a grid distribution that fits 
+<span class="lineNum">     352 </span>            :      *  to the grid of this stencil storage.
+<a name="353"><span class="lineNum">     353 </span>            :      */</a>
+<span class="lineNum">     354 </span>            : 
+<span class="lineNum">     355 </span><span class="lineNoCov">          0 :     virtual void splitHalo(</span>
+<span class="lineNum">     356 </span>            :         MatrixStorage&lt;ValueType&gt;&amp; /* localData */,
+<span class="lineNum">     357 </span>            :         MatrixStorage&lt;ValueType&gt;&amp; /* haloData */,
+<span class="lineNum">     358 </span>            :         dmemo::Halo&amp; /* halo */,
+<span class="lineNum">     359 </span>            :         const dmemo::Distribution&amp; /* colDist */,
+<span class="lineNum">     360 </span>            :         const dmemo::Distribution* /* rowDist */ ) const
+<span class="lineNum">     361 </span>            :     {
+<span class="lineNum">     362 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;print unsupported&quot; )</span>
+<span class="lineNum">     363 </span>            :     }
+<span class="lineNum">     364 </span>            :     
+<span class="lineNum">     365 </span>            : 
+<span class="lineNum">     366 </span>            :     /** General routine to build a CSR version of this stroage
+<span class="lineNum">     367 </span>            :      *
+<span class="lineNum">     368 </span>            :      *  @param[out] ia is the CSR offset array
+<span class="lineNum">     369 </span>            :      *  @param[out] ja is the array with the column indexes (optional)
+<span class="lineNum">     370 </span>            :      *  @param[out] values is the array with the non-zero matrix values (optional)
+<span class="lineNum">     371 </span>            :      *  @param[in]  loc is the Context where conversion should be done
+<span class="lineNum">     372 </span>            :      */
+<span class="lineNum">     373 </span>            : 
+<span class="lineNum">     374 </span>            :     template&lt;typename OtherValueType&gt;
+<span class="lineNum">     375 </span>            :     void buildCSR(
+<span class="lineNum">     376 </span>            :         hmemo::HArray&lt;IndexType&gt;&amp; ia,
+<span class="lineNum">     377 </span>            :         hmemo::HArray&lt;IndexType&gt;* ja,
+<span class="lineNum">     378 </span>            :         hmemo::HArray&lt;OtherValueType&gt;* values,
+<span class="lineNum">     379 </span>            :         const hmemo::ContextPtr loc ) const;
+<span class="lineNum">     380 </span>            : 
+<span class="lineNum">     381 </span>            :     /** Implementation for MatrixStorage::l1Norm */
+<span class="lineNum">     382 </span>            : 
+<span class="lineNum">     383 </span>            :     virtual RealType&lt;ValueType&gt; l1Norm() const;
+<span class="lineNum">     384 </span>            : 
+<span class="lineNum">     385 </span>            :     /** Implementation for MatrixStorage::l2Norm */
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span>            :     virtual RealType&lt;ValueType&gt; l2Norm() const;
+<span class="lineNum">     388 </span>            : 
+<span class="lineNum">     389 </span>            :     /** Implementation for MatrixStorage::maxNorm */
+<span class="lineNum">     390 </span>            : 
+<span class="lineNum">     391 </span>            :     virtual RealType&lt;ValueType&gt; maxNorm() const;
+<span class="lineNum">     392 </span>            : 
+<a name="393"><span class="lineNum">     393 </span>            :     /** Implemenation of pure method of class MatrixStorage. */</a>
+<span class="lineNum">     394 </span>            : 
+<span class="lineNum">     395 </span><span class="lineNoCov">          0 :     virtual void print( std::ostream&amp; ) const</span>
+<span class="lineNum">     396 </span>            :     {
+<span class="lineNum">     397 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;print unsupported&quot; )</span>
+<span class="lineNum">     398 </span>            :     }
+<span class="lineNum">     399 </span>            :    
+<span class="lineNum">     400 </span>            :     /** Override the default implementation MatrixStorage&lt;ValueType&gt;::assign
+<span class="lineNum">     401 </span>            :      *
+<span class="lineNum">     402 </span>            :      *  Assign is only supported if other matrix is also a stencil storage.
+<span class="lineNum">     403 </span>            :      *  Otherwise an exception is thrown.
+<span class="lineNum">     404 </span>            :      */
+<span class="lineNum">     405 </span>            :     virtual void assign( const _MatrixStorage&amp; other );
+<span class="lineNum">     406 </span>            : 
+<a name="407"><span class="lineNum">     407 </span>            :     /** Implementation of pure method MatrixStorage&lt;ValueType&gt;::assignDiagonal */</a>
+<span class="lineNum">     408 </span>            : 
+<span class="lineNum">     409 </span><span class="lineNoCov">          0 :     virtual void assignDiagonal( const hmemo::HArray&lt;ValueType&gt;&amp; )</span>
+<span class="lineNum">     410 </span>            :     {
+<span class="lineNum">     411 </span><span class="lineNoCov">          0 :         COMMON_THROWEXCEPTION( &quot;assignDiagonal unsupported&quot; )</span>
+<span class="lineNum">     412 </span>            :     }
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span>            :     /** Override the default implementation MatrixStorage&lt;ValueType&gt;::assignTranspose 
+<span class="lineNum">     415 </span>            :      *
+<span class="lineNum">     416 </span>            :      *  Assign transpose is only supported if other matrix is also a stencil storage.
+<span class="lineNum">     417 </span>            :      *  Otherwise an exception is thrown.
+<span class="lineNum">     418 </span>            :      */
+<span class="lineNum">     419 </span>            :     virtual void assignTranspose( const MatrixStorage&lt;ValueType&gt;&amp; other );
+<span class="lineNum">     420 </span>            : 
+<span class="lineNum">     421 </span>            :     /** Implementation of MatrixStorage::matrixTimesVector for stencil storage */
+<span class="lineNum">     422 </span>            : 
+<span class="lineNum">     423 </span>            :     virtual void matrixTimesVector(
+<span class="lineNum">     424 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     425 </span>            :         const ValueType alpha,
+<span class="lineNum">     426 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     427 </span>            :         const ValueType beta,
+<span class="lineNum">     428 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; y,
+<span class="lineNum">     429 </span>            :         const common::MatrixOp op ) const;
+<span class="lineNum">     430 </span>            : 
+<span class="lineNum">     431 </span>            :     /** Implementation of MatrixStorage::jacobiIterate for stencil storage */
+<span class="lineNum">     432 </span>            : 
+<span class="lineNum">     433 </span>            :     virtual void jacobiIterate(
+<span class="lineNum">     434 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; solution,
+<span class="lineNum">     435 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; oldSolution,
+<span class="lineNum">     436 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; rhs,
+<span class="lineNum">     437 </span>            :         const ValueType omega ) const;
+<span class="lineNum">     438 </span>            : 
+<span class="lineNum">     439 </span>            :     /** Implementation of MatrixStorage::matrixTimesVectorAsync for stencil storage */
+<span class="lineNum">     440 </span>            : 
+<span class="lineNum">     441 </span>            :     virtual tasking::SyncToken* matrixTimesVectorAsync(
+<span class="lineNum">     442 </span>            :         hmemo::HArray&lt;ValueType&gt;&amp; result,
+<span class="lineNum">     443 </span>            :         const ValueType alpha,
+<span class="lineNum">     444 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; x,
+<span class="lineNum">     445 </span>            :         const ValueType beta,
+<span class="lineNum">     446 </span>            :         const hmemo::HArray&lt;ValueType&gt;&amp; y,
+<span class="lineNum">     447 </span>            :         const common::MatrixOp op ) const;
+<span class="lineNum">     448 </span>            : 
+<span class="lineNum">     449 </span>            :     using _MatrixStorage::getNumRows;
+<span class="lineNum">     450 </span>            :     using _MatrixStorage::getNumColumns;
+<span class="lineNum">     451 </span>            :     using _MatrixStorage::prefetch;
+<span class="lineNum">     452 </span>            :     using _MatrixStorage::getContextPtr;
+<span class="lineNum">     453 </span>            : 
+<span class="lineNum">     454 </span>            : protected:
+<span class="lineNum">     455 </span>            : 
+<span class="lineNum">     456 </span>            :     using MatrixStorage&lt;ValueType&gt;::mDiagonalProperty;
+<span class="lineNum">     457 </span>            : 
+<span class="lineNum">     458 </span>            :     common::Grid mGrid;                    //! grid for which this matrix storage stands
+<span class="lineNum">     459 </span>            :     common::Stencil&lt;ValueType&gt; mStencil;   //! stencil that specifies the linear mapping  with involved neighbors
+<span class="lineNum">     460 </span>            : 
+<span class="lineNum">     461 </span>            : private:
+<span class="lineNum">     462 </span>            : 
+<span class="lineNum">     463 </span>            :     static std::string initTypeName();
+<span class="lineNum">     464 </span>            : 
+<span class="lineNum">     465 </span>            :     tasking::SyncToken* incGEMV( hmemo::HArray&lt;ValueType&gt;&amp; result, const ValueType alpha, const hmemo::HArray&lt;ValueType&gt;&amp; x, bool async ) const;
+<span class="lineNum">     466 </span>            : 
+<span class="lineNum">     467 </span>            :     /** Logger for this class. */
+<span class="lineNum">     468 </span>            : 
+<span class="lineNum">     469 </span>            :     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+<span class="lineNum">     470 </span>            : };
+<span class="lineNum">     471 </span>            : 
+<span class="lineNum">     472 </span>            : /* --------------------------------------------------------------------------- */
+<a name="473"><span class="lineNum">     473 </span>            : </a>
+<span class="lineNum">     474 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     475 </span><span class="lineNoCov">          0 : void StencilStorage&lt;ValueType&gt;::setRow( const scai::hmemo::HArray&lt;ValueType&gt;&amp;, IndexType, scai::common::BinaryOp )</span>
+<span class="lineNum">     476 </span>            : {
+<span class="lineNum">     477 </span><span class="lineNoCov">          0 :     COMMON_THROWEXCEPTION( &quot;setRow unsuported&quot; )</span>
+<span class="lineNum">     478 </span>            : }
+<a name="479"><span class="lineNum">     479 </span>            : </a>
+<span class="lineNum">     480 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     481 </span><span class="lineNoCov">          0 : void StencilStorage&lt;ValueType&gt;::setColumn( const scai::hmemo::HArray&lt;ValueType&gt;&amp;, IndexType, scai::common::BinaryOp )</span>
+<span class="lineNum">     482 </span>            : {
+<span class="lineNum">     483 </span><span class="lineNoCov">          0 :     COMMON_THROWEXCEPTION( &quot;setColumn unsuported&quot; )</span>
+<span class="lineNum">     484 </span>            : }
+<a name="485"><span class="lineNum">     485 </span>            : </a>
+<span class="lineNum">     486 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     487 </span><span class="lineNoCov">          0 : void StencilStorage&lt;ValueType&gt;::getSparseColumn( hmemo::HArray&lt;IndexType&gt;&amp;, hmemo::HArray&lt;ValueType&gt;&amp;, const IndexType ) const</span>
+<span class="lineNum">     488 </span>            : {
+<span class="lineNum">     489 </span><span class="lineNoCov">          0 :     COMMON_THROWEXCEPTION( &quot;get(Sparse)Column unsupported for stencil storage&quot; )</span>
+<span class="lineNum">     490 </span>            : }
+<a name="491"><span class="lineNum">     491 </span>            : </a>
+<span class="lineNum">     492 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     493 </span><span class="lineNoCov">          0 : void StencilStorage&lt;ValueType&gt;::getColumn( hmemo::HArray&lt;ValueType&gt;&amp;, const IndexType ) const</span>
+<span class="lineNum">     494 </span>            : {
+<span class="lineNum">     495 </span><span class="lineNoCov">          0 :     COMMON_THROWEXCEPTION( &quot;get(Sparse)Column unsupported for stencil storage&quot; )</span>
+<span class="lineNum">     496 </span>            : }
+<span class="lineNum">     497 </span>            : 
+<span class="lineNum">     498 </span>            : } /* end namespace lama */
+<span class="lineNum">     499 </span>            : 
+<span class="lineNum">     500 </span>            : } /* end namespace scai */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

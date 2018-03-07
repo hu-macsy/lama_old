@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - dmemo/NoDistribution.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">dmemo</a> - NoDistribution.hpp<span style="font-size: 80%;"> (source / <a href="NoDistribution.hpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-04 18:51:09</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file NoDistribution.hpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief NoDistribution.hpp
+<span class="lineNum">      31 </span>            :  * @author brandes
+<span class="lineNum">      32 </span>            :  * @date 14.03.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #pragma once
+<span class="lineNum">      36 </span>            : 
+<span class="lineNum">      37 </span>            : // for dll_import
+<span class="lineNum">      38 </span>            : #include &lt;scai/common/config.hpp&gt;
+<span class="lineNum">      39 </span>            : 
+<span class="lineNum">      40 </span>            : // base classes
+<span class="lineNum">      41 </span>            : #include &lt;scai/dmemo/Distribution.hpp&gt;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : // internal scai libraries
+<span class="lineNum">      44 </span>            : #include &lt;scai/logging.hpp&gt;
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : namespace scai
+<span class="lineNum">      47 </span>            : {
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            : namespace dmemo
+<span class="lineNum">      50 </span>            : {
+<span class="lineNum">      51 </span>            : 
+<span class="lineNum">      52 </span>            : /** Distribution class that stands for a replicated distribution.
+<span class="lineNum">      53 </span>            :  *
+<span class="lineNum">      54 </span>            :  *  With this distribution an object has an incarnation on each
+<span class="lineNum">      55 </span>            :  *  processor.
+<span class="lineNum">      56 </span>            :  *
+<span class="lineNum">      57 </span>            :  *  Usually, methods should take care of consistency among
+<span class="lineNum">      58 </span>            :  *  all processors, i.e. writes and update operations must be
+<span class="lineNum">      59 </span>            :  *  done on all partitions. But a replicated object can also be used
+<span class="lineNum">      60 </span>            :  *  like a private incarnation on each processor.
+<span class="lineNum">      61 </span>            :  */
+<span class="lineNum">      62 </span>            : class COMMON_DLL_IMPORTEXPORT NoDistribution:
+<span class="lineNum">      63 </span>            : 
+<span class="lineNum">      64 </span>            :     public Distribution,
+<span class="lineNum">      65 </span>            :     private Distribution::Register&lt;NoDistribution&gt;
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : {
+<span class="lineNum">      68 </span>            : public:
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            :     /** Constructor of NoDistribution requires only the global size */
+<span class="lineNum">      71 </span>            : 
+<span class="lineNum">      72 </span>            :     NoDistribution( const IndexType globalSize );
+<span class="lineNum">      73 </span>            : 
+<span class="lineNum">      74 </span>            :     virtual ~NoDistribution();
+<span class="lineNum">      75 </span>            : 
+<span class="lineNum">      76 </span>            :     virtual bool isLocal( const IndexType index ) const;
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :     virtual IndexType getLocalSize() const;
+<span class="lineNum">      79 </span>            : 
+<span class="lineNum">      80 </span>            :     virtual IndexType local2global( const IndexType localIndex ) const;
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            :     virtual IndexType global2local( const IndexType globalIndex ) const;
+<span class="lineNum">      83 </span>            : 
+<span class="lineNum">      84 </span>            :     /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
+<span class="lineNum">      85 </span>            : 
+<span class="lineNum">      86 </span>            :     virtual IndexType getBlockDistributionSize() const;
+<span class="lineNum">      87 </span>            : 
+<span class="lineNum">      88 </span>            :     virtual bool isEqual( const Distribution&amp; other ) const;
+<span class="lineNum">      89 </span>            : 
+<span class="lineNum">      90 </span>            :     virtual void writeAt( std::ostream&amp; stream ) const;
+<span class="lineNum">      91 </span>            : 
+<span class="lineNum">      92 </span>            :     virtual void computeOwners( hmemo::HArray&lt;PartitionId&gt;&amp; owners, const hmemo::HArray&lt;IndexType&gt;&amp; indexes ) const;
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            :     /** Static method required for create to use in Distribution::Register */
+<span class="lineNum">      95 </span>            : 
+<span class="lineNum">      96 </span>            :     static Distribution* create( const DistributionArguments args );
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            :     /** Static method required for Distribution::Register */
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span>            :     static inline std::string createValue();
+<span class="lineNum">     101 </span>            : 
+<span class="lineNum">     102 </span>            :     virtual inline const char* getKind() const;
+<span class="lineNum">     103 </span>            : 
+<span class="lineNum">     104 </span>            :     static inline const char* getId();
+<span class="lineNum">     105 </span>            : 
+<span class="lineNum">     106 </span>            :     /** Implementation of pure method Distribution::hasAnyAddressing */
+<span class="lineNum">     107 </span>            :     virtual bool hasAnyAddressing() const;
+<span class="lineNum">     108 </span>            : 
+<span class="lineNum">     109 </span>            :     /** Implementation of pure method Distribution::enableAnyAddressing */
+<span class="lineNum">     110 </span>            : 
+<span class="lineNum">     111 </span>            :     virtual void enableAnyAddressing() const;
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            :     /** Implementation of pure method Distribution::getAnyLocalSize */
+<span class="lineNum">     114 </span>            : 
+<span class="lineNum">     115 </span>            :     virtual IndexType getAnyLocalSize( const PartitionId partition ) const;
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span>            :     /** Implementation of pure method Distribution::getAnyOwner */
+<span class="lineNum">     118 </span>            : 
+<span class="lineNum">     119 </span>            :     virtual PartitionId getAnyOwner( const IndexType globalIndex ) const;
+<span class="lineNum">     120 </span>            : 
+<span class="lineNum">     121 </span>            :     /** Implementation of pure method Distribution::getAnyLocalIndex */
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            :     virtual IndexType getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const;
+<span class="lineNum">     124 </span>            : 
+<span class="lineNum">     125 </span>            :     /** Implementation of pure method Distribution::getAnyGlobalIndex */
+<span class="lineNum">     126 </span>            : 
+<span class="lineNum">     127 </span>            :     virtual IndexType getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const;
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span>            : private:
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span>            :     NoDistribution(); // no default constructor as global size is not available
+<span class="lineNum">     132 </span>            : 
+<span class="lineNum">     133 </span>            :     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+<span class="lineNum">     134 </span>            : 
+<span class="lineNum">     135 </span>            : };
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span>            : /* ------------------------------------------------------------------------ */
+<span class="lineNum">     138 </span>            : /*  Implementation of inline methods                                        */
+<a name="139"><span class="lineNum">     139 </span>            : /* ------------------------------------------------------------------------ */</a>
+<span class="lineNum">     140 </span>            : 
+<span class="lineNum">     141 </span><span class="lineCov">        242 : const char* NoDistribution::getKind() const</span>
+<span class="lineNum">     142 </span>            : {
+<span class="lineNum">     143 </span><span class="lineCov">        242 :     return getId();</span>
+<span class="lineNum">     144 </span>            : }
+<span class="lineNum">     145 </span>            : 
+<span class="lineNum">     146 </span>            : std::string NoDistribution::createValue()
+<span class="lineNum">     147 </span>            : {
+<span class="lineNum">     148 </span><span class="lineCov">         22 :     return getId();</span>
+<span class="lineNum">     149 </span>            : }
+<span class="lineNum">     150 </span>            : 
+<span class="lineNum">     151 </span>            : const char* NoDistribution::getId()
+<span class="lineNum">     152 </span>            : {
+<span class="lineNum">     153 </span>            :     return &quot;NO&quot;;
+<span class="lineNum">     154 </span>            : }
+<span class="lineNum">     155 </span>            : 
+<span class="lineNum">     156 </span>            : } /* end namespace dmemo */
+<span class="lineNum">     157 </span>            : 
+<span class="lineNum">     158 </span>            : } /* end namespace scai */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,657 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - data.info - lama/storage/StorageMethods.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">lama/storage</a> - StorageMethods.cpp<span style="font-size: 80%;"> (source / <a href="StorageMethods.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">data.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">221</td>
+            <td class="headerCovTableEntry">224</td>
+            <td class="headerCovTableEntryHi">98.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-03-07 06:39:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">48</td>
+            <td class="headerCovTableEntry">51</td>
+            <td class="headerCovTableEntryHi">94.1 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /**</a>
+<span class="lineNum">       2 </span>            :  * @file StorageMethods.cpp
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * @license
+<span class="lineNum">       5 </span>            :  * Copyright (c) 2009-2017
+<span class="lineNum">       6 </span>            :  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+<span class="lineNum">       7 </span>            :  * for Fraunhofer-Gesellschaft
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * This file is part of the SCAI framework LAMA.
+<span class="lineNum">      10 </span>            :  *
+<span class="lineNum">      11 </span>            :  * LAMA is free software: you can redistribute it and/or modify it under the
+<span class="lineNum">      12 </span>            :  * terms of the GNU Affero General Public License as published by the Free
+<span class="lineNum">      13 </span>            :  * Software Foundation, either version 3 of the License, or (at your option)
+<span class="lineNum">      14 </span>            :  * any later version.
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+<span class="lineNum">      17 </span>            :  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+<span class="lineNum">      18 </span>            :  * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+<span class="lineNum">      19 </span>            :  * more details.
+<span class="lineNum">      20 </span>            :  *
+<span class="lineNum">      21 </span>            :  * You should have received a copy of the GNU Affero General Public License
+<span class="lineNum">      22 </span>            :  * along with LAMA. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+<span class="lineNum">      23 </span>            :  *
+<span class="lineNum">      24 </span>            :  * Other Usage
+<span class="lineNum">      25 </span>            :  * Alternatively, this file may be used in accordance with the terms and
+<span class="lineNum">      26 </span>            :  * conditions contained in a signed written agreement between you and
+<span class="lineNum">      27 </span>            :  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+<span class="lineNum">      28 </span>            :  * @endlicense
+<span class="lineNum">      29 </span>            :  *
+<span class="lineNum">      30 </span>            :  * @brief Implementation of static routines for matrix storage
+<span class="lineNum">      31 </span>            :  * @author Thomas Brandes
+<span class="lineNum">      32 </span>            :  * @date 27.04.2011
+<span class="lineNum">      33 </span>            :  */
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : // hpp
+<span class="lineNum">      36 </span>            : #include &lt;scai/lama/storage/StorageMethods.hpp&gt;
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : // internal scai libraries
+<span class="lineNum">      39 </span>            : #include &lt;scai/dmemo/Distribution.hpp&gt;
+<span class="lineNum">      40 </span>            : #include &lt;scai/dmemo/HaloBuilder.hpp&gt;
+<span class="lineNum">      41 </span>            : #include &lt;scai/dmemo/Redistributor.hpp&gt;
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : #include &lt;scai/sparsekernel/openmp/OpenMPCSRUtils.hpp&gt;
+<span class="lineNum">      44 </span>            : #include &lt;scai/utilskernel/TransferUtils.hpp&gt;
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span>            : #include &lt;scai/common/macros/assert.hpp&gt;
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : #include &lt;scai/tracing.hpp&gt;
+<span class="lineNum">      49 </span>            : #include &lt;scai/common/macros/instantiate.hpp&gt;
+<span class="lineNum">      50 </span>            : 
+<span class="lineNum">      51 </span>            : // std
+<span class="lineNum">      52 </span>            : #include &lt;algorithm&gt;
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span>            : namespace scai
+<span class="lineNum">      55 </span>            : {
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : using namespace hmemo;
+<span class="lineNum">      58 </span>            : using namespace dmemo;
+<span class="lineNum">      59 </span>            : 
+<span class="lineNum">      60 </span>            : using sparsekernel::OpenMPCSRUtils;
+<span class="lineNum">      61 </span>            : 
+<span class="lineNum">      62 </span>            : namespace lama
+<span class="lineNum">      63 </span>            : {
+<span class="lineNum">      64 </span>            : 
+<span class="lineNum">      65 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span><span class="lineCov">         28 : SCAI_LOG_DEF_LOGGER( _StorageMethods::logger, &quot;Storage.Methods&quot; )</span>
+<span class="lineNum">      68 </span>            : 
+<span class="lineNum">      69 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">      70 </span>            : 
+<span class="lineNum">      71 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">      72 </span><span class="lineCov">      54716 : void StorageMethods&lt;ValueType&gt;::localizeCSR(</span>
+<span class="lineNum">      73 </span>            :     HArray&lt;IndexType&gt;&amp; localIA,
+<span class="lineNum">      74 </span>            :     HArray&lt;IndexType&gt;&amp; localJA,
+<span class="lineNum">      75 </span>            :     HArray&lt;ValueType&gt;&amp; localValues,
+<span class="lineNum">      76 </span>            :     const HArray&lt;IndexType&gt;&amp; globalIA,
+<span class="lineNum">      77 </span>            :     const HArray&lt;IndexType&gt;&amp; globalJA,
+<span class="lineNum">      78 </span>            :     const HArray&lt;ValueType&gt;&amp; globalValues,
+<span class="lineNum">      79 </span><span class="lineCov">      54716 :     const Distribution&amp; rowDist )</span>
+<span class="lineNum">      80 </span>            : {
+<span class="lineNum">      81 </span><span class="lineCov">      54716 :     SCAI_REGION( &quot;Storage.localizeCSR&quot; )</span>
+<span class="lineNum">      82 </span><span class="lineCov">      54716 :     const IndexType globalNumRows = globalIA.size() - 1;</span>
+<span class="lineNum">      83 </span><span class="lineCov">      54716 :     SCAI_ASSERT_EQUAL_ERROR( globalNumRows, rowDist.getGlobalSize() )</span>
+<span class="lineNum">      84 </span><span class="lineCov">      54716 :     const IndexType localNumRows = rowDist.getLocalSize();</span>
+<span class="lineNum">      85 </span><span class="lineCov">     109432 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">      86 </span>            :                    &quot;localzeCSR (#rows = global:&quot; &lt;&lt; globalNumRows &lt;&lt; &quot;, local:&quot; &lt;&lt; localNumRows &lt;&lt; &quot;, #values( global ) = &quot; &lt;&lt; globalJA.size() &lt;&lt; &quot;, rowDist = &quot; &lt;&lt; rowDist )
+<span class="lineNum">      87 </span><span class="lineCov">      54716 :     ReadAccess&lt;IndexType&gt; rGlobalIA( globalIA );</span>
+<span class="lineNum">      88 </span>            :     // localIA will contain at first sizes, later the offsets
+<span class="lineNum">      89 </span><span class="lineCov">     109432 :     WriteOnlyAccess&lt;IndexType&gt; wLocalIA( localIA, localNumRows + 1 );</span>
+<a name="90"><span class="lineNum">      90 </span>            :     // By using the routine local2global of a distribution we can</a>
+<span class="lineNum">      91 </span>            :     // set the local sizes independently
+<span class="lineNum">      92 </span><span class="lineCov">     109432 :     #pragma omp parallel for </span>
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span>            :     for ( IndexType i = 0; i &lt; localNumRows; i++ )
+<span class="lineNum">      95 </span>            :     {
+<span class="lineNum">      96 </span><span class="lineCov">     164360 :         IndexType globalI = rowDist.local2global( i );</span>
+<span class="lineNum">      97 </span><span class="lineCov">     164360 :         wLocalIA[i] = rGlobalIA[globalI + 1] - rGlobalIA[globalI];</span>
+<span class="lineNum">      98 </span>            :     }
+<span class="lineNum">      99 </span>            : 
+<span class="lineNum">     100 </span>            :     // build now row offset from running sums, set nnz
+<span class="lineNum">     101 </span><span class="lineCov">      54716 :     IndexType localNumValues = OpenMPCSRUtils::sizes2offsets( wLocalIA.get(), localNumRows );</span>
+<span class="lineNum">     102 </span>            :     SCAI_LOG_DEBUG( logger, &quot;#values( local ) = &quot; &lt;&lt; localNumValues )
+<span class="lineNum">     103 </span>            :     // so we can now allocate s of correct size
+<span class="lineNum">     104 </span><span class="lineCov">     109432 :     WriteOnlyAccess&lt;IndexType&gt; wLocalJA( localJA, localNumValues );</span>
+<span class="lineNum">     105 </span><span class="lineCov">     109432 :     WriteOnlyAccess&lt;ValueType&gt; wLocalValues( localValues, localNumValues );</span>
+<span class="lineNum">     106 </span><span class="lineCov">      54716 :     ReadAccess&lt;IndexType&gt; rGlobalJA( globalJA );</span>
+<span class="lineNum">     107 </span><span class="lineCov">      54716 :     ReadAccess&lt;ValueType&gt; rGlobalValues( globalValues );</span>
+<a name="108"><span class="lineNum">     108 </span>            :     // Due to the availability of offsets for both storages we</a>
+<span class="lineNum">     109 </span>            :     // can copy the global matrix data to the local one independently
+<span class="lineNum">     110 </span><span class="lineCov">     109432 :     #pragma omp parallel for </span>
+<span class="lineNum">     111 </span>            : 
+<span class="lineNum">     112 </span>            :     for ( IndexType i = 0; i &lt; localNumRows; i++ )
+<span class="lineNum">     113 </span>            :     {
+<span class="lineNum">     114 </span><span class="lineCov">     164360 :         IndexType globalI = rowDist.local2global( i );</span>
+<span class="lineNum">     115 </span><span class="lineCov">     164360 :         IndexType localOffset = wLocalIA[i];</span>
+<span class="lineNum">     116 </span>            : 
+<span class="lineNum">     117 </span><span class="lineCov">     394364 :         for ( IndexType jj = rGlobalIA[globalI]; jj &lt; rGlobalIA[globalI + 1]; ++jj )</span>
+<span class="lineNum">     118 </span>            :         {
+<span class="lineNum">     119 </span><span class="lineCov">     230004 :             wLocalJA[localOffset] = rGlobalJA[jj];</span>
+<span class="lineNum">     120 </span><span class="lineCov">     336090 :             wLocalValues[localOffset] = rGlobalValues[jj];</span>
+<span class="lineNum">     121 </span><span class="lineCov">     230004 :             ++localOffset;</span>
+<span class="lineNum">     122 </span>            :         }
+<span class="lineNum">     123 </span>            : 
+<span class="lineNum">     124 </span><span class="lineCov">     164360 :         SCAI_ASSERT_DEBUG( localOffset == wLocalIA[i + 1],</span>
+<span class="lineNum">     125 </span>            :                            &quot;, localOffset = &quot; &lt;&lt; localOffset &lt;&lt; &quot;, expected &quot; &lt;&lt; wLocalIA[i + 1] )
+<span class="lineNum">     126 </span>            :     }
+<span class="lineNum">     127 </span><span class="lineCov">      54716 : }</span>
+<span class="lineNum">     128 </span>            : 
+<span class="lineNum">     129 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     132 </span><span class="lineCov">       4851 : void StorageMethods&lt;ValueType&gt;::replicateCSR(</span>
+<span class="lineNum">     133 </span>            :     HArray&lt;IndexType&gt;&amp; globalIA,
+<span class="lineNum">     134 </span>            :     HArray&lt;IndexType&gt;&amp; globalJA,
+<span class="lineNum">     135 </span>            :     HArray&lt;ValueType&gt;&amp; globalValues,
+<span class="lineNum">     136 </span>            :     const HArray&lt;IndexType&gt;&amp; localIA,
+<span class="lineNum">     137 </span>            :     const HArray&lt;IndexType&gt;&amp; localJA,
+<span class="lineNum">     138 </span>            :     const HArray&lt;ValueType&gt;&amp; localValues,
+<span class="lineNum">     139 </span><span class="lineCov">       4851 :     const Distribution&amp; rowDist )</span>
+<span class="lineNum">     140 </span>            : {
+<span class="lineNum">     141 </span><span class="lineCov">       4851 :     SCAI_REGION( &quot;Storage.replicateCSR&quot; )</span>
+<span class="lineNum">     142 </span><span class="lineCov">       4851 :     const IndexType localNumRows = localIA.size() - 1;</span>
+<span class="lineNum">     143 </span><span class="lineCov">       4851 :     SCAI_ASSERT_EQUAL_ERROR( localNumRows, rowDist.getLocalSize() )</span>
+<span class="lineNum">     144 </span>            :     // the CSR data is not checked for consistency here
+<span class="lineNum">     145 </span>            :     const IndexType globalNumRows = rowDist.getGlobalSize();
+<span class="lineNum">     146 </span><span class="lineCov">       9702 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     147 </span>            :                    &quot;replicateCSR (#rows = local:&quot; &lt;&lt; localNumRows &lt;&lt; &quot;, global: &quot; &lt;&lt; globalNumRows &lt;&lt; &quot;, #values(local) = &quot; &lt;&lt; localJA.size() &lt;&lt; &quot;, rowDist = &quot; &lt;&lt; rowDist )
+<span class="lineNum">     148 </span>            :     // gather distributed matrix storage into one global storage replicated on all processors
+<span class="lineNum">     149 </span><span class="lineCov">       4851 :     const Communicator&amp; comm = rowDist.getCommunicator();</span>
+<span class="lineNum">     150 </span>            :     // In a first step we need sizes of all rows, so build it locally before
+<span class="lineNum">     151 </span><span class="lineCov">       4851 :     HArray&lt;IndexType&gt; localSizes;</span>
+<span class="lineNum">     152 </span><span class="lineCov">       4851 :     ReadAccess&lt;IndexType&gt; rLocalIA( localIA );</span>
+<span class="lineNum">     153 </span><span class="lineCov">       9702 :     WriteOnlyAccess&lt;IndexType&gt; wLocalSizes( localSizes, localNumRows );</span>
+<span class="lineNum">     154 </span><span class="lineCov">       4851 :     OpenMPCSRUtils::offsets2sizes( wLocalSizes.get(), rLocalIA.get(), localNumRows );</span>
+<span class="lineNum">     155 </span>            :     // global IA will contain sizes at first, but later we need the offsets
+<span class="lineNum">     156 </span><span class="lineCov">       9702 :     WriteOnlyAccess&lt;IndexType&gt; wGlobalIA( globalIA, globalNumRows + 1 );</span>
+<span class="lineNum">     157 </span><span class="lineCov">       4851 :     rowDist.replicate( wGlobalIA.get(), wLocalSizes.get() );</span>
+<span class="lineNum">     158 </span>            :     SCAI_LOG_DEBUG( logger, comm &lt;&lt; &quot;: IA is now replicated, build offset &quot; )
+<span class="lineNum">     159 </span><span class="lineCov">       4851 :     const IndexType globalNumValues = OpenMPCSRUtils::sizes2offsets( wGlobalIA.get(), globalNumRows );</span>
+<span class="lineNum">     160 </span>            :     SCAI_LOG_DEBUG( logger, comm &lt;&lt; &quot;: offsets available, #non-zeros (global) = &quot; &lt;&lt; globalNumValues )
+<span class="lineNum">     161 </span>            :     // Distribution supports a replicate routine that works on arrays with jagged rows
+<span class="lineNum">     162 </span><span class="lineCov">       4851 :     ReadAccess&lt;IndexType&gt; rLocalJA( localJA );</span>
+<span class="lineNum">     163 </span><span class="lineCov">       9702 :     WriteOnlyAccess&lt;IndexType&gt; wGlobalJA( globalJA, globalNumValues );</span>
+<span class="lineNum">     164 </span><span class="lineCov">       4851 :     rowDist.replicateRagged( wGlobalJA.get(), rLocalJA.get(), wGlobalIA.get() );</span>
+<span class="lineNum">     165 </span>            :     SCAI_LOG_DEBUG( logger, comm &lt;&lt; &quot;: JA is now replicated &quot; )
+<span class="lineNum">     166 </span><span class="lineCov">       4851 :     ReadAccess&lt;ValueType&gt; rLocalValues( localValues );</span>
+<span class="lineNum">     167 </span><span class="lineCov">       9702 :     WriteOnlyAccess&lt;ValueType&gt; wGlobalValues( globalValues, globalNumValues );</span>
+<span class="lineNum">     168 </span><span class="lineCov">       4851 :     rowDist.replicateRagged( wGlobalValues.get(), rLocalValues.get(), wGlobalIA.get() );</span>
+<span class="lineNum">     169 </span>            :     SCAI_LOG_DEBUG( logger, comm &lt;&lt; &quot;: Values are now replicated &quot; )
+<span class="lineNum">     170 </span><span class="lineCov">       4851 : }</span>
+<span class="lineNum">     171 </span>            : 
+<span class="lineNum">     172 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     175 </span><span class="lineCov">       4752 : void StorageMethods&lt;ValueType&gt;::redistributeCSR(</span>
+<span class="lineNum">     176 </span>            :     HArray&lt;IndexType&gt;&amp; targetIA,
+<span class="lineNum">     177 </span>            :     HArray&lt;IndexType&gt;&amp; targetJA,
+<span class="lineNum">     178 </span>            :     HArray&lt;ValueType&gt;&amp; targetValues,
+<span class="lineNum">     179 </span>            :     const HArray&lt;IndexType&gt;&amp; sourceIA,
+<span class="lineNum">     180 </span>            :     const HArray&lt;IndexType&gt;&amp; sourceJA,
+<span class="lineNum">     181 </span>            :     const HArray&lt;ValueType&gt;&amp; sourceValues,
+<span class="lineNum">     182 </span>            :     const Redistributor&amp; redistributor )
+<span class="lineNum">     183 </span>            : {
+<span class="lineNum">     184 </span><span class="lineCov">       4752 :     SCAI_REGION( &quot;Storage.redistributeCSR&quot; )</span>
+<span class="lineNum">     185 </span>            :     const IndexType sourceNumRows = redistributor.getSourceLocalSize();
+<span class="lineNum">     186 </span>            :     const IndexType targetNumRows = redistributor.getTargetLocalSize();
+<span class="lineNum">     187 </span><span class="lineCov">       4752 :     SCAI_ASSERT_EQUAL_ERROR( sourceNumRows, sourceIA.size() - 1 )</span>
+<span class="lineNum">     188 </span><span class="lineCov">       9504 :     SCAI_LOG_INFO( logger, &quot;redistributeCSR, #source rows = &quot; &lt;&lt; sourceNumRows &lt;&lt; &quot;, #target rows = &quot; &lt;&lt; targetNumRows )</span>
+<span class="lineNum">     189 </span>            :     // Redistribution of row sizes, requires size array
+<span class="lineNum">     190 </span><span class="lineCov">       4752 :     HArray&lt;IndexType&gt; sourceSizes;</span>
+<span class="lineNum">     191 </span>            :     {
+<span class="lineNum">     192 </span><span class="lineCov">       4752 :         WriteOnlyAccess&lt;IndexType&gt; wSourceSizes( sourceSizes, sourceNumRows );</span>
+<span class="lineNum">     193 </span><span class="lineCov">       4752 :         ReadAccess&lt;IndexType&gt; rSourceIA( sourceIA );</span>
+<span class="lineNum">     194 </span><span class="lineCov">       4752 :         OpenMPCSRUtils::offsets2sizes( wSourceSizes.get(), rSourceIA.get(), sourceNumRows );</span>
+<span class="lineNum">     195 </span><span class="lineCov">       9504 :         WriteOnlyAccess&lt;IndexType&gt; wTargetIA( targetIA, targetNumRows + 1 );</span>
+<span class="lineNum">     196 </span>            :     }
+<span class="lineNum">     197 </span><span class="lineCov">       4752 :     redistributor.redistribute( targetIA, sourceSizes );</span>
+<span class="lineNum">     198 </span>            :     // redistribution does not build ragged row plan by default
+<span class="lineNum">     199 </span><span class="lineCov">       4752 :     redistributor.buildRowPlans( targetIA, sourceSizes );</span>
+<span class="lineNum">     200 </span>            :     IndexType targetNumValues;
+<span class="lineNum">     201 </span>            :     {
+<span class="lineNum">     202 </span><span class="lineCov">       4752 :         WriteAccess&lt;IndexType&gt; wTargetSizes( targetIA );</span>
+<span class="lineNum">     203 </span><span class="lineCov">       4752 :         wTargetSizes.resize( targetNumRows + 1 );</span>
+<span class="lineNum">     204 </span><span class="lineCov">       4752 :         targetNumValues = OpenMPCSRUtils::sizes2offsets( wTargetSizes.get(), targetNumRows );</span>
+<span class="lineNum">     205 </span><span class="lineCov">       9504 :         SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     206 </span>            :                        &quot;redistributeCSR: #source values = &quot; &lt;&lt; sourceJA.size() &lt;&lt; &quot;, #target values = &quot; &lt;&lt; targetNumValues )
+<span class="lineNum">     207 </span>            :         // allocate target array with the correct size
+<span class="lineNum">     208 </span><span class="lineCov">       9504 :         WriteOnlyAccess&lt;IndexType&gt; wTargetJA( targetJA, targetNumValues );</span>
+<span class="lineNum">     209 </span><span class="lineCov">       4752 :         WriteOnlyAccess&lt;ValueType&gt; wTargetValues( targetValues, targetNumValues );</span>
+<span class="lineNum">     210 </span>            :     }
+<span class="lineNum">     211 </span><span class="lineCov">       4752 :     redistributor.redistributeV( targetJA, targetIA, sourceJA, sourceIA );</span>
+<span class="lineNum">     212 </span><span class="lineCov">       4752 :     redistributor.redistributeV( targetValues, targetIA, sourceValues, sourceIA );</span>
+<span class="lineNum">     213 </span><span class="lineCov">       4752 : }</span>
+<span class="lineNum">     214 </span>            : 
+<span class="lineNum">     215 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     216 </span>            : 
+<span class="lineNum">     217 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     218 </span><span class="lineCov">         30 : void StorageMethods&lt;ValueType&gt;::exchangeHaloCSR(</span>
+<span class="lineNum">     219 </span>            :     HArray&lt;IndexType&gt;&amp; targetIA,
+<span class="lineNum">     220 </span>            :     HArray&lt;IndexType&gt;&amp; targetJA,
+<span class="lineNum">     221 </span>            :     HArray&lt;ValueType&gt;&amp; targetValues,
+<span class="lineNum">     222 </span>            :     const HArray&lt;IndexType&gt;&amp; sourceIA,
+<span class="lineNum">     223 </span>            :     const HArray&lt;IndexType&gt;&amp; sourceJA,
+<span class="lineNum">     224 </span>            :     const HArray&lt;ValueType&gt;&amp; sourceValues,
+<span class="lineNum">     225 </span>            :     const Halo&amp; halo,
+<span class="lineNum">     226 </span>            :     const Communicator&amp; comm )
+<span class="lineNum">     227 </span>            : {
+<span class="lineNum">     228 </span><span class="lineCov">         30 :     SCAI_REGION( &quot;Storage.exchangeHaloCSR&quot; )</span>
+<span class="lineNum">     229 </span>            :     // get the number of rows for the new matrix
+<span class="lineNum">     230 </span><span class="lineCov">         30 :     const IndexType numRecvRows = halo.getRequiredPlan().totalQuantity();</span>
+<span class="lineNum">     231 </span><span class="lineCov">         30 :     HArray&lt;IndexType&gt; sourceSizes;</span>
+<span class="lineNum">     232 </span>            :     // provides indexes: indirection vector needed for sending
+<span class="lineNum">     233 </span><span class="lineCov">         30 :     const HArray&lt;IndexType&gt; providesIndexes = halo.getProvidesIndexes();</span>
+<span class="lineNum">     234 </span><span class="lineCov">         30 :     const IndexType numSendRows = providesIndexes.size();</span>
+<span class="lineNum">     235 </span><span class="lineCov">         60 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     236 </span>            :                    &quot;exchange halo matrix, #rows to send = &quot; &lt;&lt; numSendRows &lt;&lt; &quot;, #rows to recv = &quot; &lt;&lt; numRecvRows )
+<span class="lineNum">     237 </span>            :     {
+<span class="lineNum">     238 </span><span class="lineCov">         30 :         ReadAccess&lt;IndexType&gt; ia( sourceIA );</span>
+<span class="lineNum">     239 </span><span class="lineCov">         30 :         ReadAccess&lt;IndexType&gt; indexes( providesIndexes );</span>
+<span class="lineNum">     240 </span><span class="lineCov">         60 :         WriteOnlyAccess&lt;IndexType&gt; sizes( sourceSizes, numSendRows );</span>
+<span class="lineNum">     241 </span><span class="lineCov">         30 :         OpenMPCSRUtils::offsets2sizesGather( sizes.get(), ia.get(), indexes, numSendRows );</span>
+<span class="lineNum">     242 </span>            :     }
+<span class="lineNum">     243 </span>            :     {
+<span class="lineNum">     244 </span>            :         // allocate target IA with the right size
+<span class="lineNum">     245 </span><span class="lineCov">         30 :         WriteOnlyAccess&lt;IndexType&gt; tmpIA( targetIA, numRecvRows + 1 );</span>
+<span class="lineNum">     246 </span>            :     }
+<span class="lineNum">     247 </span>            :     // send the sizes of the rows I will provide
+<span class="lineNum">     248 </span><span class="lineCov">         60 :     SCAI_LOG_INFO( logger, &quot;exchange sizes of rows&quot; )</span>
+<span class="lineNum">     249 </span><span class="lineCov">         30 :     comm.exchangeByPlan( targetIA, halo.getRequiredPlan(), sourceSizes, halo.getProvidesPlan() );</span>
+<span class="lineNum">     250 </span>            :     // now we build the variable communication plan
+<span class="lineNum">     251 </span><span class="lineCov">         60 :     SCAI_LOG_INFO( logger, &quot;exchanged sizes of rows, build vPlans&quot; )</span>
+<span class="lineNum">     252 </span><span class="lineCov">         30 :     ReadAccess&lt;IndexType&gt; sendSizes( sourceSizes );</span>
+<span class="lineNum">     253 </span><span class="lineCov">         30 :     ReadAccess&lt;IndexType&gt; recvSizes( targetIA );</span>
+<span class="lineNum">     254 </span><span class="lineCov">         60 :     CommunicationPlan provideV( halo.getProvidesPlan(), sendSizes.get() );</span>
+<span class="lineNum">     255 </span><span class="lineCov">         60 :     CommunicationPlan requiredV( halo.getRequiredPlan(), recvSizes.get() );</span>
+<span class="lineNum">     256 </span><span class="lineCov">         30 :     const IndexType sendVSize = provideV.totalQuantity();</span>
+<span class="lineNum">     257 </span><span class="lineCov">         60 :     SCAI_LOG_INFO( logger, &quot;built vPlans: #send &quot; &lt;&lt; sendVSize &lt;&lt; &quot;, #recv = &quot; &lt;&lt; requiredV.totalQuantity() )</span>
+<span class="lineNum">     258 </span><span class="lineCov">         30 :     recvSizes.release();</span>
+<span class="lineNum">     259 </span><span class="lineCov">         60 :     SCAI_LOG_INFO( logger, &quot;released read access to recvSizes&quot; )</span>
+<span class="lineNum">     260 </span>            :     // row sizes of target will now become offsets
+<span class="lineNum">     261 </span>            :     {
+<span class="lineNum">     262 </span><span class="lineCov">         30 :         WriteAccess&lt;IndexType&gt; ia( targetIA );</span>
+<span class="lineNum">     263 </span><span class="lineCov">         30 :         ia.resize( numRecvRows + 1 );</span>
+<span class="lineNum">     264 </span><span class="lineCov">         30 :         OpenMPCSRUtils::sizes2offsets( ia.get(), numRecvRows );</span>
+<span class="lineNum">     265 </span>            :     }
+<span class="lineNum">     266 </span>            :     // sendJA, sendValues must already be allocated before calling gatherV
+<span class="lineNum">     267 </span>            :     // as its size cannot be determined by arguments
+<span class="lineNum">     268 </span><span class="lineCov">         30 :     HArray&lt;IndexType&gt; sendJA( sendVSize );</span>
+<span class="lineNum">     269 </span><span class="lineCov">         30 :     HArray&lt;ValueType&gt; sendValues( sendVSize );</span>
+<span class="lineNum">     270 </span><span class="lineCov">         30 :     utilskernel::TransferUtils::gatherV( sendJA, sourceJA, sourceIA, providesIndexes );</span>
+<span class="lineNum">     271 </span><span class="lineCov">         30 :     comm.exchangeByPlan( targetJA, requiredV, sendJA, provideV );</span>
+<span class="lineNum">     272 </span><span class="lineCov">         30 :     utilskernel::TransferUtils::gatherV( sendValues, sourceValues, sourceIA, providesIndexes );</span>
+<span class="lineNum">     273 </span><span class="lineCov">         30 :     comm.exchangeByPlan( targetValues, requiredV, sendValues, provideV );</span>
+<span class="lineNum">     274 </span>            :     // thats it !!
+<span class="lineNum">     275 </span><span class="lineCov">         30 : }</span>
+<span class="lineNum">     276 </span>            : 
+<span class="lineNum">     277 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     278 </span>            : 
+<span class="lineNum">     279 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     280 </span><span class="lineCov">      93656 : void StorageMethods&lt;ValueType&gt;::splitCSR(</span>
+<span class="lineNum">     281 </span>            :     HArray&lt;IndexType&gt;&amp; localIA,
+<span class="lineNum">     282 </span>            :     HArray&lt;IndexType&gt;&amp; localJA,
+<span class="lineNum">     283 </span>            :     HArray&lt;ValueType&gt;&amp; localValues,
+<span class="lineNum">     284 </span>            :     HArray&lt;IndexType&gt;&amp; haloIA,
+<span class="lineNum">     285 </span>            :     HArray&lt;IndexType&gt;&amp; haloJA,
+<span class="lineNum">     286 </span>            :     HArray&lt;ValueType&gt;&amp; haloValues,
+<span class="lineNum">     287 </span>            :     const HArray&lt;IndexType&gt;&amp; csrIA,
+<span class="lineNum">     288 </span>            :     const HArray&lt;IndexType&gt;&amp; csrJA,
+<span class="lineNum">     289 </span>            :     const HArray&lt;ValueType&gt;&amp; csrValues,
+<span class="lineNum">     290 </span>            :     const Distribution&amp; colDist,
+<span class="lineNum">     291 </span><span class="lineCov">      43641 :     const Distribution* rowDist )</span>
+<span class="lineNum">     292 </span>            : {
+<span class="lineNum">     293 </span><span class="lineCov">      93656 :     if ( rowDist )</span>
+<span class="lineNum">     294 </span>            :     {
+<span class="lineNum">     295 </span><span class="lineCov">      43641 :         if ( rowDist-&gt;getGlobalSize() != rowDist-&gt;getLocalSize() )</span>
+<span class="lineNum">     296 </span>            :         {
+<span class="lineNum">     297 </span><span class="lineCov">      40013 :             HArray&lt;IndexType&gt; myIA;</span>
+<span class="lineNum">     298 </span><span class="lineCov">      40013 :             HArray&lt;IndexType&gt; myJA;</span>
+<span class="lineNum">     299 </span><span class="lineCov">      40013 :             HArray&lt;ValueType&gt; myValues;</span>
+<span class="lineNum">     300 </span><span class="lineCov">      40013 :             localizeCSR( myIA, myJA, myValues, csrIA, csrJA, csrValues, *rowDist );</span>
+<span class="lineNum">     301 </span><span class="lineCov">      80026 :             SCAI_LOG_INFO( logger, &quot;localized before split: ia = &quot; &lt;&lt; myIA &lt;&lt; &quot;, ja = &quot; &lt;&lt; myJA &lt;&lt; &quot;, values = &quot; &lt;&lt; myValues )</span>
+<span class="lineNum">     302 </span><span class="lineCov">      40013 :             splitCSR( localIA, localJA, localValues, haloIA, haloJA, haloValues, myIA, myJA, myValues, colDist, NULL );</span>
+<span class="lineNum">     303 </span><span class="lineCov">      93656 :             return;</span>
+<span class="lineNum">     304 </span>            :         }
+<span class="lineNum">     305 </span>            :     }
+<span class="lineNum">     306 </span>            : 
+<span class="lineNum">     307 </span><span class="lineCov">      53643 :     SCAI_REGION( &quot;Storage.splitCSR&quot; )</span>
+<span class="lineNum">     308 </span>            : 
+<span class="lineNum">     309 </span>            :     ContextPtr ctx = Context::getHostPtr();  // all done on host here
+<span class="lineNum">     310 </span>            : 
+<span class="lineNum">     311 </span><span class="lineCov">      53643 :     IndexType numRows = csrIA.size() - 1;</span>
+<span class="lineNum">     312 </span>            : 
+<span class="lineNum">     313 </span><span class="lineCov">     107286 :     SCAI_LOG_INFO( logger, &quot;splitCSR( #rows = &quot; &lt;&lt; numRows &lt;&lt; &quot;, #values = &quot; &lt;&lt; csrJA.size()</span>
+<span class="lineNum">     314 </span>            :                             &lt;&lt; &quot;, colDist = &quot; &lt;&lt; colDist &lt;&lt; &quot; ) on &quot; &lt;&lt; *ctx )
+<span class="lineNum">     315 </span>            : 
+<span class="lineNum">     316 </span><span class="lineCov">      53643 :     HArray&lt;IndexType&gt; isLocalJA;    // contains translation global-&gt;local indexes, invalidIndex if not local</span>
+<span class="lineNum">     317 </span>            : 
+<span class="lineNum">     318 </span><span class="lineCov">      53643 :     colDist.global2localV( isLocalJA, csrJA );</span>
+<span class="lineNum">     319 </span>            : 
+<span class="lineNum">     320 </span><span class="lineCov">     107286 :     ReadAccess&lt;IndexType&gt; ia( csrIA, ctx );</span>
+<span class="lineNum">     321 </span><span class="lineCov">     107286 :     ReadAccess&lt;IndexType&gt; jaLocal( isLocalJA, ctx );</span>
+<span class="lineNum">     322 </span><span class="lineCov">     160929 :     WriteOnlyAccess&lt;IndexType&gt; wLocalIA( localIA, ctx, numRows + 1 );</span>
+<a name="323"><span class="lineNum">     323 </span><span class="lineCov">     160929 :     WriteOnlyAccess&lt;IndexType&gt; wHaloIA( haloIA, ctx, numRows + 1 );</span></a>
+<span class="lineNum">     324 </span>            : 
+<span class="lineNum">     325 </span><span class="lineCov">     107286 :     #pragma omp parallel</span>
+<span class="lineNum">     326 </span>            :     {
+<span class="lineNum">     327 </span><span class="lineCov">      53643 :         SCAI_REGION( &quot;Storage.splitCount&quot; )</span>
+<span class="lineNum">     328 </span>            : 
+<span class="lineNum">     329 </span><span class="lineCov">      53643 :         #pragma omp for </span>
+<span class="lineNum">     330 </span>            : 
+<span class="lineNum">     331 </span>            :         for ( IndexType i = 0; i &lt; numRows; i++ )
+<span class="lineNum">     332 </span>            :         {
+<span class="lineNum">     333 </span>            :             IndexType localNonZeros = 0;
+<span class="lineNum">     334 </span>            :             IndexType haloNonZeros = 0;
+<span class="lineNum">     335 </span>            : 
+<span class="lineNum">     336 </span><span class="lineCov">     590501 :             for ( IndexType jj = ia[i]; jj &lt; ia[i + 1]; ++jj )</span>
+<span class="lineNum">     337 </span>            :             {
+<span class="lineNum">     338 </span><span class="lineCov">     378363 :                 if ( jaLocal[jj] == invalidIndex )</span>
+<span class="lineNum">     339 </span>            :                 {
+<span class="lineNum">     340 </span><span class="lineCov">     198364 :                     ++haloNonZeros;</span>
+<span class="lineNum">     341 </span>            :                 }
+<span class="lineNum">     342 </span>            :                 else
+<span class="lineNum">     343 </span>            :                 {
+<span class="lineNum">     344 </span><span class="lineCov">     179999 :                     ++localNonZeros;</span>
+<span class="lineNum">     345 </span>            :                 }
+<span class="lineNum">     346 </span>            :             }
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span>            :             // assignment takes also care for correct first touch
+<span class="lineNum">     349 </span><span class="lineCov">     212138 :             wLocalIA[i] = localNonZeros;</span>
+<span class="lineNum">     350 </span><span class="lineCov">     212138 :             wHaloIA[i] = haloNonZeros;</span>
+<span class="lineNum">     351 </span>            :         }
+<span class="lineNum">     352 </span>            :     }
+<span class="lineNum">     353 </span>            : 
+<span class="lineNum">     354 </span>            :     // build now row offset from running sums, set nnz
+<span class="lineNum">     355 </span><span class="lineCov">      53643 :     IndexType localNumValues = OpenMPCSRUtils::sizes2offsets( wLocalIA.get(), numRows );</span>
+<span class="lineNum">     356 </span><span class="lineCov">      53643 :     IndexType haloNumValues = OpenMPCSRUtils::sizes2offsets( wHaloIA.get(), numRows );</span>
+<span class="lineNum">     357 </span>            :     SCAI_LOG_DEBUG( logger,
+<span class="lineNum">     358 </span>            :                     &quot;split: local part has &quot; &lt;&lt; localNumValues &lt;&lt; &quot; values&quot; &lt;&lt; &quot;, halo part has &quot; &lt;&lt; haloNumValues &lt;&lt; &quot; values&quot; )
+<span class="lineNum">     359 </span>            : 
+<span class="lineNum">     360 </span>            :     // so we can now allocate s of correct size
+<span class="lineNum">     361 </span>            : 
+<span class="lineNum">     362 </span><span class="lineCov">     160929 :     WriteOnlyAccess&lt;IndexType&gt; wLocalJA( localJA, ctx, localNumValues );</span>
+<span class="lineNum">     363 </span><span class="lineCov">     160929 :     WriteOnlyAccess&lt;ValueType&gt; wLocalValues( localValues, ctx, localNumValues );</span>
+<span class="lineNum">     364 </span><span class="lineCov">     160929 :     WriteOnlyAccess&lt;IndexType&gt; wHaloJA( haloJA, ctx, haloNumValues );</span>
+<span class="lineNum">     365 </span><span class="lineCov">     160929 :     WriteOnlyAccess&lt;ValueType&gt; wHaloValues( haloValues, ctx, haloNumValues );</span>
+<span class="lineNum">     366 </span>            : 
+<span class="lineNum">     367 </span><span class="lineCov">     107286 :     ReadAccess&lt;IndexType&gt; jaGlobal( csrJA, ctx );</span>
+<a name="368"><span class="lineNum">     368 </span><span class="lineCov">     107286 :     ReadAccess&lt;ValueType&gt; values( csrValues, ctx );</span></a>
+<span class="lineNum">     369 </span>            : 
+<span class="lineNum">     370 </span><span class="lineCov">     107286 :     #pragma omp parallel</span>
+<span class="lineNum">     371 </span>            :     {
+<span class="lineNum">     372 </span><span class="lineCov">      53643 :         SCAI_REGION( &quot;Storage.splitTransfer&quot; )</span>
+<span class="lineNum">     373 </span><span class="lineCov">      53643 :         #pragma omp for </span>
+<span class="lineNum">     374 </span>            : 
+<span class="lineNum">     375 </span>            :         for ( IndexType i = 0; i &lt; numRows; i++ )
+<span class="lineNum">     376 </span>            :         {
+<span class="lineNum">     377 </span><span class="lineCov">     212138 :             IndexType localOffset = wLocalIA[i];</span>
+<span class="lineNum">     378 </span><span class="lineCov">     212138 :             IndexType haloOffset = wHaloIA[i];</span>
+<span class="lineNum">     379 </span>            : 
+<span class="lineNum">     380 </span>            :             SCAI_LOG_TRACE( logger, &quot;fill local row &quot; &lt;&lt; i &lt;&lt; &quot; from &quot; &lt;&lt; localOffset &lt;&lt; &quot; to &quot; &lt;&lt; wLocalIA[i + 1] )
+<span class="lineNum">     381 </span>            :             SCAI_LOG_TRACE( logger, &quot;fill halo row &quot; &lt;&lt; i &lt;&lt; &quot; from &quot; &lt;&lt; haloOffset &lt;&lt; &quot; to &quot; &lt;&lt; wHaloIA[i + 1] )
+<span class="lineNum">     382 </span>            : 
+<span class="lineNum">     383 </span><span class="lineCov">     590501 :             for ( IndexType jj = ia[i]; jj &lt; ia[i + 1]; ++jj )</span>
+<span class="lineNum">     384 </span>            :             {
+<span class="lineNum">     385 </span><span class="lineCov">     378363 :                 const IndexType jLocal = jaLocal[jj];</span>
+<span class="lineNum">     386 </span>            : 
+<span class="lineNum">     387 </span><span class="lineCov">     378363 :                 if ( jLocal != invalidIndex )</span>
+<span class="lineNum">     388 </span>            :                 {
+<span class="lineNum">     389 </span>            :                     // local column index, will be used in local JA
+<span class="lineNum">     390 </span>            : 
+<span class="lineNum">     391 </span><span class="lineCov">     179999 :                     wLocalJA[localOffset] = jLocal;</span>
+<span class="lineNum">     392 </span><span class="lineCov">     239120 :                     wLocalValues[localOffset] = values[jj];</span>
+<span class="lineNum">     393 </span>            : 
+<span class="lineNum">     394 </span>            :                     SCAI_LOG_TRACE( logger,
+<span class="lineNum">     395 </span>            :                                     &quot;row &quot; &lt;&lt; i &lt;&lt; &quot; : j = &quot; &lt;&lt; jaGlobal[jj]
+<span class="lineNum">     396 </span>            :                                     &lt;&lt; &quot; is local &quot; &lt;&lt; &quot; local offset = &quot; &lt;&lt; localOffset )
+<span class="lineNum">     397 </span>            : 
+<span class="lineNum">     398 </span><span class="lineCov">     179999 :                     ++localOffset;</span>
+<span class="lineNum">     399 </span>            :                 }
+<span class="lineNum">     400 </span>            :                 else
+<span class="lineNum">     401 </span>            :                 {
+<span class="lineNum">     402 </span>            :                     // non-local index, global index remains in halo JA
+<span class="lineNum">     403 </span>            : 
+<span class="lineNum">     404 </span><span class="lineCov">     198364 :                     wHaloJA[haloOffset] = jaGlobal[jj];    // global -&gt; halo translation is done later</span>
+<span class="lineNum">     405 </span><span class="lineCov">     283517 :                     wHaloValues[haloOffset] = values[jj];</span>
+<span class="lineNum">     406 </span>            : 
+<span class="lineNum">     407 </span>            :                     SCAI_LOG_TRACE( logger,
+<span class="lineNum">     408 </span>            :                                     &quot;row &quot; &lt;&lt; i &lt;&lt; &quot; (: j = &quot; &lt;&lt; jaGlobal[jj]
+<span class="lineNum">     409 </span>            :                                     &lt;&lt; &quot; is not local &quot; &lt;&lt; &quot; halo offset = &quot; &lt;&lt; haloOffset )
+<span class="lineNum">     410 </span><span class="lineCov">     198364 :                     ++haloOffset;</span>
+<span class="lineNum">     411 </span>            :                 }
+<span class="lineNum">     412 </span>            :             }
+<span class="lineNum">     413 </span>            : 
+<span class="lineNum">     414 </span><span class="lineCov">     212138 :             SCAI_ASSERT_EQ_DEBUG( localOffset, wLocalIA[i + 1], &quot;serious mismatch to previsous counting&quot; )</span>
+<span class="lineNum">     415 </span><span class="lineCov">     212138 :             SCAI_ASSERT_EQ_DEBUG( haloOffset, wHaloIA[i + 1], &quot;serious mitmatch to previous counting&quot; )</span>
+<span class="lineNum">     416 </span>            :         }
+<span class="lineNum">     417 </span>            :     }
+<span class="lineNum">     418 </span>            : }
+<span class="lineNum">     419 </span>            : 
+<span class="lineNum">     420 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     421 </span>            : 
+<span class="lineNum">     422 </span><span class="lineCov">      54783 : void _StorageMethods::buildHalo(</span>
+<span class="lineNum">     423 </span>            :     class Halo&amp; halo,
+<span class="lineNum">     424 </span>            :     HArray&lt;IndexType&gt;&amp; haloJA,
+<span class="lineNum">     425 </span>            :     IndexType&amp; haloSize,
+<span class="lineNum">     426 </span>            :     const Distribution&amp; colDist )
+<span class="lineNum">     427 </span>            : {
+<span class="lineNum">     428 </span><span class="lineCov">      54783 :     const IndexType haloNumValues = haloJA.size();</span>
+<span class="lineNum">     429 </span><span class="lineCov">     109566 :     SCAI_LOG_INFO( logger, &quot;build halo for &quot; &lt;&lt; haloNumValues &lt;&lt; &quot; non-local indexes&quot; )</span>
+<span class="lineNum">     430 </span>            :     // copy the LAMA array values into a std::vector
+<span class="lineNum">     431 </span>            :     std::vector&lt;IndexType&gt; haloIndexes;
+<span class="lineNum">     432 </span><span class="lineCov">      54783 :     haloIndexes.reserve( haloNumValues );</span>
+<span class="lineNum">     433 </span>            :     {
+<span class="lineNum">     434 </span><span class="lineCov">      54783 :         ReadAccess&lt;IndexType&gt; ja( haloJA );</span>
+<span class="lineNum">     435 </span>            : 
+<span class="lineNum">     436 </span><span class="lineCov">     200169 :         for ( IndexType jj = 0; jj &lt; haloNumValues; jj++ )</span>
+<span class="lineNum">     437 </span>            :         {
+<span class="lineNum">     438 </span><span class="lineCov">     200169 :             haloIndexes.push_back( ja[jj] );</span>
+<span class="lineNum">     439 </span>            :         }
+<span class="lineNum">     440 </span>            :     }
+<span class="lineNum">     441 </span>            :     // sort and then eliminate double elements
+<span class="lineNum">     442 </span><span class="lineCov">      54783 :     std::sort( haloIndexes.begin(), haloIndexes.end() );</span>
+<span class="lineNum">     443 </span><span class="lineCov">      54783 :     std::vector&lt;IndexType&gt;::iterator it = std::unique( haloIndexes.begin(), haloIndexes.end() );</span>
+<span class="lineNum">     444 </span><span class="lineCov">      54783 :     haloIndexes.resize( it - haloIndexes.begin() );</span>
+<span class="lineNum">     445 </span>            :     SCAI_LOG_DEBUG( logger,
+<span class="lineNum">     446 </span>            :                     &quot;Eliminating multiple global indexes, &quot; &lt;&lt; haloNumValues &lt;&lt; &quot; are shrinked to &quot; &lt;&lt; haloIndexes.size() &lt;&lt; &quot; values, is halo size&quot; )
+<span class="lineNum">     447 </span>            : 
+<span class="lineNum">     448 </span>            :     {
+<span class="lineNum">     449 </span><span class="lineCov">      54783 :         HArrayRef&lt;IndexType&gt; requiredIndexes( haloIndexes );</span>
+<span class="lineNum">     450 </span><span class="lineCov">      54783 :         HaloBuilder::build( colDist, requiredIndexes, halo );</span>
+<span class="lineNum">     451 </span>            :     }
+<span class="lineNum">     452 </span>            : 
+<span class="lineNum">     453 </span>            :     SCAI_LOG_DEBUG( logger, &quot;Halo = &quot; &lt;&lt; halo )
+<span class="lineNum">     454 </span><span class="lineCov">     109566 :     haloSize = static_cast&lt;IndexType&gt;( haloIndexes.size() );</span>
+<span class="lineNum">     455 </span>            :     const std::map&lt;IndexType, IndexType&gt;&amp; table = halo.getMap();
+<span class="lineNum">     456 </span>            :     // convert the global indexes to halo indexes
+<span class="lineNum">     457 </span>            :     {
+<span class="lineNum">     458 </span><span class="lineCov">      54783 :         WriteAccess&lt;IndexType&gt; ja( haloJA );</span>
+<span class="lineNum">     459 </span>            : 
+<span class="lineNum">     460 </span><span class="lineCov">     200169 :         for ( IndexType jj = 0; jj &lt; haloNumValues; jj++ )</span>
+<span class="lineNum">     461 </span>            :         {
+<span class="lineNum">     462 </span><span class="lineCov">     200169 :             const IndexType columnIndex = ja[jj];</span>
+<span class="lineNum">     463 </span>            :             const std::map&lt;IndexType, IndexType&gt;::const_iterator elem = table.find( columnIndex );
+<span class="lineNum">     464 </span>            :             SCAI_ASSERT_DEBUG( elem != table.end(), columnIndex &lt;&lt; &quot; not found&quot; )
+<span class="lineNum">     465 </span><span class="lineCov">     200169 :             ja[jj] = elem-&gt;second;</span>
+<span class="lineNum">     466 </span><span class="lineCov">     200169 :             SCAI_ASSERT_DEBUG( ja[jj] &lt; haloSize, &quot;mapped column index out of range &quot; )</span>
+<span class="lineNum">     467 </span>            :             SCAI_LOG_TRACE( logger, &quot;global index &quot; &lt;&lt; columnIndex &lt;&lt; &quot; is halo index &quot; &lt;&lt; ja[jj] )
+<span class="lineNum">     468 </span>            :         }
+<span class="lineNum">     469 </span>            :     }
+<span class="lineNum">     470 </span><span class="lineCov">      54783 : }</span>
+<span class="lineNum">     471 </span>            : 
+<span class="lineNum">     472 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     473 </span>            : 
+<span class="lineNum">     474 </span>            : template&lt;typename ValueType&gt;
+<span class="lineNum">     475 </span><span class="lineCov">      12858 : void StorageMethods&lt;ValueType&gt;::joinCSR(</span>
+<span class="lineNum">     476 </span>            :     HArray&lt;IndexType&gt;&amp; outIA,
+<span class="lineNum">     477 </span>            :     HArray&lt;IndexType&gt;&amp; outJA,
+<span class="lineNum">     478 </span>            :     HArray&lt;ValueType&gt;&amp; outValues,
+<span class="lineNum">     479 </span>            :     const HArray&lt;IndexType&gt;&amp; localIA,
+<span class="lineNum">     480 </span>            :     const HArray&lt;IndexType&gt;&amp; localJA,
+<span class="lineNum">     481 </span>            :     const HArray&lt;ValueType&gt;&amp; localValues,
+<span class="lineNum">     482 </span>            :     const HArray&lt;IndexType&gt;&amp; haloIA,
+<span class="lineNum">     483 </span>            :     const HArray&lt;IndexType&gt;&amp; haloJA,
+<span class="lineNum">     484 </span>            :     const HArray&lt;ValueType&gt;&amp; haloValues,
+<span class="lineNum">     485 </span>            :     const IndexType numKeepDiagonals )
+<span class="lineNum">     486 </span>            : {
+<span class="lineNum">     487 </span><span class="lineCov">      12858 :     SCAI_REGION( &quot;Storage.joinCSR&quot; )</span>
+<span class="lineNum">     488 </span><span class="lineCov">      12858 :     SCAI_ASSERT_EQUAL_ERROR( localIA.size(), haloIA.size() )</span>
+<span class="lineNum">     489 </span><span class="lineCov">      25716 :     SCAI_ASSERT_EQUAL_ERROR( localJA.size(), localValues.size() )</span>
+<span class="lineNum">     490 </span><span class="lineCov">      25716 :     SCAI_ASSERT_EQUAL_ERROR( haloJA.size(), haloValues.size() )</span>
+<span class="lineNum">     491 </span><span class="lineCov">      12858 :     IndexType numRows = localIA.size() - 1;</span>
+<span class="lineNum">     492 </span><span class="lineCov">      25716 :     SCAI_LOG_INFO( logger,</span>
+<span class="lineNum">     493 </span>            :                    &quot;joinCSRData, #rows = &quot; &lt;&lt; numRows &lt;&lt; &quot;, local has &quot; &lt;&lt; localValues.size() &lt;&lt; &quot; elements&quot; &lt;&lt; &quot;, halo has &quot; &lt;&lt; haloValues.size() &lt;&lt; &quot; elements&quot; &lt;&lt; &quot;, keep &quot; &lt;&lt; numKeepDiagonals &lt;&lt; &quot; diagonals &quot; )
+<span class="lineNum">     494 </span><span class="lineCov">      25716 :     WriteOnlyAccess&lt;IndexType&gt; ia( outIA, numRows + 1 );</span>
+<a name="495"><span class="lineNum">     495 </span><span class="lineCov">      12858 :     ReadAccess&lt;IndexType&gt; ia1( localIA );</span></a>
+<span class="lineNum">     496 </span><span class="lineCov">      12858 :     ReadAccess&lt;IndexType&gt; ia2( haloIA );</span>
+<span class="lineNum">     497 </span><span class="lineCov">      25716 :     #pragma omp parallel for </span>
+<span class="lineNum">     498 </span>            : 
+<span class="lineNum">     499 </span><span class="lineCov">      12858 :     for ( IndexType i = 0; i &lt; numRows; ++i )</span>
+<span class="lineNum">     500 </span>            :     {
+<span class="lineNum">     501 </span>            :         IndexType nonZeros = 0; // count for each row in parallel
+<span class="lineNum">     502 </span><span class="lineCov">      44184 :         nonZeros += ia1[i + 1] - ia1[i];</span>
+<span class="lineNum">     503 </span><span class="lineCov">      44184 :         nonZeros += ia2[i + 1] - ia2[i];</span>
+<span class="lineNum">     504 </span><span class="lineCov">      44184 :         ia[i] = nonZeros;</span>
+<span class="lineNum">     505 </span>            :     }
+<span class="lineNum">     506 </span>            : 
+<span class="lineNum">     507 </span><span class="lineCov">      12858 :     IndexType numValues = OpenMPCSRUtils::sizes2offsets( ia, numRows );</span>
+<span class="lineNum">     508 </span><span class="lineCov">      12858 :     SCAI_ASSERT_ERROR( numValues == localJA.size() + haloJA.size(), &quot;#non-zero values mismatches&quot; )</span>
+<span class="lineNum">     509 </span><span class="lineCov">      25716 :     WriteOnlyAccess&lt;IndexType&gt; ja( outJA, numValues );</span>
+<span class="lineNum">     510 </span><span class="lineCov">      25716 :     WriteOnlyAccess&lt;ValueType&gt; values( outValues, numValues );</span>
+<span class="lineNum">     511 </span><span class="lineCov">      12858 :     ReadAccess&lt;IndexType&gt; ja1( localJA );</span>
+<span class="lineNum">     512 </span><span class="lineCov">      12858 :     ReadAccess&lt;ValueType&gt; values1( localValues );</span>
+<span class="lineNum">     513 </span><span class="lineCov">      12858 :     ReadAccess&lt;IndexType&gt; ja2( haloJA );</span>
+<span class="lineNum">     514 </span><span class="lineCov">      12858 :     ReadAccess&lt;ValueType&gt; values2( haloValues );</span>
+<span class="lineNum">     515 </span>            :     // merging of each row is independent from other rows
+<span class="lineNum">     516 </span><span class="lineCov">      25716 :     #pragma omp parallel for </span>
+<span class="lineNum">     517 </span>            : 
+<span class="lineNum">     518 </span><span class="lineCov">      12858 :     for ( IndexType i = 0; i &lt; numRows; ++i )</span>
+<span class="lineNum">     519 </span>            :     {
+<span class="lineNum">     520 </span><span class="lineCov">      44184 :         IndexType offset = ia[i];</span>
+<span class="lineNum">     521 </span><span class="lineCov">      44184 :         IndexType offset1 = ia1[i];</span>
+<span class="lineNum">     522 </span><span class="lineCov">      44184 :         IndexType offset2 = ia2[i];</span>
+<span class="lineNum">     523 </span>            : 
+<span class="lineNum">     524 </span><span class="lineCov">      44184 :         if ( i &lt; numKeepDiagonals )</span>
+<span class="lineNum">     525 </span>            :         {
+<span class="lineNum">     526 </span><span class="lineCov">      14748 :             if ( offset1 &gt;= ia1[i + 1] )</span>
+<span class="lineNum">     527 </span>            :             {
+<span class="lineNum">     528 </span><span class="lineNoCov">          0 :                 SCAI_LOG_FATAL( logger, &quot;no diagonal element for first CSR input data&quot; )</span>
+<span class="lineNum">     529 </span><span class="lineNoCov">          0 :                 COMMON_THROWEXCEPTION( &quot;keep diagonal error&quot; )</span>
+<span class="lineNum">     530 </span>            :                 // @todo this exception caused segmentation faults when thrown
+<span class="lineNum">     531 </span>            :             }
+<span class="lineNum">     532 </span>            : 
+<span class="lineNum">     533 </span><span class="lineCov">      14748 :             ja[offset] = ja1[offset1];</span>
+<span class="lineNum">     534 </span><span class="lineCov">      21660 :             values[offset++] = values1[offset1++];</span>
+<span class="lineNum">     535 </span>            :         }
+<span class="lineNum">     536 </span>            : 
+<span class="lineNum">     537 </span>            :         // merge other data by order of column indexes
+<span class="lineNum">     538 </span>            : 
+<span class="lineNum">     539 </span><span class="lineCov">     191254 :         for ( IndexType k = offset; k &lt; ia[i + 1]; ++k )</span>
+<span class="lineNum">     540 </span>            :         {
+<span class="lineNum">     541 </span>            :             // merge the row data of local and halo
+<span class="lineNum">     542 </span><span class="lineCov">     147070 :             bool isNext1 = offset1 &lt; ia1[i + 1];</span>
+<span class="lineNum">     543 </span><span class="lineCov">     147070 :             bool isNext2 = offset2 &lt; ia2[i + 1]; // if same type</span>
+<span class="lineNum">     544 </span>            : 
+<span class="lineNum">     545 </span><span class="lineCov">     147070 :             if ( isNext1 &amp;&amp; isNext2 )</span>
+<span class="lineNum">     546 </span>            :             {
+<span class="lineNum">     547 </span>            :                 // both arrays not empty, take the one with smaller global index
+<span class="lineNum">     548 </span><span class="lineCov">      55781 :                 isNext1 = ja1[offset1] &lt; ja2[offset2];</span>
+<span class="lineNum">     549 </span><span class="lineCov">      55781 :                 isNext2 = !isNext1;</span>
+<span class="lineNum">     550 </span>            :             }
+<span class="lineNum">     551 </span>            : 
+<span class="lineNum">     552 </span><span class="lineCov">     147070 :             if ( isNext1 )</span>
+<span class="lineNum">     553 </span>            :             {
+<span class="lineNum">     554 </span><span class="lineCov">      59220 :                 ja[k] = ja1[offset1];</span>
+<span class="lineNum">     555 </span><span class="lineCov">      85170 :                 values[k] = values1[offset1++];</span>
+<span class="lineNum">     556 </span>            :             }
+<span class="lineNum">     557 </span><span class="lineCov">      87850 :             else if ( isNext2 )</span>
+<span class="lineNum">     558 </span>            :             {
+<span class="lineNum">     559 </span><span class="lineCov">      87850 :                 ja[k] = ja2[offset2];</span>
+<span class="lineNum">     560 </span><span class="lineCov">     127116 :                 values[k] = values2[offset2++];</span>
+<span class="lineNum">     561 </span>            :             }
+<span class="lineNum">     562 </span>            :             else
+<span class="lineNum">     563 </span>            :             {
+<span class="lineNum">     564 </span><span class="lineNoCov">          0 :                 COMMON_THROWEXCEPTION( &quot;should not happen here&quot; )</span>
+<span class="lineNum">     565 </span>            :             }
+<span class="lineNum">     566 </span>            :         }
+<span class="lineNum">     567 </span>            : 
+<span class="lineNum">     568 </span><span class="lineCov">      44184 :         SCAI_ASSERT_EQUAL_DEBUG( offset1, ia1[i + 1] )</span>
+<span class="lineNum">     569 </span><span class="lineCov">      44184 :         SCAI_ASSERT_EQUAL_DEBUG( offset2, ia2[i + 1] )</span>
+<span class="lineNum">     570 </span>            :     }
+<span class="lineNum">     571 </span><span class="lineCov">      12858 : }</span>
+<span class="lineNum">     572 </span>            : 
+<span class="lineNum">     573 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     574 </span>            : 
+<span class="lineNum">     575 </span>            : SCAI_COMMON_INST_CLASS( StorageMethods, SCAI_NUMERIC_TYPES_HOST )
+<span class="lineNum">     576 </span>            : 
+<span class="lineNum">     577 </span>            : /* -------------------------------------------------------------------------- */
+<span class="lineNum">     578 </span>            : 
+<a name="579"><span class="lineNum">     579 </span>            : } /* end namespace lama */</a>
+<span class="lineNum">     580 </span>            : 
+<span class="lineNum">     581 </span><span class="lineCov">         42 : } /* end namespace scai */</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
