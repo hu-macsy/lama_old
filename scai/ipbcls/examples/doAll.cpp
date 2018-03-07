@@ -41,7 +41,8 @@
 #include <scai/dmemo/GridDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
-#include <ipbcls/ConstrainedLeastSquares.hpp>
+#include <scai/ipbcls.hpp>
+
 #include "JoinedMatrix.hpp"
 #include "JoinedVector.hpp"
 
@@ -157,7 +158,7 @@ int main( int argc, const char* argv[] )
 
     std::cout << "construct lsq." << std::endl;
 
-    ConstrainedLeastSquares<double> lsq( A );
+    ipbcls::ConstrainedLeastSquares<double> lsq( A );
 
     // lsq.useTranspose();       // will matrixTimesVector instead ov vectorTimesMatrix
 

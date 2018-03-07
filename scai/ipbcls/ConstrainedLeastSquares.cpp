@@ -45,41 +45,43 @@
 
 #include <iostream>
 
-#include <ipbcls/ConstrainedLeastSquares.hpp>
-#include "NewtonStepCG.hpp"
-#include "CentralPathHessian.hpp"
-
-using scai::IndexType;
-using scai::common::BinaryOp;
-using scai::common::CompareOp;
-using scai::common::UnaryOp;
-using scai::dmemo::DistributionPtr;
-using scai::dmemo::Distribution;
-using scai::lama::Vector;
-using scai::lama::VectorKind;
-using scai::lama::Matrix;
-using scai::lama::CentralPathHessian;
-using scai::lama::CSRSparseMatrix;
-using scai::lama::NormPtr;
-using scai::lama::Norm;
-using scai::common::Math;
-using scai::solver::CriterionPtr;
-using scai::solver::CG;
-using scai::solver::CommonLogger;
-using scai::solver::LogLevel;
-using scai::solver::LoggerWriteBehaviour;
-using scai::solver::Jacobi;
-using scai::solver::Criterion;
-using scai::solver::CriterionPtr;
-using scai::solver::ResidualThreshold;
-using scai::solver::ResidualCheck;
-using scai::solver::BooleanOp;
-using scai::solver::IterationCount;
+#include <scai/ipbcls/ConstrainedLeastSquares.hpp>
+#include <scai/ipbcls/NewtonStepCG.hpp>
+#include <scai/ipbcls/CentralPathHessian.hpp>
 
 using std::unique_ptr;
 using std::shared_ptr;
 
-namespace
+namespace scai
+{
+
+using common::BinaryOp;
+using common::CompareOp;
+using common::UnaryOp;
+using dmemo::DistributionPtr;
+using dmemo::Distribution;
+using lama::Vector;
+using lama::VectorKind;
+using lama::Matrix;
+using lama::CentralPathHessian;
+using lama::CSRSparseMatrix;
+using lama::NormPtr;
+using lama::Norm;
+using common::Math;
+using solver::CriterionPtr;
+using solver::CG;
+using solver::CommonLogger;
+using solver::LogLevel;
+using solver::LoggerWriteBehaviour;
+using solver::Jacobi;
+using solver::Criterion;
+using solver::CriterionPtr;
+using solver::ResidualThreshold;
+using solver::ResidualCheck;
+using solver::BooleanOp;
+using solver::IterationCount;
+
+namespace ipbcls
 {
 
 template<typename ValueType>
@@ -446,8 +448,6 @@ ValueType initialCentralPathParameter(
            : c;
 }
 
-}
-
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, ConstrainedLeastSquares<ValueType>::logger, "ConstrainedLeastSquares" )
 
 /* --------------------------------------------------------------------------- */
@@ -628,3 +628,6 @@ void ConstrainedLeastSquares<ValueType>::solve(
 
 SCAI_COMMON_INST_CLASS( ConstrainedLeastSquares, float, double )
 
+}
+
+}

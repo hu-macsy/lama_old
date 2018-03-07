@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/ipbcls/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,58 +27,71 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for tutorial examples
+ # @brief CMake configuration file for SCAI module ipbcls
  # @author Thomas Brandes
- # @date 25.07.2017
+ # @date 04.03.2018
 ###
 
-project ( ipbcls CXX )
+## Include required scai macros
 
-cmake_minimum_required ( VERSION 2.8 )
+include ( scai_macro/scai_module )
+include ( scai_macro/scai_project )
+include ( scai_macro/scai_subdirectories )
+include ( scai_macro/scai_library )
+include ( scai_function/relative_install )
+ 
+## Define new SCAI module project with its internal/external dependencies
+ 
+scai_module (
 
-find_package( SCAI REQUIRED PATHS $ENV{SCAI_ROOT} )
+    MODULE_NAME   ipbcls 
 
-message ( STATUS "SCAI_DEFINITIONS=${SCAI_DEFINITIONS}" )
-message ( STATUS "SCAI_INCLUDE_DIRS=${SCAI_INCLUDE_DIRS}" )
-message ( STATUS "SCAI_CXX_FLAGS=${SCAI_CXX_FLAGS}" )
-message ( STATUS "SCAI_LIBRARIES=${SCAI_LIBRARIES}" )
+    INTERNAL_DEPS common logging lama solver
+) 
 
-add_definitions ( ${SCAI_DEFINITIONS} )
+### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
-include_directories( ${SCAI_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include )
+scai_project (
 
-## Take over OpenMP and C++11 flags 
+    CLASSES                  # .cpp, .hpp
 
-set ( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SCAI_CXX_FLAGS} )
+        ConstrainedLeastSquares
+        NewtonStepCG
 
-add_library( ipbcls STATIC
-    include/ipbcls/ConstrainedLeastSquares.hpp
-    src/ipbcls/ConstrainedLeastSquares.cpp
-    src/ipbcls/NewtonStepCG.hpp
-    src/ipbcls/NewtonStepCG.cpp)
+    HEADERS
 
-add_executable ( prepare src/tools/prepare.cpp )
-target_link_libraries( prepare ${SCAI_LIBRARIES} )
+    )
 
-add_executable ( lsbc src/tools/lsbc.cpp)
-target_link_libraries( lsbc ${SCAI_LIBRARIES} ipbcls)
+## add subdirectories
 
-add_executable ( lsbcJoined src/tools/lsbcJoined.cpp)
-target_link_libraries( lsbcJoined ${SCAI_LIBRARIES} ipbcls)
+scai_subdirectories ( EXAMPLES TEST )
 
-add_executable ( makeImage src/tools/makeImage.cpp )
-target_link_libraries( makeImage ${SCAI_LIBRARIES} )
+### for external amg ###
 
-add_executable ( doAll src/tools/doAll.cpp
-    src/tools/JoinedDistribution.hpp
-    src/tools/JoinedMatrix.hpp
-    src/tools/JoinedVector.hpp )
- target_link_libraries( doAll ${SCAI_LIBRARIES} ipbcls )
+### add library ###
 
-add_executable ( lsbctest src/tools/lsbctest.cpp src/tools/ConstrainedLeastSquaresProblem.hpp )
-target_link_libraries( lsbctest ${SCAI_LIBRARIES} ipbcls )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
+# Might be some additional ipbcls libraries have been defined
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
+
+target_link_libraries ( ${MODULE_LIBRARY} ${IPBCLS_SUB_LIBRARIES} )
+
+### install ###
+
+## install headers
+
+relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
+
+## install library.hpp
+install ( FILES ../ipbcls.hpp DESTINATION include/scai )
+
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+
+include ( CustomCommands/SphinxDoc )
+

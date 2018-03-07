@@ -45,7 +45,7 @@ namespace lama
 
 {
 
-/** An object of this class encapsulates a joined vector [ V1 ; V2 ] 
+/** An object of this class encapsulates a joined vector [ V1 ; V2 ]
  */
 
 template<typename ValueType>
@@ -82,7 +82,7 @@ public:
     {
     }
 
-    void assign( const _Vector& other )
+    void assign( const _Vector& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
@@ -107,128 +107,128 @@ public:
         return mV2;
     }
 
- 	virtual bool isConsistent() const
+    virtual bool isConsistent() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual VectorKind getVectorKind() const
+    virtual VectorKind getVectorKind() const
     {
         return VectorKind::JOINED;
     }
 
-	virtual void setDenseValues(const scai::hmemo::_HArray&)
+    virtual void setDenseValues( const scai::hmemo::_HArray& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void fillSparseData(const scai::hmemo::HArray<int>&, const scai::hmemo::_HArray&, common::BinaryOp )
+    virtual void fillSparseData( const scai::hmemo::HArray<int>&, const scai::hmemo::_HArray&, common::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void clearValues()
+    virtual void clearValues()
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void fillRandom( IndexType )
+    virtual void fillRandom( IndexType )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void fillSparseRandom( float, IndexType )
+    virtual void fillSparseRandom( float, IndexType )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual ValueType getValue( IndexType ) const
+    virtual ValueType getValue( IndexType ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void setValue(IndexType, ValueType)
+    virtual void setValue( IndexType, ValueType )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual ValueType min() const
+    virtual ValueType min() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual ValueType max() const
+    virtual ValueType max() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual ValueType sum() const
+    virtual ValueType sum() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual RealType<ValueType> l1Norm() const
+    virtual RealType<ValueType> l1Norm() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual RealType<ValueType> l2Norm() const
+    virtual RealType<ValueType> l2Norm() const
     {
         ValueType res = dotProduct( *this );
         return common::Math::sqrt( res );
     }
 
-	virtual RealType<ValueType> maxNorm() const
+    virtual RealType<ValueType> maxNorm() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual RealType<ValueType> maxDiffNorm(const Vector<ValueType>&) const
+    virtual RealType<ValueType> maxDiffNorm( const Vector<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual VectorCreateKeyType getCreateValue() const
+    virtual VectorCreateKeyType getCreateValue() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
     /** This method might be used in solvers for temporary vectors. */
 
-	virtual Vector<ValueType>* newVector() const
+    virtual Vector<ValueType>* newVector() const
     {
         return new JoinedVector( mV1.newVector(), mV2.newVector() );
     }
 
-	virtual Vector<ValueType>* copy() const
+    virtual Vector<ValueType>* copy() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void swap(_Vector&)
+    virtual void swap( _Vector& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void buildLocalValues(scai::hmemo::_HArray&, scai::common::BinaryOp, scai::hmemo::ContextPtr) const
+    virtual void buildLocalValues( scai::hmemo::_HArray&, scai::common::BinaryOp, scai::hmemo::ContextPtr ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void gatherLocalValues(scai::hmemo::_HArray&, const scai::hmemo::HArray<int>&, scai::common::BinaryOp, scai::hmemo::ContextPtr) const
+    virtual void gatherLocalValues( scai::hmemo::_HArray&, const scai::hmemo::HArray<int>&, scai::common::BinaryOp, scai::hmemo::ContextPtr ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
     /** Implementation of pure method Vector<ValueType>::setScalar */
 
-	virtual void setScalar( const ValueType& s )
+    virtual void setScalar( const ValueType& s )
     {
         mV1.setScalar( s );
         mV2.setScalar( s );
     }
 
-	virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& v1, const ValueType& beta, const Vector<ValueType>& v2 )
+    virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& v1, const ValueType& beta, const Vector<ValueType>& v2 )
     {
         SCAI_LOG_INFO( logger, "joinedVector = " << alpha << " * v1 + " << beta << " * v2" )
 
@@ -237,12 +237,12 @@ public:
 
         const JoinedVector& jV1 = reinterpret_cast<const JoinedVector&>( v1 );
         const JoinedVector& jV2 = reinterpret_cast<const JoinedVector&>( v2 );
-    
+
         mV1.vectorPlusVector( alpha, jV1.first(), beta, jV2.first() );
         mV2.vectorPlusVector( alpha, jV1.second(), beta, jV2.second() );
     }
 
-	virtual void vectorTimesVector( const ValueType& alpha, const Vector<ValueType>& v1, const Vector<ValueType>& v2 )
+    virtual void vectorTimesVector( const ValueType& alpha, const Vector<ValueType>& v1, const Vector<ValueType>& v2 )
     {
         SCAI_LOG_INFO( logger, "joinedVector = " << alpha << " * v1 * v2, v1 = " << v1 << ", v2 = " << v2 )
 
@@ -256,15 +256,15 @@ public:
         mV2.vectorTimesVector( alpha, jV1.second(), jV2.second() );
     }
 
-	virtual void vectorPlusScalar(const ValueType&, const Vector<ValueType>&, const ValueType&)
+    virtual void vectorPlusScalar( const ValueType&, const Vector<ValueType>&, const ValueType& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual ValueType dotProduct( const Vector<ValueType>& other ) const
+    virtual ValueType dotProduct( const Vector<ValueType>& other ) const
     {
         SCAI_ASSERT_EQ_ERROR( other.getDistribution(), this->getDistribution(), "distribution mismatch" );
-        
+
         const JoinedVector& jOther = reinterpret_cast<const JoinedVector&>( other );
 
         ValueType s1 = mV1.dotProduct( jOther.first() );
@@ -273,77 +273,77 @@ public:
         return s1 + s2;
     }
 
-	virtual void setVector(const _Vector&, scai::common::BinaryOp, bool)
+    virtual void setVector( const _Vector&, scai::common::BinaryOp, bool )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-    virtual void unaryOp( const Vector<ValueType>&, const common::UnaryOp op ) 
+    virtual void unaryOp( const Vector<ValueType>&, const common::UnaryOp )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-    virtual void binaryOp( const Vector<ValueType>&, const common::BinaryOp op, const Vector<ValueType>& ) 
+    virtual void binaryOp( const Vector<ValueType>&, const common::BinaryOp, const Vector<ValueType>& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-    virtual void binaryOpScalar( const Vector<ValueType>&, const ValueType&, const common::BinaryOp op, bool ) 
+    virtual void binaryOpScalar( const Vector<ValueType>&, const ValueType&, const common::BinaryOp, bool )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual bool all( scai::common::CompareOp, ValueType ) const
+    virtual bool all( scai::common::CompareOp, ValueType ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual bool all( scai::common::CompareOp, const Vector<ValueType>& ) const
+    virtual bool all( scai::common::CompareOp, const Vector<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void prefetch(scai::hmemo::ContextPtr) const
+    virtual void prefetch( scai::hmemo::ContextPtr ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void wait() const
+    virtual void wait() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual size_t getMemoryUsage() const
+    virtual size_t getMemoryUsage() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void allocate(scai::dmemo::DistributionPtr)
+    virtual void allocate( scai::dmemo::DistributionPtr )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void allocate(IndexType)
+    virtual void allocate( IndexType )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void redistribute(scai::dmemo::DistributionPtr)
+    virtual void redistribute( scai::dmemo::DistributionPtr )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void redistribute( const scai::dmemo::Redistributor&)
+    virtual void redistribute( const scai::dmemo::Redistributor& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void writeLocalToFile(const std::string&, const std::string&, scai::common::ScalarType, FileIO::FileMode) const
+    virtual void writeLocalToFile( const std::string&, const std::string&, scai::common::ScalarType, FileIO::FileMode ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual IndexType readLocalFromFile(const std::string&, IndexType, IndexType)
+    virtual IndexType readLocalFromFile( const std::string&, IndexType, IndexType )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
@@ -355,7 +355,7 @@ public:
         stream << "JoinedVector( " << mV1 << ", " << mV2 << " )";
     }
 
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType> *> & vectors)
+    virtual void concatenate( dmemo::DistributionPtr, const std::vector<const Vector<ValueType> *>& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
