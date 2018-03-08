@@ -784,30 +784,25 @@ public:
      */
     static void randomSparseIndexes( hmemo::HArray<IndexType>& array, const IndexType n, const float probability );
 
-    /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
-
-    static void buildSparseArrayZero(
-        hmemo::_HArray& sparseArray,
-        hmemo::HArray<IndexType>& sparseIndexes,
-        const hmemo::_HArray& denseArray,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    /** Build sparse indexes only, useful if sparseArray is not really needed */
-
+    /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector 
+     *
+     *  @param<out> sparseArray contains the non-zero values
+     *  @param<out> sparseIndexes contains the indexes of sparseArray in original array
+     *  @param<in>  denseArray    contains the array with all values
+     *  @param<in>  zeroValue     is the value that is considered as zero in denseArray
+     *  @param<in>  prefLoc       is the preferred location where operation is done
+     * 
+     *  \code
+     *    buildSparseArray( sparseArray, sparseIndexes, HArray<double>( { 0, 2, 1, 2, 1 } ), 1 )
+     *    -> sparseArray = HArray<double> ( { 0, 2, 2 } ); sparseIndexes = HArray<indexes> ( { 0, 1, 3 } )
+     *  \endcode
+     */
     template<typename TargetType, typename SourceType>
     static void buildSparseArray(
         hmemo::HArray<TargetType>& sparseArray,
         hmemo::HArray<IndexType>& sparseIndexes,
         const hmemo::HArray<SourceType>& denseArray,
         const SourceType zeroValue,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    /** Build sparse indexes only, useful if sparseArray is not really needed */
-
-    template<typename ValueType>
-    static void buildSparseIndexes(
-        hmemo::HArray<IndexType>& sparseIndexes,
-        const hmemo::HArray<ValueType>& denseArray,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Add new value in a sorted array, larger values are shifted up

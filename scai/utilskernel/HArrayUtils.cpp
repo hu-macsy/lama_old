@@ -145,9 +145,9 @@ void HArrayUtils::setArray(
     const BinaryOp op,
     const ContextPtr prefLoc )
 {
-    SCAI_LOG_ERROR( logger, "setArray<" << common::TypeTraits<TargetValueType>::id() << 
+    SCAI_LOG_INFO( logger, "setArray<" << common::TypeTraits<TargetValueType>::id() << 
                     ", " << common::TypeTraits<SourceValueType>::id() << ">, target[ " << target.size()
-                    << "] <- " << op << " source[" << source.size() )
+                    << "] <- " << op << " source[" << source.size() << "]" )
 
     if ( op == common::BinaryOp::COPY )
     {
@@ -1927,49 +1927,6 @@ void HArrayUtils::elimDoubles(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void HArrayUtils::buildSparseIndexes(
-    HArray<IndexType>& sparseIndexes,
-    const HArray<ValueType>& denseArray,
-    ContextPtr prefLoc )
-{
-    const IndexType n = denseArray.size();
-    static LAMAKernel<SparseKernelTrait::countNonZeros<ValueType> > countNonZeros;
-    static LAMAKernel<SparseKernelTrait::compress<ValueType, ValueType> > compress;
-    ContextPtr loc = prefLoc;
-
-    // default location for conversion: where we have the dense values
-
-    if ( loc == ContextPtr() )
-    {
-        loc = denseArray.getValidContext();
-    }
-
-    compress.getSupportedContext( loc, countNonZeros );
-    SCAI_CONTEXT_ACCESS( loc )
-    ValueType eps = TypeTraits<ValueType>::eps1();
-    ReadAccess<ValueType> rDenseArray( denseArray, loc );
-    // we count the non-zeros at first to have sizes for sparse data
-    ValueType zero = 0;
-    IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, zero, eps );
-    WriteOnlyAccess<IndexType> wSparseIndexes( sparseIndexes, loc, sparseN );
-    sparseN = compress[loc]( NULL, wSparseIndexes.get(), rDenseArray.get(), n, zero, eps );
-}
-
-/* --------------------------------------------------------------------------- */
-
-void HArrayUtils::buildSparseArrayZero(
-    _HArray& sparseArray,
-    HArray<IndexType>& sparseIndexes,
-    const _HArray& denseArray,
-    ContextPtr prefLoc )
-{
-    mepr::UtilsWrapperTT< SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::
-    buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename TargetType, typename SourceType>
 void HArrayUtils::buildSparseArray(
     HArray<TargetType>& sparseArray,
@@ -2719,10 +2676,6 @@ void HArrayUtils::buildComplex(
             hmemo::HArray<ValueType>&,                                  \
             IndexType,                                                  \
             float,                                                      \
-            hmemo::ContextPtr );                                        \
-    template void HArrayUtils::buildSparseIndexes<ValueType>(           \
-            hmemo::HArray<IndexType>&,                                  \
-            const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
     template IndexType HArrayUtils::insertSorted(                       \
             hmemo::HArray<ValueType>& array,                            \
