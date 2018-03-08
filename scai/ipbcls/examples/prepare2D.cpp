@@ -1,5 +1,5 @@
 /**
- * @file doAll.cpp
+ * @file prepare2D.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Example of least square problem with boundary conditions
- * @author Thomas Brandes, Andreas Borgen Longva
+ * @author Thomas Brandes, Andreas Borgen Langva
  * @date 21.07.2017
  */
 
@@ -37,12 +37,8 @@
 
 #include <scai/common/Settings.hpp>
 
-#include "ConstrainedLeastSquares.hpp"
-#include "MatrixWithT.hpp"
-
 using namespace scai;
 using namespace lama;
-using namespace solver;
 
 void setupSmoothMatrix( CSRSparseMatrix<double>& L, const IndexType ny, const IndexType nz, const double strength )
 {
@@ -52,35 +48,14 @@ void setupSmoothMatrix( CSRSparseMatrix<double>& L, const IndexType ny, const In
 
     common::Grid2D grid( ny, nz );
 
-    grid.setBorderType( 0, common::Grid::BORDER_REFLECTING );
-    grid.setBorderType( 1, common::Grid::BORDER_REFLECTING );
+    grid.setBorderType( 0, common::Grid::BORDER_ABSORBING );
+    grid.setBorderType( 1, common::Grid::BORDER_ABSORBING );
 
     StencilMatrix<double> stencilMatrix( grid, stencil );
 
     L = stencilMatrix;
 
     L.scale( - strength / 4 );
-}
-
-void joinMatrix( CSRSparseMatrix<double>& result, const CSRSparseMatrix<double>& a, const CSRSparseMatrix<double>& b )
-{
-    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumColumns(), "joined matrices must have same number of columns" );
-
-    typedef std::shared_ptr<scai::lama::_MatrixStorage> StoragePtr;
-
-    StoragePtr shared_ptrA( a.getLocalStorage().copy() );
-    StoragePtr shared_ptrB( b.getLocalStorage().copy() );
-
-    std::vector<StoragePtr> bothMatrices;
-
-    bothMatrices.push_back( shared_ptrA );
-    bothMatrices.push_back( shared_ptrB );
-
-    scai::lama::CSRStorage<double> joinedStorage;
-
-    joinedStorage.rowCat( bothMatrices );
-
-    result.assign( joinedStorage );
 }
 
 void zeroExtend( DenseVector<double>& T_ext,
@@ -103,10 +78,10 @@ int main( int argc, const char* argv[] )
     
     common::Settings::parseArgs( argc, argv );
 
-    if ( argc <= 4 )
+    if ( argc <= 8 )
     {
         std::cout << argv[0] << " <input_D> <input_T> <input_So> <input_hrz> " << std::endl;
-        std::cout << argv[0] << " [ <output_x] " << std::endl;
+        std::cout << "            <output_A> <output_b> <output_lb> <output_ub>" << std::endl;
         std::cout << "            [ --SCAI_STRENGTH=<strength> ]" << std::endl;
         std::cout << "            [ --SCAI_VARIATION=<variation> ]" << std::endl;
         return -1;
@@ -115,10 +90,10 @@ int main( int argc, const char* argv[] )
     std::cout << "Read D from "  << argv[1] << ", T from " << argv[2] 
               << ", So from " << argv[3] << ", hrz from " << argv[4] << std::endl;
 
-    CSRSparseMatrix<double> D( argv[1] );
-    DenseVector<double> T( argv[2] );
-    DenseVector<double> So( argv[3]  );
-    DenseVector<double> hrz( argv[4] );
+    auto D = read<CSRSparseMatrix<double>>( argv[1] );
+    auto T = read<DenseVector<double>>( argv[2] );
+    auto So = read<DenseVector<double>>( argv[3]  );
+    auto hrz = read<DenseVector<double>>( argv[4] );
 
     std::cout << "D = " << D << std::endl;
     std::cout << "hrz = " << hrz << std::endl;
@@ -132,12 +107,13 @@ int main( int argc, const char* argv[] )
     SCAI_ASSERT_EQ_ERROR( ny * nz, n , "Illegal factors ny = " << ny << ", nz = " << nz )
 
     IndexType nray = D.getNumRows();
+    std::cout << "#ray = " << nray << std::endl;
 
     SCAI_ASSERT_EQ_ERROR( D.getNumColumns(), n, "D must have #colums equal to problem size " << ny << " x " << nz )
     SCAI_ASSERT_EQ_ERROR( T.size(), D.getNumRows(), "T cannot be rhs for D" )
 
     int strength = 10;
-    int variation = 2;
+    int variation = 10;
 
     common::Settings::getEnvironment( strength, "SCAI_STRENGTH" );
     common::Settings::getEnvironment( variation, "SCAI_VARIATION" );
@@ -148,7 +124,9 @@ int main( int argc, const char* argv[] )
 
     setupSmoothMatrix( L, ny, nz, double( strength ) );
 
-    A.vcat( D, L );    // A = [ D; L ]
+    A.hcat( D, L );
+
+    std::cout << "A = " << A << std::endl;
 
     DenseVector<double> T_ext;
 
@@ -173,46 +151,11 @@ int main( int argc, const char* argv[] )
         }
     }
 
+    A.writeToFile( argv[5] );
+    T_ext.writeToFile( argv[6] );
+    lb.writeToFile( argv[7] );
+    ub.writeToFile( argv[8] );
 
-    // take context as specified by SCAI_CONTEXT
-
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
-
-    A.setContextPtr( ctx );
-    A.setCommunicationKind( _Matrix::SYNCHRONOUS );
-    T_ext.setContextPtr( ctx );
-    ub.setContextPtr( ctx );
-    lb.setContextPtr( ctx );
-
-    DenseVector<double> x( ctx );
-
-    _MatrixWithT Aopt( A );   // Allocate also a transposed matrix to optimize A' * x operations
-
-    ConstrainedLeastSquares lsq( Aopt );
-
-    // lsq.useTranspose();       // will matrixTimesVector instead ov vectorTimesMatrix
-
-    lsq.setTolerance( 0.01 );
-    lsq.setMaxIter( 50 );
-
-    try
-    {
-        lsq.solve( x, T_ext, lb, ub );
-    }
-    catch ( common::Exception& ex )
-    {
-        std::cout << "Caught exception: " << ex.what() << std::endl;
-        std::cout << "Stop execution." << std::endl;
-        return 1;
-    }
-
-    DenseVector<double> residual( A * x - T_ext );
-
-    std::cout << "res norm = " << residual.l2Norm() << std::endl;
-
-    if ( argc > 5 )
-    {
-        x.writeToFile( argv[5] );
-        std::cout << "written solution to file " << argv[5] << std::endl;
-    }
+    std::cout << "Written A to " << argv[5] << ", b to " << argv[6]
+              << ", lb to " << argv[7] << ", ub to " << argv[8] << std::endl;
 }

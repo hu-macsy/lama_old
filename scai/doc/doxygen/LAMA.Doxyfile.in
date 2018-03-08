@@ -613,6 +613,8 @@ EXCLUDE                =  ${CMAKE_SOURCE_DIR}/lama/test \
                           ${CMAKE_SOURCE_DIR}/dmemo/test     \
                           ${CMAKE_SOURCE_DIR}/solver/examples \
                           ${CMAKE_SOURCE_DIR}/solver/test     \
+                          ${CMAKE_SOURCE_DIR}/ipbcls/examples \
+                          ${CMAKE_SOURCE_DIR}/ipbcls/test     \
                           ${CMAKE_SOURCE_DIR}/blaskernel/examples \
                           ${CMAKE_SOURCE_DIR}/blaskernel/test \
                           ${CMAKE_SOURCE_DIR}/utilskernel/examples \

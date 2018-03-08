@@ -102,9 +102,9 @@ inline std::ostream& operator<<( std::ostream& stream, const MatrixOp& op )
 
 /** Combination of two matrix operations 
  *
- *  @param[op1]  first operation
- *  @param[op2]  second operation
- *  @returns     the combination of the two operations
+ *  @param[in] op1 first operation
+ *  @param[in] op2 second operation
+ *  @returns   the combination of the two operations
  *
  *  \code
  *    matrixA = transpose( conj( B ) )

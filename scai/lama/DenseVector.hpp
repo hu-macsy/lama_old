@@ -155,6 +155,7 @@ public:
      *
      * @param[in] distribution  the distribution for the vector
      * @param[in] localValues   the local values to initialize the new DenseVector with.
+     * @param[in] context       becomes the context for memory/operations on this vector.
      *
      * Note: localValues.size() == distribution->getLocalSize() must be valid.
      */

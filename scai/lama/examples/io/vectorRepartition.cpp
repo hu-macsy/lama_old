@@ -190,7 +190,7 @@ void readArrayBlocked( _HArray& array, const string& inFileName, const IndexType
         for ( size_t i = 0; i < blockVector.size(); ++i )
         {
             IndexType localSize = blockVector[i]->size();
-            HArrayUtils::setArraySection( array, offset, 1, *blockVector[i], 0, 1, localSize );
+            HArrayUtils::_setArraySection( array, offset, 1, *blockVector[i], 0, 1, localSize );
             offset += localSize;
         }
     }
@@ -237,7 +237,7 @@ void writeArrayBlocked( const _HArray& array, const string& outFileName, const I
         {
             blockArray->clear();  // invalidate content to avoid unnecessary mem transfer
             blockArray->resize( ub - lb );
-            HArrayUtils::setArraySection( *blockArray, 0, 1, array, lb, 1, ub - lb );
+            HArrayUtils::_setArraySection( *blockArray, 0, 1, array, lb, 1, ub - lb );
             FileIO::write( *blockArray, outFileNameBlock );
         }
     }

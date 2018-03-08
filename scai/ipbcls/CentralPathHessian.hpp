@@ -32,8 +32,10 @@
 
 #pragma once
 
-#include <scai/lama/matrix/AbstractMatrix.hpp>
+#include <scai/lama/matrix/OperatorMatrix.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+
+#include <scai/lama/DenseVector.hpp>
 
 namespace scai
 
@@ -43,7 +45,7 @@ namespace lama
 
 {
 
-/** The CentralPathHessian matrix stands for H = 2 * tau A' * A + D 
+/** The CentralPathHessian matrix stands for H = 2 * tau transpose( A ) * A + D 
  *
  *  This matrix is used for a solver that computes the search direction in each 
  *  iteration step of an iterative method in least square with box constraints.
@@ -52,14 +54,15 @@ namespace lama
  *     will be updated in each iteration step
  *
  */
-class CentralPathHessian : public AbstractMatrix 
+template<typename ValueType>
+class CentralPathHessian : public OperatorMatrix<ValueType>
 {
 
 public:
 
-    CentralPathHessian ( const _Matrix& A ) :
+    CentralPathHessian ( const Matrix<ValueType>& A ) :
 
-        AbstractMatrix( A.getColDistributionPtr(), A.getColDistributionPtr() ),
+        OperatorMatrix<ValueType>( A.getColDistributionPtr(), A.getColDistributionPtr() ),
 
         mA( A ),
         mD( NULL ),
@@ -67,36 +70,62 @@ public:
     {
         // create a tmp vector that contains result A * x
 
-        tmp_VectorPtr.reset( A.newVector( 0 ) );
+        tmpTargetPtr.reset( A.newTargetVector() );
+        tmpSourcePtr.reset( A.newSourceVector() );
     }
 
     ~CentralPathHessian()
     {
     }
 
-    void update( const Vector& D, const Scalar tau )
+    void update( const Vector<ValueType>& D, const ValueType tau )
     {
-        SCAI_ASSERT_EQ_ERROR( D.size(), getNumColumns(), "illegal size for vector D" );
+        SCAI_ASSERT_EQ_ERROR( D.size(), this->getNumColumns(), "illegal size for vector D" );
 
         mD = &D;
         mTau = tau;
     }
 
     virtual void matrixTimesVector(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const
+        Vector<ValueType>& result,
+        const ValueType alpha,
+        const Vector<ValueType>& x,
+        const ValueType beta,
+        const Vector<ValueType>* y,
+        const common::MatrixOp op ) const
     {
-        Vector& tmp = *tmp_VectorPtr;
+        SCAI_ASSERT_EQ_ERROR( op, common::MatrixOp::NORMAL, "no conj/transpose supported" )
 
-        result = *mD * x;          // elmentwise multiplication
-        result += beta * y;
-        tmp = mA * x + 0 * tmp;
-        result += ( 2 * mTau * alpha ) * tmp * mA;
+        Vector<ValueType>& tmpSource = *tmpSourcePtr;
+        Vector<ValueType>& tmpTarget = *tmpTargetPtr;
+
+        tmpSource = alpha * *mD * x; // elmentwise multiplication
+
+        if ( y != NULL )
+        {
+            result = beta * *y;
+            result += tmpSource;
+        }
+        else 
+        {
+            result = tmpSource;
+        }
+
+        tmpTarget = mA * x;
+        result += ( 2 * mTau * alpha ) * transpose( mA ) * tmpTarget;
     }
     
+    virtual void matrixTimesVectorDense(
+        DenseVector<ValueType>&,
+        const ValueType,
+        const DenseVector<ValueType>&,
+        const ValueType,
+        const DenseVector<ValueType>*,
+        const common::MatrixOp ) const
+    {
+        COMMON_THROWEXCEPTION( "should not be called" )
+    }
+
     /** This method must be provided so that solvers can decide about context of operations. */
 
     virtual hmemo::ContextPtr getContextPtr() const
@@ -104,20 +133,24 @@ public:
         return mA.getContextPtr();
     }   
     
-    /** This method must be provided so that solvers can decide about the type of additional runtime vectors. */
-
-    virtual common::ScalarType getValueType() const
+    virtual void writeAt( std::ostream& stream ) const
     {
-        return mA.getValueType();
-    }   
+        stream << "CentralPathHessian( 2 * " << mTau << " * A' * A + D" << " )";
+    }
 
 private:
 
-    const _Matrix& mA;   // reference kept the whole lifetime of this object
-    const Vector* mD;   // reference to the actual vector D
-    Scalar mTau;        // value tau
+    using _Matrix::logger;
 
-    _VectorPtr tmp_VectorPtr;   // avoid reallocation of temporary vector required in matrixTimesVector
+    const Matrix<ValueType>& mA;   // reference kept the whole lifetime of this object
+    const Vector<ValueType>* mD;   // changing reference to the actual vector D
+
+    ValueType mTau;        // value tau
+
+    // avoid reallocation of temporary vector required in matrixTimesVector
+
+    std::unique_ptr<Vector<ValueType>> tmpTargetPtr;
+    std::unique_ptr<Vector<ValueType>> tmpSourcePtr;
 };
 
 }

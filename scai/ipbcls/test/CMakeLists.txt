@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file ipbcls/test/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,39 +27,29 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for tutorial examples
+ # @brief CMake configuration file for tests of SCAI module solver
  # @author Thomas Brandes
- # @date 25.07.2017
+ # @date 04.07.2017
 ###
 
-project ( LeastSquare CXX )
+scai_project ( 
 
-cmake_minimum_required ( VERSION 2.8 )
+	CLASSES
 
-find_package( SCAI REQUIRED PATHS $ENV{SCAI_ROOT} )
+	HEADERS
 
-message ( STATUS "SCAI_DEFINITIONS=${SCAI_DEFINITIONS}" )
-message ( STATUS "SCAI_INCLUDE_DIRS=${SCAI_INCLUDE_DIRS}" )
-message ( STATUS "SCAI_CXX_FLAGS=${SCAI_CXX_FLAGS}" )
-message ( STATUS "SCAI_LIBRARIES=${SCAI_LIBRARIES}" )
+	SOURCES
 
-add_definitions ( ${SCAI_DEFINITIONS} )
+        lsbctest
+   )
+   
+scai_test ( EXECUTABLE lsbctest FILES ${CXX_SOURCES} UNIT_TEST RUN )
 
-include_directories( ${SCAI_INCLUDE_DIRS} )
+###  copy xmltest.sh script
 
-## Take over OpenMP and C++11 flags 
+scai_test_scripts( SCRIPTS xmltest.sh )
 
-set ( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SCAI_CXX_FLAGS} )
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
-add_executable ( prepare prepare.cpp )
-target_link_libraries( prepare ${SCAI_LIBRARIES} )
-
-add_executable ( lsbc lsbc.cpp ConstrainedLeastSquares.cpp )
-target_link_libraries( lsbc ${SCAI_LIBRARIES} )
-
-add_executable ( makeImage makeImage.cpp )
-target_link_libraries( makeImage ${SCAI_LIBRARIES} )
-
-add_executable ( doAll doAll.cpp ConstrainedLeastSquares.cpp )
-target_link_libraries( doAll ${SCAI_LIBRARIES} )
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )
 

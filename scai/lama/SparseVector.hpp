@@ -154,13 +154,14 @@ public:
     /**
      * @brief creates a distributed SparseVector with given local values.
      *
-     * @param[in] distribution   the distribution of the vector
-     * @param[in] nonZeroindexes local indexes this processor has nonz-zeros values for
-     * @param[in] nonZeroValues  values belonging to the corresponding entries
-     * @param[in] zero           is the zero value
+     * @param[in] distribution  the distribution of the vector
+     * @param[in] indexes       local indexes this processor has nonz-zeros values for
+     * @param[in] values        values belonging to the corresponding entries
+     * @param[in] zero          is the zero value
+     * @param[in] context       context to be used for the created sparse vector
      *
      * While indexes and values might have individual values on each processor, the zero value
-     * must be exactly the same on all processors
+     * must be the same on all processors
      */
     SparseVector( 
         dmemo::DistributionPtr distribution,

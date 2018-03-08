@@ -1,5 +1,5 @@
 /**
- * @file GramianMatrix.cpp
+ * @file GramianMatrix.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief _Matrix class that stands for A' * A but without building it explicitly
+ * @brief Operator matrix class that stands for transpose( A ) * A but without building it explicitly
  * @author Thomas Brandes
  * @date 28.06.2017
  */
@@ -43,7 +43,7 @@ namespace scai
 namespace lama
 {
 
-/** Operator matrix class that stands for A' * A without building it explicitly
+/** Operator matrix class that stands for transpose( A ) * A without building it explicitly
  *
  *  The above matrix is not built explicitly and only some methods are implemented so
  *  this class can be used in solvers that exploit matrix-free methods.

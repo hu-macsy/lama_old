@@ -1,5 +1,5 @@
 /**
- * @file HybridMatrix.cpp
+ * @file HybridMatrix.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -56,11 +56,12 @@ class HybridMatrix : public OperatorMatrix<ValueType>
 
 public:
 
-    /** Constructor that builds A' * A
+    /** Constructor that builds the matrix A1 + A2 symbollically
      *
-     *  @param[in] A is the rectangular matrix 
+     *  @param[in] A1, A2 are the two matrices that build the hybrid one.
      *
-     *  The size of the Hybrid matrix is n x n if A has the size m x n
+     *  The distributions of A1 and A2 must be the same and are the corresponding
+     *  distributions for this matrix.
      */
     HybridMatrix( const Matrix<ValueType>& A1, const Matrix<ValueType>& A2 ) :
 

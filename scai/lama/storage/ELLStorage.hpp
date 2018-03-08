@@ -113,9 +113,11 @@ public:
      *
      * @param[in] numRows    number of rows
      * @param[in] numColumns number of columns
-     * @param[in] context    specifies optionally the context where storage is located
+     * @param[in] ctx        context where storage is located, optional
      *
      * Attention: DEPRECATED.
+     *
+     * Instead of this constructor you should use the free function zero to create a storage.
      *
      *  \code
      *   ELLStorage<ValueType> ell( m, n, ctx );
@@ -132,7 +134,7 @@ public:
      * @param[in] ia                row pointer of the input matrix
      * @param[in] ja                column indexes of the input matrix
      * @param[in] values            the data values of the input matrix
-     * @param[in] context           context for the new storage object
+     * @param[in] ctx               context for the new storage object
      */
     ELLStorage(
         const IndexType numRows,
@@ -141,7 +143,7 @@ public:
         hmemo::HArray<IndexType> ia,
         hmemo::HArray<IndexType> ja,
         hmemo::HArray<ValueType> values,
-        const hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
+        const hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /** Default copy constructor is overridden */
 
@@ -286,7 +288,7 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
+     * @param[in] ctx        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -295,7 +297,7 @@ public:
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
         const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::ContextPtr ctx );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */

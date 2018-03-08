@@ -88,6 +88,10 @@ is minimized.
 
 * :ref:`SCAI Partitioning - Partitioning to get optimized distributions  <scaipartitioning:main-page_partitioning>`
 
+Least Squares Solver with box constraints:
+
+* :ref:`SCAI Least Squares with Box Constraint  <scaipartitioning:main-page_ipbcls>`
+
 Tools
 -----
 

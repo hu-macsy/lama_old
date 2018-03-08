@@ -102,7 +102,7 @@ public:
      *
      * @param[in] numRows    number of rows
      * @param[in] numColumns number of columns
-     * @param[in] context    specifies optionally the context where storage is located
+     * @param[in] ctx        specifies optionally the context where storage is located
      *
      * Attention: DEPRECATED
      *

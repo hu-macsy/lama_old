@@ -210,9 +210,9 @@ set ( COMMON_HEADERS
         safer_memcpy
 )
 
-if ( ${USE_COMPLEX} )
+if ( ${SCAI_USE_COMPLEX} )
     list ( APPEND COMMON_HEADERS Complex )
-endif ( ${USE_COMPLEX} )
+endif ( ${SCAI_USE_COMPLEX} )
 
 ## Boost used -> generate and add a boost check version file 
 

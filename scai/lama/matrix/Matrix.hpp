@@ -281,17 +281,15 @@ public:
     bool checkSymmetry() const;
 
     /**
-     * @brief Computes result = alpha * this * x + beta * y.
+     * @brief Computes result = alpha * op( this ) * x + beta * y.
      *
      * @param[out]  result  the vector to store the result to
      * @param[in]   alpha   the scalar alpha of the expression
      * @param[in]   x       the vector x of the expression
      * @param[in]   beta    the scalar beta of the expression
-     * @param[in]   y       the vector y of the expression
-     * @param[in]   transposeFlag if set the transposed matrix is used
+     * @param[in]   y       the vector y of the expression, optional
+     * @param[in]   op      operation (transpose, conj) implicitly applied to this matrix
      *
-     * This method computes result = alpha * this * x + beta * y. If
-     * result == x or result == y new storage is allocated to store the result.
      */
     virtual void matrixTimesVector(
         Vector<ValueType>& result,
@@ -309,7 +307,7 @@ public:
      * @param[in]  x             dense vector that is used for multiplication
      * @param[in]  beta          scaling factor for additional summand
      * @param[in]  y             additional summand ( beta = 0 if not available )
-     * @param[in]  transposeFlag if set the adjoint linear transformation is taken
+     * @param[in]  op            specifies the matrix operation (transpose, conj) implicitly applied
      *
      * This virtual method must be overridden by all derived classes that have no
      * own version of matrixTimesVector.
@@ -574,7 +572,7 @@ public:
      *
      *  Each processor adds its part locally with global coordinates.
      *
-     *  @param[in,out] assemby     is the object to which non-zero coefficients of this matrix are inserted
+     *  @param[in,out] assembly    is the object to which non-zero coefficients of this matrix are inserted
      *  @param[in]     rowOffset   is a global offset that is added to the row coordinates
      *  @param[in]     colOffset   is a global offset that is added to the column coordinates
      *

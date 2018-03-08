@@ -1,5 +1,5 @@
 /**
- * @file ConstrainedLeastSquares.cpp
+ * @file ConstrainedLeastSquaresProblem.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -101,7 +101,7 @@ ConstrainedLeastSquaresProblem<Scalar> generateConstrainedLeastSquaresProblem(sc
     p.u += eps;
     
     // Gradient of the unconstrained problem
-    const auto g = eval<DenseVector<Scalar>>( 2 * r * p.A);
+    const auto g = eval<DenseVector<Scalar>>( 2 * transpose( p.A) * r );
     
     // Lagrange multipliers for the bound constraints. Lambda is the multiplier for the lower bound,
     // while mu is the multiplier for the upper bound

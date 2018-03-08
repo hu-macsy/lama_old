@@ -55,7 +55,7 @@ public:
     JoinedMatrix ( const Matrix<ValueType>& A1, const Matrix<ValueType>& A2 ) :
 
         OperatorMatrix<ValueType>( dmemo::DistributionPtr( new dmemo::JoinedDistribution( A1.getRowDistributionPtr(),
-                                                                                          A2.getRowDistributionPtr() ) ),
+                                   A2.getRowDistributionPtr() ) ),
                                    A1.getColDistributionPtr() ),
         mA1( A1 ),
         mA2( A2 ),
@@ -80,8 +80,8 @@ public:
         // SCAI_ASSERT result is JoinedVector
         // SCAI_ASSERT if beta != 0 y is JoinedVector
 
-        SCAI_LOG_ERROR( logger, "joined matrix, result = " << alpha << " * A * x + " << beta << " * y " )
-    
+        SCAI_LOG_INFO( logger, "joined matrix, result = " << alpha << " * A * x + " << beta << " * y " )
+
         if ( !common::isTranspose( op ) )
         {
             SCAI_ASSERT_EQ_ERROR( result.getVectorKind(), VectorKind::JOINED, "joined vector expected" )
@@ -118,8 +118,8 @@ public:
             mA2.matrixTimesVector( result, alpha, jX.second(), 1, &result, op );
         }
     }
-    
-    /** Implementation of pure method Matrix<ValueType>::matrixTimesVectorDense 
+
+    /** Implementation of pure method Matrix<ValueType>::matrixTimesVectorDense
      *
      *  This method will never be called as we have already overridden matrixTimesVectorDense
      */
@@ -129,7 +129,7 @@ public:
         const DenseVector<ValueType>&,
         const ValueType,
         const DenseVector<ValueType>*,
-        const common::MatrixOp op ) const
+        const common::MatrixOp ) const
     {
         COMMON_THROWEXCEPTION( "Joined matrix does not support matrixTimesVectorDense" )
     }
@@ -158,25 +158,25 @@ public:
     virtual hmemo::ContextPtr getContextPtr() const
     {
         return mA1.getContextPtr();
-    }   
-    
+    }
+
     /** This method must be provided so that solvers can decide about the type of additional runtime vectors. */
 
     virtual common::ScalarType getValueType() const
     {
         return mA1.getValueType();
-    }   
+    }
 
     virtual void writeAt( std::ostream& stream ) const
     {
         stream << "JoinedMatrix( " << mA1 << ", " << mA2 << " )";
     }
 
-    /** Joined matrix has joined row distribution, so we need a new method for temporary column vector. */
+    /** Joined matrix has joined row distribution, so we need a new method for temporary row vector. */
 
-    virtual Vector<ValueType>* newSourceVector() const
+    virtual Vector<ValueType>* newTargetVector() const
     {
-        return new JoinedVector<ValueType>( mA1.newSourceVector(), mA2.newSourceVector() );
+        return new JoinedVector<ValueType>( mA1.newTargetVector(), mA2.newTargetVector() );
     }
 
 private:
