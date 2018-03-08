@@ -140,55 +140,6 @@ public:
     template<typename ValueType>
     inline ValueType getValue() const;
 
-    // Removed: template<typename ValueType> operator ValueType () const  for type conversions
-    // Might cause problems due to implicit conversions, should only be used explicitly
-    // Now should be done as: cast<ValueType>( scalar )
-
-    /**
-     * @brief Unary minus operator for Scalar.
-     */
-    inline Scalar operator-() const;
-
-    /**
-     * @brief Overload assignment operator +=
-     */
-    Scalar& operator+=( const Scalar& other )
-    {
-        mValue += other.mValue;
-        return *this;
-    }
-
-    /**
-     * @brief Overload assignment operator -=
-     */
-    Scalar& operator-=( const Scalar& other )
-    {
-        mValue -= other.mValue;
-        return *this;
-    }
-
-    /**
-     * @brief Overload assignment operator *=
-     */
-    Scalar& operator*=( const Scalar& other )
-    {
-        mValue *= other.mValue;
-        return *this;
-    }
-
-    /**
-     * @brief Overload assignment operator /=
-     */
-    Scalar& operator/=( const Scalar& other )
-    {
-        mValue /= other.mValue;
-        return *this;
-    }
-
-    /**
-     *  @brief Query that scalar values has no imaginary part.
-     */
-
     inline virtual void writeAt( std::ostream& stream ) const;
 
     inline bool hasComplexValue() const
@@ -218,11 +169,6 @@ template<typename ValueType>
 inline ValueType Scalar::getValue() const
 {
     return static_cast<ValueType>( mValue );
-}
-
-inline Scalar Scalar::operator-() const
-{
-    return Scalar( -mValue );
 }
 
 inline void Scalar::writeAt( std::ostream& stream ) const
@@ -265,6 +211,11 @@ inline Scalar operator-( const Scalar& a, const Scalar& b )
     return Scalar( a.getValue<ScalarRepType>() - b.getValue<ScalarRepType>() );
 }
 
+inline Scalar operator-( const Scalar& a )
+{
+    return Scalar( -a.getValue<ScalarRepType>() );
+}
+
 /**
  * @brief Multiply Scalar a with Scalar b
  *
@@ -287,56 +238,6 @@ inline Scalar operator*( const Scalar& a, const Scalar& b )
 inline Scalar operator/( const Scalar& a, const Scalar& b )
 {
     return Scalar( a.getValue<ScalarRepType>() / b.getValue<ScalarRepType>() );
-}
-
-/* --------------------------------------------------------------------------- *
- *  Compare operators for Scalar: ==, !=                                       *
- * --------------------------------------------------------------------------- */
-
-/**
- * @brief Check equality of a and b.
- *
- * @param[in] a     the 1st Scalar to compare this to.
- * @param[in] b     the 2nd Scalar to compare this to.
- * @return          if a is equal to b
- */
-
-inline bool operator==( const Scalar& a, const Scalar& b )
-{
-    return a.getValue<ScalarRepType>() == b.getValue<ScalarRepType>();
-}
-
-/**
- * @brief Check inequality of a and b.
- *
- * @param[in] a     the 1st Scalar to compare this to.
- * @param[in] b     the 2nd Scalar to compare this to.
- * @return          if a is unequal to b
- */
-inline bool operator!=( const Scalar& a, const Scalar& b )
-{
-    return a.getValue<ScalarRepType>() != b.getValue<ScalarRepType>();
-}
-
-/* --------------------------------------------------------------------------- *
- *  Unary functions for Scalar: abs, conj                                      *
- * --------------------------------------------------------------------------- */
-
-inline Scalar sqrt( const Scalar scalar )
-{
-    // call sqrt for ScalarRepType
-    return Scalar( common::Math::sqrt( scalar.getValue<ScalarRepType>() ) );
-}
-
-inline Scalar abs( const Scalar scalar )
-{
-    // call abs for ScalarRepType
-    return Scalar( common::Math::abs( scalar.getValue<ScalarRepType>() ) );
-}
-
-inline Scalar conj( const Scalar scalar )
-{
-    return Scalar( common::Math::conj( scalar.getValue<ScalarRepType>() ) );
 }
 
 } /* end namespace lama */

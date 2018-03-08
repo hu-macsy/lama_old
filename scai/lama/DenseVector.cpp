@@ -72,7 +72,6 @@ namespace scai
 using common::TypeTraits;
 using common::BinaryOp;
 using utilskernel::HArrayUtils;
-using utilskernel::LArray;
 
 using namespace hmemo;
 using namespace dmemo;
@@ -451,7 +450,7 @@ void DenseVector<ValueType>::sortImpl(
 
     // Now sort the local values
 
-    LArray<IndexType>* localPerm = NULL;
+    HArray<IndexType>* localPerm = NULL;
 
     if ( perm )
     {
@@ -477,7 +476,8 @@ void DenseVector<ValueType>::sortImpl(
         {
             // due to block distribution we need only global index of first one
 
-            *localPerm += distribution.local2global( 0 );
+            const IndexType globalLow = distribution.local2global( 0 );
+            HArrayUtils::setScalar( *localPerm, globalLow, common::BinaryOp::ADD );
         }
 
         ReadAccess<IndexType> rPerm( *localPerm );
@@ -548,7 +548,7 @@ void DenseVector<ValueType>::sortImpl(
 
     SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
 
-    LArray<ValueType> newValues;
+    HArray<ValueType> newValues;
 
     IndexType newLocalSize = recvPlan.totalQuantity();
 
@@ -562,7 +562,7 @@ void DenseVector<ValueType>::sortImpl(
 
     if ( perm )
     {
-        LArray<IndexType> newPerm;
+        HArray<IndexType> newPerm;
 
         {
             WriteOnlyAccess<IndexType> recvVals( newPerm, newLocalSize );
@@ -1033,7 +1033,7 @@ void DenseVector<ValueType>::axpy( const ValueType& alpha, const Vector<ValueTyp
 
         const DenseVector<ValueType>& denseX = static_cast<const DenseVector<ValueType>&>( x );
 
-        const LArray<ValueType>& xValues = denseX.getLocalValues();
+        const HArray<ValueType>& xValues = denseX.getLocalValues();
 
         utilskernel::HArrayUtils::axpy( mLocalValues, alpha, xValues, getContextPtr() );
     }
@@ -1494,11 +1494,11 @@ ValueType DenseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) c
 
         const SparseVector<ValueType>& sparseOther = static_cast<const SparseVector<ValueType>&>( other );
     
-        LArray<ValueType> myValues;   // build values at same position as sparse vector
+        HArray<ValueType> myValues;   // build values at same position as sparse vector
 
         gatherLocalValues( myValues, sparseOther.getNonZeroIndexes(), BinaryOp::COPY, getContextPtr() );
 
-        localDotProduct = myValues.dotProduct( sparseOther.getNonZeroValues() );
+        localDotProduct = HArrayUtils::dotProduct( myValues, sparseOther.getNonZeroValues() );
     }
 
     SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )

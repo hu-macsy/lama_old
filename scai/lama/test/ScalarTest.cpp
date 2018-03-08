@@ -81,9 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, ValueType, test_types )
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
     Scalar u = s + t;
-    s += t;
     BOOST_CHECK_EQUAL( u.getValue<ValueType>(), 5.0 );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 5.0 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -93,9 +91,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, ValueType, test_types )
     Scalar s ( 2 );
     Scalar t ( 3 );
     Scalar u = s * t;
-    s *= t;
     BOOST_CHECK_EQUAL( u.getValue<ValueType>(), ValueType( 6 ) );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), ValueType( 6 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -105,9 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, ValueType, test_types )
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
     Scalar u = s - t;
-    s -= t;
     BOOST_CHECK_EQUAL( u.getValue<ValueType>(), -1.0 );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), -1.0 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -132,44 +126,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( NegativNumberTest, ValueType, test_types )
 {
     Scalar s( 2.0 );
     Scalar t( -s );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 2.0 );
-    BOOST_CHECK_EQUAL( t.getValue<ValueType>(), -2.0 );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( EqualityTest )
-{
-    Scalar s ( 2.0 );
-    Scalar t ( 2.0 );
-    Scalar u ( 3.0 );
-    BOOST_CHECK( s == t );
-    BOOST_CHECK( s != u );
-
-    // negative values
-    Scalar n ( -2.0 );
-    BOOST_CHECK( n != s );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( MiscTests )
-{
-    Scalar s( 6.25 );
-    Scalar t( 9.0 );
-    Scalar u( -2.5 );
-    BOOST_CHECK( sqrt( s ) == 2.5 );
-    BOOST_CHECK_EQUAL( sqrt( s ), 2.5 );
-    BOOST_CHECK_EQUAL( sqrt( t ), 3.0 );
-    BOOST_CHECK_EQUAL( abs( u ), 2.5 );
-    BOOST_CHECK_EQUAL( abs( t ), 9.0 );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-    Scalar c1( ComplexFloat( 3, 4 ) );
-    Scalar c2( ComplexFloat( 4, 2 ) );
-    // Pythagoras: 3^2 + 4^2 = 5^2
-    BOOST_CHECK_EQUAL( abs( c1 ), 5.0f );
-#endif
+    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), ValueType( 2 ) );
+    BOOST_CHECK_EQUAL( t.getValue<ValueType>(), ValueType( -2 ) );
 }
 
 /* --------------------------------------------------------------------- */
