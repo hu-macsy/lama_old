@@ -647,7 +647,7 @@ ValueType HArrayUtils::reduce(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::asum( const HArray<ValueType>& array, const ContextPtr prefLoc )
+RealType<ValueType> HArrayUtils::l1Norm( const HArray<ValueType>& array, const ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -662,14 +662,14 @@ ValueType HArrayUtils::asum( const HArray<ValueType>& array, const ContextPtr pr
     asum.getSupportedContext( loc );
     ReadAccess<ValueType> readArray( array, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType result = asum[loc]( n, readArray.get(), 1 );
+    RealType<ValueType> result = asum[loc]( n, readArray.get(), 1 );
     return result;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::nrm2( const HArray<ValueType>& array, const ContextPtr prefLoc )
+RealType<ValueType> HArrayUtils::l2Norm( const HArray<ValueType>& array, const ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -684,14 +684,14 @@ ValueType HArrayUtils::nrm2( const HArray<ValueType>& array, const ContextPtr pr
     nrm2.getSupportedContext( loc );
     ReadAccess<ValueType> readArray( array, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType result = nrm2[loc]( n, readArray.get(), 1 );
+    RealType<ValueType> result = nrm2[loc]( n, readArray.get(), 1 );
     return result;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::absMaxDiffVal(
+RealType<ValueType> HArrayUtils::maxDiffNorm(
     const HArray<ValueType>& array1,
     const HArray<ValueType>& array2,
     ContextPtr prefLoc )
@@ -2589,7 +2589,7 @@ void HArrayUtils::buildComplex(
             const CompareOp,                                            \
             const ValueType,                                            \
             hmemo::ContextPtr );                                        \
-    template ValueType HArrayUtils::absMaxDiffVal<ValueType>(           \
+    template RealType<ValueType> HArrayUtils::maxDiffNorm<ValueType>(   \
             const hmemo::HArray<ValueType>&,                            \
             const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
@@ -2620,10 +2620,10 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<ValueType>&,                            \
             const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
-    template ValueType HArrayUtils::asum<ValueType>(                    \
+    template RealType<ValueType> HArrayUtils::l1Norm<ValueType>(        \
             const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
-    template ValueType HArrayUtils::nrm2<ValueType>(                    \
+    template RealType<ValueType> HArrayUtils::l2Norm<ValueType>(        \
             const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
     template bool HArrayUtils::isSorted<ValueType>(                     \

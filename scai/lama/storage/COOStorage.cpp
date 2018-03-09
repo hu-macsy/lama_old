@@ -696,7 +696,7 @@ RealType<ValueType> COOStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     // asum over the full array mValues
-    return HArrayUtils::asum( mValues, this->getContextPtr() );
+    return HArrayUtils::l1Norm( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

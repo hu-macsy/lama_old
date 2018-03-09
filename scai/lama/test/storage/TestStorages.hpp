@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./lama/test/storage/TestStorages.hpp
+ * @brief Utilities to set up storages for matrix storage unit tests.
  * @author Thomas Brandes
  * @date 08.04.2016
  */
@@ -35,9 +35,11 @@
 #pragma once
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/LArray.hpp>
+
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
+
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 namespace scai
 {
@@ -45,10 +47,10 @@ namespace scai
 template<typename ValueType>
 void getMatrix_7_4 ( IndexType& numRows,
                      IndexType& numColumns,
-                     utilskernel::LArray<IndexType>& matrixRowSizes,
-                     utilskernel::LArray<IndexType>& matrixJA,
-                     utilskernel::LArray<ValueType>& matrixValues,
-                     utilskernel::LArray<ValueType>& denseValues )
+                     hmemo::HArray<IndexType>& matrixRowSizes,
+                     hmemo::HArray<IndexType>& matrixJA,
+                     hmemo::HArray<ValueType>& matrixValues,
+                     hmemo::HArray<ValueType>& denseValues )
 {
     // Attention: ia array is not an offset array, it contains number of values in each row
     IndexType ia[] = { 2, 1, 2, 3, 2, 0, 2 };
@@ -71,7 +73,7 @@ void getMatrix_7_4 ( IndexType& numRows,
     matrixRowSizes.setRawData( numRows, ia );
     matrixJA.setRawData( numValues, ja );
     matrixValues.setRawData( numValues, values );
-    numColumns = matrixJA.max() + 1;
+    numColumns = utilskernel::HArrayUtils::max( matrixJA ) + 1;
     BOOST_REQUIRE_EQUAL( static_cast<size_t>( numRows * numColumns ), sizeof( resultMatrix ) / sizeof( ValueType ) );
     denseValues.setRawData( numRows * numColumns, resultMatrix );
 }

@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Tests for the class LArray
+ * @brief Tests for FFT operations on arrays
  * @author Eric Schricker
  * @date 22.02.2016
  */

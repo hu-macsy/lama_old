@@ -48,14 +48,21 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/expression/all.hpp>
+
+#include <scai/utilskernel.hpp>
+
 #include <scai/testsupport/uniquePath.hpp>
 #include <scai/testsupport/GlobalTempDir.hpp>
 
 using namespace scai;
 using namespace lama;
 
+using hmemo::HArray;
+
 using scai::testsupport::uniquePath;
 using scai::testsupport::GlobalTempDir;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -127,17 +134,15 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 
     IndexType n = 5;   // let it really small, this test is very inefficient
 
-    utilskernel::LArray<ValueType> data( n );
-
     common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
-    data.setRandom( 1 );
+    auto data = utilskernel::randomHArray<ValueType>( n, 1 );
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < dists.size(); ++i )
     {
-        utilskernel::LArray<ValueType> data1( n );
+        HArray<ValueType> data1( n );
 
         dmemo::DistributionPtr dist = dists[i];
 
@@ -157,7 +162,7 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
             data1[k] = distV.getValue( k );
         }
 
-        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+        BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
     }
 }
 
@@ -210,7 +215,7 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 
         BOOST_CHECK_EQUAL( n, newV.getLocalValues().size() );
 
-        BOOST_CHECK_EQUAL( 0, newV.getLocalValues().maxDiffNorm( repV.getLocalValues() ) );
+        BOOST_TEST( hostReadAccess( newV.getLocalValues() ) == hostReadAccess( repV.getLocalValues() ), per_element() );
     }
 }
 
@@ -249,7 +254,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
         DenseVector<ValueType> distV1 = linearDenseVector<ValueType>( dist, 0, 1, ctx );
 
-        BOOST_CHECK_EQUAL( 0, distV1.getLocalValues().maxDiffNorm( distV.getLocalValues() ) );
+        BOOST_TEST( hostReadAccess( distV1.getLocalValues() ) == hostReadAccess( distV.getLocalValues() ), per_element() );
     }
 }
 
@@ -346,10 +351,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
     // vector1 and vector2 must be equal
 
-    const utilskernel::LArray<ValueType> localValues1 = vector1.getLocalValues();
-    const utilskernel::LArray<ValueType> localValues2 = vector2.getLocalValues();
+    const HArray<ValueType>& localValues1 = vector1.getLocalValues();
+    const HArray<ValueType>& localValues2 = vector2.getLocalValues();
 
-    BOOST_CHECK_EQUAL( ValueType( 0 ), localValues1.maxDiffNorm( localValues2 ) );
+    BOOST_TEST( hostReadAccess( localValues1 ) == hostReadAccess( localValues2 ), per_element() );
 
     if ( comm->getRank() == 0 )
     {
@@ -415,8 +420,8 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
 
         // prove same distribution, same values of r and y/z
 
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( y.getLocalValues() ) == 0 );
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( z.getLocalValues() ) == 0 );
+        BOOST_TEST( hostReadAccess( r.getLocalValues() ) == hostReadAccess( y.getLocalValues() ), per_element() );
+        BOOST_TEST( hostReadAccess( r.getLocalValues() ) == hostReadAccess( z.getLocalValues() ), per_element() );
     }
 }
 
@@ -659,10 +664,10 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
     auto res1 = eval<DenseVector<ValueType>>( 2 * transpose( A ) * x - y );
     auto res2 = eval<DenseVector<ValueType>>( 2 * At * x - y );
 
-    const utilskernel::LArray<ValueType>& v1 = res1.getLocalValues();
-    const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues();
+    const HArray<ValueType>& v1 = res1.getLocalValues();
+    const HArray<ValueType>& v2 = res2.getLocalValues();
 
-    BOOST_CHECK_EQUAL( 0, v1.maxDiffNorm( v2 ) );
+    BOOST_TEST( hostReadAccess( v1 ) == hostReadAccess( v2 ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */

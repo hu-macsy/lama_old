@@ -1523,7 +1523,7 @@ template<typename ValueType>
 RealType<ValueType> JDSStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
-    return mValues.maxNorm();
+    return HArrayUtils::maxNorm( mValues );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

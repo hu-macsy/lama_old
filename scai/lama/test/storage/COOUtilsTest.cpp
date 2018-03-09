@@ -40,7 +40,6 @@
 #include <scai/common/TypeTraits.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 using namespace scai;
 using namespace utilskernel;

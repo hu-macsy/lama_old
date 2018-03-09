@@ -59,9 +59,8 @@ scai_project (
 
     HEADERS                  # .hpp only
 
+        freeFunction
         LAMAKernel
-        LArray
-        LArrayRef
         UtilKernelTrait
         SparseKernelTrait
         FFTKernelTrait

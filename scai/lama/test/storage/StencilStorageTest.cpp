@@ -38,7 +38,7 @@
 #include <scai/lama/storage/StencilStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/lama/test/storage/StorageTemplateTests.hpp>
 
@@ -46,6 +46,8 @@ using namespace scai;
 using namespace lama;
 using namespace utilskernel;
 using namespace hmemo;
+
+using boost::test_tools::per_element;
 
 /* ------------------------------------------------------------------------- */
 
@@ -188,7 +190,7 @@ BOOST_AUTO_TEST_CASE( transposeTest )
             CSRStorage<ValueType> csrStorageT1;
             csrStorageT1.assignTranspose( csrStorage );
 
-            BOOST_CHECK_EQUAL( ValueType( 0 ), csrStorageT.maxDiffNorm( csrStorageT1 ) );
+            BOOST_CHECK_EQUAL( csrStorageT.maxDiffNorm( csrStorageT1 ), 0 );
         }
     }
 }
@@ -216,13 +218,14 @@ BOOST_AUTO_TEST_CASE( getTest )
 
     for ( IndexType i = 0; i < N1; i++ )
     {
-        LArray<ValueType> row1;
-        LArray<ValueType> row2;
+        HArray<ValueType> row1;
+        HArray<ValueType> row2;
 
         stencilStorage.getRow( row1, i );
         BOOST_CHECK_EQUAL( row1.size(), N1 * N2 );
         csrStorage.getRow( row2, i );
-        BOOST_CHECK_EQUAL( row1.maxDiffNorm( row2 ), 0 );
+
+        BOOST_TEST( hostReadAccess( row1 ) == hostReadAccess( row2 ), per_element() );
     }
 
     for ( IndexType i = 0; i < N1; i++ )

@@ -335,7 +335,7 @@ public:
      *  @param[in]  n     number of elements, default is invalidIndex that stands for up to the end
      *
      *  \code
-     *      LArray<double> data;
+     *      HArray<double> data;
      *      FileIO::read( data, "myData.txt" )           // reads the full array
      *      FileIO::read( data, "myData.txt", 50 )       // reads array but skips first 50 entries
      *      FileIO::read( data, "myData.txt", 50, 10 )   // reads for pos 50 next 10 elements

@@ -376,6 +376,26 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static inline ValueType min(
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static inline ValueType max(
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static inline RealType<ValueType> maxNorm(
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static inline ValueType sum(
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType reduce2(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
@@ -413,17 +433,17 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static ValueType asum(
+    static RealType<ValueType> l1Norm(
         const hmemo::HArray<ValueType>& array,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static ValueType nrm2(
+    static RealType<ValueType> l2Norm(
         const hmemo::HArray<ValueType>& array,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static ValueType absMaxDiffVal(
+    static RealType<ValueType> maxDiffNorm(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
@@ -1024,6 +1044,40 @@ private:
     HArrayUtils( const HArrayUtils& );
 
 };
+
+/* ============================================================================= */
+
+template<typename ValueType>
+ValueType HArrayUtils::min(
+    const hmemo::HArray<ValueType>& values,
+    hmemo::ContextPtr ctx )
+{
+    return HArrayUtils::reduce( values, common::BinaryOp::MIN, ctx );
+}
+
+template<typename ValueType>
+ValueType HArrayUtils::max(
+    const hmemo::HArray<ValueType>& values,
+    hmemo::ContextPtr ctx )
+{
+    return HArrayUtils::reduce( values, common::BinaryOp::MAX, ctx );
+}
+
+template<typename ValueType>
+ValueType HArrayUtils::sum(
+    const hmemo::HArray<ValueType>& values,
+    hmemo::ContextPtr ctx )
+{
+    return HArrayUtils::reduce( values, common::BinaryOp::ADD, ctx );
+}
+
+template<typename ValueType>
+RealType<ValueType> HArrayUtils::maxNorm(
+    const hmemo::HArray<ValueType>& values,
+    hmemo::ContextPtr ctx )
+{
+    return HArrayUtils::reduce( values, common::BinaryOp::ABS_MAX, ctx );
+}
 
 } /* end namespace utilskernel */
 

@@ -39,7 +39,6 @@
 #include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/Settings.hpp>
 

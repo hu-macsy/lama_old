@@ -185,6 +185,14 @@ public:
         return findValidData() < mContextData.size();
     }
 
+    /** Copy 'some' data from a valid context to the host */
+
+    void getData( void* data, const size_t offset, const size_t size );
+
+    /** Copy 'some' data from the host to the valid context */
+
+    void setData( const void* data, const size_t offset, const size_t dataSize, const size_t allocSize );
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

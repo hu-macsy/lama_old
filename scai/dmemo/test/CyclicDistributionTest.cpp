@@ -36,7 +36,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/dmemo/CyclicDistribution.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 using namespace scai;
 using namespace dmemo;
@@ -127,10 +127,10 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
 
     using namespace utilskernel;
 
-    LArray<IndexType> indexes;
-    HArrayUtils::setOrder( indexes, globalSize );
+    hmemo::HArray<IndexType> indexes;
+    utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
-    LArray<PartitionId> owners;
+    hmemo::HArray<PartitionId> owners;
     distribution.computeOwners( owners, indexes );
 
     BOOST_CHECK_EQUAL( owners.size(), indexes.size() );

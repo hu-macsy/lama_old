@@ -35,7 +35,7 @@
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/lama/io/FileIO.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <memory>
 
@@ -73,28 +73,28 @@ int main( int narg, const char* argv[] )
     IndexType numColumns = storage.getNumColumns();
     IndexType numValues  = storage.getNumValues();
 
-    LArray<IndexType> rowDist;
+    HArray<IndexType> rowDist;
 
     FileIO::read( rowDist, rowDistFileName );
 
     SCAI_ASSERT_EQ_ERROR( rowDist.size(), numRows, "array length of distRow does not match #rows in input matrix" )
 
-    LArray<IndexType> colDist;
+    HArray<IndexType> colDist;
 
     FileIO::read( colDist, colDistFileName );
 
     SCAI_ASSERT_EQ_ERROR( colDist.size(), numColumns, "array length of distRow does not match #rows in input matrix" )
 
-    IndexType np_row = rowDist.max() + 1;
-    IndexType np_col = colDist.max() + 1;
+    IndexType np_row = HArrayUtils::max( rowDist ) + 1;
+    IndexType np_col = HArrayUtils::max( colDist ) + 1;
 
     std::cout << "Row dist for " << np_row << " processors, col dist for " << np_col << " processors" << std::endl;
 
     // Now make a bucket sort of the indexes according to the distributions
 
-    LArray<IndexType> rowPermutation;
-    LArray<IndexType> colPermutation;
-    LArray<IndexType> invColPermutation;
+    HArray<IndexType> rowPermutation;
+    HArray<IndexType> colPermutation;
+    HArray<IndexType> invColPermutation;
 
     HArray<IndexType> rowOffsets;   // offset array required as temporary, will not be used later
     HArray<IndexType> colOffsets;   // offset array required as temporary, will not be used later

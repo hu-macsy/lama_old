@@ -161,7 +161,7 @@ void DenseVector<ValueType>::fillLinearValues( const ValueType startValue, const
 template<typename ValueType>
 void DenseVector<ValueType>::fillRandom( const IndexType bound )
 {
-    mLocalValues.setRandom( bound, getContextPtr() );
+    HArrayUtils::fillRandom( mLocalValues, bound, 1.0f, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -169,7 +169,7 @@ void DenseVector<ValueType>::fillRandom( const IndexType bound )
 template<typename ValueType>
 void DenseVector<ValueType>::fillSparseRandom( const float fillRate, const IndexType bound )
 {
-    mLocalValues.setSparseRandom( fillRate, bound, getContextPtr() );
+    HArrayUtils::fillRandom( mLocalValues, bound, fillRate, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -661,7 +661,7 @@ void DenseVector<ValueType>::scan()
  
     HArray<ValueType> prefixValues;
     
-    ValueType val = mLocalValues.sum();
+    ValueType val = HArrayUtils::sum( mLocalValues );
 
     ValueType scanVal = comm.scan( val ); // is inclusve scan
 
@@ -798,8 +798,7 @@ void DenseVector<ValueType>::setValue( const IndexType globalIndex, const ValueT
 template<typename ValueType>
 ValueType DenseVector<ValueType>::min() const
 {
-    // Note: min returns the maximal representation value on zero-sized vectors, TypeTraits<ValueType>::getMax()
-    ValueType localMin = mLocalValues.min();
+    ValueType localMin = HArrayUtils::min( mLocalValues );
     return getDistribution().getCommunicator().min( localMin );
 }
 
@@ -809,7 +808,7 @@ template<typename ValueType>
 ValueType DenseVector<ValueType>::max() const
 {
     // Note: max returns the minimal representation value on zero-sized vectors
-    ValueType localMax = mLocalValues.max();
+    ValueType localMax = HArrayUtils::max( mLocalValues );
     return getDistribution().getCommunicator().max( localMax );
 }
 
@@ -818,7 +817,7 @@ ValueType DenseVector<ValueType>::max() const
 template<typename ValueType>
 RealType<ValueType> DenseVector<ValueType>::l1Norm() const
 {
-    RealType<ValueType> localL1Norm = mLocalValues.l1Norm();
+    auto localL1Norm = HArrayUtils::l1Norm( mLocalValues );
     return getDistribution().getCommunicator().sum( localL1Norm );
 }
 
@@ -826,7 +825,7 @@ RealType<ValueType> DenseVector<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType DenseVector<ValueType>::sum() const
 {
-    ValueType localsum = mLocalValues.sum();
+    auto localsum = HArrayUtils::sum( mLocalValues );
     return getDistribution().getCommunicator().sum( localsum );
 }
 
@@ -836,7 +835,7 @@ template<typename ValueType>
 RealType<ValueType> DenseVector<ValueType>::l2Norm() const
 {
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
-    RealType<ValueType> localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    RealType<ValueType> localDotProduct = HArrayUtils::dotProduct( mLocalValues, mLocalValues );
     RealType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     return common::Math::sqrt( globalDotProduct );
 }
@@ -846,7 +845,7 @@ IndexType DenseVector<IndexType>::l2Norm() const
 {
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
 
-    double localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    double localDotProduct = HArrayUtils::dotProduct( mLocalValues, mLocalValues );
     double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     return IndexType( common::Math::sqrt( globalDotProduct ) );
 }
@@ -856,7 +855,7 @@ IndexType DenseVector<IndexType>::l2Norm() const
 template<typename ValueType>
 RealType<ValueType> DenseVector<ValueType>::maxNorm() const
 {
-    RealType<ValueType> localMaxNorm = mLocalValues.maxNorm();
+    RealType<ValueType> localMaxNorm = HArrayUtils::maxNorm( mLocalValues );
     const Communicator& comm = getDistribution().getCommunicator();
     RealType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
     SCAI_LOG_INFO( logger,
@@ -895,7 +894,7 @@ RealType<ValueType> DenseVector<ValueType>::maxDiffNorm( const Vector<ValueType>
 
     const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
 
-    RealType<ValueType> localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
+    RealType<ValueType> localMaxNorm = HArrayUtils::maxDiffNorm( mLocalValues, denseOther.getLocalValues() );
 
     const Communicator& comm = getDistribution().getCommunicator();
 
@@ -1486,7 +1485,7 @@ ValueType DenseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) c
 
         const DenseVector<ValueType>& denseOther = static_cast<const DenseVector<ValueType>&>( other );
 
-        localDotProduct = mLocalValues.dotProduct( denseOther.getLocalValues() );
+        localDotProduct = HArrayUtils::dotProduct( mLocalValues, denseOther.getLocalValues() );
     }
     else
     {

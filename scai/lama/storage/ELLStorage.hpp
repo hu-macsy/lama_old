@@ -37,8 +37,6 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
-
 // base classes
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/mepr/StorageWrapper.hpp>
@@ -349,11 +347,11 @@ public:
 
     /** getter for member variables IA, JA, Data, only const reference */
 
-    const utilskernel::LArray<IndexType>& getIA() const;
+    const hmemo::HArray<IndexType>& getIA() const;
 
-    const utilskernel::LArray<IndexType>& getJA() const;
+    const hmemo::HArray<IndexType>& getJA() const;
 
-    const utilskernel::LArray<ValueType>& getValues() const;
+    const hmemo::HArray<ValueType>& getValues() const;
 
     /** @brief Getter routine for the number of non-zero values 
      *
@@ -583,9 +581,9 @@ private:
 
     IndexType mNumValuesPerRow; //!< number of values in each row
 
-    utilskernel::LArray<IndexType> mIA; //!< size is numRows
-    utilskernel::LArray<IndexType> mJA; //!< size is numRows x numValuesPerRow
-    utilskernel::LArray<ValueType> mValues; //!< size is numRows x numValuesPerRow
+    hmemo::HArray<IndexType> mIA; //!< size is numRows
+    hmemo::HArray<IndexType> mJA; //!< size is numRows x numValuesPerRow
+    hmemo::HArray<ValueType> mValues; //!< size is numRows x numValuesPerRow
 
     /** Addressing function for the arrays ia and ja: column-wise */
 

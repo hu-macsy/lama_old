@@ -37,7 +37,6 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/HArrayRef.hpp>
@@ -65,7 +64,9 @@
 using namespace scai;
 using namespace lama;
 using namespace dmemo;
-using utilskernel::LArray;
+using hmemo::HArray;
+
+using boost::test_tools::per_element;
 
 void initMatrix( _Matrix& matrix, const char* rowDistKind, const char* colDistKind )
 {
@@ -564,14 +565,13 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
 
             matrix.redistribute( dist, repDist );
 
-            utilskernel::LArray<IndexType> myGlobalIndexes1;
-            utilskernel::LArray<IndexType> myGlobalIndexes2;
+            HArray<IndexType> myGlobalIndexes1;
+            HArray<IndexType> myGlobalIndexes2;
 
             matrix.getLocalStorage().getFirstColumnIndexes( myGlobalIndexes1 );
             dist->getOwnedIndexes( myGlobalIndexes2 );
 
-            BOOST_CHECK_EQUAL( myGlobalIndexes1.size(), myGlobalIndexes2.size() );
-            BOOST_CHECK_EQUAL( IndexType( 0 ), myGlobalIndexes1.maxDiffNorm( myGlobalIndexes2 ) );
+            BOOST_TEST( hostReadAccess( myGlobalIndexes1 ) == hostReadAccess( myGlobalIndexes2 ), per_element() );
         }
     }
 }

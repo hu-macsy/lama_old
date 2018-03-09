@@ -41,9 +41,6 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/mepr/StorageWrapper.hpp>
 
-// local scai libraries
-#include <scai/utilskernel/LArray.hpp>
-
 #include <scai/logging.hpp>
 
 namespace scai
@@ -532,12 +529,12 @@ private:
 
     // Note: implicitly: numDiagonals = mDlg.size(), numValues = mJA.size()
 
-    utilskernel::LArray<IndexType> mDlg;  //!< number of values in each column, size is mNumDiagonals
-    utilskernel::LArray<IndexType> mIlg;  //!< number of values in each row, size is getNumRows()
-    utilskernel::LArray<IndexType> mPerm; //!< position of each row in original matrix, size is getNumRows()
-    utilskernel::LArray<IndexType> mJA;   //!< column indices, size is mNumValues
+    hmemo::HArray<IndexType> mDlg;  //!< number of values in each column, size is mNumDiagonals
+    hmemo::HArray<IndexType> mIlg;  //!< number of values in each row, size is getNumRows()
+    hmemo::HArray<IndexType> mPerm; //!< position of each row in original matrix, size is getNumRows()
+    hmemo::HArray<IndexType> mJA;   //!< column indices, size is mNumValues
 
-    utilskernel::LArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
+    hmemo::HArray<ValueType> mValues; //!< non-zero values (+ optionally zeros in diagonal), size is mNumValues
 
     /** matrixTimesVector for synchronous and asynchronous execution */
 

@@ -36,7 +36,6 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/hmemo/HArrayRef.hpp>
 #include <scai/lama/storage/ELLStorage.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -104,9 +103,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-    LArray<IndexType> ellIA( numRows, ia );
-    LArray<IndexType> ellJA( numValues, ja );
-    LArray<ValueType> ellValues( numValues, values );
+    HArray<IndexType> ellIA( numRows, ia );
+    HArray<IndexType> ellJA( numValues, ja );
+    HArray<ValueType> ellValues( numValues, values );
     ELLStorage<ValueType> ellStorage( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues, loc );
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
@@ -303,14 +302,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
         else if ( icase == 1 )
         {
             //  -> invalid ia     { 1, 1, 3 }
-            LArray<IndexType>& ellIA = const_cast<LArray<IndexType>&>( ellStorage.getIA() );
+            HArray<IndexType>& ellIA = const_cast<HArray<IndexType>&>( ellStorage.getIA() );
             HArrayUtils::setVal<IndexType>( ellIA, 2, 3 );
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
         else if ( icase == 2 )
         {
             //  -> invalid ja     { 0, 1, 2, 0, 0, 2 }
-            LArray<IndexType>& ellJA = const_cast<LArray<IndexType>&>( ellStorage.getJA() );
+            HArray<IndexType>& ellJA = const_cast<HArray<IndexType>&>( ellStorage.getJA() );
             HArrayUtils::setVal<IndexType>( ellJA, 5, 15 );
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
@@ -358,9 +357,9 @@ BOOST_AUTO_TEST_CASE( compressTest )
     const IndexType ja[]     = { 0, 1, 1, 0, 0, 2 };
     const ValueType values[] = { 1, 1, 0, 0, 0, 1 };
 
-    LArray<IndexType> ellIA( numRows, ia );
-    LArray<IndexType> ellJA( storedValues, ja );
-    LArray<ValueType> ellValues( storedValues, values );
+    HArray<IndexType> ellIA( numRows, ia );
+    HArray<IndexType> ellJA( storedValues, ja );
+    HArray<ValueType> ellValues( storedValues, values );
 
     ELLStorage<ValueType> ell( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
     ell.setContextPtr( context );
@@ -375,9 +374,9 @@ BOOST_AUTO_TEST_CASE( compressTest )
     const IndexType expected_ja[]     = { 0, 1, 2 };
     const IndexType expected_values[] = { 1, 1, 1 };
 
-    LArray<IndexType> compressedIA     = ell.getIA();
-    LArray<IndexType> compressedJA     = ell.getJA();
-    LArray<ValueType> compressedValues = ell.getValues();
+    HArray<IndexType> compressedIA     = ell.getIA();
+    HArray<IndexType> compressedJA     = ell.getJA();
+    HArray<ValueType> compressedValues = ell.getValues();
 
     ReadAccess<IndexType> rIA ( compressedIA );
     ReadAccess<IndexType> rJA ( compressedJA );

@@ -45,6 +45,7 @@
 
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/lama/matrix/_Matrix.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <vector>
 

@@ -39,8 +39,7 @@
 
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
-#include <scai/utilskernel/LArray.hpp>
-#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -57,12 +56,14 @@ using std::unique_ptr;
 using namespace scai;
 using namespace common;
 using namespace lama;
-using namespace hmemo;
 
-using utilskernel::LArray;
+using hmemo::HArray;
+using utilskernel::HArrayUtils;
 
 using scai::testsupport::uniquePath;
 using scai::testsupport::GlobalTempDir;
+
+using boost::test_tools::per_element;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
@@ -84,10 +85,12 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
     // values: take numRows x numColums random numbers of required type
 
-    LArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
-    SCAI_LOG_INFO( logger, "setDenseData, values = " << values )
+    ValueType zero = 0;
+    IndexType bound = 1;
 
-    values.setSparseRandom( 0.2f, 1 );
+    auto values = utilskernel::sparseRandomHArray<ValueType>( numRows * numColumns, zero, 0.2f, bound );
+
+    SCAI_LOG_INFO( logger, "setDenseData, values = " << values )
 
     // Note: diagonal property of sparse matrices will be set due to square matrix
 
@@ -106,9 +109,9 @@ static void setNonSquareData( MatrixStorage<ValueType>& storage )
     const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
     const IndexType numValues = ia[numRows];
 
-    LArray<IndexType> csrIA( numRows + 1, ia );
-    LArray<IndexType> csrJA( numValues, ja );
-    LArray<ValueType> csrValues( numValues, ValueType( 1 ) );
+    HArray<IndexType> csrIA( numRows + 1, ia );
+    HArray<IndexType> csrJA( numValues, ja );
+    HArray<ValueType> csrValues( numValues, ValueType( 1 ) );
 
     storage.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
 }
@@ -125,9 +128,9 @@ static void setSymmetricData( MatrixStorage<ValueType>& storage )
     const ValueType values[] = { 1.1, 0.1, 0.6, 1.2, 1.3, 0.1, 0.6, 1.4, 1.5 };
     const IndexType numValues = ia[numRows];
 
-    LArray<IndexType> csrIA( numRows + 1, ia );
-    LArray<IndexType> csrJA( numValues, ja );
-    LArray<ValueType> csrValues( numValues, values );
+    HArray<IndexType> csrIA( numRows + 1, ia );
+    HArray<IndexType> csrJA( numValues, ja );
+    HArray<ValueType> csrValues( numValues, values );
 
     storage.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
 }
@@ -138,7 +141,7 @@ BOOST_AUTO_TEST_CASE( Unsupported )
 {
     typedef SCAI_TEST_TYPE ValueType;
 
-    LArray<ValueType> array( 10, 1 );
+    HArray<ValueType> array( 10, 1 );
 
     BOOST_CHECK_THROW(
     {
@@ -445,7 +448,7 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         CSRStorage<ValueType> csrStorage;
         setNonSquareData( csrStorage );
 
-        LArray<IndexType> firstColIndexes1;
+        HArray<IndexType> firstColIndexes1;
         csrStorage.getFirstColumnIndexes( firstColIndexes1 );
 
         const std::string typeName = TypeTraits<ValueType>::id();
@@ -475,7 +478,7 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
         // We verify that the order of the column indexes has not changed
 
-        LArray<IndexType> firstColIndexes2;
+        HArray<IndexType> firstColIndexes2;
         readStorage.getFirstColumnIndexes( firstColIndexes2 );
 
         for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
@@ -530,7 +533,7 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
 
         BOOST_CHECK( csrStorage.checkSymmetry() );
 
-        LArray<IndexType> firstColIndexes1;
+        HArray<IndexType> firstColIndexes1;
         csrStorage.getFirstColumnIndexes( firstColIndexes1 );
 
         const std::string typeName = TypeTraits<ValueType>::id();
@@ -684,9 +687,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         fileIO->setMode( FileIO::FORMATTED );
 
-        LArray<ValueType> array( N );
-
-        array.setRandom( 100 );
+        auto array = utilskernel::randomHArray<ValueType>( N, 100 );
 
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outArrayFormatted_" + typeName) + fileSuffix;
@@ -720,7 +721,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
         RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
         {
-            LArray<ValueType> inArray;
+            HArray<ValueType> inArray;
 
             fileIO->readArray( inArray, fileName );
 
@@ -744,7 +745,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
         // Test the method readArray with first, n arguments
 
         {
-            LArray<ValueType> inArray;
+            HArray<ValueType> inArray;
 
             BOOST_CHECK_THROW(
             {
@@ -811,11 +812,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         fileIO->setMode( FileIO::BINARY );
 
-        LArray<ValueType> array( N );
-
         IndexType range = 1000;
 
-        array.setRandom( range );
+        auto array = utilskernel::randomHArray<ValueType>( N, range );
 
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outArrayBinary_" + typeName) + fileSuffix;
@@ -834,7 +833,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
-        LArray<ValueType> inArray;
+        HArray<ValueType> inArray;
 
         fileIO->readArray( inArray, fileName );
 
@@ -842,7 +841,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         // due to binary output and using same data type there should be no loss
 
-        BOOST_CHECK_EQUAL( 0, array.maxDiffNorm( inArray ) );
+        BOOST_TEST( hostReadAccess( array ) == hostReadAccess( inArray ), per_element() );
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
@@ -877,7 +876,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
             continue;
         }
 
-        LArray<ValueType> array;
+        HArray<ValueType> array;
 
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outEmptyArray_" + typeName) + fileSuffix;
@@ -898,7 +897,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 
         IndexType N = 10;
 
-        LArray<ValueType> inArray( N, ValueType( 1 ) );
+        HArray<ValueType> inArray( N, ValueType( 1 ) );
 
         BOOST_CHECK_EQUAL( N, inArray.size() );
 
@@ -908,7 +907,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 
         // due to binary output and using same data type there should be no loss
 
-        BOOST_CHECK_EQUAL( ValueType( 0 ), array.maxDiffNorm( inArray ) );
+        BOOST_TEST( hostReadAccess( array ) == hostReadAccess( inArray ), per_element() );
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
@@ -945,15 +944,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
             continue;
         }
 
-        LArray<ValueType> array( N, ValueType( 0 ) );
-
         float fillRate = 0.05f;   // make it really sparse
         IndexType bound = 1;
 
-        array.setSparseRandom( fillRate, bound );
+        auto array = utilskernel::sparseRandomHArray<ValueType>( N, 0, fillRate, bound );
 
-        LArray<ValueType> sparseArray;
-        LArray<IndexType> sparseIndexes;
+        HArray<ValueType> sparseArray;
+        HArray<IndexType> sparseIndexes;
 
         ValueType zero = 0;
 
@@ -991,8 +988,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
         {
             IndexType         inN;
-            LArray<ValueType> inValues;
-            LArray<IndexType> inPos;
+            HArray<ValueType> inValues;
+            HArray<IndexType> inPos;
 
             fileIO->readSparse( inN, inPos, inValues, fileName );
 
@@ -1005,7 +1002,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
             // indexes must be equal
 
-            BOOST_CHECK_EQUAL( IndexType( 0 ), sparseIndexes.maxDiffNorm( inPos ) );
+            BOOST_TEST( hostReadAccess( sparseIndexes ) == hostReadAccess( inPos ), per_element() );
 
             for ( IndexType i = 0; i < inValues.size(); ++i )
             {

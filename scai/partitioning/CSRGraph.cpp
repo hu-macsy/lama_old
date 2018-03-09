@@ -46,7 +46,6 @@ using namespace dmemo;
 using namespace hmemo;
 
 using lama::CSRSparseMatrix;
-using utilskernel::LArray;
 
 namespace partitioning
 {
@@ -159,11 +158,11 @@ void CSRGraph<IdxType>::buildByCSRSparseMatrix( const CSRSparseMatrix<ValueType>
 
     // local2global for local IA, halo2global for halo JA
 
-    HArray<IndexType>& localIA = const_cast<LArray<IndexType>&>( localStorage.getIA() );
-    HArray<IndexType>& localJA = const_cast<LArray<IndexType>&>( localStorage.getJA() );
+    HArray<IndexType>& localIA = const_cast<HArray<IndexType>&>( localStorage.getIA() );
+    HArray<IndexType>& localJA = const_cast<HArray<IndexType>&>( localStorage.getJA() );
 
-    HArray<IndexType>& haloIA = const_cast<LArray<IndexType>&>( haloStorage.getIA() );
-    HArray<IndexType>& haloJA = const_cast<LArray<IndexType>&>( haloStorage.getJA() ); 
+    HArray<IndexType>& haloIA = const_cast<HArray<IndexType>&>( haloStorage.getIA() );
+    HArray<IndexType>& haloJA = const_cast<HArray<IndexType>&>( haloStorage.getJA() ); 
 
     IndexType numLocalRows = dist.getLocalSize();
 

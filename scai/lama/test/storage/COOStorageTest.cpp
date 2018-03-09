@@ -40,8 +40,7 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-#include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/lama/test/storage/StorageTemplateTests.hpp>
 

@@ -38,7 +38,6 @@
 #include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
@@ -66,6 +65,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using utilskernel::HArrayUtils;
 
 namespace lama
 {
@@ -425,9 +425,9 @@ void SAMGIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
-    utilskernel::LArray<IndexType> csrIA;
-    utilskernel::LArray<IndexType> csrJA;
-    utilskernel::LArray<ValueType> csrValues;
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
 
     storage.buildCSRData( csrIA, csrJA, csrValues );
 
@@ -436,8 +436,8 @@ void SAMGIO::writeStorageImpl(
     const IndexType numRows = csrIA.size() - 1;
     const IndexType numValues = csrJA.size();
 
-    csrIA += 1;
-    csrJA += 1;
+    HArrayUtils::compute<IndexType>( csrIA, csrIA, common::BinaryOp::ADD, 1 );
+    HArrayUtils::compute<IndexType>( csrJA, csrJA, common::BinaryOp::ADD, 1 );
 
     bool binary = ( mFileMode != FORMATTED );
 
@@ -598,9 +598,9 @@ void SAMGIO::readStorageImpl(
 
     IOStream inFile( dataFileName, flags );
 
-    utilskernel::LArray<IndexType> csrIA;
-    utilskernel::LArray<IndexType> csrJA;
-    utilskernel::LArray<ValueType> csrValues;
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
 
     size_t indexTypeSize = common::typeSize( mScalarTypeIndex );
     size_t valueTypeSize = sizeof( ValueType );
@@ -649,7 +649,7 @@ void SAMGIO::readStorageImpl(
 
     IndexType offsetBlock = csrIA[0];
 
-    csrIA -= offsetBlock;    // offset array will now start at 0
+    HArrayUtils::compute<IndexType>( csrIA, csrIA, common::BinaryOp::SUB, offsetBlock );   // offset array will now start at 0
 
     offsetBlock -= IndexType( 1 );        // SAMG indexing starts with 1, deal correctly for reading ja, values
 
@@ -671,9 +671,9 @@ void SAMGIO::readStorageImpl(
         inFile.skipFormatted( numValues - offsetBlock - numBlockValues );
     }
 
-    IndexType maxColumn = csrJA.max();   // maximal column index used
+    IndexType maxColumn = utilskernel::HArrayUtils::max( csrJA );   // maximal column index used
 
-    csrJA -= IndexType( 1 );
+    HArrayUtils::compute<IndexType>( csrJA, csrJA, common::BinaryOp::SUB, 1 );
 
     if ( mScalarTypeData == common::ScalarType::PATTERN )
     {

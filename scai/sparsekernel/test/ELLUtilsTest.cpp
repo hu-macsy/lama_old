@@ -38,9 +38,9 @@
 // others
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPELLUtils.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/kregistry.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/Math.hpp>
@@ -1490,14 +1490,14 @@ BOOST_AUTO_TEST_CASE( matrixAddTest )
         HArray<IndexType> BJa( bNumValues, valuesBJa, testContext );
         HArray<IndexType> CIa( cNumRows, valuesCIa, testContext );
         // output arrays
+
         HArray<ValueType> CValues( testContext );
         HArray<IndexType> CJa( testContext );
+
         IndexType aNumValuesPerRow = aNumValues / aNumRows;
         IndexType bNumValuesPerRow = bNumValues / bNumRows;
         IndexType cNumValuesPerRow = cNumValues / cNumRows;
-        // This did no work but should
-        // LArray<ValueType> CValues;
-        // LArray<IndexType> CJa;
+
         {
             ReadAccess<IndexType> rAIa( AIa, loc );
             ReadAccess<IndexType> rAJa( AJa, loc );
@@ -2090,13 +2090,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
         }
 
-        LArray<ValueType> expectedRes( testContext );
+        HArray<ValueType> expectedRes( testContext );
 
         data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
 
-        ValueType maxDiff = expectedRes.maxDiffNorm( res );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedRes, res );
 
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+        BOOST_CHECK( maxDiff < 0.1 );
 
         bool mustBeIdentical = false;
 
@@ -2178,13 +2178,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
                              rOld.get(), omega );
         }
 
-        LArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+        HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
 
         data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
 
-        ValueType maxDiff = expectedSol.maxDiffNorm( solution );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedSol, solution );
 
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+        BOOST_CHECK( maxDiff < 0.1 );
 
         bool mustBeIdentical = false;
 

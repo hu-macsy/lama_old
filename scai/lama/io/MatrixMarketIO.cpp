@@ -44,7 +44,6 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
@@ -526,8 +525,9 @@ void MatrixMarketIO::writeSparseImpl(
     int precIndexes = getDataPrecision( indexes.getValueType() );
     int precValues  = getDataPrecision( values.getValueType() );
 
-    LArray<IndexType> indexes1( indexes );
-    indexes1 += 1;
+    HArray<IndexType> indexes1;
+
+    HArrayUtils::compute<IndexType>( indexes1, indexes, common::BinaryOp::ADD, 1 );
 
     outFile.writeFormatted( indexes1, precIndexes, values, precValues );
 
@@ -585,11 +585,11 @@ void MatrixMarketIO::readVectorCoordinates(
     {
         // row, col position in each line
 
-        LArray<IndexType> colDummy;
+        HArray<IndexType> colDummy;
         inFile.readFormatted( indexes, colDummy, values, numValues );
     }
 
-    HArrayUtils::setScalar( indexes, IndexType( 1 ), common::BinaryOp::SUB );
+    HArrayUtils::setScalar<IndexType>( indexes, 1, common::BinaryOp::SUB );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -976,9 +976,9 @@ void MatrixMarketIO::writeStorageImpl(
 
     // define arrays that will contain the COO daa
 
-    LArray<IndexType> cooIA;       // = coo.getIA()
-    LArray<IndexType> cooJA;       // = coo.getJA()
-    LArray<ValueType> cooValues;   // = coo.getValues
+    HArray<IndexType> cooIA;       // = coo.getIA()
+    HArray<IndexType> cooJA;       // = coo.getJA()
+    HArray<ValueType> cooValues;   // = coo.getValues
 
     // use splitUp to avoid copies of the data 
 
@@ -997,8 +997,8 @@ void MatrixMarketIO::writeStorageImpl(
 
     // Attention: indexing in MatrixMarket starts with 1 and not with 0 as in LAMA
 
-    cooIA += 1;
-    cooJA += 1;
+    HArrayUtils::setScalar<IndexType>( cooIA, 1, common::BinaryOp::ADD );
+    HArrayUtils::setScalar<IndexType>( cooJA, 1, common::BinaryOp::ADD );
 
     int numValues = cooIA.size();
 
@@ -1219,9 +1219,9 @@ void MatrixMarketIO::readStorageImpl(
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
-    LArray<IndexType> ia;   // row indexes, as ia in COO format
-    LArray<IndexType> ja;   // col indexes, as ja in COO format
-    LArray<ValueType> val;  // values as in COO format
+    HArray<IndexType> ia;   // row indexes, as ia in COO format
+    HArray<IndexType> ja;   // col indexes, as ja in COO format
+    HArray<ValueType> val;  // values as in COO format
 
     SCAI_LOG_DEBUG( logger, "read in" )
 
@@ -1245,8 +1245,8 @@ void MatrixMarketIO::readStorageImpl(
 
     // MatrixMarket starts indexes always with one, so shift all row/col indexes
 
-    ia -= 1;
-    ja -= 1;
+    HArrayUtils::setScalar<IndexType>( ia, 1, common::BinaryOp::SUB );
+    HArrayUtils::setScalar<IndexType>( ja, 1, common::BinaryOp::SUB );
 
     // double symmetric entries
 
@@ -1276,8 +1276,8 @@ void MatrixMarketIO::readStorageImpl(
 
     // we shape the matrix by maximal appearing indexes, apply max only if size > 0
 
-    IndexType nrows = ia.size() ? ia.max() + 1 : 0;
-    IndexType ncols = ja.size() ? ja.max() + 1 : 0;
+    IndexType nrows = ia.size() ? HArrayUtils::max( ia ) + 1 : 0;
+    IndexType ncols = ja.size() ? HArrayUtils::max( ja ) + 1 : 0;
 
     SCAI_LOG_INFO( logger, "size from header: " << numRows << " x " << numColumns
                    << ", size by indexes: " << nrows << " x " << ncols )

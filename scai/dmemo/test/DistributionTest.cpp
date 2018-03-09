@@ -192,8 +192,8 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
     {
         DistributionPtr dist = allDist[i];
 
-        utilskernel::LArray<IndexType> myIndexes1;
-        utilskernel::LArray<IndexType> myIndexes2;
+        hmemo::HArray<IndexType> myIndexes1;
+        hmemo::HArray<IndexType> myIndexes2;
 
         dist->getOwnedIndexes( myIndexes1 );                 // call it for block distribution
         dist->Distribution::getOwnedIndexes( myIndexes2 );   // call if from base class
@@ -203,13 +203,8 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
         BOOST_REQUIRE_EQUAL( nLocal, myIndexes1.size() );
         BOOST_REQUIRE_EQUAL( nLocal, myIndexes2.size() );
 
-        hmemo::ReadAccess<IndexType> rIndexes1( myIndexes1 );
-        hmemo::ReadAccess<IndexType> rIndexes2( myIndexes2 );
-
-        for ( IndexType i = 0; i < nLocal; ++i )
-        {
-            BOOST_CHECK_EQUAL( rIndexes1[i], rIndexes2[i] );
-        }
+        BOOST_TEST( hmemo::hostReadAccess( myIndexes1 ) == hmemo::hostReadAccess( myIndexes2 ),
+                    boost::test_tools::per_element() );
     }
 }
 
@@ -255,8 +250,8 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
 
         // now check for correct permutations
 
-        utilskernel::LArray<IndexType> offsets;
-        utilskernel::LArray<IndexType> perm;
+        hmemo::HArray<IndexType> offsets;
+        hmemo::HArray<IndexType> perm;
 
         dist->getAnyGlobal2Local( offsets, perm );
 
@@ -320,12 +315,12 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
         IndexType nGlobal = dist->getGlobalSize();
 
-        utilskernel::LArray<IndexType> indexes;
+        hmemo::HArray<IndexType> indexes;
         utilskernel::HArrayUtils::setOrder( indexes, nGlobal );
 
-        utilskernel::LArray<PartitionId> owners1;
-        utilskernel::LArray<PartitionId> owners2;
-        utilskernel::LArray<PartitionId> owners3;
+        hmemo::HArray<PartitionId> owners1;
+        hmemo::HArray<PartitionId> owners2;
+        hmemo::HArray<PartitionId> owners3;
 
         dist->computeOwners( owners1, indexes );                 // call the efficient derived class method
         dist->Distribution::computeOwners( owners2, indexes );   // call the straight forw from base class
@@ -382,10 +377,10 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
             IndexType nGlobal = dist->getGlobalSize();
 
-            utilskernel::LArray<IndexType> indexes;
+            hmemo::HArray<IndexType> indexes;
             utilskernel::HArrayUtils::setOrder( indexes, nGlobal );
 
-            utilskernel::LArray<PartitionId> owners;
+            hmemo::HArray<PartitionId> owners;
 
             dist->computeOwners( owners, indexes );
 

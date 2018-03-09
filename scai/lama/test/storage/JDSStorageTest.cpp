@@ -38,7 +38,6 @@
 #include <scai/lama/storage/JDSStorage.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -198,11 +197,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
     BOOST_CHECK_EQUAL( numValues, sizeValues );
     BOOST_CHECK_EQUAL( numRows, sizePerm );
     BOOST_CHECK_EQUAL( numRows, sizeILG );
-    LArray<IndexType> jdsILG( numRows, ilg );
-    LArray<IndexType> jdsDLG( numDiagonals, dlg );
-    LArray<IndexType> jdsPerm( numRows, perm );
-    LArray<IndexType> jdsJA( numValues, ja );
-    LArray<ValueType> jdsValues( numValues, values );
+    HArray<IndexType> jdsILG( numRows, ilg );
+    HArray<IndexType> jdsDLG( numDiagonals, dlg );
+    HArray<IndexType> jdsPerm( numRows, perm );
+    HArray<IndexType> jdsJA( numValues, ja );
+    HArray<ValueType> jdsValues( numValues, values );
 
     // Call the specific constructor for JDS storage
 

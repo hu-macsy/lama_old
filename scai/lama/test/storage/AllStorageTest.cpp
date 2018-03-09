@@ -37,8 +37,6 @@
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
-
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/HArrayRef.hpp>
 
@@ -49,7 +47,9 @@
 
 using namespace scai;
 using namespace lama;
-using utilskernel::LArray;
+using hmemo::HArray;
+
+using boost::test_tools::per_element;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -57,10 +57,12 @@ using utilskernel::LArray;
 
 void checkEqual( const _MatrixStorage& storage1, const _MatrixStorage& storage2 )
 {
+    using namespace hmemo;
+
     auto dense1 = convert<DenseStorage<ScalarRepType>>( storage1 );
     auto dense2 = convert<DenseStorage<ScalarRepType>>( storage2 );
 
-    BOOST_CHECK_EQUAL( 0, dense1.maxDiffNorm( dense2 ) );
+    BOOST_TEST( hostReadAccess( dense1.getValues() ) == hostReadAccess( dense2.getValues() ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -140,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setIdentityTest, ValueType, scai_numeric_test_typ
         BOOST_REQUIRE_EQUAL( N, storage.getNumRows() );
         BOOST_REQUIRE_EQUAL( N, storage.getNumColumns() );
         BOOST_REQUIRE_EQUAL( N, storage.getNumValues() );
-        LArray<ValueType> row;
+        HArray<ValueType> row;
 
         for ( IndexType i = 0; i < N; ++i )
         {
@@ -181,7 +183,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allocateTest, ValueType, scai_numeric_test_types 
         BOOST_REQUIRE_EQUAL( numRows, storage.getNumRows() );
         BOOST_REQUIRE_EQUAL( numColumns, storage.getNumColumns() );
         BOOST_REQUIRE_EQUAL( IndexType( 0 ), storage.getNumValues() );
-        LArray<ValueType> row;
+        HArray<ValueType> row;
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
@@ -248,15 +250,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getColTest, ValueType, scai_numeric_test_types )
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         initStorage( storage );
 
-        LArray<ValueType> col1;
-        LArray<ValueType> col2;
+        HArray<ValueType> col1;
+        HArray<ValueType> col2;
 
         for ( IndexType j = 0; j < denseStorage.getNumColumns(); ++j )
         {
             storage.getColumn( col1, j );
             denseStorage.getColumn( col2, j );
 
-            BOOST_CHECK_EQUAL( col1.maxDiffNorm( col2 ), 0 );
+            BOOST_TEST( hostReadAccess( col1 ) == hostReadAccess( col2 ), per_element() );
         }
     }
 }

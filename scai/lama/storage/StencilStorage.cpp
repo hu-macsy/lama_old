@@ -459,7 +459,7 @@ ValueType StencilStorage<ValueType>::getValue( const IndexType i, const IndexTyp
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
 
     HArray<IndexType> sparseIA;
-    utilskernel::LArray<ValueType> sparseValues;
+    HArray<ValueType> sparseValues;
 
     getSparseRow( sparseIA, sparseValues, i );
 

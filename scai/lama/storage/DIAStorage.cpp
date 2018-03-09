@@ -1067,7 +1067,7 @@ RealType<ValueType> DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
-    return utilskernel::HArrayUtils::asum( mValues, prefLoc );
+    return utilskernel::HArrayUtils::l1Norm( mValues, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
