@@ -276,9 +276,9 @@ void COOStorage<ValueType>::assignCOO( const COOStorage<OtherValueType>& other )
 
     _MatrixStorage::_assign( other );
 
-    HArrayUtils::setArrayImpl( mIA, other.getIA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::setArray( mIA, other.getIA(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::setArray( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::setArray( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
 
     _MatrixStorage::resetDiagonalProperty();
 }
@@ -429,7 +429,7 @@ void COOStorage<ValueType>::setCOOData(
 
     HArrayUtils::assign( mIA, ia, loc );
     HArrayUtils::assign( mJA, ja, loc );
-    HArrayUtils::assign( mValues, values, loc ); // supports type conversion
+    HArrayUtils::_assign( mValues, values, loc ); // supports type conversion
 
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 #ifdef SCAI_ASSERT_LEVEL_DEBUG
@@ -696,7 +696,7 @@ RealType<ValueType> COOStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     // asum over the full array mValues
-    return HArrayUtils::asum( mValues, this->getContextPtr() );
+    return HArrayUtils::l1Norm( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1069,8 +1069,8 @@ void COOStorage<ValueType>::getRow( hmemo::HArray<ValueType>& row, const IndexTy
 
     // row[ colIndexes ] = mValues[ pos ];
 
-    HArrayUtils::gatherImpl( rowValues, mValues, valuePos, BinaryOp::COPY, loc );
-    HArrayUtils::scatterImpl( row, colIndexes, true, rowValues, BinaryOp::COPY, loc );
+    HArrayUtils::gather( rowValues, mValues, valuePos, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( row, colIndexes, true, rowValues, BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1114,8 +1114,8 @@ void COOStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexTyp
 
     // mValues[pos] = row[ colIndexes ]
 
-    HArrayUtils::gatherImpl( rowValues, row, colIndexes, BinaryOp::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, true, rowValues, op, loc );
+    HArrayUtils::gather( rowValues, row, colIndexes, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( mValues, valuePos, true, rowValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1209,8 +1209,8 @@ void COOStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 
     //  mValues[ pos ] op= column[ rowIndexes ]
 
-    HArrayUtils::gatherImpl( colValues, column, rowIndexes, BinaryOp::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
+    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( mValues, valuePos, true, colValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1291,8 +1291,8 @@ void COOStorage<ValueType>::buildCSR(
 
     // CSR array ja, values are the COO arrays resorted
 
-    utilskernel::HArrayUtils::gatherImpl( *csrJA, mJA, perm, BinaryOp::COPY, preferredLoc );
-    utilskernel::HArrayUtils::gatherImpl( *csrValues, mValues, perm, BinaryOp::COPY, preferredLoc );
+    utilskernel::HArrayUtils::gather( *csrJA, mJA, perm, BinaryOp::COPY, preferredLoc );
+    utilskernel::HArrayUtils::gather( *csrValues, mValues, perm, BinaryOp::COPY, preferredLoc );
 
     // Note: sort is stable, so diagonal values remain first in each row
 }

@@ -37,6 +37,7 @@
 #include <scai/lama/VectorAssembly.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
+#include <algorithm>
 
 namespace scai
 {

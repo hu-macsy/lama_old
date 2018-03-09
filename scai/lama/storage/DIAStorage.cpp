@@ -247,8 +247,8 @@ void DIAStorage<ValueType>::assignDIA( const DIAStorage<OtherValueType>& other )
     
     _MatrixStorage::_assign( other );     // assign member variables of base class
     
-    HArrayUtils::setArrayImpl( mOffset, other.getOffsets(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::assign( mOffset, other.getOffsets(), ctx );
+    HArrayUtils::assign( mValues, other.getValues(), ctx );
     
     _MatrixStorage::resetDiagonalProperty();
     
@@ -1067,7 +1067,7 @@ RealType<ValueType> DIAStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
-    return utilskernel::HArrayUtils::asum( mValues, prefLoc );
+    return utilskernel::HArrayUtils::l1Norm( mValues, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */

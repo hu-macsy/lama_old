@@ -39,7 +39,6 @@
 #include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/Settings.hpp>
 
@@ -193,16 +192,9 @@ struct CommandLineOptions
 
         // take double or complex double
 
-        if ( conj( value ) == value )
-        {
-            outDataType = common::ScalarType::DOUBLE;
-        }
-        else
-        {
-            outDataType = common::ScalarType::DOUBLE_COMPLEX;
-        }
+        outDataType = common::ScalarType::DOUBLE;
 
-        cout << "No output data type specified, take " << outDataType << " due to value = " << value << endl;
+        cout << "No output data type specified, take " << outDataType << endl;
     }
 };
 

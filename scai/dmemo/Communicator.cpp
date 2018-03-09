@@ -500,7 +500,7 @@ void Communicator::joinArray(
         {
             // my turn for broadcast
 
-            utilskernel::HArrayUtils::assign( bufferArray, localArray );
+            utilskernel::HArrayUtils::_assign( bufferArray, localArray );
         }
 
         bcastArray( bufferArray, p );
@@ -629,7 +629,7 @@ void Communicator::updateHalo(
     IndexType numSendValues = providesPlan.totalQuantity();
     HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
 
-    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
+    utilskernel::HArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
 
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
 }
@@ -669,7 +669,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     // put together the (send) values to provide for other partitions
 
-    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
+    utilskernel::HArrayUtils::gather( *sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
 
     SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
 

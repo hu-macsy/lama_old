@@ -42,15 +42,22 @@ namespace dmemo
 
 {
 
-/** An object of this class stands a distribution of joined vectors
+/** An object of this class stands for a distribution of joined vectors
  *  or of joined matrices (first dimension)
  */
-
 class JoinedDistribution : public Distribution
 {
 
 public:
 
+    /** Constructor concatenates two distributions 
+     * 
+     *  @param[in] d1 distribution of first part
+     *  @param[in] d2 distribution of second part
+     * 
+     *  As distributions are always shared pointers, the use is safe regarding 
+     *  the lifetime of the input arguments.
+     */
     JoinedDistribution ( DistributionPtr d1, DistributionPtr d2 ) :
 
         Distribution( d1->getGlobalSize() + d2->getGlobalSize() ),
@@ -87,25 +94,67 @@ public:
         return mD1->getLocalSize() + mD2->getLocalSize();
     }
 
-  	virtual IndexType local2global(IndexType) const
+  	virtual IndexType local2global( IndexType localIndex ) const
     {
-        COMMON_THROWEXCEPTION( "local2global not available yet" )
+        const IndexType localSize1 = mD1->getLocalSize();
+
+        if ( localIndex < localSize1 )
+        {
+            // look up in first distribution
+            return mD1->local2global( localSize1 );
+        }
+        else
+        {
+            // look up in second distribution
+            return mD1->getGlobalSize() + mD2->local2global( localIndex - localSize1 );
+        }
     }
 
-  	virtual IndexType global2local(IndexType) const
+  	virtual IndexType global2local( IndexType globalIndex ) const
     {
-        COMMON_THROWEXCEPTION( "global2local not available yet" )
+        const IndexType globalSize1 = mD1->getGlobalSize();
+  
+        if ( globalIndex < globalSize1 )
+        {
+            return global2local( globalIndex );
+        }
+        else
+        {
+            IndexType localIndex = mD2->global2local( globalIndex - globalSize1 );
+
+            if ( localIndex != invalidIndex )
+            {
+                localIndex += mD1->getLocalSize();
+            }
+
+            return localIndex;
+        }
     }
 
   	virtual IndexType getBlockDistributionSize() const
     {
-        return mD1->getBlockDistributionSize() + mD2->getBlockDistributionSize();
+        IndexType blockSize1 = mD1->getBlockDistributionSize();
+        IndexType blockSize2 = mD2->getBlockDistributionSize();
+
+        if ( blockSize1 != invalidIndex && blockSize2 != invalidIndex )
+        {
+            return blockSize1 + blockSize2;
+        }
+        else
+        {
+            return invalidIndex;
+        }
     }
 
   	virtual void enableAnyAddressing() const
     {
         mD1->enableAnyAddressing();
         mD2->enableAnyAddressing();
+    }
+
+    virtual bool hasAnyAddressing() const
+    {
+        return mD1->hasAnyAddressing() && mD2->hasAnyAddressing();
     }
 
   	virtual IndexType getAnyLocalSize( PartitionId p ) const
@@ -138,7 +187,7 @@ public:
             return false;
         }
 
-        const JoinedDistribution& jOther = reinterpret_cast<const JoinedDistribution&>( other );
+        const JoinedDistribution& jOther = static_cast<const JoinedDistribution&>( other );
        
         return mD1->isEqual( *jOther.mD1 ) && mD2->isEqual( *jOther.mD2 );
     }

@@ -117,8 +117,8 @@ If Sphinx is found the user documentation can be built as follows:
 
 .. code-block:: bash
 
-   make doc_lama_all
-   <browser> doc/user/lama_all/html/index.html
+   make doc_libama
+   <browser> doc/user/libama/html/index.html
 
 Doxygen API Documentation
 """""""""""""""""""""""""

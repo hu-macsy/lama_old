@@ -343,6 +343,8 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>& matrix )
 
 {
+    SCAI_REGION( "Mat.Sp.transpose" )
+
     SCAI_LOG_INFO( logger, "transpose sparse matrix with same value type, switch row/col distributions" )
     // assign matrix properties
     _Matrix::setDistributedMatrix( matrix.getColDistributionPtr(), matrix.getRowDistributionPtr() );
@@ -767,13 +769,13 @@ void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const In
     HArray<IndexType> localIndexes;
     distributionCol.getOwnedIndexes( localIndexes );
     mLocalData->getRow( tmpRow, localRowIndex );
-    HArrayUtils::scatterImpl( row, localIndexes, true, tmpRow, common::BinaryOp::COPY );
+    HArrayUtils::scatter( row, localIndexes, true, tmpRow, common::BinaryOp::COPY );
 
     // get halo part
 
     mHaloData->getRow( tmpRow, localRowIndex );
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::scatterImpl( row, haloIndexes, true, tmpRow, common::BinaryOp::COPY );
+    HArrayUtils::scatter( row, haloIndexes, true, tmpRow, common::BinaryOp::COPY );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1086,13 +1088,13 @@ void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
 
     HArray<IndexType> localIndexes;
     distributionCol.getOwnedIndexes( localIndexes );
-    HArrayUtils::gatherImpl( tmpRow, row, localIndexes, common::BinaryOp::COPY );
+    HArrayUtils::gather( tmpRow, row, localIndexes, common::BinaryOp::COPY );
     mLocalData->setRow( tmpRow, localRowIndex, op );
 
     // set halo part
 
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::gatherImpl( tmpRow, row, haloIndexes, common::BinaryOp::COPY );
+    HArrayUtils::gather( tmpRow, row, haloIndexes, common::BinaryOp::COPY );
     mHaloData->setRow( tmpRow, localRowIndex, op );
 }
 
@@ -1312,7 +1314,7 @@ void SparseMatrix<ValueType>::reduceImpl(
 
         if ( haloResult.size() > 0 )
         {
-            HArrayUtils::scatterImpl( v.getLocalValues(), mHalo.getProvidesIndexes(), false, haloResult, reduceOp );
+            HArrayUtils::scatter( v.getLocalValues(), mHalo.getProvidesIndexes(), false, haloResult, reduceOp );
         }
 
         return;
@@ -1665,7 +1667,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
             SCAI_REGION( "Mat.Sp.syncGatherHalo" )
             SCAI_LOG_INFO( logger,
                            comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-            HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
+            HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
             // Note: send values might be fetched to the host by halo exchange
         }
 
@@ -1768,7 +1770,7 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
 
     if ( haloResult.size() > 0 )
     {
-        HArrayUtils::scatterImpl( localResult, mHalo.getProvidesIndexes(), false, haloResult, common::BinaryOp::ADD );
+        HArrayUtils::scatter( localResult, mHalo.getProvidesIndexes(), false, haloResult, common::BinaryOp::ADD );
     }
 
     SCAI_LOG_DEBUG( logger, "invHaloOpSync done" )
@@ -1806,7 +1808,7 @@ void SparseMatrix<ValueType>::haloOperationAsyncComm(
             SCAI_REGION( "Mat.Sp.gatherHalo" )
             SCAI_LOG_INFO( logger,
                            comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-            HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
+            HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
             // Note: send values might be fetched to the host by halo exchange
         }
 
@@ -1875,7 +1877,7 @@ void SparseMatrix<ValueType>::haloOperationAsyncLocal(
         // Note: gather will be done where denseX is available
         SCAI_LOG_INFO( logger, 
                        comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-        HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
+        HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
         // prefetch needed otherwise sending will block until local computation has finished
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
@@ -1970,18 +1972,14 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const DenseVector<ValueType>* denseY ) const
 {
     using namespace std::placeholders;
-    using utilskernel::LArray;
-
-    using utilskernel::LArray;
-
     SCAI_REGION( "Mat.Sp.timesVector" )
 
-    LArray<ValueType>& localResult = denseResult.getLocalValues();
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
  
     // be careful: denseY is optional, i.e. nullptr iff beta == 0
 
-    const LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
-    const LArray<ValueType>& localX = denseX.getLocalValues();
+    const HArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
 
     HArray<ValueType>& haloX = denseX.getHaloValues();
 
@@ -2060,15 +2058,14 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     const DenseVector<ValueType>* denseY ) const
 {
     using namespace std::placeholders;
-    using utilskernel::LArray;
 
     SCAI_LOG_INFO( logger, "result = " << alpha << " * x * A + " << beta << " * y"
                    ", x = " << denseX << ", A = " << *this )
 
-    LArray<ValueType>& localResult = denseResult.getLocalValues();
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    const LArray<ValueType>& localX = denseX.getLocalValues();
-    const LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
+    const HArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
 
     void ( MatrixStorage<ValueType>::*matrixTimesVector )(
         HArray<ValueType>& result,

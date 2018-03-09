@@ -11,7 +11,8 @@ Here is a summary of the major changes compared to the old release LAMA 2.1.
    Experience has also shown that individual settings for each module caused more troubles than 
    giving higher flexibility.
  * LAMA now uses full functionality of C++11, therefore the C++ compiler used for LAMA must
-   support C++11 features.
+   support C++11 features. Boost is no longer used by the LAMA library, only for the test
+   the Boost Test Library is required.
  * The classes Matrix and Vector are now template classes with the value type of the elements 
    as template argument. There are still the classes _Matrix and _Vector as common base
    classes, but operations on these base classes are rather limited.
@@ -28,7 +29,7 @@ Here is a summary of the major changes compared to the old release LAMA 2.1.
    classes ``thread``, ``mutex`` and related ones of the C++11 standard are exploited.
  * The support for matrix and vector expressions has improved and is now more functional. Especially unary 
    functions (e.g. sqrt, log, sin, cos ) and binary functions( e.g. min, max, pow) support better text book
-   syntax.
+   syntax. The vector-matrix product ``x * A`` is no longer supported, instead ``tranpose( A ) * x`` has to be used.
  * Type conversions for matrices and vector are still possible but must be called explicitly by a cast function.
  * The LAMA internal types IndexType and PartitionId are now in the namespace scai.
  * The move semantics of C++11 can be used to avoid deep copies of data structures when setting up LAMA

@@ -1475,14 +1475,14 @@ void DenseMatrix<ValueType>::setLocalRow(
         return;
     }
 
-    utilskernel::LArray<IndexType> offsets;
-    utilskernel::LArray<IndexType> perm;
+    HArray<IndexType> offsets;
+    HArray<IndexType> perm;
 
     getColDistribution().getAnyLocal2Global( offsets, perm );
 
     HArray<ValueType> rowResorted;   // row resorted according to the owners
 
-    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, common::BinaryOp::COPY );
+    utilskernel::HArrayUtils::gather( rowResorted, row, perm, common::BinaryOp::COPY );
 
     ReadAccess<IndexType> rOffsets( offsets );
 
@@ -1876,12 +1876,10 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>* denseY ) const
 {
-    using utilskernel::LArray;
-
     SCAI_REGION( "Mat.Dense.timesVector" )
 
-    LArray<ValueType>& localResult = denseResult.getLocalValues();
-    const LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
+    const HArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
     ContextPtr localContext = mData[0]->getContextPtr();
     const Distribution& colDist = getColDistribution();
     const Communicator& comm = colDist.getCommunicator();
@@ -1897,7 +1895,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         denseY->prefetch( localContext );
     }
 
-    const LArray<ValueType>& localX = denseX.getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
 
     SCAI_LOG_INFO( logger,
                    comm << ": matrixTimesVector" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )
@@ -2027,20 +2025,18 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>* denseY ) const
 {
-    using utilskernel::LArray;
-
     SCAI_REGION( "Mat.Dense.vectorTimesMatrix" )
 
-    LArray<ValueType>& localResult = denseResult.getLocalValues();
+    HArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    const LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
+    const HArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
 
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getRowDistribution();
 
     const Communicator& comm = colDist.getCommunicator();
 
-    const LArray<ValueType>& localX = denseX.getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
 
     PartitionId nParts = colDist.getNumPartitions();
 

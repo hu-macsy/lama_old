@@ -38,7 +38,6 @@ set ( TEST_SOURCES
           HArrayUtilsTest
           SectionTest
           UtilsTest
-          LArrayTest
           TransferUtilsTest
     )
 

@@ -145,6 +145,40 @@ BOOST_AUTO_TEST_CASE( emptyInitializerListConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( getTest )
+{
+    const auto context = Context::getContextPtr(); 
+
+    const IndexType pos = 3;
+
+    const auto array = HArray<int> ( { 5, 6, 2, 3, -5 }, context );
+
+    int val = array[pos];
+
+    ReadAccess<int> rArray( array );
+    BOOST_CHECK_EQUAL( rArray[pos], val );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( setTest )
+{
+    const auto context = Context::getContextPtr();
+
+    const IndexType pos = 3;
+
+    auto array = HArray<int> ( 5, 0, context );
+
+    int val = 2;
+
+    array[pos] = val;
+
+    ReadAccess<int> rArray( array );
+    BOOST_CHECK_EQUAL( rArray[pos], val );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( moveConstructorTest )
 {
     ContextPtr contextPtr = Context::getContextPtr();

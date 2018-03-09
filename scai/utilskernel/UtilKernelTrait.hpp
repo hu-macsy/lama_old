@@ -43,7 +43,7 @@
 namespace scai
 {
 
-/** Namespace for utilities on heterogeneous arrays (HArray) and derived class LArray */
+/** Namespace for utilities on heterogeneous arrays (HArray) */
 
 namespace utilskernel
 {

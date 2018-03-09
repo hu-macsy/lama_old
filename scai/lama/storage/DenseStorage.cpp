@@ -142,8 +142,8 @@ void DenseStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo:
 
     HArray<ValueType> row;
     getRow( row, i );
-    ValueType zero = 0; 
-    HArrayUtils::buildSparseArrayImpl( values, jA, row, zero, mContext );
+    ValueType zero = 0;
+    HArrayUtils::buildSparseArray( values, jA, row, zero, mContext );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -154,7 +154,7 @@ void DenseStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hme
     HArray<ValueType> col;
     getColumn( col, j );
     ValueType zero = 0;
-    HArrayUtils::buildSparseArrayImpl( values, iA, col, zero, mContext );
+    HArrayUtils::buildSparseArray( values, iA, col, zero, mContext );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1002,7 +1002,7 @@ RealType<ValueType> DenseStorage<ValueType>::maxDiffNormImpl( const DenseStorage
         return static_cast<RealType<ValueType> >( 0 );
     }
 
-    return HArrayUtils::absMaxDiffVal( mData, other.mData, this->getContextPtr() );
+    return HArrayUtils::maxDiffNorm( mData, other.mData, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1354,8 +1354,8 @@ void DenseStorage<ValueType>::fillCOO(
 
     bool unique = false;    // there might be multiple entries in the COO data
 
-    HArrayUtils::arrayPlusArray( pos, getNumColumns(), ia, 1, ja, getContextPtr() );
-    HArrayUtils::scatter( mData, pos, unique, values, op, getContextPtr() );
+    HArrayUtils::arrayPlusArray<IndexType>( pos, getNumColumns(), ia, 1, ja, getContextPtr() );
+    HArrayUtils::scatter<ValueType, ValueType>( mData, pos, unique, values, op, getContextPtr() );
 }
 
 /* ========================================================================= */

@@ -118,8 +118,8 @@ static void bench( const IndexType N )
 
     if ( debug )
     {
-        const utilskernel::LArray<ValueType>& localValues = X.getLocalValues();
-        const utilskernel::LArray<IndexType>& permValues = perm.getLocalValues();
+        const hmemo::HArray<ValueType>& localValues = X.getLocalValues();
+        const hmemo::HArray<IndexType>& permValues = perm.getLocalValues();
 
         for ( IndexType i = 0; i < X.getDistribution().getLocalSize(); ++i )
         {
@@ -146,7 +146,7 @@ static void bench( const IndexType N )
 
     Xcomp.gather( Xsave, perm );
     Xcomp -= X;
-    Scalar maxDiff = Xcomp.maxNorm();
+    RealType<ValueType> maxDiff = Xcomp.maxNorm();
 
     tmpTime = Walltime::get() - tmpTime;
 
@@ -165,8 +165,8 @@ static void bench( const IndexType N )
 
     if ( debug )
     {
-        const utilskernel::LArray<ValueType>& localValues1 = Xcomp.getLocalValues();
-        const utilskernel::LArray<ValueType>& localValues2 = Xsave.getLocalValues();
+        const hmemo::HArray<ValueType>& localValues1 = Xcomp.getLocalValues();
+        const hmemo::HArray<ValueType>& localValues2 = Xsave.getLocalValues();
 
         SCAI_ASSERT_EQUAL( localValues1.size(), localValues2.size(), "serious mismatch" )
 

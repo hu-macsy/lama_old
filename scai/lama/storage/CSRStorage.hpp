@@ -42,7 +42,7 @@
 #include <scai/lama/mepr/StorageWrapper.hpp>
 
 // scai libraries
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
 namespace scai
@@ -128,9 +128,11 @@ public:
      *
      * @param[in] numRows    number of rows
      * @param[in] numColumns number of columns
-     * @param[in] context    specifies optionally the context where storage is located
+     * @param[in] ctx        context where storage is located, optional
      *
      * Attention: DEPRECATED.
+     *
+     * Instead of this constructor you should use the free function zero to create a storage.
      *
      *  \code
      *   CSRStorage<ValueType> csr( m, n, ctx );
@@ -317,15 +319,15 @@ public:
 
     /** Getter routine for member variable IA (read-only). */
 
-    const utilskernel::LArray<IndexType>& getIA() const;
+    const hmemo::HArray<IndexType>& getIA() const;
 
     /** Getter routine for member variable JA (read-only). */
 
-    const utilskernel::LArray<IndexType>& getJA() const;
+    const hmemo::HArray<IndexType>& getJA() const;
 
     /** Getter routine for member variable values (read-only). */
 
-    const utilskernel::LArray<ValueType>& getValues() const;
+    const hmemo::HArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values. */
 
@@ -697,9 +699,9 @@ private:
     /*  Member variables ( always private )                                 */
     /* ==================================================================== */
 
-    utilskernel::LArray<IndexType> mIA; //!< offsets for ja and data, size is numRows+1
-    utilskernel::LArray<IndexType> mJA; //!< column indexes, size is mIA[ numRows ]
-    utilskernel::LArray<ValueType> mValues; //!< non-zero values, size is equal to mJA
+    hmemo::HArray<IndexType> mIA; //!< offsets for ja and data, size is numRows+1
+    hmemo::HArray<IndexType> mJA; //!< column indexes, size is mIA[ numRows ]
+    hmemo::HArray<ValueType> mValues; //!< non-zero values, size is equal to mJA
 
     bool mSortedRows; //!< if true, the column indexes in each row are sorted
 

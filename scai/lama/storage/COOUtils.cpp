@@ -39,6 +39,7 @@
 #include <scai/hmemo/HostReadAccess.hpp>
 
 #include <scai/common/macros/loop.hpp>
+#include <algorithm>
 
 namespace scai
 {

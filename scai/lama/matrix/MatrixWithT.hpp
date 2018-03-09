@@ -68,10 +68,10 @@ public:
         mA( A ), 
         mAT( AT )
     {
-        // we do not verify that AT is really the transpose of A, but we check sizes
+        // we cannot verify that AT is really the transpose of A, but we check at least distributions
 
-        SCAI_ASSERT_EQ_ERROR(  A.getRowDistributionPtr(), AT.getColDistributionPtr(), "dist mismatch" )
-        SCAI_ASSERT_EQ_ERROR(  A.getColDistributionPtr(), AT.getRowDistributionPtr(), "dist mismatch" )
+        SCAI_ASSERT_EQ_ERROR(  A.getRowDistribution(), AT.getColDistribution(), "dist mismatch" )
+        SCAI_ASSERT_EQ_ERROR(  A.getColDistribution(), AT.getRowDistribution(), "dist mismatch" )
     }
 
     /** 

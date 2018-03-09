@@ -247,9 +247,7 @@ void StencilStorage<ValueType>::getDiagonal( HArray<ValueType>& array ) const
 
     SCAI_LOG_ERROR( logger, "diagonal value is = " << diagonalValue );
 
-    HArrayUtils::assignScalar( array, diagonalValue, common::BinaryOp::COPY );
-
-    // Attention: reflecting boundaries can imply changes on the diagonal values
+    HArrayUtils::setScalar( array, diagonalValue, common::BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -357,7 +355,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
     }
     else
     {
-        HArrayUtils::assign( csrValues, typedValues );
+        HArrayUtils::_assign( csrValues, typedValues );  // conversion required
     }
 }
 
@@ -440,7 +438,7 @@ void StencilStorage<ValueType>::getRow( hmemo::HArray<ValueType>& values, const 
 
     values.resize( getNumColumns() );
 
-    HArrayUtils::assignScalar( values, ValueType( 0 ), BinaryOp::COPY );
+    HArrayUtils::setScalar<ValueType>( values, 0, BinaryOp::COPY );
 
     HArray<IndexType> sparseIA;
     HArray<ValueType> sparseValues;
@@ -461,7 +459,7 @@ ValueType StencilStorage<ValueType>::getValue( const IndexType i, const IndexTyp
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
 
     HArray<IndexType> sparseIA;
-    utilskernel::LArray<ValueType> sparseValues;
+    HArray<ValueType> sparseValues;
 
     getSparseRow( sparseIA, sparseValues, i );
 

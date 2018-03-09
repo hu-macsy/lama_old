@@ -180,11 +180,11 @@ void JDSStorage<ValueType>::setJDSData(
     SCAI_ASSERT_EQUAL_ERROR( values.size(), ja.size() )
     _MatrixStorage::setDimension( numRows, numColumns );
     ContextPtr loc = getContextPtr();
-    HArrayUtils::setArray( mDlg, dlg, BinaryOp::COPY, loc );
-    HArrayUtils::setArray( mIlg, ilg, BinaryOp::COPY, loc );
-    HArrayUtils::setArray( mPerm, perm, BinaryOp::COPY, loc );
-    HArrayUtils::setArray( mJA, ja, BinaryOp::COPY, loc );
-    HArrayUtils::assign( mValues, values, loc ); // supports type conversion
+    HArrayUtils::assign( mDlg, dlg, loc );
+    HArrayUtils::assign( mIlg, ilg, loc );
+    HArrayUtils::assign( mPerm, perm, loc );
+    HArrayUtils::assign( mJA, ja, loc );
+    HArrayUtils::_assign( mValues, values, loc ); // supports type conversion
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 #ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
@@ -296,11 +296,11 @@ void JDSStorage<ValueType>::assignJDS( const JDSStorage<OtherValueType>& other )
 
     _MatrixStorage::_assign( other );     // assign member variables of base class
 
-    HArrayUtils::setArrayImpl( mIlg, other.getIlg(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mDlg, other.getDlg(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mPerm, other.getPerm(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
-    HArrayUtils::setArrayImpl( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::assign( mIlg, other.getIlg(), ctx );
+    HArrayUtils::assign( mDlg, other.getDlg(), ctx );
+    HArrayUtils::assign( mPerm, other.getPerm(), ctx );
+    HArrayUtils::assign( mJA, other.getJA(), ctx );
+    HArrayUtils::assign( mValues, other.getValues(), ctx );
 
     _MatrixStorage::resetDiagonalProperty();
 }
@@ -475,7 +475,7 @@ void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::H
 
     // with entries in pos we can gather the column indexes and the values from jdsJA, jdsValues
  
-    HArrayUtils::gatherImpl( jA, mJA, pos, BinaryOp::COPY, loc );
+    HArrayUtils::gather( jA, mJA, pos, BinaryOp::COPY, loc );
     HArrayUtils::gather( values, mValues, pos, BinaryOp::COPY, loc );
 
     SCAI_LOG_DEBUG( logger, "getSparseRow( " << i << " ) : jA = " << jA << ", values = " << values )
@@ -607,8 +607,8 @@ void JDSStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 
     //  mValues[ pos ] op= column[row]
 
-    HArrayUtils::gatherImpl( colValues, column, rowIndexes, BinaryOp::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
+    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( mValues, valuePos, true, colValues, op, loc );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1523,7 +1523,7 @@ template<typename ValueType>
 RealType<ValueType> JDSStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
-    return mValues.maxNorm();
+    return HArrayUtils::maxNorm( mValues );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -43,7 +43,6 @@
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 namespace scai
 {
@@ -102,7 +101,7 @@ public:
      *
      * @param[in] numRows    number of rows
      * @param[in] numColumns number of columns
-     * @param[in] context    specifies optionally the context where storage is located
+     * @param[in] ctx        specifies optionally the context where storage is located
      *
      * Attention: DEPRECATED
      *
@@ -343,8 +342,6 @@ public:
 
     /** Getter routine for the matrix data array (read-only). */
 
-    // const hmemo::HArray<ValueType>& getData() const;
-
     const hmemo::HArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values. */
@@ -526,7 +523,7 @@ protected:
     using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mContext;
 
-    utilskernel::LArray<ValueType> mData;  //!<  matrix data as LArray, stored row-wise
+    hmemo::HArray<ValueType> mData;  //!<  matrix data as HArray, stored row-wise
 
     /** Logger just for this class / matrix format. */
 

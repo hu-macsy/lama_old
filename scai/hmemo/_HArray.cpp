@@ -176,7 +176,6 @@ void _HArray::swap( _HArray& other )
     SCAI_LOG_DEBUG( logger, *this << ": has been swapped with other = " << other )
 }
 
-
 /* ---------------------------------------------------------------------------------*/
 
 void _HArray::setHostRef( const IndexType size, void* pointer )

@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_numeric_test_t
 
     L1Norm<ValueType> l1norm;
 
-    ValueType expected = n * val;
+    ValueType expected = ValueType( n ) * val;
 
     BOOST_CHECK_EQUAL( expected, l1norm( vec ) );
     BOOST_CHECK_EQUAL( vec.l1Norm(), l1norm( vec ) );

@@ -66,6 +66,8 @@ set ( COMPLEX_VALUES      "scai::ComplexFloat" "scai::ComplexDouble" "scai::Comp
 set ( TYPE_LIST_VALUES    ${NONE_COMPLEX_VALUES} ${COMPLEX_VALUES} )
 set ( LONG_DOUBLE_VALUES  "long double" "scai::ComplexLongDouble" )
 
+## define USE_COMPLEX ( might be configured )
+
 ## define SCAI_HOST_TYPES_LIST ( might be configured )
 
 set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
@@ -149,9 +151,9 @@ endif ()
 # SCAI_USE_COMPLEX ( 0 or 1 ) is required 
 
 if ( ${USE_COMPLEX} )
-    set ( SCAI_USE_COMPLEX 1 )
+    set ( SCAI_USE_COMPLEX 1 CACHE BOOL "use complex" )
 else ()
-    set ( SCAI_USE_COMPLEX 0 )
+    set ( SCAI_USE_COMPLEX 1 CACHE BOOL "use complex" )
 endif ()
 
 ###################################
@@ -208,9 +210,9 @@ set ( COMMON_HEADERS
         safer_memcpy
 )
 
-if ( ${USE_COMPLEX} )
+if ( ${SCAI_USE_COMPLEX} )
     list ( APPEND COMMON_HEADERS Complex )
-endif ( ${USE_COMPLEX} )
+endif ( ${SCAI_USE_COMPLEX} )
 
 ## Boost used -> generate and add a boost check version file 
 

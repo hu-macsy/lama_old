@@ -26,76 +26,28 @@
  * @endlicense
  *
  * @brief Example of least square problem with boundary conditions
- * @author Thomas Brandes, Andreas Borgen Longva
+ * @author Thomas Brandes, Andreas Borgen Langva
  * @date 21.07.2017
  */
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
+#include <scai/lama/matrix/MatrixWithT.hpp>
 
 #include <scai/tracing.hpp>
 
 #include <scai/common/Settings.hpp>
 
-#include "ConstrainedLeastSquares.hpp"
-#include "MatrixWithT.hpp"
+#include <scai/dmemo/GridDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+
+#include <scai/ipbcls.hpp>
+
+#include "JoinedMatrix.hpp"
+#include "JoinedVector.hpp"
 
 using namespace scai;
 using namespace lama;
-using namespace solver;
-
-void setupSmoothMatrix( CSRSparseMatrix<double>& L, const IndexType ny, const IndexType nz, const double strength )
-{
-    // not neccesary, but to keep in accordance with the original
-
-    common::Stencil2D<double> stencil( 5 );
-
-    common::Grid2D grid( ny, nz );
-
-    grid.setBorderType( 0, common::Grid::BORDER_REFLECTING );
-    grid.setBorderType( 1, common::Grid::BORDER_REFLECTING );
-
-    StencilMatrix<double> stencilMatrix( grid, stencil );
-
-    L = stencilMatrix;
-
-    L.scale( - strength / 4 );
-}
-
-void joinMatrix( CSRSparseMatrix<double>& result, const CSRSparseMatrix<double>& a, const CSRSparseMatrix<double>& b )
-{
-    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumColumns(), "joined matrices must have same number of columns" );
-
-    typedef std::shared_ptr<scai::lama::_MatrixStorage> StoragePtr;
-
-    StoragePtr shared_ptrA( a.getLocalStorage().copy() );
-    StoragePtr shared_ptrB( b.getLocalStorage().copy() );
-
-    std::vector<StoragePtr> bothMatrices;
-
-    bothMatrices.push_back( shared_ptrA );
-    bothMatrices.push_back( shared_ptrB );
-
-    scai::lama::CSRStorage<double> joinedStorage;
-
-    joinedStorage.rowCat( bothMatrices );
-
-    result.assign( joinedStorage );
-}
-
-void zeroExtend( DenseVector<double>& T_ext,
-                 const DenseVector<double>& T, const IndexType nZeros )
-{
-    T_ext.allocate( T.size() + nZeros );
-
-    hmemo::WriteAccess<double> wT( T_ext.getLocalValues() );
-    hmemo::ReadAccess<double> rT( T.getLocalValues() );
-
-    for ( IndexType i = 0; i < rT.size(); ++i )
-    {
-        wT[i] = rT[i];
-    }
-}
 
 int main( int argc, const char* argv[] )
 {
@@ -115,10 +67,10 @@ int main( int argc, const char* argv[] )
     std::cout << "Read D from "  << argv[1] << ", T from " << argv[2] 
               << ", So from " << argv[3] << ", hrz from " << argv[4] << std::endl;
 
-    CSRSparseMatrix<double> D( argv[1] );
-    DenseVector<double> T( argv[2] );
-    DenseVector<double> So( argv[3]  );
-    DenseVector<double> hrz( argv[4] );
+    auto D   = read<CSRSparseMatrix<double>>( argv[1] );
+    auto T   = read<DenseVector<double>>( argv[2] );
+    auto So  = read<DenseVector<double>>( argv[3]  );
+    auto hrz = read<DenseVector<double>>( argv[4] );
 
     std::cout << "D = " << D << std::endl;
     std::cout << "hrz = " << hrz << std::endl;
@@ -143,16 +95,26 @@ int main( int argc, const char* argv[] )
     common::Settings::getEnvironment( variation, "SCAI_VARIATION" );
 
     std::cout << "Use strength = " << strength << ", variation = " << variation << std::endl;
-    CSRSparseMatrix<double> A;
-    CSRSparseMatrix<double> L;
 
-    setupSmoothMatrix( L, ny, nz, double( strength ) );
+    common::Stencil2D<double> stencil( 5 ); stencil.scale( - strength / 4.0 );
 
-    A.vcat( D, L );    // A = [ D; L ]
+    common::Grid2D grid( ny, nz );
 
-    DenseVector<double> T_ext;
+    grid.setBorderType( 0, common::Grid::BORDER_ABSORBING );
+    grid.setBorderType( 1, common::Grid::BORDER_ABSORBING );
 
-    zeroExtend( T_ext, T, L.getNumRows() );
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+ 
+    dmemo::DistributionPtr gridDist( new dmemo::GridDistribution( grid, comm ) );
+    dmemo::DistributionPtr rayDist( new dmemo::BlockDistribution( nray, comm ) );
+ 
+    StencilMatrix<double> L( gridDist, stencil );
+
+    MatrixWithT<double> Lopt( L, L );   // tricky stuff for symmetric matrix
+
+    DenseVector<double> Zero( L.getNumRows(), 0 );
+
+    So.redistribute( gridDist );
 
     DenseVector<double> lb( So );
     DenseVector<double> ub( So );
@@ -178,25 +140,34 @@ int main( int argc, const char* argv[] )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    A.setContextPtr( ctx );
-    A.setCommunicationKind( _Matrix::SYNCHRONOUS );
-    T_ext.setContextPtr( ctx );
+    D.setContextPtr( ctx );
+    D.setCommunicationKind( SyncKind::SYNCHRONOUS );
     ub.setContextPtr( ctx );
     lb.setContextPtr( ctx );
 
-    DenseVector<double> x( ctx );
+    D.redistribute( rayDist, gridDist );
+    T.redistribute( rayDist );
+    Zero.redistribute( gridDist );
 
-    _MatrixWithT Aopt( A );   // Allocate also a transposed matrix to optimize A' * x operations
+    auto x = fill<DenseVector<double>>( gridDist, 0 );
 
-    ConstrainedLeastSquares lsq( Aopt );
+    MatrixWithT<double> Dopt( D );
+
+    JoinedMatrix<double> A( Dopt, Lopt );
+    JoinedVector<double> T_ext( T, Zero );
+
+    std::cout << "construct lsq." << std::endl;
+
+    ipbcls::ConstrainedLeastSquares<double> lsq( A );
 
     // lsq.useTranspose();       // will matrixTimesVector instead ov vectorTimesMatrix
 
-    lsq.setTolerance( 0.01 );
+    lsq.setObjectiveTolerance( 0.01 );
     lsq.setMaxIter( 50 );
 
     try
     {
+        std::cout << "solve lsq with boundary cond" << std::endl;
         lsq.solve( x, T_ext, lb, ub );
     }
     catch ( common::Exception& ex )
@@ -206,9 +177,11 @@ int main( int argc, const char* argv[] )
         return 1;
     }
 
-    DenseVector<double> residual( A * x - T_ext );
+    VectorPtr<double> residual( T_ext.newVector() );
 
-    std::cout << "res norm = " << residual.l2Norm() << std::endl;
+    *residual = A * x - T_ext;
+
+    std::cout << "res norm = " << residual->l2Norm() << std::endl;
 
     if ( argc > 5 )
     {

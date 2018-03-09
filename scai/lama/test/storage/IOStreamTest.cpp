@@ -36,7 +36,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/io/IOStream.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -47,10 +47,14 @@
 using namespace scai;
 using namespace common;
 using namespace lama;
-using namespace utilskernel;
+
+using hmemo::HArray;
+using utilskernel::HArrayUtils;
 
 using scai::testsupport::uniquePath;
 using scai::testsupport::GlobalTempDir;
+
+using boost::test_tools::per_element;
 
 /* ------------------------------------------------------------------------- */
 
@@ -66,7 +70,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_type
 
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    LArray<ValueType> data( n, values );
+    HArray<ValueType> data( n, values );
 
     int precision = 3;
 
@@ -76,18 +80,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_type
     outFile.writeFormatted( data, precision );
     outFile.close();
 
-    LArray<ValueType> data1;
+    HArray<ValueType> data1;
 
     IOStream inFile( testFileName, std::ios::in );
     inFile.readFormatted( data1, n );
     inFile.close();
 
-    BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
-
-    typedef typename TypeTraits<ValueType>::RealType RealType;
-    RealType diff = common::Math::real( data.maxDiffNorm( data1 ) );
-
-    BOOST_CHECK( diff < 1e-3 );
+    BOOST_CHECK( HArrayUtils::maxDiffNorm( data, data1 ) < 1e-3 );
 
     int rc = std::remove( testFileName.c_str() );
     BOOST_CHECK_EQUAL( 0, rc );
@@ -100,8 +99,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
     const IndexType n = 5;
     const IndexType randomRange = 100;
 
-    LArray<ValueType> data( n );
-    data.setRandom( randomRange );  // random value between 0 and 100
+    auto data = utilskernel::randomHArray<ValueType>( n, randomRange );
 
     // ScalarType type = TypeTraits<ValueType>::stype;
 
@@ -121,7 +119,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
     outFile.writeBinary( data, stype );
     outFile.close();
 
-    LArray<ValueType> data1;
+    HArray<ValueType> data1;
 
     IOStream inFile( testFileName, std::ios::in | std::ios::binary );
 
@@ -134,12 +132,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
     inFile.readBinary( data1, n, stype );
     inFile.close();
 
-    BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
-
-    typedef typename TypeTraits<ValueType>::RealType RealType;
-    RealType diff = common::Math::real( data.maxDiffNorm( data1 ) );
-
-    BOOST_CHECK_EQUAL( diff, 0 );
+    BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
 
     int rc = std::remove( testFileName.c_str() );
     BOOST_CHECK_EQUAL( 0, rc );
@@ -153,8 +146,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
 
     const IndexType n = 5;
 
-    LArray<ValueType> data( n );
-    data.setRandom( 1 );
+    auto data = utilskernel::randomHArray<ValueType>( n, 1 );
 
     ScalarType stype = TypeTraits<ScalarRepType>::stype;
 
@@ -164,7 +156,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
     outFile.writeBinary( data, stype );
     outFile.close();
 
-    LArray<ValueType> data1;
+    HArray<ValueType> data1;
 
     IOStream inFile( testFileName, std::ios::in | std::ios::binary );
 
@@ -177,12 +169,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
     inFile.readBinary( data1, n, stype );
     inFile.close();
 
-    BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
+    // binary should guarantee exactly same values
 
-    typedef typename TypeTraits<ValueType>::RealType RealType;
-    RealType diff = common::Math::real( data.maxDiffNorm( data1 ) );
-
-    BOOST_CHECK_EQUAL( diff, 0 );
+    BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
 
     int rc = std::remove( testFileName.c_str() );
     BOOST_CHECK_EQUAL( 0, rc );

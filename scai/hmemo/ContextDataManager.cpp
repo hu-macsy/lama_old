@@ -903,6 +903,52 @@ void ContextDataManager::init( const void* data, const size_t size )
     releaseAccess( index, AccessKind::Write );
 }
 
+void ContextDataManager::getData( void* data, const size_t offset, const size_t size )
+{
+    // get a valid context, preferred host
+
+    ContextPtr ctx     = Context::getHostPtr();
+    const Memory& hostMem = *ctx->getMemoryPtr();
+
+    ctx = getValidContext( ctx );
+
+    ContextDataIndex index = acquireAccess( ctx, AccessKind::Read, offset + size, offset + size );
+
+    const Memory& mem = mContextData[index].getMemory();
+
+    const char* ptr = static_cast<const char*>( mContextData[index].get() );
+
+    SCAI_LOG_INFO( logger, "getData( offset = " << offset << ", size = " << size << " ), index = " << index << ", mem = " << mem << " copies to " << hostMem )
+
+    mem.memcpyTo( hostMem, data, ptr + offset, size );
+
+    releaseAccess( index, common::AccessKind::Read );
+}
+
+void ContextDataManager::setData( const void* data, const size_t offset, const size_t dataSize, const size_t allocSize )
+{
+    // get a valid context, preferred host
+
+    ContextPtr ctx     = Context::getHostPtr();
+    const Memory& hostMem = *ctx->getMemoryPtr();
+
+    ctx = getValidContext( ctx );
+
+    ContextDataIndex index = acquireAccess( ctx, AccessKind::Write, allocSize, allocSize );
+
+    SCAI_LOG_INFO( logger, "setData( offset = " << offset << ", size = " << dataSize << " ), index = " << index << ", data: " << mContextData[index] )
+
+    const Memory& mem = mContextData[index].getMemory();
+
+    char* ptr = static_cast<char*>( mContextData[index].get() );
+
+    SCAI_LOG_DEBUG( logger, "setData( offset = " << offset << ", size = " << dataSize << " ), index = " << index << ", mem = " << mem << " copies from " << hostMem )
+
+    mem.memcpyFrom( ptr + offset, hostMem, data, dataSize );
+
+    releaseAccess( index, common::AccessKind::Write );
+}
+
 /* ---------------------------------------------------------------------------------*/
 
 } /* end namespace hmemo */

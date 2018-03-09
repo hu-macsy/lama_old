@@ -69,7 +69,6 @@ RUN 1 vectorAdd.exe
 RUN 1 SingleAccess.exe
 RUN 1 BenchSort.exe
 RUN 1 BenchOps.exe
-RUN 1 LArrayDemo.exe
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`

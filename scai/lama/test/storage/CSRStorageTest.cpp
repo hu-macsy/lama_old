@@ -72,9 +72,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-    LArray<IndexType> csrIA( numRows + 1, ia );
-    LArray<IndexType> csrJA( numValues, ja );
-    LArray<ValueType> csrValues( numValues, values );
+    HArray<IndexType> csrIA( numRows + 1, ia );
+    HArray<IndexType> csrJA( numValues, ja );
+    HArray<ValueType> csrValues( numValues, values );
     CSRStorage<ValueType> csrStorage( numRows, numColumns, csrIA, csrJA, csrValues, context );
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
@@ -297,9 +297,9 @@ BOOST_AUTO_TEST_CASE( compressTest )
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
     BOOST_CHECK_EQUAL( numValues, sizeJA );
     BOOST_CHECK_EQUAL( numValues, sizeValues );
-    LArray<IndexType> csrIA( numRows + 1, ia );
-    LArray<IndexType> csrJA( numValues, ja );
-    LArray<ValueType> csrValues( numValues, values );
+    HArray<IndexType> csrIA( numRows + 1, ia );
+    HArray<IndexType> csrJA( numValues, ja );
+    HArray<ValueType> csrValues( numValues, values );
     CSRStorage<ValueType> csr;
     csr.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
     csr.setContextPtr( context );
@@ -328,22 +328,30 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     const IndexType ia[] = { 0, 2, 4, 6, 8 };
     const IndexType ja[] = { 1, 0, 2, 1, 3, 2, 0, 3 };
     const IndexType sorted_ja[] = { 0, 1, 1, 2, 2, 3, 0, 3 };
-    const IndexType values[] = { 1, 0, 2, 1, 3, 2, 0, 3 };
     const IndexType numValues = ia[numRows];
-    LArray<IndexType> csrIA( numRows + 1, ia, context );
-    LArray<IndexType> csrJA( numValues, ja, context );
-    LArray<ValueType> csrValues( numValues, values, context );
+
+    HArray<IndexType> csrIA( numRows + 1, ia, context );
+    HArray<IndexType> csrJA( numValues, ja, context );
+    HArray<ValueType> csrValues;
+    HArrayUtils::assign<ValueType, IndexType>( csrValues, csrJA, context );
+
     CSRStorage<ValueType> csrStorage;
     csrStorage.setContextPtr( context );
     csrStorage.allocate( numRows, numColumns );
+
     csrStorage.swap( csrIA, csrJA, csrValues );
+
     BOOST_CHECK_EQUAL( IndexType( 0 ), csrJA.size() );
     BOOST_CHECK_EQUAL( IndexType( 0 ), csrValues.size() );
     BOOST_CHECK_EQUAL( numValues, csrStorage.getNumValues() );
+
     bool diagonalProperty = csrStorage.hasDiagonalProperty();
+
     csrStorage.sortRows( diagonalProperty );
-    const LArray<IndexType>& sortedJA = csrStorage.getJA();
-    const LArray<ValueType>& sortedVals = csrStorage.getValues();
+
+    const HArray<IndexType>& sortedJA = csrStorage.getJA();
+    const HArray<ValueType>& sortedVals = csrStorage.getValues();
+
     BOOST_REQUIRE_EQUAL( numValues, sortedJA.size() );
     BOOST_REQUIRE_EQUAL( numValues, sortedVals.size() );
 
@@ -366,9 +374,9 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
     const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
     const IndexType firstCols[] = { 1, 3, 5, 7 };
     const IndexType numValues = ia[numRows];
-    LArray<IndexType> csrIA( numRows + 1, ia, context );
-    LArray<IndexType> csrJA( numValues, ja, context );
-    LArray<ValueType> csrValues( numValues, ValueType( 1 ), context );
+    HArray<IndexType> csrIA( numRows + 1, ia, context );
+    HArray<IndexType> csrJA( numValues, ja, context );
+    HArray<ValueType> csrValues( numValues, ValueType( 1 ), context );
     CSRStorage<ValueType> csrStorage;
     csrStorage.setContextPtr( context );
     csrStorage.allocate( numRows, numColumns );
@@ -376,8 +384,8 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
 
     // we check both, base class and derived class method
 
-    LArray<IndexType> firstColIndexes1;
-    LArray<IndexType> firstColIndexes2;
+    HArray<IndexType> firstColIndexes1;
+    HArray<IndexType> firstColIndexes2;
     csrStorage.getFirstColumnIndexes( firstColIndexes1 );
     csrStorage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
 

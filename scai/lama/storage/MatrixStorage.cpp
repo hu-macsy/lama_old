@@ -186,9 +186,9 @@ void MatrixStorage<ValueType>::buildCSCData(
 template<typename ValueType>
 void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
 {
-    utilskernel::LArray<IndexType> csrIA;
-    utilskernel::LArray<IndexType> csrJA;
-    utilskernel::LArray<ValueType> csrValues;
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
 
     buildCSRData( csrIA, csrJA, csrValues );
 
@@ -304,9 +304,9 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
     SCAI_ASSERT_VALID_INDEX( first, getNumRows(), "first row out of range" )
     SCAI_ASSERT_VALID_INDEX( first + n - 1, getNumRows(), "last row out of range" );
 
-    LArray<IndexType> csrIA;
-    LArray<IndexType> csrJA;
-    LArray<ValueType> csrValues;
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
 
     buildCSRData( csrIA, csrJA, csrValues );
 
@@ -316,7 +316,7 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
 
     // copy out the corresponding sections, ia needs a shifting to zero
 
-    LArray<IndexType> blockIA( n + 1 );
+    HArray<IndexType> blockIA( n + 1 );
     HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, BinaryOp::COPY, loc );
 
     IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
@@ -326,8 +326,8 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
 
     SCAI_LOG_DEBUG( logger, "offset = " << offset << ", #nnz = " << numBlockValues );
 
-    LArray<IndexType> blockJA( numBlockValues );
-    LArray<ValueType> blockValues( numBlockValues );
+    HArray<IndexType> blockJA( numBlockValues );
+    HArray<ValueType> blockValues( numBlockValues );
 
     HArrayUtils::setArraySection( blockJA, 0, 1, csrJA, offset, 1, numBlockValues, BinaryOp::COPY, loc );
     HArrayUtils::setArraySection( blockValues, 0, 1, csrValues, offset, 1, numBlockValues, BinaryOp::COPY, loc );

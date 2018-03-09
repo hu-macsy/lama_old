@@ -40,7 +40,8 @@
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
-#include <scai/utilskernel/LArray.hpp>
+
+#include <scai/utilskernel.hpp>
 
 using namespace scai;
 using namespace dmemo;

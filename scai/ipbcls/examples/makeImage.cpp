@@ -55,7 +55,7 @@ int main( int argc, const char* argv[] )
     IndexType nx = atoi( argv[2] );
     IndexType ny = atoi( argv[3] );
 
-    DenseVector<double> x( argv[1] );
+    auto x = read<DenseVector<double>>( argv[1] );
 
     SCAI_ASSERT_EQ_ERROR( nx * ny, x.size(), "vector file does not match size " << nx << " x " << ny )
 

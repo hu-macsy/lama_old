@@ -41,7 +41,6 @@
 #include <scai/lama/Vector.hpp>
 
 // internal scai libraries
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
@@ -154,13 +153,14 @@ public:
     /**
      * @brief creates a distributed SparseVector with given local values.
      *
-     * @param[in] distribution   the distribution of the vector
-     * @param[in] nonZeroindexes local indexes this processor has nonz-zeros values for
-     * @param[in] nonZeroValues  values belonging to the corresponding entries
-     * @param[in] zero           is the zero value
+     * @param[in] distribution  the distribution of the vector
+     * @param[in] indexes       local indexes this processor has nonz-zeros values for
+     * @param[in] values        values belonging to the corresponding entries
+     * @param[in] zero          is the zero value
+     * @param[in] context       context to be used for the created sparse vector
      *
      * While indexes and values might have individual values on each processor, the zero value
-     * must be exactly the same on all processors
+     * must be the same on all processors
      */
     SparseVector( 
         dmemo::DistributionPtr distribution,
@@ -449,14 +449,14 @@ private:
 
     void binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
 
-    utilskernel::LArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
-    utilskernel::LArray<ValueType> mNonZeroValues;   //!< my local non-zero values
+    hmemo::HArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
+    hmemo::HArray<ValueType> mNonZeroValues;   //!< my local non-zero values
 
     ValueType mZeroValue;    //!< ZERO element of vector, can be explicity set, defaults to 0
 
     /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
 
-    mutable utilskernel::LArray<ValueType> mHaloValues;
+    mutable hmemo::HArray<ValueType> mHaloValues;
 
     /** Implementation of _Vector::writeLocalToFile */
 

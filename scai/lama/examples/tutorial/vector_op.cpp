@@ -38,73 +38,14 @@
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/expression/all.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
-
 #include <iostream>
 #include <stdlib.h>
 
 using namespace scai;
 using namespace lama;
-using utilskernel::LArray;
+using utilskernel::HArrayUtils;
 
 typedef DefaultReal ValueType;
-
-void methods1()
-{
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
-
-    const IndexType n = 10;
-
-    LArray<ValueType> x( n, 1.0, ctx );
-    LArray<ValueType> y( n, 2.0, ctx );
- 
-    x[0] = 0.5;
-    y[1] = x[0] * 1.0 - 0.5 * y[0];
-
-    x += 1.0;
-    y -= 1.3;
-    y *= 1.5;
-    x /= 0.7;
-
-    x += y;
-    y -= x;
-    x /= y;
-    x *= y;
-
-    y += x *= 2;
-
-    // UnaryOp operations
-
-    x.invert();      // x[i] = 1.0 / x[i]
-    y.conj();        // y[i] = conj( y[i] )
-    x.log();
-    y.floor();
-    x.ceil();
-    x.sqrt();
-    x.sin();
-    x.cos();
-    x.tan();
-    x.atan();
-    x.powBase( 2.0 );  // x[i] = 2.0 ** x[i] 
-    y.powExp( 2.0 );   // x[i] = x[i] ** 2.0
-    x.powBase( y );    // x[i] = y[i] ** x[i]
-    y.powExp( x );     // y[i] = y[i] ** x[i]
-
-    ValueType s;
-
-    s = x.sum();
-    std::cout << "sum of x = " << s << std::endl;
-
-    s = x.min();
-    s = x.max();
-
-    s = x.l1Norm();
-    s = x.l2Norm();
-    s = y.maxNorm();
-   
-    s = x.dotProduct( y );
-    s = x.maxDiffNorm( y );
-}
 
 void methods2()
 {
@@ -143,14 +84,14 @@ void methods2()
     x = cos( x );
     x = tan( x );
     x = atan( x);
-    // x = pow( 2.0, x )
-    x.binaryOp( ValueType( 2 ), common::BinaryOp::POW, x );  // x[i] = 2.0 ** x[i] 
-    // x = pow( x, 2.0 )
-    y.binaryOp( y, common::BinaryOp::POW, ValueType( 2 ) );  // x[i] = x[i] ** 2.0
-    // x = pow( y, x )
-    x.binaryOp( y, common::BinaryOp::POW, x );  // x[i] = y[i] ** x[i]
-    // x = pow( x, y )
-    y.binaryOp( y, common::BinaryOp::POW, x );  // y[i] = y[i] ** x[i]
+    x = pow( 2.0, x );
+    // x.binaryOp( ValueType( 2 ), common::BinaryOp::POW, x );  // x[i] = 2.0 ** x[i] 
+    x = pow( x, 2.0 );
+    // y.binaryOp( y, common::BinaryOp::POW, ValueType( 2 ) );  // x[i] = x[i] ** 2.0
+    x = pow( y, x );
+    // x.binaryOp( y, common::BinaryOp::POW, x );  // x[i] = y[i] ** x[i]
+    x = pow( x, y );
+    // y.binaryOp( y, common::BinaryOp::POW, x );  // y[i] = y[i] ** x[i]
 
     ValueType s;
 

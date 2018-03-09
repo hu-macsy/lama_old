@@ -38,7 +38,7 @@
 // others
 #include <scai/kregistry.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/sparsekernel/JDSKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/sparsekernel/test/TestMacros.hpp>
@@ -60,6 +60,8 @@ using namespace utilskernel;
 using namespace kregistry;
 using common::TypeTraits;
 using common::Exception;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -117,7 +119,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
     }
 
     std::vector<ValueType> expectedValues( { 0, 7, 0, 8, 0, 9, 0, 10, 0, 11, 0, 0, 0, 0, 0, 0 } );
-    BOOST_TEST( hostReadAccess( row ) == expectedValues, boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( row ) == expectedValues, per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -134,11 +136,11 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
 
     getValuePosRow.getSupportedContext( loc );
 
-    LArray<IndexType> jdsPerm( testContext );
-    LArray<IndexType> jdsILG( testContext );
-    LArray<IndexType> jdsDLG( testContext );
-    LArray<IndexType> jdsJA( testContext );
-    LArray<ValueType> jdsValues( testContext );
+    HArray<IndexType> jdsPerm( testContext );
+    HArray<IndexType> jdsILG( testContext );
+    HArray<IndexType> jdsDLG( testContext );
+    HArray<IndexType> jdsJA( testContext );
+    HArray<ValueType> jdsValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -177,11 +179,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
     ContextPtr loc = testContext;
     getRow.getSupportedContext( loc, setRow );
 
-    LArray<IndexType> jdsPerm( testContext );
-    LArray<IndexType> jdsILG( testContext );
-    LArray<IndexType> jdsDLG( testContext );
-    LArray<IndexType> jdsJA( testContext );
-    LArray<ValueType> jdsValues( testContext );
+    HArray<IndexType> jdsPerm( testContext );
+    HArray<IndexType> jdsILG( testContext );
+    HArray<IndexType> jdsDLG( testContext );
+    HArray<IndexType> jdsJA( testContext );
+    HArray<ValueType> jdsValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -211,7 +213,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
     // Now all values should be zero
 
-    BOOST_CHECK_EQUAL( ValueType( 0 ), common::Math::real( jdsValues.maxNorm() ) );
+    BOOST_TEST( hostReadAccess( jdsValues ) == std::vector<ValueType>( jdsValues.size(), 0 ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -510,7 +512,7 @@ BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 
     std::vector<IndexType> expectedDlg( { 6, 5, 5, 5, 3, 2, 2 } );
 
-    BOOST_TEST( hostReadAccess( dlg ) == expectedDlg, boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( dlg ) == expectedDlg, per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -761,7 +763,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 
         auto expectedRes = data1::getGEMVNormalResult( alpha, x, beta, y );
 
-        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), per_element() );
     }
 }
 
@@ -842,9 +844,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
 
         // compare against mv product of dense matrix
 
-        LArray<ValueType> expectedRes = data1::getGEMVNormalResult( alpha, x, beta, y );
+        HArray<ValueType> expectedRes = data1::getGEMVNormalResult( alpha, x, beta, y );
 
-        BOOST_CHECK( common::Math::real( expectedRes.maxDiffNorm( res ) ) < 0.001 );
+        BOOST_CHECK( HArrayUtils::maxDiffNorm( expectedRes, res ) < 0.001 );
     }
 }
 
@@ -929,9 +931,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTransposeTest, ValueType, scai_numeric_test_t
 
         // compare against gevm product of dense matrix
 
-         LArray<ValueType> expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, y );
+        HArray<ValueType> expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, y );
 
-        BOOST_CHECK( common::Math::real( expectedRes.maxDiffNorm( res ) ) < 0.001 );
+        BOOST_CHECK( HArrayUtils::maxDiffNorm( expectedRes, res ) < 0.001 );
     }
 }
 
@@ -999,13 +1001,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
         }
 
-        LArray<ValueType> expectedRes( testContext );
+        HArray<ValueType> expectedRes( testContext );
 
         data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
 
-        ValueType maxDiff = expectedRes.maxDiffNorm( res );
-
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+        BOOST_CHECK( HArrayUtils::maxDiffNorm( expectedRes, res ) < 0.1 );
 
         bool mustBeIdentical = false;
 
@@ -1092,15 +1092,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
                              rOld.get(), omega );
         }
 
-        LArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+        auto expectedSol = utilskernel::fillHArray<ValueType>( numRows, 0, testContext );
 
         data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
 
         // be careful: expectedSol == oldSolution does not hold on GPUs
 
-        ValueType maxDiff = expectedSol.maxDiffNorm( solution );
-
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.001 );
+        BOOST_CHECK( HArrayUtils::maxDiffNorm( expectedSol, solution ) < 0.001 );
     }
 }
 

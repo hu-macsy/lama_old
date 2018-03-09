@@ -40,7 +40,7 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/sparsekernel/DIAKernelTrait.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
@@ -542,13 +542,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
         }
 
-        LArray<ValueType> expectedRes( testContext );
+        HArray<ValueType> expectedRes( testContext );
 
         data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
 
-        ValueType maxDiff = expectedRes.maxDiffNorm( res );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedRes, res );
 
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.001 );
+        BOOST_CHECK( maxDiff < 0.001 );
     }
 }
 
@@ -565,8 +565,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    LArray<ValueType> diaValues( testContext );
-    LArray<IndexType> diaOffsets( testContext );
+    HArray<ValueType> diaValues( testContext );
+    HArray<IndexType> diaOffsets( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -574,7 +574,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
     data1::getDIATestData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
 
-    LArray<ValueType> dense( numRows * numColumns, 0, testContext );
+    HArray<ValueType> dense( numRows * numColumns, ValueType( 0 ), testContext );
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -598,11 +598,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
         }
     }
 
-    LArray<ValueType> expectedDense( testContext );
+    HArray<ValueType> expectedDense( testContext );
 
     data1::getDenseTestData( numRows, numColumns, expectedDense );
 
-    BOOST_CHECK_EQUAL( expectedDense.maxDiffNorm( dense ), ValueType( 0 ) );
+    BOOST_TEST( hostReadAccess( expectedDense ) == hostReadAccess( dense ), boost::test_tools::per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -618,8 +618,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxValTest, ValueType, scai_numeric_test_types
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    LArray<ValueType> diaValues( testContext );
-    LArray<IndexType> diaOffsets( testContext );
+    HArray<ValueType> diaValues( testContext );
+    HArray<IndexType> diaOffsets( testContext );
 
     IndexType numRows;
     IndexType numColumns;

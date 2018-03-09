@@ -43,8 +43,6 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Communicator.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
-
 #include <memory>
 #include <vector>
 

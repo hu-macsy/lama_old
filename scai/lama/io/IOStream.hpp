@@ -47,10 +47,9 @@
 
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/hmemo.hpp>
-
-#include <scai/utilskernel/LArray.hpp>
 
 #include <fstream>
 #include <string>
@@ -341,7 +340,8 @@ inline void IOStream::writeBinConverted( const hmemo::HArray<DataType>& data )
     }
     else
     {
-        utilskernel::LArray<FileType> buffer( data );
+        hmemo::HArray<FileType> buffer;
+        utilskernel::HArrayUtils::assign<FileType, DataType>( buffer, data );  // converts the data
         writeBinDirect( buffer );
     }
 
@@ -416,8 +416,7 @@ inline void IOStream::readBinConverted( hmemo::HArray<DataType>& data,
     {
         hmemo::HArray<FileType> buffer;
         readBinDirect( buffer, size );
-        utilskernel::LArray<DataType>& lData = reinterpret_cast<utilskernel::LArray<DataType>& >( data );
-        lData = buffer;
+        utilskernel::HArrayUtils::assign( data, buffer );
     }
 }
 

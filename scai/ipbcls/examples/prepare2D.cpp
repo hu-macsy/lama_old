@@ -1,5 +1,5 @@
 /**
- * @file doAll.cpp
+ * @file prepare2D.cpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Example of least square problem with boundary conditions
- * @author Thomas Brandes, Andreas Borgen Longva
+ * @author Thomas Brandes, Andreas Borgen Langva
  * @date 21.07.2017
  */
 
@@ -37,17 +37,40 @@
 
 #include <scai/common/Settings.hpp>
 
-#include <scai/dmemo/GridDistribution.hpp>
-#include <scai/dmemo/BlockDistribution.hpp>
-
-#include "ConstrainedLeastSquares.hpp"
-#include "JoinedMatrix.hpp"
-#include "JoinedVector.hpp"
-#include "MatrixWithT.hpp"
-
 using namespace scai;
 using namespace lama;
-using namespace solver;
+
+void setupSmoothMatrix( CSRSparseMatrix<double>& L, const IndexType ny, const IndexType nz, const double strength )
+{
+    // not neccesary, but to keep in accordance with the original
+
+    common::Stencil2D<double> stencil( 5 );
+
+    common::Grid2D grid( ny, nz );
+
+    grid.setBorderType( 0, common::Grid::BORDER_ABSORBING );
+    grid.setBorderType( 1, common::Grid::BORDER_ABSORBING );
+
+    StencilMatrix<double> stencilMatrix( grid, stencil );
+
+    L = stencilMatrix;
+
+    L.scale( - strength / 4 );
+}
+
+void zeroExtend( DenseVector<double>& T_ext,
+                 const DenseVector<double>& T, const IndexType nZeros )
+{
+    T_ext.allocate( T.size() + nZeros );
+
+    hmemo::WriteAccess<double> wT( T_ext.getLocalValues() );
+    hmemo::ReadAccess<double> rT( T.getLocalValues() );
+
+    for ( IndexType i = 0; i < rT.size(); ++i )
+    {
+        wT[i] = rT[i];
+    }
+}
 
 int main( int argc, const char* argv[] )
 {
@@ -55,10 +78,10 @@ int main( int argc, const char* argv[] )
     
     common::Settings::parseArgs( argc, argv );
 
-    if ( argc <= 4 )
+    if ( argc <= 8 )
     {
         std::cout << argv[0] << " <input_D> <input_T> <input_So> <input_hrz> " << std::endl;
-        std::cout << argv[0] << " [ <output_x] " << std::endl;
+        std::cout << "            <output_A> <output_b> <output_lb> <output_ub>" << std::endl;
         std::cout << "            [ --SCAI_STRENGTH=<strength> ]" << std::endl;
         std::cout << "            [ --SCAI_VARIATION=<variation> ]" << std::endl;
         return -1;
@@ -67,10 +90,10 @@ int main( int argc, const char* argv[] )
     std::cout << "Read D from "  << argv[1] << ", T from " << argv[2] 
               << ", So from " << argv[3] << ", hrz from " << argv[4] << std::endl;
 
-    CSRSparseMatrix<double> D( argv[1] );
-    DenseVector<double> T( argv[2] );
-    DenseVector<double> So( argv[3]  );
-    DenseVector<double> hrz( argv[4] );
+    auto D = read<CSRSparseMatrix<double>>( argv[1] );
+    auto T = read<DenseVector<double>>( argv[2] );
+    auto So = read<DenseVector<double>>( argv[3]  );
+    auto hrz = read<DenseVector<double>>( argv[4] );
 
     std::cout << "D = " << D << std::endl;
     std::cout << "hrz = " << hrz << std::endl;
@@ -84,38 +107,30 @@ int main( int argc, const char* argv[] )
     SCAI_ASSERT_EQ_ERROR( ny * nz, n , "Illegal factors ny = " << ny << ", nz = " << nz )
 
     IndexType nray = D.getNumRows();
+    std::cout << "#ray = " << nray << std::endl;
 
     SCAI_ASSERT_EQ_ERROR( D.getNumColumns(), n, "D must have #colums equal to problem size " << ny << " x " << nz )
     SCAI_ASSERT_EQ_ERROR( T.size(), D.getNumRows(), "T cannot be rhs for D" )
 
     int strength = 10;
-    int variation = 2;
+    int variation = 10;
 
     common::Settings::getEnvironment( strength, "SCAI_STRENGTH" );
     common::Settings::getEnvironment( variation, "SCAI_VARIATION" );
 
     std::cout << "Use strength = " << strength << ", variation = " << variation << std::endl;
+    CSRSparseMatrix<double> A;
+    CSRSparseMatrix<double> L;
 
-    common::Stencil2D<double> stencil( 5 ); stencil.scale( - strength / 4.0 );
+    setupSmoothMatrix( L, ny, nz, double( strength ) );
 
-    common::Grid2D grid( ny, nz );
+    A.hcat( D, L );
 
-    grid.setBorderType( 0, common::Grid::BORDER_REFLECTING );
-    grid.setBorderType( 1, common::Grid::BORDER_REFLECTING );
+    std::cout << "A = " << A << std::endl;
 
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
- 
-    dmemo::DistributionPtr gridDist( new dmemo::GridDistribution( grid, comm ) );
-    dmemo::DistributionPtr rayDist( new dmemo::BlockDistribution( nray, comm ) );
- 
-    StencilMatrix<double> L( gridDist, stencil );
+    DenseVector<double> T_ext;
 
-    _MatrixWithT Lopt( L, L );
-
-    DenseVector<double> Zero( L.getNumRows() );
-    Zero = 0;
-
-    So.redistribute( gridDist );
+    zeroExtend( T_ext, T, L.getNumRows() );
 
     DenseVector<double> lb( So );
     DenseVector<double> ub( So );
@@ -136,57 +151,11 @@ int main( int argc, const char* argv[] )
         }
     }
 
+    A.writeToFile( argv[5] );
+    T_ext.writeToFile( argv[6] );
+    lb.writeToFile( argv[7] );
+    ub.writeToFile( argv[8] );
 
-    // take context as specified by SCAI_CONTEXT
-
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
-
-    D.setContextPtr( ctx );
-    D.setCommunicationKind( _Matrix::SYNCHRONOUS );
-    ub.setContextPtr( ctx );
-    lb.setContextPtr( ctx );
-
-    D.redistribute( rayDist, gridDist );
-    T.redistribute( rayDist );
-    Zero.redistribute( gridDist );
-
-    DenseVector<double> x( ctx );
-
-    _MatrixWithT Dopt( D );
-
-    JoinedMatrix A( Dopt, Lopt );
-    JoinedVector T_ext( T, Zero );
-
-    std::cout << "construct lsq." << std::endl;
-
-    ConstrainedLeastSquares lsq( A );
-
-    // lsq.useTranspose();       // will matrixTimesVector instead ov vectorTimesMatrix
-
-    lsq.setTolerance( 0.01 );
-    lsq.setMaxIter( 50 );
-
-    try
-    {
-        std::cout << "solve lsq with boundary cond" << std::endl;
-        lsq.solve( x, T_ext, lb, ub );
-    }
-    catch ( common::Exception& ex )
-    {
-        std::cout << "Caught exception: " << ex.what() << std::endl;
-        std::cout << "Stop execution." << std::endl;
-        return 1;
-    }
-
-    _VectorPtr residual( A.newVector( 0 ) );
-
-    *residual = A * x - T_ext;
-
-    std::cout << "res norm = " << residual->l2Norm() << std::endl;
-
-    if ( argc > 5 )
-    {
-        x.writeToFile( argv[5] );
-        std::cout << "written solution to file " << argv[5] << std::endl;
-    }
+    std::cout << "Written A to " << argv[5] << ", b to " << argv[6]
+              << ", lb to " << argv[7] << ", ub to " << argv[8] << std::endl;
 }

@@ -38,7 +38,7 @@
 
 // others
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/hmemo.hpp>
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
     ValueType expectedValues[] =
     { 0, 2, 4, 6, 8, 0, 2, 4, 6, 8, 0, 2, 4, 6, 8 };
     const ValueType mult = 2;
-    LArray<ValueType> values( nValues, valuesValues );
+    HArray<ValueType> values( nValues, valuesValues );
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
         const ValueType expectedSum = 30;
-        LArray<ValueType> values( nValues, valuesValues );
+        HArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
         const ValueType resultSum = reduce[loc]( rValues.get(), nValues, ValueType( 0 ), BinaryOp::ADD );
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
     }
     {
         const ValueType expectedSum = 0;
-        LArray<ValueType> values;
+        HArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
         const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), ValueType( 0 ), BinaryOp::ADD );
@@ -151,8 +151,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_array_test_types )
 
         SCAI_ASSERT_EQ_ERROR( nValues1, nValues2, "size mismatch" )
 
-        LArray<ValueType> values1( nValues1, valuesValues1 );
-        LArray<ValueType> values2( nValues2, valuesValues2 );
+        HArray<ValueType> values1( nValues1, valuesValues1 );
+        HArray<ValueType> values2( nValues2, valuesValues2 );
 
         ReadAccess<ValueType> rValues1( values1, loc );
         ReadAccess<ValueType> rValues2( values2, loc );
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     {
         const IndexType n = 20;
-        LArray<ValueType> values;
+        HArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
     }
     {
         const IndexType n = 0;
-        LArray<ValueType> values;
+        HArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -234,9 +234,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
         const IndexType nValues1 = sizeof( values1 ) / sizeof( ValueType );
         const IndexType nValues2 = sizeof( values2 ) / sizeof( ValueType );
         const IndexType nValues3 = sizeof( values3 ) / sizeof( ValueType );
-        LArray<ValueType> valueArray1( nValues1, values1 );
-        LArray<ValueType> valueArray2( nValues2, values2 );
-        LArray<ValueType> valueArray3( nValues3, values3 );
+        HArray<ValueType> valueArray1( nValues1, values1 );
+        HArray<ValueType> valueArray2( nValues2, values2 );
+        HArray<ValueType> valueArray3( nValues3, values3 );
         ReadAccess<ValueType> rValues1( valueArray1, loc );
         ReadAccess<ValueType> rValues2( valueArray2, loc );
         ReadAccess<ValueType> rValues3( valueArray3, loc );
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     {
         const IndexType n = 20;
-        LArray<IndexType> values;
+        HArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
     }
     {
         const IndexType n = 0;
-        LArray<IndexType> values;
+        HArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpScalar1Test, ValueType, scai_numeric_test
         ValueType valuesValues[] =
         { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-        LArray<ValueType> values( nValues, valuesValues );
+        HArray<ValueType> values( nValues, valuesValues );
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );

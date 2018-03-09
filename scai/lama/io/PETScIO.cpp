@@ -36,7 +36,6 @@
 #include <scai/lama/io/PETScIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 #include <scai/lama/io/IOStream.hpp>
@@ -145,10 +144,7 @@ void PETScIO::writeArrayImpl(
 
     SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
 
-    utilskernel::LArray<IndexType> headValues( 2 );
-
-    headValues[0] = VEC_FILE_CLASSID;
-    headValues[1] = nrows;
+    HArray<IndexType> headValues( { VEC_FILE_CLASSID, nrows } );
 
     outFile.writeBinary( headValues, mScalarTypeIndex );
     outFile.writeBinary( array, mScalarTypeData );
@@ -187,7 +183,7 @@ void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<IndexType> headerVals;
+    HArray<IndexType> headerVals;
 
     inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
 
@@ -220,7 +216,7 @@ void PETScIO::readArrayImpl(
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<IndexType> headerVals;
+    HArray<IndexType> headerVals;
 
     inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
 
@@ -285,7 +281,7 @@ void PETScIO::readSparseImpl(
     readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     ValueType zero = 0;
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray, zero );
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -338,7 +334,7 @@ void PETScIO::writeStorageImpl(
 
     // Note: PETSc starts indexing with 0
 
-    utilskernel::LArray<IndexType> headValues( 4 );
+    HArray<IndexType> headValues( 4 );
 
     headValues[0] = MAT_FILE_CLASSID;
     headValues[1] = nrows;
@@ -371,7 +367,7 @@ void PETScIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexT
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<IndexType> headerVals;
+    HArray<IndexType> headerVals;
 
     inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
 
@@ -408,7 +404,7 @@ void PETScIO::readStorageImpl(
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<IndexType> headerVals;
+    HArray<IndexType> headerVals;
 
     inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
 

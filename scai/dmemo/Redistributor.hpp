@@ -280,7 +280,7 @@ void Redistributor::redistribute( hmemo::HArray<ValueType>& targetArray, const h
     exchangeHalo( targetHalo, sourceHalo );
     SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mExchangeTargetIndexes.size() << " values" )
     const bool uniqueIndexes = true;
-    utilskernel::HArrayUtils::scatterImpl( targetArray, mExchangeTargetIndexes, uniqueIndexes, targetHalo, common::BinaryOp::COPY );
+    utilskernel::HArrayUtils::scatter( targetArray, mExchangeTargetIndexes, uniqueIndexes, targetHalo, common::BinaryOp::COPY );
 }
 
 /* ------------------------------------------------------------------------------- */

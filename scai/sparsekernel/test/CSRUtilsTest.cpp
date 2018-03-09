@@ -38,8 +38,8 @@
 // others
 #include <scai/hmemo.hpp>
 #include <scai/kregistry.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/common/Settings.hpp>
@@ -57,6 +57,8 @@ using namespace hmemo;
 using namespace sparsekernel;
 using namespace utilskernel;
 using common::TypeTraits;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -250,9 +252,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    LArray<IndexType> csrIA( testContext );
-    LArray<IndexType> csrJA( testContext );
-    LArray<ValueType> csrValues( testContext );
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -730,9 +732,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    LArray<IndexType> csrIA( testContext );
-    LArray<IndexType> csrJA( testContext );
-    LArray<ValueType> csrValues( testContext );
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -940,22 +942,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
     IndexType numColumns1;
     IndexType numValues1;
 
-    LArray<IndexType> expIA( testContext );
-    LArray<IndexType> expJA( testContext );
-    LArray<ValueType> expValues( testContext );
+    HArray<IndexType> expIA( testContext );
+    HArray<IndexType> expJA( testContext );
+    HArray<ValueType> expValues( testContext );
 
     data1::getCSCTestData( numRows1, numColumns1, numValues1, expIA, expJA, expValues );
 
     // test cscIA = expJA, cscJA = expIA, cscValues = expValues
 
-    BOOST_REQUIRE_EQUAL( expJA.size(), cscIA.size() );
-    BOOST_CHECK_EQUAL( IndexType( 0 ), expJA.maxDiffNorm( cscIA ) );
-
-    BOOST_REQUIRE_EQUAL( expIA.size(), cscJA.size() );
-    BOOST_CHECK_EQUAL( IndexType( 0 ), expIA.maxDiffNorm( cscJA ) );
-
-    BOOST_REQUIRE_EQUAL( expValues.size(), cscValues.size() );
-    BOOST_CHECK_EQUAL( ValueType( 0 ), expValues.maxDiffNorm( cscValues ) );
+    BOOST_TEST( hostReadAccess( expJA ) == hostReadAccess( cscIA ), per_element() );
+    BOOST_TEST( hostReadAccess( expIA ) == hostReadAccess( cscJA ), per_element() );
+    BOOST_TEST( hostReadAccess( expValues ) == hostReadAccess( cscValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -1926,11 +1923,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
                          rOld.get(), rRhs.get(), omega, numRows );
         }
 
-        LArray<ValueType> expectedRes( testContext );
+        HArray<ValueType> expectedRes( testContext );
 
         data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
 
-        ValueType maxDiff = expectedRes.maxDiffNorm( res );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedRes, res );
 
         BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
 
@@ -2023,13 +2020,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
                              rOld.get(), omega, numNonEmptyRows );
         }
 
-        LArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+        HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
 
         data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
 
-        ValueType maxDiff = expectedSol.maxDiffNorm( solution );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedSol, solution );
 
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+        BOOST_CHECK( maxDiff < 0.1 );
 
         bool mustBeIdentical = false;
 
@@ -2113,13 +2110,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloDiagTest, ValueType, scai_numeric_test_
                                      rOld.get(), omega, numNonEmptyRows );
         }
 
-        LArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+        HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
 
         data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
 
-        ValueType maxDiff = expectedSol.maxDiffNorm( solution );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedSol, solution );
 
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+        BOOST_CHECK( maxDiff < 0.1 );
 
         bool mustBeIdentical = false;
 
