@@ -88,7 +88,7 @@ void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 
     // Okay, not very safe but we know what we do, and certainly do not change the size 
 
-    LArray<ValueType>& values = const_cast<LArray<ValueType>&>( localStorage.getValues() );
+    HArray<ValueType>& values = const_cast<HArray<ValueType>&>( localStorage.getValues() );
 
     {
         const ValueType minusOne = -1;

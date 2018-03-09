@@ -30,7 +30,7 @@
  * @date 21.07.2017
  */
 
-#include <ipbcls/ConstrainedLeastSquares.hpp>
+#include <scai/ipbcls/ConstrainedLeastSquares.hpp>
 
 #include <scai/tracing.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -47,75 +47,33 @@
 
 using namespace scai;
 using namespace lama;
-
-/** Set row and column distribution of a matrix 
- *
- *  @param[in,out] determine a good distribution of sparse matrix A and redistribute it
- *
- *  Default: BLOCK distribution, but graph partitioning via METIS/SCOTCH, .. might be used
- *
- *  uses environment variables:
- *
- *    SCAI_PARTITIONING ( e.g. BLOCK, METIS, ... )
- *    SCAI_WEIGHT=w1,w2,...,wp    comma separated list for individual weights of processors
- */
-void setDistribution( _Matrix& A )
-{
-    using namespace partitioning;
-    using namespace common;
-
-    std::string partitioningKind = "BLOCK";   // default setting
-
-    std::string val;
-
-    if ( Settings::getEnvironment( val, "SCAI_PARTITIONING" ) )
-    {
-        if ( Partitioning::canCreate( val ) )
-        {
-            partitioningKind = val;
-        }
-        else
-        {
-            std::cout << "ERROR: Partitioning kind = " << val << " not supported" << std::endl;
-        }
-    }
-
-    Settings::setRank( A.getRowDistribution().getCommunicator().getRank() );
-
-    float weight = 1.0f;   // default weight on this processor
-
-    if ( Settings::getEnvironment( val, "SCAI_WEIGHT" ) )
-    {
-        weight = strtof( val.c_str(), NULL );
-    }
-
-    PartitioningPtr thePartitioning( Partitioning::create( partitioningKind ) );
-
-    thePartitioning->rectangularRedistribute( A, weight );
-}
+using namespace ipbcls;
 
 int main( int argc, const char* argv[] )
 {
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+ 
+    SCAI_ASSERT_EQ_ERROR( comm->getSize(), 1, "This example program does not run parallel yet" )
 
     SCAI_REGION( "Main.driver" )
-    
+
     common::Settings::parseArgs( argc, argv );
 
     if ( argc < 7 )
     {
         if ( comm->getRank() == 0 )
         {
-            std::cout << "Please call " << argv[0] 
+            std::cout << "Please call " << argv[0]
                       << " <tolerance> <filename_D> <filename_L> <filename_T> <filename_lb> <filename_ub> [ <filename_x> ]" << std::endl
-                      << " where <tolerance> is a floating point number between 0 and 1. "<< std::endl;
+                      << " where <tolerance> is a floating point number between 0 and 1. " << std::endl;
         }
 
         return -1;
     }
-    
-    double tol = std::strtod(argv[1], NULL);
-    if (tol == 0.0)
+
+    double tol = std::strtod( argv[1], NULL );
+
+    if ( tol == 0.0 )
     {
         std::cout << "Invalid tolerance supplied." << std::endl;
         return -1;
@@ -138,8 +96,8 @@ int main( int argc, const char* argv[] )
 
     auto Zero = fill<DenseVector<double>>( colDist, 0 );
 
-    MatrixWithT<double> Lopt( L, L );  
-    MatrixWithT<double> Dopt( D ); 
+    MatrixWithT<double> Lopt( L, L );
+    MatrixWithT<double> Dopt( D );
 
     JoinedMatrix<double> A( Dopt, Lopt );
     JoinedVector<double> b( T, Zero );
@@ -164,7 +122,7 @@ int main( int argc, const char* argv[] )
     lsq.setObjectiveTolerance( tol );
     lsq.setMaxIter( 500 );
 
-    try 
+    try
     {
         lsq.solve( x, b, lb, ub );
     }

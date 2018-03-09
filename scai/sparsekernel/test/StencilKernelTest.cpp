@@ -38,8 +38,8 @@
 // others
 #include <scai/hmemo.hpp>
 #include <scai/kregistry.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/StencilKernelTrait.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/test/TestMacros.hpp>
@@ -54,6 +54,8 @@ using namespace sparsekernel;
 using namespace utilskernel;
 using common::TypeTraits;
 using common::Grid;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -76,9 +78,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilLocalTest, ValueType, scai_numeric_test_ty
     ContextPtr loc = testContext;
     stencilLocalSizes.getSupportedContext( loc, stencilLocalCSR );
 
-    LArray<IndexType> csrIA( testContext );
-    LArray<IndexType> csrJA( testContext );
-    LArray<ValueType> csrValues( testContext );
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
 
     IndexType nDims = 1;
     IndexType gridSizes[] = { 100 };
@@ -146,10 +148,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
         {
             Grid::BorderType gridBorders[] = { Grid::BorderType( b1 ), Grid::BorderType( b2 ) };
 
-            LArray<ValueType> x ( n, xRaw );
+            HArray<ValueType> x ( n, xRaw );
 
-            LArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by kernel, must be initialized
-            LArray<ValueType> y2;                         // result by manual evaluation
+            HArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by kernel, must be initialized
+            HArray<ValueType> y2;                         // result by manual evaluation
 
             // apply stencil manually
 
@@ -199,24 +201,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
                                   nPoints, stencilNodes, stencilValues, stencilOffset );
             }
 
-            BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
-
-            if ( y1.maxDiffNorm( y2 ) != 0 )
-            {
-                ReadAccess<ValueType> rY1( y1 );
-                ReadAccess<ValueType> rY2( y2 );
-
-                for ( IndexType i = 0; i < n1; ++i )
-                {
-                    if ( rY1[i] == rY2[i] )
-                    {
-                        continue;
-                    }
-
-                    SCAI_LOG_ERROR( logger, "point (" << i << " ) : by kernel: " << rY1[ i ]
-                                    << ", by hand " << rY2[ i ] )
-                }
-            }
+            BOOST_TEST( hostReadAccess( y1 ) == hostReadAccess( y2 ), per_element() );
         }
     }
 }
@@ -257,10 +242,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
     BOOST_CHECK_EQUAL( n, gridSizes[0] * gridSizes[1] );
     BOOST_CHECK_EQUAL( nPoints * nDims, nNodes );
 
-    LArray<ValueType> x ( n, xRaw );
+    HArray<ValueType> x ( n, xRaw );
 
-    LArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by kernel, must be initialized
-    LArray<ValueType> y2;                         // result by hand
+    HArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by kernel, must be initialized
+    HArray<ValueType> y2;                         // result by hand
 
     // apply stencil manually
 
@@ -324,22 +309,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
                           nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
-    BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
-
-    if ( y1.maxDiffNorm( y2 ) != 0 )
-    {
-        ReadAccess<ValueType> rY1( y1 );
-        ReadAccess<ValueType> rY2( y2 );
-
-        for ( IndexType i = 0; i < gridSizes[0]; ++i )
-        {
-            for ( IndexType j = 0; j < gridSizes[1]; ++j )
-            {
-                SCAI_LOG_INFO( logger, "point (" << i << ", " << j << " ) : by kernel: " << rY1[ i * n2 + j ]
-                               << ", by hand " << rY2[ i * n2 + j ] )
-            }
-        }
-    }
+    BOOST_TEST( hostReadAccess( y1 ) == hostReadAccess( y2 ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -382,10 +352,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
     BOOST_REQUIRE_EQUAL( n, gridSizes[0] * gridSizes[1] * gridSizes[2] );
     BOOST_REQUIRE_EQUAL( nPoints * nDims, nNodes );
 
-    LArray<ValueType> x ( n, xRaw );
+    HArray<ValueType> x ( n, xRaw );
 
-    LArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by hand, must be initialized
-    LArray<ValueType> y2;   // result by kernel
+    HArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by hand, must be initialized
+    HArray<ValueType> y2;   // result by kernel
 
     // apply stencil manually
 
@@ -436,7 +406,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
                           nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
-    BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
+    BOOST_TEST( hostReadAccess( y1 ) == hostReadAccess( y2 ), per_element() );
 
     {
         ReadAccess<ValueType> rY1( y1 );
@@ -502,10 +472,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
     BOOST_REQUIRE_EQUAL( n, gridSizes[0] * gridSizes[1] * gridSizes[2] * gridSizes[3] );
     BOOST_REQUIRE_EQUAL( nPoints * nDims, nNodes );
 
-    LArray<ValueType> x ( n, xRaw );
+    HArray<ValueType> x ( n, xRaw );
 
-    LArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by hand, must be initialized
-    LArray<ValueType> y2;   // result by kernel
+    HArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by hand, must be initialized
+    HArray<ValueType> y2;   // result by kernel
 
     // apply stencil manually
 
@@ -558,7 +528,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
                           nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
-    BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
+    BOOST_TEST( hostReadAccess( y1 ) == hostReadAccess( y2 ), per_element() );
 
     {
         ReadAccess<ValueType> rY1( y1 );

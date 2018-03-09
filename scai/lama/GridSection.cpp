@@ -417,7 +417,7 @@ ValueType GridSection<ValueType>::get() const
 
     SCAI_ASSERT_EQ_ERROR( 0, rank, "section must have rank 0 to get the value" )
 
-    const utilskernel::LArray<ValueType>& vals = mGridVector.getLocalValues();
+    const hmemo::HArray<ValueType>& vals = mGridVector.getLocalValues();
 
     return vals[ offset ];
 }

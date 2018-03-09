@@ -848,7 +848,7 @@ void CSRStorage<ValueType>::prefetch( const ContextPtr location ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LArray<IndexType>& CSRStorage<ValueType>::getIA() const
+const HArray<IndexType>& CSRStorage<ValueType>::getIA() const
 {
     return mIA;
 }
@@ -856,7 +856,7 @@ const LArray<IndexType>& CSRStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LArray<IndexType>& CSRStorage<ValueType>::getJA() const
+const HArray<IndexType>& CSRStorage<ValueType>::getJA() const
 {
     return mJA;
 }
@@ -864,7 +864,7 @@ const LArray<IndexType>& CSRStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LArray<ValueType>& CSRStorage<ValueType>::getValues() const
+const HArray<ValueType>& CSRStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -1316,7 +1316,7 @@ void CSRStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType 
 
     // copy out the corresponding sections, ia needs a shifting to zero
 
-    LArray<IndexType> blockIA( n + 1 );
+    HArray<IndexType> blockIA( n + 1 );
     HArrayUtils::setArraySection( blockIA, 0, 1, mIA, first, 1, n +  1, BinaryOp::COPY, loc );
 
     // Note: BinaryOp::ADD with -offset is strange if IndexType is unsigned
@@ -1328,8 +1328,8 @@ void CSRStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType 
 
     SCAI_LOG_DEBUG( logger, "offset = " << offset << ", #nnz = " << numBlockValues );
 
-    LArray<IndexType> blockJA( numBlockValues );
-    LArray<ValueType> blockValues( numBlockValues );
+    HArray<IndexType> blockJA( numBlockValues );
+    HArray<ValueType> blockValues( numBlockValues );
 
     HArrayUtils::setArraySection( blockJA, 0, 1, mJA, offset, 1, numBlockValues, BinaryOp::COPY, loc );
     HArrayUtils::setArraySection( blockValues, 0, 1, mValues, offset, 1, numBlockValues, BinaryOp::COPY, loc );
@@ -2231,7 +2231,7 @@ template<typename ValueType>
 RealType<ValueType> CSRStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
-    return HArrayUtils::asum( mValues, this->getContextPtr() );
+    return HArrayUtils::l1Norm( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

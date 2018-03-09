@@ -84,7 +84,57 @@ class COMMON_DLL_IMPORTEXPORT HArray:
     public _HArray::Register<HArray<ValueType> >
 
 {
+
 public:
+
+    /** Help class to observe the further use of operator[] in HArray */
+
+    class IndexProxy
+    {
+    public:
+
+        /** Proxy constructed by ref to the array and the index value. */
+
+        IndexProxy( HArray<ValueType>& array, const IndexType i ) :
+
+            mArray( array ),
+            mIndex( i )
+        {
+        }
+
+        /** indexed value proxy can be used to get its value */
+
+        operator ValueType() const
+        {
+            ValueType val;
+            mArray._getValue( &val, mIndex );
+            return val;
+        }
+
+        /** indexed value proxy can be assigned a value */
+
+        IndexProxy& operator= ( ValueType val )
+        {
+            mArray._setValue( &val, mIndex );
+            return *this;
+        }
+
+        /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */
+
+        IndexProxy& operator= ( const IndexProxy& other )
+        {
+            ValueType tmp;
+            other.mArray._getValue( &tmp, other.mIndex );
+            mArray._setValue( &tmp, mIndex );
+            return *this;
+        }
+
+    private:
+
+        HArray<ValueType>& mArray;
+        IndexType mIndex;
+
+    };
 
     // WriteAccess and ReadAccess should be allowed to call some methods that
     // use ContextDataIndex for more efficient usage
@@ -189,6 +239,22 @@ public:
      * @brief Destructor, releases all used resources.
      */
     virtual ~HArray();
+
+    /* ======================================================== */
+    /*   operator []                                            */
+    /* ======================================================== */
+
+    IndexProxy operator[] ( const IndexType i )
+    {
+        return IndexProxy( *this, i );
+    }
+
+    ValueType operator[] ( const IndexType i ) const
+    {
+        ValueType val;
+        _HArray::_getValue( &val, i );
+        return val;
+    }
 
     /* ======================================================== */
     /*   Setter methods                                         */

@@ -1,6 +1,6 @@
 
-#include <ipbcls/ConstrainedLeastSquares.hpp>
-#include "ConstrainedLeastSquaresProblem.hpp"
+#include <scai/ipbcls/ConstrainedLeastSquares.hpp>
+#include <scai/ipbcls/test/ConstrainedLeastSquaresProblem.hpp>
 #include <scai/lama/expression/all.hpp>
 
 #include <cstdlib>
@@ -8,6 +8,7 @@
 using scai::IndexType;
 using scai::lama::DenseVector;
 using scai::common::CompareOp;
+using scai::ipbcls::ConstrainedLeastSquares;
 
 template <typename Scalar>
 bool inInterior( const DenseVector<Scalar> & x, const DenseVector<Scalar> l, const DenseVector<Scalar> u )
@@ -24,7 +25,7 @@ int main()
     using namespace scai::lama;
 
     const int maxDimension = 100;
-    const int maxAttempts = 1000;
+    const int maxAttempts = 200;
     const ValueType objTolerance = 1e-4;
     const ValueType resTolerance = 1e-6;
 
@@ -37,17 +38,12 @@ int main()
         std::cout << "Solving problem with dimensions " << m << " x " << n << std::endl;
 
         auto solution = fill<DenseVector<ValueType>>( n, 0.0 );
-        problem.A.writeToFile( "problemA.mtx" );
         ConstrainedLeastSquares<ValueType> solver( problem.A );
         solver.setObjectiveTolerance( objTolerance );
         // solver.setInnerSolverType( InnerSolverType::StandardCG );
 
         // TODO: Test with non-zero matrix lower bound?
         solver.setResidualTolerance( resTolerance );
-
-        problem.b.writeToFile( "problemb.mtx" );
-        problem.l.writeToFile( "probleml.mtx" );
-        problem.u.writeToFile( "problemu.mtx" );
 
         solver.solve( solution, problem.b, problem.l, problem.u );
 

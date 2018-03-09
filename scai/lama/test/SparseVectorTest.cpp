@@ -48,10 +48,16 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/lama/expression/all.hpp>
 
+#include <scai/utilskernel.hpp>
+
 using namespace scai;
 using namespace lama;
 
 using common::Math;
+using hmemo::HArray;
+using utilskernel::HArrayUtils;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -105,7 +111,7 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     // usually it is not simple to make a vector inconsistent
 
-    hmemo::HArray<IndexType>& indexes = const_cast<hmemo::HArray<IndexType>&>( v.getNonZeroIndexes() );
+    HArray<IndexType>& indexes = const_cast<HArray<IndexType>&>( v.getNonZeroIndexes() );
 
     // make it inconsistent on one processor only, isConsistent can deal with it
 
@@ -118,7 +124,7 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     BOOST_CHECK( ! v.isConsistent() );
 
-    hmemo::HArray<ValueType>& values = const_cast<hmemo::HArray<ValueType>&>( v.getNonZeroValues() );
+    HArray<ValueType>& values = const_cast<HArray<ValueType>&>( v.getNonZeroValues() );
 
     if ( dist->getLocalSize() > 0 )
     {
@@ -145,6 +151,8 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
 BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 {
+    using namespace hmemo;
+
     // Note: it is sufficient to consider one value type
 
     typedef DefaultReal ValueType;
@@ -152,19 +160,17 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
     IndexType n = 20;   // let it really small, this test is very inefficient
     IndexType bound = 1000;
 
-    utilskernel::LArray<ValueType> data( n, ValueType( 0 ) );
-
     common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
     const float fillRate = 0.2;   // makes it worth to be sparse
 
-    data.setSparseRandom( fillRate, bound ); // ~ 20% values are non-zero with value between 0 and 1
+    HArray<ValueType> data = utilskernel::sparseRandomHArray<ValueType>( n, 0, fillRate, bound );
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < dists.size(); ++i )
     {
-        utilskernel::LArray<ValueType> data1( n );
+        HArray<ValueType> data1( n );
 
         dmemo::DistributionPtr dist = dists[i];
 
@@ -181,7 +187,7 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
             data1[k] = sparseV.getValue( k );
         }
 
-        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+        BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
     }
 }
 
@@ -197,8 +203,8 @@ BOOST_AUTO_TEST_CASE( SparseConstructorTest )
     IndexType nnz = sizeof( values_raw ) / sizeof( ValueType );
     IndexType n   = 20;
 
-    hmemo::HArray<ValueType> values( nnz, values_raw );
-    hmemo::HArray<IndexType> indexes( nnz, indexes_raw );
+    HArray<ValueType> values( nnz, values_raw );
+    HArray<IndexType> indexes( nnz, indexes_raw );
 
     ValueType zero = 1;
 
@@ -208,11 +214,11 @@ BOOST_AUTO_TEST_CASE( SparseConstructorTest )
 
     SparseVector<ValueType> s( dist, indexes, values, zero );
 
-    const hmemo::HArray<IndexType>& spIndexes = s.getNonZeroIndexes();
+    const HArray<IndexType>& spIndexes = s.getNonZeroIndexes();
 
     // indexes must be sorted:  spIndexes[0] < spIndexes[1] < ... < spIndexes[nnz-1]
 
-    BOOST_CHECK( utilskernel::HArrayUtils::isSorted( spIndexes, common::CompareOp::LT ) );
+    BOOST_CHECK( HArrayUtils::isSorted( spIndexes, common::CompareOp::LT ) );
     BOOST_CHECK_EQUAL( s.getZero(), zero );
 }
 
@@ -226,19 +232,17 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 
     IndexType n = 20;   // let it really small, this test is very inefficient
 
-    utilskernel::LArray<ValueType> data( n, ValueType( 0 ) );
-
     common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
     const float fillRate = 0.2;   // makes it worth to be sparse
 
-    data.setSparseRandom( fillRate, 1 );
+    auto data = utilskernel::sparseRandomHArray<ValueType>( n, 0, fillRate, 1 );
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < dists.size(); ++i )
     {
-        utilskernel::LArray<ValueType> data1( n );
+        HArray<ValueType> data1( n );
 
         dmemo::DistributionPtr dist = dists[i];
 
@@ -253,7 +257,7 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
             data1[k] = sparseV.getValue( k );
         }
 
-        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+        BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
     }
 }
 
@@ -506,7 +510,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
     IndexType n = 10;
     ValueType rawValues[] = { 2, 2, 1, 1, 1, 0, 0, 0, 0, 0 } ;
 
-    DenseVector<ValueType> xD( hmemo::HArray<ValueType>( n, rawValues ) );
+    DenseVector<ValueType> xD( HArray<ValueType>( n, rawValues ) );
 
     // Case 1: check constructor conversion: dense -> sparse
 

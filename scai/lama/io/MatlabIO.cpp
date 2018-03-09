@@ -35,7 +35,6 @@
 #include <scai/lama/io/MatlabIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -358,7 +357,7 @@ void MatlabIO::readArrayImpl(
 
     if ( isComplex )
     {
-        utilskernel::LArray<ValueType> imagValues;
+        HArray<ValueType> imagValues;
 
         offset += getArrayData( imagValues, elementPtr + offset, nBytes - offset );
 
@@ -827,7 +826,7 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
         SCAI_LOG_INFO( logger, "Get dense<" << common::TypeTraits<ValueType>::stype << "> matrix "
                        << dims[0] << " x " << dims[1] )
 
-        LArray<ValueType> values;
+        HArray<ValueType> values;
 
         offset += getArrayData( values, dataElementPtr + offset, nBytes - offset );
 
@@ -942,7 +941,7 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
     if ( isComplex )
     {
-        utilskernel::LArray<ValueType> imagValues;
+        HArray<ValueType> imagValues;
 
         offset += getArrayData( imagValues, elementPtr + offset, nBytes - offset );
 

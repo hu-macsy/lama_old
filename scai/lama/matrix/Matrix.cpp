@@ -50,6 +50,7 @@ namespace scai
 
 using common::TypeTraits;
 using namespace dmemo;
+using hmemo::HArray;
 
 namespace lama
 {
@@ -424,12 +425,12 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 {
     SCAI_REGION( "Mat.vectorTimesMatrixRepCols" )
 
-    utilskernel::LArray<ValueType>& localResult = denseResult.getLocalValues();
+    hmemo::HArray<ValueType>& localResult = denseResult.getLocalValues();
 
     // be careful: denseY is undefined if beta == 0
 
-    const utilskernel::LArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
-    const utilskernel::LArray<ValueType>& localX = denseX.getLocalValues();
+    const HArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
+    const HArray<ValueType>& localX = denseX.getLocalValues();
 
     const Distribution& colDist = this->getColDistribution();
 

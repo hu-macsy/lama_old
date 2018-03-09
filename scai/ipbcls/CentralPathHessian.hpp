@@ -121,7 +121,7 @@ public:
         const DenseVector<ValueType>&,
         const ValueType,
         const DenseVector<ValueType>*,
-        const common::MatrixOp op ) const
+        const common::MatrixOp ) const
     {
         COMMON_THROWEXCEPTION( "should not be called" )
     }

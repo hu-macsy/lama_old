@@ -43,7 +43,7 @@
 
 #include <scai/tasking.hpp>
 #include <scai/hmemo.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/Settings.hpp>
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
     PartitionId size = comm->getSize();
     IndexType n = 17;
 
-    LArray<IndexType> localIndexes;
+    HArray<IndexType> localIndexes;
 
     IndexType first = static_cast<IndexType>( rank ) * n;
     IndexType inc   = 1;
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
     GeneralDistribution dist( n * size, localIndexes, comm );
 
-    LArray<IndexType> nonLocalIndexes;
+    HArray<IndexType> nonLocalIndexes;
 
     IndexType pos = 0;
 
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
     BOOST_CHECK_EQUAL( pos, nonLocalIndexes.size() );
 
-    LArray<PartitionId> owners;
+    HArray<PartitionId> owners;
 
     comm->computeOwners( owners, dist, nonLocalIndexes );
 
@@ -548,9 +548,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 
     for ( PartitionId root = 0; root < comm->getSize(); ++root )
     {
-        IndexType N = 5;
-        LArray<RealType> vals( N );
-        vals.setRandom( 1 );
+        const IndexType N = 10;
+
+        auto vals = utilskernel::randomHArray<RealType>( N, 1 );
         RealType localMax = vals[0];
         IndexType localMaxLoc = 0;
 
@@ -610,8 +610,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
     for ( PartitionId root = 0; root < comm->getSize(); ++root )
     {
         IndexType N = 5;
-        LArray<RealType> vals( N );
-        vals.setRandom( 1 );
+        auto vals = randomHArray<RealType>( N, 1 );
         RealType localMin = vals[0];
         IndexType localMinLoc = 0;
 
@@ -673,8 +672,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
     Math::srandom( 1751 + comm->getRank() * 17 );
 
     IndexType N = 5;
-    LArray<RealType> vals( N );
-    vals.setRandom( 10 );
+    auto vals = randomHArray<RealType>( N, 10 );
     RealType localMin = vals[0];
 
     for ( IndexType i = 0; i < N; ++i )
@@ -727,16 +725,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumArrayTest, ValueType, scai_array_test_types )
     common::Math::srandom( 17511 );  // same vals on each processor
 
     IndexType N = 5;
-    LArray<ValueType> vals( N );
-    vals.setRandom( 1 );
+    auto vals = randomHArray<ValueType>( N, 1 );
 
-    LArray<ValueType> saveVals( vals );
+    HArray<ValueType> saveVals( vals );
 
     comm->sumArray( vals );
 
-    saveVals *= size;
+    HArrayUtils::setScalar<ValueType>( saveVals, size, common::BinaryOp::MULT );
 
-    BOOST_CHECK( vals.maxDiffNorm( saveVals ) < 0.0001 );
+    // be carful: values are not exactly the same
+
+    BOOST_CHECK( HArrayUtils::maxDiffNorm( vals, saveVals ) < 0.0001 );
 }
 
 /* --------------------------------------------------------------------- */

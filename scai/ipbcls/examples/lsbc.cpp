@@ -30,7 +30,7 @@
  * @date 21.07.2017
  */
 
-#include <ipbcls/ConstrainedLeastSquares.hpp>
+#include <scai/ipbcls/ConstrainedLeastSquares.hpp>
 
 #include <scai/tracing.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -43,8 +43,9 @@
 
 using namespace scai;
 using namespace lama;
+using namespace ipbcls;
 
-/** Set row and column distribution of a matrix 
+/** Set row and column distribution of a matrix
  *
  *  @param[in,out] determine a good distribution of sparse matrix A and redistribute it
  *
@@ -97,23 +98,24 @@ int main( int argc, const char* argv[] )
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     SCAI_REGION( "Main.driver" )
-    
+
     common::Settings::parseArgs( argc, argv );
 
     if ( argc < 6 )
     {
         if ( comm->getRank() == 0 )
         {
-            std::cout << "Please call " << argv[0] 
+            std::cout << "Please call " << argv[0]
                       << " <tolerance> <filename_A> <filename_b> <filename_lb> <filename_ub> [ <filename_x> ]" << std::endl
-                      << " where <tolerance> is a floating point number between 0 and 1. "<< std::endl;
+                      << " where <tolerance> is a floating point number between 0 and 1. " << std::endl;
         }
 
         return -1;
     }
-    
-    double tol = std::strtod(argv[1], NULL);
-    if (tol == 0.0)
+
+    double tol = std::strtod( argv[1], NULL );
+
+    if ( tol == 0.0 )
     {
         std::cout << "Invalid tolerance supplied." << std::endl;
         return -1;
@@ -174,7 +176,7 @@ int main( int argc, const char* argv[] )
     lsq.setObjectiveTolerance( tol );
     lsq.setMaxIter( 500 );
 
-    try 
+    try
     {
         lsq.solve( x, b, lb, ub );
     }

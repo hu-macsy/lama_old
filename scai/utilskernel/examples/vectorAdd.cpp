@@ -33,6 +33,8 @@
  */
 #include <scai/hmemo.hpp>
 #include <scai/utilskernel.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 
 using namespace scai;
 

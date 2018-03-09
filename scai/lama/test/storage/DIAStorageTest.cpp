@@ -37,7 +37,7 @@
 
 #include <scai/lama/storage/DIAStorage.hpp>
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/lama/test/storage/StorageTemplateTests.hpp>
 

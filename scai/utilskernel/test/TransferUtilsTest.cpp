@@ -36,7 +36,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/utilskernel/TransferUtils.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/utilskernel/test/HArrays.hpp>
@@ -105,11 +105,11 @@ BOOST_AUTO_TEST_CASE( gatherVTest )
     const IndexType nTarget      = 4;
     const ValueType eVals[]      = { 1, 3, 1, 5 };
 
-    LArray<ValueType> sourceArray( rowOffsets[nRows], vals );
-    LArray<IndexType> sourceOffsets( nRows + 1, rowOffsets );
-    LArray<IndexType> sourceIndexes( 2, sIndexes );
+    HArray<ValueType> sourceArray( rowOffsets[nRows], vals );
+    HArray<IndexType> sourceOffsets( nRows + 1, rowOffsets );
+    HArray<IndexType> sourceIndexes( 2, sIndexes );
 
-    LArray<ValueType> targetArray( 4 );
+    HArray<ValueType> targetArray( 4 );
 
     TransferUtils::gatherV( targetArray, sourceArray, sourceOffsets, sourceIndexes );
 

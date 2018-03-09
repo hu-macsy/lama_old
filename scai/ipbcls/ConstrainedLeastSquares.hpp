@@ -47,8 +47,14 @@ enum class InnerSolverType
     NewtonStepCG
 };
 
+namespace scai
+{
+
+namespace ipbcls
+{
+
 template<typename ValueType>
-class ConstrainedLeastSquares : private scai::common::NonCopyable
+class ConstrainedLeastSquares : private common::NonCopyable
 {
 
 public:
@@ -64,7 +70,7 @@ public:
      *  ATTENTION: The solver object only keeps a reference to the matrix A, so it
      *             must not be destroyed during the lifetime of this solver object
      */
-    ConstrainedLeastSquares( const scai::lama::Matrix<ValueType>& A );
+    ConstrainedLeastSquares( const lama::Matrix<ValueType>& A );
 
     /**
      * Set the tolerance for the relative objective value of the optimization problem.
@@ -123,24 +129,28 @@ public:
 
     void setInnerSolverType ( InnerSolverType type );
 
-    void setMaxIter( scai::IndexType maxIter );
+    void setMaxIter( IndexType maxIter );
 
-    void solve ( scai::lama::Vector<ValueType>& x,
-                 const scai::lama::Vector<ValueType>& b,
-                 const scai::lama::Vector<ValueType>& lb,
-                 const scai::lama::Vector<ValueType>& ub ) const;
+    void solve ( lama::Vector<ValueType>& x,
+                 const lama::Vector<ValueType>& b,
+                 const lama::Vector<ValueType>& lb,
+                 const lama::Vector<ValueType>& ub ) const;
 
 private:
 
-    const scai::lama::Matrix<ValueType>& mA;
+    const lama::Matrix<ValueType>& mA;
 
     ValueType mObjTolerance;
     ValueType mResTolerance;
     ValueType mMatrixNormLowerBound;
-    scai::IndexType mMaxIter;
+    IndexType mMaxIter;
     InnerSolverType mInnerSolverType;
 
     // static logger for this class
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
+
+}
+
+}

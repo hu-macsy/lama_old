@@ -39,7 +39,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/kregistry/KernelContextFunction.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
@@ -195,9 +195,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    LArray<IndexType> cooIA( testContext );
-    LArray<IndexType> cooJA( testContext );
-    LArray<ValueType> cooValues( testContext );
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -422,9 +422,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    LArray<IndexType> cooIA( testContext );
-    LArray<IndexType> cooJA( testContext );
-    LArray<ValueType> cooValues( testContext );
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -762,11 +762,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
         }
 
-        LArray<ValueType> expectedRes( testContext );
+        HArray<ValueType> expectedRes( testContext );
 
         data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
 
-        BOOST_CHECK( expectedRes.maxDiffNorm( res ) < 0.001 );
+        BOOST_CHECK( HArrayUtils::maxDiffNorm( expectedRes, res ) < 0.001 );
 
         // ?? how to set tolerance 
 

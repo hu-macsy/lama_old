@@ -38,7 +38,6 @@
 #include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
 
@@ -177,7 +176,7 @@ void TextIO::writeSparseImpl(
     {
         HArray<ValueType> denseArray;
         ValueType zero = 0;
-        utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
+        HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
         writeArrayImpl( denseArray, fileName );
     }
     else
@@ -257,7 +256,7 @@ void TextIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
+        HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
 
         array.swap( block );
     }
@@ -298,7 +297,7 @@ void TextIO::readSparseImpl(
     readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
     ValueType zeroValue = 0;
-    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
+    HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -346,8 +345,8 @@ void TextIO::readData(
     const IndexType nnz,
     const std::string& fileName )
 {
-    LArray<DefaultReal> dIA;
-    LArray<DefaultReal> dJA;
+    HArray<DefaultReal> dIA;
+    HArray<DefaultReal> dJA;
 
     IOStream inFile( fileName, std::ios::in );
 
@@ -394,13 +393,13 @@ void TextIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexTy
 
     // As there is no header, we have to read the full file, at least the index values
 
-    LArray<IndexType> ia;
-    LArray<IndexType> ja;
+    HArray<IndexType> ia;
+    HArray<IndexType> ja;
 
     readData<DefaultReal>( ia, ja, NULL, numValues, fileName );
 
-    numRows    = ia.max() + 1;
-    numColumns = ja.max() + 1;
+    numRows    = HArrayUtils::max( ia ) + 1;
+    numColumns = HArrayUtils::max( ja ) + 1;
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -443,9 +442,9 @@ void TextIO::readStorageImpl(
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
-    LArray<IndexType> ia;
-    LArray<IndexType> ja;
-    LArray<ValueType> val;
+    HArray<IndexType> ia;
+    HArray<IndexType> ja;
+    HArray<ValueType> val;
 
     if ( readPattern )
     {
@@ -459,8 +458,8 @@ void TextIO::readStorageImpl(
 
     // we shape the matrix by maximal appearing indexes
 
-    int nrows = ia.max() + 1;
-    int ncols = ja.max() + 1;
+    int nrows = HArrayUtils::max( ia ) + 1;
+    int ncols = HArrayUtils::max( ja ) + 1;
 
     COOStorage<ValueType> coo( nrows, ncols, ia, ja, val );
 

@@ -75,7 +75,6 @@ using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
 using utilskernel::SparseKernelTrait;
 using utilskernel::HArrayUtils;
-using utilskernel::LArray;
 
 using sparsekernel::ELLKernelTrait;
 using sparsekernel::CSRKernelTrait;
@@ -951,7 +950,7 @@ void ELLStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LArray<IndexType>& ELLStorage<ValueType>::getIA() const
+const HArray<IndexType>& ELLStorage<ValueType>::getIA() const
 {
     return mIA;
 }
@@ -959,7 +958,7 @@ const LArray<IndexType>& ELLStorage<ValueType>::getIA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LArray<IndexType>& ELLStorage<ValueType>::getJA() const
+const HArray<IndexType>& ELLStorage<ValueType>::getJA() const
 {
     return mJA;
 }
@@ -967,7 +966,7 @@ const LArray<IndexType>& ELLStorage<ValueType>::getJA() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const LArray<ValueType>& ELLStorage<ValueType>::getValues() const
+const HArray<ValueType>& ELLStorage<ValueType>::getValues() const
 {
     return mValues;
 }
@@ -1194,7 +1193,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
 
     IndexType newNumValuesPerRow = invalidIndex;
 
-    LArray<IndexType> newIAArray;
+    HArray<IndexType> newIAArray;
     {
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -1217,8 +1216,8 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
         SCAI_CONTEXT_ACCESS( loc )
 
         // 3. Step: Allocate new JA and Values array
-        LArray<ValueType> newValuesArray;
-        LArray<IndexType> newJAArray;
+        HArray<ValueType> newValuesArray;
+        HArray<IndexType> newJAArray;
 
         {
             ReadAccess<IndexType> IA( mIA, loc );

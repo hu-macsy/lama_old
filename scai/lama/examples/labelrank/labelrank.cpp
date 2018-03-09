@@ -186,9 +186,9 @@ static void update( CSRStorage<ValueType>& affinityMatrix, const std::vector<Ind
 
     const IndexType size = evidenceVector.size();
 
-    utilskernel::LArray<IndexType> ia;
-    utilskernel::LArray<IndexType> ja;
-    utilskernel::LArray<ValueType> values;
+    hmemo::HArray<IndexType> ia;
+    hmemo::HArray<IndexType> ja;
+    hmemo::HArray<ValueType> values;
 
     IndexType numRows;
     IndexType numColumns;

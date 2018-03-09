@@ -41,7 +41,6 @@
 #include <scai/lama/Vector.hpp>
 
 // internal scai libraries
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
@@ -350,14 +349,14 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    inline utilskernel::LArray<ValueType>& getLocalValues();
+    inline hmemo::HArray<ValueType>& getLocalValues();
 
     /**
      * @brief get a constant reference to local values of this Dense Vector.
      *
      * @return  a constant reference to the local values of this.
      */
-    inline const utilskernel::LArray<ValueType>& getLocalValues() const;
+    inline const hmemo::HArray<ValueType>& getLocalValues() const;
 
     /**
      * @brief Get a reference to the halo temp array of this Dense Vector.
@@ -368,7 +367,7 @@ public:
      * processors. It avoids reallocation of memory for the values.
      */
 
-    inline utilskernel::LArray<ValueType>& getHaloValues() const;
+    inline hmemo::HArray<ValueType>& getHaloValues() const;
 
     /** @brief Implementation of pure method Vector<ValueType>::getValue */
 
@@ -548,11 +547,11 @@ private:
         DenseVector<ValueType>& in,
         bool descending );
 
-    utilskernel::LArray<ValueType> mLocalValues; //!< my local values of vector
+    hmemo::HArray<ValueType> mLocalValues; //!< my local values of vector
 
     /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
 
-    mutable utilskernel::LArray<ValueType> mHaloValues;
+    mutable hmemo::HArray<ValueType> mHaloValues;
 
     /** Implementation of _Vector::writeLocalToFile */
 
@@ -639,19 +638,19 @@ VectorKind DenseVector<ValueType>::getVectorKind() const
 }
 
 template<typename ValueType>
-utilskernel::LArray<ValueType>& DenseVector<ValueType>::getLocalValues()
+hmemo::HArray<ValueType>& DenseVector<ValueType>::getLocalValues()
 {
     return mLocalValues;
 }
 
 template<typename ValueType>
-const utilskernel::LArray<ValueType>& DenseVector<ValueType>::getLocalValues() const
+const hmemo::HArray<ValueType>& DenseVector<ValueType>::getLocalValues() const
 {
     return mLocalValues;
 }
 
 template<typename ValueType>
-utilskernel::LArray<ValueType>& DenseVector<ValueType>::getHaloValues() const
+hmemo::HArray<ValueType>& DenseVector<ValueType>::getHaloValues() const
 {
     return mHaloValues;
 }

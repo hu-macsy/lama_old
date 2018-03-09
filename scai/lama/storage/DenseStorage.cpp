@@ -1002,7 +1002,7 @@ RealType<ValueType> DenseStorage<ValueType>::maxDiffNormImpl( const DenseStorage
         return static_cast<RealType<ValueType> >( 0 );
     }
 
-    return HArrayUtils::absMaxDiffVal( mData, other.mData, this->getContextPtr() );
+    return HArrayUtils::maxDiffNorm( mData, other.mData, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

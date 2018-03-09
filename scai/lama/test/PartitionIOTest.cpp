@@ -45,7 +45,8 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
+
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
@@ -61,6 +62,11 @@ using namespace dmemo;
 
 using scai::testsupport::uniquePathSharedAmongNodes;
 using scai::testsupport::GlobalTempDir;
+
+using hmemo::HArray;
+using utilskernel::HArrayUtils;
+
+using boost::test_tools::per_element;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
@@ -142,12 +148,12 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         DistributionPtr newDist = PartitionIO::readDistribution( distFileName, comm );
         SCAI_LOG_INFO( logger, *comm << ": readDistribution " << *newDist )
         // should be equal
-        utilskernel::LArray<IndexType> myIndexes1;
-        utilskernel::LArray<IndexType> myIndexes2;
+        HArray<IndexType> myIndexes1;
+        HArray<IndexType> myIndexes2;
         dist->getOwnedIndexes( myIndexes1 );
         newDist->getOwnedIndexes( myIndexes2 );
-        BOOST_REQUIRE_EQUAL( myIndexes1.size(), myIndexes2.size() );
-        BOOST_CHECK_EQUAL( IndexType( 0 ), myIndexes1.maxDiffNorm( myIndexes2 ) );
+
+        BOOST_TEST( hostReadAccess( myIndexes1 ) == hostReadAccess( myIndexes2 ), per_element() );
 
 #ifdef DELETE_OUTPUT_FILES
         // only one processor should delete the file
@@ -198,12 +204,12 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         DistributionPtr newDist = PartitionIO::readDistribution( fileName, comm );
         SCAI_LOG_INFO( logger, *comm << ": readDistribution " << *newDist << " from " << pFileName )
         // collect all owners on root processor and then compare
-        utilskernel::LArray<IndexType> owners1;
-        utilskernel::LArray<IndexType> owners2;
+        HArray<IndexType> owners1;
+        HArray<IndexType> owners2;
         dist->allOwners( owners1, 0 );
         newDist->allOwners( owners2, 0 );
-        BOOST_REQUIRE_EQUAL( owners1.size(), owners2.size() );
-        BOOST_CHECK_EQUAL( IndexType( 0 ), owners1.maxDiffNorm( owners2 ) );
+
+        BOOST_TEST( hostReadAccess( owners1 ) == hostReadAccess( owners2 ), per_element() );
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = PartitionIO::removeFile( fileName, *comm );
@@ -260,7 +266,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
 
-        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
+        ValueType diff = utilskernel::HArrayUtils::maxDiffNorm( local, readLocal );
 
         BOOST_CHECK( diff == ValueType( 0 ) );
 
@@ -336,11 +342,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         const hmemo::HArray<ValueType>& local = vector.getLocalValues();
         const hmemo::HArray<ValueType>& readLocal = readVector.getLocalValues();
 
-        BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
-
-        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        BOOST_TEST( hostReadAccess( local ) == hostReadAccess( readLocal ), per_element() );
 
         int rc = PartitionIO::removeFile( vectorFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
@@ -418,11 +420,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
         const hmemo::HArray<ValueType>& local = vector.getNonZeroValues();
         const hmemo::HArray<ValueType>& readLocal = readVector.getNonZeroValues();
 
-        BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
-
-        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        BOOST_TEST( hostReadAccess( local ) == hostReadAccess( readLocal ), per_element() );
 
         int rc = PartitionIO::removeFile( vectorFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
@@ -484,9 +482,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
         BOOST_REQUIRE_EQUAL( local.getNumRows(), readLocal.getNumRows() );
         BOOST_REQUIRE_EQUAL( local.getNumColumns(), readLocal.getNumColumns() );
 
-        ValueType diff = local.maxDiffNorm( readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        BOOST_CHECK_EQUAL( local.maxDiffNorm( readLocal ), 0 );
 
         int rc = PartitionIO::removeFile( matrixFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
@@ -574,9 +570,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
         BOOST_REQUIRE_EQUAL( local.getNumRows(), readLocal.getNumRows() );
         BOOST_REQUIRE_EQUAL( local.getNumColumns(), readLocal.getNumColumns() );
 
-        ValueType diff = local.maxDiffNorm( readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        BOOST_CHECK_EQUAL( local.maxDiffNorm( readLocal ), 0 );
 
         int rc = PartitionIO::removeFile( matrixFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );

@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/hmemo/HArray.hpp>
 #include <scai/dmemo/Distribution.hpp>
 
 // internal scai libraries
@@ -174,15 +174,15 @@ protected:
 
     static const char theCreateValue[];
 
-    utilskernel::LArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
+    hmemo::HArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
 
     // the following arrays will only be available if enableAnyAddressing has been called
     // Note: if set the array mGlobal2Local is no more needed
 
-    mutable utilskernel::LArray<PartitionId> mAllOwners;
-    mutable utilskernel::LArray<IndexType> mAllLocalOffsets;     // local size on each partition
-    mutable utilskernel::LArray<IndexType> mAllLocal2Global;     // sorts elements into buckets
-    mutable utilskernel::LArray<IndexType> mAllGlobal2Local;     // sorts elements into buckets
+    mutable hmemo::HArray<PartitionId> mAllOwners;
+    mutable hmemo::HArray<IndexType> mAllLocalOffsets;     // local size on each partition
+    mutable hmemo::HArray<IndexType> mAllLocal2Global;     // sorts elements into buckets
+    mutable hmemo::HArray<IndexType> mAllGlobal2Local;     // sorts elements into buckets
 
     // Example
     // index       0    1    2    3   4    5    6    7   8   9   10   11   12

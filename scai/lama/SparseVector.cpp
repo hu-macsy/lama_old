@@ -47,6 +47,7 @@
 
 // internal scai libraries
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/freeFunction.hpp>
 #include <scai/common/BinaryOp.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
@@ -73,7 +74,6 @@ namespace scai
 using common::Math;
 using common::TypeTraits;
 using utilskernel::HArrayUtils;
-using utilskernel::LArray;
 
 using namespace hmemo;
 using namespace dmemo;
@@ -256,11 +256,7 @@ template<typename ValueType>
 void SparseVector<ValueType>::fillRandom( const IndexType bound )
 {
     const IndexType localSize = getDistribution().getLocalSize();
-
-    LArray<ValueType> localValues( localSize );
-
-    localValues.setRandom( bound, getContextPtr() );
-
+    auto localValues = utilskernel::randomHArray<ValueType>( localSize, bound, getContextPtr() );
     setDenseValuesImpl( localValues );
 }
 
@@ -275,7 +271,7 @@ void SparseVector<ValueType>::fillSparseRandom( const float fillRate, const Inde
 
     HArrayUtils::randomSparseIndexes( mNonZeroIndexes, localSize, fillRate );
     mNonZeroValues.resize( mNonZeroIndexes.size() );
-    mNonZeroValues.setRandom( bound );
+    HArrayUtils::fillRandom( mNonZeroValues, bound, 1.0f );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -453,9 +449,9 @@ void SparseVector<ValueType>::buildLocalValues(
 
         SCAI_UNSUPPORTED( *this << ", mZero = " << mZeroValue << " is not ZERO element of " << op << ", temporary dense values are built" )
 
-        utilskernel::LArray<ValueType> myDenseValues( size, mZeroValue );
-        HArrayUtils::scatter( myDenseValues, mNonZeroIndexes, UNIQUE, mNonZeroValues, common::BinaryOp::COPY, loc );
-        HArrayUtils::_setArray( values, myDenseValues, op, loc );
+        auto denseArray = utilskernel::fillHArray<ValueType>( size, mZeroValue, loc );
+        HArrayUtils::scatter( denseArray, mNonZeroIndexes, UNIQUE, mNonZeroValues, common::BinaryOp::COPY, loc );
+        HArrayUtils::_setArray( values, denseArray, op, loc );
     }
 }
 
@@ -711,7 +707,7 @@ ValueType SparseVector<ValueType>::min() const
 {
     // Note: min returns the maximal representation value on zero-sized vectors, TypeTraits<ValueType>::getMax()
 
-    ValueType localMin = mNonZeroValues.min();
+    ValueType localMin = HArrayUtils::min( mNonZeroValues );
 
     // if there are implicit zero values they must be used for min computation
 
@@ -752,7 +748,7 @@ ValueType SparseVector<ValueType>::max() const
 {
     // Note: max returns the minimal representation value on zero-sized vectors
 
-    ValueType localMax = mNonZeroValues.max();
+    ValueType localMax = HArrayUtils::max( mNonZeroValues );
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
@@ -791,7 +787,7 @@ RealType<ValueType> SparseVector<ValueType>::l1Norm() const
 {
     SCAI_REGION( "Vector.sparse.l1Norm" )
 
-    RealType<ValueType> localL1Norm = mNonZeroValues.l1Norm();
+    auto localL1Norm = HArrayUtils::l1Norm( mNonZeroValues );
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
@@ -811,7 +807,7 @@ RealType<ValueType> SparseVector<ValueType>::l1Norm() const
 template<typename ValueType>
 ValueType SparseVector<ValueType>::sum() const
 {
-    ValueType localSum = mNonZeroValues.sum();
+    ValueType localSum = HArrayUtils::sum( mNonZeroValues );
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
@@ -832,7 +828,7 @@ RealType<ValueType> SparseVector<ValueType>::l2Norm() const
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
-    RealType<ValueType> localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+    RealType<ValueType> localDotProduct = HArrayUtils::dotProduct( mNonZeroValues, mNonZeroValues );
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
@@ -856,7 +852,7 @@ IndexType SparseVector<IndexType>::l2Norm() const
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
-    double localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+    double localDotProduct = HArrayUtils::dotProduct( mNonZeroValues, mNonZeroValues );
     double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     return IndexType( Math::sqrt( globalDotProduct ) );
 }
@@ -868,7 +864,7 @@ RealType<ValueType> SparseVector<ValueType>::maxNorm() const
 {
     SCAI_REGION( "Vector.sparse.maxNorm" )
 
-    RealType<ValueType> localMaxNorm = mNonZeroValues.maxNorm();
+    auto localMaxNorm = HArrayUtils::maxNorm( mNonZeroValues );
 
     // the ZERO element must also be considered if at least one element is zero
 
@@ -1311,7 +1307,7 @@ ValueType SparseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) 
     {
         // dot product with this sparse vector
 
-        localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+        localDotProduct = HArrayUtils::dotProduct( mNonZeroValues, mNonZeroValues );
     }
     else if ( mZeroValue == common::Constants::ZERO )
     {
@@ -1321,15 +1317,15 @@ ValueType SparseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) 
 
         // now build dotproduct( mNonZeroValues, otherNonZeroValues )
 
-        localDotProduct = mNonZeroValues.dotProduct( otherNonZeroValues );
+        localDotProduct = HArrayUtils::dotProduct( mNonZeroValues, otherNonZeroValues );
     }
     else 
     {
-         utilskernel::LArray<ValueType> multValues;
+         HArray<ValueType> multValues;
 
          buildLocalValues( multValues, common::BinaryOp::COPY, getContextPtr() );
          other.buildLocalValues( multValues, common::BinaryOp::MULT, getContextPtr() );
-         localDotProduct = multValues.sum();
+         localDotProduct = HArrayUtils::sum( multValues );
     }
 
     SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
@@ -1713,7 +1709,7 @@ void SparseVector<ValueType>::writeLocalToFile(
             // build a dense array on the host where it is used for the output
 
             hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
-            LArray<ValueType> denseArray( size, mZeroValue, ctx );
+            auto denseArray = utilskernel::fillHArray<ValueType>( size, mZeroValue, ctx );
             HArrayUtils::scatter( denseArray, mNonZeroIndexes, true, mNonZeroValues, common::BinaryOp::COPY, ctx );
             fileIO->writeArray( denseArray, fileName );
         }

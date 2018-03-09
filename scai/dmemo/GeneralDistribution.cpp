@@ -41,10 +41,9 @@
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/common/macros/assert.hpp>
 
-#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -118,8 +117,8 @@ GeneralDistribution::GeneralDistribution(
 
     SCAI_LOG_DEBUG( logger, *mCommunicator << ": global size = " << mGlobalSize )
 
-    LArray<IndexType> localSizes;
-    LArray<IndexType> localOffsets;
+    HArray<IndexType> localSizes;
+    HArray<IndexType> localOffsets;
 
     // count in localSizes for each partition the owners
     // owners = [ 0, 1, 2, 1, 2, 1, 0 ] -> sizes = [2, 3, 2 ]
@@ -128,7 +127,7 @@ GeneralDistribution::GeneralDistribution(
     if ( rank == MASTER )
     {
         HArrayUtils::bucketCount( localSizes, owners, size );
-        IndexType lsum = localSizes.sum();
+        IndexType lsum = HArrayUtils::sum( localSizes );
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
     }
     else
@@ -421,7 +420,7 @@ bool GeneralDistribution::isEqual( const Distribution& other ) const
 
     // values will only be compared it sizes are same on all processors
 
-    bool localSameVals = mLocal2Global.maxDiffNorm( otherGen.getMyIndexes() ) == 0;
+    bool localSameVals = HArrayUtils::maxDiffNorm( mLocal2Global, otherGen.getMyIndexes() ) == 0;
     bool allSameVals   = mCommunicator->all( localSameVals );
 
     SCAI_LOG_DEBUG( logger, *this << ": localSameVals = " << localSameVals << ", allSameVals = " << allSameVals )

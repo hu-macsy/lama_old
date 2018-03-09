@@ -39,7 +39,7 @@
 // others
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/SectionKernelTrait.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 // import scai_numeric_test_types, scai_array_test_types
@@ -49,7 +49,10 @@
 using namespace scai;
 using namespace utilskernel;
 using namespace hmemo;
+
 using common::BinaryOp;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -85,8 +88,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign0Test, ValueType, scai_array_test_types )
 
     const IndexType nValues = 1;
 
-    LArray<ValueType> source( nValues, rawValues );
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> source( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     IndexType nDims = 0;
 
@@ -145,8 +148,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign1Test, ValueType, scai_array_test_types )
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 };
 
-    LArray<ValueType> source( nValues, rawValues );
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> source( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     IndexType nDims = 1;
 
@@ -210,8 +213,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign2Test, ValueType, scai_array_test_types )
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n2, 1 };
 
-    LArray<ValueType> source( nValues, rawValues );
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> source( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     {
         WriteAccess<ValueType> wTarget( target, loc );
@@ -267,8 +270,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign3Test, ValueType, scai_array_test_types )
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n3 * n2, 1, 1 };
 
-    LArray<ValueType> source( nValues, rawValues );
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> source( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     const IndexType nDims = 3;
 
@@ -327,8 +330,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign4Test, ValueType, scai_array_test_types )
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n2 * n3 * n4, n3 * n4, n4, 1 };
 
-    LArray<ValueType> source( nValues, rawValues );
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> source( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     const IndexType nDims = 4;
 
@@ -372,7 +375,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar0Test, ValueType, scai_array_test_typ
 
     const IndexType nValues = 1;
 
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     IndexType nDims = 0;
     ValueType scalar = 7;
@@ -429,7 +432,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar1Test, ValueType, scai_array_test_typ
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 };
 
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     IndexType nDims = 1;
     ValueType scalar = 10;
@@ -491,7 +494,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar2Test, ValueType, scai_array_test_typ
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n2, 1 };
 
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     const IndexType nDims = 2;
     ValueType scalarVal = 2;
@@ -546,7 +549,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar3Test, ValueType, scai_array_test_typ
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n2 * n3, n3, 1 };
 
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     const IndexType nDims = 3;
     ValueType scalarVal = 2;
@@ -610,7 +613,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar4Test, ValueType, scai_array_test_typ
     SCAI_ASSERT_EQ_ERROR( nDims, nSizes, "serious mismatch of sizes array" )
     SCAI_ASSERT_EQ_ERROR( nDims, nDistances, "serious mismatch of distances array" )
  
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     ValueType scalarVal = 2;
     bool swap = false;
@@ -649,23 +652,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_ty
                                            << common::TypeTraits<SourceValueType>::id() << "> for " 
                                            << *testContext << ", done on " << *loc )
 
-    const IndexType n1 = 8;
-
     // work on this array:   0   1   2   3   4  5  6  7 
-
-    TargetValueType rawValues[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-
-    const IndexType nValues = sizeof( rawValues ) / sizeof( TargetValueType );
-
-    BOOST_REQUIRE_EQUAL( n1, nValues );
-
     // array[0:3:2] = array[ 6:8 ]
     //   gives this array:   6  1   7   3    4   5  6  7
 
-    TargetValueType expValues[] = { 6, 1, 7, 3,  4, 5,  6,  7 };
-    const IndexType nValues1 = sizeof( expValues ) / sizeof( TargetValueType );
+    HArray<SourceValueType> source(    { 0, 1, 2, 3, 4, 5, 6, 7 } );
+    HArray<TargetValueType> expTarget( { 6, 1, 7, 3, 4, 5, 6, 7 } );
 
-    BOOST_REQUIRE_EQUAL( n1, nValues1 );
+    BOOST_REQUIRE_EQUAL( source.size(), expTarget.size() );
 
     const IndexType sizes[] = { 2 };
     const IndexType sourceOffset      = 6;
@@ -673,8 +667,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_ty
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 };
 
-    LArray<SourceValueType> source( nValues, rawValues );
-    LArray<TargetValueType> target( source );
+    auto target = utilskernel::convertHArray<TargetValueType>( source );
 
     IndexType nDims = 1;
 
@@ -686,12 +679,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_ty
                       rSource.get() + sourceOffset, sourceDistances, common::UnaryOp::COPY );
     }
 
-    ReadAccess<TargetValueType> rTarget( target );
-
-    for ( IndexType i = 0; i < nValues; i++ )
-    {
-        BOOST_CHECK_EQUAL( expValues[i], rTarget[i] );
-    }
+    BOOST_TEST( hostReadAccess( target ) == hostReadAccess( expTarget ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -742,8 +730,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_ty
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n2, 1 };
 
-    LArray<SourceValueType> source( nValues, rawValues );
-    LArray<TargetValueType> target( source );
+    HArray<SourceValueType> source( nValues, rawValues );
+    auto target = utilskernel::convertHArray<TargetValueType>( source );
 
     {
         WriteAccess<TargetValueType> wTarget( target, loc );
@@ -806,8 +794,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_ty
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n2 * n3, n3, 1 };
 
-    LArray<SourceValueType> source( nValues, rawValues );
-    LArray<TargetValueType> target( source );
+    HArray<SourceValueType> source( nValues, rawValues );
+    auto target = utilskernel::convertHArray<TargetValueType>( source );
 
     IndexType nDims = 3;
 
@@ -875,8 +863,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp4Test, SourceValueType, scai_array_test_ty
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n2 * n3 * n4, n3 * n4, n4, 1 };
 
-    LArray<SourceValueType> source( nValues, rawValues );
-    LArray<TargetValueType> target( source );
+    HArray<SourceValueType> source( nValues, rawValues );
+    auto target = utilskernel::convertHArray<TargetValueType>( source );
 
     {
         WriteAccess<TargetValueType> wTarget( target, loc );
@@ -928,7 +916,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp1Test, ValueType, scai_numeric_test_types 
     const IndexType targetOffset      = 1;
     const IndexType targetDistances[] = { 2 };
 
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
 
     IndexType nDims = 1;
 
@@ -988,7 +976,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp2Test, ValueType, scai_numeric_test_types 
     const IndexType targetOffset      = 0;
     const IndexType targetDistances[] = { 2 * n2, 1 };
 
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
     {
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -1039,7 +1027,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp3Test, ValueType, scai_numeric_test_types 
 
     const IndexType nDims = 3;
 
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
     {
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
@@ -1091,7 +1079,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp4Test, ValueType, scai_numeric_test_types 
 
     const IndexType nDims = 4;
 
-    LArray<ValueType> target( nValues, rawValues );
+    HArray<ValueType> target( nValues, rawValues );
     {
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );

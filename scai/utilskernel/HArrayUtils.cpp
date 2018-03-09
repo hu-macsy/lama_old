@@ -647,7 +647,7 @@ ValueType HArrayUtils::reduce(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::asum( const HArray<ValueType>& array, const ContextPtr prefLoc )
+RealType<ValueType> HArrayUtils::l1Norm( const HArray<ValueType>& array, const ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -662,14 +662,14 @@ ValueType HArrayUtils::asum( const HArray<ValueType>& array, const ContextPtr pr
     asum.getSupportedContext( loc );
     ReadAccess<ValueType> readArray( array, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType result = asum[loc]( n, readArray.get(), 1 );
+    RealType<ValueType> result = asum[loc]( n, readArray.get(), 1 );
     return result;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::nrm2( const HArray<ValueType>& array, const ContextPtr prefLoc )
+RealType<ValueType> HArrayUtils::l2Norm( const HArray<ValueType>& array, const ContextPtr prefLoc )
 {
     const IndexType n = array.size();
 
@@ -684,14 +684,14 @@ ValueType HArrayUtils::nrm2( const HArray<ValueType>& array, const ContextPtr pr
     nrm2.getSupportedContext( loc );
     ReadAccess<ValueType> readArray( array, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType result = nrm2[loc]( n, readArray.get(), 1 );
+    RealType<ValueType> result = nrm2[loc]( n, readArray.get(), 1 );
     return result;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::absMaxDiffVal(
+RealType<ValueType> HArrayUtils::maxDiffNorm(
     const HArray<ValueType>& array1,
     const HArray<ValueType>& array2,
     ContextPtr prefLoc )
@@ -1927,49 +1927,6 @@ void HArrayUtils::elimDoubles(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void HArrayUtils::buildSparseIndexes(
-    HArray<IndexType>& sparseIndexes,
-    const HArray<ValueType>& denseArray,
-    ContextPtr prefLoc )
-{
-    const IndexType n = denseArray.size();
-    static LAMAKernel<SparseKernelTrait::countNonZeros<ValueType> > countNonZeros;
-    static LAMAKernel<SparseKernelTrait::compress<ValueType, ValueType> > compress;
-    ContextPtr loc = prefLoc;
-
-    // default location for conversion: where we have the dense values
-
-    if ( loc == ContextPtr() )
-    {
-        loc = denseArray.getValidContext();
-    }
-
-    compress.getSupportedContext( loc, countNonZeros );
-    SCAI_CONTEXT_ACCESS( loc )
-    ValueType eps = TypeTraits<ValueType>::eps1();
-    ReadAccess<ValueType> rDenseArray( denseArray, loc );
-    // we count the non-zeros at first to have sizes for sparse data
-    ValueType zero = 0;
-    IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, zero, eps );
-    WriteOnlyAccess<IndexType> wSparseIndexes( sparseIndexes, loc, sparseN );
-    sparseN = compress[loc]( NULL, wSparseIndexes.get(), rDenseArray.get(), n, zero, eps );
-}
-
-/* --------------------------------------------------------------------------- */
-
-void HArrayUtils::buildSparseArrayZero(
-    _HArray& sparseArray,
-    HArray<IndexType>& sparseIndexes,
-    const _HArray& denseArray,
-    ContextPtr prefLoc )
-{
-    mepr::UtilsWrapperTT< SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::
-    buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename TargetType, typename SourceType>
 void HArrayUtils::buildSparseArray(
     HArray<TargetType>& sparseArray,
@@ -2632,7 +2589,7 @@ void HArrayUtils::buildComplex(
             const CompareOp,                                            \
             const ValueType,                                            \
             hmemo::ContextPtr );                                        \
-    template ValueType HArrayUtils::absMaxDiffVal<ValueType>(           \
+    template RealType<ValueType> HArrayUtils::maxDiffNorm<ValueType>(   \
             const hmemo::HArray<ValueType>&,                            \
             const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
@@ -2663,10 +2620,10 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<ValueType>&,                            \
             const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
-    template ValueType HArrayUtils::asum<ValueType>(                    \
+    template RealType<ValueType> HArrayUtils::l1Norm<ValueType>(        \
             const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
-    template ValueType HArrayUtils::nrm2<ValueType>(                    \
+    template RealType<ValueType> HArrayUtils::l2Norm<ValueType>(        \
             const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
     template bool HArrayUtils::isSorted<ValueType>(                     \
@@ -2719,10 +2676,6 @@ void HArrayUtils::buildComplex(
             hmemo::HArray<ValueType>&,                                  \
             IndexType,                                                  \
             float,                                                      \
-            hmemo::ContextPtr );                                        \
-    template void HArrayUtils::buildSparseIndexes<ValueType>(           \
-            hmemo::HArray<IndexType>&,                                  \
-            const hmemo::HArray<ValueType>&,                            \
             hmemo::ContextPtr );                                        \
     template IndexType HArrayUtils::insertSorted(                       \
             hmemo::HArray<ValueType>& array,                            \

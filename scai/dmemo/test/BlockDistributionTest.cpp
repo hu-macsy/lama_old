@@ -35,10 +35,12 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 using namespace scai;
 using namespace dmemo;
+
+using hmemo::HArray;
 
 /* --------------------------------------------------------------------- */
 
@@ -145,13 +147,13 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
 {
     using namespace utilskernel;
 
-    LArray<IndexType> indexes;
+    HArray<IndexType> indexes;
     HArrayUtils::setOrder( indexes, size * blockSize );
 
-    LArray<PartitionId> owners;
+    HArray<PartitionId> owners;
     dist->computeOwners( owners, indexes );
 
-    LArray<PartitionId> owners1;
+    HArray<PartitionId> owners1;
 
     BOOST_CHECK_EQUAL( owners.size(), indexes.size() );
 
@@ -186,8 +188,8 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 
     using namespace utilskernel;
 
-    LArray<IndexType> myIndexes1;
-    LArray<IndexType> myIndexes2;
+    HArray<IndexType> myIndexes1;
+    HArray<IndexType> myIndexes2;
 
     dist->getOwnedIndexes( myIndexes1 );                 // call it for block distribution
     dist->Distribution::getOwnedIndexes( myIndexes2 );   // call if from base class

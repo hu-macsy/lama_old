@@ -147,6 +147,20 @@ public:
         mContextDataManager.init( src, mValueSize * size );
     }
 
+    /** 
+     *  @brief Get one value from the array at a certain pos
+     *
+     *  This operation uses memcpy to a valid context.
+     */
+    inline void _getValue( void* data, const IndexType pos ) const;
+
+    /** 
+     *  @brief Set one value from the array at a certain pos
+     *
+     *  This operation uses memcpy to a valid context.
+     */
+    inline void _setValue( const void* data, const IndexType pos );
+
     /**
      * @brief sets the size of this array to 0 an frees all memory
      */
@@ -417,7 +431,7 @@ public:
 
     /** Release an acquired write access. */
 
-    void releaseWriteAccess( ContextDataIndex );
+    inline void releaseWriteAccess( ContextDataIndex );
 
     /** Query the memory for a certain access. */
 
@@ -563,9 +577,26 @@ inline ContextDataIndex _HArray::acquireWriteAccess( ContextPtr context, bool ke
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void _HArray::releaseWriteAccess( ContextDataIndex index )
+void _HArray::releaseWriteAccess( ContextDataIndex index )
 {
     mContextDataManager.releaseAccess( index, common::AccessKind::Write );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _HArray::_getValue( void* data, const IndexType pos ) const
+{
+    mContextDataManager.getData( data, pos * mValueSize, mValueSize );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _HArray::_setValue( const void* data, const IndexType pos )
+{
+    size_t allocSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
+    size_t offset    = static_cast<size_t>( pos ) * static_cast<size_t>( mValueSize );
+
+    mContextDataManager.setData( data, offset, mValueSize, allocSize );
 }
 
 } /* end namespace hmemo */

@@ -45,7 +45,6 @@
 namespace scai
 {
 
-using namespace utilskernel;
 using namespace hmemo;
 
 namespace lama

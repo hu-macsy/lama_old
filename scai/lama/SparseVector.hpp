@@ -41,7 +41,6 @@
 #include <scai/lama/Vector.hpp>
 
 // internal scai libraries
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
@@ -450,14 +449,14 @@ private:
 
     void binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
 
-    utilskernel::LArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
-    utilskernel::LArray<ValueType> mNonZeroValues;   //!< my local non-zero values
+    hmemo::HArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
+    hmemo::HArray<ValueType> mNonZeroValues;   //!< my local non-zero values
 
     ValueType mZeroValue;    //!< ZERO element of vector, can be explicity set, defaults to 0
 
     /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
 
-    mutable utilskernel::LArray<ValueType> mHaloValues;
+    mutable hmemo::HArray<ValueType> mHaloValues;
 
     /** Implementation of _Vector::writeLocalToFile */
 
