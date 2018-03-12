@@ -34,6 +34,7 @@
 
 #include <scai/tracing.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 #include <scai/lama/matrix/MatrixWithT.hpp>
 
 #include <scai/common/Settings.hpp>
@@ -73,6 +74,10 @@ void setDistribution( _Matrix& A )
         {
             partitioningKind = val;
         }
+        else if ( val == "FILE" )
+        {
+            partitioningKind = val; // handled here
+        }
         else
         {
             std::cout << "ERROR: Partitioning kind = " << val << " not supported" << std::endl;
@@ -88,9 +93,26 @@ void setDistribution( _Matrix& A )
         weight = strtof( val.c_str(), NULL );
     }
 
-    PartitioningPtr thePartitioning( Partitioning::create( partitioningKind ) );
+    if ( val == "FILE" )
+    {
+        auto comm = A.getRowDistribution().getCommunicatorPtr();
 
-    thePartitioning->rectangularRedistribute( A, weight );
+        int np = comm->getSize();
+
+        std::string rowDistFileName = "row_" + std::to_string( np ) + ".txt";
+        std::string colDistFileName = "col_" + std::to_string( np ) + ".txt";
+
+        dmemo::DistributionPtr rowDist( PartitionIO::readDistribution( rowDistFileName, comm ) );
+        dmemo::DistributionPtr colDist( PartitionIO::readDistribution( colDistFileName, comm ) );
+
+        A.redistribute( rowDist, colDist );
+    }
+    else
+    {
+        PartitioningPtr thePartitioning( Partitioning::create( partitioningKind ) );
+
+        thePartitioning->rectangularRedistribute( A, weight );
+    }
 }
 
 int main( int argc, const char* argv[] )
