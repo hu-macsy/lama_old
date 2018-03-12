@@ -806,15 +806,17 @@ public:
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector 
      *
-     *  @param<out> sparseArray contains the non-zero values
-     *  @param<out> sparseIndexes contains the indexes of sparseArray in original array
-     *  @param<in>  denseArray    contains the array with all values
-     *  @param<in>  zeroValue     is the value that is considered as zero in denseArray
-     *  @param<in>  prefLoc       is the preferred location where operation is done
+     *  @param[out] sparseArray contains the non-zero values
+     *  @param[out] sparseIndexes contains the indexes of sparseArray in original array
+     *  @param[in]  denseArray    contains the array with all values
+     *  @param[in]  zeroValue     is the value that is considered as zero in denseArray
+     *  @param[in]  prefLoc       is the preferred location where operation is done
      * 
      *  \code
      *    buildSparseArray( sparseArray, sparseIndexes, HArray<double>( { 0, 2, 1, 2, 1 } ), 1 )
      *    -> sparseArray = HArray<double> ( { 0, 2, 2 } ); sparseIndexes = HArray<indexes> ( { 0, 1, 3 } )
+     *    buildSparseArray( sparseArray, sparseIndexes, HArray<double>( { 0, 2, 1, 2, 1 } ), 2 )
+     *    -> sparseArray = HArray<double> ( { 0, 1, 1 } ); sparseIndexes = HArray<indexes> ( { 0, 2, 4 } )
      *  \endcode
      */
     template<typename TargetType, typename SourceType>
