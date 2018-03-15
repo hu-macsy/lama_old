@@ -134,30 +134,7 @@ BOOST_AUTO_TEST_CASE( initializerListConstructorTest )
     BOOST_CHECK_EQUAL( rArray[4], -5 );
 }
 
-BOOST_AUTO_TEST_CASE( getTest )
-{
-    const auto context = Context::getContextPtr();
-
-    auto array = HArray<int>( { 5, 6, 2, 3, -5 }, context );
-
-    int val = array[2];
-
-    BOOST_CHECK_EQUAL( val, 2 );
-}
-
-BOOST_AUTO_TEST_CASE( setTest )
-{
-    const auto context = Context::getContextPtr();
-
-    auto array = HArray<int>( 4, 5, context );
-
-    array[3] = 4;
-
-    {
-        ReadAccess<int> rArray( array );
-        BOOST_CHECK_EQUAL( rArray[3], 4 );
-    }
-}
+/* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( emptyInitializerListConstructorTest )
 {
