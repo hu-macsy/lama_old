@@ -168,8 +168,6 @@ public:
         return mUseMetis;
     }
 
-    float getWeight() const;
-
     double getAbsoluteTolerance() const
     {
         return mAbsoluteTolerance;
@@ -207,8 +205,6 @@ private:
     solver::LogLevel   mLogLevel;
 
     bool mUseMetis;
-
-    float mWeight;
 
     double mRelativeTolerance;
     double mAbsoluteTolerance;
@@ -305,24 +301,6 @@ LamaConfig::LamaConfig()
     }
 
     std::string val;
-
-    mWeight = 1.0;   // as default
-
-    if ( common::Settings::getEnvironment( val, "SCAI_WEIGHT" ) )
-    {
-        float weight;
-
-        int narg = sscanf( val.c_str(), "%f", &weight );
-
-        if ( narg > 0 && weight >= 0.0f )
-        {
-            mWeight = weight;
-        }
-        else
-        {
-            CONFIG_ERROR( "SCAI_WEIGHT=" << val << " illegal" )
-        }
-    }
 
     getTolerance( mRelativeTolerance, "SCAI_REL_TOL" );
     getTolerance( mAbsoluteTolerance, "SCAI_ABS_TOL" );
@@ -427,8 +405,8 @@ void LamaConfig::writeAt( std::ostream& stream ) const
 {
     using common::Settings;
 
-    stream << "LAMA configuration" << std::endl;
-    stream << "==================" << std::endl;
+    stream << "lamaSolver configuration" << std::endl;
+    stream << "========================" << std::endl;
     stream << "Solver            = " << mSolverName << std::endl;
     stream << "Solver Logging    = " << mLogLevel << std::endl;
     stream << "Context           = " << getContext() << std::endl;
@@ -437,7 +415,6 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     stream << "CommKind          = " << mCommunicationKind << std::endl;
     stream << "ValueType         = " << getValueType() << std::endl;
     stream << "#Threads/CPU      = " << omp_get_max_threads() << std::endl;
-    stream << "weight            = " << getWeight() << std::endl;
 
     bool useTexture;
     bool useSharedMem;
@@ -510,11 +487,6 @@ const std::string& LamaConfig::getNorm( ) const
     return mNorm;
 }
 
-float LamaConfig::getWeight() const
-{
-    return mWeight;
-}
-
 IndexType LamaConfig::getMaxIter() const
 {
     return mMaxIter;
@@ -571,7 +543,8 @@ void LamaConfig::printHelp( const char* progName )
     cout << "Usage: " << progName << " <matrix_filename> [ rhs ] [start_solution] [ final_solution_filename ] [ options ] " << endl;
     cout << "         rhs, start_solution can be either a value or a filename" << endl;
     cout << "         solver specific options:" << endl;
-    cout << "         --SCAI_DISTRBUTION=BLOCK|<dist_filename>" << endl;
+    cout << "         --SCAI_DISTRIBUTION=<dist_filename>" << endl;
+    cout << "         --SCAI_PARTITIONING=OFF|BLOCK|CYCLIC|METIS|PARAMETS" << endl;
     cout << "         --SCAI_SOLVER=" << getLoggers() << endl;
     cout << "         --SCAI_SOLVER_LOG=" << getLogLevels() << endl;
     cout << "         --SCAI_MAX_ITER=<int_val>" << endl;

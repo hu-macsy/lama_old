@@ -70,7 +70,7 @@ using namespace solver;
 
 typedef DefaultReal ValueType;
 
-#define HOST_PRINT( rank, msg )             \
+#define HOST_PRINT( rank, msg )                 \
     {                                           \
         if ( rank == 0 )                        \
         {                                       \
@@ -130,6 +130,55 @@ static void orCriterion( CriterionPtr<ValueType>& crit, const CriterionPtr<Value
     }
 }
 
+template<typename ValueType>
+void doPartitioning( Matrix<ValueType>& matrix, Vector<ValueType>& rhs, Vector<ValueType>& solution )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    if ( comm->getSize() < 2 )
+    {
+        return;
+    }
+
+    SCAI_REGION( "lamaSolver.redistribute" )
+
+    LamaTiming timer( *comm, "Redistribution" );
+
+    // determine a new distribution so that each processor gets part of the matrix according to its weight
+
+    float weight = 1.0f;
+
+    common::Settings::getEnvironment( weight, "SCAI_WEIGHT" );
+  
+    std::string parKind = "BLOCK";     // default partitioning strategy
+
+    common::Settings::getEnvironment( parKind, "SCAI_PARTITIONING" );
+
+    using namespace partitioning;
+
+    DistributionPtr dist;
+
+    if ( parKind == "OFF" )
+    {
+        // let it unchanged
+ 
+        dist = matrix.getRowDistributionPtr();
+    }
+    else 
+    {
+        PartitioningPtr graphPartitioning( Partitioning::create( parKind ) );
+
+        std::cout << "Partitioning, kind = " << parKind << ", weight = " << weight << ", partitioner = " << *graphPartitioning << std::endl;
+
+        dist = graphPartitioning->partitionIt( comm, matrix, weight );
+    }
+
+    matrix.redistribute( dist, dist );
+
+    rhs.redistribute ( dist );
+    solution.redistribute ( dist );
+}
+
 /**
  *  Main program
  *
@@ -148,7 +197,6 @@ int main( int argc, const char* argv[] )
     const Communicator& comm = lamaconf.getCommunicator();
 
     int myRank   = comm.getRank();
-    int numProcs = comm.getSize();
 
     // accept only 2 - 4 arguments, --SCAI_xxx do not count here
 
@@ -281,54 +329,7 @@ int main( int argc, const char* argv[] )
                                "size mismatch: #cols of matrix must be equal size of initial solution" )
         }
 
-        // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
-
-        int numRows = inMatrix.getNumRows();
-
-        // distribute data (trivial block partitioning)
-
-        if ( numProcs > 1 )
-        {
-            SCAI_REGION( "Main.redistribute" )
-
-            LamaTiming timer( comm, "Redistribution" );
-            // determine a new distribution so that each processor gets part of the matrix according to its weight
-            float weight = lamaconf.getWeight();
-
-            DistributionPtr oldDist = inMatrix.getRowDistributionPtr();
-
-            DistributionPtr dist;
-
-            if ( lamaconf.useMetis() )
-            {
-                using namespace partitioning;
-
-                LamaTiming timer( comm, "Metis" );
-
-                PartitioningPtr graphPartitioning( Partitioning::create( "METIS" ) );
-                SCAI_ASSERT_ERROR( graphPartitioning.get(), "METIS partitioning not available" )
-                dist = graphPartitioning->partitionIt( lamaconf.getCommunicatorPtr(), inMatrix, weight );
-            }
-            else if ( *oldDist == dmemo::SingleDistribution( numRows, oldDist->getCommunicatorPtr(), 0 ) )
-            {
-                // one single processor only has read the matrix, redistribute among all available processors
-
-                dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
-            }
-            else
-            {
-                // was a distributed read, so take this as distribution
-
-                dist = inMatrix.getRowDistributionPtr();
-            }
-
-            inMatrix.redistribute( dist, dist );
-
-            rhs.redistribute ( dist );
-            solution.redistribute ( dist );
-
-            HOST_PRINT( myRank, "matrix redistributed = " << inMatrix )
-        }
+        doPartitioning( inMatrix, solution, rhs );
 
         // Now convert to th desired matrix format
 
