@@ -1,4 +1,3 @@
-###
  # @file scai/ipbcls/CMakeLists.txt
  #
  # @license
