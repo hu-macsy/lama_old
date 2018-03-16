@@ -90,6 +90,8 @@ GeneralDistribution::GeneralDistribution(
     IndexType nLocal = myIndexes.size();
 
     SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
+
+    fillIndexMap();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -194,6 +196,10 @@ GeneralDistribution::GeneralDistribution(
         mCommunicator->scatterV( wLocal2Global.get(), localSize, MASTER, rIndexes.get(), rSizes.get() );
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatterV, sortedIndexes = " << sortedIndexes )
     }
+
+    wLocal2Global.release();
+
+    fillIndexMap();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -222,6 +228,8 @@ GeneralDistribution::GeneralDistribution(
         SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( owners, 1 ), "illegal owners, #partitions = " << numPartitions )
 
         HArrayUtils::setOrder( mLocal2Global, nLocal );
+
+        fillIndexMap();
 
         return;
     }
@@ -281,12 +289,20 @@ GeneralDistribution::GeneralDistribution(
     // Note: actually it would be sufficient to have a mergesort
 
     HArrayUtils::sort( NULL, &mLocal2Global, myNewIndexes, true );
+
+    fillIndexMap();
 }
 
 /* ---------------------------------------------------------------------- */
 
 GeneralDistribution::~GeneralDistribution()
 {
+    if ( static_cast<IndexType>( mGlobal2Local.size() ) != mLocal2Global.size() )
+    {
+        SCAI_LOG_ERROR( logger, "Oops: size mismatch: mGlobal2Local: " << mGlobal2Local.size()
+                        << ", mLocal2Global : " << mLocal2Global.size() )
+    }
+
     SCAI_LOG_DEBUG( logger, "~GeneralDistribution" )
 }
 
@@ -294,8 +310,7 @@ GeneralDistribution::~GeneralDistribution()
 
 bool GeneralDistribution::isLocal( const IndexType globalIndex ) const
 {
-    IndexType pos = HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
-    return pos != invalidIndex;
+    return mGlobal2Local.count( globalIndex ) > 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -303,6 +318,26 @@ bool GeneralDistribution::isLocal( const IndexType globalIndex ) const
 IndexType GeneralDistribution::getLocalSize() const
 {
     return mLocal2Global.size();
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GeneralDistribution::fillIndexMap()
+{
+    SCAI_REGION( "Distribution.General.fillIndexMap" )
+ 
+    IndexType nLocal = mLocal2Global.size();
+
+    SCAI_LOG_INFO( logger, "fillHashMap, #local indexes = " << nLocal )
+
+    // add local indexes into unordered_map
+
+    auto rIndexes = hostReadAccess( mLocal2Global );
+
+    for ( IndexType i = 0; i < nLocal; i++ ) 
+    {
+        mGlobal2Local[rIndexes[i]] = i;
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -317,8 +352,18 @@ IndexType GeneralDistribution::local2global( const IndexType localIndex ) const
 IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 {
     // do a binary search in the array of global indexes for entries owned by this partition
+    // return HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
 
-    return HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
+    auto pos = mGlobal2Local.find( globalIndex );
+
+    if ( pos == mGlobal2Local.end() )
+    {
+        return invalidIndex;
+    } 
+    else 
+    {
+        return pos->second;
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -327,9 +372,21 @@ void GeneralDistribution::global2localV( hmemo::HArray<IndexType>& localIndexes,
 {
     SCAI_REGION( "Distribution.General.global2localV" )
 
-    // do a binary search in the array of global indexes for entries owned by this partition
+    IndexType nnz = globalIndexes.size();
 
-    HArrayUtils::findPosInSortedIndexesV( localIndexes, mLocal2Global, globalIndexes );
+    ReadAccess<IndexType> rGlobal( globalIndexes );
+    WriteOnlyAccess<IndexType> wLocal( localIndexes, nnz );
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < nnz; ++i )
+    {
+        // avoid virtual call by calling method of this class directly
+        wLocal[i] = GeneralDistribution::global2local( rGlobal[i] );
+    }
+
+    // do a binary search in the array of global indexes for entries owned by this partition
+    // HArrayUtils::findPosInSortedIndexesV( localIndexes, mLocal2Global, globalIndexes );
 }
 
 /* ---------------------------------------------------------------------- */

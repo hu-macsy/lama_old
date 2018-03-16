@@ -44,6 +44,9 @@
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 
+// std
+#include <unordered_map>
+
 namespace scai
 {
 
@@ -176,6 +179,10 @@ protected:
 
     hmemo::HArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
 
+    // the following hash map is more efficient than a binary search in mLocal2Global
+
+    std::unordered_map<IndexType, IndexType> mGlobal2Local;
+
     // the following arrays will only be available if enableAnyAddressing has been called
     // Note: if set the array mGlobal2Local is no more needed
 
@@ -200,6 +207,8 @@ private:
     GeneralDistribution& operator=( const GeneralDistribution& other ) = delete;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    void fillIndexMap();
 };
 
 typedef std::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
