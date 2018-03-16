@@ -89,6 +89,10 @@ public:
 
     static MemoryPtr getIt();
 
+    /** Implementation of pure method Memory::maxAllocatedBytes() */
+
+    virtual size_t maxAllocatedBytes() const;
+
 private:
 
     std::shared_ptr<const HostContext> mHostContextPtr;
@@ -98,6 +102,8 @@ private:
     mutable size_t mNumberOfAllocates; //!< variable counts allocates
 
     mutable size_t mNumberOfAllocatedBytes;//!< variable counts allocated bytes
+
+    mutable size_t mMaxAllocatedBytes;//!< variable counts max allocated bytes
 
     mutable std::recursive_mutex allocate_mutex;// needed to make allocate/free thread-safe
 };

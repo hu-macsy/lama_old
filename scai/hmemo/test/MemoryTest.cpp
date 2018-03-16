@@ -63,6 +63,13 @@ BOOST_AUTO_TEST_CASE( DeviceMemoryTest )
     void* data = mem->allocate( N );
     BOOST_ASSERT( data != NULL );
     mem->free( data, N );
+
+    size_t NM = mem->maxAllocatedBytes() + 1;
+    data = mem->allocate( NM );
+    mem->free( data, NM );
+
+    BOOST_ASSERT( mem->maxAllocatedBytes() >= NM );
+
     // Make sure that too much memory allocation throws an exception
     size_t MAX_N = std::numeric_limits<size_t>::max();
     BOOST_CHECK_THROW(

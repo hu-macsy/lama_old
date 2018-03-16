@@ -104,6 +104,8 @@ public:
         return *mCUDAContext;
     }
 
+    size_t maxAllocatedBytes() const;
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -111,6 +113,12 @@ protected:
     virtual void writeAt( std::ostream& stream ) const;
 
     std::shared_ptr<const CUDAContext> mCUDAContext;   // fast DMA transfer to this device
+
+private:
+
+    mutable size_t mNumberOfAllocates;
+    mutable size_t mNumberOfAllocatedBytes;
+    mutable size_t mMaxAllocatedBytes;
 };
 
 } /* end namespace hmemo */

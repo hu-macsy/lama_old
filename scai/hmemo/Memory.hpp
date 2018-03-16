@@ -160,6 +160,10 @@ public:
 
     virtual void* allocate( const size_t size ) const = 0;
 
+    /** This method returns the maximal number of allocated bytes during the lifetime of the memory. */
+
+    virtual size_t maxAllocatedBytes() const = 0;
+
     /**
      * This method free's allocated data allocated by this allocator.
      *
