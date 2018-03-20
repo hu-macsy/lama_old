@@ -38,18 +38,16 @@
 
 #include <vector>
 
-/** Class for a list of matrix pointers, one for each supported
+/** Class for a standard vector of matrix pointers, one for each supported
  *  matrix storage format and each supported arithmetic type.
  */
-
-class _Matrices : public std::vector<scai::lama::_MatrixPtr>
+class _Matrices : public std::vector<std::unique_ptr<scai::lama::_Matrix>>
 {
-
 public:
 
     /** Constructor creates already the list with all matrix pointers. */
 
-    _Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    _Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::Context::getContextPtr() )
     {
         using namespace scai::lama;
         std::vector<MatrixCreateKeyType> values;  //  all create values
@@ -57,18 +55,15 @@ public:
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::_MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
+            std::unique_ptr<scai::lama::_Matrix> matrixPtr( scai::lama::_Matrix::create( values[i] ) );
 
-            if ( ctx )
-            {
-                matrixPtr->setContextPtr( ctx );
-            }
+            matrixPtr->setContextPtr( ctx );
 
-            push_back( matrixPtr );
+            push_back( std::move( matrixPtr ) );
         }
     }
 
-    _Matrices( scai::common::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    _Matrices( scai::common::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::Context::getContextPtr() )
     {
         using namespace scai::lama;
         std::vector<MatrixCreateKeyType> values;  //  all create values
@@ -76,23 +71,20 @@ public:
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::_MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
-
             if ( values[i].second != stype )
             {
                 continue;
             }
 
-            if ( ctx )
-            {
-                matrixPtr->setContextPtr( ctx );
-            }
+            std::unique_ptr<scai::lama::_Matrix> matrixPtr( scai::lama::_Matrix::create( values[i] ) );
 
-            push_back( matrixPtr );
+            matrixPtr->setContextPtr( ctx );
+
+            push_back( std::move( matrixPtr ) );
         }
     }
 
-    // Destructor will free all matrices due to use of shared pointers
+    // Destructor will free all matrices due to use of unique pointers
 };
 
 /**
@@ -109,7 +101,7 @@ public:
     
     /** Constructor allocates a set of typed matrices, one for each supported format */
     
-    Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::Context::getContextPtr() )
     {   
         using namespace scai;
         using namespace lama;

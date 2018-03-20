@@ -35,6 +35,9 @@
 
 #include <scai/hmemo/Context.hpp>
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/lama/_Vector.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
+#include <scai/lama/storage/_MatrixStorage.hpp>
 
 namespace scai
 {
@@ -66,6 +69,64 @@ ObjectType eval( expression exp, hmemo::ContextPtr ctx = hmemo::Context::getCont
 }
 
 /** 
+ *  @brief Function that returns a zero vector or array of a given size 
+ * 
+ *  @tparam    ObjectType can be any derived MatrixStorage or Matrix class.
+ *  @param[in] size       number of entries
+ *  @param[in] ctx        context where operations on matrix will be execued
+ *  @returns              a zero vector of given size
+ *
+ *  \code
+ *     const auto v = zero<DenseVector<double>>( n );
+ *  \endcode
+ *
+ *  This template function can be considered as a syntactical help for code abbreviation.
+ *  Please keep in mind the function requires the result type as template argument.
+ */
+template<typename ObjectType>
+ObjectType zero( const IndexType size, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    static_assert(std::is_base_of<_Vector, ObjectType>::value, "zero<ObjectType>( n [,ctx] ): ObjectType is not a vector class");
+    ObjectType obj( ctx );
+    typename ObjectType::ObjectValueType zeroVal = 0;
+    obj.setSameValue( size, zeroVal );
+    return obj;
+}
+
+template<typename ObjectType>
+ObjectType zero( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    // ObjectType must be a vector class
+    static_assert(std::is_base_of<_Vector, ObjectType>::value, "zero<ObjectType>( dist [,ctx] ): ObjectType is not a vector class");
+    ObjectType obj( ctx );
+    typename ObjectType::ObjectValueType zeroVal = 0;
+    obj.setSameValue( dist, zeroVal );
+    return obj;
+}
+
+template<typename ObjectType>
+ObjectType undefined( const IndexType size, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    // ObjectType must be a vector class
+
+    static_assert(std::is_base_of<_Vector, ObjectType>::value, "undefined<ObjectType>( n [,ctx] ): ObjectType is not a vector class");
+    ObjectType obj( ctx );
+    obj.allocate( size );
+    return obj;
+}
+
+template<typename ObjectType>
+ObjectType undefined( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    // ObjectType must be a vector class
+
+    static_assert(std::is_base_of<_Vector, ObjectType>::value, "undefined<ObjectType>( dist [,ctx] ): ObjectType is not a vector class");
+    ObjectType obj( ctx );
+    obj.allocate( dist );
+    return obj;
+}
+
+/** 
  *  @brief Function that returns a zero matrix or storage for a given size 
  * 
  *  @tparam    ObjectType can be any derived MatrixStorage or Matrix class.
@@ -85,6 +146,8 @@ ObjectType eval( expression exp, hmemo::ContextPtr ctx = hmemo::Context::getCont
 template<typename ObjectType>
 ObjectType zero( const IndexType numRows, const IndexType numColumns, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
+    static_assert(std::is_base_of<_Matrix, ObjectType>::value || std::is_base_of<_MatrixStorage, ObjectType>::value, 
+                  "zero<ObjectType>( numRows, numCols [, ctx] ): ObjectType is not a matrix/storage class");
     ObjectType obj( ctx );
     obj.allocate( numRows, numColumns );
     return obj;
@@ -115,6 +178,7 @@ ObjectType zero(
     dmemo::DistributionPtr colDist,
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr()  )
 {
+    static_assert(std::is_base_of<_Matrix, ObjectType>::value, "zero<ObjectType>( rowDist, colDist [, ctx] ): ObjectType is not a matrix class");
     ObjectType obj( ctx );
     obj.allocate( rowDist, colDist );
     return obj;

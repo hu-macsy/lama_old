@@ -242,11 +242,8 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
 {
     // do the scaling via minimal and maximal value of the array data
 
-    Scalar min = arrayData.min();
-    Scalar max = arrayData.max();
-
-    ValueType minVal = min.getValue<ValueType>();
-    ValueType maxVal = max.getValue<ValueType>();
+    ValueType minVal = arrayData.min();
+    ValueType maxVal = arrayData.max();
 
     SCAI_LOG_INFO( logger, "arrayData = " << arrayData << " has min = " << minVal << ", max = " << maxVal )
 

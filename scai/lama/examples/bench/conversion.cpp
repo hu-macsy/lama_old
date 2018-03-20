@@ -139,20 +139,20 @@ int main()
             cout << "CSR <-- ELL" << endl;
             bench( a1, b );
             // test for same
-            Scalar maxDiff = a.maxDiffNorm( a1 );
-            cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
+            auto maxDiff = a.maxDiffNorm( a1 );
+            cout << "max diff = " << maxDiff << endl;
             cout << "JDS <-- CSR" << endl;
             bench( c, a );
             cout << "CSR <-- JDS" << endl;
             bench( a1, c );
             maxDiff = a.maxDiffNorm( a1 );
-            cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
+            cout << "max diff = " << maxDiff << endl;
             cout << "CSR <-- CSR" << endl;
             bench( d, a );
             cout << "CSR <-- CSR" << endl;
             bench( a1, d );
             maxDiff = a.maxDiffNorm( a1 );
-            cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
+            cout << "max diff = " << maxDiff << endl;
         }
     }
 }

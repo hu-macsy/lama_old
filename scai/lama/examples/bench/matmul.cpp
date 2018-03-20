@@ -89,8 +89,8 @@ static void bench( IndexType size, float fillRate )
     c1 = a * b;
     timeGPU = Walltime::get() - timeGPU;
     // check maxDiff
-    Scalar maxDiff = c.maxDiffNorm( c1 );
-    cout << "max diff Host/GPU matrix = " << maxDiff.getValue<ValueType>() << endl;
+    auto maxDiff = c.maxDiffNorm( c1 );
+    cout << "max diff Host/GPU matrix = " << maxDiff << endl;
 
     if ( verboseFlag )
     {

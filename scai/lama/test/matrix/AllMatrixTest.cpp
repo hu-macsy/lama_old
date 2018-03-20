@@ -406,7 +406,7 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
         initMatrix( matrix, "BLOCK", "CYCLIC" );
         MatrixPtr<ValueType> copyMatrix( matrix.copy() );
         // transpse the matrix first time
-        matrix.assignTranspose( matrix );
+        matrix = transpose( matrix );
         SCAI_LOG_DEBUG( logger, "transposeTest: " << matrix << " , orig is " << *copyMatrix );
         BOOST_CHECK_EQUAL( matrix.getRowDistribution(), copyMatrix->getColDistribution() );
         BOOST_CHECK_EQUAL( matrix.getColDistribution(), copyMatrix->getRowDistribution() );

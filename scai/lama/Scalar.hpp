@@ -59,6 +59,9 @@ namespace scai
 namespace lama
 {
 
+namespace intern
+{
+
 /**
  * @brief The class Scalar represents a container for all kind of ValueType used for Matrix and/or Vector.
  *
@@ -141,11 +144,6 @@ public:
     inline ValueType getValue() const;
 
     inline virtual void writeAt( std::ostream& stream ) const;
-
-    inline bool hasComplexValue() const
-    {
-        return common::Math::imag( mValue ) != common::Constants::ZERO;
-    }
 
 protected:
 
@@ -239,6 +237,8 @@ inline Scalar operator/( const Scalar& a, const Scalar& b )
 {
     return Scalar( a.getValue<ScalarRepType>() / b.getValue<ScalarRepType>() );
 }
+
+} /* end namespace intern */
 
 } /* end namespace lama */
 

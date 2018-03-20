@@ -179,9 +179,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
                 {
                     IndexType j = j1 * nCols + j2;
 
-                    Scalar s = matrix.getValue( i, j );
-                    ValueType v = s.getValue<ValueType>();
-
+                    ValueType v = matrix.getValue( i, j );
                     BOOST_CHECK_EQUAL( v, storage.getValue( i2, j2 ) );
                 }
             }

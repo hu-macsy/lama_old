@@ -167,7 +167,7 @@ static void bench( const IndexType N )
     HOST_PRINT( rank, "Scan time 2 : " << scanTime2 << " seconds" )
 
     Y -= Z;
-    Scalar diff = Y.maxNorm();
+    auto diff = Y.maxNorm();
 
     HOST_PRINT( rank, "diff between the two solutions: " << diff )
 }

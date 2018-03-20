@@ -35,7 +35,6 @@
 #include <scai/lama.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/expression/all.hpp>
@@ -117,7 +116,7 @@ struct CommandLineOptions
 
     common::ScalarType outDataType;
 
-    Scalar value;   // value for the vector
+    intern::Scalar value;   // value for the vector
 
     bool random;    // if true generate random numbers
 
@@ -128,7 +127,7 @@ struct CommandLineOptions
         outFileName = "";
         matFileName = "";
         outDataType = getType();
-        value       = Scalar( 1 );
+        value       = 1;
         size        = 0;
         random      = false;
     }

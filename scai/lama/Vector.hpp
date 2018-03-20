@@ -313,10 +313,10 @@ public:
     /** this = x binaryOp y */
 
     template<common::BinaryOp op>
-    Vector<ValueType>& operator=( const Expression<Scalar, Vector<ValueType>, op>& exp );
+    Vector<ValueType>& operator=( const Expression<intern::Scalar, Vector<ValueType>, op>& exp );
 
     template<common::BinaryOp op>
-    Vector<ValueType>& operator=( const Expression<Vector<ValueType>, Scalar, op>& exp );
+    Vector<ValueType>& operator=( const Expression<Vector<ValueType>, intern::Scalar, op>& exp );
 
     template<common::BinaryOp op>
     Vector<ValueType>& operator=( const Expression<Vector<ValueType>, Vector<ValueType>, op>& exp );
@@ -963,18 +963,18 @@ Vector<ValueType>& Vector<ValueType>::operator/=( const CastVectorExpression<Val
 
 template<typename ValueType>
 template<common::BinaryOp op>
-Vector<ValueType>& Vector<ValueType>::operator=( const Expression<Scalar, Vector<ValueType>, op>& exp )
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression<intern::Scalar, Vector<ValueType>, op>& exp )
 {
-    Scalar alpha = exp.getArg1();
+    intern::Scalar alpha = exp.getArg1();
     this->binaryOpScalar( exp.getArg2(), alpha.getValue<ValueType>(), op, true );  // swap 
     return *this;
 }
 
 template<typename ValueType>
 template<common::BinaryOp op>
-Vector<ValueType>& Vector<ValueType>::operator=( const Expression<Vector<ValueType>, Scalar, op>& exp )
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression<Vector<ValueType>, intern::Scalar, op>& exp )
 {
-    Scalar alpha = exp.getArg2();
+    intern::Scalar alpha = exp.getArg2();
     this->binaryOpScalar( exp.getArg1(), alpha.getValue<ValueType>(), op, false );  // no swap
     return *this;
 }

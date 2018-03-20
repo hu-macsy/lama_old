@@ -129,9 +129,9 @@ ResidualThreshold<ValueType>* ResidualThreshold<ValueType>::copy() const
 template<typename ValueType>
 inline bool ResidualThreshold<ValueType>::isSatisfied( const IterativeSolver<ValueType>& solver )
 {
-    lama::Scalar normScalar = ( *mNorm )( solver.getResidual() );
     typedef RealType<ValueType> DefaultReal;
-    DefaultReal normResult = normScalar.getValue<DefaultReal>();
+
+    DefaultReal normResult = ( *mNorm )( solver.getResidual() );
     SCAI_ASSERT( normResult >= DefaultReal( 0 ), "A norm should be always positive but is " << normResult );
 
     switch ( mCheckMode )

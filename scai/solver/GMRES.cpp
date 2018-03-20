@@ -63,7 +63,6 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, GMRES<ValueType>::lo
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
