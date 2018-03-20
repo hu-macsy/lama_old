@@ -95,12 +95,63 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( paddedForward1D, ValueType, scai_fft_test_types )
 
     ValueType eps = 0.00001;
 
+    for ( IndexType i = 0; i < npad; ++i )
+    {
+        Complex<ValueType> v = out[i];
+        SCAI_LOG_ERROR( logger, "rout[" << i << "] = " << v )
+    }
+
     // Test
     {
         ReadAccess<Complex<ValueType> > rOut( out );
 
         BOOST_CHECK( common::Math::abs( rOut[0] - Complex<ValueType>( 0.2 + 0.16 ) ) < eps );
         BOOST_CHECK( common::Math::abs( rOut[npad-2] - Complex<ValueType>( 0.2, 0.16 ) ) < eps );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( paddedBackward1D, ValueType, scai_fft_test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    static LAMAKernel<FFTKernelTrait::paddedBackward1D<ValueType> > fft;
+
+    fft.getSupportedContext( loc );
+
+    const IndexType n = 2;
+    const IndexType npad = 8;
+
+    // Init Arrays
+
+    HArray<ValueType> in( { 0.2, 0.16 } );
+
+    HArray<Complex<ValueType> > out;
+
+    // FFT Call
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<ValueType> rIn( in, loc );
+        WriteOnlyAccess<Complex<ValueType> > rOut( out, loc, npad );
+        fft[loc](n, npad, rIn.get(), rOut.get());
+    }
+
+    ValueType eps = 0.00001;
+
+    for ( IndexType i = 0; i < npad; ++i )
+    {
+        Complex<ValueType> v = out[i];
+        SCAI_LOG_ERROR( logger, "rout[" << i << "] = " << v )
+    }
+
+    // Test
+    {
+        ReadAccess<Complex<ValueType> > rOut( out );
+
+        BOOST_CHECK( common::Math::abs( rOut[0] - Complex<ValueType>( 0.2 + 0.16 ) ) < eps );
+        BOOST_CHECK( common::Math::abs( rOut[npad-2] - Complex<ValueType>( 0.2, -0.16 ) ) < eps );
     }
 }
 

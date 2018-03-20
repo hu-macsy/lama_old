@@ -39,11 +39,8 @@ set ( TEST_SOURCES
           SectionTest
           UtilsTest
           TransferUtilsTest
+          FFTTest
     )
-
-if ( FFTW_FOUND AND USE_FFTW )
-    set ( TEST_SOURCES ${TEST_SOURCES} FFTTest )
-endif ()
 
 scai_project ( 
 

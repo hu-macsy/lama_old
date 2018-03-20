@@ -49,6 +49,7 @@
 
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 
 
@@ -153,11 +154,20 @@ SCAI_REGION( "external.FFTW3.paddedBackward1D" )
 template<typename ValueType>
 void FFTW3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
+    bool useFFTW = true;
+    common::Settings::getEnvironment( useFFTW, "SCAI_USE_FFTW" );
+
+    if ( !useFFTW )
+    {
+        return;
+    }
+
     const common::ContextType ctx = common::ContextType::Host;
     using kregistry::KernelRegistry;
     SCAI_LOG_INFO( logger,
                    "register FFTW3-routines for Host at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<FFTKernelTrait::paddedForward1D<ValueType> >( paddedForward1D, ctx, flag );
+    KernelRegistry::set<FFTKernelTrait::paddedBackward1D<ValueType> >( paddedBackward1D, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -167,7 +177,7 @@ void FFTW3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry:
 FFTW3::FFTW3()
 {
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host" )
-    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
     kregistry::mepr::RegistratorV<RegistratorV,SCAI_NUMERIC_TYPES_FFTW3_LIST>::registerKernels( flag );
 }
 
