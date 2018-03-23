@@ -68,19 +68,16 @@ class COMMON_DLL_IMPORTEXPORT CUFFT
 
 private:
 
-    template<typename ValueType>
-    static void paddedForward1D(
-        const IndexType n,
-        const IndexType npad,
-        const ValueType in[],
-        common::Complex<ValueType> out[] );
+    /** CUDA implementation for FFTKernelTrait::fft */
 
     template<typename ValueType>
-    static void paddedBackward1D(
+    static void fft(
+        common::Complex<ValueType> array[],
+        const IndexType nb,
         const IndexType n,
-        const IndexType npad,
-        const ValueType in[],
-        common::Complex<ValueType> out[] );
+        const IndexType m,
+        const int direction );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

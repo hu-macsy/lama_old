@@ -58,30 +58,26 @@ class COMMON_DLL_IMPORTEXPORT OpenMPFFT
 {
 public:
 
-    /** OpenMP implementation for UtilKernelTrait::conj */
-
-    template<typename ValueType>
-    static void paddedForward1D(
-        const IndexType n,
-        const IndexType npad,
-        const ValueType in[],
-        common::Complex<ValueType> out[] );
-
-    template<typename ValueType>
-    static void paddedBackward1D(
-        const IndexType n,
-        const IndexType npad,
-        const ValueType in[],
-        common::Complex<ValueType> out[] );
+    /** OpenMP implementation for FFTKernelTrait::fft */
 
     template<typename ValueType>
     static void fft(
         common::Complex<ValueType> array[],
+        const IndexType nb,
         const IndexType n,
         const IndexType m,
         const int direction );
 
 private:
+
+    template<typename ValueType>
+    static void fft1(
+        common::Complex<ValueType> array[],
+        const IndexType n,
+        const IndexType m,
+        const int direction );
+
+    /** OpenMP implementation for FFTKernelTrait::fft_n */
 
     /** Struct for registration of methods with one template argument.
      *

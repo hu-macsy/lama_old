@@ -51,67 +51,20 @@ namespace utilskernel
 
 struct FFTKernelTrait
 {
-    /** @brief Trait for register kernel function paddedForward1 that applies a forward fft on padded data
-     */
-    template <typename ValueType>
-    struct paddedForward1D
-    {
-        /** @brief one dimensional fft
-         *
-         *  @param[in] n is the size of the in-array
-         *  @param[in] npad is the size of the out-array
-         *  @param[in] in is an array of values
-         *  @param[out] out is an array which contains the transformed values
-         */
-
-        typedef void ( *FuncType ) ( 
-            const IndexType n, 
-            const IndexType npad, 
-            const ValueType in[], 
-            common::Complex<RealType<ValueType>> out[] );
-
-        static const char* getId()
-        {
-            return "FFTKernel.paddedForward1D";
-        }
-    };
-
-    /** @brief Trait for register kernel function paddedForward1 that applies a backward fft on padded data
-     */
-    template <typename ValueType>
-    struct paddedBackward1D
-    {
-        /** @brief one dimensional fft
-         *
-         *  @param[in] n is the size of the in-array
-         *  @param[in] npad is the size of the out-array
-         *  @param[in] in is an array of values
-         *  @param[out] out is an array which contains the transformed values
-         */
-        typedef void ( *FuncType ) ( 
-            const IndexType n, 
-            const IndexType npad, 
-            const ValueType in[], 
-            common::Complex<RealType<ValueType>> out[] );
-
-        static const char* getId()
-        {
-            return "FFTKernel.paddedBackward1D";
-        }
-    };
-
     template <typename ValueType>
     struct fft
     {
-        /** @brief one dimensional fft in-place
+        /** @brief one dimensional fft in-place for multiple (row) vectors
          *
-         *  @param[in,out] array used for input and output
-         *  @param[in] n is the size of the array, must be power of 2
-         *  @param[in] m is the log of n so that n == 2**m
+         *  @param[in,out] array used for input and output, size is k x n
+         *  @param[in] nb is the number of vectors
+         *  @param[in] n is the length of each vector, must be power of 2
+         *  @param[in] m is the log of n, so that n == 2**m
          *  @param[in] direction is either 1 (forward) or -1 (backward)
          */
         typedef void ( *FuncType ) ( 
             common::Complex<ValueType> array[],
+            const IndexType nb,
             const IndexType n,
             const IndexType m,
             const int direction );
@@ -119,30 +72,6 @@ struct FFTKernelTrait
         static const char* getId()
         {
             return "FFTKernel.fft";
-        }
-    };
-
-    template <typename ValueType>
-    struct fftK
-    {
-        /** @brief one dimensional fft in-place for multiple (row) vectors
-         *
-         *  @param[in,out] array used for input and output, size is k x n
-         *  @param[in] k is the number of rows
-         *  @param[in] n is the size of the array, must be power of 2
-         *  @param[in] m is the log of n so that n == 2**m
-         *  @param[in] direction is either 1 (forward) or -1 (backward)
-         */
-        typedef void ( *FuncType ) ( 
-            common::Complex<ValueType> array[],
-            const IndexType k,
-            const IndexType n,
-            const IndexType m,
-            const int direction );
-
-        static const char* getId()
-        {
-            return "FFTKernel.fftK";
         }
     };
 

@@ -64,6 +64,23 @@ static void fft(
     const int direction,
     const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
 
+/** Compute the discrete fourier transform multiple vectors using the FFT algorithm
+ *
+ *  @param[out] result is the result array, size will be many * n
+ *  @param[in]  x is the input array, size must be multiple of many
+ *  @param[in]  many is the number of rows, valid for input and result array
+ *  @param[in]  n is the padding length for each row vector
+ *  @param[in]  direction must be either 1 (forward) or -1 (backward, inverse)
+ */
+template<typename ValueType>
+static void fft_many( 
+    hmemo::HArray<common::Complex<RealType<ValueType>>>& result, 
+    const hmemo::HArray<ValueType>& x, 
+    const IndexType many,
+    const IndexType n, 
+    const int direction,
+    const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

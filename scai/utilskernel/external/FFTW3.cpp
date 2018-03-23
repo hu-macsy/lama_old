@@ -66,85 +66,29 @@ SCAI_LOG_DEF_LOGGER( FFTW3::logger, "external.FFTW3" )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void FFTW3::paddedForward1D(
-    const IndexType n,
-    const IndexType npad,
-    const ValueType in[],
-    common::Complex<ValueType> out[] )
+void FFTW3::fft( common::Complex<ValueType> x[], IndexType nb, IndexType n, IndexType m, int dir )
 {
-    SCAI_REGION( "external.FFTW3.paddedForward1D" )
+    SCAI_REGION( "FFTW3.fft" )
 
-    SCAI_LOG_INFO( logger,
-                  "fftw padded forward 1-dimensional with: n(" << n << ") npad(" << npad << ") in(" << in << ") and out(" << out << ")" )
+    SCAI_LOG_INFO( logger, "fft<" << common::TypeTraits<ValueType>::id() << "> @ FFTW, " 
+                   << nb << " x " << n << " = 2 ** " << m )
 
-    typedef common::Complex<ValueType> ComplexType;
     typedef typename FFTW3Wrapper<ValueType>::FFTW3PlanType PlanType;
     typedef typename FFTW3Wrapper<ValueType>::FFTW3IndexType FFTW3IndexType;
 
-    std::unique_ptr<ComplexType[]> in1( new ComplexType[npad] );
-
-    PlanType p = NULL;
-
-    p = FFTW3Wrapper<ValueType>::plan_dft_1d( static_cast<FFTW3IndexType>( npad ), in1.get(), out, FFTW_FORWARD,
-                                              FFTW_ESTIMATE );
-
-    const ComplexType zero = ComplexType( 0 );
-
-    for( IndexType i = 0; i < n; ++i )
+    for ( IndexType i = 0; i < nb; ++i )
     {
-        in1[i] = in[i];
+        PlanType p = NULL;
+
+        p = FFTW3Wrapper<ValueType>::plan_dft_1d( static_cast<FFTW3IndexType>( n ), 
+                                                  x + i * n, x + i * n, 
+                                                  dir == 1 ? FFTW_FORWARD : FFTW_BACKWARD,
+                                                  FFTW_ESTIMATE );
+
+        FFTW3Wrapper<ValueType>::execute( p );
+
+        FFTW3Wrapper<ValueType>::destroy_plan( p );
     }
-
-    for( IndexType i = n; i < npad; ++i )
-    {
-        in1[i] = zero;
-    }
-
-    FFTW3Wrapper<ValueType>::execute( p );
-
-    FFTW3Wrapper<ValueType>::destroy_plan( p );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void FFTW3::paddedBackward1D(
-    const IndexType n,
-    const IndexType npad,
-    const ValueType in[],
-    common::Complex<ValueType> out[] )
-{
-SCAI_REGION( "external.FFTW3.paddedBackward1D" )
-
-        SCAI_LOG_INFO( logger,
-                   "fftw padded backward 1-dimensional with: n(" << n << ") npad(" << npad << ") in(" << in << ") and out(" << out << ")" )
-
-    typedef common::Complex<ValueType> ComplexType;
-    typedef typename FFTW3Wrapper<ValueType>::FFTW3PlanType PlanType;
-    typedef typename FFTW3Wrapper<ValueType>::FFTW3IndexType FFTW3IndexType;
-
-    std::unique_ptr<ComplexType[]> in1( new ComplexType[npad] );
-
-    PlanType p = NULL;
-
-    p = FFTW3Wrapper<ValueType>::plan_dft_1d( static_cast<FFTW3IndexType>( npad ), in1.get(), out, FFTW_BACKWARD,
-                                              FFTW_ESTIMATE );
-
-    const ComplexType zero = ComplexType( 0 );
-
-    for( IndexType i = 0; i < n; ++i )
-    {
-        in1[i] = in[i];
-    }
-
-    for( IndexType i = n; i < npad; ++i )
-    {
-        in1[i] = zero;
-    }
-
-    FFTW3Wrapper<ValueType>::execute( p );
-
-    FFTW3Wrapper<ValueType>::destroy_plan( p );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -166,8 +110,7 @@ void FFTW3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry:
     using kregistry::KernelRegistry;
     SCAI_LOG_INFO( logger,
                    "register FFTW3-routines for Host at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<FFTKernelTrait::paddedForward1D<ValueType> >( paddedForward1D, ctx, flag );
-    KernelRegistry::set<FFTKernelTrait::paddedBackward1D<ValueType> >( paddedBackward1D, ctx, flag );
+    KernelRegistry::set<FFTKernelTrait::fft<ValueType> >( fft, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

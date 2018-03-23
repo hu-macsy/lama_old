@@ -79,23 +79,75 @@ void fft(
     result = DenseVector<FFTType>( std::move( resultArray ), ctx );
 }
 
-/**
+template<typename ValueType>
+void ifft(
+    DenseVector<common::Complex<RealType<ValueType>>>& result,
+    const DenseVector<ValueType>& x,
+    const IndexType n = invalidIndex )
+{
+    // result array for fft is alway complex
+
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    SCAI_ASSERT_ERROR( x.getDistribution().isReplicated(), "fft only on replicated vectors" )
+
+    hmemo::ContextPtr ctx = result.getContextPtr();   // preferred location for FFT
+
+    dmemo::DistributionPtr dummyDist;
+    hmemo::HArray<FFTType> resultArray;
+
+    result.splitUp( dummyDist, resultArray );    // reuse allocated array of result vector
+
+    const IndexType size = n == invalidIndex ? x.size() : n;
+
+    int direction = -1;
+
+    utilskernel::FFTUtils::fft<ValueType>( resultArray, x.getLocalValues(), size, direction, result.getContextPtr() );
+
+    result = DenseVector<FFTType>( std::move( resultArray ), ctx );
+}
+
 template<typename ValueType>
 void fft( 
-    DenseMatrix<ComplexType<ValueType>>& result, 
+    DenseMatrix<common::Complex<RealType<ValueType>>>& result, 
     const DenseMatrix<ValueType>& x, 
     const IndexType dim,
     const IndexType n = invalidIndex )
 {
-    if ( dim == 0 )
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    SCAI_ASSERT_ERROR( x.getColDistribution().isReplicated(), "fft for dense matrix only with no col distribution" )
+
+    if ( dim == 1 )
     {
-        // fft along the rows is done in parallel
+        // fft  for each row
+
         IndexType nLocalRows = x.getRowDistribution().getLocalSize();
-        utilskernel::fft( nLocalRows, result.getLocalValues(), x.getLocalValues(), result.getContextPtr() );
+
+        const IndexType ncols = n == invalidIndex ? x.getNumColumns() : n;
+
+        int direction = 1;
+
+        hmemo::HArray<FFTType> resultArray;
+
+        const hmemo::HArray<ValueType>& inX = x.getLocalStorage().getValues();
+
+        utilskernel::FFTUtils::fft_many( resultArray, inX, nLocalRows, ncols, direction, result.getContextPtr() );
+
+        SCAI_ASSERT_EQ_DEBUG( resultArray.size(), nLocalRows * ncols, "serious mismatch" )
+
+        result = DenseMatrix<FFTType>( x.getRowDistributionPtr(), 
+                                       DenseStorage<FFTType>( nLocalRows, ncols, std::move( resultArray ) ) );
     }
-    else if ( dim == 1 )
+    else if ( dim == 0 )
     {
-        // fft along the columns we do on the transpose
+        // fft for each column
+
+        DenseMatrix<FFTType> resultT;
+        DenseMatrix<ValueType> xT;
+        xT.assignTranspose( x );
+        fft( resultT, x, 1, n );
+        result.assignTranspose( resultT );
     }
     else
     {
@@ -103,6 +155,55 @@ void fft(
     }
 }
 
+template<typename ValueType>
+void ifft(
+    DenseMatrix<common::Complex<RealType<ValueType>>>& result,
+    const DenseMatrix<ValueType>& x,
+    const IndexType dim,
+    const IndexType n = invalidIndex )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    SCAI_ASSERT_ERROR( x.getColDistribution().isReplicated(), "fft for dense matrix only with no col distribution" )
+
+    if ( dim == 1 )
+    {
+        // fft  for each row
+
+        IndexType nLocalRows = x.getRowDistribution().getLocalSize();
+
+        const IndexType ncols = n == invalidIndex ? x.getNumColumns() : n;
+
+        int direction = -1;
+
+        hmemo::HArray<FFTType> resultArray;
+
+        const hmemo::HArray<ValueType>& inX = x.getLocalStorage().getValues();
+
+        utilskernel::FFTUtils::fft_many( resultArray, inX, nLocalRows, ncols, direction, result.getContextPtr() );
+
+        SCAI_ASSERT_EQ_DEBUG( resultArray.size(), nLocalRows * ncols, "serious mismatch" )
+
+        result = DenseMatrix<FFTType>( x.getRowDistributionPtr(),
+                                       DenseStorage<FFTType>( nLocalRows, ncols, std::move( resultArray ) ) );
+    }
+    else if ( dim == 0 )
+    {
+        // fft for each column
+
+        DenseMatrix<FFTType> resultT;
+        DenseMatrix<ValueType> xT;
+        xT.assignTranspose( x );
+        ifft( resultT, x, 1, n );
+        result.assignTranspose( resultT );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "illegal dim argument " << dim << ", must be 0 or 1" )
+    }
+}
+
+/*
 template<typename ValueType>
 void fft2( 
     DenseMatrix<ComplexType<ValueType>>& result, 
@@ -114,7 +215,7 @@ void fft2(
     fft( result, result, 1, n );
 }
 
-**/
+*/
 
 
 } /* end namespace lama */

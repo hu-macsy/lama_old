@@ -92,7 +92,7 @@ static void DFT( int dir, IndexType m, Complex<ValueType> x1[] )
 }
 
 template<typename ValueType>
-void OpenMPFFT::fft( Complex<ValueType> x[], IndexType n, IndexType m, int dir )
+void OpenMPFFT::fft1( Complex<ValueType> x[], IndexType n, IndexType m, int dir )
 {
     IndexType i, i1, i2, j, k, l, l1, l2;
     Complex<ValueType> tx, t1, u, c;
@@ -153,8 +153,6 @@ void OpenMPFFT::fft( Complex<ValueType> x[], IndexType n, IndexType m, int dir )
 
         c.real( sqrt( ( 1.0 + c.real() ) / 2.0 ) );
     }
-
-    return;
 }
 
 template<typename ValueType>
@@ -170,6 +168,21 @@ static void FFT( int dir, IndexType m, Complex<ValueType> x[] )
     }
 
     OpenMPFFT::fft( x, n, m, dir );
+}
+
+template<typename ValueType>
+void OpenMPFFT::fft( Complex<ValueType> x[], IndexType nb, IndexType n, IndexType m, int dir )
+{
+    SCAI_REGION( "OpenMP.fft" )
+
+    SCAI_LOG_INFO( logger, "fft<" << common::TypeTraits<ValueType>::id() << "> @ OpenMP, "
+                     << nb << " x " << n << " = 2 ** " << m )
+
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < nb; ++i )
+    {
+        OpenMPFFT::fft1( x + i * nb, n, m, dir );
+    }
 }
 
 bool Powerof2(int n,int *m,int *twopm)
@@ -226,90 +239,6 @@ void FFT2D(Complex<ValueType> c[], int nx, int ny, int dir)
    }
 }
 
-template<typename ValueType>
-void OpenMPFFT::paddedForward1D(
-    const IndexType n,
-    const IndexType npad,
-    const ValueType in[],
-    Complex<ValueType> out[] )
-{
-    // compute m, n2 = 2**m with n2 >= n
-
-    IndexType m = 0;
-    IndexType n2 = 1;
-
-    while ( n2 < n || n2 < npad )
-    {
-        n2 *= 2;
-        m++;
-    }
-
-    SCAI_LOG_ERROR( logger, "FFT1D_forward, n = " << n << ", npad = " << npad << ", n2 = " << n2 << " = 2 ** " << m )
-
-    std::unique_ptr<Complex<ValueType>[]> arr( new Complex<ValueType>[n2] );
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        arr[i] = in[i];
-    }
-
-    for ( IndexType i = n; i < n2; ++i )
-    {
-        arr[i] = 0;
-    }
-
-    // DFT( 1, n2, arr.get()
-    FFT( 1, m, arr.get() );
-
-    for ( IndexType i = 0; i < npad; ++i )
-    {
-        out[i] = arr[i];
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPFFT::paddedBackward1D(
-    const IndexType n,
-    const IndexType npad,
-    const ValueType in[],
-    common::Complex<ValueType> out[] )
-{
-    // compute m, n2 = 2**m with n2 >= n
-
-    IndexType m = 0;
-    IndexType n2 = 1;
-
-    while ( n2 < n || n2 < npad )
-    {
-        n2 <<= 1;
-        m++;
-    }
-
-    SCAI_LOG_ERROR( logger, "FFT1D_backward, n = " << n << ", npad = " << npad << ", n2 = " << n2 << " = 2 ** " << m )
-
-    std::unique_ptr<Complex<ValueType>[]> arr( new Complex<ValueType>[n2] );
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        arr[i] = in[i];
-    }
-
-    for ( IndexType i = n; i < n2; ++i )
-    {
-        arr[i] = 0;
-    }
-
-    // DFT( 1, n2, arr.get()
-    FFT( -1, m, arr.get() );
-
-    for ( IndexType i = 0; i < npad; ++i )
-    {
-        out[i] = arr[i];
-    }
-}
-
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
@@ -321,8 +250,6 @@ void OpenMPFFT::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegis
     using kregistry::KernelRegistry;
     SCAI_LOG_INFO( logger,
                    "register OpenMPFFT-routines for Host at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
-    // KernelRegistry::set<FFTKernelTrait::paddedForward1D<ValueType> >( paddedForward1D, ctx, flag );
-    // KernelRegistry::set<FFTKernelTrait::paddedBackward1D<ValueType> >( paddedBackward1D, ctx, flag );
     KernelRegistry::set<FFTKernelTrait::fft<ValueType> >( fft, ctx, flag );
 }
 

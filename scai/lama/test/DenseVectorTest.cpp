@@ -998,5 +998,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest2, ValueType, scai_numeric_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.5, 1.0 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 4;
+
+    ifft( y, x, n );
+
+    HArray<FFTType> result( { 1.5, FFTType( 0.5, 1.0 ), -0.5, FFTType( 0.5, -1.0 ) } );
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( y.getLocalValues(), result ) < eps );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 

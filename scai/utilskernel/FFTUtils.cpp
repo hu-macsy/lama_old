@@ -38,6 +38,7 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/FFTKernelTrait.hpp>
+#include <scai/utilskernel/SectionKernelTrait.hpp>
 
 #include <scai/common/macros/loop.hpp>
 
@@ -52,6 +53,8 @@ namespace utilskernel
 
 SCAI_LOG_DEF_LOGGER( FFTUtils::logger, "FFTUtils" )
 
+/* --------------------------------------------------------------------------- */
+
 static void pow2( IndexType& m, IndexType& n2, const IndexType n )
 {
     m  = 0;
@@ -63,6 +66,8 @@ static void pow2( IndexType& m, IndexType& n2, const IndexType n )
         n2 = n2 << 1;
     }
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void FFTUtils::fft( 
@@ -92,34 +97,103 @@ void FFTUtils::fft(
  
     pow2( m, n2, n );
 
-    SCAI_LOG_ERROR( logger, "fft<" << common::TypeTraits<ValueType>::id() 
-                     << ">( array[" << n << "], " << n2 << " = 2 ** " << m << ", dir = " << direction )
+    SCAI_LOG_INFO( logger, "fft<" << common::TypeTraits<ValueType>::id() 
+                    << ">( array[" << n << " -> " << n2 << " = 2 ** " << m << "], dir = " << direction
+                    << " @ ctx = " << *loc ) 
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<ValueType> rX( x );
+    ReadAccess<ValueType> rX( x, loc );
     WriteOnlyAccess<FFTType> wResult( result, loc, n2 );
 
     IndexType nx = std::min( n, x.size() );
 
-    SCAI_LOG_ERROR( logger, "copy x[" << nx << "] and pad to " << n2 )
+    SCAI_LOG_DEBUG( logger, "copy x[" << nx << "] and pad to " << n2 )
     set[loc]( wResult.get(), rX.get(), x.size(), common::BinaryOp::COPY );
     setVal[loc]( wResult.get() + nx, n2 - nx, FFTType( 0 ), common::BinaryOp::COPY );
 
-    for ( IndexType i = 0; i < n2; ++i )
-    {
-        std::cout << "result[" << i << "] = " << wResult[i] << std::endl;
-    }
-
-    fft[loc]( wResult.get(), n2, m, direction );
-
-    for ( IndexType i = 0; i < n2; ++i )
-    {
-        std::cout << "result[" << i << "] = " << wResult[i] << std::endl;
-    }
+    fft[loc]( wResult.get(), 1, n2, m, direction );
 
     wResult.resize( n );
 }
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void FFTUtils::fft_many( 
+    HArray<Complex<RealType<ValueType>>>& result, 
+    const HArray<ValueType>& x, 
+    const IndexType many,
+    const IndexType ncols,
+    int direction,
+    const ContextPtr context )
+{
+    typedef Complex<RealType<ValueType>> FFTType;
+
+    IndexType ncols2;
+    IndexType m;
+ 
+    pow2( m, ncols2, ncols );
+
+    SCAI_ASSERT_EQ_ERROR( ncols2, ncols, "not supported yet" )
+
+    SCAI_LOG_INFO( logger, "fft_many<" << common::TypeTraits<ValueType>::id() 
+                     << ">( array[ " << many << " x " << ncols << "], " << ncols2 << " = 2 ** " << m << ", dir = " << direction )
+ 
+    // copy input array x into result array and pad the rows with 0
+
+    {
+        IndexType nColsX = x.size() / many;
+        SCAI_ASSERT_EQ_ERROR( nColsX * many, x.size(), "size of input array is not multiple of #many = " << many )
+
+        HArrayUtils::setSameValue( result, many * ncols2, FFTType( 0 ), context );
+
+        IndexType sizes[2] = { many, nColsX };
+        IndexType sdist[2] = { nColsX, 1 };
+        IndexType tdist[2] = { ncols2, 1 };
+
+        static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::unaryOp<FFTType, ValueType> > unaryOp;
+
+        ContextPtr loc = context ? context : x.getValidContext();
+
+        unaryOp.getSupportedContext( loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<ValueType> rX( x, loc );
+        WriteAccess<FFTType> wResult( result, loc );
+
+        unaryOp[loc]( wResult.get(), 2, sizes, tdist, rX.get(), sdist, common::UnaryOp::COPY );
+    }
+
+    // for ( IndexType i = 0; i < result.size(); ++i )
+    // {
+    //     FFTType v = result[i];
+    //     std::cout << "before fft_n: result[" << i << "] = " << v << std::endl;
+    // }
+
+    {
+        static LAMAKernel<FFTKernelTrait::fft<RealType<ValueType>>> fft;
+
+        ContextPtr loc = context ? context : x.getValidContext();
+
+        fft.getSupportedContext( loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteAccess<FFTType> wResult( result, loc );
+        fft[loc]( wResult.get(), many, ncols2, m, direction );
+    }
+
+    // for ( IndexType i = 0; i < result.size(); ++i )
+    // {
+    //    FFTType v = result[i];
+    //    std::cout << "after fft_n: result[" << i << "] = " << v << std::endl;
+    // }
+
+}
+
+/* --------------------------------------------------------------------------- */
 
 #define FFTUTILS_SPECIFIER( ValueType )                     \
     template void FFTUtils::fft<ValueType>(                 \
@@ -127,6 +201,13 @@ void FFTUtils::fft(
         const hmemo::HArray<ValueType>&,                    \
         const IndexType n,                                  \
         const int direction,                                \
+        hmemo::ContextPtr);                                 \
+    template void FFTUtils::fft_many<ValueType>(            \
+        hmemo::HArray<Complex<RealType<ValueType>>>&,       \
+        const hmemo::HArray<ValueType>&,                    \
+        const IndexType,                                    \
+        const IndexType,                                    \
+        const int,                                          \
         hmemo::ContextPtr);                    
 
 SCAI_COMMON_LOOP( FFTUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
