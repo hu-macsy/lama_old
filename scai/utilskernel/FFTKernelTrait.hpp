@@ -100,6 +100,52 @@ struct FFTKernelTrait
         }
     };
 
+    template <typename ValueType>
+    struct fft
+    {
+        /** @brief one dimensional fft in-place
+         *
+         *  @param[in,out] array used for input and output
+         *  @param[in] n is the size of the array, must be power of 2
+         *  @param[in] m is the log of n so that n == 2**m
+         *  @param[in] direction is either 1 (forward) or -1 (backward)
+         */
+        typedef void ( *FuncType ) ( 
+            common::Complex<ValueType> array[],
+            const IndexType n,
+            const IndexType m,
+            const int direction );
+
+        static const char* getId()
+        {
+            return "FFTKernel.fft";
+        }
+    };
+
+    template <typename ValueType>
+    struct fftK
+    {
+        /** @brief one dimensional fft in-place for multiple (row) vectors
+         *
+         *  @param[in,out] array used for input and output, size is k x n
+         *  @param[in] k is the number of rows
+         *  @param[in] n is the size of the array, must be power of 2
+         *  @param[in] m is the log of n so that n == 2**m
+         *  @param[in] direction is either 1 (forward) or -1 (backward)
+         */
+        typedef void ( *FuncType ) ( 
+            common::Complex<ValueType> array[],
+            const IndexType k,
+            const IndexType n,
+            const IndexType m,
+            const int direction );
+
+        static const char* getId()
+        {
+            return "FFTKernel.fftK";
+        }
+    };
+
 };
 
 } /* end namespace utilskernel */

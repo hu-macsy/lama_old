@@ -37,6 +37,7 @@
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/FFTKernelTrait.hpp>
+#include <scai/utilskernel/FFTUtils.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -66,6 +67,41 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.FFTTest" )
 /* --------------------------------------------------------------------- */
 
 typedef boost::mpl::list<double> scai_fft_test_types;
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fft1D, ValueType, scai_fft_test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    // Init Arrays
+
+    HArray<ValueType> in( { 0.2, 0.16 } );
+
+    HArray<Complex<ValueType> > out;
+
+    IndexType npad = 8;
+
+    FFTUtils::fft( out, in, npad, 1, loc );
+
+    ValueType eps = 0.00001;
+
+    for ( IndexType i = 0; i < npad; ++i )
+    {
+        Complex<ValueType> v = out[i];
+        SCAI_LOG_ERROR( logger, "out[" << i << "] = " << v )
+    }
+
+    // Test
+    {
+        ReadAccess<Complex<ValueType> > rOut( out );
+
+        BOOST_CHECK( common::Math::abs( rOut[0] - Complex<ValueType>( 0.2 + 0.16 ) ) < eps );
+        BOOST_CHECK( common::Math::abs( rOut[npad-2] - Complex<ValueType>( 0.2, 0.16 ) ) < eps );
+    }
+}
+
+/* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( paddedForward1D, ValueType, scai_fft_test_types )
 {

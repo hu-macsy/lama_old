@@ -92,20 +92,13 @@ static void DFT( int dir, IndexType m, Complex<ValueType> x1[] )
 }
 
 template<typename ValueType>
-static void FFT( int dir, IndexType m, Complex<ValueType> x[] )
+void OpenMPFFT::fft( Complex<ValueType> x[], IndexType n, IndexType m, int dir )
 {
-    IndexType i, i1, i2, j, k, l, l1, l2, n;
+    IndexType i, i1, i2, j, k, l, l1, l2;
     Complex<ValueType> tx, t1, u, c;
 
-    /*Calculate the number of points */
-    n = 1;
-
-    for ( i = 0; i < m; i++ )
-    {
-        n <<= 1;
-    }
-
     /* Do the bit reversal */
+
     i2 = n >> 1;
     j = 0;
 
@@ -162,6 +155,21 @@ static void FFT( int dir, IndexType m, Complex<ValueType> x[] )
     }
 
     return;
+}
+
+template<typename ValueType>
+static void FFT( int dir, IndexType m, Complex<ValueType> x[] )
+ {
+    /*Calculate the number of points */
+
+    IndexType n = 1;
+
+    for ( IndexType i = 0; i < m; i++ )
+    {
+        n <<= 1;
+    }
+
+    OpenMPFFT::fft( x, n, m, dir );
 }
 
 bool Powerof2(int n,int *m,int *twopm)
@@ -313,15 +321,16 @@ void OpenMPFFT::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegis
     using kregistry::KernelRegistry;
     SCAI_LOG_INFO( logger,
                    "register OpenMPFFT-routines for Host at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<FFTKernelTrait::paddedForward1D<ValueType> >( paddedForward1D, ctx, flag );
-    KernelRegistry::set<FFTKernelTrait::paddedBackward1D<ValueType> >( paddedBackward1D, ctx, flag );
+    // KernelRegistry::set<FFTKernelTrait::paddedForward1D<ValueType> >( paddedForward1D, ctx, flag );
+    // KernelRegistry::set<FFTKernelTrait::paddedBackward1D<ValueType> >( paddedBackward1D, ctx, flag );
+    KernelRegistry::set<FFTKernelTrait::fft<ValueType> >( fft, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
 /*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-#define SCAI_NUMERIC_TYPES_FFT double
+#define SCAI_NUMERIC_TYPES_FFT float, double
 
 #define SCAI_NUMERIC_TYPES_FFT_LIST SCAI_TYPELIST( SCAI_NUMERIC_TYPES_FFT )
 

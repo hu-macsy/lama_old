@@ -74,6 +74,13 @@ public:
         const ValueType in[],
         common::Complex<ValueType> out[] );
 
+    template<typename ValueType>
+    static void fft(
+        common::Complex<ValueType> array[],
+        const IndexType n,
+        const IndexType m,
+        const int direction );
+
 private:
 
     /** Struct for registration of methods with one template argument.

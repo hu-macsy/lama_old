@@ -48,6 +48,7 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/expression/all.hpp>
+#include <scai/lama/fft.hpp>
 
 #include <scai/utilskernel.hpp>
 
@@ -949,4 +950,53 @@ BOOST_AUTO_TEST_CASE( moveTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_numeric_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.2, 0.16 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 8;
+
+    fft( y, x, n );
+
+    BOOST_CHECK_EQUAL( y.size(), n );
+
+    FFTType yS1 = y[0];
+    FFTType yS2 = y[n - 2];
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( common::Math::abs( yS1 - FFTType( 0.2 + 0.16 ) ) < eps );
+    BOOST_CHECK( common::Math::abs( yS2 - FFTType( 0.2, 0.16 ) ) < eps );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_numeric_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.2, 0.16 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 8;
+
+    ifft( y, x, n );
+
+    BOOST_CHECK_EQUAL( y.size(), n );
+
+    FFTType yS1 = y[0];
+    FFTType yS2 = y[n - 2];
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( common::Math::abs( yS1 - FFTType( 0.2 + 0.16 ) ) < eps );
+    BOOST_CHECK( common::Math::abs( yS2 - FFTType( 0.2, -0.16 ) ) < eps );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
+
