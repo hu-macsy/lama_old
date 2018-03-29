@@ -38,6 +38,7 @@
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/SparseKernelTrait.hpp>
+#include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
@@ -494,6 +495,52 @@ void HArrayUtils::scatter(
     ReadAccess<IndexType> rIndexes( indexes, loc );
     //  target[ indexes[i] ] = source[i]
     setScatter[loc] ( wTarget.get(), rIndexes.get(), unique, rSource.get(), op, n );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::transpose(
+    hmemo::HArray<ValueType>& target,
+    const IndexType n1,
+    const IndexType n2,
+    const HArray<ValueType>& source,
+    const bool conj,
+    ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQ_ERROR( source.size(), n1 * n2, "source array has not " << n1 << " x " << n2 << " elements." )
+
+    static LAMAKernel<blaskernel::BLASKernelTrait::geam<ValueType> > geam;
+
+    ContextPtr loc = prefLoc;
+
+    if ( loc == ContextPtr() )
+    {
+        // default location: where we have valid copy of the source data
+        loc = source.getValidContext();
+    }
+
+    geam.getSupportedContext( loc );
+
+    if ( &target == &source )
+    {
+        HArray<ValueType> tmpTarget;
+        transpose( tmpTarget, n1, n2, source, conj, loc );
+        target = std::move( tmpTarget );
+    }
+    else
+    {
+        ReadAccess<ValueType> rSource( source, loc );
+        WriteOnlyAccess<ValueType> wTarget( target, loc, n1 * n2 );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        common::MatrixOp op = conj ? common::MatrixOp::CONJ_TRANSPOSE : common::MatrixOp::TRANSPOSE;
+
+        geam[loc]( wTarget.get(), n2, n1, n2,
+                   ValueType( 1 ), rSource.get(), n1, op,
+                   ValueType( 0 ), rSource.get(), n2, common::MatrixOp::NORMAL );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2550,6 +2597,13 @@ void HArrayUtils::buildComplex(
     template ValueType HArrayUtils::getVal<ValueType>(                  \
             const hmemo::HArray<ValueType>&,                            \
             const IndexType );                                          \
+    template void HArrayUtils::transpose<ValueType>(                    \
+            hmemo::HArray<ValueType>&,                                  \
+            const IndexType,                                            \
+            const IndexType,                                            \
+            const hmemo::HArray<ValueType>&,                            \
+            const bool,                                                 \
+            hmemo::ContextPtr);                                         \
     template void HArrayUtils::setScalar<ValueType>(                    \
             hmemo::HArray<ValueType>&,                                  \
             const ValueType,                                            \

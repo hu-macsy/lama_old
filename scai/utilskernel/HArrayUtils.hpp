@@ -341,6 +341,28 @@ public:
         const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Computing the transpose of two-dimensional array.
+     *
+     *  @param[out] target result array, size will be n1 * n2
+     *  @param[in]  n1 number of rows of 2D array
+     *  @param[in]  n2 number of cols of 2D array
+     *  @param[in]  source array with size n2 * n1
+     *  @param[in]  conj   if true, compuate conjugate-transpose
+     *  @param[in]  prefLoc location where result is computed.
+     *
+     *  Alias of target and source is suppported. On the host, 
+     *  this operation is done in-place, on a device a temporary array
+     *  is used.
+     */
+    template<typename ValueType>
+    static void transpose(
+        hmemo::HArray<ValueType>& target,
+        const IndexType n1, 
+        const IndexType n2, 
+        const hmemo::HArray<ValueType>& source,
+        const bool conj,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+  
     /** Initialize an array with a certain size and a given value.
      *
      *  @param[out] array    is the array that will be allocated and set

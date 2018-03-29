@@ -44,6 +44,7 @@
 
 using scai::IndexType;
 using scai::common::ContextType;
+using scai::common::MatrixOp;
 using scai::hmemo::HArray;
 using scai::hmemo::ReadAccess;
 using scai::hmemo::WriteAccess;
@@ -81,7 +82,7 @@ void cg( const IndexType m, const IndexType n, const IndexType lda,
     static KernelTraitContextFunction<BLASKernelTrait::dot<ValueType> > dot;
     // CG init
     // r = -1 * A * x
-    gemv[loc]( CblasRowMajor, CblasNoTrans, m, n, -1.0, A_.get(), lda, x_.get(),
+    gemv[loc]( MatrixOp::NORMAL, m, n, -1.0, A_.get(), lda, x_.get(),
                1, 0.0, r_.get(), 1 );
     // r = b + r
     axpy[loc]( m, 1.0, b_.get(), 1, r_.get(), 1 );
@@ -96,7 +97,7 @@ void cg( const IndexType m, const IndexType n, const IndexType lda,
     for ( IndexType k = 0; norm > tol && k < max_iter; ++k )
     {
         // z = A * d
-        gemv[loc]( CblasRowMajor, CblasNoTrans, m, n, 1.0, A_.get(), lda,
+        gemv[loc]( MatrixOp::NORMAL, m, n, 1.0, A_.get(), lda,
                    d_.get(), 1, 0.0, z_.get(), 1 );
         // alpha = rOld / d * z
         alpha = dot[loc]( m, d_.get(), 1, z_.get(), 1 );
@@ -131,7 +132,7 @@ int main()
     // Maximum number of iterations for solver
     const IndexType max_iter = 20;
     // Pointer used for initializing data structures
-    ContextPtr host = Context::getContextPtr( scai::common::ContextType::Host );
+    ContextPtr host = Context::getHostPtr();
     // Context used for computation
     ContextType loc = ContextType::Host;
     HArray<ValueType> A( m * m );

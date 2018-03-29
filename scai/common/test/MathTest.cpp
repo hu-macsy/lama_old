@@ -258,6 +258,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
 
 typedef boost::mpl::list<short, unsigned short, int, unsigned int, long, unsigned long> IndexTypes;
 
+BOOST_AUTO_TEST_CASE( nextpow2Test )
+{
+    using scai::IndexType;
+
+    // Here we make the test with IndexType
+
+    BOOST_CHECK_EQUAL( Math::nextpow2( IndexType( 31 ) ), IndexType( 5 ) );
+    BOOST_CHECK_EQUAL( Math::nextpow2( IndexType( 32 ) ), IndexType( 5 ) );
+    BOOST_CHECK_EQUAL( Math::nextpow2( IndexType( 33 ) ), IndexType( 6 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( validIndexTest, IndexType, IndexTypes )
 {
     const IndexType size = 13;

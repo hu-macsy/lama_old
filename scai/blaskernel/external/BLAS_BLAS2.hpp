@@ -42,6 +42,7 @@
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <scai/logging.hpp>
 
@@ -64,8 +65,7 @@ public:
      */
     template<typename ValueType>
     static void gemv(
-        const CBLAS_ORDER order,
-        const CBLAS_TRANSPOSE trans,
+        const common::MatrixOp opA,
         const IndexType m,
         const IndexType n,
         const ValueType alpha,

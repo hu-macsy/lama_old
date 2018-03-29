@@ -142,6 +142,13 @@ void FFTUtils::fft_many(
  
     // copy input array x into result array and pad the rows with 0
 
+    if ( static_cast<const _HArray*>( &result ) == static_cast<const _HArray*>( &x ) )
+    {
+        // we have an alias on input and output array
+
+        SCAI_ASSERT_EQ_ERROR( x.size(), many * ncols2, "Size of aliased input/output not legal" )
+    }
+    else
     {
         IndexType nColsX = x.size() / many;
         SCAI_ASSERT_EQ_ERROR( nColsX * many, x.size(), "size of input array is not multiple of #many = " << many )

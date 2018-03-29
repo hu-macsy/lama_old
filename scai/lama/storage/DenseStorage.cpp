@@ -346,54 +346,8 @@ void DenseStorage<ValueType>::transposeImpl()
 {
     SCAI_REGION( "Storage.Dense.transpose" )
 
-    // Compute transpostion A^t of A via A^t = A^t * I, where * is implemented by LAPACK
-    ContextPtr context = Context::getHostPtr();
-    WriteAccess<ValueType> wData( mData, context );
-
-    // transpose quadratic matrix
-    // quadratic implementation is a special case of the rectangular one but this specific one might be faster
-    if ( getNumColumns() == getNumRows() )
-    {
-        for ( IndexType i = 0; i < getNumColumns(); ++i )
-        {
-            for ( IndexType j = i + 1; j < getNumColumns(); ++j )
-            {
-                std::swap( wData[i + getNumColumns() * j], wData[j + getNumColumns() * i] );
-            }
-        }
-    }
-    else //tranpose rectangular matrix
-    {
-        for ( IndexType start = 0; start < getNumColumns() * getNumRows(); ++start )
-        {
-            IndexType next = start;
-            IndexType i = 0;
-
-            do
-            {
-                ++i;
-                next = ( next % getNumRows() ) * getNumColumns() + next / getNumRows();
-            }
-            while ( next > start );
-
-            if ( next >= start && i != 1 )
-            {
-                const ValueType tmp = wData[start];
-                next = start;
-
-                do
-                {
-                    i = ( next % getNumRows() ) * getNumColumns() + next / getNumRows();
-                    wData[next] = ( i == start ) ? tmp :  wData[i];
-                    next = i;
-                }
-                while ( next > start );
-            }
-        }
-    }
-
-    // swap dimensions of transposed matrix
-
+    HArrayUtils::transpose( mData, getNumColumns(), getNumRows(), mData, false, getContextPtr() );
+ 
     _MatrixStorage::setDimension( getNumColumns(), getNumRows() );
 };
 
@@ -720,8 +674,7 @@ void DenseStorage<ValueType>::matrixTimesVector(
         WriteAccess<ValueType> wResult( result, loc );
         SCAI_CONTEXT_ACCESS( loc )
         // gemv:  result = alpha * this * x + beta * result
-        gemv[loc]( CblasRowMajor, common::isTranspose( op ) ? CblasTrans : CblasNoTrans, 
-                   getNumRows(), getNumColumns(), alpha, denseValues.get(), lda, rX.get(),
+        gemv[loc]( op, getNumRows(), getNumColumns(), alpha, denseValues.get(), lda, rX.get(),
                    1, beta, wResult.get(), 1 );
     }
 }
@@ -877,7 +830,7 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
     int ldc = getNumColumns();
     // Now  C = alpha * A * B + beta * C, can use GEMM of BLAS3
     SCAI_LOG_TRACE( logger,
-                    "GEMM( CblasRowMajor, CblasNoTrans, CblasNoTrans, m:" << m << ", n:" << n << ", k:" << k << ", alpha:" << alpha << ", A , lda:" << lda << " ,B ,ldb:" << ldb << " ,beta:" << beta << " C ,ldc:" << ldc << " )" )
+                    "GEMM( Normal, Normal, m:" << m << ", n:" << n << ", k:" << k << ", alpha:" << alpha << ", A , lda:" << lda << " ,B ,ldb:" << ldb << " ,beta:" << beta << " C ,ldc:" << ldc << " )" )
 
     if ( lda != 0 && n != 0 && m != 0 )
     {
@@ -888,7 +841,8 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
         ReadAccess<ValueType> bAccess( ptrB->getValues(), loc );
         WriteAccess<ValueType> resAccess( mData, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        gemm[loc]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
+        gemm[loc]( common::MatrixOp::NORMAL, common::MatrixOp::NORMAL, 
+                   m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
                    resAccess.get(), ldc );
     }
 }

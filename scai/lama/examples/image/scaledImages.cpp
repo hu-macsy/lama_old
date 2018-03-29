@@ -82,8 +82,8 @@ int main( int argc, const char* argv[] )
     }
     else
     {
-        float minVal = arrayData.min().getValue<float>();
-        float maxVal = arrayData.max().getValue<float>();
+        float minVal = arrayData.min();
+        float maxVal = arrayData.max();
 
         float scaleMin = minVal;
         float scaleMax = maxVal;

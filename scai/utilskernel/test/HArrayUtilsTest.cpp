@@ -1,36 +1,36 @@
-	/**
-	 * @file HArrayUtilsTest.cpp
-	 *
-	 * @license
-	 * Copyright (c) 2009-2017
-	 * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
-	 * for Fraunhofer-Gesellschaft
-	 *
-	 * This file is part of the SCAI framework LAMA.
-	 *
-	 * LAMA is free software: you can redistribute it and/or modify it under the
-	 * terms of the GNU Affero General Public License as published by the Free
-	 * Software Foundation, either version 3 of the License, or (at your option)
-	 * any later version.
-	 *
-	 * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
-	 * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-	 * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
-	 * more details.
-	 *
-	 * You should have received a copy of the GNU Affero General Public License
-	 * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
-	 *
-	 * Other Usage
-	 * Alternatively, this file may be used in accordance with the terms and
-	 * conditions contained in a signed written agreement between you and
-	 * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
-	 * @endlicense
-	 *
-	 * @brief Tests for the class HArrayUtils
-	 * @author Thomas Brandes
-	 * @date 22.01.2016
-	 */
+/**
+ * @file HArrayUtilsTest.cpp
+ *
+ * @license
+ * Copyright (c) 2009-2017
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the SCAI framework LAMA.
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ * @endlicense
+ *
+ * @brief Tests for the class HArrayUtils
+ * @author Thomas Brandes
+ * @date 22.01.2016
+ */
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
@@ -1380,6 +1380,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( appendArrayTest, ValueType, array_types )
     HArrayUtils::appendArray( x, y, loc );
   
     BOOST_TEST( hostReadAccess( x ) == hostReadAccess( xy ), per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( transposeTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    HArray<ValueType> source( { 1, 2, 3, 4, 5, 6 }, loc );
+
+    HArray<ValueType> expected( { 1, 4, 2, 5, 3, 6 }, loc );
+
+    // source array is 2 x 3 [ 1 2 3 ; 4 5 6 ], target is 3 x 2 [ 1 4 ; 2 5; 3 6 ]
+
+    HArrayUtils::transpose( source, 3, 2, source, false, loc );
+
+    BOOST_TEST( hostReadAccess( source ) == hostReadAccess( expected ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */

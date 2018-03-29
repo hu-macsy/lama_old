@@ -213,7 +213,11 @@ struct Math
      *  @returns   a boolean value
      */
     static inline bool randomBool( const float trueRatio );
+ 
+    /** @brief return the exponent p for the smallest power that satisfies $2^p \ge n$ */
 
+    template<typename ValueType>
+    static inline CUDA_CALLABLE_MEMBER ValueType nextpow2( ValueType n );
 };
 
 // -------------------------------- sqrt ----------------------------
@@ -771,6 +775,23 @@ bool Math::randomBool( const float trueRatio )
     }
 }
 
+// -------------------------------- nextpow2  ------------------------
+
+template<typename ValueType>
+ValueType Math::nextpow2( const ValueType n )
+{
+    ValueType a = Math::abs( n );
+    ValueType p2 = 1;
+    ValueType p = 0;
+
+    while ( p2 < a )
+    {
+        p2 *= 2;
+        p  += 1;
+    }
+
+    return p;
+}
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 

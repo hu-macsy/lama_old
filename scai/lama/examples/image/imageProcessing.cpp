@@ -130,11 +130,11 @@ void grayScale(GridVector<float>& outputImage, const GridVector<float>& inputIma
     {
         for(IndexType j = 0 ; j<grid.size(1); j++)
         {
-            Scalar mean =( red*rImage(i,j,0) + green*rImage(i,j,1) + blue*rImage(i,j,3) );
+            float mean =( red * rImage(i,j,0) + green*rImage(i,j,1) + blue*rImage(i,j,3) );
 
-            wImage( i,  j,  0) = mean.getValue<float>();
-            wImage( i,  j,  1) = mean.getValue<float>();
-            wImage( i,  j,  2) = mean.getValue<float>();
+            wImage( i,  j,  0) = mean;
+            wImage( i,  j,  1) = mean;
+            wImage( i,  j,  2) = mean;
         }
     } 
 }
