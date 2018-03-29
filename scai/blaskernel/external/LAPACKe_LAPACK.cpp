@@ -73,8 +73,8 @@ SCAI_LOG_DEF_LOGGER( LAPACKe_LAPACK::logger, "LAPACKe.LAPACK" )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void LAPACKe_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
-                            const IndexType n, ValueType* const A, const IndexType lda,
+void LAPACKe_LAPACK::getrf( const IndexType m, const IndexType n, 
+                            ValueType* const A, const IndexType lda,
                             IndexType* const ipiv )
 {
     SCAI_REGION( "LAPACKe.getrf" )
@@ -92,7 +92,7 @@ void LAPACKe_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
 
     LAPACKIndexType* la_ipiv = ( LAPACKIndexType* ) ipiv;
 
-    int info = LAPACKeWrapper<ValueType>::getrf( LAPACKeTrait::enum2order( order ),
+    int info = LAPACKeWrapper<ValueType>::getrf( LAPACK_ROW_MAJOR, 
                static_cast<LAPACKIndexType>( m ),
                static_cast<LAPACKIndexType>( n ), A,
                static_cast<LAPACKIndexType>( lda ), la_ipiv );
@@ -166,7 +166,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ValueType* a,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
+void LAPACKe_LAPACK::getri( const IndexType n,
                             ValueType* const a, const IndexType lda, IndexType* const ipiv )
 {
     SCAI_REGION( "LAPACKe.getri" )
@@ -180,7 +180,8 @@ void LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
         COMMON_THROWEXCEPTION( "indextype mismatch" );
     }
 
-    LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order( order );
+    LAPACKeTrait::LAPACKOrder matrix_order = LAPACK_ROW_MAJOR;
+
     LAPACKIndexType info = LAPACKeWrapper<ValueType>::getri( matrix_order,
                            static_cast<LAPACKIndexType>( n ), a,
                            static_cast<LAPACKIndexType>( lda ), reinterpret_cast<LAPACKIndexType*>( ipiv ) );
@@ -201,7 +202,7 @@ void LAPACKe_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void LAPACKe_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
+void LAPACKe_LAPACK::tptrs( const CBLAS_UPLO uplo,
                             const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
                             const IndexType nrhs, const ValueType* AP, ValueType* B,
                             const IndexType ldb )
@@ -212,7 +213,7 @@ void LAPACKe_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
     LAPACKeTrait::LAPACKFlag UL = LAPACKeTrait::enum2char( uplo );
     LAPACKeTrait::LAPACKFlag TA = LAPACKeTrait::enum2char( trans );
     LAPACKeTrait::LAPACKFlag DI = LAPACKeTrait::enum2char( diag );
-    LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order( order );
+    LAPACKeTrait::LAPACKOrder matrix_order = LAPACK_ROW_MAJOR;
 
     if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKIndexType>::stype )
     {
@@ -226,14 +227,7 @@ void LAPACKe_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 
     IndexType one = 1;
 
-    if ( order == CblasColMajor )
-    {
-        SCAI_ASSERT_ERROR( ldb >= common::Math::max( one, n ), "ldb = " << ldb << " out of range" );
-    }
-    else
-    {
-        SCAI_ASSERT_ERROR( ldb >= common::Math::max( one, nrhs ), "ldb = " << ldb << " out of range" );
-    }
+    SCAI_ASSERT_ERROR( ldb >= common::Math::max( one, nrhs ), "ldb = " << ldb << " out of range" );
 
     int info = LAPACKeWrapper<ValueType>::tptrs( matrix_order, UL, TA, DI,
                static_cast<LAPACKIndexType>( n ),

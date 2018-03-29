@@ -369,7 +369,6 @@ struct BLASKernelTrait
          * Matrix A is stored in row-major format, and lda is the
          * leading dimension of the two dimensional array in which A is stored.
          *
-         * @param[in] order     specifies if row or col major.
          * @param[in] opA       specifies op(A).
          * @param[in] m         the number of rows of matrix A; m must be at least zero
          * @param[in] n         the number of columns of matrix A; n must be at least zero
@@ -527,9 +526,6 @@ struct BLASKernelTrait
          * interchanges. L and U will be stored within A whereby the diagonal elements
          * of L will not be stored.
          *
-         * @param[in] order   Specifies, whether the matrix is stored in column major
-         *                     order (i.e. CblasColMajor) or in row major order (i.e.
-         *                     CblasRowMajor).
          * @param[in] m         Number of rows of matrix A; m must be at least zero. m
          *                       specifies, how many rows of A will be touched by this
          *                       function.
@@ -558,7 +554,6 @@ struct BLASKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            const CBLAS_ORDER order,
             const IndexType m,
             const IndexType n,
             ValueType* a,
@@ -578,10 +573,9 @@ struct BLASKernelTrait
     template<typename ValueType>
     struct getinv
     {
-
         /** Method computes the inverse of a matrix by using the LAPACK routines getrf and getri
          *
-         *  @param[in]     n specifies the order of the matrix a
+         *  @param[in]     n specifies the size of the matrix a in each dimension
          *  @param[in,out] a is the matrix for which the inverse is computed in-place
          *  @param[in]     lda for the leading dimension of the array A
          *  @throws        Exception if error occurs ( e.g. matrix is singular )
@@ -605,7 +599,6 @@ struct BLASKernelTrait
     struct getri
     {
         typedef void ( *FuncType ) (
-            const CBLAS_ORDER ,
             const IndexType n,
             ValueType* a,
             const IndexType lda,
@@ -631,9 +624,6 @@ struct BLASKernelTrait
          *  and B is a matrix of right hand sides and will contain the solution of all
          *  equations on output.
 
-         * @param[in] order   Specifies, whether the matrix is stored in column major
-         *                    order (i.e. CblasColMajor) or in row major order (i.e.
-         *                    CblasRowMajor).
          * @param[in] uplo    Specifies, whether matrix A is upper triangular (i.e.
          *                    CblasUpper) or lower triangular (i.e. CblasLower).
          * @param[in] trans   Specifies op(A).
@@ -658,7 +648,6 @@ struct BLASKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            const CBLAS_ORDER order,
             const CBLAS_UPLO uplo,
             const CBLAS_TRANSPOSE trans,
             const CBLAS_DIAG diag,

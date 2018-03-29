@@ -69,7 +69,6 @@ public:
 
     template<typename ValueType>
     static void getrf(
-        const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
         ValueType* const a,
@@ -80,7 +79,6 @@ public:
 
     template<typename ValueType>
     static void getri(
-        const CBLAS_ORDER order,
         const IndexType n,
         ValueType* const A,
         const IndexType lda,
@@ -95,7 +93,6 @@ public:
 
     template<typename ValueType>
     static void tptrs(
-        const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const CBLAS_TRANSPOSE trans,
         const CBLAS_DIAG diag,
