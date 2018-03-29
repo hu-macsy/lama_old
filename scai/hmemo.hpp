@@ -47,3 +47,4 @@
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/HostReadAccess.hpp>
+#include <scai/hmemo/HostWriteAccess.hpp>
