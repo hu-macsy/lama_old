@@ -543,11 +543,11 @@ void HArrayUtils::setSameValue(
     HArray<ValueType>& array,
     const IndexType n,
     const ValueType value,
-    ContextPtr ctx )
+    ContextPtr prefLoc )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
 
-    ContextPtr loc = ctx;
+    ContextPtr loc = prefLoc;
 
     if ( loc == ContextPtr() )
     {
@@ -569,11 +569,11 @@ void HArrayUtils::_setSameValue(
     hmemo::_HArray& array,
     const IndexType n,
     const ValueType val,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
     // use meta-programming to resolve the type of target array
 
-    mepr::UtilsWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setSameValue( array, n, val, ctx );
+    mepr::UtilsWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::setSameValue( array, n, val, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1722,9 +1722,9 @@ void HArrayUtils::mergeSort(
     HArray<ValueType>& values,
     const HArray<IndexType>& offsets,
     bool ascending,
-    ContextPtr ctx )
+    ContextPtr prefLoc )
 {
-    mergeSortOptional( values, NULL, offsets, ascending, ctx );
+    mergeSortOptional( values, NULL, offsets, ascending, prefLoc );
 }
 
 template<typename ValueType>
@@ -1733,9 +1733,9 @@ void HArrayUtils::mergeSort(
     HArray<IndexType>& perm,
     const HArray<IndexType>& offsets,
     bool ascending,
-    ContextPtr ctx )
+    ContextPtr prefLoc )
 {
-    mergeSortOptional( values, &perm, offsets, ascending, ctx );
+    mergeSortOptional( values, &perm, offsets, ascending, prefLoc );
 }
 
 template<typename ValueType>
