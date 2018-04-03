@@ -34,11 +34,8 @@
 
 #pragma once
 
-#include <scai/solver/BiCG.hpp>
 #include <scai/solver/BiCGstab.hpp>
 #include <scai/solver/CG.hpp>
-#include <scai/solver/CGNE.hpp>
-#include <scai/solver/CGNR.hpp>
 #include <scai/solver/CGS.hpp>
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/InverseSolver.hpp>
