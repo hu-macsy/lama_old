@@ -175,7 +175,7 @@ void OpenMPFFT::fft( Complex<ValueType> x[], IndexType nb, IndexType n, IndexTyp
 {
     SCAI_REGION( "OpenMP.fft" )
 
-    SCAI_LOG_INFO( logger, "fft<" << common::TypeTraits<ValueType>::id() << "> @ OpenMP, "
+    SCAI_LOG_ERROR( logger, "fft<" << common::TypeTraits<ValueType>::id() << "> @ OpenMP, "
                      << nb << " x " << n << " = 2 ** " << m )
 
     #pragma omp parallel for

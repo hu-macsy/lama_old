@@ -169,8 +169,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeRectInPlaceTest, ValueType, blas_test_ty
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     SCAI_LOG_INFO( logger, "geam< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
-    HArray<ValueType> matrix_a( {  1, -2,  3, -4,  5,   6,  7,  8,   9, 10, 11,  12 } );
-    HArray<ValueType> matrix_t( { -1,  5, -9,  2,  6, -10,  3, -7, -11, -4, -8, -12 } );
+    /*  Matrix A =  [ 1 -2 3  -4         At =  [  1  5   9
+                      5  6 7   8                 -2  6  10
+                      9 10 11 12 ]                3  7  11
+                                                 -4  8  12 ]
+    */
+
+    HArray<ValueType> matrix_a( {  1, -2,  3, -4,  5,   6,   7,  8,   9, 10, 11,  12 } );
+    HArray<ValueType> matrix_t( { -1, -5, -9,  2, -6, -10,  -3, -7, -11,  4, -8, -12 } );
 
     const IndexType m = 3;
     const IndexType n = 4;

@@ -363,7 +363,7 @@ void GMRES<ValueType>::updateX( IndexType i )
     hmemo::ContextPtr context = hmemo::Context::getHostPtr();
     static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
 
-    tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, &runtime.mH[0],
+    tptrs[context]( CblasUpper, common::MatrixOp::NORMAL, CblasNonUnit, i + 1, 1, &runtime.mH[0],
                     &runtime.mY[0], i + 1 );
 
     // Update of solution vector

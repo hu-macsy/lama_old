@@ -197,6 +197,16 @@ void OpenMPBLAS2::gemv(
 /* ---- geam :  general add (dense) matrix  ---------------------------------- */
 
 template<typename ValueType>
+static inline void applyInPlace( ValueType& v, const ValueType alpha, bool conj )
+{
+    v *= alpha;
+    if ( conj )
+    {
+        v = common::Math::conj( v );
+    }
+}
+
+template<typename ValueType>
 static void transposeInPlace( ValueType* C, const IndexType m, const IndexType n, const ValueType alpha, bool conj )
 {
     if ( m == n )
@@ -205,17 +215,13 @@ static void transposeInPlace( ValueType* C, const IndexType m, const IndexType n
 
         for ( IndexType i = 0; i < m; ++i )
         {
+            applyInPlace( C[ i * n + i ], alpha, conj );
+
+
             for ( IndexType j = i + 1; j < n; ++j )
             {
-
-                C[ i + n * j ] *= alpha;
-                C[ j + n * i ] *= alpha;
-
-                if ( conj )
-                {
-                    C[ i + n * j ] = common::Math::conj( C[ i + n * j ] );
-                    C[ j + n * i ] = common::Math::conj( C[ j + n * i ] );
-                }
+                applyInPlace( C[ i * n + j ], alpha, conj );
+                applyInPlace( C[ j * n + i ], alpha, conj );
 
                 std::swap( C[i + n * j], C[j + n * i] );
             }
@@ -226,29 +232,38 @@ static void transposeInPlace( ValueType* C, const IndexType m, const IndexType n
         for ( IndexType start = 0; start < n * m; ++start )
         {
             IndexType next = start;
-            IndexType i = 0;
+            IndexType i = 0;           // counts number of entries in permutation chain
 
             do
             {
                 ++i;
+                // get new position of element
                 next = ( next % m ) * n + next / m;
             }
             while ( next > start );
 
-            if ( next >= start && i != 1 )
+            if ( next < start )
             {
-                const ValueType tmp = C[start];
+                // start was already in a previous permutation chain
+                continue;
+            }
+
+            if ( i == 1 )
+            {
+                // permutation chain of one single element
+                applyInPlace( C[start], alpha, conj );
+            }
+            else
+            {
+                const ValueType tmp = C[start];   // save first element of chain
+
                 next = start;
 
                 do
                 {
                     i = ( next % m ) * n + next / m;
                     C[next] = ( i == start ) ? tmp :  C[i];
-                    C[next] *= alpha;
-                    if ( conj )
-                    {
-                        C[next] = common::Math::conj( C[next] );
-                    }
+                    applyInPlace( C[next], alpha, conj );
                     next = i;
                 }
                 while ( next > start );

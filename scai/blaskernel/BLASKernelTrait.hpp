@@ -626,10 +626,10 @@ struct BLASKernelTrait
 
          * @param[in] uplo    Specifies, whether matrix A is upper triangular (i.e.
          *                    CblasUpper) or lower triangular (i.e. CblasLower).
-         * @param[in] trans   Specifies op(A).
-         *                    if trans == CblasNoTrans,   op(A) = A;
-         *                    if trans == CblasTrans,     op(A) = AT;
-         *                    if trans == CblasConjTrans, op(A) = AH;
+         * @param[in] op      Specifies op(A).
+         *                    if op == MatrixOp::NORMAL,         op(A) = A;
+         *                    if op == MatrixOp::TRANSPOSE,      op(A) = AT;
+         *                    if op == MatrixOp::CONJ_TRANSPOSE, op(A) = AH;
          * @param[in] diag    Specifies, whether the triangualr matrix A is a unit
          *                    triangular matrix, i.e. the diagonal elements of A are
          *                    one.
@@ -649,7 +649,7 @@ struct BLASKernelTrait
 
         typedef void ( *FuncType ) (
             const CBLAS_UPLO uplo,
-            const CBLAS_TRANSPOSE trans,
+            const common::MatrixOp op,
             const CBLAS_DIAG diag,
             const IndexType n,
             const IndexType nrhs,
