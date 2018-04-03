@@ -203,7 +203,7 @@ void LAPACKe_LAPACK::getri( const IndexType n,
 
 template<typename ValueType>
 void LAPACKe_LAPACK::tptrs( const CBLAS_UPLO uplo,
-                            const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
+                            const common::MatrixOp op, const CBLAS_DIAG diag, const IndexType n,
                             const IndexType nrhs, const ValueType* AP, ValueType* B,
                             const IndexType ldb )
 {
@@ -211,7 +211,7 @@ void LAPACKe_LAPACK::tptrs( const CBLAS_UPLO uplo,
 
     typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
     LAPACKeTrait::LAPACKFlag UL = LAPACKeTrait::enum2char( uplo );
-    LAPACKeTrait::LAPACKFlag TA = LAPACKeTrait::enum2char( trans );
+    LAPACKeTrait::LAPACKFlag TA = LAPACKeTrait::enum2char( op );
     LAPACKeTrait::LAPACKFlag DI = LAPACKeTrait::enum2char( diag );
     LAPACKeTrait::LAPACKOrder matrix_order = LAPACK_ROW_MAJOR;
 
