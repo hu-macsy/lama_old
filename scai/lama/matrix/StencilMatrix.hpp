@@ -105,9 +105,21 @@ public:
      */
     ~StencilMatrix();
 
+    /** Override the default assignment operator that would not make deep copies. */
+
+    StencilMatrix& operator=( const StencilMatrix& matrix );
+
+    /** Override the default move assignment operator */
+
+    StencilMatrix& operator=( StencilMatrix&& matrix );
+
     /** Copy constructor */
 
     StencilMatrix( const StencilMatrix& other );
+
+    /** Move constructor */
+
+    StencilMatrix( StencilMatrix&& other ) noexcept;
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
