@@ -40,11 +40,17 @@ scai_pragma_once()
 
 find_package( FFTW ${SCAI_FIND_PACKAGE_FLAGS} )
 
-# returns PNG_FOUND, PNG_INCLUDE_DIRS (cache), PNG_LIBRARIES
+if ( FFTW_FOUND )
 
-# message( STATUS "PNG_FOUND=${PNG_FOUND}" )
-# message( STATUS "PNG_INCLUDE_DIRS=${PNG_INCLUDE_DIRS}" )
-# message( STATUS "PNG_LIBRARIES=${PNG_LIBRARIES}" )
+        ## ToDo: get FFTW version
+
+
+        ## set the SCAI variables to get macros for dependencies working correctly
+
+        set ( SCAI_FFTW_INCLUDE_DIR ${FFTW_INCLUDE_DIR} )
+        set ( SCAI_FFTW_LIBRARIES ${FFTW_LIBRARIES} )
+
+endif ( METIS_FOUND )
 
 scai_build_variable ( NAME      USE_FFTW
                       BOOL 
