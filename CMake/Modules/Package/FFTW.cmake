@@ -50,7 +50,7 @@ if ( FFTW_FOUND )
         set ( SCAI_FFTW_INCLUDE_DIR ${FFTW_INCLUDE_DIR} )
         set ( SCAI_FFTW_LIBRARIES ${FFTW_LIBRARIES} )
 
-endif ( METIS_FOUND )
+endif ()
 
 scai_build_variable ( NAME      USE_FFTW
                       BOOL 
