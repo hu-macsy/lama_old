@@ -49,6 +49,8 @@
 using namespace scai;
 using namespace lama;
 
+typedef DefaultReal ValueType;
+
 int main( int argc, const char* argv[] )
 {
     SCAI_REGION( "Main.driver" )
@@ -67,10 +69,10 @@ int main( int argc, const char* argv[] )
     std::cout << "Read D from "  << argv[1] << ", T from " << argv[2] 
               << ", So from " << argv[3] << ", hrz from " << argv[4] << std::endl;
 
-    auto D   = read<CSRSparseMatrix<double>>( argv[1] );
-    auto T   = read<DenseVector<double>>( argv[2] );
-    auto So  = read<DenseVector<double>>( argv[3]  );
-    auto hrz = read<DenseVector<double>>( argv[4] );
+    auto D   = read<CSRSparseMatrix<ValueType>>( argv[1] );
+    auto T   = read<DenseVector<ValueType>>( argv[2] );
+    auto So  = read<DenseVector<ValueType>>( argv[3]  );
+    auto hrz = read<DenseVector<ValueType>>( argv[4] );
 
     std::cout << "D = " << D << std::endl;
     std::cout << "hrz = " << hrz << std::endl;
@@ -96,7 +98,7 @@ int main( int argc, const char* argv[] )
 
     std::cout << "Use strength = " << strength << ", variation = " << variation << std::endl;
 
-    common::Stencil2D<double> stencil( 5 ); stencil.scale( - strength / 4.0 );
+    common::Stencil2D<ValueType> stencil( 5 ); stencil.scale( - strength / 4.0 );
 
     common::Grid2D grid( ny, nz );
 
@@ -108,16 +110,16 @@ int main( int argc, const char* argv[] )
     dmemo::DistributionPtr gridDist( new dmemo::GridDistribution( grid, comm ) );
     dmemo::DistributionPtr rayDist( new dmemo::BlockDistribution( nray, comm ) );
  
-    StencilMatrix<double> L( gridDist, stencil );
+    StencilMatrix<ValueType> L( gridDist, stencil );
 
-    MatrixWithT<double> Lopt( L, L );   // tricky stuff for symmetric matrix
+    MatrixWithT<ValueType> Lopt( L, L );   // tricky stuff for symmetric matrix
 
-    DenseVector<double> Zero( L.getNumRows(), 0 );
+    DenseVector<ValueType> Zero( L.getNumRows(), 0 );
 
     So.redistribute( gridDist );
 
-    DenseVector<double> lb( So );
-    DenseVector<double> ub( So );
+    DenseVector<ValueType> lb( So );
+    DenseVector<ValueType> ub( So );
 
     lb *= ( 1. - variation / 100. ); //for testing: 0.01;
     ub  *= ( 1. + variation / 100. ); //for testing: 100.0;
@@ -149,16 +151,16 @@ int main( int argc, const char* argv[] )
     T.redistribute( rayDist );
     Zero.redistribute( gridDist );
 
-    auto x = fill<DenseVector<double>>( gridDist, 0 );
+    auto x = fill<DenseVector<ValueType>>( gridDist, 0 );
 
-    MatrixWithT<double> Dopt( D );
+    MatrixWithT<ValueType> Dopt( D );
 
-    JoinedMatrix<double> A( Dopt, Lopt );
-    JoinedVector<double> T_ext( T, Zero );
+    JoinedMatrix<ValueType> A( Dopt, Lopt );
+    JoinedVector<ValueType> T_ext( T, Zero );
 
     std::cout << "construct lsq." << std::endl;
 
-    ipbcls::ConstrainedLeastSquares<double> lsq( A );
+    ipbcls::ConstrainedLeastSquares<ValueType> lsq( A );
 
     // lsq.useTranspose();       // will matrixTimesVector instead ov vectorTimesMatrix
 
@@ -177,7 +179,7 @@ int main( int argc, const char* argv[] )
         return 1;
     }
 
-    VectorPtr<double> residual( T_ext.newVector() );
+    VectorPtr<ValueType> residual( T_ext.newVector() );
 
     *residual = A * x - T_ext;
 

@@ -139,6 +139,11 @@ typedef long double LongDouble;
 #define SCAI_ARRAY_TYPES_EXT_HOST ${ARRAY_EXT_HOST_TYPES}
 #define SCAI_ARRAY_TYPES_CUDA     ${ARRAY_CUDA_TYPES}
 
+/**
+ * Supported types for fft, only if ValueType and Complex<RealType<ValueType>> are both in NUMERIC_TYPES
+ */
+#define SCAI_FFT_TYPES_HOST       ${FFT_HOST_TYPES}
+
 /*
  * List creation
  *

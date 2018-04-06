@@ -45,7 +45,7 @@ include ( scai_function/relative_install )
 scai_module(
 
     MODULE_NAME   partitioning
-    INTERNAL_DEPS common logging tracing hmemo kregistry dmemo lama
+    INTERNAL_DEPS common logging tracing hmemo kregistry utilskernel dmemo lama
     EXTERNAL_DEPS ParMetis MPI Metis
 )
 

@@ -125,9 +125,7 @@ void ParMetisPartitioning::squarePartitioning(
    
     SCAI_LOG_DEBUG( logger, comm << ": processor weights, same values on all processors" )
 
-    HArray<real_t> tpwghts;
-    utilskernel::HArrayUtils::assign( tpwghts, processorWeights );
-    WriteAccess<real_t> rTPWeights( tpwghts );       // take write access, otherwise const cast required
+    auto tpwghts = hmemo::hostReadAccess( processorWeights ).buildVector<real_t>();
 
     IndexType nlocal = dist.getLocalSize();
 
@@ -150,7 +148,7 @@ void ParMetisPartitioning::squarePartitioning(
                                       NULL, 
                                       &wgtflag,
                                       &numflag, &ncon, &nparts,
-                                      rTPWeights.get(), 
+                                      &tpwghts[0],
                                       ubvec, 
                                       options, 
                                       &edgeCut, 

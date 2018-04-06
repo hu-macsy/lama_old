@@ -40,31 +40,33 @@
 using namespace scai;
 using namespace lama;
 
-void setupSmoothMatrix( CSRSparseMatrix<double>& L, const IndexType ny, const IndexType nz, const double strength )
+typedef DefaultReal ValueType;
+
+void setupSmoothMatrix( CSRSparseMatrix<ValueType>& L, const IndexType ny, const IndexType nz, const ValueType strength )
 {
     // not neccesary, but to keep in accordance with the original
 
-    common::Stencil2D<double> stencil( 5 );
+    common::Stencil2D<ValueType> stencil( 5 );
 
     common::Grid2D grid( ny, nz );
 
     grid.setBorderType( 0, common::Grid::BORDER_ABSORBING );
     grid.setBorderType( 1, common::Grid::BORDER_ABSORBING );
 
-    StencilMatrix<double> stencilMatrix( grid, stencil );
+    StencilMatrix<ValueType> stencilMatrix( grid, stencil );
 
     L = stencilMatrix;
 
     L.scale( - strength / 4 );
 }
 
-void zeroExtend( DenseVector<double>& T_ext,
-                 const DenseVector<double>& T, const IndexType nZeros )
+void zeroExtend( DenseVector<ValueType>& T_ext,
+                 const DenseVector<ValueType>& T, const IndexType nZeros )
 {
     T_ext.allocate( T.size() + nZeros );
 
-    hmemo::WriteAccess<double> wT( T_ext.getLocalValues() );
-    hmemo::ReadAccess<double> rT( T.getLocalValues() );
+    hmemo::WriteAccess<ValueType> wT( T_ext.getLocalValues() );
+    hmemo::ReadAccess<ValueType> rT( T.getLocalValues() );
 
     for ( IndexType i = 0; i < rT.size(); ++i )
     {
@@ -90,10 +92,10 @@ int main( int argc, const char* argv[] )
     std::cout << "Read D from "  << argv[1] << ", T from " << argv[2] 
               << ", So from " << argv[3] << ", hrz from " << argv[4] << std::endl;
 
-    auto D = read<CSRSparseMatrix<double>>( argv[1] );
-    auto T = read<DenseVector<double>>( argv[2] );
-    auto So = read<DenseVector<double>>( argv[3]  );
-    auto hrz = read<DenseVector<double>>( argv[4] );
+    auto D = read<CSRSparseMatrix<ValueType>>( argv[1] );
+    auto T = read<DenseVector<ValueType>>( argv[2] );
+    auto So = read<DenseVector<ValueType>>( argv[3]  );
+    auto hrz = read<DenseVector<ValueType>>( argv[4] );
 
     std::cout << "D = " << D << std::endl;
     std::cout << "hrz = " << hrz << std::endl;
@@ -119,21 +121,21 @@ int main( int argc, const char* argv[] )
     common::Settings::getEnvironment( variation, "SCAI_VARIATION" );
 
     std::cout << "Use strength = " << strength << ", variation = " << variation << std::endl;
-    CSRSparseMatrix<double> A;
-    CSRSparseMatrix<double> L;
+    CSRSparseMatrix<ValueType> A;
+    CSRSparseMatrix<ValueType> L;
 
-    setupSmoothMatrix( L, ny, nz, double( strength ) );
+    setupSmoothMatrix( L, ny, nz, ValueType( strength ) );
 
     A.hcat( D, L );
 
     std::cout << "A = " << A << std::endl;
 
-    DenseVector<double> T_ext;
+    DenseVector<ValueType> T_ext;
 
     zeroExtend( T_ext, T, L.getNumRows() );
 
-    DenseVector<double> lb( So );
-    DenseVector<double> ub( So );
+    DenseVector<ValueType> lb( So );
+    DenseVector<ValueType> ub( So );
 
     lb *= ( 1. - variation / 100. ); //for testing: 0.01;
     ub  *= ( 1. + variation / 100. ); //for testing: 100.0;

@@ -104,7 +104,17 @@ void CUFFT::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry:
     using kregistry::KernelRegistry;
     const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register FFT routines implemented by CUFFT in KernelRegistry [" << flag << "]" )
-    KernelRegistry::set<FFTKernelTrait::fft<ValueType> >( CUFFT::fft, ctx, flag );
+    KernelRegistry::set<FFTKernelTrait::fft<RealType<ValueType>>>( CUFFT::fft, ctx, flag );
+}
+
+template<>
+void CUFFT::RegistratorV<float>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag )
+{
+}
+
+template<>
+void CUFFT::RegistratorV<double>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag )
+{
 }
 
 /* --------------------------------------------------------------------------- */
@@ -113,13 +123,13 @@ void CUFFT::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry:
 
 CUFFT::CUFFT()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_TYPELIST( float, double )>::registerKernels(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_TYPELIST( SCAI_NUMERIC_TYPES_CUDA )>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUFFT::~CUFFT()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_TYPELIST( float, double )>::registerKernels(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_TYPELIST( SCAI_NUMERIC_TYPES_CUDA )>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

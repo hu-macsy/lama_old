@@ -541,7 +541,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
 BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // test of: vector = scalar * vector * matrix + scalar * vector with all distributions, formats
 
@@ -635,7 +635,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 {
     // only serial
 
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
 
@@ -675,7 +675,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 
 BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType n = 4;
     ValueType sourceVals[] = { 3, 1, 4, 2 };
@@ -771,7 +771,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
 BOOST_AUTO_TEST_CASE( gatherTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2, 3 };
     ValueType indexValues[]  = { 3, 4, 1, 0, 6, 2 };
@@ -837,7 +837,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
 BOOST_AUTO_TEST_CASE( scatterTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2 };
     ValueType indexValues[]  = { 3, 4, 1, 0, 5, 2 };
@@ -948,9 +948,11 @@ BOOST_AUTO_TEST_CASE( moveTest )
     BOOST_CHECK_EQUAL( ptr1, ptr2 );  // that is great, all the same data used
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
 {
     typedef common::Complex<RealType<ValueType>> FFTType;
 
@@ -974,7 +976,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_fft_test_types )
 {
     typedef common::Complex<RealType<ValueType>> FFTType;
 
@@ -998,7 +1000,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest2, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest2, ValueType, scai_fft_test_types )
 {
     typedef common::Complex<RealType<ValueType>> FFTType;
 
@@ -1015,6 +1017,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest2, ValueType, scai_numeric_test_types )
 
     BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( y.getLocalValues(), result ) < eps );
 }
+
+#endif
 
 /* --------------------------------------------------------------------- */
 

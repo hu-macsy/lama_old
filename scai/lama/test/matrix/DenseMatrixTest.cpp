@@ -256,9 +256,11 @@ BOOST_AUTO_TEST_CASE( dense2SparseTest )
     }
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow1, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow1, ValueType, scai_fft_test_types )
 {
     using hmemo::HArray;
     using hmemo::hostReadAccess;
@@ -287,7 +289,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow1, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow2, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow2, ValueType, scai_fft_test_types )
 {
     using hmemo::HArray;
     using hmemo::hostReadAccess;
@@ -316,7 +318,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow2, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowArray, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowArray, ValueType, scai_fft_test_types )
 {
     using hmemo::HArray;
     using hmemo::hostReadAccess;
@@ -339,7 +341,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowArray, ValueType, scai_numeric_test_typ
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowMatrix, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowMatrix, ValueType, scai_fft_test_types )
 {
     using hmemo::HArray;
     using hmemo::hostReadAccess;
@@ -369,7 +371,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowMatrix, ValueType, scai_numeric_test_ty
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestCol, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestCol, ValueType, scai_fft_test_types )
 {
     return;
 
@@ -401,7 +403,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestCol, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestRow, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestRow, ValueType, scai_fft_test_types )
 {
     return;
 
@@ -433,7 +435,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestRow, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestCol, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestCol, ValueType, scai_fft_test_types )
 {
     return;
 
@@ -464,6 +466,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestCol, ValueType, scai_numeric_test_types )
 
     BOOST_TEST( hostReadAccess( res.getLocalStorage().getValues() ) == hostReadAccess( result ), boost::test_tools::per_element() );
 }
+
+#endif
 
 /* ------------------------------------------------------------------------- */
 

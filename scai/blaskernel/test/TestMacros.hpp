@@ -41,7 +41,7 @@
 /*     test types for BLAS ( S, D, C, Z )                                */
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<float, double> blas_test_types;
+typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> blas_test_types;
 
 /* --------------------------------------------------------------------- */
 

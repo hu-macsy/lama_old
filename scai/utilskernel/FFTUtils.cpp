@@ -45,13 +45,16 @@
 namespace scai
 {
 
-using common::Complex;
 using namespace hmemo;
 
 namespace utilskernel
 {
 
 SCAI_LOG_DEF_LOGGER( FFTUtils::logger, "FFTUtils" )
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+using common::Complex;
 
 /* --------------------------------------------------------------------------- */
 
@@ -217,9 +220,12 @@ void FFTUtils::fft_many(
         const int,                                          \
         hmemo::ContextPtr);                    
 
-SCAI_COMMON_LOOP( FFTUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
+
+    SCAI_COMMON_LOOP( FFTUTILS_SPECIFIER, SCAI_FFT_TYPES_HOST )
 
 #undef FFTUTILS_SPECIFIER
+
+#endif
 
 } /* end namespace utilskernel */
 

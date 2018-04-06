@@ -45,15 +45,12 @@
 
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Complex.hpp>
 #include <scai/common/macros/unused.hpp>
-
 
 namespace scai
 {
 
 using common::TypeTraits;
-using common::Complex;
 
 namespace utilskernel
 {
@@ -62,34 +59,9 @@ SCAI_LOG_DEF_LOGGER( OpenMPFFT::logger, "OpenMP.FFT" )
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-static void DFT( int dir, IndexType m, Complex<ValueType> x1[] )
-{
-    ValueType PI_2 = 2.0 * 3.1415926535;
+#ifdef SCAI_COMPLEX_SUPPORTED
 
-    std::unique_ptr<Complex<ValueType>[]> x2( new Complex<ValueType>[m] );
-
-    for ( IndexType i = 0; i < m; i++ )
-    {
-        x2[i] = 0;
-
-        ValueType arg = - dir * PI_2 * ValueType( i ) / ValueType( m );
-
-        for ( IndexType k = 0; k < m; k++ )
-        {
-            ValueType cosarg = std::cos( k * arg );
-            ValueType sinarg = std::sin( k * arg );
-            x2[i] += x1[k] * Complex<ValueType>( cosarg , sinarg );
-        }
-    }
-
-    /* Copy the data back */
-
-    for ( IndexType i = 0; i < m; i++ )
-    {
-        x1[i] = x2[i];
-    }
-}
+using common::Complex;
 
 template<typename ValueType>
 void OpenMPFFT::fft1( Complex<ValueType> x[], IndexType n, IndexType m, int dir )
@@ -181,29 +153,42 @@ void OpenMPFFT::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegis
     using kregistry::KernelRegistry;
     SCAI_LOG_INFO( logger,
                    "register OpenMPFFT-routines for Host at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<FFTKernelTrait::fft<ValueType> >( fft, ctx, flag );
+    KernelRegistry::set<FFTKernelTrait::fft<RealType<ValueType>> >( fft, ctx, flag );
+}
+
+#endif
+
+template<>
+void OpenMPFFT::RegistratorV<float>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag )
+{
+}
+
+template<>
+void OpenMPFFT::RegistratorV<double>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag )
+{
+}
+
+template<>
+void OpenMPFFT::RegistratorV<scai::LongDouble>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag )
+{
 }
 
 /* --------------------------------------------------------------------------- */
 /*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
 
-#define SCAI_NUMERIC_TYPES_FFT float, double
-
-#define SCAI_NUMERIC_TYPES_FFT_LIST SCAI_TYPELIST( SCAI_NUMERIC_TYPES_FFT )
-
 OpenMPFFT::OpenMPFFT()
 {
     SCAI_LOG_INFO( logger, "register UtilsKernel OpenMP-routines for Host" )
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_FFT_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPFFT::~OpenMPFFT()
 {
     SCAI_LOG_INFO( logger, "unregister UtilsKernel OpenMP-routines for Host" )
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_FFT_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

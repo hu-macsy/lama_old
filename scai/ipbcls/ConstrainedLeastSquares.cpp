@@ -626,7 +626,7 @@ void ConstrainedLeastSquares<ValueType>::solve(
                    << ". Total inner iterations: " << totalInnerIterations )
 }
 
-SCAI_COMMON_INST_CLASS( ConstrainedLeastSquares, float, double )
+SCAI_COMMON_INST_CLASS( ConstrainedLeastSquares, SCAI_NUMERIC_TYPES_HOST )
 
 }
 

@@ -43,6 +43,8 @@ namespace scai
 namespace lama
 {
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 /** Compute the discrete fourier transform of a dense vector using a fast fourier transform
  *
  *  @param[out] result is the result vector
@@ -217,6 +219,7 @@ void fft2(
 
 */
 
+#endif
 
 } /* end namespace lama */
 

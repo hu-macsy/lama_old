@@ -115,6 +115,8 @@ void setDistribution( _Matrix& A )
     }
 }
 
+typedef DefaultReal ValueType;
+
 int main( int argc, const char* argv[] )
 {
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
@@ -145,10 +147,10 @@ int main( int argc, const char* argv[] )
 
     SCAI_REGION_START( "Main.read" )
 
-    auto A  = read<CSRSparseMatrix<double>>( argv[2] );
-    auto b  = read<DenseVector<double>>( argv[3] );
-    auto lb = read<DenseVector<double>>( argv[4] );
-    auto ub = read<DenseVector<double>>( argv[5] );
+    auto A  = read<CSRSparseMatrix<ValueType>>( argv[2] );
+    auto b  = read<DenseVector<ValueType>>( argv[3] );
+    auto lb = read<DenseVector<ValueType>>( argv[4] );
+    auto ub = read<DenseVector<ValueType>>( argv[5] );
 
     SCAI_REGION_END( "Main.read" )
 
@@ -184,18 +186,18 @@ int main( int argc, const char* argv[] )
     std::cout << "lb = " << lb << std::endl;
     std::cout << "ub = " << ub << std::endl;
 
-    DenseVector<double> x( colDist, 0, ctx );
+    DenseVector<ValueType> x( colDist, 0, ctx );
 
-    MatrixWithT<double> Aopt( A );   // Allocate also a transposed matrix to optimize A' * x operations
+    MatrixWithT<ValueType> Aopt( A );   // Allocate also a transposed matrix to optimize A' * x operations
 
-    ConstrainedLeastSquares<double> lsq( Aopt );
+    ConstrainedLeastSquares<ValueType> lsq( Aopt );
 
     // lsq.setInnerSolverType( InnerSolverType::StandardCG );
     lsq.setInnerSolverType( InnerSolverType::NewtonStepCG );
 
     // lsq.useTranspose();       // will matrixTimesVector instead ov vectorTimesMatrix
 
-    lsq.setObjectiveTolerance( tol );
+    lsq.setObjectiveTolerance( static_cast<ValueType>( tol ) );
     lsq.setMaxIter( 500 );
 
     try
@@ -209,7 +211,7 @@ int main( int argc, const char* argv[] )
         return 1;
     }
 
-    auto residual = eval<DenseVector<double>>( A * x - b );
+    auto residual = eval<DenseVector<ValueType>>( A * x - b );
 
     std::cout << "res norm = " << residual.l2Norm() << std::endl;
 

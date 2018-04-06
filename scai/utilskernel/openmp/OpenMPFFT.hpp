@@ -58,6 +58,8 @@ class COMMON_DLL_IMPORTEXPORT OpenMPFFT
 {
 public:
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
     /** OpenMP implementation for FFTKernelTrait::fft */
 
     template<typename ValueType>
@@ -68,7 +70,11 @@ public:
         const IndexType m,
         const int direction );
 
+#endif
+
 private:
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
     template<typename ValueType>
     static void fft1(
@@ -76,6 +82,8 @@ private:
         const IndexType n,
         const IndexType m,
         const int direction );
+
+#endif
 
     /** OpenMP implementation for FFTKernelTrait::fft_n */
 

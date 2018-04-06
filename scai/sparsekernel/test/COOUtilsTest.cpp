@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_types )
 {
-    typedef float CSRValueType;
+    typedef DefaultReal CSRValueType;
 
     ContextPtr testContext = ContextFix::testContext;
 

@@ -61,17 +61,17 @@ include ( scai_function/listToString )
 
 # Possible choices for numeric types ( more than one can be selected )
 
-set ( NONE_COMPLEX_VALUES "float" "double" "long double" )
-set ( COMPLEX_VALUES      "scai::ComplexFloat" "scai::ComplexDouble" "scai::ComplexLongDouble" )
-set ( TYPE_LIST_VALUES    ${NONE_COMPLEX_VALUES} ${COMPLEX_VALUES} )
+set ( REAL_VALUE_TYPES    "float" "double" "long double" )
+set ( COMPLEX_VALUE_TYPES "scai::ComplexFloat" "scai::ComplexDouble" "scai::ComplexLongDouble" )
+set ( NUMERIC_VALUE_TYPES ${REAL_VALUE_TYPES} ${COMPLEX_VALUE_TYPES} )
 set ( LONG_DOUBLE_VALUES  "long double" "scai::ComplexLongDouble" )
 
 ## define USE_COMPLEX ( might be configured )
 
 ## define SCAI_HOST_TYPES_LIST ( might be configured )
 
-set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
-checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
+set ( SCAI_HOST_TYPES_LIST ${NUMERIC_VALUE_TYPES} CACHE STRING "Instantiation Types" )
+checkValues( "${SCAI_HOST_TYPES_LIST}" "${NUMERIC_VALUE_TYPES}" )
 
 ## external host types = host types without 'long' types
 
@@ -87,7 +87,7 @@ set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )
 set ( USE_COMPLEX FALSE )
 
 foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
-    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
+    list ( FIND COMPLEX_VALUE_TYPES ${ITEM} BOOLVALUE )
     if ( ${BOOLVALUE} GREATER -1 )
         set ( USE_COMPLEX TRUE )
     endif ()
@@ -98,6 +98,25 @@ endforeach ()
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
 listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
+
+# find types that might be used for FFT
+
+set( SCAI_FFT_TYPES_LIST ${SCAI_HOST_TYPES_LIST} )
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND REAL_VALUE_TYPES ${ITEM} _index )
+    if ( _index GREATER -1 )
+       list( GET COMPLEX_VALUE_TYPES ${_index} _ComplexType )
+    else ()
+        set( _ComplexType ${ITEM} )
+    endif()
+    list ( FIND SCAI_HOST_TYPES_LIST ${_ComplexType} _index )
+    # message ( STATUS "check type ${ITEM}, complex = ${_ComplexType}, found = ${_index}" )
+    if ( _index LESS 0 )
+       list ( REMOVE_ITEM SCAI_FFT_TYPES_LIST ${ITEM} )
+    endif()
+endforeach()
+
+listToString ( ", " "${SCAI_FFT_TYPES_LIST}" FFT_HOST_TYPES )
 
 ###################################################################
 ## Define index type that is used for addressing 32 or 64 bit    ##
@@ -122,13 +141,13 @@ set ( INDEX2 -1 )
 
 foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
 
-    list ( FIND NONE_COMPLEX_VALUES ${ITEM} FOUND_INDEX1 )
+    list ( FIND REAL_VALUE_TYPES ${ITEM} FOUND_INDEX1 )
     if    ( FOUND_INDEX1 GREATER INDEX1 )
         set ( INDEX1 ${FOUND_INDEX1})
     endif ( FOUND_INDEX1 GREATER INDEX1 )
 
     if    ( ${USE_COMPLEX} )
-        list ( FIND COMPLEX_VALUES ${ITEM} FOUND_INDEX2 )
+        list ( FIND COMPLEX_VALUE_TYPES ${ITEM} FOUND_INDEX2 )
         if    ( FOUND_INDEX2 GREATER INDEX2 )
             set ( INDEX2 ${FOUND_INDEX2})
         endif ( FOUND_INDEX2 GREATER INDEX2 )
@@ -138,14 +157,14 @@ endforeach ()
 
 if ( ${USE_COMPLEX} )
     if    ( INDEX1 GREATER INDEX2 )
-        list ( LENGTH NONE_COMPLEX_VALUES INDEX )
+        list ( LENGTH REAL_VALUE_TYPES INDEX )
         math ( EXPR INDEX "${INDEX}+${INDEX1}")
-        list ( GET TYPE_LIST_VALUES ${INDEX} SCAI_SCALAR_REP_TYPE ) # take biggest combinatation as value type
+        list ( GET NUMERIC_VALUE_TYPES ${INDEX} SCAI_SCALAR_REP_TYPE ) # take biggest combinatation as value type
     else  ( INDEX1 GREATER INDEX2 )
-        list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
+        list ( GET COMPLEX_VALUE_TYPES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
     endif ( INDEX1 GREATER INDEX2 )
 else  ()
-    list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
+    list ( GET REAL_VALUE_TYPES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
 endif ()
 
 # SCAI_USE_COMPLEX ( 0 or 1 ) is required 

@@ -41,6 +41,8 @@
 using namespace scai;
 using namespace lama;
 
+typedef DefaultReal ValueType;
+
 int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
@@ -55,17 +57,17 @@ int main( int argc, const char* argv[] )
     IndexType nx = atoi( argv[2] );
     IndexType ny = atoi( argv[3] );
 
-    auto x = read<DenseVector<double>>( argv[1] );
+    auto x = read<DenseVector<ValueType>>( argv[1] );
 
     SCAI_ASSERT_EQ_ERROR( nx * ny, x.size(), "vector file does not match size " << nx << " x " << ny )
 
     IndexType scale = 4;
 
-    GridVector<double> xData( common::Grid2D( scale * nx, scale * ny ), 0 );
+    GridVector<ValueType> xData( common::Grid2D( scale * nx, scale * ny ), 0 );
 
     {
-        hmemo::ReadAccess<double> rX( x.getLocalValues() );
-        GridWriteAccess<double> wXData( xData );
+        hmemo::ReadAccess<ValueType> rX( x.getLocalValues() );
+        GridWriteAccess<ValueType> wXData( xData );
 
         for ( IndexType i = 0; i < nx; ++i )
         {

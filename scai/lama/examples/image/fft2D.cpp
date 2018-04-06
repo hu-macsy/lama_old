@@ -46,9 +46,6 @@ using namespace scai;
 using namespace lama;
 using namespace hmemo;
 
-typedef float ValueType;
-typedef common::Complex<ValueType> ComplexType;
-
 int main( int argc, const char* argv[] )
 {
     // relevant SCAI arguments: 
@@ -56,6 +53,11 @@ int main( int argc, const char* argv[] )
     //   SCAI_DEVICE  = ...    set default device
 
     common::Settings::parseArgs( argc, argv );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+   typedef DefaultReal ValueType;
+   typedef common::Complex<ValueType> ComplexType;
 
     if ( argc != 5 )
     {
@@ -106,8 +108,8 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    float maxVal = utilskernel::HArrayUtils::max( image.getLocalValues() );
-    float minVal = utilskernel::HArrayUtils::min( image.getLocalValues() );
+    ValueType maxVal = utilskernel::HArrayUtils::max( image.getLocalValues() );
+    ValueType minVal = utilskernel::HArrayUtils::min( image.getLocalValues() );
 
     std::cout << "pixels range from " << minVal << " - " << maxVal << std::endl << std::endl;
 
@@ -171,4 +173,11 @@ int main( int argc, const char* argv[] )
     }
 
     imageOut.writeToFile( outputFileName );
+
+#else
+
+    std::cout << "FFT not supported, no Complex type supported" << std::endl;
+ 
+#endif
+
 }

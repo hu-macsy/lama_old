@@ -63,7 +63,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.FFTTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftForwardTest, ValueType, scai_numeric_test_types )
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+// only use those ValueType where also ComplexType<RealType<ValueType>> is supported
+
+typedef boost::mpl::list<SCAI_FFT_TYPES_HOST> scai_fft_test_types;
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftForwardTest, ValueType, scai_fft_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
@@ -91,7 +99,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftForwardTest, ValueType, scai_numeric_test_type
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftBackwardTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftBackwardTest, ValueType, scai_fft_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
@@ -143,7 +151,7 @@ static void discreteFourierTransform( Complex<ValueType> x2[], const Complex<Val
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
@@ -197,6 +205,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_numeric_test_types )
         }
     }
 }
+
+#endif
 
 /* --------------------------------------------------------------------- */
 

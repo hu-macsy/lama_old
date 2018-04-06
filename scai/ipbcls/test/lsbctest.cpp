@@ -16,7 +16,7 @@ bool inInterior( const DenseVector<Scalar> & x, const DenseVector<Scalar> l, con
     return x.all( CompareOp::GT, l ) && x.all( CompareOp::LT, u );
 }
 
-typedef double ValueType;
+typedef scai::DefaultReal ValueType;
 
 int main()
 {
@@ -53,8 +53,8 @@ int main()
             return 1;
         }
 
-        const auto r_exact  = eval<DenseVector<double>>( problem.A * problem.x - problem.b );
-        const auto r_approx = eval<DenseVector<double>>( problem.A * solution - problem.b );
+        const auto r_exact  = eval<DenseVector<ValueType>>( problem.A * problem.x - problem.b );
+        const auto r_approx = eval<DenseVector<ValueType>>( problem.A * solution - problem.b );
 
         const auto r_exact_norm = r_exact.l2Norm();
         const auto r_approx_norm = r_approx.l2Norm();

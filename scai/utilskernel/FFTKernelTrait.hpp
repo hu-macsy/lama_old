@@ -36,7 +36,6 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Complex.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 namespace scai
@@ -51,6 +50,9 @@ namespace utilskernel
 
 struct FFTKernelTrait
 {
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
     template <typename ValueType>
     struct fft
     {
@@ -74,6 +76,8 @@ struct FFTKernelTrait
             return "FFTKernel.fft";
         }
     };
+
+#endif
 
 };
 

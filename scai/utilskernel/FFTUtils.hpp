@@ -34,7 +34,7 @@
 #pragma once
 
 #include <scai/hmemo/HArray.hpp>
-#include <scai/common/Complex.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -48,6 +48,8 @@ namespace utilskernel
 class COMMON_DLL_IMPORTEXPORT FFTUtils
 {
 public:
+
+#ifdef SCAI_COMPLEX_SUPPORTED
 
 /** Compute the discrete fourier transform of an array using the FFT algorithm
  *
@@ -80,6 +82,8 @@ static void fft_many(
     const IndexType n, 
     const int direction,
     const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
+
+#endif
 
 private:
 
