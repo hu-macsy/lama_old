@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 
     bool compressFlag = false;
 
-    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size(), compressFlag );
+    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size(), compressFlag );
 
     BOOST_CHECK( !requiredPlan.compressed() );
 
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     BOOST_CHECK_EQUAL( requiredPlan2.totalQuantity(), static_cast<IndexType>( reqOwners.size() ) );
 
-    CommunicationPlan requiredPlan1( reqQuantitiesBegin, reqQuantities.size() );
+    auto requiredPlan1 = CommunicationPlan::buildBySizes( reqQuantitiesBegin, reqQuantities.size() );
 
     // verify that both plans are same
 
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( writeTest )
 
     setQuantities( reqQuantities, *comm );
 
-    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
+    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size() );
 
     std::ostringstream out;
 
@@ -238,11 +238,12 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     bool compressed = true;
 
-    CommunicationPlan tmpPlan( reqQuantities.data(), reqQuantities.size(), compressed );
+    auto tmpPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size(), compressed );
 
     const IndexType nMult = 2;
 
-    CommunicationPlan requiredPlan( tmpPlan, nMult );
+    CommunicationPlan requiredPlan( tmpPlan );
+    tmpPlan.multiplyConst( nMult );
 
     BOOST_CHECK( requiredPlan.allocated() );
     BOOST_CHECK( requiredPlan.compressed() );
@@ -280,11 +281,8 @@ BOOST_AUTO_TEST_CASE( allocateTransposeTest )
 
     setQuantities( reqQuantities, *comm );
 
-    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
-
-    CommunicationPlan providesPlan;
-
-    providesPlan.allocateTranspose( requiredPlan, *comm );
+    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size() );
+    auto providesPlan = requiredPlan.transpose( *comm );
 
     IndexType offsetCheck = 0;
 
@@ -309,7 +307,7 @@ BOOST_AUTO_TEST_CASE( singleEntryTest )
 
     const IndexType quantities[] = { 3, 0, 5, 2 };
 
-    CommunicationPlan plan( quantities, 4, true );
+    auto plan = CommunicationPlan::buildBySizes( quantities, 4, true );
    
     BOOST_CHECK_EQUAL( plan.size(), 3 );
     BOOST_CHECK_EQUAL( plan.maxQuantity(), 5 );
@@ -337,7 +335,7 @@ BOOST_AUTO_TEST_CASE( getInfoTest )
 
     bool compressFlag = true;  // make sure that p in getInfo is not same as entry pos
 
-    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size(), compressFlag );
+    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size(), compressFlag );
 
     IndexType expectedOffset = 0;
 
@@ -375,7 +373,7 @@ BOOST_AUTO_TEST_CASE( extractPlanTest )
 
     bool compressFlag = true;  // make sure that p in getInfo is not same as entry pos
 
-    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size(), compressFlag );
+    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size(), compressFlag );
 
     CommunicationPlan singlePlan;
 

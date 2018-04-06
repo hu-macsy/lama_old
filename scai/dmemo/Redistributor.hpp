@@ -353,8 +353,10 @@ void Redistributor::exchangeHaloN(
     SCAI_REGION( "Redistributor.exchangeHaloN" )
     const Communicator& comm = mSourceDistribution->getCommunicator();
     // Communication plans are built by multiplication with n
-    CommunicationPlan requiredN( mExchangeReceivePlan, n );
-    CommunicationPlan providesN( mExchangeSendPlan, n );
+    CommunicationPlan requiredN( mExchangeReceivePlan );
+    requiredN.multiplyConst( n );
+    CommunicationPlan providesN( mExchangeSendPlan );
+    providesN.multiplyConst( n );
     SCAI_LOG_DEBUG( logger, "requiredN ( n = " << n << "): " << requiredN )
     SCAI_LOG_DEBUG( logger, "providesN ( n = " << n << "): " << providesN )
     // use asynchronous communication to avoid deadlocks

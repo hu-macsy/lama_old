@@ -91,7 +91,7 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
 
     {
         ReadAccess<PartitionId> rOwners( owners );
-        requiredPlan.allocate( noPartitions, rOwners.get(), owners.size() );
+        requiredPlan.allocateByOwners( noPartitions, rOwners.get(), owners.size() );
     }
 
     SCAI_LOG_INFO( logger,
@@ -133,7 +133,7 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     requiredIndexesByOwner.release();
     // requiredPlan is ready, now we build the provides plan
     CommunicationPlan& providesPlan = halo.mProvidesPlan;
-    providesPlan.allocateTranspose( requiredPlan, communicator );
+    providesPlan = requiredPlan.transpose( communicator );
     SCAI_LOG_DEBUG( logger, communicator << ": providesPlan = " << providesPlan )
     SCAI_LOG_TRACE( logger, "requiredPlan: " << requiredPlan )
     SCAI_LOG_TRACE( logger, "providesPlan: " << providesPlan )
@@ -224,7 +224,7 @@ void HaloBuilder::buildFromProvidedOwners( const Communicator& comm,
         providedPlan.allocateByOffsets( rOffsets.get(), numPartitions );
     }
 
-    requiredPlan.allocateTranspose( providedPlan, comm );
+    requiredPlan = providedPlan.transpose( comm );
     requiredIndexes.resize( requiredPlan.totalQuantity() );
 
     const auto globalProvidedIndexes = globalizeProvidedIndexes( providedIndexes, halo2global );

@@ -240,8 +240,8 @@ struct HaloExpectedResult
 
 void checkHaloAgainstExpected( const Halo& halo, const HaloExpectedResult& expected )
 {
-    const auto expectedProvidedPlan = CommunicationPlan( expected.providedQuantities.data(), expected.providedQuantities.size() );
-    const auto expectedRequiredPlan = CommunicationPlan( expected.requiredQuantities.data(), expected.requiredQuantities.size() );
+    const auto expectedProvidedPlan = CommunicationPlan::buildBySizes( expected.providedQuantities.data(), expected.providedQuantities.size() );
+    const auto expectedRequiredPlan = CommunicationPlan::buildBySizes( expected.requiredQuantities.data(), expected.requiredQuantities.size() );
 
     CHECK_COMMUNICATION_PLANS_EQUAL( expectedProvidedPlan, halo.getProvidesPlan() );
     CHECK_COMMUNICATION_PLANS_EQUAL( expectedRequiredPlan, halo.getRequiredPlan() );

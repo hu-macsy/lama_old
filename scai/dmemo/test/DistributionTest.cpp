@@ -340,18 +340,11 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
             BOOST_REQUIRE_EQUAL( IndexType( 0 ), owners3.size() );
         }
 
-        hmemo::ReadAccess<PartitionId> rOwners1( owners1 );
-        hmemo::ReadAccess<PartitionId> rOwners2( owners2 );
-        hmemo::ReadAccess<PartitionId> rOwners3( owners3 );
+        BOOST_TEST( hostReadAccess( owners1 ) == hostReadAccess( owners2 ), boost::test_tools::per_element() );
 
-        for ( IndexType i = 0; i < nGlobal; ++i )
+        if ( rank == root )
         {
-            BOOST_CHECK_EQUAL( rOwners1[i], rOwners2[i] );
-
-            if ( rank == root )
-            {
-                BOOST_CHECK_EQUAL( rOwners1[i], rOwners3[i] );
-            }
+            BOOST_TEST( hostReadAccess( owners1 ) == hostReadAccess( owners3 ), boost::test_tools::per_element() );
         }
     }
 }

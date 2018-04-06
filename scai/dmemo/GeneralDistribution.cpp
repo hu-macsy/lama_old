@@ -35,6 +35,7 @@
 // hpp
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
@@ -236,12 +237,10 @@ GeneralDistribution::GeneralDistribution(
 
     // make a bucket sort with owners
 
-    HArray<IndexType> sizes;      // number of elements for each bucket/partition
+    HArray<IndexType> offsets;    // number of elements for each bucket/partition
     HArray<IndexType> perm;       // permutation to resort in buckets
 
-    HArrayUtils::bucketSort( sizes, perm, owners, mCommunicator->getSize() );
-    // bucketSort returns offsets, so unscan it to get the sizes
-    HArrayUtils::unscan( sizes );
+    HArrayUtils::bucketSort( offsets, perm, owners, mCommunicator->getSize() );
 
     HArray<IndexType> sortedIndexes;    // current indexes resorted according the buckets
 
@@ -260,16 +259,8 @@ GeneralDistribution::GeneralDistribution(
 
     // make communication plans for sending data and receiving to exchange
 
-    dmemo::CommunicationPlan sendPlan;
-
-    {
-        ReadAccess<IndexType> rSizes( sizes );
-        sendPlan.allocate( rSizes.get(), numPartitions );
-    }
-
-    dmemo::CommunicationPlan recvPlan;
-
-    recvPlan.allocateTranspose( sendPlan, comm );
+    auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), numPartitions );
+    auto recvPlan = sendPlan.transpose( comm );
 
     SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
 
@@ -519,6 +510,182 @@ static void setOwners( HArray<PartitionId>& owners, const HArray<IndexType>& ind
             wOwners[rIndexes[j]] = owner;
         }
     }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GeneralDistribution::getBlockDistributedOwners( hmemo::HArray<PartitionId>& localOwners ) const
+{
+    // get my range for block distribution of size
+
+    BlockDistribution blockDist( getGlobalSize(), getCommunicatorPtr() );
+
+    const Communicator& comm = getCommunicator();
+    const PartitionId   np   = comm.getSize();
+
+    hmemo::ContextPtr hostCtx = hmemo::Context::getHostPtr();
+
+    const IndexType localBlockSize = blockDist.getLocalSize();
+    const IndexType myLB           = blockDist.lb();
+
+    HArrayUtils::setSameValue( localOwners, localBlockSize, invalidPartition, hostCtx );
+
+    // get Owners of myIndexes according to the block distribution
+
+    HArray<PartitionId> blockOwners;
+    blockDist.computeOwners( blockOwners, mLocal2Global );
+
+    // bucketSort of the owners
+
+    HArray<IndexType> perm;
+    HArray<IndexType> offsets;
+
+    HArrayUtils::bucketSort( offsets, perm, blockOwners, np );
+
+    HArray<IndexType> sendIndexes;
+
+    HArrayUtils::gather( sendIndexes, mLocal2Global, perm, common::BinaryOp::COPY );
+
+    auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
+    auto recvPlan = sendPlan.transpose( comm );
+
+    SCAI_LOG_ERROR( logger, comm << ": query owners send plan: " << sendPlan )
+    SCAI_LOG_ERROR( logger, comm << ": query owners recv plan: " << recvPlan )
+
+    HArray<IndexType> receivedIndexes;
+
+    comm.exchangeByPlan( receivedIndexes, recvPlan, sendIndexes, sendPlan );
+
+    {
+        auto wLocalOwners = hmemo::hostWriteAccess( localOwners );
+        auto rGlobalIndexes = hmemo::hostReadAccess( receivedIndexes );
+
+        for ( PartitionId k = 0; k < recvPlan.size(); k++ )
+        {
+            CommunicationPlan::Entry entry = recvPlan[k];
+
+            for ( IndexType i = 0; i < entry.quantity; ++i )
+            {
+                IndexType localIndex = rGlobalIndexes[entry.offset + i] - myLB;
+                SCAI_ASSERT_VALID_INDEX_DEBUG( localIndex, localBlockSize, "serious problem" )
+                wLocalOwners[localIndex] = entry.partitionId;
+            }
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GeneralDistribution::computeOwners(
+    hmemo::HArray<PartitionId>& owners, 
+    const hmemo::HArray<IndexType>& indexes ) const
+{
+    HArrayUtils::setSameValue( owners, indexes.size(), invalidPartition, Context::getHostPtr() );
+
+    BlockDistribution blockDist( getGlobalSize(), getCommunicatorPtr() );
+
+    const Communicator& comm = getCommunicator();
+    const PartitionId   np   = comm.getSize();
+
+    HArray<PartitionId> blockDistOwners;
+
+    getBlockDistributedOwners( blockDistOwners );
+
+    if ( true )
+    {
+        auto rOwners = hostReadAccess( blockDistOwners );
+
+        IndexType lb = blockDist.lb();
+
+        for ( IndexType i = 0; i < blockDistOwners.size(); ++i )
+        {
+            std::cout << comm << ": owner[ " << ( i + lb ) << " ] = " << rOwners[i] << std::endl;
+        }
+    }
+
+    HArray<PartitionId> blockIndexOwners;
+
+    // get the processors that know the owners of the queried indexes
+
+    blockDist.computeOwners( blockIndexOwners, indexes );
+
+    // bucketSort of the owners
+
+    HArray<IndexType> perm;
+    HArray<IndexType> offsets;
+
+    HArrayUtils::bucketSort( offsets, perm, blockIndexOwners, np );
+
+    HArray<IndexType> sendIndexes;
+
+    HArrayUtils::gather( sendIndexes, indexes, perm, common::BinaryOp::COPY );
+
+    if ( true )
+    {
+        auto rIndexes = hostReadAccess( sendIndexes );
+        for ( IndexType i = 0; i < sendIndexes.size(); ++i )
+        {
+            std::cout << comm << ": queryIndex[ " << i << " ] = " << rIndexes[i] << std::endl;
+        }
+    }
+
+    auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
+    auto recvPlan = sendPlan.transpose( comm );
+
+    SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
+    SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )
+
+    HArray<IndexType> receivedIndexes;
+
+    comm.exchangeByPlan( receivedIndexes, recvPlan, sendIndexes, sendPlan );
+
+    if ( true )
+    {
+        auto rIndexes = hostReadAccess( receivedIndexes );
+        for ( IndexType i = 0; i < receivedIndexes.size(); ++i )
+        {
+            std::cout << comm << ": queriedIndex[ " << i << " ] = " << rIndexes[i] << std::endl;
+        }
+    }
+
+    HArrayUtils::compute( receivedIndexes, receivedIndexes, common::BinaryOp::SUB, blockDist.lb() );
+
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( receivedIndexes, blockDist.getLocalSize() ), "serious wrong index" )
+
+    HArray<PartitionId> sendOwners;  // will take the owners of the queried indexes
+
+    HArrayUtils::gather( sendOwners, blockDistOwners, receivedIndexes, common::BinaryOp::COPY );
+
+    if ( true )
+    {
+        auto rIndexes = hostReadAccess( receivedIndexes );
+        auto rOwners  = hostReadAccess( sendOwners );
+
+        for ( IndexType i = 0; i < receivedIndexes.size(); ++i )
+        {
+            std::cout << comm << ": queriedIndex[ " << i << " ] = " << rIndexes[i] 
+                      << " has owner " << rOwners[i] << std::endl;
+        }
+    }
+
+    HArray<PartitionId> recvOwners;  // will receive the owners for the queried indexes
+
+    comm.exchangeByPlan( recvOwners, sendPlan, sendOwners, recvPlan );
+
+    if ( true )
+    {
+        auto rIndexes = hostReadAccess( sendIndexes );
+        auto rOwners  = hostReadAccess( recvOwners );
+        auto rPerm    = hostReadAccess( perm );
+        for ( IndexType i = 0; i < sendIndexes.size(); ++i )
+        {
+            std::cout << comm << ": queriedIndex[ " << i << " ] = " << rIndexes[i] 
+                      << " from pos " << rPerm[i] 
+                      << " has owner " << rOwners[i] << std::endl;
+        }
+    }
+
+    HArrayUtils::scatter( owners, perm, true, recvOwners, common::BinaryOp::COPY );
 }
 
 /* ---------------------------------------------------------------------- */

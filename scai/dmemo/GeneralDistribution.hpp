@@ -133,6 +133,16 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    /** Override Distribution::computeOwners with more efficient version.
+     *
+     *  This routine uses a block distributed vector that holds the owners, i.e. each processor
+     *  knows the owners of a corresponding contiguous section.
+     *  For the queried indexes each processor queries the owners from the processors that holds
+     *  the corresponding information.
+     */
+
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
+
     /** Override the default implementation of Distribution::allOwners */
 
     virtual void allOwners( hmemo::HArray<PartitionId>& owners, const PartitionId root ) const;
@@ -140,6 +150,10 @@ public:
     /** Override Distribution::getOwnedIndexes */
 
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
+
+    /** Determine block-distributed ownership */
+ 
+    void getBlockDistributedOwners( hmemo::HArray<PartitionId>& localOwners ) const;
 
     /** Implementation of pure method Distribution::hasAnyAddressing */
 

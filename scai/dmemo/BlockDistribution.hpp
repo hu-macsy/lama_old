@@ -156,6 +156,10 @@ public:
 
     virtual IndexType getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const;
 
+    inline IndexType lb() const;
+
+    inline IndexType ub() const;
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -168,6 +172,16 @@ private:
     IndexType mLB;  //!< lower bound value of local range
     IndexType mUB;  //!< upper bound value of local range, mUB is not in this range
 };
+
+IndexType BlockDistribution::lb() const
+{
+    return mLB;
+}
+
+IndexType BlockDistribution::ub() const
+{
+    return mUB;
+}
 
 } /* end namespace dmemo */
 

@@ -158,22 +158,10 @@ void MatrixAssembly<ValueType>::exchangeCOO(
     HArrayUtils::gather( sendJA, inJA, perm, common::BinaryOp::COPY );
     HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
 
-    HArrayUtils::unscan( offsets );  // now we have size
-
-    SCAI_LOG_DEBUG( logger, comm << ": sizes = " << offsets )
-
-    dmemo::CommunicationPlan sendPlan;
-    dmemo::CommunicationPlan recvPlan;
-
-    {
-        ReadAccess<IndexType> rSizes( offsets );
-        sendPlan.allocate( rSizes.get(), np );
-    }
+    auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
+    auto recvPlan = sendPlan.transpose( comm );
 
     SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
-
-    recvPlan.allocateTranspose( sendPlan, comm );
-
     SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )
 
     comm.exchangeByPlan( outIA, recvPlan, sendIA, sendPlan );
