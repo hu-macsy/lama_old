@@ -368,14 +368,14 @@ public:
      *  @param[out] array    is the array that will be allocated and set
      *  @param[in]  n        is the number of values
      *  @param[in]  val      is the value for each entry of the array
-     *  @param[in]  ctx      is the location where the array is initialized
+     *  @param[in]  prefLoc  is the location where the array is initialized, defaults to Host
      */
     template<typename ValueType>
     static void setSameValue(
         hmemo::HArray<ValueType>& array,
         const IndexType n,
         const ValueType val,
-        hmemo::ContextPtr ctx );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Provide a version of setSameValue that deals with untyped HArray. */
 
@@ -384,7 +384,7 @@ public:
         hmemo::_HArray& target,
         const IndexType n,
         const ValueType val,
-        hmemo::ContextPtr ctx );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static ValueType getVal(
@@ -1074,33 +1074,33 @@ private:
 template<typename ValueType>
 ValueType HArrayUtils::min(
     const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
-    return HArrayUtils::reduce( values, common::BinaryOp::MIN, ctx );
+    return HArrayUtils::reduce( values, common::BinaryOp::MIN, prefLoc );
 }
 
 template<typename ValueType>
 ValueType HArrayUtils::max(
     const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
-    return HArrayUtils::reduce( values, common::BinaryOp::MAX, ctx );
+    return HArrayUtils::reduce( values, common::BinaryOp::MAX, prefLoc );
 }
 
 template<typename ValueType>
 ValueType HArrayUtils::sum(
     const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
-    return HArrayUtils::reduce( values, common::BinaryOp::ADD, ctx );
+    return HArrayUtils::reduce( values, common::BinaryOp::ADD, prefLoc );
 }
 
 template<typename ValueType>
 RealType<ValueType> HArrayUtils::maxNorm(
     const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
-    return HArrayUtils::reduce( values, common::BinaryOp::ABS_MAX, ctx );
+    return HArrayUtils::reduce( values, common::BinaryOp::ABS_MAX, prefLoc );
 }
 
 } /* end namespace utilskernel */

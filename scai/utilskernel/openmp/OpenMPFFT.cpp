@@ -156,87 +156,18 @@ void OpenMPFFT::fft1( Complex<ValueType> x[], IndexType n, IndexType m, int dir 
 }
 
 template<typename ValueType>
-static void FFT( int dir, IndexType m, Complex<ValueType> x[] )
- {
-    /*Calculate the number of points */
-
-    IndexType n = 1;
-
-    for ( IndexType i = 0; i < m; i++ )
-    {
-        n <<= 1;
-    }
-
-    OpenMPFFT::fft( x, n, m, dir );
-}
-
-template<typename ValueType>
 void OpenMPFFT::fft( Complex<ValueType> x[], IndexType nb, IndexType n, IndexType m, int dir )
 {
     SCAI_REGION( "OpenMP.fft" )
 
-    SCAI_LOG_ERROR( logger, "fft<" << common::TypeTraits<ValueType>::id() << "> @ OpenMP, "
+    SCAI_LOG_INFO( logger, "fft<" << common::TypeTraits<ValueType>::id() << "> @ OpenMP, "
                      << nb << " x " << n << " = 2 ** " << m )
 
     #pragma omp parallel for
     for ( IndexType i = 0; i < nb; ++i )
     {
-        OpenMPFFT::fft1( x + i * nb, n, m, dir );
+        OpenMPFFT::fft1( x + i * n, n, m, dir );
     }
-}
-
-bool Powerof2(int n,int *m,int *twopm)
-{
-   if (n <= 1) {
-      *m = 0;
-      *twopm = 1;
-      return false;
-   }
-
-   *m = 1;
-   *twopm = 2;
-   do {
-      (*m)++;
-      (*twopm) *= 2;
-   } while (2*(*twopm) <= n);
-
-   if (*twopm != n)
-      return false;
-   else
-      return true;
-}
-
-template<typename ValueType>
-void FFT2D(Complex<ValueType> c[], int nx, int ny, int dir)
-{
-   int i,j;
-   int m,twopm;
-   double *real,*imag;
-
-   /* Transform the rows */
-
-    std::unique_ptr<Complex<ValueType>[]> col( new Complex<ValueType>[nx] );
-
-    if (!Powerof2(nx,&m,&twopm) || twopm != nx)
-      return;
-
-   for (j=0;j<ny;j++) {
-      for (i=0;i<nx;i++) {
-         col[i] = c[i * ny + j];
-      }
-      FFT(dir,m,col);
-      for (i=0;i<nx;i++) {
-         c[i * ny + j] = col[i];
-      }
-   }
-
-   /* Transform the columns */
-
-   if (!Powerof2(ny,&m,&twopm) || twopm != ny)
-      return;
-   for (i=0;i<nx;i++) {
-      FFT(dir,m,&c[ i * ny ] );
-   }
 }
 
 /* --------------------------------------------------------------------------- */

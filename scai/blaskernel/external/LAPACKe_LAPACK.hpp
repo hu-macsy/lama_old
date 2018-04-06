@@ -43,6 +43,7 @@
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/OpenMP.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <scai/logging.hpp>
 
@@ -94,7 +95,7 @@ public:
     template<typename ValueType>
     static void tptrs(
         const CBLAS_UPLO uplo,
-        const CBLAS_TRANSPOSE trans,
+        const common::MatrixOp op,
         const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType nrhs,

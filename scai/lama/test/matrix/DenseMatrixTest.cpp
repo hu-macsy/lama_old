@@ -316,7 +316,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow2, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowArray, ValueType, scai_numeric_test_types )
 {
     using hmemo::HArray;
     using hmemo::hostReadAccess;
@@ -341,8 +341,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowMatrix, ValueType, scai_numeric_test_types )
 {
-    return;
-
     using hmemo::HArray;
     using hmemo::hostReadAccess;
 
