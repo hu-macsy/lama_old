@@ -151,10 +151,6 @@ public:
 
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
-    /** Determine block-distributed ownership */
- 
-    void getBlockDistributedOwners( hmemo::HArray<PartitionId>& localOwners ) const;
-
     /** Implementation of pure method Distribution::hasAnyAddressing */
 
     virtual bool hasAnyAddressing() const;
@@ -183,6 +179,10 @@ public:
 
     inline const hmemo::HArray<IndexType>& getMyIndexes() const;
 
+    /** This method returns the array of owners that this processor knowns about */
+
+    inline const hmemo::HArray<IndexType>& getMyBlockDistributedOwners() const;
+
     /** Implementation of pure method Distribution::getKind */
 
     virtual inline const char* getKind() const;
@@ -196,6 +196,10 @@ protected:
     // the following hash map is more efficient than a binary search in mLocal2Global
 
     std::unordered_map<IndexType, IndexType> mGlobal2Local;
+
+    // Block distributed array of owners (used for compute owners and for sanity check)
+
+    hmemo::HArray<PartitionId> mBlockDistributedOwners;
 
     // the following arrays will only be available if enableAnyAddressing has been called
     // Note: if set the array mGlobal2Local is no more needed
@@ -223,6 +227,10 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     void fillIndexMap();
+
+    /** Determine block-distributed ownership, i.e. mBlockDistributedOwners */
+ 
+    void setBlockDistributedOwners();
 };
 
 typedef std::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
@@ -234,6 +242,11 @@ typedef std::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 const hmemo::HArray<IndexType>& GeneralDistribution::getMyIndexes() const
 {
     return mLocal2Global;
+}
+
+const hmemo::HArray<PartitionId>& GeneralDistribution::getMyBlockDistributedOwners() const
+{
+    return mBlockDistributedOwners;
 }
 
 const char* GeneralDistribution::getKind() const

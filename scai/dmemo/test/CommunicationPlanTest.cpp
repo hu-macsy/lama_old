@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
     const IndexType nMult = 2;
 
     CommunicationPlan requiredPlan( tmpPlan );
-    tmpPlan.multiplyConst( nMult );
+    requiredPlan.multiplyConst( nMult );
 
     BOOST_CHECK( requiredPlan.allocated() );
     BOOST_CHECK( requiredPlan.compressed() );

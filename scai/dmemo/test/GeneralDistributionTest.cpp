@@ -134,13 +134,11 @@ BOOST_AUTO_TEST_CASE( getBlockDistributedOwnersTest )
     PartitionId rank = comm->getRank();
     PartitionId size = comm->getSize();
 
-    hmemo::HArray<PartitionId> localOwners;
-
     const GeneralDistribution* genDist = dynamic_cast<const GeneralDistribution*>( dist.get() );
 
     BOOST_REQUIRE( genDist != NULL );
 
-    genDist->getBlockDistributedOwners( localOwners );
+    const hmemo::HArray<PartitionId>& localOwners = genDist->getMyBlockDistributedOwners();
 
     hmemo::HArray<PartitionId> expectedOwners;
 
@@ -149,7 +147,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributedOwnersTest )
 
         for ( IndexType i = 0; i < elemsPerPartition; ++i )
         {
-            IndexType globalIndex = i + rank * elemsPerPartition;
+            IndexType globalIndex = i + rank * elemsPerPartition;   
             PartitionId owner = globalIndex % size; 
             wExpected[i] = owner;
         }
