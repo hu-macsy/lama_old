@@ -46,6 +46,8 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/hmemo.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <scai/common/BinaryOp.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
@@ -66,76 +68,30 @@ namespace utilskernel
 
 SCAI_LOG_DEF_LOGGER( CUFFT::logger, "CUDA.utilskernel" )
 
-/* ---------------------------- paddedFoward1D ---------------------------- */
+/* ----------------------------  fft  -------------------------------------- */
 
 template<typename ValueType>
-void CUFFT::paddedForward1D(
-    const IndexType n,
-    const IndexType npad,
-    const ValueType in[],
-    common::Complex<ValueType> out[] )
+void CUFFT::fft( common::Complex<ValueType> x[], IndexType nb, IndexType n, IndexType m, int dir )
 {
-    typedef common::Complex<ValueType> ComplexType;
+    SCAI_REGION( "CUDA.fft" )
+
+    SCAI_LOG_INFO( logger, "fft @ CUDA, " << nb << " x " << n << " = 2 ** " << m )
+
+    cufftHandle plan;
 
     SCAI_CHECK_CUDA_ACCESS
 
-    size_t size = sizeof(ComplexType) * npad;
+    SCAI_CUFFT_CALL( cufftPlan1d( &plan, n, CUFFTWrapper<ValueType>::getTypeC2C(), nb ), 
+                     "creation of plan for 1d fft failed")
 
-    ComplexType* d_in;
-
-    SCAI_CUDA_DRV_CALL( cuMemAlloc( ( CUdeviceptr* ) &d_in, size ), "cuMemAlloc failed" );
-
-    ComplexType zero(0);
-
-    CUDAUtils::setVal( d_in, npad, zero, common::BinaryOp::COPY );
-    CUDASparseUtils::set( d_in, in, n, common::BinaryOp::COPY );
-
-    cufftHandle plan;
-    SCAI_CUFFT_CALL( cufftPlan1d(&plan, npad, CUFFTWrapper<ValueType>::getTypeC2C(), 1 ), "creation of plan for 1d fft failed")
-
-    CUFFTWrapper<ValueType>::execute( plan, d_in, out, CUFFT_FORWARD );
-
-    SCAI_CUDA_RT_CALL( cudaDeviceSynchronize(), "device synchronize")
-
-    SCAI_CUFFT_CALL( cufftDestroy(plan), "destruction of plan failed" )
-
-    SCAI_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) d_in ), "cuMemFree failed" )
-}
-
-/* ---------------------------- paddedBackwardD ---------------------------- */
-
-template<typename ValueType>
-void CUFFT::paddedBackward1D(
-    const IndexType n,
-    const IndexType npad,
-    const ValueType in[],
-    common::Complex<ValueType> out[] )
-{
-    typedef common::Complex<ValueType> ComplexType;
-
-    SCAI_CHECK_CUDA_ACCESS
-
-    size_t size = sizeof( ComplexType ) * npad;
-
-    ComplexType* d_in; // static_cast<ComplexType*>( mem->allocate( size ) );
-
-    SCAI_CUDA_DRV_CALL( cuMemAlloc( ( CUdeviceptr* ) &d_in, size ), "cuMemAlloc failed" );
-
-    ComplexType zero(0);
-
-    CUDAUtils::setVal( d_in, npad, zero, common::BinaryOp::COPY );
-    CUDASparseUtils::set( d_in, in, n, common::BinaryOp::COPY );
-
-    cufftHandle plan;
-    SCAI_CUFFT_CALL( cufftPlan1d(&plan, npad, CUFFTWrapper<ValueType>::getTypeC2C(), 1 ), "creation of plan for 1d fft failed")
-
-    CUFFTWrapper<ValueType>::execute( plan, d_in, out, CUFFT_INVERSE );
-
-    SCAI_CUDA_RT_CALL( cudaDeviceSynchronize(), "device synchronize")
-
-    SCAI_CUFFT_CALL( cufftDestroy(plan), "destruction of plan failed" )
-
-    SCAI_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) d_in ), "cuMemFree failed" )
+    if ( dir == 1 )
+    {
+        CUFFTWrapper<ValueType>::execute( plan, x, x, CUFFT_FORWARD );
+    }
+    else
+    {
+        CUFFTWrapper<ValueType>::execute( plan, x, x, CUFFT_INVERSE );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -148,8 +104,17 @@ void CUFFT::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry:
     using kregistry::KernelRegistry;
     const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register FFT routines implemented by CUFFT in KernelRegistry [" << flag << "]" )
-    KernelRegistry::set<FFTKernelTrait::paddedForward1D<ValueType> >( CUFFT::paddedForward1D, ctx, flag );
-    KernelRegistry::set<FFTKernelTrait::paddedBackward1D<ValueType> >( CUFFT::paddedBackward1D, ctx, flag );
+    KernelRegistry::set<FFTKernelTrait::fft<RealType<ValueType>>>( CUFFT::fft, ctx, flag );
+}
+
+template<>
+void CUFFT::RegistratorV<float>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag )
+{
+}
+
+template<>
+void CUFFT::RegistratorV<double>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag )
+{
 }
 
 /* --------------------------------------------------------------------------- */
@@ -158,13 +123,13 @@ void CUFFT::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry:
 
 CUFFT::CUFFT()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_TYPELIST( float, double )>::registerKernels(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_TYPELIST( SCAI_NUMERIC_TYPES_CUDA )>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUFFT::~CUFFT()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_TYPELIST( float, double )>::registerKernels(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_TYPELIST( SCAI_NUMERIC_TYPES_CUDA )>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

@@ -56,6 +56,7 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         HArrayUtils
+        FFTUtils
 
     HEADERS                  # .hpp only
 

@@ -28,7 +28,7 @@
  # @endlicense
  #
  # @brief utilskernel/openmp/CMakeLists.txt
- # @author Eric Schricker
+ # @author LAMA Team
  # @date 18.02.2016
 ###
 
@@ -41,6 +41,7 @@ scai_project (
         
         OpenMPUtils
         OpenMPSection
+        OpenMPFFT
         
     ADD_PARENT_SCOPE
     

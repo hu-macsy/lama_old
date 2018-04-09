@@ -58,21 +58,15 @@ class COMMON_DLL_IMPORTEXPORT FFTW3
 {
 public:
 
-    /** OpenMP implementation for UtilKernelTrait::conj */
+    /** Implementation for FFTKernelTrait::fft using FFTW library */
 
     template<typename ValueType>
-    static void paddedForward1D(
+    static void fft(
+        common::Complex<ValueType> array[],
+        const IndexType nb,
         const IndexType n,
-        const IndexType npad,
-        const ValueType in[],
-        common::Complex<ValueType> out[] );
-
-    template<typename ValueType>
-    static void paddedBackward1D(
-        const IndexType n,
-        const IndexType npad,
-        const ValueType in[],
-        common::Complex<ValueType> out[] );
+        const IndexType m,
+        const int direction );
 
 private:
 

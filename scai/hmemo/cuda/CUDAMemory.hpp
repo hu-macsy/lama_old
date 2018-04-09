@@ -115,6 +115,10 @@ public:
 
     virtual ContextPtr getContextPtr() const;
 
+    /** Implementation of Memory::maxAllocatedbytes */
+
+    virtual size_t maxAllocatedBytes() const;
+
 private:
 
     bool canCopyCUDA( const CUDAMemory& other ) const;
@@ -134,9 +138,9 @@ private:
     tasking::SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
     tasking::SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
 
-    mutable int mNumberOfAllocates; //!< variable counts allocates
-    mutable long long mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device
-    mutable long long mMaxNumberOfAllocatedBytes; //!< variable counts the maximum allocated bytes
+    mutable size_t mNumberOfAllocates; //!< variable counts allocates
+    mutable size_t mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device
+    mutable size_t mMaxAllocatedBytes; //!< variable counts the maximum allocated bytes
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

@@ -44,6 +44,9 @@
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 
+// std
+#include <unordered_map>
+
 namespace scai
 {
 
@@ -130,6 +133,16 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    /** Override Distribution::computeOwners with more efficient version.
+     *
+     *  This routine uses a block distributed vector that holds the owners, i.e. each processor
+     *  knows the owners of a corresponding contiguous section.
+     *  For the queried indexes each processor queries the owners from the processors that holds
+     *  the corresponding information.
+     */
+
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
+
     /** Override the default implementation of Distribution::allOwners */
 
     virtual void allOwners( hmemo::HArray<PartitionId>& owners, const PartitionId root ) const;
@@ -166,6 +179,10 @@ public:
 
     inline const hmemo::HArray<IndexType>& getMyIndexes() const;
 
+    /** This method returns the array of owners that this processor knowns about */
+
+    inline const hmemo::HArray<IndexType>& getMyBlockDistributedOwners() const;
+
     /** Implementation of pure method Distribution::getKind */
 
     virtual inline const char* getKind() const;
@@ -175,6 +192,14 @@ protected:
     static const char theCreateValue[];
 
     hmemo::HArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
+
+    // the following hash map is more efficient than a binary search in mLocal2Global
+
+    std::unordered_map<IndexType, IndexType> mGlobal2Local;
+
+    // Block distributed array of owners (used for compute owners and for sanity check)
+
+    hmemo::HArray<PartitionId> mBlockDistributedOwners;
 
     // the following arrays will only be available if enableAnyAddressing has been called
     // Note: if set the array mGlobal2Local is no more needed
@@ -200,6 +225,12 @@ private:
     GeneralDistribution& operator=( const GeneralDistribution& other ) = delete;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    void fillIndexMap();
+
+    /** Determine block-distributed ownership, i.e. mBlockDistributedOwners */
+ 
+    void setBlockDistributedOwners();
 };
 
 typedef std::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
@@ -211,6 +242,11 @@ typedef std::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 const hmemo::HArray<IndexType>& GeneralDistribution::getMyIndexes() const
 {
     return mLocal2Global;
+}
+
+const hmemo::HArray<PartitionId>& GeneralDistribution::getMyBlockDistributedOwners() const
+{
+    return mBlockDistributedOwners;
 }
 
 const char* GeneralDistribution::getKind() const

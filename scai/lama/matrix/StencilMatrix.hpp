@@ -105,9 +105,21 @@ public:
      */
     ~StencilMatrix();
 
+    /** Override the default assignment operator that would not make deep copies. */
+
+    StencilMatrix& operator=( const StencilMatrix& matrix );
+
+    /** Override the default move assignment operator */
+
+    StencilMatrix& operator=( StencilMatrix&& matrix );
+
     /** Copy constructor */
 
     StencilMatrix( const StencilMatrix& other );
+
+    /** Move constructor */
+
+    StencilMatrix( StencilMatrix&& other ) noexcept;
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
@@ -140,7 +152,23 @@ public:
 
     virtual const char* getTypeName() const;
 
+    using _Matrix::getNumRows;
+    using _Matrix::getNumColumns;
+    using _Matrix::setIdentity;
+
+    using _Matrix::getRowDistribution;
+    using _Matrix::getRowDistributionPtr;
+    using _Matrix::getColDistribution;
+    using _Matrix::getColDistributionPtr;
+
+
+    using Matrix<ValueType>::getValueType;
+    using SparseMatrix<ValueType>::operator=;
+    using SparseMatrix<ValueType>::operator-=;
+    using SparseMatrix<ValueType>::operator+=;
+
     using SparseMatrix<ValueType>::setContextPtr;
+    using SparseMatrix<ValueType>::redistribute;
 
 protected:
 

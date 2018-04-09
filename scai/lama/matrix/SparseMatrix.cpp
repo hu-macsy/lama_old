@@ -413,8 +413,10 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         {
             ReadAccess<IndexType> sendColSizes( sendSizes, contextPtr );
             ReadAccess<IndexType> recvColSizes( recvSizes, contextPtr );
-            CommunicationPlan sendDataPlan( sendSizesPlan, sendColSizes.get() );
-            CommunicationPlan recvDataPlan( recvSizesPlan, recvColSizes.get() );
+            CommunicationPlan sendDataPlan( sendSizesPlan );
+            sendDataPlan.multiplyRagged( sendColSizes.get() );
+            CommunicationPlan recvDataPlan( recvSizesPlan );
+            recvDataPlan.multiplyRagged( recvColSizes.get() );
             comm.exchangeByPlan( recvJA, recvDataPlan, sendJA, sendDataPlan );
             comm.exchangeByPlan( recvValues, recvDataPlan, sendValues, sendDataPlan );
         }
@@ -884,7 +886,7 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
         // communicate halo row to other processors corresponding schedule
         // is inverse halo exchange
 
-        const CommunicationPlan recvPlan( NULL, 0 );                  // empty, nothing to receive
+        const auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );  // empty, nothing to receive
         const CommunicationPlan& sendPlan = mHalo.getRequiredPlan();  // only this matters here
 
         SCAI_LOG_DEBUG( logger, comm << ": owner recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
@@ -906,7 +908,7 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
 
         CommunicationPlan recvPlan;
         recvPlan.extractPlan( mHalo.getProvidesPlan(), owner );
-        CommunicationPlan sendPlan( NULL, 0 );                    // empty, nothing to send
+        auto sendPlan = CommunicationPlan::buildBySizes( NULL, 0 );                    // empty, nothing to send
 
         SCAI_LOG_DEBUG( logger, comm << ": not owner recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
 

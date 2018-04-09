@@ -626,7 +626,9 @@ void ConstrainedLeastSquares<ValueType>::solve(
                    << ". Total inner iterations: " << totalInnerIterations )
 }
 
-SCAI_COMMON_INST_CLASS( ConstrainedLeastSquares, float, double )
+// instantiation only for real types ( as < / > constraints are not defined for complex )
+
+SCAI_COMMON_INST_CLASS( ConstrainedLeastSquares, SCAI_REAL_TYPES_HOST )
 
 }
 

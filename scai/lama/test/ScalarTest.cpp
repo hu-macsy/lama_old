@@ -44,6 +44,7 @@
 using namespace scai;
 using namespace lama;
 using namespace common;
+using intern::Scalar;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
 // and vectors have not been instantiated for these types

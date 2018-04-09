@@ -1,8 +1,8 @@
 /**
- * @file BLAS_BLAS2.hpp
+ * @file OpenMPFFT.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2016
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief BLAS2 utilities on Host Context by wrapping to BLAS library
- * @author Lauretta Schubert
- * @date 05.07.2012
+ * @brief Implementations of Discrete FFT using OpenMP
+ * @author Thomas Brandes
+ * @date 20.03.2018
  */
 
 #pragma once
@@ -37,71 +37,83 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// local library
-#include <scai/blaskernel/cblas.hpp>
-
 // internal scai libraries
-#include <scai/common/SCAITypes.hpp>
-#include <scai/common/MatrixOp.hpp>
-
 #include <scai/logging.hpp>
+
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/assert.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <scai/kregistry/mepr/Registrator.hpp>
 
 namespace scai
 {
 
-namespace blaskernel
+namespace utilskernel
 {
 
-/** Implementations of blas2 methods of BLASKernelTrait with OpenMP.  */
+/** FFT Interface implemented in OpenMP  */
 
-class COMMON_DLL_IMPORTEXPORT BLAS_BLAS2
+class COMMON_DLL_IMPORTEXPORT OpenMPFFT
 {
 public:
 
-    /**
-     * This function is the OpenMP implementation of BLASKernelTrait::gemv
-     */
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+    /** OpenMP implementation for FFTKernelTrait::fft */
+
     template<typename ValueType>
-    static void gemv(
-        const common::MatrixOp opA,
-        const IndexType m,
+    static void fft(
+        common::Complex<ValueType> array[],
+        const IndexType nb,
         const IndexType n,
-        const ValueType alpha,
-        const ValueType* A,
-        const IndexType lda,
-        const ValueType* x,
-        const IndexType incX,
-        const ValueType beta,
-        ValueType* y,
-        const IndexType incY );
+        const IndexType m,
+        const int direction );
+
+#endif
 
 private:
 
-    /** Routine that registers all methods at the kernel registry. */
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+    template<typename ValueType>
+    static void fft1(
+        common::Complex<ValueType> array[],
+        const IndexType n,
+        const IndexType m,
+        const int direction );
+
+#endif
+
+    /** OpenMP implementation for FFTKernelTrait::fft_n */
+
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
 
     template<typename ValueType>
     struct RegistratorV
     {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Constructor for registration. */
 
-    BLAS_BLAS2();
+    OpenMPFFT();
 
     /** Destructor for unregistration. */
 
-    ~BLAS_BLAS2();
+    ~OpenMPFFT();
 
     /** Static variable for registration at static initialization. */
 
-    static BLAS_BLAS2 guard;
+    static OpenMPFFT guard;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} /* end namespace blaskernel */
+} /* end namespace utilskernel */
 
 } /* end namespace scai */

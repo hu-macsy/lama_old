@@ -61,17 +61,17 @@ include ( scai_function/listToString )
 
 # Possible choices for numeric types ( more than one can be selected )
 
-set ( NONE_COMPLEX_VALUES "float" "double" "long double" )
-set ( COMPLEX_VALUES      "scai::ComplexFloat" "scai::ComplexDouble" "scai::ComplexLongDouble" )
-set ( TYPE_LIST_VALUES    ${NONE_COMPLEX_VALUES} ${COMPLEX_VALUES} )
+set ( REAL_VALUE_TYPES    "float" "double" "long double" )
+set ( COMPLEX_VALUE_TYPES "scai::ComplexFloat" "scai::ComplexDouble" "scai::ComplexLongDouble" )
+set ( NUMERIC_VALUE_TYPES ${REAL_VALUE_TYPES} ${COMPLEX_VALUE_TYPES} )
 set ( LONG_DOUBLE_VALUES  "long double" "scai::ComplexLongDouble" )
 
 ## define USE_COMPLEX ( might be configured )
 
 ## define SCAI_HOST_TYPES_LIST ( might be configured )
 
-set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
-checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
+set ( SCAI_HOST_TYPES_LIST ${NUMERIC_VALUE_TYPES} CACHE STRING "Instantiation Types" )
+checkValues( "${SCAI_HOST_TYPES_LIST}" "${NUMERIC_VALUE_TYPES}" )
 
 ## external host types = host types without 'long' types
 
@@ -87,7 +87,7 @@ set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )
 set ( USE_COMPLEX FALSE )
 
 foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
-    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
+    list ( FIND COMPLEX_VALUE_TYPES ${ITEM} BOOLVALUE )
     if ( ${BOOLVALUE} GREATER -1 )
         set ( USE_COMPLEX TRUE )
     endif ()
@@ -95,9 +95,40 @@ endforeach ()
 
 # make strings out of list
 
-listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
-listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
-listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
+listToString ( ", " "${SCAI_HOST_TYPES_LIST}" CMAKE_NUMERIC_TYPES_HOST )
+listToString ( ", " "${EXT_HOST_TYPES_LIST}" CMAKE_NUMERIC_TYPES_EXT_HOST )
+listToString ( ", " "${CUDA_TYPES_LIST}" CMAKE_NUMERIC_TYPES_CUDA )
+
+# select real (non-complex) types of host types 
+
+set ( REAL_TYPES_HOST ${SCAI_HOST_TYPES_LIST} )
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND REAL_VALUE_TYPES ${ITEM} _index )
+    if ( _index LESS 0 )
+        list( REMOVE_ITEM REAL_TYPES_HOST ${ITEM} )
+    endif()
+endforeach()
+
+listToString ( ", " "${REAL_TYPES_HOST}" CMAKE_REAL_TYPES_HOST )
+
+# find types that might be used for FFT
+
+set( FFT_TYPES_HOST ${SCAI_HOST_TYPES_LIST} )
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND REAL_VALUE_TYPES ${ITEM} _index )
+    if ( _index GREATER -1 )
+       list( GET COMPLEX_VALUE_TYPES ${_index} _ComplexType )
+    else ()
+        set( _ComplexType ${ITEM} )
+    endif()
+    list ( FIND SCAI_HOST_TYPES_LIST ${_ComplexType} _index )
+    # message ( STATUS "check type ${ITEM}, complex = ${_ComplexType}, found = ${_index}" )
+    if ( _index LESS 0 )
+       list ( REMOVE_ITEM FFT_TYPES_HOST ${ITEM} )
+    endif()
+endforeach()
+
+listToString ( ", " "${FFT_TYPES_HOST}" CMAKE_FFT_TYPES_HOST )
 
 ###################################################################
 ## Define index type that is used for addressing 32 or 64 bit    ##
@@ -111,24 +142,24 @@ scai_build_variable ( NAME      SCAI_INDEX_TYPE
                       DOCSTRING "IndexType" )
 
 # add IndexType for the array types, be careful about empty string
-concatString ( "scai::IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
-concatString ( "scai::IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
-concatString ( "scai::IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
+concatString ( "scai::IndexType" ", " "${CMAKE_NUMERIC_TYPES_HOST}"  CMAKE_ARRAY_TYPES_HOST )
+concatString ( "scai::IndexType" ", " "${CMAKE_NUMERIC_TYPES_EXT_HOST}"  CMAKE_ARRAY_TYPES_EXT_HOST )
+concatString ( "scai::IndexType" ", " "${CMAKE_NUMERIC_TYPES_CUDA}"  CMAKE_ARRAY_TYPES_CUDA )
 
-# SCAI_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
+# CMAKE_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
 
 set ( INDEX1 -1 )
 set ( INDEX2 -1 )
 
 foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
 
-    list ( FIND NONE_COMPLEX_VALUES ${ITEM} FOUND_INDEX1 )
+    list ( FIND REAL_VALUE_TYPES ${ITEM} FOUND_INDEX1 )
     if    ( FOUND_INDEX1 GREATER INDEX1 )
         set ( INDEX1 ${FOUND_INDEX1})
     endif ( FOUND_INDEX1 GREATER INDEX1 )
 
     if    ( ${USE_COMPLEX} )
-        list ( FIND COMPLEX_VALUES ${ITEM} FOUND_INDEX2 )
+        list ( FIND COMPLEX_VALUE_TYPES ${ITEM} FOUND_INDEX2 )
         if    ( FOUND_INDEX2 GREATER INDEX2 )
             set ( INDEX2 ${FOUND_INDEX2})
         endif ( FOUND_INDEX2 GREATER INDEX2 )
@@ -138,14 +169,14 @@ endforeach ()
 
 if ( ${USE_COMPLEX} )
     if    ( INDEX1 GREATER INDEX2 )
-        list ( LENGTH NONE_COMPLEX_VALUES INDEX )
+        list ( LENGTH REAL_VALUE_TYPES INDEX )
         math ( EXPR INDEX "${INDEX}+${INDEX1}")
-        list ( GET TYPE_LIST_VALUES ${INDEX} SCAI_SCALAR_REP_TYPE ) # take biggest combinatation as value type
+        list ( GET NUMERIC_VALUE_TYPES ${INDEX} CMAKE_SCALAR_REP_TYPE ) # take biggest combinatation as value type
     else  ( INDEX1 GREATER INDEX2 )
-        list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
+        list ( GET COMPLEX_VALUE_TYPES ${INDEX2} CMAKE_SCALAR_REP_TYPE ) # take biggest complex value type
     endif ( INDEX1 GREATER INDEX2 )
 else  ()
-    list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
+    list ( GET REAL_VALUE_TYPES ${INDEX1} CMAKE_SCALAR_REP_TYPE ) # take biggest none complex value type
 endif ()
 
 # SCAI_USE_COMPLEX ( 0 or 1 ) is required 

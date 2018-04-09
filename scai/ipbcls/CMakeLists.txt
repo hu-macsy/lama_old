@@ -1,4 +1,3 @@
-###
  # @file scai/ipbcls/CMakeLists.txt
  #
  # @license
@@ -46,7 +45,7 @@ scai_module (
 
     MODULE_NAME   ipbcls 
 
-    INTERNAL_DEPS common logging lama solver
+    INTERNAL_DEPS common logging tracing lama solver partitioning
 ) 
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...

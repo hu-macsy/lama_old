@@ -129,6 +129,35 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( getBlockDistributedOwnersTest )
+{
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
+
+    const GeneralDistribution* genDist = dynamic_cast<const GeneralDistribution*>( dist.get() );
+
+    BOOST_REQUIRE( genDist != NULL );
+
+    const hmemo::HArray<PartitionId>& localOwners = genDist->getMyBlockDistributedOwners();
+
+    hmemo::HArray<PartitionId> expectedOwners;
+
+    {
+        auto wExpected = hmemo::hostWriteOnlyAccess( expectedOwners, elemsPerPartition );
+
+        for ( IndexType i = 0; i < elemsPerPartition; ++i )
+        {
+            IndexType globalIndex = i + rank * elemsPerPartition;   
+            PartitionId owner = globalIndex % size; 
+            wExpected[i] = owner;
+        }
+    }
+  
+    BOOST_TEST( hostReadAccess( expectedOwners ) == hostReadAccess( localOwners ), boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( redistConstructorTest )
 {
     IndexType N = 15;

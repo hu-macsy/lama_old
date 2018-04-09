@@ -35,6 +35,7 @@
 #pragma once
 
 #include <cstdio>
+#include <scai/common/MatrixOp.hpp>
 
 // macros
 #define FORTRAN_BLAS_NAME( name, prefix ) prefix##name##_
@@ -62,7 +63,29 @@ public:
 #else
     typedef char BLASTrans;
 #endif
+
+    static inline BLASTrans castTrans( const common::MatrixOp op );
 };
+
+BLASTrait::BLASTrans BLASTrait::castTrans( const common::MatrixOp op )
+{
+    BLASTrait::BLASTrans castOp = ' ';
+
+    if ( op == common::MatrixOp::NORMAL )
+    {
+        castOp = 'N';
+    }
+    else if ( op == common::MatrixOp::TRANSPOSE )
+    {
+        castOp = 'T';
+    }
+    else if ( op == common::MatrixOp::CONJ_TRANSPOSE )
+    {
+        castOp = 'C';
+    }
+
+    return castOp;
+}
 
 } /* end namespace blaskernel */
 

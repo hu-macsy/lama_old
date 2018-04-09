@@ -120,8 +120,8 @@ common::ScalarType Vector<ValueType>::getValueType() const
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_SV<ValueType>& expression )
 {
-    const Scalar alphaS        = expression.getArg1().getArg1();
-    const Scalar betaS         = expression.getArg2().getArg1();
+    const intern::Scalar alphaS        = expression.getArg1().getArg1();
+    const intern::Scalar betaS         = expression.getArg2().getArg1();
     const ValueType alpha      = alphaS.getValue<ValueType>();
     const ValueType beta       = betaS.getValue<ValueType>();
     const Vector<ValueType>& x = expression.getArg1().getArg2();
@@ -140,9 +140,9 @@ template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_S<ValueType>& expression )
 {
     const Expression_SV<ValueType>& exp = expression.getArg1();
-    const Scalar& alpha = exp.getArg1();
+    const intern::Scalar& alpha = exp.getArg1();
     const Vector<ValueType>& x = exp.getArg2();
-    const Scalar& beta = expression.getArg2();
+    const intern::Scalar& beta = expression.getArg2();
 
     vectorPlusScalar( alpha.getValue<ValueType>(), x, beta.getValue<ValueType>() );
 
@@ -152,7 +152,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_S<ValueType
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV<ValueType>& expression )
 {
-    Scalar alphaS = expression.getArg1(); 
+    intern::Scalar alphaS = expression.getArg1(); 
     ValueType alpha = alphaS.getValue<ValueType>();
 
     const OpMatrix<ValueType>& opMat = expression.getArg2().getArg1();
@@ -185,7 +185,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueTy
 
     // split up exp1 -> alpha * op( matrix ) * vectorX
 
-    const Scalar& alphaS = exp1.getArg1();
+    const intern::Scalar& alphaS = exp1.getArg1();
     ValueType alpha = alphaS.getValue<ValueType>();
     const Expression_MV<ValueType> matrixTimesVectorExp = exp1.getArg2();
     const common::MatrixOp op = matrixTimesVectorExp.getArg1().getOp();
@@ -194,7 +194,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueTy
 
     // split up exp2 -> beta * vectorY
 
-    const Scalar& betaS = exp2.getArg1();
+    const intern::Scalar& betaS = exp2.getArg1();
     const ValueType& beta = betaS.getValue<ValueType>();
     const Vector<ValueType>& vectorY = exp2.getArg2();
 
@@ -213,7 +213,7 @@ Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV_SV<IndexTy
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV<ValueType>& expression )
 {
-    const Scalar& alpha = expression.getArg1();
+    const intern::Scalar& alpha = expression.getArg1();
     const Vector<ValueType>& x = expression.getArg2();
 
     vectorPlusVector( alpha.getValue<ValueType>(), x, 0, x );
@@ -241,7 +241,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVV<ValueType>
 {
     // extract componennts from alpha * ( x * y )
 
-    Scalar a = exp.getArg1();
+    intern::Scalar a = exp.getArg1();
 
     const ValueType alpha = a.getValue<ValueType>();
 
@@ -304,7 +304,7 @@ Vector<ValueType>& Vector<ValueType>::operator/=( const ValueType value )
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SV<ValueType>& exp )
 {
-    const Scalar b = exp.getArg1();
+    const intern::Scalar b = exp.getArg1();
 
     ValueType alpha = 1;
     ValueType beta  = b.getValue<ValueType>();
@@ -321,7 +321,7 @@ template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SV<ValueType>& exp )
 {
     ValueType alpha = 1;
-    Scalar beta  = exp.getArg1();
+    intern::Scalar beta  = exp.getArg1();
 
     const Vector<ValueType>& x = *this;
     const Vector<ValueType>& y = exp.getArg2();

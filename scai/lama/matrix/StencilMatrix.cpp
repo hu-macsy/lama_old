@@ -288,6 +288,34 @@ StencilMatrix<ValueType>* StencilMatrix<ValueType>::copy() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+StencilMatrix<ValueType>::StencilMatrix( StencilMatrix&& other ) noexcept :
+
+    SparseMatrix<ValueType>()
+{
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilMatrix<ValueType>&  StencilMatrix<ValueType>::operator=( const StencilMatrix& other )
+{
+    SparseMatrix<ValueType>::operator=( other );
+    return *this;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilMatrix<ValueType>&  StencilMatrix<ValueType>::operator=( StencilMatrix&& other )
+{
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
+    return *this;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 const char* StencilMatrix<ValueType>::getTypeName() const
 {
     return typeName();

@@ -42,6 +42,7 @@
 #include <scai/blaskernel/cblas.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/kregistry/mepr/Registrator.hpp>
@@ -67,8 +68,7 @@ public:
      */
     template<typename ValueType>
     static void gemv(
-        const CBLAS_ORDER order,
-        const CBLAS_TRANSPOSE trans,
+        const common::MatrixOp op,
         const IndexType m,
         const IndexType n,
         const ValueType alpha,
@@ -80,7 +80,36 @@ public:
         ValueType* y,
         const IndexType incY );
 
+    /**
+     * This function is the OpenMP implementation of BLASKernelTrait::geam
+     */
+    template<typename ValueType>
+    static void geam(
+        ValueType* C,
+        const IndexType ldc,
+        const IndexType m,
+        const IndexType n,
+        const ValueType alpha,
+        const ValueType* A,
+        const IndexType lda,
+        const common::MatrixOp opA,
+        const ValueType beta,
+        const ValueType* B,
+        const IndexType ldb,
+        const common::MatrixOp opB );
+
 private:
+
+    template<typename ValueType>
+    static void scale(
+        ValueType* C,
+        const IndexType ldc,
+        const IndexType m,
+        const IndexType n,
+        const ValueType alpha,
+        const ValueType* A,
+        const IndexType lda,
+        const common::MatrixOp opA );
 
     /** structure that registers all methods at the kernel registry. */
 

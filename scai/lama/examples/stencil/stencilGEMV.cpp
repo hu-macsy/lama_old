@@ -155,7 +155,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
 int main( int argc, const char* argv[] )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // relevant SCAI arguments: 
     //   SCAI_CONTEXT = ...    set default context

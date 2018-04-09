@@ -100,7 +100,8 @@ struct UtilsWrapperT<ValueType, common::mepr::NullType>
         const common::BinaryOp,
         const hmemo::ContextPtr )
     {
-        COMMON_THROWEXCEPTION( "setArray: source type unsupported, target = " << target << ", source = " << source  )
+        COMMON_THROWEXCEPTION( "setArray: source type " << source.getValueType() << " unsupported, target = " 
+                               << target << ", source = " << source  )
     }
 
     static void setArraySection(

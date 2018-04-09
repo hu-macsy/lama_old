@@ -39,6 +39,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 /** Namespace used for all projects of the LAMA software and other provided packages like logging, tracing, etc. */
 
@@ -69,32 +70,14 @@ public:
      */
     static void parseArgs( int& argc, const char* argv[] );
 
-    /** Set a flag by value of its environment variable
+    /** Set a value of its environment variable
      *
-     *  @param[out]  flag is boolean variable that will be set
+     *  @param[out]  val is variable that will be set
      *  @param[in]   envVarName is name of the environment variable
      *  @return      true if environment variable has been used to set flag
      */
-    static bool getEnvironment( bool& flag, const char* envVarName );
-
-    /** Set a integer by value of its environment variable
-     *
-     *  @param[out]  val is integer variable that will be set
-     *  @param[in]   envVarName is name of the environment variable
-     *  @return      true if environment variable has been used to set flag
-     */
-    static bool getEnvironment( int& val, const char* envVarName );
-
-    /** Set a long by value of its environment variable
-     *
-     *  @param[out]  val is long variable that will be set
-     *  @param[in]   envVarName is name of the environment variable
-     *  @return      true if environment variable has been used to set flag
-     */
-    static bool getEnvironment( long& val, const char* envVarName );
-
-    static bool getEnvironment( unsigned int& val, const char* envVarName );
-    static bool getEnvironment( unsigned long& val, const char* envVarName );
+    template<typename ValueType>
+    static bool getEnvironment( ValueType& val, const char* envVarName );
 
     /** Set a string by value of its environment variable
      *
@@ -102,7 +85,7 @@ public:
      *  @param[in]   envVarName is name of the environment variable
      *  @return      true if environment variable was set and provided an integer vlaue
      */
-    static bool getEnvironment( std::string& val, const char* envVarName );
+    static bool getRankedEnvironment( std::string& val, const char* envVarName );
 
     /** Define an environment variable */
 
@@ -151,15 +134,50 @@ private:
 
     static bool convertYesNoString( bool& flag, const char* value );
 
-    /** Template version of getEnvironment */
-
-    template<typename ValueType>
-    static bool getEnvironmentValue( ValueType& val, const char* envVarName );
-
     static int sRank;  //<!  specifies pos to take from comma separated values
 
     static const char* RANK_DELIMITER();
 };
+
+/* ----------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline bool Settings::getEnvironment( ValueType& val, const char* envVarName )
+{
+    std::string envVal;
+
+    if ( !Settings::getRankedEnvironment( envVal, envVarName ) )
+    {   
+        return false; // no initialization by environment
+    }
+
+    std::istringstream input( envVal );
+
+    input >> val;
+
+    return input.fail() == 0;
+}
+
+template<>
+inline bool Settings::getEnvironment( std::string& val, const char* envVarName )
+{
+    // workaround with input stream not needed here
+
+    return Settings::getRankedEnvironment( val, envVarName );
+}
+
+template<>
+inline bool Settings::getEnvironment( bool& flag, const char* envVarName )
+{
+    std::string val;
+
+    if ( !getEnvironment( val, envVarName ) )
+    {
+        return false;  // environment variable not set
+    }
+
+    return convertYesNoString( flag, val.c_str() );
+}
 
 } /* end namespace common */
 

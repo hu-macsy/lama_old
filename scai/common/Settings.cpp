@@ -136,69 +136,7 @@ bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 
 /* ----------------------------------------------------------------------------- */
 
-bool Settings::getEnvironment( bool& flag, const char* envVarName )
-{
-    std::string val;
-
-    if ( !getEnvironment( val, envVarName ) )
-    {
-        return false;  // environment variable not set
-    }
-
-    bool done = convertYesNoString( flag, val.c_str() );
-
-    if ( !done )
-    {
-        return false;  //  no boolean value
-    }
-
-    return true; // environment variable was available
-}
-
-/* ----------------------------------------------------------------------------- */
-
-template<typename ValueType>
-bool Settings::getEnvironmentValue( ValueType& val, const char* envVarName )
-{
-    std::string envVal;
-
-    if ( !Settings::getEnvironment( envVal, envVarName ) )
-    {
-        return false; // no initialization by environment
-    }
-
-    std::istringstream input( envVal );
-
-    input >> val;
-
-    return input.fail() == 0;
-}
-
-/* ----------------------------------------------------------------------------- */
-
-bool Settings::getEnvironment( int& val, const char* envVarName )
-{
-    return getEnvironmentValue<int>( val, envVarName );
-}
-
-bool Settings::getEnvironment( long& val, const char* envVarName )
-{
-    return getEnvironmentValue<long>( val, envVarName );
-}
-
-bool Settings::getEnvironment( unsigned int& val, const char* envVarName )
-{
-    return getEnvironmentValue<unsigned int>( val, envVarName );
-}
-
-bool Settings::getEnvironment( unsigned long& val, const char* envVarName )
-{
-    return getEnvironmentValue<unsigned long>( val, envVarName );
-}
-
-/* ----------------------------------------------------------------------------- */
-
-bool Settings::getEnvironment( std::string& val, const char* envVarName )
+bool Settings::getRankedEnvironment( std::string& val, const char* envVarName )
 {
     const char* env = getenv( envVarName );
 

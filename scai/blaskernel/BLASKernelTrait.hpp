@@ -38,6 +38,7 @@
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 // std
 #include <cstring>
@@ -359,19 +360,16 @@ struct BLASKernelTrait
     struct gemv
     {
         /**
-         * @brief gemv performs one of the matrix-vector operations
          *
          * y = alpha * op(A) * x + beta * y
          * where op(A) = A or op(A) = AT
          *
          * alpha and beta are scalars, and x and y are vectors.
          * A is an m×n matrix consisting of elements.
-         * Matrix A is stored in column-major format, and lda is the
+         * Matrix A is stored in row-major format, and lda is the
          * leading dimension of the two dimensional array in which A is stored.
          *
-         * @param[in] order     specifies if row or col major.
-         * @param[in] trans     specifies op(A). If trans == 'N' or 'n', op(A) = A
-         *                                       If trans == 'T','t','C','c', op(A) = AT
+         * @param[in] opA       specifies op(A).
          * @param[in] m         the number of rows of matrix A; m must be at least zero
          * @param[in] n         the number of columns of matrix A; n must be at least zero
          * @param[in] alpha     scalar multiplier applied to op(A)
@@ -393,8 +391,7 @@ struct BLASKernelTrait
          *
          */
         typedef void ( *FuncType ) (
-            const CBLAS_ORDER order,
-            const CBLAS_TRANSPOSE trans,
+            const common::MatrixOp opA,
             const IndexType m,
             const IndexType n,
             const ValueType alpha,
@@ -412,6 +409,33 @@ struct BLASKernelTrait
         }
     };
 
+    /** Kernel trait for BLAS2 extension routine matrix add
+     *
+     *  @tparam ValueType stands for the arithmetic type used in this operation.
+     */
+    template<typename ValueType>
+    struct geam
+    {
+        typedef void ( *FuncType ) (
+            ValueType* C,
+            const IndexType ldc,
+            const IndexType m,
+            const IndexType n,
+            const ValueType alpha,
+            const ValueType* A,
+            const IndexType lda,
+            const common::MatrixOp opA,
+            const ValueType beta,
+            const ValueType* B,
+            const IndexType ldb,
+            const common::MatrixOp opB );
+
+        static const char* getId()
+        {
+            return "BLAS2.geam";
+        }
+    };
+
     /** Kernel trait for BLAS3 routine gemm.
      *
      *  @tparam ValueType stands for the arithmetic type used in this operation.
@@ -426,7 +450,7 @@ struct BLASKernelTrait
          * It performs one of the matrix‐matrix operations:
          *
          * C = alpha * op(A) * op(B) + beta * C,
-         * where op(X) = X or op(X) = \f$X^{T}\f$
+         * where op is one of the supported matrix operations conj/transpose
          *
          * alpha and beta are scalars.
          * A, B, and C are matrices consisting of elements,
@@ -437,17 +461,8 @@ struct BLASKernelTrait
          * lda, ldb, and ldc are the leading dimensions of the two‐dimensional arrays
          * containing A, B, and C.
          *
-         * @param[in] order   specifies whether arrays are row-major or column-major stored
-         * @param[in] transA  specifies op(A)
-         *                    If transa = 'N', 'n'
-         *                    op(A) = A
-         *                    If transa == 'T', 't', 'C', 'c'
-         *                    op(A) = \f$A^{T}\f$
-         * @param[in] transB  specifies op(B)
-         *                    If transb = 'N', 'n'
-         *                    op(B) = B
-         *                    If transb == 'T', 't', 'C', 'c'
-         *                    op(B) = BT
+         * @param[in] opA     specifies op(A), e.g. NORMAL, TRANSPOSE, CONJ, CONJ_TRANSPOSE
+         * @param[in] opB     specifies op(B), e.g. NORMAL, TRANSPOSE, CONJ, CONJ_TRANSPOSE
          * @param[in] m       number of rows of matrix op(A) and rows of matrix C;
          *                    m must be at least zero.
          * @param[in] n       number of columns of matrix op(B) and number of columns of C;
@@ -470,12 +485,13 @@ struct BLASKernelTrait
          * @param[in,out] C   array of dimensions (ldc,n); ldc must be at least max(1,m).
          *                    updated based on C = alpha * op(A) * op(B) + beta * C
          * @param[in] ldc     leading dimension of two-dimensional array used to store matrix C.
+         *
+         * All matrices are assumed to be in the row-major format.
          */
 
         typedef void ( *FuncType ) (
-            const CBLAS_ORDER order,
-            const CBLAS_TRANSPOSE transA,
-            const CBLAS_TRANSPOSE transB,
+            const common::MatrixOp opA,
+            const common::MatrixOp opB,
             const IndexType m,
             const IndexType n,
             const IndexType k,
@@ -510,9 +526,6 @@ struct BLASKernelTrait
          * interchanges. L and U will be stored within A whereby the diagonal elements
          * of L will not be stored.
          *
-         * @param[in] order   Specifies, whether the matrix is stored in column major
-         *                     order (i.e. CblasColMajor) or in row major order (i.e.
-         *                     CblasRowMajor).
          * @param[in] m         Number of rows of matrix A; m must be at least zero. m
          *                       specifies, how many rows of A will be touched by this
          *                       function.
@@ -541,7 +554,6 @@ struct BLASKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            const CBLAS_ORDER order,
             const IndexType m,
             const IndexType n,
             ValueType* a,
@@ -561,10 +573,9 @@ struct BLASKernelTrait
     template<typename ValueType>
     struct getinv
     {
-
         /** Method computes the inverse of a matrix by using the LAPACK routines getrf and getri
          *
-         *  @param[in]     n specifies the order of the matrix a
+         *  @param[in]     n specifies the size of the matrix a in each dimension
          *  @param[in,out] a is the matrix for which the inverse is computed in-place
          *  @param[in]     lda for the leading dimension of the array A
          *  @throws        Exception if error occurs ( e.g. matrix is singular )
@@ -588,7 +599,6 @@ struct BLASKernelTrait
     struct getri
     {
         typedef void ( *FuncType ) (
-            const CBLAS_ORDER ,
             const IndexType n,
             ValueType* a,
             const IndexType lda,
@@ -614,15 +624,12 @@ struct BLASKernelTrait
          *  and B is a matrix of right hand sides and will contain the solution of all
          *  equations on output.
 
-         * @param[in] order   Specifies, whether the matrix is stored in column major
-         *                    order (i.e. CblasColMajor) or in row major order (i.e.
-         *                    CblasRowMajor).
          * @param[in] uplo    Specifies, whether matrix A is upper triangular (i.e.
          *                    CblasUpper) or lower triangular (i.e. CblasLower).
-         * @param[in] trans   Specifies op(A).
-         *                    if trans == CblasNoTrans,   op(A) = A;
-         *                    if trans == CblasTrans,     op(A) = AT;
-         *                    if trans == CblasConjTrans, op(A) = AH;
+         * @param[in] op      Specifies op(A).
+         *                    if op == MatrixOp::NORMAL,         op(A) = A;
+         *                    if op == MatrixOp::TRANSPOSE,      op(A) = AT;
+         *                    if op == MatrixOp::CONJ_TRANSPOSE, op(A) = AH;
          * @param[in] diag    Specifies, whether the triangualr matrix A is a unit
          *                    triangular matrix, i.e. the diagonal elements of A are
          *                    one.
@@ -641,9 +648,8 @@ struct BLASKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            const CBLAS_ORDER order,
             const CBLAS_UPLO uplo,
-            const CBLAS_TRANSPOSE trans,
+            const common::MatrixOp op,
             const CBLAS_DIAG diag,
             const IndexType n,
             const IndexType nrhs,

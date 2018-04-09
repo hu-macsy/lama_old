@@ -67,10 +67,12 @@ SCAI_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 HostMemory::HostMemory( std::shared_ptr<const HostContext> hostContextPtr ) :
 
     Memory( memtype::HostMemory ),
-    mHostContextPtr( hostContextPtr )
+    mHostContextPtr( hostContextPtr ),
+    mNumberOfAllocates( 0 ),
+    mNumberOfAllocatedBytes( 0 ),
+    mMaxAllocatedBytes( 0 )
+
 {
-    mNumberOfAllocatedBytes = 0;
-    mNumberOfAllocates = 0;
     SCAI_LOG_INFO( logger, "HostMemory created" )
 }
 
@@ -109,8 +111,11 @@ void* HostMemory::allocate( const size_t size ) const
 
     // allocate must be thread-safe in case where multiple threads use LAMA arrays
     std::unique_lock<std::recursive_mutex> lock( allocate_mutex );
+
     mNumberOfAllocatedBytes += size;
+    mMaxAllocatedBytes = std::max( mNumberOfAllocatedBytes, mMaxAllocatedBytes );
     mNumberOfAllocates++;
+
     SCAI_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
     return pointer;
 }
@@ -162,6 +167,11 @@ MemoryPtr HostMemory::getIt()
     }
 
     return instancePtr;
+}
+
+size_t HostMemory::maxAllocatedBytes() const
+{
+    return mMaxAllocatedBytes;
 }
 
 } /* end namespace hmemo */

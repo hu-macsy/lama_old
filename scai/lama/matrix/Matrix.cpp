@@ -542,8 +542,8 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM_SM<ValueTy
     const Matrix<ValueType>& matB = opMatB.getMatrix();
     const Matrix<ValueType>& matC = opMatC.getMatrix();
 
-    const Scalar& alphaS = arg11.getArg1();
-    const Scalar& betaS  = arg2.getArg1();
+    const intern::Scalar& alphaS = arg11.getArg1();
+    const intern::Scalar& betaS  = arg2.getArg1();
 
     const ValueType& alpha = alphaS.getValue<ValueType>();
     const ValueType& beta  = betaS.getValue<ValueType>();
@@ -578,8 +578,8 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM_SM<ValueTyp
     SCAI_ASSERT_EQ_ERROR( opMatA.getOp(), common::MatrixOp::NORMAL, "unsupported exp" )
     SCAI_ASSERT_EQ_ERROR( opMatB.getOp(), common::MatrixOp::NORMAL, "unsupported exp" )
 
-    const Scalar& alphaS = exp.getArg1().getArg1();
-    const Scalar& betaS = exp.getArg2().getArg1();
+    const intern::Scalar& alphaS = exp.getArg1().getArg1();
+    const intern::Scalar& betaS = exp.getArg2().getArg1();
 
     const ValueType& alpha = alphaS.getValue<ValueType>();
     const ValueType& beta = betaS.getValue<ValueType>();
@@ -613,7 +613,7 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM<ValueType>
 {
     // exp =  ( alpha * A ) * B
 
-    const Scalar& alpha = exp.getArg1().getArg1();
+    const intern::Scalar& alpha = exp.getArg1().getArg1();
 
     const OpMatrix<ValueType>& opMatA = exp.getArg1().getArg2();
     const OpMatrix<ValueType>& opMatB = exp.getArg2();
@@ -640,7 +640,7 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM<ValueType>&
 
     common::MatrixOp op = opA.getOp();
     SCAI_ASSERT_EQ_ERROR( op, common::MatrixOp::NORMAL, "matrix op = " << op << " unsupported in matrixA = alpha * op( matrixB )" )
-    const Scalar& s = exp.getArg1();
+    const intern::Scalar& s = exp.getArg1();
     this->matrixTimesScalar( opA.getMatrix(), s.getValue<ValueType>() );
     return *this;
 }
@@ -681,7 +681,7 @@ Matrix<ValueType>& Matrix<ValueType>::operator+=( const Expression_SM<ValueType>
 
     SCAI_ASSERT_EQ_ERROR( opMat.getOp(), common::MatrixOp::NORMAL, "unsupported matrix op" )
 
-    const Scalar& s = exp.getArg1();
+    const intern::Scalar& s = exp.getArg1();
 
     this->matrixPlusMatrix( ValueType( 1 ), *this, s.getValue<ValueType>(), opMat.getMatrix() );
 
@@ -699,7 +699,7 @@ Matrix<ValueType>& Matrix<ValueType>::operator-=( const Expression_SM<ValueType>
 
     SCAI_ASSERT_EQ_ERROR( opMat.getOp(), common::MatrixOp::NORMAL, "unsupported matrix op" )
 
-    const Scalar& s = exp.getArg1();
+    const intern::Scalar& s = exp.getArg1();
 
     this->matrixPlusMatrix( ValueType( 1 ), *this, -s.getValue<ValueType>(), opMat.getMatrix() );
 

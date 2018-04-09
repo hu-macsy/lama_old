@@ -76,9 +76,7 @@ BOOST_AUTO_TEST_CASE( Stencil1D3PTest )
 
     BOOST_REQUIRE_EQUAL( csrMatrixStencil.getNumRows(), csrMatrixStencil.getNumRows() );
 
-    Scalar diffNorm = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
-
-    DefaultReal diff = diffNorm.getValue<DefaultReal>();
+    DefaultReal diff = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
 
     BOOST_CHECK( diff < 1e-5 );
 }
@@ -105,9 +103,7 @@ BOOST_AUTO_TEST_CASE( Stencil2D5PTest )
 
     BOOST_REQUIRE_EQUAL( csrMatrixStencil.getNumRows(), csrMatrixStencil.getNumRows() );
 
-    Scalar diffNorm = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
-
-    DefaultReal diff = diffNorm.getValue<DefaultReal>();
+    DefaultReal diff = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
 
     BOOST_CHECK( diff < 1e-5 );
 }
@@ -135,9 +131,7 @@ BOOST_AUTO_TEST_CASE( Stencil3D27PTest )
 
     BOOST_REQUIRE_EQUAL( csrMatrixStencil.getNumRows(), csrMatrixStencil.getNumRows() );
 
-    Scalar diffNorm = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
-
-    DefaultReal diff = diffNorm.getValue<DefaultReal>();
+    DefaultReal diff = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
 
     BOOST_CHECK( diff < 1e-5 );
 }
@@ -166,9 +160,7 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
     CSRSparseMatrix<DefaultReal> csrMatrixStencil2( stencilMatrix2 );
     SCAI_LOG_INFO( logger, "csr matrix 2 = " << csrMatrixStencil2 )
 
-    Scalar diffNorm = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
-
-    DefaultReal diff = diffNorm.getValue<DefaultReal>();
+    DefaultReal diff = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
 
     BOOST_CHECK( diff < 1e-5 );
 }
@@ -195,9 +187,7 @@ BOOST_AUTO_TEST_CASE( AssignTest )
     CSRSparseMatrix<DefaultReal> csrMatrixStencil1( stencilMatrix1 );
     CSRSparseMatrix<DefaultReal> csrMatrixStencil2( stencilMatrix2 );
 
-    Scalar diffNorm = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
-
-    DefaultReal diff = diffNorm.getValue<DefaultReal>();
+    DefaultReal diff = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
 
     BOOST_CHECK( diff < 1e-5 );
 }

@@ -96,6 +96,11 @@ public:
         ::free( pointer );
     }
 
+    virtual size_t maxAllocatedBytes() const
+    {
+        return 0;
+    }
+
     virtual void memcpy( void* target, const void* source, const size_t size ) const
     {
         scai::common::safer_memcpy( target, source, size );

@@ -136,19 +136,8 @@ void VectorAssembly<ValueType>::exchangeCOO(
     HArrayUtils::gather( sendIA, inIA, perm, common::BinaryOp::COPY );
     HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
 
-    HArrayUtils::unscan( offsets );  // now we have size
-
-    SCAI_LOG_DEBUG( logger, "sizes = " << offsets )
-
-    dmemo::CommunicationPlan sendPlan;
-    dmemo::CommunicationPlan recvPlan;
-
-    {
-        ReadAccess<IndexType> rSizes( offsets );
-        sendPlan.allocate( rSizes.get(), np );
-    }
-
-    recvPlan.allocateTranspose( sendPlan, comm );
+    auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
+    auto recvPlan = sendPlan.transpose( comm );
 
     SCAI_LOG_DEBUG( logger, "recv plan: " << recvPlan )
 

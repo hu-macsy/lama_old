@@ -131,7 +131,11 @@ public:
     }
 };
 
-class Scalar;
+namespace intern
+{
+    class Scalar;
+}
+
 template<typename ValueType> class Matrix;
 template<typename ValueType> class Vector;
 
@@ -142,7 +146,7 @@ template<typename ValueType> class Vector;
 /** Symbolic expression 'Scalar * Vector */
 
 template<typename ValueType>
-using Expression_SV = Expression<Scalar, Vector<ValueType>, common::BinaryOp::MULT>;
+using Expression_SV = Expression<intern::Scalar, Vector<ValueType>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Vector1 * Vector2 element-wise */
 
@@ -152,12 +156,12 @@ using Expression_VV = Expression<Vector<ValueType>, Vector<ValueType>, common::B
 /** Symbolic expression 'Scalar * Vector * Vector', element-wise */
 
 template<typename ValueType>
-using Expression_SVV = Expression<Scalar, Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>, common::BinaryOp::MULT>;
+using Expression_SVV = Expression<intern::Scalar, Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar' */
 
 template<typename ValueType>
-using Expression_SV_S = Expression<Expression_SV<ValueType>, Scalar, common::BinaryOp::ADD>;
+using Expression_SV_S = Expression<Expression_SV<ValueType>, intern::Scalar, common::BinaryOp::ADD>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
 
@@ -208,7 +212,7 @@ private:
 /** Symbolic expression 'Scalar * Matrix' */
 
 template<typename ValueType>
-using Expression_SM = Expression<Scalar, OpMatrix<ValueType>, common::BinaryOp::MULT>;
+using Expression_SM = Expression<intern::Scalar, OpMatrix<ValueType>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Scalar * Matrix * Matrix' */
 
@@ -237,7 +241,7 @@ using Expression_MV = Expression<OpMatrix<ValueType>, Vector<ValueType>, common:
 /** Symbolic expression 'Scalar * (op)Matrix * Vector' */
 
 template<typename ValueType>
-using Expression_SMV = Expression<Scalar, Expression_MV<ValueType>, common::BinaryOp::MULT>;
+using Expression_SMV = Expression<intern::Scalar, Expression_MV<ValueType>, common::BinaryOp::MULT>;
 
 /** Symbolic expression 'Scalar * (op)Matrix * Vector + Scalar * Vector' */
 

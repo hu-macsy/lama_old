@@ -538,13 +538,8 @@ void DenseVector<ValueType>::sortImpl(
 
     // make communication plans for sending data and receiving data
 
-    dmemo::CommunicationPlan sendPlan;
-
-    sendPlan.allocate( quantities.get(), numPartitions );
-
-    dmemo::CommunicationPlan recvPlan;
-
-    recvPlan.allocateTranspose( sendPlan, comm );
+    auto sendPlan = dmemo::CommunicationPlan::buildBySizes( quantities.get(), numPartitions );
+    auto recvPlan = sendPlan.transpose( comm );
 
     SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
 
@@ -1313,16 +1308,8 @@ void DenseVector<ValueType>::gather(
 
     // exchange communication plans
 
-    dmemo::CommunicationPlan recvPlan;
-
-    dmemo::CommunicationPlan sendPlan;
-
-    {
-        hmemo::ReadAccess<IndexType> rOffsets( offsets );
-        recvPlan.allocateByOffsets( rOffsets.get(), size );
-    }
-
-    sendPlan.allocateTranspose( recvPlan, comm );
+    auto recvPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), size );
+    auto sendPlan = recvPlan.transpose( comm );
 
     SCAI_LOG_DEBUG( logger, comm << ": recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
 
@@ -1426,16 +1413,8 @@ void DenseVector<ValueType>::scatter(
 
     // exchange communication plans
 
-    dmemo::CommunicationPlan sendPlan;   // will be allocated by offsets from bucket sort
-
-    dmemo::CommunicationPlan recvPlan;   // is the transposed send plan
-
-    {
-        hmemo::ReadAccess<IndexType> rOffsets( offsets );
-        sendPlan.allocateByOffsets( rOffsets.get(), size );
-    }
-
-    recvPlan.allocateTranspose( sendPlan, comm );
+    auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), size );
+    auto recvPlan = sendPlan.transpose( comm );
 
     SCAI_LOG_DEBUG( logger, comm << ": sendPlan = " << sendPlan << ", recvPlan = " << recvPlan )
 

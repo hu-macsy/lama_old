@@ -163,10 +163,7 @@ void MetisPartitioning::squarePartitioningMaster(
     options[METIS_OPTION_NUMBERING] = 0;   // C-style, should also be default
     options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_CUT;  // METIS_OBJTYPE_CUT (default), or METIS_OBJTYPE_VOL
 
-    HArray<real_t> tpwghts;
-    utilskernel::HArrayUtils::assign( tpwghts, processorWeights );
-
-    ReadAccess<real_t> rTPWeights( tpwghts );       // take write access, otherwise const cast required
+    auto tpwghts = hmemo::hostReadAccess( processorWeights ).buildVector<real_t>();
 
     idx_t nparts     = processorWeights.size();   // desired number of processors
 
@@ -205,7 +202,7 @@ void MetisPartitioning::squarePartitioningMaster(
                                          NULL,   // no size of the vertices
                                          NULL,   // no weights for the edges
                                          &nparts,
-                                         const_cast<real_t*>( rTPWeights.get() ),
+                                         &tpwghts[0],
                                          ubvec, 
                                          options, 
                                          &minConstraint, 
@@ -259,9 +256,7 @@ void MetisPartitioning::rectangularPartitioning(
 
     SCAI_LOG_INFO( logger, "METIS uses " << ncon << " constraints on the " << nNodes << " vertices" )
 
-    HArray<real_t> metisPWeights;
-
-    utilskernel::HArrayUtils::assign( metisPWeights, processorWeights );
+    auto metisPWeights = hmemo::hostReadAccess( processorWeights ).buildVector<real_t>();
 
     idx_t options[METIS_NOPTIONS];
     METIS_SetDefaultOptions( options );
@@ -276,7 +271,6 @@ void MetisPartitioning::rectangularPartitioning(
 
     {
          WriteAccess<idx_t> wMapping( mapping );
-         ReadAccess<real_t> rProcessorWeights( metisPWeights );  // otherwise const cast required
          ReadAccess<idx_t> rIA( graph.ia() );
          ReadAccess<idx_t> rJA( graph.ja() );
          ReadAccess<idx_t> rVertexWeights( graph.vertexWeights() );
@@ -291,7 +285,7 @@ void MetisPartitioning::rectangularPartitioning(
                                               NULL, 
                                               NULL, 
                                               &np,
-                                              NULL, // const_cast<real_t*>( rProcessorWeights.get() ), 
+                                              NULL, // &metisPWeights[0]
                                               ubvec, 
                                               options, 
                                               &minConstraint, 

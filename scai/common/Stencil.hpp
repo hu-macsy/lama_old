@@ -488,9 +488,7 @@ IndexType Stencil<ValueType>::getValidPoints( bool valid[], const IndexType grid
     return cnt;
 }
 
-/* ==================================================================================== */
-/*   Stencil1D  one-dimensional stencil                                                 */
-/* ==================================================================================== */
+/* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 void Stencil<ValueType>::scale( const ValueType scaling )
@@ -516,7 +514,9 @@ void Stencil<ValueType>::transpose( const Stencil<ValueType>& other )
     }
 }
 
-/* ------------------------------------------------------------------------------------ */
+/* ==================================================================================== */
+/*   Stencil1D  one-dimensional stencil                                                 */
+/* ==================================================================================== */
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Stencil1D : public Stencil<ValueType>

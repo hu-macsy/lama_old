@@ -49,7 +49,7 @@
 using namespace scai;
 using namespace lama;
 
-typedef double ValueType;
+typedef DefaultReal ValueType;
 
 /** These are the scale factor to combine the RGB values */
 

@@ -497,7 +497,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 
 BOOST_AUTO_TEST_CASE( sortRowTest )
 {
-    typedef double ValueType;
+    typedef DefaultReal ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
 
@@ -529,7 +529,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
     HArray<IndexType> csrIA( numRows + 1, ia, testContext );
     HArray<IndexType> csrJA( numValues, ja_unsorted, testContext );
-    HArray<double> csrValues( numValues, values_unsorted, testContext );
+    HArray<ValueType> csrValues( numValues, values_unsorted, testContext );
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -647,7 +647,7 @@ BOOST_AUTO_TEST_CASE( countNonZeroTest )
 
 BOOST_AUTO_TEST_CASE( compressTest )
 {
-    typedef double ValueType;
+    typedef DefaultReal ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
 
@@ -677,11 +677,11 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
     HArray<IndexType> oldIA( numRows + 1, ia_original, testContext );
     HArray<IndexType> oldJA( oldNumValues, ja_original, testContext );
-    HArray<double>    oldValues( oldNumValues, values_original, testContext );
+    HArray<ValueType> oldValues( oldNumValues, values_original, testContext );
 
     HArray<IndexType> newIA( numRows + 1, ia_compress, testContext );
     HArray<IndexType> newJA;
-    HArray<double>    newValues;
+    HArray<ValueType> newValues;
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -696,7 +696,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
         ReadAccess<ValueType> roValues( oldValues, loc );
 
         bool diagonalFlag = false;
-        double eps = 0.000001;
+        ValueType eps = common::TypeTraits<ValueType>::small();
 
         compress[loc]( wJA.get(), wValues.get(), rIA.get(), roIA.get(), roJA.get(), roValues.get(), numRows, eps, diagonalFlag );
     }

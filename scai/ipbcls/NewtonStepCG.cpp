@@ -175,6 +175,6 @@ IndexType NewtonStepCG<ValueType>::computeStep( Vector<ValueType>& dx, const Vec
     return k - 1;
 }
 
-// Template instantiation
+// Template instantiation only for real (non-complex) types
 
-SCAI_COMMON_INST_CLASS( NewtonStepCG, float, double )
+SCAI_COMMON_INST_CLASS( NewtonStepCG, SCAI_REAL_TYPES_HOST )

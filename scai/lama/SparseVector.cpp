@@ -948,8 +948,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const Vector<Valu
 
     // ValueType otherZero = otherSparse.getZero().getValue<ValueType>();
 
-    Scalar otherZeroScalar = otherSparse.getZero();
-    ValueType otherZero = otherZeroScalar.getValue<ValueType>();
+    ValueType otherZero = otherSparse.getZero();
 
     IndexType n = HArrayUtils::allSparse( localAll,
                                           mNonZeroIndexes, mNonZeroValues, mZeroValue,

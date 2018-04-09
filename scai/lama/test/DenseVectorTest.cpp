@@ -48,6 +48,7 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/expression/all.hpp>
+#include <scai/lama/fft.hpp>
 
 #include <scai/utilskernel.hpp>
 
@@ -293,8 +294,8 @@ BOOST_AUTO_TEST_CASE( ScanTest )
                 for ( IndexType i = 0; i < n; ++i )
                 {
                     ValueType expected = static_cast<ValueType>( ( i + 1 ) * ( i + 2 ) / 2  );
-                    Scalar computed = rVector[i];
-                    BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
+                    ValueType computed = rVector[i];
+                    BOOST_CHECK_EQUAL( expected, computed );
                 }
             }
         }
@@ -540,7 +541,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
 BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // test of: vector = scalar * vector * matrix + scalar * vector with all distributions, formats
 
@@ -634,7 +635,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 {
     // only serial
 
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
 
@@ -674,7 +675,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 
 BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType n = 4;
     ValueType sourceVals[] = { 3, 1, 4, 2 };
@@ -770,7 +771,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
 BOOST_AUTO_TEST_CASE( gatherTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2, 3 };
     ValueType indexValues[]  = { 3, 4, 1, 0, 6, 2 };
@@ -836,7 +837,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
 BOOST_AUTO_TEST_CASE( scatterTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2 };
     ValueType indexValues[]  = { 3, 4, 1, 0, 5, 2 };
@@ -947,6 +948,79 @@ BOOST_AUTO_TEST_CASE( moveTest )
     BOOST_CHECK_EQUAL( ptr1, ptr2 );  // that is great, all the same data used
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.2, 0.16 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 8;
+
+    fft( y, x, n );
+
+    BOOST_CHECK_EQUAL( y.size(), n );
+
+    FFTType yS1 = y[0];
+    FFTType yS2 = y[n - 2];
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( common::Math::abs( yS1 - FFTType( 0.2 + 0.16 ) ) < eps );
+    BOOST_CHECK( common::Math::abs( yS2 - FFTType( 0.2, 0.16 ) ) < eps );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_fft_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.2, 0.16 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 8;
+
+    ifft( y, x, n );
+
+    BOOST_CHECK_EQUAL( y.size(), n );
+
+    FFTType yS1 = y[0];
+    FFTType yS2 = y[n - 2];
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( common::Math::abs( yS1 - FFTType( 0.2 + 0.16 ) ) < eps );
+    BOOST_CHECK( common::Math::abs( yS2 - FFTType( 0.2, -0.16 ) ) < eps );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest2, ValueType, scai_fft_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.5, 1.0 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 4;
+
+    ifft( y, x, n );
+
+    HArray<FFTType> result( { 1.5, FFTType( 0.5, 1.0 ), -0.5, FFTType( 0.5, -1.0 ) } );
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( y.getLocalValues(), result ) < eps );
+}
+
+#endif
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();
+

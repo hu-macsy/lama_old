@@ -34,6 +34,7 @@
 
 #include <scai/tracing.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 #include <scai/lama/matrix/MatrixWithT.hpp>
 
 #include <scai/common/Settings.hpp>
@@ -73,6 +74,10 @@ void setDistribution( _Matrix& A )
         {
             partitioningKind = val;
         }
+        else if ( val == "FILE" )
+        {
+            partitioningKind = val; // handled here
+        }
         else
         {
             std::cout << "ERROR: Partitioning kind = " << val << " not supported" << std::endl;
@@ -88,10 +93,29 @@ void setDistribution( _Matrix& A )
         weight = strtof( val.c_str(), NULL );
     }
 
-    PartitioningPtr thePartitioning( Partitioning::create( partitioningKind ) );
+    if ( val == "FILE" )
+    {
+        auto comm = A.getRowDistribution().getCommunicatorPtr();
 
-    thePartitioning->rectangularRedistribute( A, weight );
+        int np = comm->getSize();
+
+        std::string rowDistFileName = "row_" + std::to_string( np ) + ".txt";
+        std::string colDistFileName = "col_" + std::to_string( np ) + ".txt";
+
+        dmemo::DistributionPtr rowDist( PartitionIO::readDistribution( rowDistFileName, comm ) );
+        dmemo::DistributionPtr colDist( PartitionIO::readDistribution( colDistFileName, comm ) );
+
+        A.redistribute( rowDist, colDist );
+    }
+    else
+    {
+        PartitioningPtr thePartitioning( Partitioning::create( partitioningKind ) );
+
+        thePartitioning->rectangularRedistribute( A, weight );
+    }
 }
+
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -123,10 +147,10 @@ int main( int argc, const char* argv[] )
 
     SCAI_REGION_START( "Main.read" )
 
-    auto A  = read<CSRSparseMatrix<double>>( argv[2] );
-    auto b  = read<DenseVector<double>>( argv[3] );
-    auto lb = read<DenseVector<double>>( argv[4] );
-    auto ub = read<DenseVector<double>>( argv[5] );
+    auto A  = read<CSRSparseMatrix<ValueType>>( argv[2] );
+    auto b  = read<DenseVector<ValueType>>( argv[3] );
+    auto lb = read<DenseVector<ValueType>>( argv[4] );
+    auto ub = read<DenseVector<ValueType>>( argv[5] );
 
     SCAI_REGION_END( "Main.read" )
 
@@ -162,18 +186,18 @@ int main( int argc, const char* argv[] )
     std::cout << "lb = " << lb << std::endl;
     std::cout << "ub = " << ub << std::endl;
 
-    DenseVector<double> x( colDist, 0, ctx );
+    DenseVector<ValueType> x( colDist, 0, ctx );
 
-    MatrixWithT<double> Aopt( A );   // Allocate also a transposed matrix to optimize A' * x operations
+    MatrixWithT<ValueType> Aopt( A );   // Allocate also a transposed matrix to optimize A' * x operations
 
-    ConstrainedLeastSquares<double> lsq( Aopt );
+    ConstrainedLeastSquares<ValueType> lsq( Aopt );
 
     // lsq.setInnerSolverType( InnerSolverType::StandardCG );
     lsq.setInnerSolverType( InnerSolverType::NewtonStepCG );
 
     // lsq.useTranspose();       // will matrixTimesVector instead ov vectorTimesMatrix
 
-    lsq.setObjectiveTolerance( tol );
+    lsq.setObjectiveTolerance( static_cast<ValueType>( tol ) );
     lsq.setMaxIter( 500 );
 
     try
@@ -187,7 +211,7 @@ int main( int argc, const char* argv[] )
         return 1;
     }
 
-    auto residual = eval<DenseVector<double>>( A * x - b );
+    auto residual = eval<DenseVector<ValueType>>( A * x - b );
 
     std::cout << "res norm = " << residual.l2Norm() << std::endl;
 

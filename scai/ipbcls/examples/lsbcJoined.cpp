@@ -49,6 +49,8 @@ using namespace scai;
 using namespace lama;
 using namespace ipbcls;
 
+typedef DefaultReal ValueType;
+
 int main( int argc, const char* argv[] )
 {
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
@@ -79,28 +81,28 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    auto D  = read<CSRSparseMatrix<double>>( argv[2] );
-    auto L  = read<CSRSparseMatrix<double>>( argv[3] );
+    auto D  = read<CSRSparseMatrix<ValueType>>( argv[2] );
+    auto L  = read<CSRSparseMatrix<ValueType>>( argv[3] );
 
     // Alternatively if geometry is known.
-    // StencilMatrix<double> L( common::Grid3D( 73, 32, 121 ), common::Stencil3D<double>( 7 ) );
+    // StencilMatrix<ValueType> L( common::Grid3D( 73, 32, 121 ), common::Stencil3D<ValueType>( 7 ) );
 
-    auto T  = read<DenseVector<double>>( argv[4] );
-    auto lb = read<DenseVector<double>>( argv[5] );
-    auto ub = read<DenseVector<double>>( argv[6] );
+    auto T  = read<DenseVector<ValueType>>( argv[4] );
+    auto lb = read<DenseVector<ValueType>>( argv[5] );
+    auto ub = read<DenseVector<ValueType>>( argv[6] );
 
     D.setCommunicationKind( SyncKind::SYNCHRONOUS );
     L.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
     auto colDist = L.getColDistributionPtr();
 
-    auto Zero = fill<DenseVector<double>>( colDist, 0 );
+    auto Zero = fill<DenseVector<ValueType>>( colDist, 0 );
 
-    MatrixWithT<double> Lopt( L, L );
-    MatrixWithT<double> Dopt( D );
+    MatrixWithT<ValueType> Lopt( L, L );
+    MatrixWithT<ValueType> Dopt( D );
 
-    JoinedMatrix<double> A( Dopt, Lopt );
-    JoinedVector<double> b( T, Zero );
+    JoinedMatrix<ValueType> A( Dopt, Lopt );
+    JoinedVector<ValueType> b( T, Zero );
 
     lb.redistribute( colDist );
     ub.redistribute( colDist );
@@ -110,16 +112,16 @@ int main( int argc, const char* argv[] )
     std::cout << "lb = " << lb << std::endl;
     std::cout << "ub = " << ub << std::endl;
 
-    DenseVector<double> x( colDist, 0 );
+    DenseVector<ValueType> x( colDist, 0 );
 
-    ConstrainedLeastSquares<double> lsq( A );
+    ConstrainedLeastSquares<ValueType> lsq( A );
 
     // lsq.setInnerSolverType( InnerSolverType::StandardCG );
     lsq.setInnerSolverType( InnerSolverType::NewtonStepCG );
 
     // lsq.useTranspose();       // will matrixTimesVector instead ov vectorTimesMatrix
 
-    lsq.setObjectiveTolerance( tol );
+    lsq.setObjectiveTolerance( static_cast<ValueType>( tol ) );
     lsq.setMaxIter( 500 );
 
     try
@@ -133,7 +135,7 @@ int main( int argc, const char* argv[] )
         return 1;
     }
 
-    std::unique_ptr<Vector<double>> residual( A.newTargetVector() );
+    std::unique_ptr<Vector<ValueType>> residual( A.newTargetVector() );
     *residual =  A * x - b;
 
     std::cout << "res norm = " << residual->l2Norm() << std::endl;

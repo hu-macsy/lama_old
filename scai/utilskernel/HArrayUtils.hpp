@@ -341,19 +341,41 @@ public:
         const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Computing the transpose of two-dimensional array.
+     *
+     *  @param[out] target result array, size will be n1 * n2
+     *  @param[in]  n1 number of rows of 2D array
+     *  @param[in]  n2 number of cols of 2D array
+     *  @param[in]  source array with size n2 * n1
+     *  @param[in]  conj   if true, compuate conjugate-transpose
+     *  @param[in]  prefLoc location where result is computed.
+     *
+     *  Alias of target and source is suppported. On the host, 
+     *  this operation is done in-place, on a device a temporary array
+     *  is used.
+     */
+    template<typename ValueType>
+    static void transpose(
+        hmemo::HArray<ValueType>& target,
+        const IndexType n1, 
+        const IndexType n2, 
+        const hmemo::HArray<ValueType>& source,
+        const bool conj,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+  
     /** Initialize an array with a certain size and a given value.
      *
      *  @param[out] array    is the array that will be allocated and set
      *  @param[in]  n        is the number of values
      *  @param[in]  val      is the value for each entry of the array
-     *  @param[in]  ctx      is the location where the array is initialized
+     *  @param[in]  prefLoc  is the location where the array is initialized, defaults to Host
      */
     template<typename ValueType>
     static void setSameValue(
         hmemo::HArray<ValueType>& array,
         const IndexType n,
         const ValueType val,
-        hmemo::ContextPtr ctx );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Provide a version of setSameValue that deals with untyped HArray. */
 
@@ -362,7 +384,7 @@ public:
         hmemo::_HArray& target,
         const IndexType n,
         const ValueType val,
-        hmemo::ContextPtr ctx );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static ValueType getVal(
@@ -806,15 +828,17 @@ public:
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector 
      *
-     *  @param<out> sparseArray contains the non-zero values
-     *  @param<out> sparseIndexes contains the indexes of sparseArray in original array
-     *  @param<in>  denseArray    contains the array with all values
-     *  @param<in>  zeroValue     is the value that is considered as zero in denseArray
-     *  @param<in>  prefLoc       is the preferred location where operation is done
+     *  @param[out] sparseArray contains the non-zero values
+     *  @param[out] sparseIndexes contains the indexes of sparseArray in original array
+     *  @param[in]  denseArray    contains the array with all values
+     *  @param[in]  zeroValue     is the value that is considered as zero in denseArray
+     *  @param[in]  prefLoc       is the preferred location where operation is done
      * 
      *  \code
      *    buildSparseArray( sparseArray, sparseIndexes, HArray<double>( { 0, 2, 1, 2, 1 } ), 1 )
      *    -> sparseArray = HArray<double> ( { 0, 2, 2 } ); sparseIndexes = HArray<indexes> ( { 0, 1, 3 } )
+     *    buildSparseArray( sparseArray, sparseIndexes, HArray<double>( { 0, 2, 1, 2, 1 } ), 2 )
+     *    -> sparseArray = HArray<double> ( { 0, 1, 1 } ); sparseIndexes = HArray<indexes> ( { 0, 2, 4 } )
      *  \endcode
      */
     template<typename TargetType, typename SourceType>
@@ -1050,33 +1074,33 @@ private:
 template<typename ValueType>
 ValueType HArrayUtils::min(
     const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
-    return HArrayUtils::reduce( values, common::BinaryOp::MIN, ctx );
+    return HArrayUtils::reduce( values, common::BinaryOp::MIN, prefLoc );
 }
 
 template<typename ValueType>
 ValueType HArrayUtils::max(
     const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
-    return HArrayUtils::reduce( values, common::BinaryOp::MAX, ctx );
+    return HArrayUtils::reduce( values, common::BinaryOp::MAX, prefLoc );
 }
 
 template<typename ValueType>
 ValueType HArrayUtils::sum(
     const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
-    return HArrayUtils::reduce( values, common::BinaryOp::ADD, ctx );
+    return HArrayUtils::reduce( values, common::BinaryOp::ADD, prefLoc );
 }
 
 template<typename ValueType>
 RealType<ValueType> HArrayUtils::maxNorm(
     const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr ctx )
+    hmemo::ContextPtr prefLoc )
 {
-    return HArrayUtils::reduce( values, common::BinaryOp::ABS_MAX, ctx );
+    return HArrayUtils::reduce( values, common::BinaryOp::ABS_MAX, prefLoc );
 }
 
 } /* end namespace utilskernel */

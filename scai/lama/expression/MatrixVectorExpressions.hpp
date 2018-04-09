@@ -72,7 +72,7 @@ inline OpMatrix<ValueType> transpose( const Matrix<ValueType>& matrix )
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Matrix<ValueType>& matrix, const Vector<ValueType>& vector )
 {
-    return Expression_SMV<ValueType>( Scalar( 1 ), 
+    return Expression_SMV<ValueType>( intern::Scalar( 1 ), 
                                       Expression_MV<ValueType>( OpMatrix<ValueType>( matrix, common::MatrixOp::NORMAL ), 
                                                                 vector ) );
 }
@@ -80,7 +80,7 @@ inline Expression_SMV<ValueType> operator*( const Matrix<ValueType>& matrix, con
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const OpMatrix<ValueType>& opMatrix, const Vector<ValueType>& vector )
 {
-    return Expression_SMV<ValueType>( Scalar( 1 ), 
+    return Expression_SMV<ValueType>( intern::Scalar( 1 ), 
                                       Expression_MV<ValueType>( opMatrix, vector ) );
 }
 
@@ -140,7 +140,7 @@ inline Expression_SMV<ValueType> operator*( const Expression_SM<ValueType>& exp,
 template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator-( const Expression_SMV<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( -1 ), vector ) );
+    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( intern::Scalar( -1 ), vector ) );
 }
 
 /**
@@ -155,7 +155,7 @@ template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator-( const Vector<ValueType>& vector, const Expression_SMV<ValueType>& exp )
 {
     Expression_SMV<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
-    return Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
+    return Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( intern::Scalar( 1 ), vector ) );
 }
 
 /**
@@ -169,7 +169,7 @@ inline Expression_SMV_SV<ValueType> operator-( const Vector<ValueType>& vector, 
 template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator+( const Vector<ValueType>& vector, const Expression_SMV<ValueType>& exp )
 {
-    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
+    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( intern::Scalar( 1 ), vector ) );
 }
 
 /**
@@ -183,7 +183,7 @@ inline Expression_SMV_SV<ValueType> operator+( const Vector<ValueType>& vector, 
 template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator+( const Expression_SMV<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
+    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( intern::Scalar( 1 ), vector ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -236,37 +236,37 @@ inline Expression_SMV_SV<ValueType> operator+( const Expression_SMV<ValueType>& 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-inline Expression_SMV<ValueType> operator*( const Expression_SMV<ValueType>& exp, const Scalar alpha )
+inline Expression_SMV<ValueType> operator*( const Expression_SMV<ValueType>& exp, const intern::Scalar alpha )
 {
     return Expression_SMV<ValueType>( exp.getArg1() * alpha, exp.getArg2() );
 }
 
 template<typename ValueType>
-inline Expression_SMV_SV<ValueType> operator*( const Expression_SMV_SV<ValueType>& exp, const Scalar alpha )
+inline Expression_SMV_SV<ValueType> operator*( const Expression_SMV_SV<ValueType>& exp, const intern::Scalar alpha )
 {
     return Expression_SMV_SV<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
 }
 
 template<typename ValueType>
-inline Expression_SMV<ValueType> operator*( const Scalar alpha, const Expression_SMV<ValueType>& exp )
+inline Expression_SMV<ValueType> operator*( const intern::Scalar alpha, const Expression_SMV<ValueType>& exp )
 {
     return Expression_SMV<ValueType>( alpha * exp.getArg1(), exp.getArg2() );
 }
 
 template<typename ValueType>
-inline Expression_SMV_SV<ValueType> operator*( const Scalar alpha, const Expression_SMV_SV<ValueType>& exp )
+inline Expression_SMV_SV<ValueType> operator*( const intern::Scalar alpha, const Expression_SMV_SV<ValueType>& exp )
 {
     return Expression_SMV_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
 }
 
 template<typename ValueType>
-inline Expression_SMV<ValueType> operator/( const Expression_SMV<ValueType>& exp, const Scalar alpha )
+inline Expression_SMV<ValueType> operator/( const Expression_SMV<ValueType>& exp, const intern::Scalar alpha )
 {
     return Expression_SMV<ValueType>( exp.getArg1() / alpha, exp.getArg2() );
 }
 
 template<typename ValueType>
-inline Expression_SMV_SV<ValueType> operator/( const Expression_SMV_SV<ValueType>& exp, const Scalar alpha )
+inline Expression_SMV_SV<ValueType> operator/( const Expression_SMV_SV<ValueType>& exp, const intern::Scalar alpha )
 {
     return Expression_SMV_SV<ValueType>( exp.getArg1() / alpha, exp.getArg2() / alpha );
 }

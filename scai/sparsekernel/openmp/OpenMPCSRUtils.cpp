@@ -1164,7 +1164,7 @@ void OpenMPCSRUtils::decomposition(
         solution[i] = beta;
     }
 
-    blaskernel::OpenMPBLAS2::gemv( CblasRowMajor, CblasNoTrans,
+    blaskernel::OpenMPBLAS2::gemv( common::MatrixOp::NORMAL,
                                    numRows, numRows, alpha, denseA.get(), numRows, rhs, inc1, beta, solution, inc1 );
 
 }

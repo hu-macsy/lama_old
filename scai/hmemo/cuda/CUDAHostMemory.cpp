@@ -67,7 +67,10 @@ SCAI_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 CUDAHostMemory::CUDAHostMemory( std::shared_ptr<const CUDAContext> cudaContext ) :
 
     Memory( memtype::CUDAHostMemory ),
-    mCUDAContext( cudaContext )
+    mCUDAContext( cudaContext ),
+    mNumberOfAllocates( 0 ),
+    mNumberOfAllocatedBytes( 0 ),
+    mMaxAllocatedBytes( 0 )
 
 {
     SCAI_ASSERT( cudaContext, "CUDAHostMemory requires valid CUDAContext, is NULL" )
@@ -96,6 +99,11 @@ void* CUDAHostMemory::allocate( const size_t size ) const
     // check if we can use HostMemory also for device computations
     SCAI_CUDA_RT_CALL( cudaHostGetDevicePointer( &pDevice, pointer, flags ), "cudaHostGetDevicePointer" )
     SCAI_ASSERT_EQUAL( pDevice, pointer, "Not yet supported: pointer conversion for different context" )
+
+    mNumberOfAllocatedBytes += size;
+    mMaxAllocatedBytes = std::max( mMaxAllocatedBytes, mNumberOfAllocatedBytes );
+    mNumberOfAllocates++;
+
     return pointer;
 }
 
@@ -109,6 +117,8 @@ void CUDAHostMemory::free( void* pointer, const size_t size ) const
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
     SCAI_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
+    mNumberOfAllocatedBytes -= size;
+    mNumberOfAllocates--;
 }
 
 void CUDAHostMemory::memcpy( void* dst, const void* src, const size_t size ) const
@@ -223,6 +233,13 @@ void CUDAHostMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* s
         SCAI_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from " << *this << " not supported" )
     }
+}
+
+/* ----------------------------------------------------------------------------- */
+
+size_t CUDAHostMemory::maxAllocatedBytes() const
+{
+    return mMaxAllocatedBytes;
 }
 
 /* ----------------------------------------------------------------------------- */

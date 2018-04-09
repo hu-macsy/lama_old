@@ -63,7 +63,6 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, GMRES<ValueType>::lo
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -364,8 +363,11 @@ void GMRES<ValueType>::updateX( IndexType i )
     hmemo::ContextPtr context = hmemo::Context::getHostPtr();
     static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
 
-    tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, &runtime.mH[0],
-                    &runtime.mY[0], i + 1 );
+    const IndexType n = i + 1;   // size of matrix 
+    const IndexType nrhs = 1;
+
+    tptrs[context]( CblasUpper, common::MatrixOp::NORMAL, CblasNonUnit, n, nrhs, &runtime.mH[0],
+                    &runtime.mY[0], n );
 
     // Update of solution vector
 

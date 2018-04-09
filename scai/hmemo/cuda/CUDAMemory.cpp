@@ -75,14 +75,14 @@ SCAI_LOG_DEF_LOGGER( CUDAMemory::logger, "Memory.CUDAMemory" )
 CUDAMemory::CUDAMemory( std::shared_ptr<const CUDAContext> cudaContext )
 
     : Memory( memtype::CUDAMemory ),
-      mCUDAContext( cudaContext )
+      mCUDAContext( cudaContext ),
+      mNumberOfAllocates( 0 ),
+      mNumberOfAllocatedBytes( 0 ),
+      mMaxAllocatedBytes( 0 )
 
 {
     SCAI_ASSERT( cudaContext, "NULL context for CUDA memory" )
     SCAI_LOG_DEBUG( logger, "construct CUDAMemory for context " << cudaContext )
-    mNumberOfAllocatedBytes = 0;
-    mNumberOfAllocates = 0;
-    mMaxNumberOfAllocatedBytes = 0;
 }
 
 /**  destructor   *********************************************************/
@@ -94,10 +94,6 @@ CUDAMemory::~CUDAMemory()
     if ( mNumberOfAllocates > 0 )
     {
         SCAI_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
-    }
-    else if ( mNumberOfAllocates < 0 )
-    {
-        SCAI_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " free without allocate" )
     }
 
     if ( mNumberOfAllocatedBytes != 0 )
@@ -139,12 +135,12 @@ void* CUDAMemory::allocate( const size_t size ) const
     CUdeviceptr pointer = 0;
     SCAI_CUDA_DRV_CALL_EXCEPTION(
         cuMemAlloc( &pointer, size ),
-        "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " << mMaxNumberOfAllocatedBytes + size << " bytes global memory.",
+        "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " << mMaxAllocatedBytes + size << " bytes global memory.",
         MemoryException )
     SCAI_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << ( ( void* ) pointer ) )
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
-    mMaxNumberOfAllocatedBytes = std::max( mNumberOfAllocatedBytes, mMaxNumberOfAllocatedBytes );
+    mMaxAllocatedBytes = std::max( mNumberOfAllocatedBytes, mMaxAllocatedBytes );
     return ( void* ) pointer;
 }
 
@@ -538,6 +534,13 @@ SyncToken* CUDAMemory::memcpyToAsync( const Memory& dstMemory, void* dst, const 
     }
 
     return NULL;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+size_t CUDAMemory::maxAllocatedBytes() const
+{
+    return mMaxAllocatedBytes;
 }
 
 /* ----------------------------------------------------------------------------- */

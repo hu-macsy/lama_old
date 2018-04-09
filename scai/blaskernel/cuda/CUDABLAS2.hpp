@@ -43,6 +43,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <scai/kregistry/mepr/Registrator.hpp>
 
@@ -69,8 +70,7 @@ public:
      */
     template<typename ValueType>
     static void gemv(
-        const CBLAS_ORDER order,
-        const CBLAS_TRANSPOSE trans,
+        const common::MatrixOp opA,
         const IndexType m,
         const IndexType n,
         const ValueType alpha,
@@ -81,6 +81,24 @@ public:
         const ValueType beta,
         ValueType* y,
         const IndexType incY );
+
+    /**
+     * This function is the CUDA implementation of BLASKernelTrait::geam
+     */
+    template<typename ValueType>
+    static void geam(
+        ValueType* C,
+        const IndexType ldc,
+        const IndexType m,
+        const IndexType n,
+        const ValueType alpha,
+        const ValueType* A,
+        const IndexType lda,
+        const common::MatrixOp opA,
+        const ValueType beta,
+        const ValueType* B,
+        const IndexType ldb,
+        const common::MatrixOp opB );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

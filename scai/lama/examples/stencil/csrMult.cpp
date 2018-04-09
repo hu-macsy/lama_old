@@ -62,7 +62,7 @@ static const IndexType NITER = 10;
 
 int main( int argc, const char* argv[] )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // relevant SCAI arguments: 
     //   SCAI_CONTEXT = ...    set default context

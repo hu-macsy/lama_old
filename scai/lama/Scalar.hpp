@@ -59,6 +59,9 @@ namespace scai
 namespace lama
 {
 
+namespace intern
+{
+
 /**
  * @brief The class Scalar represents a container for all kind of ValueType used for Matrix and/or Vector.
  *
@@ -68,17 +71,17 @@ namespace lama
  * also supported to allow a high flexibility. 
  *
  * ScalarRepType is used internally for the representation of
- * the value. For each supported arithmetic type SCAI_NUMERIC_TYPES_TYPE the following
+ * the value. For each supported arithmetic type SCAI_NUMERIC_TYPES the following
  * conversions must be supported:
  *
- *    - ScalarRepType( SCAI_NUMERIC_TYPES_TYPE v )
- *    - SCAI_NUMERIC_TYPES_TYPE( ScalarRepType v )
+ *    - ScalarRepType( SCAI_NUMERIC_TYPES v )
+ *    - SCAI_NUMERIC_TYPE( ScalarRepType v )
  *
  * Conversion into the representation type and back should be lossless, i. e. the
  * following relation must / should  hold:
  *
  * \code
- *    ARITHEMTIC_TYPE( ScalarRepType( x ) ) == x
+ *    SCAI_NUMERIC_TYPE( ScalarRepType( x ) ) == x
  * \endcode
  */
 class COMMON_DLL_IMPORTEXPORT Scalar: public common::Printable
@@ -93,9 +96,7 @@ public:
     /**
      * @brief Constructs a scalar representing 0.
      */
-    inline Scalar() : mValue( 0 )
-    {
-    }
+    inline Scalar();
 
     /**
      * @brief Constructs a scalar representing the passed real value.
@@ -107,24 +108,12 @@ public:
      * @param[in] value   the value this scalar should represent
      */
     template<typename ValueType>
-    explicit inline Scalar( const ValueType value ) : mValue( value )
-    {
-    }
-
-    inline Scalar( const Scalar& x ) : mValue( x.mValue )
-    {
-    }
+    inline Scalar( const ValueType value );
 
     /**
-     * @brief Constructor of scalar for each supported arithmetic type.
+     *  Copy constructor
      */
-#define SCAI_LAMA_SCALAR_CONSTRUCTORS( type )                \
-    inline Scalar( const type value ) : mValue( value ) \
-    { }
-
-    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ALL_TYPES )
-
-#undef SCAI_LAMA_SCALAR_CONSTRUCTORS
+    inline Scalar( const Scalar& x );
 
     /**
      * @brief Releases all allocated resources.
@@ -142,11 +131,6 @@ public:
 
     inline virtual void writeAt( std::ostream& stream ) const;
 
-    inline bool hasComplexValue() const
-    {
-        return common::Math::imag( mValue ) != common::Constants::ZERO;
-    }
-
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -154,12 +138,24 @@ protected:
 private:
 
     ScalarRepType mValue;  //!< use highest precision for representation
-
 };
 
 /* --------------------------------------------------------------------------- *
  *  Implementation of methods for Scalar                                       *
  * --------------------------------------------------------------------------- */
+
+inline Scalar::Scalar() : mValue( 0 )
+{
+}
+
+template<typename ValueType>
+inline Scalar::Scalar( const ValueType value ) : mValue( value )
+{
+}
+
+inline Scalar::Scalar( const Scalar& x ) : mValue( x.mValue )
+{
+}
 
 inline Scalar::~Scalar()
 {
@@ -239,6 +235,8 @@ inline Scalar operator/( const Scalar& a, const Scalar& b )
 {
     return Scalar( a.getValue<ScalarRepType>() / b.getValue<ScalarRepType>() );
 }
+
+} /* end namespace intern */
 
 } /* end namespace lama */
 

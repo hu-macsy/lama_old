@@ -73,7 +73,7 @@ SCAI_LOG_DEF_LOGGER( LAPACK_LAPACK::logger, "LAPACK.LAPACK" )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void LAPACK_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
+void LAPACK_LAPACK::getrf( const IndexType m,
                            const IndexType n, ValueType* const A, const IndexType lda,
                            IndexType* const ipiv )
 {
@@ -90,13 +90,7 @@ void LAPACK_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
 
     LAPACKIndexType info = 0;
 
-    if ( order == CblasColMajor )
-    {
-        info = LAPACKWrapper<ValueType>::getrf( static_cast<LAPACKIndexType>( m ),
-                                                static_cast<LAPACKIndexType>( n ), A,
-                                                static_cast<LAPACKIndexType>( lda ), ipiv );
-    }
-    else if ( m == n )
+    if ( m == n )
     {
         for ( IndexType i = 0; i < m; ++i )
         {
@@ -179,7 +173,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, ValueType* a,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
+void LAPACK_LAPACK::getri( const IndexType n,
                            ValueType* const a, const IndexType lda, IndexType* const ipiv )
 {
     SCAI_REGION( "LAPACK.LAPACK.getri<float>" )
@@ -202,17 +196,12 @@ void LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
         ++ipiv[i];
     }
 
-    // transpose if not column major order
-
-    if ( order != CblasColMajor )
+    for ( IndexType i = 0; i < n; ++i )
     {
-        for ( IndexType i = 0; i < n; ++i )
+        // swap row and column
+        for ( IndexType j = i + 1; j < n; ++j )
         {
-            // swap row and column
-            for ( IndexType j = i + 1; j < n; ++j )
-            {
-                std::swap( a[i * lda + j], a[j * lda + i] );
-            }
+            std::swap( a[i * lda + j], a[j * lda + i] );
         }
     }
 
@@ -221,15 +210,12 @@ void LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
                                             static_cast<LAPACKIndexType>( lda ), ipiv, work.get(),
                                             static_cast<LAPACKIndexType>( n ) );
 
-    if ( order != CblasColMajor )
+    // transpose back
+    for ( IndexType i = 0; i < n; ++i )
     {
-        // transpose back
-        for ( IndexType i = 0; i < n; ++i )
+        for ( IndexType j = i + 1; j < n; ++j )
         {
-            for ( IndexType j = i + 1; j < n; ++j )
-            {
-                std::swap( a[i * lda + j], a[j * lda + i] );
-            }
+            std::swap( a[i * lda + j], a[j * lda + i] );
         }
     }
 
@@ -245,32 +231,37 @@ void LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
 }
 
 template<typename ValueType>
-void LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
-                           const CBLAS_TRANSPOSE trans, const CBLAS_DIAG diag, const IndexType n,
+void LAPACK_LAPACK::tptrs( const CBLAS_UPLO uplo,
+                           const common::MatrixOp op, const CBLAS_DIAG diag, const IndexType n,
                            const IndexType nrhs, const ValueType* AP, ValueType* B,
                            const IndexType ldb )
 {
     SCAI_REGION( "LAPACK.LAPACK.tptrs" )
+
     typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
     typedef LAPACKTrait::LAPACKFlag LAPACKFlag;
+
     LAPACKFlag UL = LAPACKTrait::enum2char( uplo );
-    LAPACKFlag TA = LAPACKTrait::enum2char( trans );
+    LAPACKFlag TA = LAPACKTrait::enum2char( op );
     LAPACKFlag DI = LAPACKTrait::enum2char( diag );
+
     SCAI_LOG_INFO( logger,
                    "tptrs<" << common::TypeTraits<ValueType>::id() << ">, n = " << n
-                   << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
+                   << ", nrhs = " << nrhs << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
-    if ( order == CblasColMajor )
+    bool colOrder = true;
+
+    if ( colOrder )
     {
         LAPACKWrapper<ValueType>::tptrs( UL, TA, DI,
                                          static_cast<LAPACKIndexType>( n ),
                                          static_cast<LAPACKIndexType>( nrhs ), AP, B,
                                          static_cast<LAPACKIndexType>( ldb ) );
     }
-    else if ( order == CblasRowMajor )
+    else
     {
-        // not supported by LAPACK, call own implementation
-        OpenMPLAPACK::tptrs( order, uplo, trans, diag, n, nrhs, AP, B, ldb );
+        // row-major order not supported by LAPACK, call own implementation
+        OpenMPLAPACK::tptrs( uplo, op, diag, n, nrhs, AP, B, ldb );
     }
 }
 

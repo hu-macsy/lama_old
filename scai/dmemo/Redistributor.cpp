@@ -323,8 +323,10 @@ void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexT
         SCAI_LOG_DEBUG( logger, "required[" << i << "] = " << size )
     }
 
-    mProvidesPlan.reset( new CommunicationPlan( mExchangeSendPlan, provideQuantities.get() ) );
-    mRequiredPlan.reset( new CommunicationPlan( mExchangeReceivePlan, requiredQuantities.get() ) );
+    mProvidesPlan.reset( new CommunicationPlan( mExchangeSendPlan ) );
+    mProvidesPlan->multiplyRagged( provideQuantities.get() );
+    mRequiredPlan.reset( new CommunicationPlan( mExchangeReceivePlan ) );
+    mRequiredPlan->multiplyRagged( requiredQuantities.get() );
     SCAI_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
     SCAI_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
 }
@@ -364,8 +366,10 @@ void Redistributor::buildRowPlans(
             SCAI_LOG_DEBUG( logger, "required[" << i << "] = " << size )
         }
     }
-    mProvidesPlan.reset( new CommunicationPlan( mExchangeSendPlan, provideQuantities.get() ) );
-    mRequiredPlan.reset( new CommunicationPlan( mExchangeReceivePlan, requiredQuantities.get() ) );
+    mProvidesPlan.reset( new CommunicationPlan( mExchangeSendPlan ) );
+    mProvidesPlan->multiplyRagged( provideQuantities.get() );
+    mRequiredPlan.reset( new CommunicationPlan( mExchangeReceivePlan ) );
+    mRequiredPlan->multiplyRagged( requiredQuantities.get() );
     SCAI_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
     SCAI_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
 }

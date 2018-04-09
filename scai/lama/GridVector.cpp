@@ -99,6 +99,8 @@ void GridVector<ValueType>::gemm( const ValueType alpha, const GridVector<ValueT
     int ldb = grid2.size( 1 );
     int ldc = resGrid.size( 1 );
 
+    using common::MatrixOp;
+
     if ( lda != 0 && n != 0 && m != 0 )
     {
         static utilskernel::LAMAKernel<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
@@ -115,7 +117,8 @@ void GridVector<ValueType>::gemm( const ValueType alpha, const GridVector<ValueT
 
         ValueType beta = 1;
 
-        gemm[loc]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, rA.get(), lda, rB.get(), ldb, beta,
+        gemm[loc]( MatrixOp::NORMAL, MatrixOp::NORMAL, 
+                   m, n, k, alpha, rA.get(), lda, rB.get(), ldb, beta,
                    wRes.get(), ldc );
     }
 }

@@ -37,16 +37,14 @@
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/FFTKernelTrait.hpp>
+#include <scai/utilskernel/FFTUtils.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Constants.hpp>
-#include <scai/hmemo/Context.hpp>
-#include <scai/hmemo/HArray.hpp>
-#include <scai/hmemo/ReadAccess.hpp>
-#include <scai/hmemo/WriteAccess.hpp>
-#include <scai/hmemo/WriteOnlyAccess.hpp>
-#include <scai/hmemo/ContextAccess.hpp>
+
+#include <scai/hmemo.hpp>
 
 using namespace scai;
 using namespace utilskernel;
@@ -65,44 +63,150 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.FFTTest" )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<double> scai_fft_test_types;
+#ifdef SCAI_COMPLEX_SUPPORTED
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( paddedForward1D, ValueType, scai_fft_test_types )
+// only use those ValueType where also ComplexType<RealType<ValueType>> is supported
+
+typedef boost::mpl::list<SCAI_FFT_TYPES_HOST> scai_fft_test_types;
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftForwardTest, ValueType, scai_fft_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
-
-    static LAMAKernel<FFTKernelTrait::paddedForward1D<ValueType> > fft;
-
-    fft.getSupportedContext( loc );
-
-    const IndexType n = 2;
-    const IndexType npad = 8;
 
     // Init Arrays
 
     HArray<ValueType> in( { 0.2, 0.16 } );
 
-    HArray<Complex<ValueType> > out;
+    typedef common::Complex<RealType<ValueType>> ComplexType;
 
-    // FFT Call
+    HArray<ComplexType> out;
+
+    IndexType npad = 8;
+
+    FFTUtils::fft( out, in, npad, 1, loc );
+
+    RealType<ValueType> eps = 0.00001;
+
     {
-        SCAI_CONTEXT_ACCESS( loc )
+        ReadAccess<ComplexType> rOut( out );
 
-        ReadAccess<ValueType> rIn( in, loc );
-        WriteOnlyAccess<Complex<ValueType> > rOut( out, loc, npad );
-        fft[loc](n, npad, rIn.get(), rOut.get());
-    }
-
-    ValueType eps = 0.00001;
-
-    // Test
-    {
-        ReadAccess<Complex<ValueType> > rOut( out );
-
-        BOOST_CHECK( common::Math::abs( rOut[0] - Complex<ValueType>( 0.2 + 0.16 ) ) < eps );
-        BOOST_CHECK( common::Math::abs( rOut[npad-2] - Complex<ValueType>( 0.2, 0.16 ) ) < eps );
+        BOOST_CHECK( common::Math::abs( rOut[0] - ComplexType( 0.2 + 0.16 ) ) < eps );
+        BOOST_CHECK( common::Math::abs( rOut[npad-2] - ComplexType( 0.2, 0.16 ) ) < eps );
     }
 }
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftBackwardTest, ValueType, scai_fft_test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    // Init Arrays
+
+    HArray<ValueType> in( { 0.2, 0.16 } );
+
+    typedef common::Complex<RealType<ValueType>> ComplexType;
+
+    HArray<ComplexType> out;
+
+    IndexType npad = 8;
+
+    FFTUtils::fft( out, in, npad, -1, loc );
+
+    RealType<ValueType> eps = 0.00001;
+
+    {
+        ReadAccess<ComplexType> rOut( out );
+
+        BOOST_CHECK( common::Math::abs( rOut[0] - ComplexType( 0.2 + 0.16 ) ) < eps );
+        BOOST_CHECK( common::Math::abs( rOut[npad-2] - ComplexType( 0.2, -0.16 ) ) < eps );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+/* Discrete fourier transform ( inefficient straight-forward implementation ) */
+
+template<typename ValueType>
+static void discreteFourierTransform( Complex<ValueType> x2[], const Complex<ValueType> x1[], IndexType n, int dir )
+{   
+    ValueType PI_2 = static_cast<ValueType>( 2 * 3.14159265358979 );
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        x2[i] = 0;
+
+        ValueType arg = - dir * PI_2 * ValueType( i ) / ValueType( n );
+
+        for ( IndexType k = 0; k < n; k++ )
+        {
+            ValueType cosarg = std::cos( k * arg );
+            ValueType sinarg = std::sin( k * arg );
+            x2[i] += x1[k] * Complex<ValueType>( cosarg , sinarg );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    typedef common::Complex<RealType<ValueType>> ComplexType;
+
+    for ( int dir = -1; dir <=1; dir += 2 )
+    {
+        const IndexType m = 6;
+        const IndexType n = 1 << m; 
+
+        HArray<ComplexType> in( n );
+        HArray<ComplexType> outFFT;
+        HArray<ComplexType> outDFT;
+
+        // generate random numbers between -1 and 1
+
+        HArrayUtils::fillRandom( in, 2, 1.0f, loc );
+        HArrayUtils::compute(in, in, common::BinaryOp::SUB, ComplexType( 1, 1 ) );
+
+        FFTUtils::fft( outFFT, in, n, dir, loc );
+    
+        BOOST_REQUIRE_EQUAL( outFFT.size(), n );
+
+        {
+            auto rIn = hostReadAccess( in );
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                // std::cout << "in[" << i << "] = " << rIn[i] << std::endl;
+            }
+
+            auto wOut = hostWriteOnlyAccess( outDFT, n );
+            discreteFourierTransform( wOut.get(), rIn.get(), n, dir );
+        }
+
+        {
+            auto rOut1 = hostReadAccess( outFFT );
+            auto rOut2 = hostReadAccess( outDFT );
+
+            RealType<ValueType> eps = common::TypeTraits<ComplexType>::small() * m;
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                auto diff = common::Math::abs( rOut1[i] - rOut2[i] );
+    
+                // std::cout << "FFT[ " << i << " ] = " << rOut1[i] << ", DFT[ " << i << " ] = " << rOut2[i] 
+                //          << ", diff = " << diff << ", eps = " << eps << std::endl;
+
+                BOOST_CHECK( diff < eps );
+            }
+        }
+    }
+}
+
+#endif
 
 /* --------------------------------------------------------------------- */
 

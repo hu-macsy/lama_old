@@ -1352,7 +1352,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
         HArray<ValueType> recvBuffer;
 
         CommunicationPlan sendPlan;
-        CommunicationPlan recvPlan( NULL, 0 );  // nothing to receive
+        auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );  // nothing to receive
 
         for ( PartitionId p = 0; p < comm.getSize(); ++p )
         {
@@ -1382,8 +1382,8 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
         IndexType size = getColDistribution().getLocalSize();
 
-        CommunicationPlan sendPlan( NULL, 0 );
-        CommunicationPlan recvPlan( NULL, 0 );
+        auto sendPlan = CommunicationPlan::buildBySizes( NULL, 0 );
+        auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );
 
         recvPlan.singleEntry( rowOwner, size );
 

@@ -60,7 +60,7 @@ using namespace dmemo;
 using partitioning::PartitioningPtr;
 using partitioning::Partitioning;
 
-typedef float ValueType;
+typedef DefaultReal ValueType;
 
 int main ( int argc, char* argv[] )
 {

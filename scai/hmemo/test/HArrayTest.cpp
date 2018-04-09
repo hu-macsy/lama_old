@@ -134,6 +134,8 @@ BOOST_AUTO_TEST_CASE( initializerListConstructorTest )
     BOOST_CHECK_EQUAL( rArray[4], -5 );
 }
 
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( emptyInitializerListConstructorTest )
 {
     const auto context = Context::getContextPtr();

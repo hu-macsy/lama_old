@@ -71,21 +71,21 @@ public:
         }
     }
 
-    static inline LAPACKFlag enum2char( const CBLAS_TRANSPOSE trans )
+    static inline LAPACKFlag enum2char( const common::MatrixOp op )
     {
-        switch ( trans )
+        switch ( op )
         {
-            case CblasNoTrans:
+            case common::MatrixOp::NORMAL:
                 return 'N';
 
-            case CblasTrans:
+            case common::MatrixOp::TRANSPOSE:
                 return 'T';
 
-            case CblasConjTrans:
+            case common::MatrixOp::CONJ_TRANSPOSE:
                 return 'C';
 
             default:
-                COMMON_THROWEXCEPTION( "Illegal trans: " << trans );
+                COMMON_THROWEXCEPTION( "Illegal matrix op: " << op );
         }
     }
 

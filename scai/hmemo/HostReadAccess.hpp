@@ -38,6 +38,7 @@
 #include <scai/hmemo/ReadAccess.hpp>
 
 #include <iterator>
+#include <vector>
 
 namespace scai
 {
@@ -117,6 +118,12 @@ public:
     const_iterator cend() const
     {
         return ReadAccess<ValueType>::get() + ReadAccess<ValueType>::size();
+    }
+
+    template<typename OtherValueType>
+    std::vector<OtherValueType> buildVector()
+    {
+        return std::vector<OtherValueType>( cbegin(), cend() );
     }
 };
 

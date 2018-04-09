@@ -251,8 +251,10 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     SCAI_LOG_INFO( logger, "exchanged sizes of rows, build vPlans" )
     ReadAccess<IndexType> sendSizes( sourceSizes );
     ReadAccess<IndexType> recvSizes( targetIA );
-    CommunicationPlan provideV( halo.getProvidesPlan(), sendSizes.get() );
-    CommunicationPlan requiredV( halo.getRequiredPlan(), recvSizes.get() );
+    CommunicationPlan provideV( halo.getProvidesPlan() );
+    provideV.multiplyRagged( sendSizes.get() );
+    CommunicationPlan requiredV( halo.getRequiredPlan() );
+    requiredV.multiplyRagged( recvSizes.get() );
     const IndexType sendVSize = provideV.totalQuantity();
     SCAI_LOG_INFO( logger, "built vPlans: #send " << sendVSize << ", #recv = " << requiredV.totalQuantity() )
     recvSizes.release();

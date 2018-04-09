@@ -752,6 +752,23 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void StencilStorage<ValueType>::clear()
+{
+    mGrid = common::Grid1D( 0 );
+    mStencil = common::Stencil1D<ValueType>( 1 );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::purge() 
+{
+    clear();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 StencilStorage<ValueType>* StencilStorage<ValueType>::copy() const
 {
     return new StencilStorage<ValueType>( *this );
