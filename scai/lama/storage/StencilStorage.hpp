@@ -115,25 +115,19 @@ public:
     /** 
      * @brief Implementation of pure method _MatrixStorage::allocate
      */
-    void allocate( const IndexType /* numRows */, const IndexType /* numColumns */ )
+    void allocate( const IndexType numRows, const IndexType numColumns )
     {
-        COMMON_THROWEXCEPTION( "unsupported" )
+        COMMON_THROWEXCEPTION( "unsupported: StencilStorage cannot be allocated by " << numRows << " x " << numColumns )
     }
 
     /**
      * @brief Implementation of pure method for _MatrixStorage.
      */
-    virtual void clear()
-    {
-        COMMON_THROWEXCEPTION( "unsupported" )
-    }
+    virtual void clear();
 
     /** Implementation of pure method of class MatrixStorage. */
 
-    virtual void purge()
-    {
-        COMMON_THROWEXCEPTION( "unsupported" )
-    }
+    virtual void purge();
 
     /** Implementation of MatrixStorage::copy for derived class. */
 
