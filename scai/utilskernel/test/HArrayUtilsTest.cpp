@@ -1003,7 +1003,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
-    const IndexType n = 100;
+    const IndexType n = 500;
 
     auto array = utilskernel::randomHArray<ValueType>( n, 1, loc );
 
