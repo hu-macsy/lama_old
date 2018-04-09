@@ -81,6 +81,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
         getinv[loc->getType()]( n, wA.get(), n );
     }
     {
+        auto eps = common::TypeTraits<ValueType>::small();
+
         // comparison only possible on Host
         ContextPtr host = Context::getHostPtr();
         ReadAccess<ValueType> rA( a, host );
@@ -89,7 +91,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
         {
             const auto x1 = common::Math::abs( rA[i] );
             const auto x2 = common::Math::abs( bvalues[i] );
-            BOOST_CHECK_CLOSE( x1, x2, 1 );
+            BOOST_CHECK( common::Math::abs( x1 - x2 ) < eps );
         }
     }
 }
@@ -212,12 +214,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, blas_test_types )
             getrf[loc->getType()]( n, n, wA.get(), n, wPermutation.get() );
             getri[loc->getType()]( n, wA.get(), n, wPermutation.get() );
         }
+
+        RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
         {
             ReadAccess<ValueType> rA( a );
 
             for ( IndexType i = 0; i < n * n; ++i )
             {
-                BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
+                BOOST_CHECK( common::Math::abs( rA[i] - bvalues[i] ) < eps );
             }
         }
     }
@@ -229,6 +234,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
+
+    auto eps = common::TypeTraits<ValueType>::small();
     {
         const IndexType n = 3;
         const IndexType ntri = n * ( n + 1 ) / 2;
@@ -266,11 +273,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, blas_test_types )
 
             for ( IndexType i = 0; i < n; ++i )
             {
-//            printf("Lower:");
-                BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
-//            printf("\nUpper:");
-                BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
-//            printf("\n");
+                BOOST_CHECK( common::Math::abs( rX1[i] - xvalues[i] ) < eps );
+                BOOST_CHECK( common::Math::abs( rX2[i] - xvalues[i] ) < eps );
             }
         }
     }
@@ -326,8 +330,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, blas_test_types )
 
             for ( IndexType i = 0; i < n; ++i )
             {
-                BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
-                BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
+                BOOST_CHECK( common::Math::abs( rX1[i] - xvalues[i] ) < eps );
+                BOOST_CHECK( common::Math::abs( rX2[i] - xvalues[i] ) < eps );
             }
         }
     }
@@ -376,13 +380,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, blas_test_types )
                                    n, 1, rA.get(), wB2.get(), ldb );
         }
         {
+
             ReadAccess<ValueType> rX1( b1 );
             ReadAccess<ValueType> rX2( b2 );
 
             for ( IndexType i = 0; i < n; ++i )
             {
-                BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
-                BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
+                BOOST_CHECK( common::Math::abs( rX1[i] - xvalues[i] ) < eps );
+                BOOST_CHECK( common::Math::abs( rX2[i] - xvalues[i] ) < eps );
             }
         }
     }
