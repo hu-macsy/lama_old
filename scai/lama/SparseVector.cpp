@@ -852,9 +852,9 @@ IndexType SparseVector<IndexType>::l2Norm() const
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
-    double localDotProduct = HArrayUtils::dotProduct( mNonZeroValues, mNonZeroValues );
+    double localDotProduct = static_cast<double>( HArrayUtils::dotProduct( mNonZeroValues, mNonZeroValues ) );
     double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-    return IndexType( Math::sqrt( globalDotProduct ) );
+    return static_cast<IndexType>( Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */

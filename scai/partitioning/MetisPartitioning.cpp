@@ -223,7 +223,10 @@ void MetisPartitioning::squarePartitioningMaster(
     else
     {
         SCAI_LOG_DEBUG( logger, "assign partitionining results to new local owners" )
-        utilskernel::HArrayUtils::assign( newLocalOwners, partition );
+        // HArrayUtils::assign( newLocalOwners, partition ) might not be instantiated for idx_t
+        auto wNewLocalOwners = hostWriteOnlyAccess( newLocalOwners, partition.size() );
+        auto rPartition      = hostReadAccess( partition );
+        std::copy( rPartition.begin(), rPartition.end(), wNewLocalOwners.begin() );
     }
 }
 

@@ -127,6 +127,10 @@ void ParMetisPartitioning::squarePartitioning(
 
     auto tpwghts = hmemo::hostReadAccess( processorWeights ).buildVector<real_t>();
 
+    // The processor weight must be normed that they sum up to 1.0
+
+    Partitioning::normWeights( tpwghts );
+
     IndexType nlocal = dist.getLocalSize();
 
     HArray<idx_t> partition; 
@@ -168,7 +172,10 @@ void ParMetisPartitioning::squarePartitioning(
     else
     {
         SCAI_LOG_INFO( logger, "assign partitionining results to new local owners" )
-        utilskernel::HArrayUtils::assign( newLocalOwners, partition );
+        // HArrayUtils::assign( newLocalOwners, partition ) might not be instantiated for idx_t
+        auto wNewLocalOwners = hostWriteOnlyAccess( newLocalOwners, partition.size() );
+        auto rPartition      = hostReadAccess( partition );
+        std::copy( rPartition.begin(), rPartition.end(), wNewLocalOwners.begin() );
     }
 }
 

@@ -840,7 +840,7 @@ IndexType DenseVector<IndexType>::l2Norm() const
 {
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
 
-    double localDotProduct = HArrayUtils::dotProduct( mLocalValues, mLocalValues );
+    double localDotProduct = static_cast<double>( HArrayUtils::dotProduct( mLocalValues, mLocalValues ) );
     double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     return IndexType( common::Math::sqrt( globalDotProduct ) );
 }
