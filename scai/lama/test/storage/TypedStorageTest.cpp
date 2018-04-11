@@ -1193,7 +1193,7 @@ BOOST_AUTO_TEST_CASE( fillCOOTest )
 
     HArray<IndexType> badIA(     { 3, 1, 2, 2 } );
     HArray<IndexType> badJA(     { 0, 1, 5, 2 } );
-    HArray<ValueType> badValues( { 0, 1, 5 } );
+    HArray<ValueType> badValues( { 0, 1, 5 } );        // illegal size
 
     // expected output data (dense)
 
