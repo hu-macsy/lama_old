@@ -1920,11 +1920,17 @@ void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
     {
         BucketType iBucket = bucketMap[k];
 
+        if ( !scai::common::Utils::validIndex( iBucket, nBuckets ) )
+        {
+            continue;
+        }
+
         IndexType& offset = offsets[iBucket];
+  
         SCAI_ASSERT_LT_DEBUG( offset, n, "out of range offset" )
         sortedIndexes[offset] = k;
         offset++;
-        SCAI_LOG_TRACE( logger, k << " is in bucket " << iBucket << ", offset = " << offsets[iBucket] )
+        SCAI_LOG_TRACE( logger, k << " is in bucket " << iBucket << " of " << nBuckets << ", offset = " << offsets[iBucket] )
     }
 
     // set back the old offsets
