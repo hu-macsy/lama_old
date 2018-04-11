@@ -216,7 +216,7 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
     SCAI_LOG_INFO( logger, "read distribution from one single file " << inFileName )
 
     HArray<IndexType> owners;
-    HArray<IndexType> localSizes( 1, 0 );  // at least one entry
+    HArray<IndexType> localSizes( { 0 } );  // at least one entry
 
     typedef enum
     {

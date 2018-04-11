@@ -207,7 +207,7 @@ void PngIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& gr
     const IndexType ncolor = grid.size( 2 );
     SCAI_ASSERT_EQ_ERROR( 3, ncolor, "3 values per pixel expected" )
     // convert the array data to png data
-    png_bytep* row_pointers = new png_bytep[ height ];
+    png_bytep* row_pointers = new png_bytep[ static_cast<int>( height ) ];
     {
         ReadAccess<ValueType> rX( data );
 

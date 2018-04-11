@@ -42,6 +42,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/Math.hpp>
 
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/SCAITypes.hpp>
@@ -116,14 +117,14 @@ void OpenMPFFT::fft1( Complex<ValueType> x[], IndexType n, IndexType m, int dir 
             u = u * c;
         }
 
-        c.imag( sqrt( ( 1.0 - c.real() ) / 2.0 ) );
+        c.imag( common::Math::sqrt( ( 1.0 - c.real() ) / 2.0 ) );
 
         if ( dir == 1 )
         {
             c.imag( -c.imag() );
         }
 
-        c.real( sqrt( ( 1.0 + c.real() ) / 2.0 ) );
+        c.real( common::Math::sqrt( ( 1.0 + c.real() ) / 2.0 ) );
     }
 }
 

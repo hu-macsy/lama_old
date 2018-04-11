@@ -1102,18 +1102,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( elimDoubleTest, ValueType, array_types )
 
     HArrayUtils::elimDoubles ( indexes, values, BinaryOp::COPY );
 
-    BOOST_TEST( hostReadAccess( indexes ) == std::vector<IndexType>( { 0, 1, 5, 7, 9 } ), 
-                per_element() );
-    BOOST_TEST( hostReadAccess( values ) == std::vector<IndexType>( { 0, 1, 2, 4, 6 } ), 
-                per_element() );
+    BOOST_TEST( hostReadAccess( indexes ) == std::vector<IndexType>( { 0, 1, 5, 7, 9 } ), per_element() );
+    BOOST_TEST( hostReadAccess( values ) == std::vector<ValueType>( { 0, 1, 2, 4, 6 } ), per_element() );
 
     indexes = HArray<IndexType>( { 0, 1, 5, 7, 7, 9, 9 } );
     values  = HArray<ValueType>( { 0, 1, 2, 3, 4, 5, 6 } );
 
     HArrayUtils::elimDoubles ( indexes, values, BinaryOp::ADD );
 
-    BOOST_TEST( hostReadAccess( values ) == std::vector<IndexType>( { 0, 1, 2, 7, 11 } ), 
-                per_element() );
+    BOOST_TEST( hostReadAccess( values ) == std::vector<ValueType>( { 0, 1, 2, 7, 11 } ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */
