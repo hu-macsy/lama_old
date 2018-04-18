@@ -129,7 +129,7 @@ mpi intel 2018.1 (release):
     # It seems to be necessary to specifically specify the Boost installation
     BOOST_ROOT: /home/brandes/local/boost_1_65_1_icc18
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
-    RUN_TESTS_ARGS: --mpi --np 1 2 3 5
+    RUN_TESTS_ARGS: --intel --mpi --np 1 2 3 5
   tags:
     - draco
 
