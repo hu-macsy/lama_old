@@ -124,6 +124,7 @@ mpi intel 2018.1 (debug):
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
+    USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
     BOOST_ROOT: /home/brandes/local/boost_1_65_1_icc18
