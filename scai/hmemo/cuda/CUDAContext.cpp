@@ -165,7 +165,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
     // CUDA device can use only data on same CUDA device
 
-    if ( other.getType() == memtype::CUDAMemory )
+    if ( other.getType() == MemoryType::CUDAMemory )
     {
         const CUDAMemory* otherCUDAMem = dynamic_cast<const CUDAMemory*>( &other );
         SCAI_ASSERT( otherCUDAMem, "serious type mismatch" )
@@ -174,7 +174,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
     // Zero-Copy: we can use CUDA Host memory
 
-    if ( other.getType() == memtype::CUDAHostMemory )
+    if ( other.getType() == MemoryType::CUDAHostMemory )
     {
         const CUDAHostMemory* otherCUDAHostMem = dynamic_cast<const CUDAHostMemory*>( &other );
         SCAI_ASSERT( otherCUDAHostMem, "serious type mismatch" )

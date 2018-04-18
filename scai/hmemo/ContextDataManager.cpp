@@ -646,12 +646,12 @@ void ContextDataManager::fetch( ContextData& target, const ContextData& source, 
 
         // try it via host
 
-        if ( target.getMemory().getType() == memtype::HostMemory )
+        if ( target.getMemory().getType() == MemoryType::HostMemory )
         {
             COMMON_THROWEXCEPTION( "Unsupported: copy to host from: " << source.getMemory() )
         }
 
-        if ( source.getMemory().getType() == memtype::HostMemory )
+        if ( source.getMemory().getType() == MemoryType::HostMemory )
         {
             COMMON_THROWEXCEPTION( "Unsupported: copy from host to: " << target.getMemory() )
         }
@@ -686,8 +686,8 @@ SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextDat
 
         ContextPtr hostContextPtr = Context::getHostPtr();
 
-        if (     target.getMemory().getType() == memtype::HostMemory
-                 ||  source.getMemory().getType() == memtype::HostMemory )
+        if (     target.getMemory().getType() == MemoryType::HostMemory
+                 ||  source.getMemory().getType() == MemoryType::HostMemory )
         {
             COMMON_THROWEXCEPTION( "copyAsync from " << source << " to " << target
                                    << " must be supported with HostMemory, exception = " << ex.what() )

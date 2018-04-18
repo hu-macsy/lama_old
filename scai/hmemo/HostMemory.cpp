@@ -66,7 +66,7 @@ SCAI_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 
 HostMemory::HostMemory( std::shared_ptr<const HostContext> hostContextPtr ) :
 
-    Memory( memtype::HostMemory ),
+    Memory( MemoryType::HostMemory ),
     mHostContextPtr( hostContextPtr ),
     mNumberOfAllocates( 0 ),
     mNumberOfAllocatedBytes( 0 ),

@@ -88,7 +88,7 @@ public:
 
     virtual bool canUseMemory( const scai::hmemo::Memory& memory ) const
     {
-        if ( memory.getType() != scai::hmemo::memtype::UserMemory )
+        if ( memory.getType() != scai::hmemo::MemoryType::UserMemory )
         {
             return false;
         }

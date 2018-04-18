@@ -120,6 +120,7 @@ public:
         return ReadAccess<ValueType>::get() + ReadAccess<ValueType>::size();
     }
 
+    /** This method builds a std::vector from an HArray on the host, type conversion is supported */
     template<typename OtherValueType>
     std::vector<OtherValueType> buildVector()
     {

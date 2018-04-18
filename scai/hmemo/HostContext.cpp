@@ -115,7 +115,7 @@ bool HostContext::canUseMemory( const Memory& other ) const
 {
     bool canUseIt = false;
 
-    if ( other.getType() == memtype::HostMemory )
+    if ( other.getType() == MemoryType::HostMemory )
     {
         canUseIt = true;
     }
