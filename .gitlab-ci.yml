@@ -111,7 +111,7 @@ serial gcc 4.9.1 (debug):
   tags:
     - draco
 
-mpi intel 2018.1 (debug):
+mpi intel 2018.1 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:

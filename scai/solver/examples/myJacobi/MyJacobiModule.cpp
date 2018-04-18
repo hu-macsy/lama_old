@@ -130,7 +130,7 @@ void MyJacobi<ValueType>::initialize( const lama::Matrix<ValueType>& coefficient
 }
 
 template<typename ValueType>
-void MyJacobi<ValueType>::solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs )
+void MyJacobi<ValueType>::solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs )
 {
     solver::Solver<ValueType>::solveInit( solution, rhs );
 
