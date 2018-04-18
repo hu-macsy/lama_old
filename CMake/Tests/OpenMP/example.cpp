@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Simple example program that prints size of pointer (32-bit or 64-bit)
+ * @brief Simple example program that runs only with OpenMP enabled
  * @author Thomas Brandes
- * @date 28.04.2013
+ * @date 18.04.2018
  */
 
 #include <iostream>

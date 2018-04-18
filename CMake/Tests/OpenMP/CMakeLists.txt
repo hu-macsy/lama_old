@@ -36,7 +36,7 @@
 #   CMake example for simple C++ program       #
 ################################################
 
-cmake_minimum_required( VERSION 3.1 )
+cmake_minimum_required( VERSION 2.5 )
 
 ## PROJECT NAME and supported LANGUAGES
 
