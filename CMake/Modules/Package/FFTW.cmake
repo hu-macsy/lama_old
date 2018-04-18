@@ -42,13 +42,39 @@ find_package( FFTW ${SCAI_FIND_PACKAGE_FLAGS} )
 
 if ( FFTW_FOUND )
 
-        ## ToDo: get FFTW version
+else ()
+
+    # Try to use the FFTW wrapper of the MKL libraries
+
+    find_package ( MKL ${SCAI_FIND_PACKAGE_FLAGS} )
+
+    # message ( STATUS "FFTW not found, MKL_FOUND=${MKL_FOUND}" )
+
+    if ( MKL_FOUND )
+
+        # message ( STATUS "Try to use FFTW of MKL" )
+
+        find_path( FFTW_INCLUDE_DIR fftw3.h
+                   ${MKL_INCLUDE_DIR}/fftw )
+
+        if ( FFTW_INCLUDE_DIR )
+            set ( FFTW_FOUND TRUE )
+            set ( FFTW_LIBRARIES ${MKL_LIBRARIES} )
+        endif ()
+
+    endif ()
+    
+endif ()
+
+if ( FFTW_FOUND )
+
+    ## ToDo: get FFTW version
 
 
-        ## set the SCAI variables to get macros for dependencies working correctly
+    ## set the SCAI variables to get macros for dependencies working correctly
 
-        set ( SCAI_FFTW_INCLUDE_DIR ${FFTW_INCLUDE_DIR} )
-        set ( SCAI_FFTW_LIBRARIES ${FFTW_LIBRARIES} )
+    set ( SCAI_FFTW_INCLUDE_DIR ${FFTW_INCLUDE_DIR} )
+    set ( SCAI_FFTW_LIBRARIES ${FFTW_LIBRARIES} )
 
 endif ()
 
