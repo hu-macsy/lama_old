@@ -93,6 +93,8 @@ foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
     endif ()
 endforeach ()
 
+message( STATUS "USE_COMPLEX=${USE_COMPLEX}" )
+
 # make strings out of list
 
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" CMAKE_NUMERIC_TYPES_HOST )
@@ -184,7 +186,7 @@ endif ()
 if ( ${USE_COMPLEX} )
     set ( SCAI_USE_COMPLEX 1 CACHE BOOL "use complex" )
 else ()
-    set ( SCAI_USE_COMPLEX 1 CACHE BOOL "use complex" )
+    set ( SCAI_USE_COMPLEX 0 CACHE BOOL "use complex" )
 endif ()
 
 ###################################
