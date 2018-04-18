@@ -1,5 +1,5 @@
 /**
- * @file VersionCheck/openmp.cpp
+ * @file OpenMP/example.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,52 +27,25 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Checking the OpenMP version
- * @author Eric Schricker
- * @date 07.04.2016
+ * @brief Simple example program that prints size of pointer (32-bit or 64-bit)
+ * @author Thomas Brandes
+ * @date 28.04.2013
  */
 
-#include <stdio.h>
+#include <iostream>
+
 #include <omp.h>
 
-#ifndef _OPENMP
-    #define _OPENMP -1
-#endif
-
-int main(int argc, char *argv[])
+int main( int, char* [] )
 {
-    double version = 0.0;
+    std::cout << "#Threads = " << omp_get_max_threads() << std::endl;
+    std::cout << "Version " << _OPENMP << std::endl;
 
-    if ( _OPENMP >= 200505 )
+    #pragma omp parallel
     {
-        version = 2.5;
+        #pragma omp critical
+        {
+            std::cout << "Thread " << omp_get_thread_num() << " of " << omp_get_num_threads() << std::endl;
+        }
     }
-
-    if ( _OPENMP >= 200805 )
-    {
-        version = 3.0;
-    }
-
-    if ( _OPENMP >= 201107 )
-    {
-        version = 3.1;
-    }
-
-    if ( _OPENMP >= 201307 )
-    {
-        version = 4.0;
-    }
-
-    if ( _OPENMP >= 201511 )
-    {
-        version = 4.5;
-    }
-
-    if ( version == 0.0 )
-    {
-        fprintf( stderr, "Unknown OpenMP-Version, _OPENMP = %d\n", _OPENMP );
-        return -1;
-    }
-    
-    printf("%3.1f", version );
 }
