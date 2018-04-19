@@ -163,7 +163,7 @@ int main( int argc, const char* argv[] )
         {
             for ( IndexType j = 0; j < n2; ++j )
             {
-                ValueType val = rPixels[ nc2 * i + j ] / ( nc1 * nc2 );
+                ValueType val = rPixels[ nc2 * i + j ] / static_cast<ValueType>( nc1 * nc2 );
                 val *= maxVal;
                 wImage( i, j, 0 ) = val;
                 wImage( i, j, 1 ) = val;
