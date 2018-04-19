@@ -85,8 +85,8 @@ int main( int argc, const char* argv[] )
 
     SCAI_ASSERT_EQ_ERROR( nc, 3, "only rgb supported" )
 
-    IndexType nc1 = common::Math::pow( 2, common::Math::nextpow2( n1 ) );
-    IndexType nc2 = common::Math::pow( 2, common::Math::nextpow2( n2 ) );
+    IndexType nc1 = common::Math::pow<IndexType>( 2, common::Math::nextpow2( n1 ) );
+    IndexType nc2 = common::Math::pow<IndexType>( 2, common::Math::nextpow2( n2 ) );
 
     auto m = zero<DenseStorage<ComplexType>>( nc1, nc2 );
 
