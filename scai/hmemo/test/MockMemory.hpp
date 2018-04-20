@@ -56,7 +56,7 @@ public:
 
     // MockMemory uses the type UserContext as its type
 
-    MockMemory( int deviceNr ) : scai::hmemo::Memory( scai::hmemo::memtype::UserMemory )
+    MockMemory( int deviceNr ) : scai::hmemo::Memory( scai::hmemo::MemoryType::UserMemory )
     {
         mDeviceNr = deviceNr;
     }
@@ -81,9 +81,9 @@ public:
         return scai::hmemo::Context::getContextPtr( scai::common::ContextType::UserContext, mDeviceNr );
     }
 
-    virtual scai::hmemo::memtype::MemoryType getType() const
+    virtual scai::hmemo::MemoryType getType() const
     {
-        return scai::hmemo::memtype::UserMemory;
+        return scai::hmemo::MemoryType::UserMemory;
     }
 
     virtual void* allocate( const size_t size ) const
@@ -124,18 +124,18 @@ public:
     virtual bool canCopyFrom( const scai::hmemo::Memory& other ) const
     {
         // copy from host to this context should always be supported
-        return other.getType() == scai::hmemo::memtype::HostMemory;
+        return other.getType() == scai::hmemo::MemoryType::HostMemory;
     }
 
     virtual bool canCopyTo( const scai::hmemo::Memory& other ) const
     {
         // copy from this context to host should always be supported
-        return other.getType() == scai::hmemo::memtype::HostMemory;
+        return other.getType() == scai::hmemo::MemoryType::HostMemory;
     }
 
     virtual void memcpyFrom( void* dst, const scai::hmemo::Memory& srcMemory, const void* src, size_t size ) const
     {
-        if ( srcMemory.getType() == scai::hmemo::memtype::HostMemory )
+        if ( srcMemory.getType() == scai::hmemo::MemoryType::HostMemory )
         {
             scai::common::safer_memcpy( dst, src, size );
         }
@@ -147,7 +147,7 @@ public:
 
     virtual void memcpyTo( const scai::hmemo::Memory& dstMemory, void* dst, const void* src, size_t size ) const
     {
-        if ( dstMemory.getType() == scai::hmemo::memtype::HostMemory )
+        if ( dstMemory.getType() == scai::hmemo::MemoryType::HostMemory )
         {
             scai::common::safer_memcpy( dst, src, size );
         }

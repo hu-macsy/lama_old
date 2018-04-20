@@ -66,7 +66,7 @@ SCAI_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 
 CUDAHostMemory::CUDAHostMemory( std::shared_ptr<const CUDAContext> cudaContext ) :
 
-    Memory( memtype::CUDAHostMemory ),
+    Memory( MemoryType::CUDAHostMemory ),
     mCUDAContext( cudaContext ),
     mNumberOfAllocates( 0 ),
     mNumberOfAllocatedBytes( 0 ),
@@ -162,14 +162,14 @@ ContextPtr CUDAHostMemory::getContextPtr() const
 bool CUDAHostMemory::canCopyFrom( const Memory& other ) const
 {
     bool supported = false;
-    memtype::MemoryType otherType = other.getType();
+    MemoryType otherType = other.getType();
 
-    if ( otherType == memtype::HostMemory )
+    if ( otherType == MemoryType::HostMemory )
     {
         // CUDHostMem -> Host is supported
         supported = true;
     }
-    else if ( otherType == memtype::CUDAHostMemory )
+    else if ( otherType == MemoryType::CUDAHostMemory )
     {
         supported = true;
     }
@@ -180,14 +180,14 @@ bool CUDAHostMemory::canCopyFrom( const Memory& other ) const
 bool CUDAHostMemory::canCopyTo( const Memory& other ) const
 {
     bool supported = false;
-    memtype::MemoryType otherType = other.getType();
+    MemoryType otherType = other.getType();
 
-    if ( otherType == memtype::HostMemory )
+    if ( otherType == MemoryType::HostMemory )
     {
         // CUDHostMem -> Host is supported
         supported = true;
     }
-    else if ( otherType == memtype::CUDAHostMemory )
+    else if ( otherType == MemoryType::CUDAHostMemory )
     {
         supported = true;
     }
@@ -200,11 +200,11 @@ bool CUDAHostMemory::canCopyTo( const Memory& other ) const
 void CUDAHostMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
 {
     // all kind of Host <-> CUDAHost is supported
-    if ( srcMemory.getType() == memtype::HostMemory )
+    if ( srcMemory.getType() == MemoryType::HostMemory )
     {
         ::memcpy( dst, src, size );
     }
-    else if ( srcMemory.getType() == memtype::CUDAHostMemory )
+    else if ( srcMemory.getType() == MemoryType::CUDAHostMemory )
     {
         ::memcpy( dst, src, size );
     }
@@ -220,11 +220,11 @@ void CUDAHostMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void*
 void CUDAHostMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
 {
     // all kind of Host <-> CUDAHost is supported
-    if ( dstMemory.getType() == memtype::HostMemory )
+    if ( dstMemory.getType() == MemoryType::HostMemory )
     {
         ::memcpy( dst, src, size );
     }
-    else if ( dstMemory.getType() == memtype::CUDAHostMemory )
+    else if ( dstMemory.getType() == MemoryType::CUDAHostMemory )
     {
         ::memcpy( dst, src, size );
     }

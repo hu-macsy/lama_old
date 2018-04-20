@@ -74,7 +74,7 @@ SCAI_LOG_DEF_LOGGER( CUDAMemory::logger, "Memory.CUDAMemory" )
 
 CUDAMemory::CUDAMemory( std::shared_ptr<const CUDAContext> cudaContext )
 
-    : Memory( memtype::CUDAMemory ),
+    : Memory( MemoryType::CUDAMemory ),
       mCUDAContext( cudaContext ),
       mNumberOfAllocates( 0 ),
       mNumberOfAllocatedBytes( 0 ),
@@ -351,20 +351,20 @@ SyncToken* CUDAMemory::memcpyAsyncToCUDAHost( void* dst, const void* src, const 
 bool CUDAMemory::canCopyFrom( const Memory& other ) const
 {
     bool supported = false;
-    memtype::MemoryType otherType = other.getType();
+    MemoryType otherType = other.getType();
 
-    if ( otherType == memtype::HostMemory )
+    if ( otherType == MemoryType::HostMemory )
     {
         // CUDACtx -> Host is supported
         supported = true;
     }
-    else if ( otherType == memtype::CUDAHostMemory )
+    else if ( otherType == MemoryType::CUDAHostMemory )
     {
         // CUDACtx -> CUDA Host is supported
         // Note: slower but okay if CUDA Host memory does not belong to this device
         supported = true;
     }
-    else if ( otherType == memtype::CUDAMemory )
+    else if ( otherType == MemoryType::CUDAMemory )
     {
         const CUDAMemory* otherCUDAMem = dynamic_cast<const CUDAMemory*>( &other );
         SCAI_ASSERT( otherCUDAMem, "dynamic_cast<CUDAMemory*> failed" )
@@ -408,19 +408,19 @@ bool CUDAMemory::canCopyCUDA( const CUDAMemory& other ) const
 bool CUDAMemory::canCopyTo( const Memory& other ) const
 {
     bool supported = false;
-    memtype::MemoryType otherType = other.getType();
+    MemoryType otherType = other.getType();
 
-    if ( otherType == memtype::HostMemory )
+    if ( otherType == MemoryType::HostMemory )
     {
         // CUDAMemory -> HostMemory is supported
         supported = true;
     }
-    else if ( otherType == memtype::CUDAHostMemory )
+    else if ( otherType == MemoryType::CUDAHostMemory )
     {
         // CUDAMemory -> CUDA Host is supported
         supported = true;
     }
-    else if ( otherType == memtype::CUDAMemory )
+    else if ( otherType == MemoryType::CUDAMemory )
     {
         const CUDAMemory* otherCUDA = dynamic_cast<const CUDAMemory*>( &other );
         SCAI_ASSERT( otherCUDA, "dynamic_cast<CUDAMemory*> failed" )
@@ -435,15 +435,15 @@ bool CUDAMemory::canCopyTo( const Memory& other ) const
 
 void CUDAMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
 {
-    if ( srcMemory.getType() == memtype::HostMemory )
+    if ( srcMemory.getType() == MemoryType::HostMemory )
     {
         memcpyFromHost( dst, src, size );
     }
-    else if ( srcMemory.getType() == memtype::CUDAHostMemory )
+    else if ( srcMemory.getType() == MemoryType::CUDAHostMemory )
     {
         memcpyFromCUDAHost( dst, src, size );
     }
-    else if ( srcMemory.getType() == memtype::CUDAMemory )
+    else if ( srcMemory.getType() == MemoryType::CUDAMemory )
     {
         const CUDAMemory* srcCUDAMemory = dynamic_cast<const CUDAMemory*>( &srcMemory );
         SCAI_ASSERT( srcCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
@@ -460,16 +460,16 @@ void CUDAMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src
 
 SyncToken* CUDAMemory::memcpyFromAsync( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
 {
-    if ( srcMemory.getType() == memtype::HostMemory )
+    if ( srcMemory.getType() == MemoryType::HostMemory )
     {
         // here we have no asynchronous transfer
         return memcpyAsyncFromHost( dst, src, size );
     }
-    else if ( srcMemory.getType() == memtype::CUDAHostMemory )
+    else if ( srcMemory.getType() == MemoryType::CUDAHostMemory )
     {
         return memcpyAsyncFromCUDAHost( dst, src, size );
     }
-    else if ( srcMemory.getType() == memtype::CUDAMemory )
+    else if ( srcMemory.getType() == MemoryType::CUDAMemory )
     {
         const CUDAMemory* srcCUDAMemory = dynamic_cast<const CUDAMemory*>( &srcMemory );
         SCAI_ASSERT( srcCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
@@ -488,15 +488,15 @@ SyncToken* CUDAMemory::memcpyFromAsync( void* dst, const Memory& srcMemory, cons
 
 void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
 {
-    if ( dstMemory.getType() == memtype::HostMemory )
+    if ( dstMemory.getType() == MemoryType::HostMemory )
     {
         memcpyToHost( dst, src, size );
     }
-    else if ( dstMemory.getType() == memtype::CUDAHostMemory )
+    else if ( dstMemory.getType() == MemoryType::CUDAHostMemory )
     {
         memcpyToCUDAHost( dst, src, size );
     }
-    else if ( dstMemory.getType() == memtype::CUDAMemory )
+    else if ( dstMemory.getType() == MemoryType::CUDAMemory )
     {
         const CUDAMemory* dstCUDAMemory = dynamic_cast<const CUDAMemory*>( &dstMemory );
         SCAI_ASSERT( dstCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )
@@ -513,15 +513,15 @@ void CUDAMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, 
 
 SyncToken* CUDAMemory::memcpyToAsync( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
 {
-    if ( dstMemory.getType() == memtype::HostMemory )
+    if ( dstMemory.getType() == MemoryType::HostMemory )
     {
         return memcpyAsyncToHost( dst, src, size );
     }
-    else if ( dstMemory.getType() == memtype::CUDAHostMemory )
+    else if ( dstMemory.getType() == MemoryType::CUDAHostMemory )
     {
         return memcpyAsyncToCUDAHost( dst, src, size );
     }
-    else if ( dstMemory.getType() == memtype::CUDAMemory )
+    else if ( dstMemory.getType() == MemoryType::CUDAMemory )
     {
         const CUDAMemory* dstCUDAMemory = dynamic_cast<const CUDAMemory*>( &dstMemory );
         SCAI_ASSERT( dstCUDAMemory, "dynamic_cast<CUDAMemory*> failed" )

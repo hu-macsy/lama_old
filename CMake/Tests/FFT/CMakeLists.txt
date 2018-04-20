@@ -1,5 +1,5 @@
 ###
- # @file Package/PNG.cmake
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,66 +27,43 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief SCAI wrapper for find_package( PNG )
+ # @brief CMakeLists.txt
  # @author Thomas Brandes
- # @date 14.05.2017
+ # @date 25.04.2013
 ###
 
-include ( scai_macro/scai_pragma_once )
+################################################
+#   CMake example for C++ program using FFTW   #
+################################################
 
-scai_pragma_once()
+cmake_minimum_required( VERSION 2.8 )
 
-#  CMake provides already a module to find the PNG reference library, use it
+## PROJECT NAME and supported LANGUAGES
 
-find_package( FFTW ${SCAI_FIND_PACKAGE_FLAGS} )
+project ( FFTTest CXX )
 
-if ( FFTW_FOUND )
+set ( CMAKE_MODULE_PATH "../../Modules" )
 
-else ()
+find_package( FFTW )
 
-    # Try to use the FFTW wrapper of the MKL libraries
-
-    find_package ( MKL ${SCAI_FIND_PACKAGE_FLAGS} )
-
-    # message ( STATUS "FFTW not found, MKL_FOUND=${MKL_FOUND}" )
-
+if ( NOT FFTW_FOUND )
+    message ( STATUS "CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}" )
+    find_package ( MKL )
     if ( MKL_FOUND )
-
-        # message ( STATUS "Try to use FFTW of MKL" )
-
         find_path( FFTW_INCLUDE_DIR fftw3.h
                    ${MKL_INCLUDE_DIR}/fftw )
-
         if ( FFTW_INCLUDE_DIR )
             set ( FFTW_FOUND TRUE )
             set ( FFTW_LIBRARIES ${MKL_LIBRARIES} )
         endif ()
-
     endif ()
-    
 endif ()
 
-if ( FFTW_FOUND )
+message ( STATUS "FFTW_FOUND=${FFTW_FOUND}" )
+message ( STATUS "FFTW_INCLUDE_DIR=${FFTW_INCLUDE_DIR}" )
+message ( STATUS "FFTW_LIBRARIES=${FFTW_LIBRARIES}" )
 
-    ## ToDo: get FFTW version
-
-
-    ## set the SCAI variables to get macros for dependencies working correctly
-
-    set ( SCAI_FFTW_INCLUDE_DIR ${FFTW_INCLUDE_DIR} )
-    set ( SCAI_FFTW_LIBRARIES ${FFTW_LIBRARIES} )
-
-endif ()
-
-scai_build_variable ( NAME      USE_FFTW
-                      BOOL 
-                      DEFAULT   ${FFTW_FOUND}
-                      DOCSTRING "use of FFTW library (Discrete Fast Fourier Transform)" )
-
-scai_summary_external ( NAME      FFTW
-                        ENABLED   ${USE_FFTW}
-                        FOUND     ${FFTW_FOUND} 
-                        VERSION   "3.3.7"
-                        INCLUDE   ${FFTW_INCLUDE_DIR} 
-                        LIBRARIES ${FFTW_LIBRARIES} )
+include_directories( ${FFTW_INCLUDE_DIR} )
+add_executable( fft_simple fft_simple.cpp )
+target_link_libraries( fft_simple ${FFTW_LIBRARIES} )
 
