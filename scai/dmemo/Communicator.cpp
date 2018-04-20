@@ -902,7 +902,7 @@ ValueType Communicator::scanDefault( ValueType localValue ) const
 
     ValueType runningSum = 0;
 
-    for ( PartitionId p = 0; p < rank; ++p )
+    for ( PartitionId p = 0; p <= rank; ++p )
     {
         runningSum += allValues[p];
     }
