@@ -136,7 +136,7 @@ def run_tests(tests, output_dir, temp_dir = None, prepend_args = [], tag = ""):
     return (successful_tests, failed_tests)
 
 
-def run_mpi_tests(tests, output_dir, np, temp_dir=None):
+def run_mpi_tests(tests, output_dir, np, intel, temp_dir=None):
     failed_tests = []
     passed_tests = []
 
@@ -144,7 +144,10 @@ def run_mpi_tests(tests, output_dir, np, temp_dir=None):
         print("Running {} MPI tests ({} processors) ...".format(len(tests), n))
         tag = "_mpi_{}".format(str(n))
         print(tag)
-        mpi_args = [ "mpirun", "-np", str(n), "--tag-output" ]
+        if intel:
+            mpi_args = [ "mpirun", "-np", str(n), "-l" ]
+        else:
+            mpi_args = [ "mpirun", "-np", str(n), "--tag-output" ]
         (passed, failed) = run_tests(tests, output_dir, temp_dir=temp_dir, prepend_args=mpi_args, tag=tag)
         print()
         passed_tests += passed
@@ -166,6 +169,8 @@ def main():
                         help='The directory in which to store temporary files used by tests.')
     parser.add_argument('--mpi', dest='mpi', action='store_true',
                         help='Whether or not to use MPI for MPI-enabled tests.')
+    parser.add_argument('--intel', dest='intel', action='store_true',
+                        help='To be set when Intel MPI is used')
     parser.add_argument('--np', dest='np', type=int, nargs='+', required=False, default=[ 1 ],
                         help='The number of processors to use for MPI. Can supply multiple arguments (e.g. --np 1 2 3)')
     parser.add_argument('--tests', dest='tests', nargs='+', type=str, required=False,default=None,
@@ -206,7 +211,7 @@ def main():
     mpi_passed = []
     mpi_failed = []
     if args.mpi:
-        (mpi_passed, mpi_failed) = run_mpi_tests(filtered_mpi_tests, output_dir, args.np, temp_dir=args.temp_dir)
+        (mpi_passed, mpi_failed) = run_mpi_tests(filtered_mpi_tests, output_dir, args.np, args.intel, temp_dir=args.temp_dir)
     else:
         print("MPI tests not requested. Skipping ...")
 

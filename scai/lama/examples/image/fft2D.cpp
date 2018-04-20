@@ -85,8 +85,9 @@ int main( int argc, const char* argv[] )
 
     SCAI_ASSERT_EQ_ERROR( nc, 3, "only rgb supported" )
 
-    IndexType nc1 = common::Math::pow( 2, common::Math::nextpow2( n1 ) );
-    IndexType nc2 = common::Math::pow( 2, common::Math::nextpow2( n2 ) );
+    IndexType one = 1;
+    IndexType nc1 = one << common::Math::nextpow2( n1 );
+    IndexType nc2 = one << common::Math::nextpow2( n2 );
 
     auto m = zero<DenseStorage<ComplexType>>( nc1, nc2 );
 
@@ -163,7 +164,7 @@ int main( int argc, const char* argv[] )
         {
             for ( IndexType j = 0; j < n2; ++j )
             {
-                ValueType val = rPixels[ nc2 * i + j ] / ( nc1 * nc2 );
+                ValueType val = rPixels[ nc2 * i + j ] / static_cast<ValueType>( nc1 * nc2 );
                 val *= maxVal;
                 wImage( i, j, 0 ) = val;
                 wImage( i, j, 1 ) = val;
