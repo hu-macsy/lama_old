@@ -53,7 +53,7 @@ scai_pragma_once ()
 # set ( Boost_USE_STATIC_LIBS OFF )
 # set ( Boost_USE_MULTITHREADED OFF )
 
-set ( BOOST_TEST_MINIMUM_VERSION 1.41 )    ## functionality before is not sufficient
+set ( BOOST_TEST_MINIMUM_VERSION 1.61 )    ## functionality before is not sufficient
 
 if    ( WIN32 )
     message ( STATUS "Setting special Boost options on Windows" )
