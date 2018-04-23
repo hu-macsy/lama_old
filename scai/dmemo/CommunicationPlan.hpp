@@ -92,19 +92,19 @@ public:
 
     /** Default copy constructor can be used. */
 
-    CommunicationPlan( const CommunicationPlan& other ) = default;
+    CommunicationPlan( const CommunicationPlan& ) = default;
 
     /** Default move constructor can be used. */
 
-    CommunicationPlan( CommunicationPlan&& other ) = default;
+    CommunicationPlan( CommunicationPlan&& ) = default;
 
     /** Default copy assignment operator can be used. */
 
-    CommunicationPlan& operator=( const CommunicationPlan& other ) = default;
+    CommunicationPlan& operator=( const CommunicationPlan& ) = default;
 
     /** Default move assignment operator can be used. */
 
-    CommunicationPlan& operator=( CommunicationPlan&& other ) = default;
+    CommunicationPlan& operator=( CommunicationPlan&& ) = default;
 
     /** Destructor */
 
