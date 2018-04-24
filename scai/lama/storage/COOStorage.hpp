@@ -493,6 +493,17 @@ public:
                                const COOStorage<ValueType>& b );
 
     /******************************************************************
+     *  Halo related operations                                        *
+     ******************************************************************/
+
+    /** 
+     *  @brief Override MatrixStorage<ValueType>::globalizeHaloIndexes 
+     *
+     *  This solution is more efficient as temporary CSR data is completely avoided.
+     */
+    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+
+    /******************************************************************
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
 

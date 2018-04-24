@@ -195,6 +195,19 @@ public:
 
     virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
+    /**
+     * @brief This method removes all zero elements of a sparse matrix, i.e. only entries whose absolute
+     *        value is greater than eps are considered to be non-zero.
+     *
+     * This operation should be executed by all processors as it might recompute the halo.
+     *
+     * \code
+     *    auto diffMatrix = eval<CSRSparseMatrix<ValueType>>( matrix1 - matrix2 );
+     *    diffMatrix.compress( 0.0001 );
+     * \endcode
+     */
+    void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+
     /** @brief Implementation of pure method Matrix<ValueType>::getColumn 
      *
      *  It is recommended to call getColumn with a SparseVector for a sparse matrix.

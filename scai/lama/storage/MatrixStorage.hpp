@@ -321,6 +321,28 @@ public:
 
     virtual void buildHalo( dmemo::Halo& halo, const dmemo::Distribution& colDist );
 
+    /** This method translates the halo column indexes back to global indexes 
+     * 
+     *  @param halo provides the method for translation of halo to global indexes
+     *  @param globalNumColumns will be the new number of columns for this matrix
+     * 
+     *  The default implementation uses CSR storage to globalize the indexes.
+     */
+    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+
+    /**
+     * @brief This method removes all zero elements of a sparse storage, i.e. only entries whose absolute
+     *        value is greater than eps are considered to be non-zero.
+     *
+     * The default implementation uses temporary CSR storage to compress it.
+     *
+     * \code
+     *    auto diffStorage = eval<CSRStorage<ValueType>>( storage1 - storage2 );
+     *    diffStorage.compress( 0.0001 );
+     * \endcode
+     */
+    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+
     /** This method build for this matrix the local part of a global matrix.
      *
      *  The row distribution specifies which rows of the global matrix will

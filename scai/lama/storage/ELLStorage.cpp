@@ -1698,6 +1698,16 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void ELLStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+{   
+    halo.halo2Global( mJA );
+    _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
+    _MatrixStorage::resetDiagonalProperty();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 RealType<ValueType> ELLStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )

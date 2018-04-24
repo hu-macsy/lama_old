@@ -384,6 +384,13 @@ public:
         const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
+    /** 
+     *  @brief Override MatrixStorage<ValueType>::globalizeHaloIndexes 
+     *
+     *  This solution is more efficient as we need only update of the column data
+     */
+    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+
     /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;

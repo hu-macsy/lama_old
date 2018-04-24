@@ -1555,12 +1555,6 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
 
     mLocalData->matrixPlusMatrix( alpha, *A.mLocalData, beta, *B.mLocalData );
 
-    if ( mLocalData->getFormat() == Format::CSR )
-    {
-        CSRStorage<ValueType>& csrLocal = static_cast<CSRStorage<ValueType>&>( *mLocalData );
-        csrLocal.compress();
-    }
-
     if ( B.getColDistribution().isReplicated() )
     {
          // there is no halo and no halo storage 
@@ -1588,12 +1582,6 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
 
          mHaloData->matrixPlusMatrix( alpha, haloA, beta, haloB );
  
-         if ( mHaloData->getFormat() == Format::CSR )
-         {
-             CSRStorage<ValueType>& csrHalo = static_cast<CSRStorage<ValueType>&>( *mHaloData );
-             csrHalo.compress();
-         }
-
          // now build Halo from this result storage
 
          mHaloData->buildHalo( mHalo, getColDistribution() );
@@ -1601,6 +1589,22 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
 }
 
 /* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
+{
+    mLocalData->compress( eps, keepDiagonal);
+
+    if ( !getColDistribution().isReplicated() )
+    {
+         mHaloData->compress( eps, false );   //  diagonal elements in halo are irrelevant
+
+         // rebuild the Halo schedule as entries might have been deleted
+
+         mHaloData->globalizeHaloIndexes( mHalo, getColDistribution().getGlobalSize() );
+         mHaloData->buildHalo( mHalo, getColDistribution() );
+    }
+}
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexPart kind ) const

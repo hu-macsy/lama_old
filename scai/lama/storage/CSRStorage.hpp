@@ -445,24 +445,16 @@ public:
     void allocate( const IndexType numRows, const IndexType numColumns );
 
     /**
-     * @brief compress compresses this by removing non-diagonal elements that
-     *        are smaller than eps.
-     *
-     * compress compresses this by removing non-diagonal elements that are
-     * smaller than eps. compress has linear runtime. compress is used by
-     * CSRSparseMatrix Multiplication.
-     *
-     * @param[in] eps   the threshold to set a element of this to zero and
-     *                  remove it. (Default: 0.0)
+     *  @brief Override default implementation MatrixStorage<ValueType>::compress 
      */
-    void compress( const ValueType eps = 0.0 );
+    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
 
     static void compress( 
         hmemo::HArray<IndexType>& ia, 
         hmemo::HArray<IndexType>& ja, 
         hmemo::HArray<ValueType>& values,
         const bool diagonalFlag, 
-        const ValueType eps, 
+        const RealType<ValueType> eps, 
         hmemo::ContextPtr prefContext );
 
     /** Swap this CSR storage data with another CSR storage.
@@ -533,6 +525,13 @@ public:
         dmemo::Halo& halo,
         const dmemo::Distribution& colDist,
         const dmemo::Distribution* rowDist ) const;
+
+    /** 
+     *  @brief Override MatrixStorage<ValueType>::globalizeHaloIndexes 
+     *
+     *  This solution is more efficient as temporary CSR data is completely avoided.
+     */ 
+    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
 
     /** Own implementation to get global owners of the row */
 
