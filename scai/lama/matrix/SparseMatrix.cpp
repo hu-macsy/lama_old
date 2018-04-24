@@ -1549,17 +1549,55 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
     SCAI_ASSERT_EQ_DEBUG( A.getRowDistribution(), B.getRowDistribution(), "added matrices have different target space" )
     SCAI_ASSERT_EQ_DEBUG( A.getColDistribution(), B.getColDistribution(), "added matrices have different source space" )
 
-    if ( !B.getColDistribution().isReplicated() )
+    // Now we can do it completly locally
+
+    _Matrix::setDistributedMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() );
+
+    mLocalData->matrixPlusMatrix( alpha, *A.mLocalData, beta, *B.mLocalData );
+
+    if ( mLocalData->getFormat() == Format::CSR )
     {
-        COMMON_THROWEXCEPTION( "matrixA + matrixB only supported for replicated columns" << " in matrixB = " << B )
+        CSRStorage<ValueType>& csrLocal = static_cast<CSRStorage<ValueType>&>( *mLocalData );
+        csrLocal.compress();
     }
 
-    // Now we can do it completly locally
-    _Matrix::setDistributedMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() );
-    mLocalData->matrixPlusMatrix( alpha, *A.mLocalData, beta, *B.mLocalData );
-    // replicated columns, so no halo needed
-    mHaloData->allocate( getNumRows(), 0 );
-    mHalo.clear();
+    if ( B.getColDistribution().isReplicated() )
+    {
+         // there is no halo and no halo storage 
+         mHaloData->allocate( getNumRows(), 0 );
+         mHalo.clear();
+    }
+    else
+    {
+         IndexType numRows = A.mHaloData->getNumRows();
+         IndexType numCols = getColDistribution().getGlobalSize();
+
+         // build halo storage for A and B with global column indexes
+
+         HArray<IndexType> csrIA;
+         HArray<IndexType> csrJA;
+         HArray<ValueType> csrValues;
+
+         A.mHaloData->buildCSRData( csrIA, csrJA, csrValues );
+         A.mHalo.halo2Global( csrJA );
+         CSRStorage<ValueType> haloA( numRows, numCols, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
+
+         B.mHaloData->buildCSRData( csrIA, csrJA, csrValues );
+         B.mHalo.halo2Global( csrJA );
+         CSRStorage<ValueType> haloB( numRows, numCols, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
+
+         mHaloData->matrixPlusMatrix( alpha, haloA, beta, haloB );
+ 
+         if ( mHaloData->getFormat() == Format::CSR )
+         {
+             CSRStorage<ValueType>& csrHalo = static_cast<CSRStorage<ValueType>&>( *mHaloData );
+             csrHalo.compress();
+         }
+
+         // now build Halo from this result storage
+
+         mHaloData->buildHalo( mHalo, getColDistribution() );
+    }
 }
 
 /* -------------------------------------------------------------------------- */

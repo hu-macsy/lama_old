@@ -110,12 +110,21 @@ public:
 
     inline bool isEmpty() const;
 
-    inline const std::map<IndexType, IndexType>& getMap() const
-    {
-        return mGlobal2Halo;
-    }
-
     virtual void writeAt( std::ostream& stream ) const;
+
+    /** This method translates halo indexes back to global indexes 
+     *
+     *  @param[in,out] indexes is the array with halo indexes that are translated back to (non-local) global indexes
+     */
+    void halo2Global( hmemo::HArray<IndexType>& indexes ) const;
+
+    /** This method translates global indexes into local indexes 
+     *
+     *  @param[in,out] indexes is the array with global indexes that are translated halo indexes
+     *
+     *  The array must only contain required indexes used to build the halo.
+     */
+    void global2Halo( hmemo::HArray<IndexType>& indexes ) const;
 
 protected:
 
@@ -129,8 +138,8 @@ private:
     // Indexes for required values and values to provide are stored in HArrays
     // so they might be used in different contexts, especially also on GPU
 
-    hmemo::HArray<IndexType> mRequiredIndexes;
-    hmemo::HArray<IndexType> mProvidesIndexes;
+    hmemo::HArray<IndexType> mRequiredIndexes;   // non-local global indexes required
+    hmemo::HArray<IndexType> mProvidesIndexes;   // local indexes for provided data
 
     std::map<IndexType, IndexType> mGlobal2Halo;
 

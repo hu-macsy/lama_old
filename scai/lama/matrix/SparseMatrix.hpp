@@ -562,15 +562,14 @@ public:
 
     virtual SparseMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method of class _Matrix. */
+    /* Implementation of pure method _Matrix::redistribute */
 
     virtual void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
-    /* Implementation of pure method of class _Matrix. */
+    /* Implementation of pure method of _Matrix::redistribute */
 
     virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistribution );
 
-    /**  */
     /**
      * @brief Assign another matrix transposed to this matrix.
      *

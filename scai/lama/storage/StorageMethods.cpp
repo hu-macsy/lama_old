@@ -453,22 +453,12 @@ void _StorageMethods::buildHalo(
     }
 
     SCAI_LOG_DEBUG( logger, "Halo = " << halo )
-    haloSize = static_cast<IndexType>( haloIndexes.size() );
-    const std::map<IndexType, IndexType>& table = halo.getMap();
-    // convert the global indexes to halo indexes
-    {
-        WriteAccess<IndexType> ja( haloJA );
 
-        for ( IndexType jj = 0; jj < haloNumValues; jj++ )
-        {
-            const IndexType columnIndex = ja[jj];
-            const std::map<IndexType, IndexType>::const_iterator elem = table.find( columnIndex );
-            SCAI_ASSERT_DEBUG( elem != table.end(), columnIndex << " not found" )
-            ja[jj] = elem->second;
-            SCAI_ASSERT_DEBUG( ja[jj] < haloSize, "mapped column index out of range " )
-            SCAI_LOG_TRACE( logger, "global index " << columnIndex << " is halo index " << ja[jj] )
-        }
-    }
+    haloSize = static_cast<IndexType>( haloIndexes.size() );
+
+    // translate the non-local - global indexes to halo indexes 
+
+    halo.global2Halo( haloJA );
 }
 
 /* -------------------------------------------------------------------------- */

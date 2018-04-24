@@ -295,6 +295,9 @@ public:
      *
      *  @param[out] storage  will contain the local part of the matrix with all columns.
      *
+     *  The output storage might be of any value type and any format as this operation supports also
+     *  implicit type conversion.
+     *
      *  As splitting of columns is differently handled for sparse and dense matrices,
      *  this method is useful for conversion between them. An alternative solution
      *  of copying the whole matrix and replication of columns might be too expensive.

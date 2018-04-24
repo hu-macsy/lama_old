@@ -94,6 +94,39 @@ Halo& Halo::operator=( const Halo& other )
 
 /* ---------------------------------------------------------------------- */
 
+void Halo::halo2Global( hmemo::HArray<IndexType>& indexes ) const
+{
+    IndexType numValues = indexes.size();
+    IndexType haloSize  = mRequiredIndexes.size();
+
+    hmemo::WriteAccess<IndexType> wIndexes( indexes );
+    hmemo::ReadAccess<IndexType> halo2global( mRequiredIndexes );
+
+    for ( IndexType i = 0; i < numValues; i++ )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( wIndexes[i], haloSize, "illegal halo index" )
+        wIndexes[i] = halo2global[wIndexes[i]];
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Halo::global2Halo( hmemo::HArray<IndexType>& indexes ) const
+{
+    IndexType numValues = indexes.size();
+
+    hmemo::WriteAccess<IndexType> wIndexes( indexes );
+
+    for ( IndexType i = 0; i < numValues; i++ )
+    {
+        const std::map<IndexType, IndexType>::const_iterator elem = mGlobal2Halo.find( wIndexes[i] );
+        SCAI_ASSERT_ERROR( elem != mGlobal2Halo.end(), "global Index " << wIndexes[i] << " no halo index, never required" )
+        wIndexes[i] = elem->second;
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
 void Halo::writeAt( std::ostream& stream ) const
 {
     // write info this object

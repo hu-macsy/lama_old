@@ -144,6 +144,13 @@ public:
         return Format::CSR;
     }
 
+    /** Implementation of _Matrix::buildLocalStorage, overrides SparseMatrix<ValueType>::buildLocalStorage 
+     *
+     *  This method gets an own implementatin as it fails for SparseMatrix and as it might be implemented
+     *  more efficiently.
+     */
+    virtual void buildLocalStorage( _MatrixStorage& storage ) const;
+
     /* Query the stencil that has been used to define the stencil matrix */
 
     const common::Stencil<ValueType>& getStencil() const;

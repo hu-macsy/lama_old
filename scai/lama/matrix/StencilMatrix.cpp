@@ -316,6 +316,36 @@ StencilMatrix<ValueType>&  StencilMatrix<ValueType>::operator=( StencilMatrix&& 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void StencilMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
+{
+    if ( getColDistribution().isReplicated() )
+    {
+        // copy local storage with format / value conversion
+        storage = *mLocalData;
+    }
+    else
+    {
+        // temporary local storage with joined columns needed before
+
+        bool keepDiagonalProperty = true;
+
+        if ( storage.getValueType() == getValueType() )
+        {
+            MatrixStorage<ValueType>& typedStorage = static_cast<MatrixStorage<ValueType>&>( storage );
+            typedStorage.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
+        }     
+        else
+        {
+            CSRStorage<ValueType> tmp; 
+            tmp.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
+            storage = tmp;
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 const char* StencilMatrix<ValueType>::getTypeName() const
 {
     return typeName();
