@@ -1,5 +1,5 @@
 /**
- * @file utilskernel/fft.hpp
+ * @file utilskernel/FFTUtils.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -57,6 +57,7 @@ public:
  *  @param[in]  x  is the input array
  *  @param[in]  n  padding length (n > x.size()) or truncate length , optional
  *  @param[in]  direction must be either 1 (forward) or -1 (backward, inverse)
+ *  @param[in]  ctx preferred context for execution   
  */
 template<typename ValueType>
 static void fft( 
@@ -73,6 +74,7 @@ static void fft(
  *  @param[in]  many is the number of rows, valid for input and result array
  *  @param[in]  n is the padding length for each row vector
  *  @param[in]  direction must be either 1 (forward) or -1 (backward, inverse)
+ *  @param[in]  ctx preferred context for execution   
  */
 template<typename ValueType>
 static void fft_many( 
