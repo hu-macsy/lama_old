@@ -18,3 +18,22 @@ or define the environment variables PARMETIS_INCLUDE_PATH and PARMETIS_LIBRARY_P
 
    export PARMETIS_INCLUDE_PATH=<path_to_parmetis>/include
    export PARMETIS_LIBRARY_PATH=<path_to_parmetis>/lib
+
+Download latest stable PARMETIS release (e.g. parmetis-4.0.3.tar.gz), unpack it.
+
+Before compiling you should make share that you have the same MPI package installed/enabled that you will
+use for LAMA. 
+
+.. code-block:: bash
+
+   mkdir Software
+   cd Software
+   tar xvfz ~/Downloads parmetis-4.0.3.tar.gz
+   cd parmetis-4.0.3
+   export PARMETIS_ROOT=<metis_installation_directory>
+   make config shared=1 cc=gcc prefix=$PARMETIS_ROOT
+   make -j 8
+   make install
+
+The environment variable ``PARMETIS_ROOT`` should be used for the cmake configuration.
+
