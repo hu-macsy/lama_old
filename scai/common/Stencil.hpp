@@ -577,25 +577,20 @@ Stencil1D<ValueType>::Stencil1D( const IndexType nPoints ) : Stencil<ValueType>(
     switch( nPoints ) 
     {
         case 7 : 
-        {
             addPoint( -3, minusOne );
             addPoint( 3, minusOne );
-        }
+            // fall through
         case 5 : 
-        {
             addPoint( -2, minusOne );
             addPoint( 2, minusOne );
-        }
+            // fall through
         case 3 : 
-        {
             addPoint( -1, minusOne );
             addPoint( 1, minusOne );
-        }
+            // fall through
         case 1 :
-        {
             addPoint( ( int ) 0, ValueType( nPoints - 1 ) );
             break;
-        }
         default:
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil1D, #points = " << nPoints )
     }
@@ -714,24 +709,20 @@ Stencil2D<ValueType>::Stencil2D( const IndexType nPoints ) : Stencil<ValueType>(
     switch( nPoints ) 
     {
         case 9 : 
-        {
             addPoint( -1, -1, minusOne );
             addPoint( -1,  1, minusOne );
             addPoint(  1, -1, minusOne );
             addPoint(  1,  1, minusOne );
-        }
+            // fall through
         case 5 : 
-        {
             addPoint(  0, -1, minusOne );
             addPoint(  0,  1, minusOne );
             addPoint( -1,  0, minusOne );
             addPoint(  1,  0, minusOne );
-        }
+            // fall through
         case 1 :
-        {
             addPoint( 0, 0, ValueType( nPoints - 1 ) );
             break;
-        }
         default:
 
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil2D, #points = " << nPoints )
@@ -907,7 +898,7 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
     switch( nPoints ) 
     {
         case 27 : 
-        {
+
             addPoint( -1, -1, -1, minusOne );
             addPoint( -1, -1,  1,  minusOne );
             addPoint( -1,  1, -1, minusOne );
@@ -917,10 +908,10 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  1,  1, -1, minusOne );
             addPoint(  1,  1,  1,  minusOne );
 
-            // no break here, continue with points for Stencil3D( 19 )
-        }
+            // fall through
+
         case 19 : 
-        {
+
             addPoint( -1,  0, -1, minusOne );
             addPoint( -1,  0,  1, minusOne );
             addPoint( -1, -1,  0, minusOne );
@@ -934,10 +925,10 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  1, -1,  0, minusOne );
             addPoint(  1,  1,  0, minusOne );
 
-            // no break here, continue with points for Stencil3D( 7 )
-        }
+            // fall through
+
         case 7 :
-        {
+
             addPoint( -1,  0,  0, minusOne );
             addPoint(  1,  0,  0, minusOne );
             addPoint(  0, -1,  0, minusOne );
@@ -945,19 +936,19 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  0,  0, -1, minusOne );
             addPoint(  0,  0,  1, minusOne );
 
-            // no break here, continue with points for Stencil3D( 1 )
-        }
+            // fall through
+
         case 1 :
-        {
+
             addPoint( 0, 0, 0, ValueType( nPoints - 1 ) );
             break;
-        }
+
         default:
 
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil3D, #points = " << nPoints )
-
-        SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
     }
+
+    SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -1142,7 +1133,7 @@ Stencil4D<ValueType>::Stencil4D( const IndexType nPoints ) : Stencil<ValueType>(
     switch( nPoints ) 
     {
         case 9 :
-        {
+
             addPoint( -1,  0,  0,  0, minusOne );
             addPoint(  1,  0,  0,  0, minusOne );
             addPoint(  0, -1,  0,  0, minusOne );
@@ -1152,19 +1143,19 @@ Stencil4D<ValueType>::Stencil4D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  0,  0,  0, -1, minusOne );
             addPoint(  0,  0,  0,  1, minusOne );
 
-            // no break here, continue with points for Stencil4D( 1 )
-        }
+            // fall through
+
         case 1 :
-        {
+
             addPoint( 0, 0, 0, 0, ValueType( nPoints - 1 ) );
             break;
-        }
+
         default:
 
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil4D, #points = " << nPoints )
-
-        SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
     }
+
+    SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
 }
 
 /* ------------------------------------------------------------------------------------ */
