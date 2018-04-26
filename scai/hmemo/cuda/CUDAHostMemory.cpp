@@ -115,7 +115,7 @@ void CUDAHostMemory::free( void* pointer, const size_t size ) const
     // as this defines a function and not a variable
     // General rule: never use shared_ptr temporaries implicitly
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-    SCAI_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
+    SCAI_CUDA_DRV_CALL_NOTHROW( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
     SCAI_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
     mNumberOfAllocatedBytes -= size;
     mNumberOfAllocates--;
