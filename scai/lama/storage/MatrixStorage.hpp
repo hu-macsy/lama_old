@@ -334,11 +334,14 @@ public:
      * @brief This method removes all zero elements of a sparse storage, i.e. only entries whose absolute
      *        value is greater than eps are considered to be non-zero.
      *
+     * @param[in] eps  is the threshold when a values is to be considered as zero
+     * @param[in] keepDiagonal if true existing diagonal elements will not be removed
+     *
      * The default implementation uses temporary CSR storage to compress it.
      *
      * \code
      *    auto diffStorage = eval<CSRStorage<ValueType>>( storage1 - storage2 );
-     *    diffStorage.compress( 0.0001 );
+     *    diffStorage.compress( 0.0001, false );
      * \endcode
      */
     virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );

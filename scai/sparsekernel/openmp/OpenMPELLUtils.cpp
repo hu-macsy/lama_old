@@ -440,15 +440,16 @@ void OpenMPELLUtils::fillELLValues(
 
 template<typename ValueType>
 void OpenMPELLUtils::compressIA(
+    IndexType newIA[],
     const IndexType IA[],
     const IndexType JA[],
     const ValueType ellValues[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
-    IndexType newIA[] )
+    const RealType<ValueType> eps,
+    bool keepDiagonal )
 {
-    SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
+    SCAI_LOG_INFO( logger, "compressIA with eps = " << eps << ", keep diagonal = " << keepDiagonal )
     #pragma omp parallel
     {
         #pragma omp for
@@ -461,15 +462,17 @@ void OpenMPELLUtils::compressIA(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
-                if ( JA[pos] == i )
+                if ( keepDiagonal && JA[pos] == i )
                 {
-                    continue;
+                    continue;   // entry remains
                 }
 
-                if ( common::Math::abs( ellValues[pos] ) <= common::Math::real( eps ) )
+                if ( common::Math::abs( ellValues[pos] ) > eps )
                 {
-                    length--;
+                    continue;   // entry remains
                 }
+
+                length--;    // entry is deleted
             }
 
             newIA[i] = length;
@@ -481,15 +484,16 @@ void OpenMPELLUtils::compressIA(
 
 template<typename ValueType>
 void OpenMPELLUtils::compressValues(
+    IndexType newJA[],
+    ValueType newValues[],
+    const IndexType newNumValuesPerRow,
     const IndexType IA[],
     const IndexType JA[],
     const ValueType values[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
-    const IndexType newNumValuesPerRow,
-    IndexType newJA[],
-    ValueType newValues[] )
+    const RealType<ValueType> eps,
+    bool keepDiagonal )
 {
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
                    << ", values/row = " << numValuesPerRow << " / " << newNumValuesPerRow
@@ -508,18 +512,19 @@ void OpenMPELLUtils::compressValues(
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
                 // delete it if zero and not diagonal entry
-
-                if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
+ 
+                if ( common::Math::abs( values[pos] ) > eps || ( keepDiagonal && JA[pos] == i ) )
+                {
+                    // move entry gap positions back in this row
+    
+                    IndexType newpos = ellindex( i, jj - gap, numRows, newNumValuesPerRow );
+                    newValues[newpos] = values[pos];
+                    newJA[newpos] = JA[pos];
+                }
+                else
                 {
                     gap++;
-                    continue;
                 }
-
-                // move entry gap positions back in this row
-
-                IndexType newpos = ellindex( i, jj - gap, numRows, newNumValuesPerRow );
-                newValues[newpos] = values[pos];
-                newJA[newpos] = JA[pos];
             }
 
             // fill up to top

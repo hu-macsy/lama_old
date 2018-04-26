@@ -1480,7 +1480,8 @@ void ell_compressIA_kernel(
     const ValueType* ellValues,
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
+    const RealType<ValueType> eps,
+    bool keepDiagonal,
     IndexType* newIA )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -1493,15 +1494,17 @@ void ell_compressIA_kernel(
         {
             IndexType pos = jj * numRows + i;
 
-            if ( JA[pos] == i )
+            if ( keepDiagonal && JA[pos] == i )
             {
                 continue;
             }
 
-            if ( common::Math::abs( ellValues[pos] ) <= common::Math::real( eps ) )
+            if ( common::Math::abs( ellValues[pos] ) > eps )
             {
-                length--;
+                continue;
             }
+
+            length--;
         }
 
         newIA[i] = length;
@@ -1510,13 +1513,14 @@ void ell_compressIA_kernel(
 
 template<typename ValueType>
 void CUDAELLUtils::compressIA(
+    IndexType newIA[],
     const IndexType IA[],
     const IndexType JA[],
     const ValueType ellValues[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
-    IndexType newIA[] )
+    const RealType<ValueType> eps,
+    const bool keepDiagonal )
 {
     SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
 
@@ -1526,7 +1530,7 @@ void CUDAELLUtils::compressIA(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    ell_compressIA_kernel <<< dimGrid, dimBlock>>>( IA, JA, ellValues, numRows, numValuesPerRow, eps, newIA );
+    ell_compressIA_kernel <<< dimGrid, dimBlock>>>( IA, JA, ellValues, numRows, numValuesPerRow, eps, keepDiagonal, newIA );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
 }
@@ -1541,7 +1545,8 @@ void ell_compressValues_kernel(
     const ValueType* values,
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
+    const RealType<ValueType> eps,
+    bool keepDiagonal,
     const IndexType newNumValuesPerRow,
     IndexType* newJA,
     ValueType* newValues )
@@ -1550,66 +1555,51 @@ void ell_compressValues_kernel(
 
     if ( i < numRows )
     {
-        IndexType* gaps = new IndexType[numValuesPerRow];
+        IndexType gap = 0;
 
-        for ( IndexType j = 0; j < numValuesPerRow; ++j )
+        for ( IndexType jj = 0; jj < IA[i]; jj++ )
         {
-            gaps[j] = 0;
-        }
+            IndexType pos = jj * numRows + i;
 
-        for ( IndexType j = 0; j < IA[i]; j++ )
-        {
-            IndexType pos = j * numRows + i;
+            // delete it if zero and not diagonal entry
 
-            if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
-            {
-                gaps[j] = 1;
-            }
-        }
-
-        IndexType totalGaps = 0;
-        IndexType lastNewPos = static_cast<IndexType>( -1 );
-
-        for ( IndexType j = 0; j < IA[i]; j++ )
-        {
-            totalGaps += gaps[j];
-
-            IndexType pos    = j * numRows + i;
-            IndexType newpos = ( j - totalGaps ) * numRows + i;
-
-            if ( newpos != lastNewPos )
-            {
+            if ( common::Math::abs( values[pos] ) > eps || ( keepDiagonal && JA[pos] == i ) )
+            {   
+                // move entry gap positions back in this row
+                
+                IndexType newpos = ( jj - gap ) * numRows + i; 
                 newValues[newpos] = values[pos];
                 newJA[newpos] = JA[pos];
             }
-
-            lastNewPos = newpos;
+            else
+            {   
+                gap++;
+            }
         }
 
         // fill up to top
 
-        for (  IndexType j = IA[i] - totalGaps; j < newNumValuesPerRow; j++ )
+        for (  IndexType jj = IA[i] - gap; jj < newNumValuesPerRow; jj++ )
         {
-            IndexType newpos = j * numRows + i;
+            IndexType newpos = jj * numRows + i; 
             newValues[newpos] = 0;
             newJA[newpos] = 0;
         }
-
-        delete gaps;
     }
 }
 
 template<typename ValueType>
 void CUDAELLUtils::compressValues(
+    IndexType newJA[],
+    ValueType newValues[],
+    const IndexType newNumValuesPerRow,
     const IndexType IA[],
     const IndexType JA[],
     const ValueType values[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
-    const IndexType newNumValuesPerRow,
-    IndexType newJA[],
-    ValueType newValues[] )
+    const RealType<ValueType> eps,
+    const bool keepDiagonal )
 {
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
                    << ", values per row (old/new) = " << numValuesPerRow << " / " << newNumValuesPerRow
@@ -1621,7 +1611,7 @@ void CUDAELLUtils::compressValues(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    ell_compressValues_kernel <<< dimGrid, dimBlock>>>( IA, JA, values, numRows, numValuesPerRow, eps,
+    ell_compressValues_kernel <<< dimGrid, dimBlock>>>( IA, JA, values, numRows, numValuesPerRow, eps, keepDiagonal,
             newNumValuesPerRow, newJA, newValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )

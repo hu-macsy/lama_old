@@ -45,6 +45,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/MatrixOp.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <utility>
 
@@ -158,27 +159,29 @@ private:
 
     template<typename ValueType>
     static void compressIA(
+        IndexType newIA[],
         const IndexType ellIA[],
         const IndexType ellJA[],
         const ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const ValueType eps,
-        IndexType newIA[] );
+        const RealType<ValueType> eps,
+        bool keepDiagonal );
 
     /** Implementation for ELLKernelTrait::compressValues */
 
     template<typename ValueType>
     static void compressValues(
+        IndexType newJA[],
+        ValueType newValues[],
+        const IndexType newNumValuesPerRow,
         const IndexType ellIA[],
         const IndexType ellJA[],
         const ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const ValueType eps,
-        const IndexType newNumValuesPerRow,
-        IndexType newJA[],
-        ValueType newValues[] );
+        const RealType<ValueType> eps,
+        bool keepDiagonal );
 
     /** Implementation for ELLKernelTrait::getCSRValues */
 
