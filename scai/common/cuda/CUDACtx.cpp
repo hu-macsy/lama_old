@@ -36,6 +36,7 @@
 
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAException.hpp>
 
 #include <iostream>
 
@@ -62,9 +63,11 @@ CUDACtx::CUDACtx( int deviceNr )
 
     mDeviceNr = deviceNr;   // no alternative is taken here
     SCAI_CUDA_DRV_CALL( cuDeviceGet( &mCUdevice, mDeviceNr ),
-                        "cuDeviceGet device = " << mDeviceNr << " failed, probably not available" );
+                        "cuDeviceGet device = " << mDeviceNr << " failed, probably not available" )
+
     SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
                         "cuCtxCreate for " << mDeviceNr )
+
     SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
 
     SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuSparse library" );
@@ -191,13 +194,8 @@ CUDACtx::~CUDACtx()
 
 #endif
 
-    res = cuCtxDestroy( mCUcontext );
-
-    if ( res != CUDA_SUCCESS )
-    {
-        std::cerr << "Error: destroy context for device " << mDeviceNr << " failed." << std::endl;
-        return;
-    }
+    SCAI_CUDA_DRV_CALL_NOTHROW( cuCtxDestroy( mCUcontext ),
+                                "Error: destroy context for device " << mDeviceNr << " failed." )
 }
 
 /* ----------------------------------------------------------------------- */
