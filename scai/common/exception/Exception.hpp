@@ -91,7 +91,7 @@ public:
      *
      *  Very useful utility for identification of bugs, only supported for GNU compiler.
      */
-    static void addCallStack( std::ostringstream& output );
+    static void addCallStack( std::ostream& output );
 
 protected:
 
