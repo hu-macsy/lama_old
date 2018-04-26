@@ -35,10 +35,10 @@
 #
 # Find the METIS includes and libraries
 #
-# ParMETIS is an MPI-based parallel library that implements a variety of algorithms for
-# partitioning unstructured graphs, meshes, and for computing fill-reducing orderings of
-# sparse matrices. It can be found at:
-#       http://www-users.cs.umn.edu/~karypis/metis/parmetis/index.html
+# METIS is a set of serial programs for partitioning graphs, partitioning finite element meshes, 
+# and producing fill reducing orderings for sparse matrices. The algorithms implemented in METIS
+# are based on the multilevel recursive-bisection, multilevel k-way, and multi-constraint 
+# partitioning schemes developed in the Kariypis Lab. 
 #
 # METIS_FOUND       - Do not attempt to use if "no" or undefined
 # METIS_INCLUDE_DIR - the METIS include dir
@@ -50,15 +50,19 @@ if ( NOT DEFINED METIS_INCLUDE_DIR )
     	        /usr/local/include
     	        /usr/include
     	        /usr/include/metis
+    	        ${METIS_INCLUDE_PATH}
     	        $ENV{METIS_INCLUDE_PATH}
-    	        ${METIS_ROOT}/include         )
+    	        ${METIS_ROOT}/include        
+    	        $ENV{METIS_ROOT}/include         )
 endif ()
 
 find_library ( METIS_LIBRARY metis
 	/usr/local/lib
 	/usr/lib
+	${METIS_LIBRARY_PATH}
 	$ENV{METIS_LIBRARY_PATH}
 	${METIS_ROOT}/lib
+	$ENV{METIS_ROOT}/lib
 )
 	
 if ( METIS_INCLUDE_DIR )

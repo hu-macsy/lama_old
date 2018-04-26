@@ -49,16 +49,20 @@ if ( NOT DEFINED PARMETIS_INCLUDE_DIR )
     	/usr/local/include
     	/usr/include
     	/usr/include/metis
+    	${PARMETIS_INCLUDE_PATH}
     	$ENV{PARMETIS_INCLUDE_PATH}
     	${PARMETIS_ROOT}/include
+    	$ENV{PARMETIS_ROOT}/include
     )
 endif ()
 
 find_library( PARMETIS_LIBRARY parmetis
 	/usr/local/lib
 	/usr/lib
+	${PARMETIS_LIBRARY_PATH}
 	$ENV{PARMETIS_LIBRARY_PATH}
 	${PARMETIS_ROOT}/lib
+	$ENV{PARMETIS_ROOT}/lib
 )
 	
 if ( PARMETIS_INCLUDE_DIR )

@@ -18,3 +18,19 @@ or define the environment variables METIS_INCLUDE_PATH and METIS_LIBRARY_PATH as
 
    export METIS_INCLUDE_PATH=<path_to_metis>/include
    export METIS_LIBRARY_PATH=<path_to_metis>/lib
+
+Download latest stable METIS release (e.g. meits-5.1.0.tar.gz), unpack it.
+
+.. code-block:: bash
+
+   mkdir Software
+   cd Software
+   tar xvfz ~/Downloads metis-5.1.0.tar.gz
+   cd metis-5.1.0
+   export METIS_ROOT=<metis_installation_directory>
+   make config shared=1 cc=gcc prefix=$METIS_ROOT
+   make -j 8
+   make install
+
+The environment variable ``METIS_ROOT`` should be used for the cmake configuration.
+
