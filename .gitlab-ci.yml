@@ -80,7 +80,7 @@ gpu (release):
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_4_8_2
+    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_4_8_2
     MPI_HOME: /usr/lib64/openmpi
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
