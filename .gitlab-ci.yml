@@ -77,10 +77,11 @@ gpu (release):
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 1
-    USE_MPI: 0
+    USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
     BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_4_9_1
+    MPI_HOME: /usr/lib64/openmpi
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - bliss
