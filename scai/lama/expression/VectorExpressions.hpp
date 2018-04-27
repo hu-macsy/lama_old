@@ -34,7 +34,6 @@
 #pragma once
 
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/_Vector.hpp>
 #include <scai/lama/expression/Expression.hpp>
 
 namespace scai

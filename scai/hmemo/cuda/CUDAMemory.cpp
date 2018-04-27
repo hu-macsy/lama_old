@@ -136,7 +136,8 @@ void* CUDAMemory::allocate( const size_t size ) const
     SCAI_CUDA_DRV_CALL_EXCEPTION(
         cuMemAlloc( &pointer, size ),
         "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " << mMaxAllocatedBytes + size << " bytes global memory.",
-        MemoryException )
+        MemoryException
+    )
     SCAI_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << ( ( void* ) pointer ) )
     mNumberOfAllocatedBytes += size;
     mNumberOfAllocates++;
@@ -148,10 +149,11 @@ void* CUDAMemory::allocate( const size_t size ) const
 
 void CUDAMemory::free( void* pointer, const size_t size ) const
 {
-    // SCAI_REGION( "CUDA.free" )
+    // Note: free mgiht be called in other destructors, so do never throw
+
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_DEBUG( logger, *this << ": free " << size << " bytes, ptr = " << pointer )
-    SCAI_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) pointer ), "cuMemFree( " << pointer << " ) failed" )
+    SCAI_CUDA_DRV_CALL_NOTHROW( cuMemFree( ( CUdeviceptr ) pointer ), "cuMemFree( " << pointer << " ) failed" )
     mNumberOfAllocatedBytes -= size;
     mNumberOfAllocates--;
 }
@@ -163,6 +165,7 @@ void CUDAMemory::memcpy( void* dst, const void* src, const size_t size ) const
     SCAI_REGION( "CUDA.Memory.memcpyDtoD" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (device) " )
+
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoD( ( CUdeviceptr ) dst, ( CUdeviceptr ) src, size ),
                         "cuMemcpyDtoD( " << dst << ", " << src << ", " << size << " ) failed" )
 }
@@ -174,6 +177,7 @@ void CUDAMemory::memset( void* dst, const int val, const size_t size ) const
     SCAI_REGION( "CUDA.Memory.memset" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "set " << size << " bytes with " << val << " to " << dst << " (device) " )
+
     SCAI_CUDA_DRV_CALL( cuMemsetD8( ( CUdeviceptr ) dst, ( unsigned char ) val, size ),
                         "cuMemsetD8( " << dst << ", " << val << ", " << size << " ) failed" )
 }

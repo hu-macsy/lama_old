@@ -45,6 +45,7 @@
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/lama/expression/MatrixExpressions.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 
@@ -157,6 +158,52 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, SparseMatrixType
     BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumColumns() );
 
     BOOST_CHECK_EQUAL( 0, matrix1.maxDiffNorm( matrix2 ) );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, MatrixType, SparseMatrixTypes )
+{
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    ValueType alpha = 2;
+    ValueType beta  = -1;
+
+    const IndexType numRows = 3;
+    const IndexType numCols = 3;
+
+    float fillRate = 0.2;
+
+    hmemo::HArray<ValueType> denseData1( numRows * numCols, ValueType( 0 ) );
+    hmemo::HArray<ValueType> denseData2( numRows * numCols, ValueType( 0 ) );
+    hmemo::HArray<ValueType> expDenseData( numRows * numCols );
+
+    common::Math::srandom( 1317 );    // makes sure that all processors generate same data
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData1, fillRate, 1 );
+    utilskernel::HArrayUtils::setSparseRandom( denseData2, fillRate, 1 );
+    utilskernel::HArrayUtils::arrayPlusArray( expDenseData, alpha, denseData1, beta, denseData2 );
+
+    // wrap the (2D) array denseData as a dense storage
+
+    DenseStorage<ValueType> denseStorage1( numRows, numCols, std::move( denseData1 ) );
+    DenseStorage<ValueType> denseStorage2( numRows, numCols, std::move( denseData2 ) );
+
+    DenseStorage<ValueType> expectedResult( numRows, numCols, std::move( expDenseData ) );
+
+    auto rowDist = std::make_shared<dmemo::BlockDistribution>( numRows, comm );
+    auto colDist = std::make_shared<dmemo::BlockDistribution>( numCols, comm );
+
+    auto matrix1 = distribute<MatrixType>( denseStorage1, rowDist, colDist );
+    auto matrix2 = distribute<MatrixType>( denseStorage2, rowDist, colDist );
+    auto expMatrix = distribute<MatrixType>( expectedResult, rowDist, colDist );
+
+    // parallel matrix add on row/col distributed matrix
+
+    auto matrix  = eval<MatrixType>( alpha * matrix1 + beta * matrix2 );
+
+    RealType<ValueType> maxDiff = matrix.maxDiffNorm( expMatrix );
+    BOOST_CHECK( maxDiff < 0.0001 );
 }
 
 /* ------------------------------------------------------------------------- */

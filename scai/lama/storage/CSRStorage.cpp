@@ -636,7 +636,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
 template<typename ValueType>
 void CSRStorage<ValueType>::compress( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values, 
-                                      const bool diagonalFlag, const ValueType eps, ContextPtr prefContext )
+                                      const bool diagonalFlag, const RealType<ValueType> eps, ContextPtr prefContext )
 {
     static LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
 
@@ -702,9 +702,9 @@ void CSRStorage<ValueType>::compress( HArray<IndexType>& ia, HArray<IndexType>& 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::compress( const ValueType eps )
+void CSRStorage<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
 {
-    compress( mIA, mJA, mValues, mDiagonalProperty, eps, this->getContextPtr() );
+    compress( mIA, mJA, mValues, keepDiagonal, eps, this->getContextPtr() );
 
     // Note: temporary data is freed implicitly
 }
@@ -1504,6 +1504,16 @@ void CSRStorage<ValueType>::splitHalo(
     haloData.check( "halo part after split" );
     SCAI_LOG_INFO( logger,
                    "Result of split: local storage = " << localData << ", halo storage = " << haloData << ", halo = " << halo )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+{
+    halo.halo2Global( mJA );
+    _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
+    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

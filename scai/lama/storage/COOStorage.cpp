@@ -1385,6 +1385,18 @@ void COOStorage<ValueType>::matrixPlusMatrixImpl(
     SCAI_LOG_INFO( logger, "COO matrix add: nnz = " << getNumValues() << " from " << nnz1 << " + " << nnz2 )
 }
 
+/* ========================================================================= */
+/*  Halo stuff                                                               */
+/* ========================================================================= */
+
+template<typename ValueType>
+void COOStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+{
+    halo.halo2Global( mJA );
+    _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
+    _MatrixStorage::resetDiagonalProperty();
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>

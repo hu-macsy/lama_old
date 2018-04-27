@@ -902,7 +902,7 @@ ValueType Communicator::scanDefault( ValueType localValue ) const
 
     ValueType runningSum = 0;
 
-    for ( PartitionId p = 0; p < rank; ++p )
+    for ( PartitionId p = 0; p <= rank; ++p )
     {
         runningSum += allValues[p];
     }
@@ -1220,32 +1220,44 @@ void Communicator::setNodeData()
 /* -------------------------------------------------------------------------- */
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     IndexType Communicator::shift0(                                 \
             _type targetVals[],                                     \
             const IndexType maxTargetSize,                          \
             const _type sourceVals[],                               \
             const IndexType sourceSize ) const;                     \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::maxloc(                                      \
             _type& val,                                             \
             IndexType& location,                                    \
             const PartitionId root ) const;                         \
-    \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::maxlocDefault(                               \
+            _type& val,                                             \
+            IndexType& location,                                    \
+            const PartitionId root ) const;                         \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::minloc(                                      \
             _type& val,                                             \
             IndexType& location,                                    \
             const PartitionId root ) const;                         \
-    \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::minlocDefault(                               \
+            _type& val,                                             \
+            IndexType& location,                                    \
+            const PartitionId root ) const;                         \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     _type Communicator::scan( _type val ) const;                    \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     _type Communicator::scanDefault( _type val ) const;             \
-    \
+                                                                    \
     // instantiate methods for all communicator data types
 
 SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
@@ -1253,64 +1265,64 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::bcastArray(                                  \
             HArray<_type>& array,                                   \
             const PartitionId root ) const;                         \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::bcastArray(                                  \
             HArray<_type>& array,                                   \
             const IndexType n,                                      \
             const PartitionId root ) const;                         \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::joinArray(                                   \
             HArray<_type>& globalArray,                             \
             const HArray<_type>& localArray ) const;                \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::sumArray(                                    \
             HArray<_type>& array ) const;                           \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::updateHalo(                                  \
             HArray<_type>& haloValues,                              \
             const HArray<_type>& localValues,                       \
             const Halo& halo ) const;                               \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::all2allv(                                    \
             _type* recvVal[], IndexType recvCount[],                \
             _type* sendVal[], IndexType sendCount[] ) const;        \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::exchangeByPlan(                              \
             HArray<_type>& recvArray,                               \
             const CommunicationPlan& recvPlan,                      \
             const HArray<_type>& sendArray,                         \
             const CommunicationPlan& sendPlan ) const;              \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::exchangeByPlanAsync(                   \
             HArray<_type>& recvArray,                               \
             const CommunicationPlan& recvPlan,                      \
             const HArray<_type>& sendArray,                         \
             const CommunicationPlan& sendPlan ) const;              \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \
             HArray<_type>& haloValues,                              \

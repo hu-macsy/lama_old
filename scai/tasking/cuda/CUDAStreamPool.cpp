@@ -124,10 +124,12 @@ CUDAStreamPool::~CUDAStreamPool()
         SCAI_LOG_ERROR( logger, "Not all transfer streams for CUDA released (no delete of SyncToken)" )
     }
 
-    SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mComputeStream ), "cuStreamSynchronize for compute failed" )
-    SCAI_CUDA_DRV_CALL( cuStreamDestroy( mComputeStream ), "cuStreamDestroy for compute failed" )
-    SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mTransferStream ), "cuStreamSynchronize for transfer failed" )
-    SCAI_CUDA_DRV_CALL( cuStreamDestroy( mTransferStream ), "cuStreamDestroy for transfer failed" )
+    // Do not throw exceptions in destructor
+
+    SCAI_CUDA_DRV_CALL_NOTHROW( cuStreamSynchronize( mComputeStream ), "cuStreamSynchronize for compute failed" )
+    SCAI_CUDA_DRV_CALL_NOTHROW( cuStreamDestroy( mComputeStream ), "cuStreamDestroy for compute failed" )
+    SCAI_CUDA_DRV_CALL_NOTHROW( cuStreamSynchronize( mTransferStream ), "cuStreamSynchronize for transfer failed" )
+    SCAI_CUDA_DRV_CALL_NOTHROW( cuStreamDestroy( mTransferStream ), "cuStreamDestroy for transfer failed" )
 }
 
 bool CUDAStreamPool::isEmpty()
