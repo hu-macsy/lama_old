@@ -46,6 +46,7 @@ variables:
         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
         -DUSE_BOOST_TEST=$USE_BOOST_TEST
         -DCMAKE_BUILD_TYPE=$LAMA_BUILD_TYPE
+        -DSCAI_CMAKE_VERBOSE=1
         "$EXTRA_CMAKE_OPTS"
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
