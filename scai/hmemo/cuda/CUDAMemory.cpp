@@ -133,9 +133,10 @@ void* CUDAMemory::allocate( const size_t size ) const
     SCAI_ASSERT( size > 0, "should not call allocate for size = " << size )
     SCAI_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
     CUdeviceptr pointer = 0;
-    SCAI_CUDA_DRV_CALL(
+    SCAI_CUDA_DRV_CALL_EXCEPTION(
         cuMemAlloc( &pointer, size ),
-        "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " << mMaxAllocatedBytes + size << " bytes global memory."
+        "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " << mMaxAllocatedBytes + size << " bytes global memory.",
+        MemoryException
     )
     SCAI_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << ( ( void* ) pointer ) )
     mNumberOfAllocatedBytes += size;

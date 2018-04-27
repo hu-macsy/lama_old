@@ -85,7 +85,7 @@ COMMON_DLL_IMPORTEXPORT const char* cusolverErrorString( cusolverStatus_t res );
 
 /** Macro for CUDA driver API calls to catch errors */
 
-#define SCAI_CUDA_DRV_CALL( call, msg )                                             \
+#define SCAI_CUDA_DRV_CALL_EXCEPTION( call, msg, exception )                        \
     {                                                                               \
         CUresult res = call;                                                        \
         if ( CUDA_SUCCESS != res )                                                  \
@@ -99,7 +99,7 @@ COMMON_DLL_IMPORTEXPORT const char* cusolverErrorString( cusolverStatus_t res );
             errorStr << scai::common::cudaDriverErrorString( res );                 \
             errorStr << ", CUresult = " << res << "\n";                             \
             scai::common::Exception::addCallStack( errorStr );                      \
-            throw scai::common::CUDAException( errorStr.str() );                    \
+            throw exception( errorStr.str() );                                      \
         }                                                                           \
     }
 
@@ -118,6 +118,9 @@ COMMON_DLL_IMPORTEXPORT const char* cusolverErrorString( cusolverStatus_t res );
             scai::common::Exception::addCallStack( std::cerr );                     \
         }                                                                           \
     }
+
+#define SCAI_CUDA_DRV_CALL( call, msg )                                             \
+    SCAI_CUDA_DRV_CALL_EXCEPTION( call, msg, scai::common::CUDAException )
 
 #define SCAI_CUDA_RT_CALL(call, msg)                                                \
     {                                                                               \
