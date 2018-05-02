@@ -34,6 +34,15 @@
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE CUDATest
+#define BOOST_TEST_NO_MAIN
 
 #include <boost/test/unit_test.hpp>
+
+#include <scai/testsupport/hmemoTestMain.hpp>
+
+int main( int argc, char* argv[] )
+{
+    SCAI_LOG_THREAD( "main" )
+    return scai::testsupport::hmemoTestMain(argc, argv);
+}
 

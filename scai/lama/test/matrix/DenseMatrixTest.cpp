@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow1, ValueType, scai_fft_test_types )
 
     fft( res, x, dim, 4 );    // fft for each row
 
-    SCAI_LOG_ERROR( logger, "Result of fft : " << res )
+    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
 
     BOOST_CHECK_EQUAL( res.getNumRows(), 1 );
     BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );

@@ -63,6 +63,12 @@ NORMAL_TESTS = [
     Test('lamaStorageTest', [ 'lama/test/storage/lamaStorageTest' ], is_boost_test=True)
 ]
 
+GPU_ONLY_TESTS = [
+    Test('commonCUDATest', [ 'common/test/cuda/commonCUDATest' ], is_boost_test=True),
+    Test('taskingCUDATest', [ 'tasking/test/cuda/taskingCUDATest' ], is_boost_test=True),
+    Test('hmemoCUDATest', [ 'hmemo/test/cuda/hmemoCUDATest' ], is_boost_test=True)
+]
+
 MPI_TESTS = [
     Test('dmemoTest', [ 'dmemo/test/dmemoTest' ], is_boost_test=True),
     Test('lamaTest', [ 'lama/test/lamaTest' ], is_boost_test=True),
@@ -154,6 +160,9 @@ def run_mpi_tests(tests, output_dir, np, intel, temp_dir=None):
         failed_tests += failed
     return (passed_tests, failed_tests)
 
+def run_gpu_tests(tests, output_dir, temp_dir=None):
+    (passed_tests, failed_tests) = run_tests(tests, output_dir, temp_dir=temp_dir)
+    return (passed_tests, failed_tests)
 
 def test_exists(name):
     all_tests = NORMAL_TESTS + MPI_TESTS
@@ -167,6 +176,8 @@ def main():
                         help='The directory in which to store the standard output, test logs and test reports.')
     parser.add_argument('--temp_dir', dest='temp_dir', default=None,
                         help='The directory in which to store temporary files used by tests.')
+    parser.add_argument('--gpu', dest='gpu', action='store_true',
+                        help='Whether or not to run tests on GPU device.')
     parser.add_argument('--mpi', dest='mpi', action='store_true',
                         help='Whether or not to use MPI for MPI-enabled tests.')
     parser.add_argument('--intel', dest='intel', action='store_true',
@@ -215,9 +226,16 @@ def main():
     else:
         print("MPI tests not requested. Skipping ...")
 
-    all_tests = normal_passed + normal_failed + mpi_passed + mpi_failed
-    passed = normal_passed + mpi_passed
-    failed = normal_failed + mpi_failed
+    gpu_passed = []
+    gpu_failed = []
+    if args.gpu:
+        (gpu_passed, gpu_failed ) = run_gpu_tests(GPU_ONLY_TESTS, output_dir, temp_dir=args.temp_dir)
+    else:
+        print("GPU/Cuda tests not requested. Skipping ...")
+
+    all_tests = normal_passed + normal_failed + mpi_passed + mpi_failed + gpu_passed + gpu_failed
+    passed = normal_passed + mpi_passed + gpu_passed
+    failed = normal_failed + mpi_failed + gpu_failed
     all_tests_passed = len(failed) == 0
     result_label = PASSED if all_tests_passed else FAILED
     print()
