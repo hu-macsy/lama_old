@@ -38,8 +38,6 @@ scai_project (
 
     HEADERS
 
-        all
-
         Expression
 
         VectorExpressions
