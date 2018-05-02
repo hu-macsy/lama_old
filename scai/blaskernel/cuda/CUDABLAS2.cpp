@@ -143,10 +143,21 @@ void CUDABLAS2::geam(
 
     SCAI_CHECK_CUDA_ACCESS
 
+    if ( m == 0 || n == 0 )
+    {
+        return;    // important as call of geam might return an error 
+    }
+
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
                       "CUDABLAS2::geam set cublas kernel stream = " << stream );
+
+    SCAI_LOG_INFO( logger,
+                    "geam<" << TypeTraits<ValueType>::id() << "> with cuBLAS: "
+                     << "C ( " << m << " x " << n << ", ldc = " << ldc << " ) "
+                     << " = " << alpha << " * A ( lda = " << lda << " ) " << opA 
+                     << " + " << beta << " * B ( ldb = " << ldb << " ) " << opB )
 
     // we swap m and n as geam expects matrices in columns-major format
 
