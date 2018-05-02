@@ -36,7 +36,6 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 
 #include <iostream>
 #include <stdlib.h>

@@ -37,7 +37,6 @@
 #include "scai/lama.hpp"
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/norm/Norm.hpp>
 

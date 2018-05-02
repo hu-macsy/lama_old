@@ -42,6 +42,7 @@
 #include <scai/lama/expression/CastVectorExpression.hpp>
 #include <scai/lama/expression/ComplexVectorExpression.hpp>
 #include <scai/lama/expression/VectorExpressions.hpp>
+#include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 

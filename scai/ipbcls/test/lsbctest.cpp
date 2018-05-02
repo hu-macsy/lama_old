@@ -1,7 +1,6 @@
 
 #include <scai/ipbcls/ConstrainedLeastSquares.hpp>
 #include <scai/ipbcls/test/ConstrainedLeastSquaresProblem.hpp>
-#include <scai/lama/expression/all.hpp>
 
 #include <cstdlib>
 

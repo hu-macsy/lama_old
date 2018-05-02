@@ -37,8 +37,6 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
-// includes operators (+,*) for book syntax
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/solver/CG.hpp>
