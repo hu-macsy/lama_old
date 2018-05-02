@@ -603,8 +603,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
+
+BOOST_AUTO_TEST_CASE( ExpMMConstructorTest )
 {
+    typedef CSRSparseMatrix<ValueType> MatrixType;
+
     typedef typename MatrixType::StorageType StorageType;
 
     const IndexType n = 13;
@@ -636,6 +640,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
         unity.setIdentity( n );
 
         matrix1.redistribute( dist, repColDist );     // only row distribution
+
+        SCAI_LOG_ERROR( logger, "build new matrix from " << matrix1 << " * " << unity )
 
         auto matrix2 = eval<MatrixType>( matrix1 * unity );
 
