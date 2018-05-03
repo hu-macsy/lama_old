@@ -180,7 +180,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, HArray<ValueT
     Vector<ValueType>( distribution, context ),
     mLocalValues( std::move( localValues ) )
 {
-    SCAI_ASSERT_EQ_ERROR( localValues.size(), distribution->getLocalSize(), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( mLocalValues.size(), distribution->getLocalSize(), "size mismatch" )
 }
 
 /* ------------------------------------------------------------------------- */

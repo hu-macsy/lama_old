@@ -47,7 +47,6 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/fft.hpp>
 
 #include <scai/utilskernel.hpp>

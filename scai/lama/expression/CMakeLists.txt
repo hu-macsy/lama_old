@@ -28,7 +28,7 @@
  # @endlicense
  #
  # @brief lama/expression/CMakeLists.txt
- # @author Jan Ecker
+ # @author LAMA Team
  # @date 02.04.2013
 ###
 
@@ -37,8 +37,6 @@
 scai_project (
 
     HEADERS
-
-        all
 
         Expression
 

@@ -87,11 +87,15 @@ public:
      * recvValues and sendValues must both have a size of communicator size.
      * recvValues[i] on processor j contains sendValues[j] of processor i.
      */
-    virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
+    /** MPI Implementation for pure method Communciator::all2allImpl */
 
-    MPI_Request startrecv( void* buffer, int count, int source, common::ScalarType stype ) const;
+    void all2allImpl( void* recvBuffer, 
+                      const void* sendBuffer,
+                      const common::ScalarType stype ) const;
 
-    MPI_Request startsend( const void* buffer, int count, int target, common::ScalarType stype ) const;
+    MPI_Request startrecv( void* buffer, int count, int source, const common::ScalarType stype ) const;
+
+    MPI_Request startsend( const void* buffer, int count, int target, const common::ScalarType stype ) const;
 
     virtual void synchronize() const;
 
@@ -103,60 +107,60 @@ private:
 
     /** Implementation of Communicator::sumImpl */
 
-    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const;
+    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::minImpl */
 
-    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const;
+    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::maxImpl */
 
-    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const;
+    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::scanImpl */
 
-    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const;
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Translate SCAI project enum type ScalarType to MPI enum MPI_Datatype */
 
-    inline static MPI_Datatype getMPIType( common::ScalarType stype );
+    inline static MPI_Datatype getMPIType( const common::ScalarType stype );
 
     /** Translate SCAI project enum type ScalarType ( two types ) to MPI enum MPI_Datatype */
 
-    inline static MPI_Datatype getMPI2Type( common::ScalarType stype1, common::ScalarType stype2 );
+    inline static MPI_Datatype getMPI2Type( const common::ScalarType stype1, const common::ScalarType stype2 );
 
-    inline static MPI_Op getMPISum( common::ScalarType stype );
+    inline static MPI_Op getMPISum( const common::ScalarType stype );
 
-    inline static MPI_Op getMPIMin( common::ScalarType stype );
+    inline static MPI_Op getMPIMin( const common::ScalarType stype );
 
-    inline static MPI_Op getMPIMax( common::ScalarType stype );
+    inline static MPI_Op getMPIMax( const common::ScalarType stype );
 
     /** MPI implementation for pure method Communicator::bcastImpl */
 
-    void bcastImpl( void* val, const IndexType n, const PartitionId root, common::ScalarType stype ) const;
+    void bcastImpl( void* val, const IndexType n, const PartitionId root, const common::ScalarType stype ) const;
 
     /** MPI Implementation for pure method Communciator::all2allvImpl */
 
-    void all2allvImpl( void* recvBuffer[], IndexType recvCount[],
-                       void* sendBuffer[], IndexType sendCount[],
-                       common::ScalarType stype ) const;
+    void all2allvImpl( void* recvBuffer[], const IndexType recvCount[],
+                       const void* sendBuffer[], const IndexType sendCount[],
+                       const common::ScalarType stype ) const;
 
-    inline void send( const void* buffer, int count, int target, common::ScalarType stype ) const;
+    inline void send( const void* buffer, int count, int target, const common::ScalarType stype ) const;
 
-    inline int getCount( MPI_Status& status, common::ScalarType stype ) const;
+    inline int getCount( MPI_Status& status, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::scatterImpl */
 
-    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, common::ScalarType stype ) const;
+    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::scatterVImpl */
 
     void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
-                       const void* allVals, const IndexType sizes[], common::ScalarType stype ) const;
+                       const void* allVals, const IndexType sizes[], const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::gatherImpl */
 
-    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::ScalarType stype ) const;
+    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::gatherVImpl */
 
@@ -166,7 +170,7 @@ private:
         const PartitionId root,
         const void* myvals,
         const IndexType sizes[],
-        common::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::shiftImpl */
 
@@ -177,7 +181,7 @@ private:
         const void* oldVals,
         const IndexType oldSize,
         const PartitionId dest,
-        common::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::shiftAsyncImpl */
 
@@ -187,19 +191,19 @@ private:
         const void* oldVals,
         const PartitionId dest,
         const IndexType size,
-        common::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::swapImpl */
 
-    void swapImpl( void* val, const IndexType n, PartitionId partner, common::ScalarType stype ) const;
+    void swapImpl( void* val, const IndexType n, PartitionId partner, const common::ScalarType stype ) const;
 
-    void maxlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const;
+    void maxlocImpl( void* val, IndexType* location, PartitionId root, const common::ScalarType stype ) const;
 
-    void minlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const;
+    void minlocImpl( void* val, IndexType* location, PartitionId root, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::supportsLocReduction */
 
-    virtual bool supportsLocReduction( common::ScalarType vType, common::ScalarType iType ) const;
+    virtual bool supportsLocReduction( const common::ScalarType vType, const common::ScalarType iType ) const;
 
     /** Implementation of pure method Communicator::exchangeByPlanImpl */
 
@@ -295,7 +299,7 @@ private:
 /*              getMPIType                                                            */
 /* ---------------------------------------------------------------------------------- */
 
-inline MPI_Datatype MPICommunicator::getMPIType( common::ScalarType stype )
+inline MPI_Datatype MPICommunicator::getMPIType( const common::ScalarType stype )
 {
     switch ( stype )
     {
@@ -334,8 +338,9 @@ inline MPI_Datatype MPICommunicator::getMPIType( common::ScalarType stype )
 /*              getMPI2Type                                                           */
 /* ---------------------------------------------------------------------------------- */
 
-inline MPI_Datatype MPICommunicator::getMPI2Type( common::ScalarType stype1,
-        common::ScalarType stype2 )
+inline MPI_Datatype MPICommunicator::getMPI2Type( 
+    const common::ScalarType stype1,
+    const common::ScalarType stype2 )
 {
     if ( stype2 != common::ScalarType::INT )
     {
@@ -361,7 +366,7 @@ inline MPI_Datatype MPICommunicator::getMPI2Type( common::ScalarType stype1,
 /*              getMPISum                                                             */
 /* ---------------------------------------------------------------------------------- */
 
-inline MPI_Op MPICommunicator::getMPISum( common::ScalarType stype )
+inline MPI_Op MPICommunicator::getMPISum( const common::ScalarType stype )
 {
     if ( stype == common::ScalarType::LONG_DOUBLE_COMPLEX )
     {
@@ -381,7 +386,7 @@ inline MPI_Op MPICommunicator::getMPISum( common::ScalarType stype )
 /*              getMPIMax                                                             */
 /* ---------------------------------------------------------------------------------- */
 
-inline MPI_Op MPICommunicator::getMPIMax( common::ScalarType stype )
+inline MPI_Op MPICommunicator::getMPIMax( const common::ScalarType stype )
 {
     if ( common::isComplex( stype ) )
     {
@@ -395,7 +400,7 @@ inline MPI_Op MPICommunicator::getMPIMax( common::ScalarType stype )
 /*              getMPIMin                                                             */
 /* ---------------------------------------------------------------------------------- */
 
-inline MPI_Op MPICommunicator::getMPIMin( common::ScalarType stype )
+inline MPI_Op MPICommunicator::getMPIMin( const common::ScalarType stype )
 {
     if ( common::isComplex( stype ) )
     {

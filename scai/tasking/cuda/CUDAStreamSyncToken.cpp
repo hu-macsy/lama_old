@@ -73,20 +73,22 @@ void CUDAStreamSyncToken::wait()
         return;
     }
 
+    // Note: do not throw exceptions here
+
     SCAI_LOG_DEBUG( logger, "wait on CUDA stream synchronization" )
     {
         common::CUDAAccess tmpAccess( mCUDA );
 
         if ( mEvent != 0 )
         {
-            SCAI_CUDA_DRV_CALL( cuEventSynchronize( mEvent ), "cuEventSynchronize( " << mEvent << " ) failed." )
-            SCAI_CUDA_DRV_CALL( cuEventDestroy( mEvent ), "cuEventDestroy( " << mEvent << " ) failed." );
+            SCAI_CUDA_DRV_CALL_NOTHROW( cuEventSynchronize( mEvent ), "cuEventSynchronize( " << mEvent << " ) failed." )
+            SCAI_CUDA_DRV_CALL_NOTHROW( cuEventDestroy( mEvent ), "cuEventDestroy( " << mEvent << " ) failed." );
             mEvent = 0;
         }
         else
         {
             SCAI_LOG_DEBUG( logger, "synchronize with stream " << mStream );
-            SCAI_CUDA_DRV_CALL( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream << " ) failed." );
+            SCAI_CUDA_DRV_CALL_NOTHROW( cuStreamSynchronize( mStream ), "cuStreamSynchronize( " << mStream << " ) failed." );
             SCAI_LOG_DEBUG( logger, "synchronized with stream " << mStream );
         }
 

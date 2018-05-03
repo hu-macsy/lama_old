@@ -505,6 +505,13 @@ public:
         const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
+    /** 
+     *  @brief Override MatrixStorage<ValueType>::globalizeHaloIndexes 
+     *
+     *  This solution is more efficient as we need only update of the column data
+     */
+    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+
     /** Implementation of MatrixStorage::matrixPlusMatrix for ELL */
 
     virtual void matrixPlusMatrix(
@@ -535,17 +542,9 @@ public:
     virtual RealType<ValueType> maxNorm() const;
 
     /**
-     * @brief compress compresses this by removing non-diagonal elements that
-     *        are smaller than eps.
-     *
-     * compress compresses this by removing non-diagonal elements that are
-     * smaller than eps. compress has linear runtime. compress is used by
-     * CSRSparseMatrix Multiplication.
-     *
-     * @param[in] eps   the threshold to set a element of this to zero and
-     *                  remove it. (Default: 0.0)
+     * @brief Override default method MatrixStorage<ValueType>::compress with a more efficient one.
      */
-    void compress( const ValueType eps = 0.0 );
+    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
 
     /** Swap this ELL storage data with another ELL storage.
      *

@@ -85,22 +85,14 @@ Communicator::ThreadSafetyLevel NoCommunicator::getThreadSafetyLevel() const
     return Communicator::Multiple;
 }
 
-void NoCommunicator::all2all( IndexType recvValues[], const IndexType sendValues[] ) const
+void NoCommunicator::all2allImpl( void* recvBuffer, const void* sendBuffer, const common::ScalarType stype ) const
 {
-    recvValues[0] = sendValues[0];
+    // exchange one single element on a single processor
+
+    safer_memcpy( recvBuffer, sendBuffer, typeSize( stype ) );
 }
 
-void NoCommunicator::sumImpl( void* outData, const void* inData, const IndexType n, common::ScalarType stype ) const
-{
-    if ( outData == inData )
-    {
-        return;   // IN_PLACE
-    }
-
-    safer_memcpy( outData, inData, typeSize( stype ) * n );
-}
-
-void NoCommunicator::minImpl( void* outData, const void* inData, const IndexType n, common::ScalarType stype ) const
+void NoCommunicator::sumImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
 {
     if ( outData == inData )
     {
@@ -110,7 +102,7 @@ void NoCommunicator::minImpl( void* outData, const void* inData, const IndexType
     safer_memcpy( outData, inData, typeSize( stype ) * n );
 }
 
-void NoCommunicator::maxImpl( void* outData, const void* inData, const IndexType n, common::ScalarType stype ) const
+void NoCommunicator::minImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
 {
     if ( outData == inData )
     {
@@ -120,7 +112,17 @@ void NoCommunicator::maxImpl( void* outData, const void* inData, const IndexType
     safer_memcpy( outData, inData, typeSize( stype ) * n );
 }
 
-void NoCommunicator::scanImpl( void* outData, const void* inData, const IndexType n, common::ScalarType stype ) const
+void NoCommunicator::maxImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
+{
+    if ( outData == inData )
+    {
+        return;   // IN_PLACE
+    }
+
+    safer_memcpy( outData, inData, typeSize( stype ) * n );
+}
+
+void NoCommunicator::scanImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
 {
     if ( outData == inData )
     {
@@ -225,13 +227,22 @@ bool NoCommunicator::supportsLocReduction( common::ScalarType, common::ScalarTyp
 void NoCommunicator::bcastImpl( void*, const IndexType, const PartitionId root, common::ScalarType ) const
 {
     // Nothing to do as root is the only one processor
-    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "root can only be processor 0" )
 }
 
 /* ---------------------------------------------------------------------------------- */
 
-void NoCommunicator::all2allvImpl( void*[], IndexType[], void*[], IndexType[], common::ScalarType ) const
+void NoCommunicator::all2allvImpl( 
+    void* recvBuffer[], 
+    const IndexType recvSizes[], 
+    const void* sendBuffer[], 
+    const IndexType sendSizes[], 
+    const common::ScalarType stype ) const
 {
+    SCAI_ASSERT_EQ_ERROR( sendSizes[0], recvSizes[0], "serious mismatch" )
+
+    SCAI_LOG_INFO( logger, "all2allv<" << stype << ">, size = " << sendSizes[0] )
+    safer_memcpy( recvBuffer[0], sendBuffer[0], typeSize( stype ) * sendSizes[0] );
 }
 
 void NoCommunicator::scatterImpl(
@@ -241,6 +252,8 @@ void NoCommunicator::scatterImpl(
     const void* allVals,
     const common::ScalarType stype ) const
 {
+    SCAI_LOG_INFO( logger, "scatter<" << stype << ">, size = " << n << ", root = " << root )
+
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
     safer_memcpy( myVals, allVals, common::typeSize( stype ) * n );

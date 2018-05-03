@@ -35,7 +35,6 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/storage/DIAStorage.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/lama/norm/L2Norm.hpp>

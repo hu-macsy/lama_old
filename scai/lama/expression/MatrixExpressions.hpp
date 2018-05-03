@@ -33,7 +33,6 @@
  */
 #pragma once
 
-#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/expression/Expression.hpp>
 
 namespace scai

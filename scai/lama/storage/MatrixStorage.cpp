@@ -673,6 +673,38 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
+{
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    CSRStorage<ValueType>::compress( csrIA, csrJA, csrValues, keepDiagonal, eps, getContextPtr() );
+
+    setCSRData( getNumRows(), getNumColumns(), csrIA, csrJA, csrValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+{
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    halo.halo2Global( csrJA );
+
+    setCSRData( getNumRows(), globalNumColumns, csrIA, csrJA, csrValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::invert( const MatrixStorage<ValueType>& other )
 {
     SCAI_ASSERT_NE_ERROR( other.getFormat(), Format::DENSE, "default implementation relies on override for DenseStorage" )

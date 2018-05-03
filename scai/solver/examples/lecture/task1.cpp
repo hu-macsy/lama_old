@@ -38,7 +38,6 @@
 #include <scai/lama/matrix/MatrixAssembly.hpp>
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/VectorAssembly.hpp>
-#include <scai/lama/expression/all.hpp>
 
 #include <scai/solver/CG.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>

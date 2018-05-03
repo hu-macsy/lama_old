@@ -119,13 +119,13 @@ We have tested the installation of LAMA with various versions of the required an
 
 Nevertheless we encountered different problems, and here are some general advices:
 
-- CXX Compilers
+- CXX Compiler (support of C++11 standard)
 
   We have very good experience with all versions of the GNU C++ compiler suite and the Intel C++ compiler
   tools. We now require using compiler versions that support the C++11 features, i.e. GCC 4.8.1 or higher,
   or Intel C++ 15.0 or higher. In this case, Boost is no more mandatory that also avoids a lot of problems.
 
-- Boost
+- Boost (Version 1.61 or higher)
 
   Most Linux distributions come with a Boost installation that fits well the default GNU C++ compiler. 
   Generally speaking, the Boost library should have been built with the same compiler that is exploited for the
@@ -137,12 +137,12 @@ Nevertheless we encountered different problems, and here are some general advice
 
 .. code-block:: bash
 
-   tar xvfz boost_1_59_0.tar.gz 
-   cd boost_1_59_0
+   tar xvfz boost_1_61_0.tar.gz 
+   cd boost_1_61_0
    bootstrap.sh --prefix=$BOOST_ROOT --with-libraries=test
    ./b2
 
-- CUDA
+- CUDA (Version 7.0 or higher)
 
   Unfortunately the CUDA toolkit versions cannot keep up with the latest GNU C++ compiler or Intel compiler version.
   In this case, you have to install/use a previous compiler version. E.g. CUDA Version 8.0 does not support gcc versions

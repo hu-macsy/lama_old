@@ -1,5 +1,5 @@
 /**
- * @file expression/all.hpp
+ * @file CUDAException.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,12 +27,55 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Include file for all expression classes and operators for more convenient use
+ * @brief Definition of exception class that is thrown when an CUDA problem occurs.
  * @author Thomas Brandes
- * @date 21.05.2013
+ * @date 15.01.2018
  */
+#pragma once
 
-#include <scai/lama/expression/Expression.hpp>
-#include <scai/lama/expression/VectorExpressions.hpp>
-#include <scai/lama/expression/MatrixExpressions.hpp>
-#include <scai/lama/expression/MatrixVectorExpressions.hpp>
+// base class
+#include <scai/common/exception/Exception.hpp>
+
+// std
+#include <string>
+
+namespace scai
+{
+
+namespace common
+{
+
+/** Derived exception class for an exception that is thrown if any CUDA problem occurs. */
+
+class COMMON_DLL_IMPORTEXPORT CUDAException : public Exception
+{
+public:
+
+    /**
+     * @brief This constructor creates an CUDAException with the passed message.
+     *
+     * @param[in] message  the message to assign to this.
+     */
+    inline CUDAException( const std::string& message );
+
+    /**
+     * @brief The destructor destroys this CUDAException.
+     */
+    inline virtual ~CUDAException() throw ();
+};
+
+CUDAException::CUDAException( const std::string& message ) :
+
+    Exception( message )
+{
+    mMessage += "@CUDAException";
+}
+
+CUDAException::~CUDAException() throw ()
+{
+}
+
+} /* end namespace common */
+
+} /* end namespace scai */
+

@@ -74,7 +74,7 @@ const char* Exception::what() const throw ()
 
 #ifdef __GNUC__
 
-void Exception::addCallStack( std::ostringstream& output )
+void Exception::addCallStack( std::ostream& output )
 {
     const size_t maxDepth = 20;
     void* stackAddrs[maxDepth];
@@ -149,7 +149,7 @@ std::string Exception::demangle( const char* functionName )
 
 #else
 
-void Exception::addCallStack( std::ostringstream& )
+void Exception::addCallStack( std::ostream& )
 {
 }
 

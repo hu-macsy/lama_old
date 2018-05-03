@@ -54,9 +54,6 @@
 //include for using the NoDistribution
 #include <scai/dmemo/NoDistribution.hpp>
 
-//include the generic inner product functions of LAMA
-#include <scai/lama/expression/all.hpp>
-
 //include the generic norm functions of LAMA
 #include <scai/lama/norm/all.hpp>
 

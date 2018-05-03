@@ -1182,7 +1182,7 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
+void ELLStorage<ValueType>::compress( const RealType<ValueType> eps, const bool keepDiagonal )
 {
     SCAI_LOG_INFO( logger, "compress: eps = " << eps )
 
@@ -1202,7 +1202,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
         ReadAccess<ValueType> values( mValues, loc );
         // 1. Step: Check for 0 elements and write new IA array
         WriteOnlyAccess<IndexType> newIA( newIAArray, loc, getNumRows() );
-        compressIA[loc]( IA.get(), JA.get(), values.get(), getNumRows(), mNumValuesPerRow, eps, newIA.get() );
+        compressIA[loc]( newIA.get(), IA.get(), JA.get(), values.get(), getNumRows(), mNumValuesPerRow, eps, keepDiagonal );
         // 2. Step: compute length of longest row
         newNumValuesPerRow = reduce[ loc ]( newIA.get(), getNumRows(), 0, common::BinaryOp::MAX );
     }
@@ -1226,13 +1226,13 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
             WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, getNumRows() * newNumValuesPerRow );
             WriteOnlyAccess<IndexType> newJA( newJAArray, loc, getNumRows() * newNumValuesPerRow );
             // 4. Step: Compute new JA and Values array
-            compressValues[loc]( IA.get(), JA.get(), values.get(), getNumRows(), mNumValuesPerRow, eps, newNumValuesPerRow,
-                                 newJA.get(), newValues.get() );
+            compressValues[loc]( newJA.get(), newValues.get(), newNumValuesPerRow,
+                                 IA.get(), JA.get(), values.get(), getNumRows(), mNumValuesPerRow, eps, keepDiagonal );
         }
 
-        mIA.swap( newIAArray );
-        mJA.swap( newJAArray );
-        mValues.swap( newValuesArray );
+        mIA = std::move( newIAArray );
+        mJA = std::move( newJAArray );
+        mValues = std::move( newValuesArray );
         mNumValuesPerRow = newNumValuesPerRow;
     }
 }
@@ -1693,6 +1693,16 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
                              haloValues.get(), NULL, numNonEmptyRows, rOldHaloSolution.get(), omega );
         }
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+{   
+    halo.halo2Global( mJA );
+    _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
+    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

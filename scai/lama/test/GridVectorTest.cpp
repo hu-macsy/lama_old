@@ -84,12 +84,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
 {
+    if ( !FileIO::canCreate( ".mat" ) )
+    {
+        // Matlab IO might be disabled if no zlib was available
+        return;
+    }
+
     const IndexType n1 = 5;
     const IndexType n2 = 3;
     const IndexType n3 = 2;
     const IndexType n4 = 4;
 
     // Matlab binary format supports io of grids
+    
     const auto comm = scai::dmemo::Communicator::getCommunicatorPtr();
     const auto fileName = uniquePathSharedAmongNodes(GlobalTempDir::getPath(), *comm, "tmpGrid") + ".mat";
 
