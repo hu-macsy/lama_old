@@ -944,11 +944,21 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Communicator::all2allv( ValueType* recvVal[], IndexType recvCount[],
-                             ValueType* sendVal[], IndexType sendCount[] ) const
+void Communicator::all2all( ValueType recvValues[], const ValueType sendValues[] ) const
 {
-    all2allvImpl( reinterpret_cast<void**>( recvVal ), recvCount,
-                  reinterpret_cast<void**>( sendVal ), sendCount,
+    all2allImpl( reinterpret_cast<void*>( recvValues ),
+                 reinterpret_cast<const void*>( sendValues ), 
+                 common::TypeTraits<ValueType>::stype );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::all2allv( ValueType* recvBuffer[], const IndexType recvCount[],
+                             const ValueType* sendBuffer[], const IndexType sendCount[] ) const
+{
+    all2allvImpl( reinterpret_cast<void**>( recvBuffer ), recvCount,
+                  reinterpret_cast<const void**>( sendBuffer ), sendCount,
                   common::TypeTraits<ValueType>::stype );
 }
 
@@ -1033,8 +1043,8 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
 template<typename ValueType>
 void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    common::ScalarType vType = common::TypeTraits<ValueType>::stype;
-    common::ScalarType iType = common::TypeTraits<IndexType>::stype;
+    const common::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    const common::ScalarType iType = common::TypeTraits<IndexType>::stype;
 
     if ( supportsLocReduction( vType, iType ) )
     {
@@ -1071,8 +1081,8 @@ void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionI
 template<typename ValueType>
 void Communicator::minloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    common::ScalarType vType = common::TypeTraits<ValueType>::stype;
-    common::ScalarType iType = common::TypeTraits<IndexType>::stype;
+    const common::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    const common::ScalarType iType = common::TypeTraits<IndexType>::stype;
 
     if ( supportsLocReduction( vType, iType ) )
     {
@@ -1305,9 +1315,15 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
             const Halo& halo ) const;                               \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::all2all(                                     \
+            _type recvValues[],                                     \
+            const _type sendValues[] ) const;                       \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::all2allv(                                    \
-            _type* recvVal[], IndexType recvCount[],                \
-            _type* sendVal[], IndexType sendCount[] ) const;        \
+            _type* recvVal[], const IndexType recvCount[],          \
+            const _type* sendVal[],                                 \
+            const IndexType sendCount[] ) const;                    \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::exchangeByPlan(                              \

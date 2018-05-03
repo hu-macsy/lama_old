@@ -378,16 +378,19 @@ void MPICommunicator::send( const void* buffer, int count, int target, common::S
 
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[] ) const
+void MPICommunicator::all2allImpl( void* recvValues, const void* sendValues, common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.all2all" )
-    SCAI_ASSERT_ERROR( sendSizes != 0, " invalid sendSizes " )
-    SCAI_ASSERT_ERROR( recvSizes != 0, " invalid recvSizes " )
-    // MPI is not const-aware so we have to use a const_cast on sendSizes
-    MPI_Datatype commType = getMPIType( common::TypeTraits<IndexType>::stype );
+
+    SCAI_ASSERT_ERROR( sendValues != NULL, "invalid sendValues" )
+    SCAI_ASSERT_ERROR( recvValues != NULL, "invalid recvValues" )
+
+    MPI_Datatype commType = getMPIType( stype );
+
+    // MPI is not const-aware so we have to use a const_cast on sendValues
+
     SCAI_MPICALL( logger,
-                  MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes,
-                                1, commType, selectMPIComm() ),
+                  MPI_Alltoall( const_cast<void*>( sendValues ), 1, commType, recvValues, 1, commType, selectMPIComm() ),
                   "MPI_Alltoall" )
 }
 
@@ -600,8 +603,8 @@ void MPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
 /*           all2allv                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[],
-                                    void* sendBuffer[], IndexType sendCount[],
+void MPICommunicator::all2allvImpl( void* recvBuffer[], const IndexType recvCount[],
+                                    const void* sendBuffer[], const IndexType sendCount[],
                                     common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.all2allv" )
