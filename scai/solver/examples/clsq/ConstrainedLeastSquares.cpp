@@ -76,7 +76,7 @@ bool isInterior( const DenseVector<double>& x,
                  const DenseVector<double>& lb,
                  const DenseVector<double>& ub )
 {
-    return x.all( common::binary::LT, ub ) && x.all( common::binary::GT, lb );
+    return x.all( common::CompareOp::LT, ub ) && x.all( common::CompareOp::GT, lb );
 }
 
 void ConstrainedLeastSquares::dualityGap( 
@@ -112,7 +112,7 @@ void ConstrainedLeastSquares::dualityGap(
          mu = ( -1 ) * kappa * mA;
     }
 
-    mu.setScalar( Scalar( 0 ), common::binary::MAX );
+    mu.setScalar( Scalar( 0 ), common::BinaryOp::MAX );
 
     Scalar sDualObj = - kappa.dotProduct( kappa ) * 0.25  - kappa.dotProduct( b_s ) - mu.dotProduct( u_s );
     Scalar sGap = res.dotProduct( res ) - sDualObj;
@@ -306,7 +306,7 @@ void ConstrainedLeastSquares::computeSearchDirection(
 
     mDiagonalMatrix.setDiagonal( diagonal );
 
-    common::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
+    std::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
 
     preconditioner->initialize( mDiagonalMatrix );
 
@@ -409,7 +409,7 @@ void ConstrainedLeastSquares::solve(
 
     // diagATA = sum(A .* A)';
 
-    mA.reduce( mDiagATA, 1, common::binary::ADD, common::unary::SQR );
+    mA.reduce( mDiagATA, 1, common::BinaryOp::ADD, common::unary::SQR );
 
     SCAI_ASSERT_EQ_ERROR( mDiagATA.size(), n, "serious mismatch" )
 

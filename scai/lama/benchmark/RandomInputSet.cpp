@@ -87,11 +87,13 @@ RandomInputSet::RandomInputSet( const std::string argument ) :
 
     SCAI_LOG_INFO( logger, "col dist = " << *colDistribution )
 
-    mX.reset( new lama::DenseVector<double>( colDistribution, 1.0 ) );
+    mX.reset( new lama::DenseVector<double>() );
+    mX->setSameValue( colDistribution, 1.0 );
 
     SCAI_LOG_INFO( logger, "mX = " << *mX )
 
-    mY.reset( new lama::DenseVector<double>( *mA * *mX ) );
+    mY.reset( new lama::DenseVector<double>() );
+    *mY = *mA * *mX;
 
     SCAI_LOG_INFO( logger, "created input set: A = " << *mA << ", X = " << *mX << ", Y = " << *mY );
 }

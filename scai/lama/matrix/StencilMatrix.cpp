@@ -41,12 +41,14 @@
 #include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
-#include <scai/common/shared_ptr.hpp>
+
+#include <memory>
+
+using std::shared_ptr;
 
 namespace scai
 {
 
-using common::shared_ptr;
 using common::Stencil;
 using namespace dmemo;
 
@@ -61,23 +63,13 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, StencilMatrix<ValueT
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-StencilMatrix<ValueType>::StencilMatrix()
-
-    : SparseMatrix<ValueType>()
+StencilMatrix<ValueType>::StencilMatrix() : SparseMatrix<ValueType>()
 
 {
     SCAI_LOG_INFO( logger, "create default stencil matrix" )
 
-    common::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>() );
-    common::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
-
-    haloData->allocate( localData->getNumRows(), 0 );
-
-    DistributionPtr dist( new NoDistribution( localData->getNumRows() ) );
-
-    Halo halo;
-
-    this->set( localData, haloData, halo, dist, dist );
+    mLocalData.reset( new StencilStorage<ValueType>() );
+    mHaloData.reset( new CSRStorage<ValueType>() );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -85,28 +77,26 @@ StencilMatrix<ValueType>::StencilMatrix()
 template<typename ValueType>
 void StencilMatrix<ValueType>::define( const common::Grid& grid, const Stencil<ValueType>& stencil )
 {
+    const IndexType N = grid.size();   // shape of matrix is N x N
+
+    _Matrix::setReplicatedMatrix( grid.size(), grid.size() );
+
     SCAI_LOG_INFO( logger, "create stencil matrix, grid = " << grid << ", stencil = " << stencil )
 
-    common::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>( grid, stencil ) );
-    common::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
-
-    haloData->allocate( localData->getNumRows(), 0 );
-
-    DistributionPtr dist( new NoDistribution( localData->getNumRows() ) );
-
-    Halo halo;
-
-    this->set( localData, haloData, halo, dist, dist );
+    mLocalData.reset( new StencilStorage<ValueType>( grid, stencil ) );
+    mHaloData.reset( new CSRStorage<ValueType>() );
+    mHaloData->allocate( N, 0 );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil<ValueType>& stencil )
+StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil<ValueType>& stencil ) : 
 
-    : SparseMatrix<ValueType>()
+    SparseMatrix<ValueType>()
 
 {
+    // own method needed as halo storage will be of CSR format
     define( grid, stencil );
 }
 
@@ -136,7 +126,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
 
     // get the offsets of the stencil points in the global grid 
 
-    common::scoped_array<int> stencilOffsets( new int[ stencil.nPoints() ] );
+    std::unique_ptr<int[]> stencilOffsets( new int[ stencil.nPoints() ] );
     stencil.getLinearOffsets( stencilOffsets.get(), globalGridDistances );
 
     {
@@ -180,7 +170,7 @@ void StencilMatrix<ValueType>::define( dmemo::DistributionPtr dist, const Stenci
   
     SCAI_ASSERT_ERROR( gridDist, "not grid distribution: dist = " << *dist )
 
-    Matrix::setDistributedMatrix( dist, dist );
+    _Matrix::setDistributedMatrix( dist, dist );
 
     // const common::Grid& globalGrid = gridDist->getGlobalGrid();
     const common::Grid& localGrid  = gridDist->getLocalGrid();
@@ -293,6 +283,64 @@ template<typename ValueType>
 StencilMatrix<ValueType>* StencilMatrix<ValueType>::copy() const
 {
     return new StencilMatrix<ValueType>( *this );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilMatrix<ValueType>::StencilMatrix( StencilMatrix&& other ) noexcept :
+
+    SparseMatrix<ValueType>()
+{
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilMatrix<ValueType>&  StencilMatrix<ValueType>::operator=( const StencilMatrix& other )
+{
+    SparseMatrix<ValueType>::operator=( other );
+    return *this;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilMatrix<ValueType>&  StencilMatrix<ValueType>::operator=( StencilMatrix&& other )
+{
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
+    return *this;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
+{
+    if ( getColDistribution().isReplicated() )
+    {
+        // copy local storage with format / value conversion
+        storage = *mLocalData;
+    }
+    else
+    {
+        // temporary local storage with joined columns needed before
+
+        bool keepDiagonalProperty = true;
+
+        if ( storage.getValueType() == getValueType() )
+        {
+            MatrixStorage<ValueType>& typedStorage = static_cast<MatrixStorage<ValueType>&>( storage );
+            typedStorage.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
+        }     
+        else
+        {
+            CSRStorage<ValueType> tmp; 
+            tmp.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
+            storage = tmp;
+        }
+    }
 }
 
 /* -------------------------------------------------------------------------- */

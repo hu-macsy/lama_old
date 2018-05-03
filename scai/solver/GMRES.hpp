@@ -41,8 +41,7 @@
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/IterativeSolver.hpp>
 
-// internal scai libraries
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -54,9 +53,11 @@ namespace solver
  * @brief The class GMRES represents a IterativeSolver which uses the krylov subspace GMRES method
  *        to solve a system of linear equations iteratively.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT GMRES:
-    public IterativeSolver,
-    public Solver::Register<GMRES>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<GMRES<ValueType> >
 {
 public:
 
@@ -82,9 +83,9 @@ public:
 
     virtual ~GMRES();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
-    void setKrylovDim( unsigned int krylovDim );
+    void setKrylovDim( IndexType krylovDim );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -92,38 +93,40 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual GMRES<ValueType>* copy();
 
-    struct GMRESRuntime: IterativeSolverRuntime
+    /** Runtime data for the GMRES solver.
+     *
+     *  Most data strucures are arrays of size krylovDim + 1, all are implemented
+     *  via unique_ptr to guarantee correct delete in the destructor.
+     */
+    struct GMRESRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        GMRESRuntime();
-        virtual ~GMRESRuntime();
-
         // arrays to store rotations
-        common::scoped_array<double> mCC;
-        common::scoped_array<double> mSS;
+        std::vector<ValueType> mCC;
+        std::vector<ValueType> mSS;
 
         // array for Hessenberg equation
         // H*y=g
-        common::scoped_array<double> mG;
-        common::scoped_array<double> mY;
+        std::vector<ValueType> mG;
+        std::vector<ValueType> mY;
 
         // Hessenberg matrix
         // mH:  Upper triangular (columnwise)
         // mHd: diagonal band h(i+1,i)
-        common::scoped_array<double> mH;
-        common::scoped_array<double> mHd;
+        std::vector<ValueType> mH;
+        std::vector<ValueType> mHd;
 
-        // krylov space
-        std::vector<lama::Vector*>* mV;
+        // krylov space, vector of (unique) vector pointers
+        std::vector<std::unique_ptr<lama::Vector<ValueType>>> mV;
 
         // temp-arrays
-        lama::Vector* mW;
-        lama::Vector* mT;
+        std::unique_ptr<lama::Vector<ValueType>> mW;
+        std::unique_ptr<lama::Vector<ValueType>> mT;
 
         // remember starting solution
         // only needed if x is modified within krylov loop
-        lama::Vector* mX0;
+        std::unique_ptr<lama::Vector<ValueType>> mX0;
     };
 
     /**
@@ -134,13 +137,15 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const GMRESRuntime& getConstRuntime() const;
+    virtual const GMRESRuntime& getRuntime() const;
 
-    double getAverageIterationTime() const;
-    double getAveragePreconditionerTime() const;
+    // static method that delivers the key for registration in solver factor
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
@@ -150,6 +155,8 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
+    using IterativeSolver<ValueType>::mPreconditioner;
+
 private:
 
     /**
@@ -157,13 +164,10 @@ private:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-    void updateX( unsigned int i );
+    void updateX( IndexType i );
 
     // krylov dimension
-    unsigned int mKrylovDim;
-
-    double totalIterationTime;
-    double totalPreconditionerTime;
+    IndexType mKrylovDim;
 };
 
 } /* end namespace solver */

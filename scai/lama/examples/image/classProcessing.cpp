@@ -43,10 +43,12 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 
 using namespace scai;
 using namespace lama;
+
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -67,7 +69,7 @@ int main( int argc, const char* argv[] )
 
     // read in the image file, must be a png/bmp file
 
-    GridVector<float> image;   // size will be ( width , height, ncolors )
+    GridVector<ValueType> image;   // size will be ( width , height, ncolors )
 
     std::cout << "read image as grid vector : " << image << std::endl;
 
@@ -80,35 +82,35 @@ int main( int argc, const char* argv[] )
 
     SCAI_ASSERT_EQ_ERROR( 3, grid.size( 2 ), "not RGB pixels" );
 
-    GridVector<float> dist ( common::Grid2D( height, width ), 0.0f );
+    GridVector<ValueType> dist ( common::Grid2D( height, width ), 0.0f );
 
     // define the color to be used for classification 
 
-    const float classColor[][3] = { { 0, 128, 128 }, { 128, 0, 128 }, { 128, 128, 0 },
+    const ValueType classColor[][3] = { { 0, 128, 128 }, { 128, 0, 128 }, { 128, 128, 0 },
                                     { 0, 128, 0 }, { 128, 0, 0}, { 0, 0, 128 } };
 
-    IndexType nClassColors = sizeof( classColor ) / ( 3 * sizeof( float ) );
+    IndexType nClassColors = sizeof( classColor ) / ( 3 * sizeof( ValueType ) );
 
-    GridVector<float> classImage( grid, 0 );
+    GridVector<ValueType> classImage( grid, 0 );
 
     // Idea: set for each pixel the classification color that is the closest
 
     std::cout << "Class image = " << classImage << std::endl;
 
     {
-        GridWriteAccess<float> wClass( classImage );
-        GridReadAccess<float> rImage( image );
-        GridWriteAccess<float> wDist( dist );
+        GridWriteAccess<ValueType> wClass( classImage );
+        GridReadAccess<ValueType> rImage( image );
+        GridWriteAccess<ValueType> wDist( dist );
 
         for ( IndexType i = 0; i < height; i++ )
         {
             for ( IndexType j = 0; j < width; j++ )
             {
-               float dist = 0.0;  // distance of image(i,j) to classColor[0] 
+               ValueType dist = 0.0;  // distance of image(i,j) to classColor[0] 
 
                for ( IndexType c = 0; c < 3; ++c )
                {
-                   float diff = classColor[0][c] - rImage( i, j, c );
+                   ValueType diff = classColor[0][c] - rImage( i, j, c );
                    dist += diff * diff;
                }
 
@@ -134,19 +136,19 @@ int main( int argc, const char* argv[] )
 
     for ( IndexType k = 1; k < nClassColors; ++k )
     {
-        GridWriteAccess<float> wClass( classImage );
-        GridReadAccess<float> rImage( image );
-        GridWriteAccess<float> wDist( dist );
+        GridWriteAccess<ValueType> wClass( classImage );
+        GridReadAccess<ValueType> rImage( image );
+        GridWriteAccess<ValueType> wDist( dist );
 
         for ( IndexType i = 0; i < height; i++ )
         {
             for ( IndexType j = 0; j < width; j++ )
             {
-               float dist = 0.0;
+               ValueType dist = 0.0;
 
                for ( IndexType c = 0; c < 3; ++c )
                {
-                   float diff = classColor[k][c] - rImage( i, j, c );
+                   ValueType diff = classColor[k][c] - rImage( i, j, c );
                    dist += diff * diff;
                }
 
@@ -168,13 +170,13 @@ int main( int argc, const char* argv[] )
     {
         // apply edge detection
 
-        float edge_pattern[9] = { 0, -1, 0, -1, 4, -1, 0, -1, 0 };
+        ValueType edge_pattern[9] = { 0, -1, 0, -1, 4, -1, 0, -1, 0 };
 
-        common::Stencil3D<float> stencil( 3, 3, 1, edge_pattern );
+        common::Stencil3D<ValueType> stencil( 3, 3, 1, edge_pattern );
 
-        StencilMatrix<float> edgeIt( image.getDistributionPtr(), stencil );
+        StencilMatrix<ValueType> edgeIt( image.getDistributionPtr(), stencil );
 
-        GridVector<float> imageNew;
+        GridVector<ValueType> imageNew;
 
         imageNew = edgeIt * classImage;
 

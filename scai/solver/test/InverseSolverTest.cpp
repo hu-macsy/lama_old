@@ -52,18 +52,21 @@
 #include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
+#include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <scai/solver/logger/CommonLogger.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
+using namespace scai;
+using namespace lama;
+using namespace solver;
+using namespace hmemo;
+using namespace dmemo;
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -73,48 +76,55 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.InverseSolverTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    InverseSolver InverseSolverSolver( "InverseSolverSolver", slogger );
-    BOOST_CHECK_EQUAL( InverseSolverSolver.getId(), "InverseSolverSolver" );
-    InverseSolver InverseSolverSolver2( "InverseSolverSolver2" );
-    BOOST_CHECK_EQUAL( InverseSolverSolver2.getId(), "InverseSolverSolver2" );
-    InverseSolver InverseSolverSolver3( InverseSolverSolver2 );
-    BOOST_CHECK_EQUAL( InverseSolverSolver3.getId(), "InverseSolverSolver2" );
+    InverseSolver<ValueType> solver1( "InverseSolver", slogger );
+    BOOST_CHECK_EQUAL( solver1.getId(), "InverseSolver" );
+    InverseSolver<ValueType> solver2( "solver2" );
+    BOOST_CHECK_EQUAL( solver2.getId(), "solver2" );
+    InverseSolver<ValueType> solver3( solver2 );
+    BOOST_CHECK_EQUAL( solver3.getId(), "solver2" );
 }
+
 // ---------------------------------------------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types )
 {
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get4x4SystemA<ValueType>();
     const IndexType n = 4;
-    DenseVector<ValueType> solution( n, 1.0 );
-    DenseVector<ValueType> solution2( n, 1.0 );
+
+    auto solution  = fill<DenseVector<ValueType>>( n, 1 );
+    auto solution2 = fill<DenseVector<ValueType>>( n, 1 );
+
     std::string s = "DataType";
-    InverseSolver inverseSolver( "InverseSolverTest<" + s + "> solver" );
+
+    InverseSolver<ValueType> inverseSolver( "InverseSolverTest<" + s + "> solver" );
+
     // DenseMatrix<ValueType> inverse = DenseMatrix<ValueType>( system.coefficients );
-    DenseMatrix<ValueType> origin = DenseMatrix<ValueType>( system.coefficients );
-    DenseMatrix<ValueType> result = DenseMatrix<ValueType>( system.coefficients );
+
+    auto origin = convert<DenseMatrix<ValueType>>( system.coefficients );
+    auto result = convert<DenseMatrix<ValueType>>( system.coefficients );
+
     inverseSolver.initialize( origin );
-    const Matrix& inverse = inverseSolver.getInverse();
+    const Matrix<ValueType>& inverse = inverseSolver.getInverse();
     origin.matrixTimesMatrix( result, 1.0, inverse, 0.0, result );
 
-    typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
+    auto eps = common::TypeTraits<ValueType>::small();
 
     for ( IndexType i = 0; i < n; ++i )
     {
         for ( IndexType j = 0; j < n; ++j )
         {
-            Scalar scalar = result.getValue( i, j );
+            ValueType scalar = result.getValue( i, j );
 
             if ( i == j )
             {
-                SCAI_CHECK_CLOSE( 1.0, scalar.getValue<AbsType>(), 1 );
+                BOOST_CHECK( common::Math::abs( scalar - 1 ) < eps  );
             }
             else
             {
-                BOOST_CHECK( scalar.getValue<AbsType>() < 1E-6 );
+                BOOST_CHECK( common::Math::abs( scalar ) < eps  );
             }
         }
     }
@@ -132,32 +142,37 @@ BOOST_AUTO_TEST_CASE( SolveTest )
     const IndexType N1 = 10;
     const IndexType N2 = 10;
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-    CSRSparseMatrix<ValueType> coefficients;
-    coefficients.setContextPtr( context );
+
+    CSRSparseMatrix<ValueType> coefficients( context );
+
     MatrixCreator::buildPoisson2D( coefficients, 9, N1, N2 );
+
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
     SCAI_LOG_INFO( logger, "InverseTest uses context = " << context->getType() );
-    DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
-    DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
+
+    auto rowDist = std::make_shared<BlockDistribution>( coefficients.getNumRows(), comm );
+    auto colDist = std::make_shared<BlockDistribution>( coefficients.getNumColumns(), comm );
+
     coefficients.redistribute( rowDist, colDist );
+
     const ValueType solutionInitValue = 1.0;
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
-    // TODO: use constructor to set context
-    solution.setContextPtr( context );
-    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );
-    // TODO: use constructor to set context
-    exactSolution.setContextPtr( context );
-    DenseVector<ValueType> rhs( coefficients * exactSolution );
+
+    auto solution      = fill<DenseVector<ValueType>>( colDist, solutionInitValue, context );
+    auto exactSolution = fill<DenseVector<ValueType>>( colDist, solutionInitValue + 1.0, context );
+    auto rhs           = eval<DenseVector<ValueType>>( coefficients * exactSolution, context );
+
     IndexType maxExpectedIterations = 3000;
-    CriterionPtr criterion( new IterationCount( maxExpectedIterations ) );
-    SolverPtr solver ( Solver::create( "InverseSolver", "" ) );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( maxExpectedIterations ) );
+    SolverPtr<ValueType> solver ( Solver<ValueType>::getSolver( "InverseSolver" ) );
     solver->initialize( coefficients );
     solver->solve( solution, rhs );
-    DenseVector<ValueType> diff( solution - exactSolution );
-    Scalar s                  = maxNorm( diff );
-    ValueType realMaxNorm     = s.getValue<ValueType>();
-    ValueType expectedMaxNorm = 1E-4;
-    SCAI_LOG_INFO( logger, "maxNorm of diff = " << s << " = ( solution - exactSolution ) = " << realMaxNorm );
+    auto diff = eval<DenseVector<ValueType>>( solution - exactSolution );
+
+    auto realMaxNorm = maxNorm( diff );                // norm returns RealType<ValueType>
+    decltype( realMaxNorm) expectedMaxNorm = 1E-4;
+
+    SCAI_LOG_INFO( logger, "maxNorm of diff ( solution - exactSolution ) = " << realMaxNorm );
+
     BOOST_CHECK( realMaxNorm < expectedMaxNorm );
 }
 

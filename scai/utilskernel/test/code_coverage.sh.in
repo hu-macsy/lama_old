@@ -57,16 +57,9 @@ then
     count_error ./utilskernelTest --SCAI_CONTEXT=CUDA >/dev/null
 fi
 
-if [ -d ../mic ];
-then
-    #Running common MIC tests
-    echo "Running utilskernel tests on MIC"
-    count_error ./utilskernelTest --SCAI_CONTEXT=MIC >/dev/null
-fi
-
 exit_on_failure ${error_count}
 
-do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@/@MODULE_NAME@"
 
 exit_on_failure $?
 

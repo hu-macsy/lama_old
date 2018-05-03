@@ -44,14 +44,7 @@ namespace solver
  * @brief Contains an enumeration which identifies whether a logger
  *        logs its messages to the console only or to a file and the console
  */
-namespace LoggerWriteBehaviour
-{
-
-/**
- * @brief Enumeration identifying whether a logger logs its messages to
- *        the console and a file or to the console only
- */
-enum LoggerWriteBehaviour
+enum class LoggerWriteBehaviour
 {
     /**
      * @brief Log messages will be written to standard out only.
@@ -69,7 +62,35 @@ enum LoggerWriteBehaviour
     toFileAndConsole
 };
 
-} /* end namespace LoggerWriteBehaviour */
+/*
+ * Output of LoggerWriteBehaviour in stream by writing strings instead of numbers
+ *
+ */
+inline std::ostream& operator<<( std::ostream& stream, const LoggerWriteBehaviour& object )
+{
+    switch ( object )
+    {
+        case LoggerWriteBehaviour::toConsoleOnly:
+
+            stream << "toConsoleOnly";
+            break;
+
+        case LoggerWriteBehaviour::toFileOnly:
+
+            stream << "toFileOnly";
+            break;
+ 
+        case LoggerWriteBehaviour::toFileAndConsole:
+
+            stream << "toFileOnly";
+            break;
+
+        default:
+            stream << "UNKNOWN";
+    }
+
+    return stream;
+}
 
 } /* end namespace solver */
 

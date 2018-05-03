@@ -37,12 +37,13 @@
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/CompareOp.hpp>
 #include <scai/common/UnaryOp.hpp>
 
 namespace scai
 {
 
-/** Namespace for utilities on heterogeneous arrays (HArray) and derived class LArray */
+/** Namespace for utilities on heterogeneous arrays (HArray) */
 
 namespace utilskernel
 {
@@ -94,7 +95,7 @@ struct UtilKernelTrait
         typedef ValueType ( *FuncType ) ( const ValueType array[],
                                           const IndexType n,
                                           const ValueType zero,
-                                          const common::binary::BinaryOp op );
+                                          const common::BinaryOp op );
         static const char* getId()
         {
             return "Util.reduce";
@@ -122,9 +123,9 @@ struct UtilKernelTrait
         typedef ValueType ( *FuncType ) ( const ValueType array1[],
                                           const ValueType array2[],
                                           const IndexType n,
-                                          const common::binary::BinaryOp binop,
+                                          const common::BinaryOp binop,
                                           const ValueType zero,
-                                          const common::binary::BinaryOp redop );
+                                          const common::BinaryOp redop );
         static const char* getId()
         {
             return "Util.reduce2";
@@ -137,7 +138,7 @@ struct UtilKernelTrait
         typedef bool ( *FuncType ) ( const ValueType array1[],
                                      const ValueType array2[],
                                      const IndexType n,
-                                     const common::binary::CompareOp op );
+                                     const common::CompareOp op );
         static const char* getId()
         {
             return "Util.allCompare";
@@ -150,7 +151,7 @@ struct UtilKernelTrait
         typedef bool ( *FuncType ) ( const ValueType array[],
                                      const ValueType scalar,
                                      const IndexType n,
-                                     const common::binary::CompareOp op );
+                                     const common::CompareOp op );
         static const char* getId()
         {
             return "Util.allCompareScalar";
@@ -168,7 +169,7 @@ struct UtilKernelTrait
          *  @returns true iff \f$ a[i] \le a[i+1] \f$ (ascending=true) or \f$ a[i] \ge a[i+1] \f$ (ascending=false)
          */
 
-        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, const common::binary::CompareOp op );
+        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, const common::CompareOp op );
         static const char* getId()
         {
             return "Util.isSorted";
@@ -187,7 +188,7 @@ struct UtilKernelTrait
          *  A binary operator like ADD, MULT can be used to combine the new value with the old value.
          */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const common::binary::BinaryOp op );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const common::BinaryOp op );
         static const char* getId()
         {
             return "Util.setVal";
@@ -245,7 +246,7 @@ struct UtilKernelTrait
     {
         /** Set out[i] _op= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( TargetValueType out[], const SourceValueType in[], const IndexType n, const common::binary::BinaryOp op );
+        typedef void ( *FuncType ) ( TargetValueType out[], const SourceValueType in[], const IndexType n, const common::BinaryOp op );
         static const char* getId()
         {
             return "Util.set";
@@ -259,7 +260,7 @@ struct UtilKernelTrait
 
         typedef void ( *FuncType ) ( TargetValueType out[], const IndexType inc_out,
                                      const SourceValueType in[], const IndexType inc_in,
-                                     const IndexType n, const common::binary::BinaryOp op );
+                                     const IndexType n, const common::BinaryOp op );
         static const char* getId()
         {
             return "Util.setSection";
@@ -269,7 +270,7 @@ struct UtilKernelTrait
     template<typename ValueType>
     struct unaryOp
     {
-        /** Apply unary op sin/cos/sqrt/... function elementwise on vector
+        /** Apply UnaryOp op sin/cos/sqrt/... function elementwise on vector
          *  This routine can also be used for aliased arrays, i.e. in == out
          *  This method can only be used for numeric types, not for IndexType
          */
@@ -277,7 +278,7 @@ struct UtilKernelTrait
             ValueType out[],
             const ValueType in[],
             const IndexType n,
-            const common::unary::UnaryOp op );
+            const common::UnaryOp op );
 
         static const char* getId()
         {
@@ -303,7 +304,7 @@ struct UtilKernelTrait
             const ValueType in1[],
             const ValueType in2[],
             const IndexType n,
-            const common::binary::BinaryOp op );
+            const common::BinaryOp op );
 
         static const char* getId()
         {
@@ -330,7 +331,7 @@ struct UtilKernelTrait
             const ValueType in[],
             const ValueType value,
             const IndexType n,
-            const common::binary::BinaryOp op,
+            const common::BinaryOp op,
             const bool swapScalar );
 
         static const char* getId()
@@ -348,7 +349,7 @@ struct UtilKernelTrait
             TargetValueType out[],
             const SourceValueType in[],
             const IndexType indexes[],
-            const common::binary::BinaryOp op,
+            const common::BinaryOp op,
             const IndexType n );
 
         static const char* getId()
@@ -364,11 +365,12 @@ struct UtilKernelTrait
 
         typedef void ( *FuncType ) (
             TargetValueType out[],
+            const SourceValueType inZeroValue,
             const SourceValueType inNonZeroValues[],
             const IndexType inNonZeroIndexes[],
             const IndexType nnz,
             const IndexType indexes[],
-            const common::binary::BinaryOp op,
+            const common::BinaryOp op,
             const IndexType n );
 
         static const char* getId()
@@ -430,7 +432,7 @@ struct UtilKernelTrait
             const IndexType indexes[],
             const bool unique,
             const SourceValueType in[],
-            const common::binary::BinaryOp op,
+            const common::BinaryOp op,
             const IndexType n );
 
         static const char* getId()

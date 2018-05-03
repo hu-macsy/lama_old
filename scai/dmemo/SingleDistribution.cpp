@@ -63,7 +63,7 @@ SingleDistribution::SingleDistribution( const IndexType globalSize, const Commun
 
     Distribution( globalSize, communicator ),
     mOwner( owner )
- 
+
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( owner, communicator->getSize(), "owner is not a valid rank of any processor" )
 
@@ -124,7 +124,7 @@ IndexType SingleDistribution::local2global( const IndexType localIndex ) const
 
 IndexType SingleDistribution::global2local( const IndexType globalIndex ) const
 {
-    IndexType localIndex = nIndex;
+    IndexType localIndex = invalidIndex;
 
     if ( mOwner == mCommunicator->getRank() )
     {
@@ -169,6 +169,11 @@ void SingleDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
 }
 
 /* ---------------------------------------------------------------------- */
+
+bool SingleDistribution::hasAnyAddressing() const
+{
+    return true;
+}
 
 void SingleDistribution::enableAnyAddressing() const
 {

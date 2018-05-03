@@ -37,8 +37,8 @@
 #include <iostream>
 
 using namespace scai;
-using namespace scai::kregistry;
-using scai::common::context;
+using namespace kregistry;
+using common::ContextType;
 
 struct UtilsInterface
 {
@@ -107,12 +107,12 @@ static void setInterface()
     std::cout << std::endl;
     std::cout << "setInterface: start" << std::endl;
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
-    KernelRegistry::set<UtilsInterface::isSorted<double> >( isSorted, context::Host, flag );
-    KernelRegistry::set( isSorted, "Utils.isSorted", context::Host, flag );
-    KernelRegistry::set( scale<float>, "Utils.scale", context::Host, flag );
-    KernelRegistry::set( scale<float>, "Utils.scale", context::CUDA, flag );
-    KernelRegistry::set( scale<double>, "Utils.scale", context::Host, flag );
-    KernelRegistry::set( scale<double>, "Utils.scale", context::CUDA, flag );
+    KernelRegistry::set<UtilsInterface::isSorted<double> >( isSorted, ContextType::Host, flag );
+    KernelRegistry::set( isSorted, "Utils.isSorted", ContextType::Host, flag );
+    KernelRegistry::set( scale<float>, "Utils.scale", ContextType::Host, flag );
+    KernelRegistry::set( scale<float>, "Utils.scale", ContextType::CUDA, flag );
+    KernelRegistry::set( scale<double>, "Utils.scale", ContextType::Host, flag );
+    KernelRegistry::set( scale<double>, "Utils.scale", ContextType::CUDA, flag );
     std::cout << "setInterface: done" << std::endl;
     KernelRegistry::printAll();
 }
@@ -125,7 +125,7 @@ static void example1()
     typedef bool ( *SigIsSorted ) ( const double*, int N, bool ascending );
     SigIsSorted isSorted = NULL;
     // double ( *isSorted ) ( const double*, int, bool );
-    KernelRegistry::get( isSorted, "Utils.isSorted", context::Host );
+    KernelRegistry::get( isSorted, "Utils.isSorted", ContextType::Host );
     double a[] = { 3.0, 4.0, 5.0 };
     bool okay = isSorted( a, 3, true );
     std::cout << "example1: isSorted = " << okay << std::endl;
@@ -144,7 +144,7 @@ static void example2()
     */
     KernelTraitContextFunction< UtilsInterface::isSorted<double> > isSorted;
     double a[] = { 3.0, 4.0, 2.0 };
-    bool okay = isSorted[ context::Host ]( a, 3, true );
+    bool okay = isSorted[ ContextType::Host ]( a, 3, true );
     std::cout << "example2: isSorted = " << okay << std::endl;
 }
 
@@ -158,7 +158,7 @@ static void example3()
     typedef void ( *SigScale ) ( ValueType*, ValueType, int );
     ValueType a[] = { 3, 4, 2 };
     static KernelContextFunction< SigScale > scale ( "Utils.scale" ) ;
-    scale[ context::Host ]( a, 10, 3 );
+    scale[ ContextType::Host ]( a, 10, 3 );
     std::cout << "example3: scale: " << a[0] << ", " << a[1] << ", " << a[2] << std::endl;
 }
 
@@ -169,9 +169,9 @@ static void example4()
     std::cout << "==========" << std::endl;
     static KernelContextFunction< bool (* ) ( const double*, int, bool ) > isSorted( "Utils.isSorted" );
     static KernelContextFunction< void (* ) ( double*, double, int ) > scale( "Utils.scale" );
-    std::cout << "isSorted: valid context = " << isSorted.validContext( context::CUDA ) << std::endl;
-    std::cout << "scale: valid context = " << scale.validContext( context::CUDA ) << std::endl;
-    std::cout << "scale, isSorted: valid context = " << scale.validContext( isSorted, context::CUDA ) << std::endl;
+    std::cout << "isSorted: valid context = " << isSorted.validContext( ContextType::CUDA ) << std::endl;
+    std::cout << "scale: valid context = " << scale.validContext( ContextType::CUDA ) << std::endl;
+    std::cout << "scale, isSorted: valid context = " << scale.validContext( isSorted, ContextType::CUDA ) << std::endl;
     std::cout << std::endl;
 }
 

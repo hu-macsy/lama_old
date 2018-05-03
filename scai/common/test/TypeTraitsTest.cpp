@@ -58,7 +58,7 @@ typedef boost::mpl::list<SCAI_ALL_TYPES> TraitTypes;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( IdTest, ValueType, TraitTypes )
 {
-    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    ScalarType stype = TypeTraits<ValueType>::stype;
     std::ostringstream out1;
     std::ostringstream out2;
     out1 << TypeTraits<ValueType>::id();
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TypeSizeTest, ValueType, TraitTypes )
 {
     // this test is essential as otherwise certain copy routines might fail
 
-    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    ScalarType stype = TypeTraits<ValueType>::stype;
     BOOST_CHECK_EQUAL( sizeof( ValueType ), typeSize( stype ) );
 }
 
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IsComplexTest, ValueType, TraitTypes )
 {
     // this test is essential as otherwise certain copy routines might fail
 
-    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    ScalarType stype = TypeTraits<ValueType>::stype;
 
     bool v1 = isComplex( stype );
 
@@ -181,37 +181,59 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_numeric_test_types
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
-    AbsType min    = TypeTraits<ValueType>::getMin();
-    AbsType max    = TypeTraits<ValueType>::getMax();
-    AbsType small  = TypeTraits<ValueType>::small();
-    AbsType eps0   = TypeTraits<ValueType>::eps0();
-    AbsType eps1   = TypeTraits<ValueType>::eps1();
+    RealType min    = TypeTraits<ValueType>::getMin();
+    RealType max    = TypeTraits<ValueType>::getMax();
+    RealType small  = TypeTraits<ValueType>::small();
+    RealType eps0   = TypeTraits<ValueType>::eps0();
+    RealType eps1   = TypeTraits<ValueType>::eps1();
 
     // neutral elements for min and max operations
 
     BOOST_CHECK( min < max );
 
-    AbsType one = 1;
-    AbsType one1 = one + eps1;
+    RealType one = 1;
+    RealType one1 = one + eps1;
 
     // Note: This test fails for LongDouble or ComplexLongDouble when using valgrind
 
     BOOST_CHECK( one < one1 );
-    BOOST_CHECK( one1 != AbsType( 0 ) );
+    BOOST_CHECK( one1 != RealType( 0 ) );
 
     // there should be no value between one and one1
 
-    AbsType one2 = ( one + one1 ) * AbsType( 0.5 );
+    RealType one2 = ( one + one1 ) * RealType( 0.5 );
 
     BOOST_CHECK( one2 == one1 || one2 == one );
 
     // compare small, eps0 against eps1
 
-    BOOST_CHECK( AbsType( 0 ) < eps0 );
+    BOOST_CHECK( RealType( 0 ) < eps0 );
     BOOST_CHECK( eps0 < eps1 );
     BOOST_CHECK( eps1 < small );
+}
+
+/* -----------------------------------------------------------------------------*/
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ImaginaryTest, ValueType, scai_numeric_test_types )
+{
+    ValueType imagUnit = TypeTraits<ValueType>::imaginaryUnit();
+
+    ValueType imagSquare = imagUnit * imagUnit;
+   
+    ScalarType stype = TypeTraits<ValueType>::stype;
+
+    if ( isComplex( stype ) )
+    {
+        ValueType expected = -1;
+        BOOST_CHECK_EQUAL( expected, imagSquare );
+    }
+    else
+    {
+        ValueType expected = 0;
+        BOOST_CHECK_EQUAL( expected, imagSquare );
+    }
 }
 
 /* -----------------------------------------------------------------------------*/

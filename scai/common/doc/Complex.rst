@@ -23,7 +23,7 @@ Advantages:
  * output operator just prints the two values re and im
  * provides conversion operators needed for I/O
  * Implements fabs, operator<, and operator>
- * can also be used in CUDA and MIC kernel implementations.
+ * can also be used in CUDA.
 
 Typedefs are used to have one single name for the different instantiations.
 

@@ -38,10 +38,13 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace scai
 {
 
-using common::shared_ptr;
 using namespace dmemo;
 
 namespace lama
@@ -55,27 +58,23 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, JDSSparseMatrix<Valu
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::shared_ptr<MatrixStorage<ValueType> > JDSSparseMatrix<ValueType>::createStorage()
+std::shared_ptr<JDSStorage<ValueType> > JDSSparseMatrix<ValueType>::createStorage( hmemo::ContextPtr ctx )
 {
-    return shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
+    return shared_ptr<JDSStorage<ValueType> >( new StorageType( ctx ) );
 }
 
 template<typename ValueType>
-common::shared_ptr<MatrixStorage<ValueType> > JDSSparseMatrix<ValueType>::createStorage(
-    const IndexType numRows,
-    const IndexType numColumns )
+std::shared_ptr<JDSStorage<ValueType> > JDSSparseMatrix<ValueType>::createStorage( JDSStorage<ValueType>&& storage )
 {
-    shared_ptr<MatrixStorage<ValueType> > storage( new StorageType() );
-    storage->allocate( numRows, numColumns );
-    return storage;
+    return shared_ptr<JDSStorage<ValueType> >( new JDSStorage<ValueType>( std::move( storage ) ) );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix()
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( hmemo::ContextPtr ctx ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( ctx ) )
 
 {
     SCAI_LOG_INFO( logger, "JDSSparseMatrix()" )
@@ -84,152 +83,65 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix()
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const IndexType numRows, const IndexType numColumns )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const JDSSparseMatrix& other ) : 
 
-    : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
-
-{
-    SCAI_LOG_INFO( logger, "JDSSparseMatrix( " << numRows << " x " << numColumns << " )" )
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
-
-    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ), rowDist,
-                               colDist )
-{
-    // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const JDSSparseMatrix& other )
-
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 
 {
     this->setCommunicationKind( other.getCommunicationKind() );
-    this->setContextPtr( other.getContextPtr() );
     SparseMatrix<ValueType>::assign( other );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Matrix& other, bool transposeFlag )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( JDSSparseMatrix&& other ) noexcept :
 
-    : SparseMatrix<ValueType>( createStorage() )
-
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 {
-    this->setContextPtr( other.getContextPtr() );
-    this->setCommunicationKind( other.getCommunicationKind() );
-
-    if ( transposeFlag )
-    {
-        SparseMatrix<ValueType>::assignTranspose( other );
-    }
-    else
-    {
-        SparseMatrix<ValueType>::assign( other );
-    }
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
+JDSSparseMatrix<ValueType>&  JDSSparseMatrix<ValueType>::operator=( JDSSparseMatrix&& other ) 
+{
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
+    return *this;
+}
 
-    : SparseMatrix<ValueType>( createStorage() )
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Matrix<ValueType>& other ) : 
+
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 
 {
     this->setContextPtr( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
-    // this might be done more efficiently as assign introduces intermediate copy
+
     SparseMatrix<ValueType>::assign( other );
-    this->redistribute( rowDist, colDist );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _MatrixStorage& globalData )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( JDSStorage<ValueType> globalStorage ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( std::move( globalStorage ) ) )
 
 {
-    DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
-    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
-    SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix(
-    const _MatrixStorage& localData,
-    DistributionPtr rowDist,
-    DistributionPtr colDist )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( DistributionPtr rowDist, JDSStorage<ValueType> localStorage ) :
 
-    : SparseMatrix<ValueType>( createStorage() )
-
+    SparseMatrix<ValueType>( rowDist, createStorage( std::move( localStorage ) ) )
 {
-    SparseMatrix<ValueType>::assign( localData, rowDist, colDist );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM& expression )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
-{
-    const Matrix& master = expression.getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SMM& expression )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
-{
-    const Matrix& master = expression.getArg1().getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM_SM& expression )
-
-    : SparseMatrix<ValueType>( createStorage() )
-{
-    // inherit context from matA in alpha * matA + beta * matB
-    const Matrix& master = expression.getArg1().getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const std::string& filename )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
-{
-    this->readFromFile( filename );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -292,26 +204,13 @@ JDSSparseMatrix<ValueType>::getHaloStorage() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void JDSSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
-{
-    // make sure that local storage fits into this sparse matrix
-    SCAI_ASSERT_EQUAL_ERROR( localStorage.getNumRows(), mLocalData->getNumRows() )
-    SCAI_ASSERT_EQUAL_ERROR( localStorage.getNumColumns(), mLocalData->getNumColumns() )
-    // make sure that local matrix storage has the correct format / value type
-    StorageType* localData = dynamic_cast<StorageType*>( mLocalData.get() );
-    SCAI_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() )
-    localData->swap( localStorage );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<JDSSparseMatrix<ValueType> > newSparseMatrix( new JDSSparseMatrix<ValueType>() );
+    std::unique_ptr<JDSSparseMatrix<ValueType> > newSparseMatrix( new JDSSparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
+    newSparseMatrix->allocate( getRowDistributionPtr(), getColDistributionPtr() );
     SCAI_LOG_INFO( logger,
                    *this << ": create -> " << *newSparseMatrix << " @ " << * ( newSparseMatrix->getContextPtr() )
                    << ", kind = " << newSparseMatrix->getCommunicationKind() );
@@ -340,7 +239,7 @@ const char* JDSSparseMatrix<ValueType>::getTypeName() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Matrix* JDSSparseMatrix<ValueType>::create()
+_Matrix* JDSSparseMatrix<ValueType>::create()
 {
     return new JDSSparseMatrix<ValueType>();
 }

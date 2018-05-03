@@ -57,8 +57,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ContextTest" )
 BOOST_AUTO_TEST_CASE( hostContextText )
 {
     // make sure that host context is always available
-    BOOST_CHECK( Context::canCreate( common::context::Host ) );
-    ContextPtr host = Context::create( common::context::Host, -1 );
+    BOOST_CHECK( Context::canCreate( common::ContextType::Host ) );
+    ContextPtr host = Context::create( common::ContextType::Host, -1 );
     BOOST_CHECK( host.get() );
     BOOST_CHECK( host == Context::getHostPtr() );
     SCAI_LOG_INFO( logger, "host context = " << *host )
@@ -99,8 +99,8 @@ BOOST_AUTO_TEST_CASE( currentContextTest )
 
 BOOST_AUTO_TEST_CASE( useContextTest )
 {
-    ContextPtr userContext  = Context::getContextPtr( Context::UserContext, 1 );
-    ContextPtr hostContext  = Context::getContextPtr( Context::Host );
+    ContextPtr userContext  = Context::getContextPtr( common::ContextType::UserContext, 1 );
+    ContextPtr hostContext  = Context::getContextPtr( common::ContextType::Host );
     ContextPtr testContext  = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "testContext = " << *testContext << ", userContext = " << *userContext );
     const IndexType N = 7;

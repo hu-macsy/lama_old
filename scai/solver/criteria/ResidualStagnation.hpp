@@ -50,7 +50,7 @@ namespace scai
 namespace solver
 {
 
-class IterativeSolver;
+template<typename ValueType> class IterativeSolver;
 
 /**
  * @brief Stagnation stopping criterion.
@@ -58,7 +58,8 @@ class IterativeSolver;
  * @param IterativeSolver The type solver in which this criterion is used.
  *        Most commonly this is the abstract sblas::IterativeSolver type.
  */
-class COMMON_DLL_IMPORTEXPORT ResidualStagnation: public Criterion
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT ResidualStagnation: public Criterion<ValueType>
 {
 
 public:
@@ -68,23 +69,23 @@ public:
      * TODO[doxy] param in or out?
      *
      * @param      norm The norm which shall be used to check the criterion.
-     *             Has to be compatible with the Matrix/Vector types of
+     *             Has to be compatible with the _Matrix/Vector types of
      *             the solver.
      */
-    ResidualStagnation( lama::NormPtr norm );
+    ResidualStagnation( lama::NormPtr<ValueType> norm );
 
     /**
      * @brief Creates a new Stagnation based stopping criterion.
      * TODO[doxy] params in or out?
      *
      * @param      norm The norm which shall be used to check the criterion.
-     *             Has to be compatible with the Matrix/Vector types of
+     *             Has to be compatible with the _Matrix/Vector types of
      *             the solver.
      * @param      lookback The amount of residual-norm-calculation results used
      *             for the criterion check.
      * @param      precision TODO[doxy] Complete Description.
      */
-    ResidualStagnation( lama::NormPtr norm, IndexType lookback, lama::Scalar precision );
+    ResidualStagnation( lama::NormPtr<ValueType> norm, IndexType lookback, ValueType precision );
 
     /**
      * @brief Creates a copy of the passed ResidualStagnation object.
@@ -98,11 +99,9 @@ public:
     virtual ~ResidualStagnation();
 
     /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @return   TODO[doxy] Complete Description.
+     * @brief Implement pure method but return with the covariant return type
      */
-    virtual Criterion* copy() const;
+    virtual ResidualStagnation<ValueType>* copy() const;
 
     /**
      * @brief Checks if the criterion is satisfied.
@@ -118,7 +117,7 @@ public:
      * @return   Boolean value which determines if the criterion is
      *           satisfied or not.
      */
-    virtual bool isSatisfied( const IterativeSolver& solver );
+    virtual bool isSatisfied( const IterativeSolver<ValueType>& solver );
 
     /**
      * @brief Gets the amount of calculations used for the criterion check.
@@ -132,14 +131,14 @@ public:
      *
      * @return   The Norm used.
      */
-    const lama::NormPtr getNorm() const;
+    const lama::NormPtr<ValueType> getNorm() const;
 
     /**
      * @brief Returns the precision for floating point number calculations related to the Norm.
      *
      * @return   The precision given in a Scalar object.
      */
-    const lama::Scalar getPrecision() const;
+    const ValueType getPrecision() const;
 
     /**
      * @brief Sets the amount of calculations used for the criterion check.
@@ -151,9 +150,9 @@ public:
     /**
      * @brief Sets the precision for floating point number calculations related to the Norm.
      *
-     * @param[in] precision   The precision given in a Scalar object.
+     * @param[in] precision   should be real value
      */
-    void setPrecision( const lama::Scalar precision );
+    void setPrecision( const ValueType precision );
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -162,7 +161,7 @@ private:
     /**
      * @brief The norm used in the residual-norm-calculation.
      */
-    const lama::NormPtr mNorm;
+    const lama::NormPtr<ValueType> mNorm;
 
     /**
      * @brief The amount of calculations used for the criterion check.
@@ -172,7 +171,7 @@ private:
     /**
      * @brief Stores the results of the residual-norm-calculations.
      */
-    std::vector<lama::Scalar> mLastResidualNorms;
+    std::vector<RealType<ValueType> > mLastResidualNorms;
 
     /**
      * @brief Index. Needed for circular use of the vector.
@@ -188,7 +187,7 @@ private:
     /**
      * @brief The precision used for the stagnation check.
      */
-    lama::Scalar mPrecision;
+    RealType<ValueType> mPrecision;
 };
 
 } /* end namespace solver */

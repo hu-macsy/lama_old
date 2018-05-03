@@ -53,7 +53,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest" );
 
 /** For the matrix tests here it is sufficient to take only one of the possible value types. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 /* ------------------------------------------------------------------------- */
 
@@ -64,21 +64,19 @@ BOOST_AUTO_TEST_CASE( Stencil1D3PTest )
 
     const IndexType N1 = 98;
 
-    common::Stencil1D<RealType> stencil( 3 );
+    common::Stencil1D<DefaultReal> stencil( 3 );
     common::Grid1D grid( N1 );
 
-    StencilMatrix<RealType> stencilMatrix( grid, stencil );
+    StencilMatrix<DefaultReal> stencilMatrix( grid, stencil );
 
-    CSRSparseMatrix<RealType> csrMatrixPoisson;
+    CSRSparseMatrix<DefaultReal> csrMatrixPoisson;
     MatrixCreator::buildPoisson( csrMatrixPoisson, 1, 3, N1, 1, 1 );
 
-    CSRSparseMatrix<RealType> csrMatrixStencil( stencilMatrix );
+    CSRSparseMatrix<DefaultReal> csrMatrixStencil( stencilMatrix );
 
     BOOST_REQUIRE_EQUAL( csrMatrixStencil.getNumRows(), csrMatrixStencil.getNumRows() );
 
-    Scalar diffNorm = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
-
-    RealType diff = diffNorm.getValue<RealType>();
+    DefaultReal diff = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
 
     BOOST_CHECK( diff < 1e-5 );
 }
@@ -93,21 +91,19 @@ BOOST_AUTO_TEST_CASE( Stencil2D5PTest )
     const IndexType N1 = 10;
     const IndexType N2 = 4;
 
-    common::Stencil2D<RealType> stencil( 5 );
+    common::Stencil2D<DefaultReal> stencil( 5 );
     common::Grid2D grid( N1, N2 );
 
-    StencilMatrix<RealType> stencilMatrix( grid, stencil );
+    StencilMatrix<DefaultReal> stencilMatrix( grid, stencil );
 
-    CSRSparseMatrix<RealType> csrMatrixPoisson;
+    CSRSparseMatrix<DefaultReal> csrMatrixPoisson;
     MatrixCreator::buildPoisson( csrMatrixPoisson, 2, 5, N1, N2, 1 );
 
-    CSRSparseMatrix<RealType> csrMatrixStencil( stencilMatrix );
+    CSRSparseMatrix<DefaultReal> csrMatrixStencil( stencilMatrix );
 
     BOOST_REQUIRE_EQUAL( csrMatrixStencil.getNumRows(), csrMatrixStencil.getNumRows() );
 
-    Scalar diffNorm = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
-
-    RealType diff = diffNorm.getValue<RealType>();
+    DefaultReal diff = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
 
     BOOST_CHECK( diff < 1e-5 );
 }
@@ -123,21 +119,19 @@ BOOST_AUTO_TEST_CASE( Stencil3D27PTest )
     const IndexType N2 = 4;
     const IndexType N3 = 7;
 
-    common::Stencil3D<RealType> stencil( 27 );
+    common::Stencil3D<DefaultReal> stencil( 27 );
     common::Grid3D grid( N1, N2, N3 );
 
-    StencilMatrix<RealType> stencilMatrix( grid, stencil );
+    StencilMatrix<DefaultReal> stencilMatrix( grid, stencil );
 
-    CSRSparseMatrix<RealType> csrMatrixPoisson;
+    CSRSparseMatrix<DefaultReal> csrMatrixPoisson;
     MatrixCreator::buildPoisson( csrMatrixPoisson, 3, 27, N1, N2, N3 );
 
-    CSRSparseMatrix<RealType> csrMatrixStencil( stencilMatrix );
+    CSRSparseMatrix<DefaultReal> csrMatrixStencil( stencilMatrix );
 
     BOOST_REQUIRE_EQUAL( csrMatrixStencil.getNumRows(), csrMatrixStencil.getNumRows() );
 
-    Scalar diffNorm = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
-
-    RealType diff = diffNorm.getValue<RealType>();
+    DefaultReal diff = csrMatrixStencil.maxDiffNorm( csrMatrixPoisson );
 
     BOOST_CHECK( diff < 1e-5 );
 }
@@ -153,22 +147,20 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
     const IndexType N2 = 3;
     const IndexType N3 = 4;
 
-    common::Stencil3D<RealType> stencil( 27 );
+    common::Stencil3D<DefaultReal> stencil( 27 );
     common::Grid3D grid( N1, N2, N3 );
 
-    StencilMatrix<RealType> stencilMatrix1( grid, stencil );
+    StencilMatrix<DefaultReal> stencilMatrix1( grid, stencil );
     SCAI_LOG_INFO( logger, "copy this stencil matrix: " << stencilMatrix1 )
-    StencilMatrix<RealType> stencilMatrix2( stencilMatrix1 );
+    StencilMatrix<DefaultReal> stencilMatrix2( stencilMatrix1 );
     SCAI_LOG_INFO( logger, "copied stencil matrix = " << stencilMatrix2 )
 
-    CSRSparseMatrix<RealType> csrMatrixStencil1( stencilMatrix1 );
+    CSRSparseMatrix<DefaultReal> csrMatrixStencil1( stencilMatrix1 );
     SCAI_LOG_INFO( logger, "csr matrix 1 = " << csrMatrixStencil1 )
-    CSRSparseMatrix<RealType> csrMatrixStencil2( stencilMatrix2 );
+    CSRSparseMatrix<DefaultReal> csrMatrixStencil2( stencilMatrix2 );
     SCAI_LOG_INFO( logger, "csr matrix 2 = " << csrMatrixStencil2 )
 
-    Scalar diffNorm = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
-
-    RealType diff = diffNorm.getValue<RealType>();
+    DefaultReal diff = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
 
     BOOST_CHECK( diff < 1e-5 );
 }
@@ -184,20 +176,18 @@ BOOST_AUTO_TEST_CASE( AssignTest )
     const IndexType N2 = 3;
     const IndexType N3 = 4;
 
-    common::Stencil3D<RealType> stencil( 27 );
+    common::Stencil3D<DefaultReal> stencil( 27 );
     common::Grid3D grid( N1, N2, N3 );
 
-    StencilMatrix<RealType> stencilMatrix1( grid, stencil );
-    StencilMatrix<RealType> stencilMatrix2;
+    StencilMatrix<DefaultReal> stencilMatrix1( grid, stencil );
+    StencilMatrix<DefaultReal> stencilMatrix2;
 
     stencilMatrix2 = stencilMatrix1;
 
-    CSRSparseMatrix<RealType> csrMatrixStencil1( stencilMatrix1 );
-    CSRSparseMatrix<RealType> csrMatrixStencil2( stencilMatrix2 );
+    CSRSparseMatrix<DefaultReal> csrMatrixStencil1( stencilMatrix1 );
+    CSRSparseMatrix<DefaultReal> csrMatrixStencil2( stencilMatrix2 );
 
-    Scalar diffNorm = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
-
-    RealType diff = diffNorm.getValue<RealType>();
+    DefaultReal diff = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
 
     BOOST_CHECK( diff < 1e-5 );
 }

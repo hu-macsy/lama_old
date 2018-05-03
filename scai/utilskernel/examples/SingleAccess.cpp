@@ -43,29 +43,29 @@ using namespace utilskernel;
 
 int main()
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
-    if ( ! Context::canCreate( Context::CUDA ) )
+    if ( ! Context::canCreate( common::ContextType::CUDA ) )
     {
         cout << "Example program skipped, no CUDA available." << endl;
         return 0;
     }
 
     ContextPtr host = Context::getHostPtr();
-    ContextPtr gpu  = Context::getContextPtr( Context::CUDA );
+    ContextPtr gpu  = Context::getContextPtr( common::ContextType::CUDA );
 
     const IndexType Nh = 50;
     const IndexType N = 2 * Nh;
 
-    LArray<ValueType> hostA( N, 5, host );
-    LArray<ValueType> gpuA( N, 2, gpu );
+    HArray<ValueType> hostA( N, 5, host );
+    HArray<ValueType> gpuA( N, 2, gpu );
 
     for ( IndexType i = 0; i < N; i += 2 )
     {
         gpuA[i] = hostA[i];
     }
 
-    ValueType sum = gpuA.sum();
+    ValueType sum = HArrayUtils::sum( gpuA );
 
     cout << "Sum = " << sum << " should be " << 2 * Nh + 5 * Nh  << endl;
 
@@ -80,7 +80,7 @@ int main()
         hostA[i] = gpuA[i];
     }
 
-    sum = hostA.sum();
+    sum = HArrayUtils::sum( hostA );
 
     cout << "Sum = " << sum << " should be " << 2 * Nh + 5 * Nh  << endl;
 }

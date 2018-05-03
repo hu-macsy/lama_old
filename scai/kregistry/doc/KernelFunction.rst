@@ -21,8 +21,6 @@ A kernel function has the following properties:
   - OpenMP on CPU
   
   - CUDA on GPU device
-  
-  - OpenMP on Intel MIC
 
 - it can assume that all data is available
 
@@ -33,8 +31,6 @@ A kernel function has the following properties:
   - BLAS, MKL on the CPU
   
   - Thrust library or cuBLAS/cuSPARSE on the GPU
-  
-  - MKL on Intel MIC
 
 - it should never use communication in kernel routines (possible but makes encapsulation and porting difficult, e.g. SAMG setup, ScaL, ...)
 

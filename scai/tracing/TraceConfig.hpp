@@ -43,12 +43,10 @@
 // interal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/Thread.hpp>
-#include <scai/common/shared_ptr.hpp>
-
 // std
 #include <string>
 #include <map>
+#include <memory>
 
 namespace scai
 {
@@ -82,7 +80,7 @@ public:
 
     /** Type definition for thread identification used in tracing. */
 
-    typedef common::Thread::Id ThreadId;
+    typedef std::thread::id ThreadId;
 
     ~TraceConfig();
 
@@ -100,7 +98,7 @@ public:
     /**
      * Get the actual trace configuration as a shared pointer.
      */
-    static common::shared_ptr<TraceConfig> getInstancePtr();
+    static std::shared_ptr<TraceConfig> getInstancePtr();
 
     /**
      * Query if tracing is enabled.
@@ -194,7 +192,7 @@ private:
      *  Use of shared pointer for entry in map
      */
 
-    std::map<ThreadId, common::shared_ptr<TraceData> > mTraceDataMap;
+    std::map<ThreadId, std::shared_ptr<TraceData> > mTraceDataMap;
 
     /** Get the trace data by the id of a thread. */
 
@@ -202,7 +200,7 @@ private:
 
     /** The only one instance allocated at program start. */
 
-    static common::shared_ptr<TraceConfig> config;
+    static std::shared_ptr<TraceConfig> config;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

@@ -34,6 +34,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <scai/dmemo/Communicator.hpp>
+
 #include <scai/solver/logger/FileLogger.hpp>
 
 #include <fstream>
@@ -43,16 +45,24 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/test/Configuration.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
+
+#include <scai/testsupport/GlobalTempDir.hpp>
+#include <scai/testsupport/uniquePathComm.hpp>
+
+#include <memory>
 
 using namespace scai;
 
 using namespace solver;
 
 using common::Exception;
-using common::unique_ptr;
-using common::scoped_array;
+using std::unique_ptr;
+
+using scai::dmemo::Communicator;
+
+using scai::testsupport::uniquePathPerNode;
+using scai::testsupport::GlobalTempDir;
 
 /* --------------------------------------------------------------------- */
 
@@ -64,14 +74,16 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.FileLoggerTest" )
 
 BOOST_AUTO_TEST_CASE( LoggingTest )
 {
+    const auto logFileName = uniquePathPerNode(GlobalTempDir::getPath(),
+                                               *Communicator::getDefaultCommunicatorPtr(),
+                                               "FileLoggerTest.log");
+
+    BOOST_TEST_MESSAGE("Log filename: " << logFileName);
+
     std::string testMessage( "FileLoggerTestMessage\n" );
     FileLogger& flogger = FileLogger::getFileLogger();
     // This should throw an exception
     SCAI_CHECK_THROW( flogger.setLogFile( "/15/16/17" ), Exception );
-    const std::string path = scai::test::Configuration::getPath();
-    SCAI_LOG_INFO( logger, "Configuration path = " << path );
-    std::string logFileName( path + "/" + "FileLoggerTestFile.log" );
-    SCAI_LOG_INFO( logger, "Log file name = " << logFileName );
     flogger.setLogFile( logFileName );
     // Setting same name twice should be okay
     flogger.setLogFile( logFileName );
@@ -79,7 +91,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     SCAI_CHECK_THROW( flogger.setLogFile( logFileName + "1" ), Exception );
     flogger.logMessage( testMessage );
     flogger.closeLogFile();
-    scoped_array<char> fileInput( new char[testMessage.length()] );
+    unique_ptr<char[]> fileInput( new char[testMessage.length()] );
     std::fstream fileStream;
     fileStream.open( logFileName.c_str(), std::fstream::in );
     fileStream.read( fileInput.get(), testMessage.length() );

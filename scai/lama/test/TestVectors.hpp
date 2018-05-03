@@ -34,10 +34,10 @@
 
 #include <scai/lama/Vector.hpp>
 
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 #include <vector>
+#include <memory>
 
 namespace scai
 {
@@ -48,12 +48,12 @@ namespace lama
 /** Class for a list of vectors, one for each supported
  *  vector storage format and each supported arithmetic type.
  *
- *  Note: Currently only DENSE vectors are supported, but SPARSE might be
- *        supported in future releases.
- *
+ *  Supported vector formats and types might depend on the current version
+ *  of LAMA and of its configuration. Therefore vectors a generated via 
+ *  the vector factory.
  */
 
-class TestVectors : public std::vector<scai::lama::VectorPtr>
+class _TestVectors : public std::vector<scai::lama::_VectorPtr>
 {
 
 public:
@@ -64,15 +64,15 @@ public:
      *  @param[in] ctx optional argument for the context where operations on vector should be executed
      */
 
-    TestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    _TestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::lama;
         std::vector<VectorCreateKeyType> values;  //  all create values
-        Vector::getCreateValues( values );
+        _Vector::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::VectorPtr vectorPtr( scai::lama::Vector::create( values[i] ) );
+            scai::lama::_VectorPtr vectorPtr( scai::lama::_Vector::create( values[i] ) );
 
             if ( ctx )
             {
@@ -81,6 +81,39 @@ public:
 
             push_back( vectorPtr );
         }
+    }
+};
+
+/** 
+ *  Class for a list of vectors with a given type.
+ */
+template<typename ValueType>
+class TestVectors : public std::vector<typename scai::lama::VectorPtr<ValueType> >
+{
+
+public:
+
+    /** Constructor creates already the list with shared vector pointers, one for each
+     *  registered key type in the Vector factory.
+     *
+     *  @param[in] ctx optional argument for the context where operations on vector should be executed
+     */
+    
+    TestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    {   
+        using namespace scai::lama;
+
+        VectorPtr<ValueType> vectorPtrS( Vector<ValueType>::getVector( VectorKind::SPARSE ) );
+        VectorPtr<ValueType> vectorPtrD( Vector<ValueType>::getVector( VectorKind::DENSE ) );
+
+        if ( ctx )
+        {   
+            vectorPtrS->setContextPtr( ctx );
+            vectorPtrD->setContextPtr( ctx );
+        }
+        
+        this->push_back( vectorPtrD );
+        this->push_back( vectorPtrS );
     }
 };
 

@@ -37,14 +37,14 @@
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/partitioning/Partitioning.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace scai;
 using namespace hmemo;
 using namespace lama;
 using namespace partitioning;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int narg, const char* argv[] )
 {
@@ -58,7 +58,7 @@ int main( int narg, const char* argv[] )
     std::string procs    = argv[2];
 
     IndexType np = 0;
-    utilskernel::LArray<float> pWeights;
+    HArray<float> pWeights;
 
     if ( procs.find( "." ) == std::string::npos )
     {
@@ -70,35 +70,51 @@ int main( int narg, const char* argv[] )
     else
     {
         FileIO::read( pWeights, procs );
-        // scale the weight
-        float sumWeight = pWeights.sum();
-        pWeights /= sumWeight;
         np = pWeights.size();
+        // scale the weight:  pWeights /= pWeights.sum();
+        WriteAccess<float> rWeight( pWeights );
+        float sumWeight = 0;
+        for ( IndexType i = 0; i < np; ++i )
+        {
+            sumWeight += rWeight[ i ];
+        }
+        for ( IndexType i = 0; i < np; ++i )
+        {
+            rWeight [ i ] /= sumWeight;
+        }
     }
+
+    std::cout << "Processor weights: " << pWeights << std::endl;
 
     SCAI_ASSERT_GT_ERROR( np , 0, "Partitioning requires at least one processor" )
 
     std::string kind = "METIS";
-
-    PartitioningPtr partitioning( Partitioning::create( "METIS" ) );
+  
+    if ( narg > 3 )
+    {
+        kind = argv[3];
+    }
+ 
+    PartitioningPtr partitioning;
 
     if ( Partitioning::canCreate( kind ) )
     {
+        partitioning = Partitioning::create( kind );
     }
     else
     {
         COMMON_THROWEXCEPTION( kind << " as partition kind not supported" )
     }
 
-    CSRSparseMatrix<ValueType> csrMatrix( fileName );
+    auto csrMatrix = read<CSRSparseMatrix<ValueType>>( fileName );
 
     HArray<PartitionId> rowDist;
     HArray<PartitionId> colDist;
 
     partitioning->rectangularPartitioning( rowDist, colDist, csrMatrix, pWeights );
 
-    std::string rowDistFileName = "distRow.mtx";
-    std::string colDistFileName = "distCol.mtx";
+    std::string rowDistFileName = "row_" + kind + "_" + std::to_string( np ) + ".txt";
+    std::string colDistFileName = "col_" + kind + "_" + std::to_string( np ) + ".txt";
 
     FileIO::write( rowDist, rowDistFileName.c_str() );
     FileIO::write( colDist, colDistFileName.c_str() );

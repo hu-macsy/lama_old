@@ -45,17 +45,25 @@ include ( scai_function/relative_install )
 scai_module(
 
     MODULE_NAME   partitioning
-    INTERNAL_DEPS common logging tracing hmemo kregistry dmemo lama
-    EXTERNAL_DEPS Metis 
+    INTERNAL_DEPS common logging tracing hmemo kregistry utilskernel dmemo lama
+    EXTERNAL_DEPS ParMetis MPI Metis
 )
 
-## MetisDistribution only added as source if enabled and IndexType is int
+# ToDo: The order ParMetis < Metis is important here as ParMetis links also with Metis
 
-if ( METIS_FOUND AND USE_METIS )
-    if ( SCAI_INDEX_TYPE STREQUAL "int" )
-        set ( METISPARTITIONING MetisPartitioning )
-    endif ()
+set ( PARTITIONING_CLASSES Partitioning BlockPartitioning CyclicPartitioning CSRGraph CSRGraph2 )
+
+if ( USE_METIS )
+    set ( PARTITIONING_CLASSES ${PARTITIONING_CLASSES} MetisPartitioning )
 endif ()
+    
+# ParMetis depends on Metis and MPI
+
+if ( USE_PARMETIS AND USE_METIS AND USE_MPI )
+    set ( PARTITIONING_CLASSES ${PARTITIONING_CLASSES} ParMetisPartitioning )
+endif ()
+
+# message ( STATUS "PARTITIONING_CLASSES=${PARTITIONING_CLASSES}" )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -63,10 +71,7 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        Partitioning
-        BlockPartitioning
-
-        ${METISPARTITIONING}
+        ${PARTITIONING_CLASSES}
     )
 
 scai_subdirectories( EXAMPLES TEST )

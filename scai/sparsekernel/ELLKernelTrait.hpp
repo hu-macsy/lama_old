@@ -38,6 +38,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 namespace scai
 {
@@ -185,23 +187,26 @@ struct ELLKernelTrait
     template<typename ValueType>
     struct compressIA
     {
-        /** Compresses the given IA array using the values array and epsilon
+        /** Determine the new row sizes when ELL storage data will be compressed
          *
-         * @param[in]  IA that should be compressed
-         * @param[in]  related JA array
-         * @param[in]  related values array
-         * @param[in]  number of rows
-         * @param[in]  epsilon
-         * @param[out] new created IA
+         * @param[out] newSizes are the new sizes of the rows when storage is compressed 
+         * @param[in]  ellSizes are the sizes of the rows in the original ELL data
+         * @param[in]  ellJA column indexes of ELL data
+         * @param[in]  ellValues are values of the ELL data
+         * @param[in]  numRows number of rows
+         * @param[in]  numValuesPerRow for maximal number of entries in one row
+         * @param[in]  eps threshold, abs value of entry must be greater than eps to be non-zero
+         * @param[in]  keepDiagonal if true do not remove diagonal elements
          */
         typedef void ( *FuncType ) (
+            IndexType newSizes[],
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
-            const ValueType eps,
-            IndexType newIA[] );
+            const RealType<ValueType> eps,
+            const bool keepDiagonal );
 
         static const char* getId()
         {
@@ -212,26 +217,30 @@ struct ELLKernelTrait
     template<typename ValueType>
     struct compressValues
     {
-        /** Compresses the given JA and values array using epsilon
+        /** Compute the new ja and values array for compressed ELL stroage
          *
-         * @param[in]  IA that should be compressed
-         * @param[in]  related JA array
-         * @param[in]  related values array
-         * @param[in]  number of rows
-         * @param[in]  epsilon
-         * @param[out] new created JA
-         * @param[out] new created values
+         * @param[out] new JA array for compressed storage
+         * @param[out] new values array for compressed storage
+         * @param[in]  newnumValuesPerRow for maximal number of entries in one row for compressed data
+         * @param[in]  ellIA is the ia array of uncompressed ELL storage
+         * @param[in]  ellJA ja array of uncompressed ELL storage
+         * @param[in]  ellValues is the values array of uncompressed ELL storage
+         * @param[in]  numRows number of rows
+         * @param[in]  numValuesPerRow for maximal number of entries in one row
+         * @param[in]  eps threshold, abs value of entry must be greater than eps to be non-zero
+         * @param[in]  keepDiagonal if true do not remove diagonal elements
          */
         typedef void ( *FuncType ) (
+            IndexType newJA[],
+            ValueType newValues[],
+            const IndexType newNumValuesPerRow,
             const IndexType ellSizes[],
             const IndexType ellJA[],
             const ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
-            const ValueType eps,
-            const IndexType newNumValuesPerRow,
-            IndexType newJA[],
-            ValueType newValues[] );
+            const RealType<ValueType> eps,
+            const bool keepDiagonal );
 
         static const char* getId()
         {
@@ -239,7 +248,7 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     struct getRow
     {
         /** Returns a row of the matrix as dense vector
@@ -254,7 +263,7 @@ struct ELLKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            OtherValueType row[],
+            ValueType row[],
             const IndexType i,
             const IndexType numRows,
             const IndexType numColumns,
@@ -367,6 +376,7 @@ struct ELLKernelTrait
          *  @param y is additional input vector to add
          *  @param numRows is number of elements for all vectors and rows of matrix
          *  @param ellIA, ellJA, csrValues are arrays of ELL storage
+         *  @param op specifies an operation implicitly applied to the matrix storage
          */
 
         typedef void ( *FuncType ) (
@@ -376,10 +386,12 @@ struct ELLKernelTrait
             const ValueType beta,
             const ValueType y[],
             const IndexType numRows,
+            const IndexType numColumns,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ValueType ellValues[] );
+            const ValueType ellValues[],
+            const common::MatrixOp op );
 
         static const char* getId()
         {
@@ -413,59 +425,12 @@ struct ELLKernelTrait
             const IndexType rowIndexes[],
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ValueType ellValues[] );
+            const ValueType ellValues[],
+            const common::MatrixOp op );
 
         static const char* getId()
         {
             return "ELL.sparseGEMV";
-        }
-    };
-
-    template<typename ValueType>
-    struct normalGEVM
-    {
-        /** Matrix vector multiplication for ELL format */
-
-        typedef void ( *FuncType ) (
-            ValueType result[],
-            const ValueType alpha,
-            const ValueType x[],
-            const ValueType beta,
-            const ValueType y[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const IndexType numValuesPerRow,
-            const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[] );
-
-        static const char* getId()
-        {
-            return "ELL.normalGEVM";
-        }
-    };
-
-    template<typename ValueType>
-    struct sparseGEVM
-    {
-        /** Matrix vector multiplication for ELL format, sparse rows */
-
-        typedef void ( *FuncType ) (
-            ValueType result[],
-            const ValueType alpha,
-            const ValueType x[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const IndexType numValuesPerRow,
-            const IndexType numNonZeroRows,
-            const IndexType rowIndexes[],
-            const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[] );
-
-        static const char* getId()
-        {
-            return "ELL.sparseGEVM";
         }
     };
 
@@ -489,19 +454,19 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ValueType, typename OtherValueType>
-    struct scaleValue
+    template<typename ValueType>
+    struct scaleRows
     {
         typedef void ( *FuncType ) (
+            ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
-            ValueType ellValues[],
-            const OtherValueType values[] );
+            const ValueType values[] );
 
         static const char* getId()
         {
-            return "ELL.scaleValue";
+            return "ELL.scaleRows";
         }
     };
 

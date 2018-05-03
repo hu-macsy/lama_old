@@ -113,7 +113,7 @@ public:
         dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
         dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
         this->allocate( dist );
-        this->assign( initVal );
+        this->setScalar( initVal );
     }
 
     GridVector( dmemo::DistributionPtr dist ) : DenseVector<ValueType>()
@@ -124,7 +124,7 @@ public:
     GridVector( dmemo::DistributionPtr dist, const ValueType initVal ) : DenseVector<ValueType>()
     {
         this->allocate( dist );
-        this->assign( initVal );
+        this->setScalar( initVal );
     }
 
     const common::Grid& globalGrid() const
@@ -160,7 +160,7 @@ public:
 
     /** Make size() of Vector visible */
 
-    using Vector::size;
+    using _Vector::size;
 
     /** Swap available array with data into a grid vector. */
 
@@ -179,13 +179,13 @@ public:
         DenseVector<ValueType>::swap( other );
     }
 
-    using Vector::swap;
+    using _Vector::swap;
 
     /** Set this grid vector by another grid vector that is reduced in one dimension */
 
-    void reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp );
+    void reduce( const GridVector<ValueType>& other, IndexType dim, const common::BinaryOp redOp );
 
-    /** Matrix-matrix multiplication : this += alpha * v1 * v2
+    /** _Matrix-matrix multiplication : this += alpha * v1 * v2
      *
      *  @param alpha is just an additional scaling factor to avoid temporaries
      *  @param v1 must be a two-dimensional grid-vector with v1.size( 0 ) == this->size( 0 )
@@ -235,14 +235,14 @@ public:
     virtual void writeLocalToFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
+        const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
-    /** Override of Vector::readLocalFromFile 
+    /** Override of _Vector::readLocalFromFile 
      *
      *  This method reads the local part of a grid vector and tries to read also the shape.
      */
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex );
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex );
 };
 
 } /* end namespace lama */

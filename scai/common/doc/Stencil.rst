@@ -16,7 +16,7 @@ the relative coordinates of the neighbor and the corresponding value.
     double v_right = 0.2;
     double v_lower = 0.2;
     double v_upper = 0.2;
-    double v_self  = 0.2;
+    double v_self  = -0.8;
 
     Stencil2D<double> stencil;
 
@@ -31,12 +31,11 @@ are updated as follows:
 
 .. code-block:: c++
 
-    out(i,j) = v_self * in(i,j) + v_left * in(i,j-1) + v_right * in(i,j+1) 
-                                + v_lower * in(i-1,j) + v_upper * in(i+1,j) 
+    out( i, j ) = v_self * in( i, j) + v_left * in( i, j - 1 ) + v_right * in( i, j + 1 ) 
+                                     + v_lower * in( i - 1, j ) + v_upper * in( i + 1, j ) 
 
 For each dimension an own stencil class is provided where all these 
 classes derive from the common base class ``Stencil``.
-
 
 A stencil and a grid togehter are used in LAMA to define a stencil matrix
 that specifies the linear mapping from the input values to the output values

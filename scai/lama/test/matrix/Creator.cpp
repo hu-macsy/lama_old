@@ -35,15 +35,16 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/logging.hpp>
 
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
+using namespace dmemo;
 
 /* ------------------------------------------------------------------------- */
 
@@ -58,9 +59,8 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
     { 6.0, 0.0, 0.0, 4.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.0, 4.0, 2.0, 5.0, 0.0, 3.0 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
     // Note: diagonal property of sparse matrices will be set due to square matrix
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -115,9 +115,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
                 {
                     IndexType j = j1 * nCols + j2;
 
-
-                    Scalar s = matrix.getValue( i, j );
-                    ValueType v = s.getValue<ValueType>();
+                    ValueType v = matrix.getValue( i, j );
 
                     SCAI_LOG_TRACE( logger, "i = " << i << " ( " << i1 << " * " << nRows << " + " << i2 << " )"
                                     << ", j = " << j << " ( " << j1 << " * " << nCols << " + " << i2 << " )"
@@ -181,9 +179,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
                 {
                     IndexType j = j1 * nCols + j2;
 
-                    Scalar s = matrix.getValue( i, j );
-                    ValueType v = s.getValue<ValueType>();
-
+                    ValueType v = matrix.getValue( i, j );
                     BOOST_CHECK_EQUAL( v, storage.getValue( i2, j2 ) );
                 }
             }

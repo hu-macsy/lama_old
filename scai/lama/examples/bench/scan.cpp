@@ -38,7 +38,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
@@ -77,7 +77,7 @@ DenseVector<ValueType> computeGlobalPrefixSum( const DenseVector<ValueType>& inp
     //first, check that the input is some block distribution
     const IndexType localN = input.getDistributionPtr()->getBlockDistributionSize();
 
-    if ( localN == nIndex )
+    if ( localN == invalidIndex )
     {
         throw std::logic_error( "Global prefix sum only implemented for block distribution." );
     }
@@ -109,16 +109,18 @@ DenseVector<ValueType> computeGlobalPrefixSum( const DenseVector<ValueType>& inp
     ValueType myOffset[1];
     comm->scatter( myOffset, 1, 0, offsetPrefixSum.data() );
 
-    //get results by adding local sums and offsets
-    DenseVector<ValueType> result( input.getDistributionPtr() );
-    scai::hmemo::WriteOnlyAccess<ValueType> wResult( result.getLocalValues(), localN );
+    // get results by adding local sums and offsets
+
+    HArray<ValueType> resultValues;
+
+    scai::hmemo::WriteOnlyAccess<ValueType> wResult( resultValues, localN );
 
     for ( IndexType i = 0; i < localN; i++ )
     {
         wResult[i] = localPrefixSum[i] + myOffset[0];
     }
 
-    return result;
+    return DenseVector<ValueType>( input.getDistributionPtr(), std::move( resultValues ) );
 }
 
 /** Generic routine for benchmarking scan routine.
@@ -165,7 +167,7 @@ static void bench( const IndexType N )
     HOST_PRINT( rank, "Scan time 2 : " << scanTime2 << " seconds" )
 
     Y -= Z;
-    Scalar diff = Y.maxNorm();
+    auto diff = Y.maxNorm();
 
     HOST_PRINT( rank, "diff between the two solutions: " << diff )
 }
@@ -178,7 +180,7 @@ template<typename TList> struct Calling;
 
 template<> struct Calling<common::mepr::NullType>
 {
-    static bool callBench( const common::scalar::ScalarType, const IndexType )
+    static bool callBench( const common::ScalarType, const IndexType )
     {
         return false;
     }
@@ -189,7 +191,7 @@ template<> struct Calling<common::mepr::NullType>
 template<typename HeadType, typename TailTypes>
 struct Calling<common::mepr::TypeList<HeadType, TailTypes> >
 {
-    static bool callBench( const common::scalar::ScalarType stype, const IndexType n )
+    static bool callBench( const common::ScalarType stype, const IndexType n )
     {
         if ( common::TypeTraits<HeadType>::stype == stype )
         {
@@ -227,13 +229,13 @@ int main( int argc, const char* argv[] )
 
     string typeString;
 
-    common::scalar::ScalarType dataType = common::scalar::DOUBLE;
+    common::ScalarType dataType = common::ScalarType::DOUBLE;
 
     if ( common::Settings::getEnvironment( typeString, "SCAI_TYPE" ) )
     {
         dataType = common::str2ScalarType( typeString.c_str() );
 
-        if ( dataType == common::scalar::UNKNOWN )
+        if ( dataType == common::ScalarType::UNKNOWN )
         {
             HOST_PRINT( rank, "SCAI_TYPE=" << typeString << ": is not a known data type" )
             return -1;

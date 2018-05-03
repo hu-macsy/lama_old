@@ -39,7 +39,6 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/LibModule.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <vector>
 
@@ -70,7 +69,7 @@ int main( void )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        common::unique_ptr<Benchmark> bench( Benchmark::create( values[i], "" ) );
+        std::unique_ptr<Benchmark> bench( Benchmark::create( values[i], "" ) );
   
         SCAI_LOG_INFO( logger, "Benchmark " << i << " of " << values.size() << ": key = " << values[i] 
                                 << ", Id = " << bench->getCreateId() << ", Name = " << bench->getName() )

@@ -69,7 +69,7 @@ public:
         const IndexType targetDistances[],
         const ValueType sourceSection[],
         const IndexType sourceDistances[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     /** CUDA implementation on host for SectionKernelTrait::assignScalar */
@@ -81,7 +81,7 @@ public:
         const IndexType sizes[],
         const IndexType distances[],
         ValueType val, 
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     /** CUDA implementation on host for SectionKernelTrait::unaryOp */
@@ -94,17 +94,17 @@ public:
         const IndexType targetDistances[],
         const SourceValueType sourceSection[],
         const IndexType sourceDistances[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
-    /** CUDA implementation on host for SectionKernelTrait::unary */
+    /** CUDA implementation on host for SectionKernelTrait::UnaryOp */
 
     template <typename ValueType>
-    static void unary( 
+    static void UnaryOp( 
         ValueType section[],
         const IndexType nDims,
         const IndexType sizes[],
         const IndexType distances[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
 private:
 
@@ -112,7 +112,7 @@ private:
     static void assign0(
         ValueType targetSection[],
         const ValueType sourceSection[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
@@ -120,7 +120,7 @@ private:
         ValueType targetSection[],
         const ValueType sourceSection[],
         const IndexType sizes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
@@ -128,7 +128,7 @@ private:
         ValueType targetSection[],
         const ValueType sourceSection[],
         const IndexType sizes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
@@ -136,7 +136,7 @@ private:
         ValueType targetSection[],
         const ValueType sourceSection[],
         const IndexType sizes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
@@ -144,14 +144,14 @@ private:
         ValueType targetSection[],
         const ValueType sourceSection[],
         const IndexType sizes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
     static void assignScalar0(
         ValueType targetSection[],
         const ValueType val,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
@@ -159,7 +159,7 @@ private:
         ValueType targetSection[],
         const ValueType val,
         const IndexType sizes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
@@ -167,7 +167,7 @@ private:
         ValueType targetSection[],
         const ValueType val,
         const IndexType sizes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
@@ -175,7 +175,7 @@ private:
         ValueType targetSection[],
         const ValueType val,
         const IndexType sizes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename ValueType>
@@ -183,7 +183,7 @@ private:
         ValueType targetSection[],
         const ValueType val,
         const IndexType sizes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     template<typename TargetValueType, typename SourceValueType>
@@ -191,52 +191,52 @@ private:
         TargetValueType targetSection[],
         const SourceValueType sourceSection[],
         const IndexType sizes[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
     template<typename TargetValueType, typename SourceValueType>
     static void unaryOp2(
         TargetValueType targetSection[],
         const SourceValueType sourceSection[],
         const IndexType sizes[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
     template<typename TargetValueType, typename SourceValueType>
     static void unaryOp3(
         TargetValueType targetSection[],
         const SourceValueType sourceSection[],
         const IndexType sizes[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
     template<typename TargetValueType, typename SourceValueType>
     static void unaryOp4(
         TargetValueType targetSection[],
         const SourceValueType sourceSection[],
         const IndexType sizes[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
     template<typename ValueType>
-    static void unary1(
+    static void UnaryOp1(
         ValueType section[],
         const IndexType sizes[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
     template<typename ValueType>
-    static void unary2(
+    static void UnaryOp2(
         ValueType section[],
         const IndexType sizes[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
     template<typename ValueType>
-    static void unary3(
+    static void UnaryOp3(
         ValueType section[],
         const IndexType sizes[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
     template<typename ValueType>
-    static void unary4(
+    static void UnaryOp4(
         ValueType section[],
         const IndexType sizes[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

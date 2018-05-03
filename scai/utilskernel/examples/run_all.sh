@@ -69,7 +69,6 @@ RUN 1 vectorAdd.exe
 RUN 1 SingleAccess.exe
 RUN 1 BenchSort.exe
 RUN 1 BenchOps.exe
-RUN 1 LArrayDemo.exe
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`
@@ -102,28 +101,4 @@ then
 
 	cd ..
 
-fi
-
-if [ -d $MYDIR/mic ];
-then
-
-	cd $MYDIR/mic
-
-	# build examples
-	make
-
-	# reset counter for CUDA examples
-	i=0
-
-	# run mic examples
-	#RUN 1 mic/MICExample1.exe
-
-	# check if there are unkown examples
-	count=`ls -l -la $MYDIR/mic/*.exe | wc -l`
-	if [ $count -ne $i ]; then
-	    echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
-	    exit 1
-	fi
-
-	cd ..
 fi

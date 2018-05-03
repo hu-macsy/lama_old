@@ -39,7 +39,7 @@
 // include necessary system headers
 #include <iostream>
 #include <time.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 // include general lama header
 #include <scai/lama.hpp>
@@ -54,9 +54,6 @@
 //include for using the NoDistribution
 #include <scai/dmemo/NoDistribution.hpp>
 
-//include the generic inner product functions of LAMA
-#include <scai/lama/expression/all.hpp>
-
 //include the generic norm functions of LAMA
 #include <scai/lama/norm/all.hpp>
 
@@ -69,16 +66,16 @@ int main()
     // Define the ValueType used for the vector
     // Change this type definition to double if your gpu supports that
     //
-    typedef RealType ScalarType;
+    typedef DefaultReal ScalarType;
     /////////////////////////////////////////////////
     ///////////// Scalar operations /////////////////
     /////////////////////////////////////////////////
     //
     // Define a few scalars:
     //
-    lama::Scalar s1( static_cast<ScalarType>( 3.1415926 ) ); // static_cast is only needed to switch between t and double by typedef
-    lama::Scalar s2( static_cast<ScalarType>( 2.71763 ) );
-    lama::Scalar s3( static_cast<ScalarType>( 42.0 ) );
+    ScalarType s1 = 3.1415926;   // static_cast is only needed to switch between t and double by typedef
+    ScalarType s2 = 2.71763;
+    ScalarType s3 = 42.0;
     // pure scalar operations only can be executed on the host
     std::cout << "Manipulating a few scalars..." << std::endl;
     std::cout << "operator +=" << std::endl;
@@ -112,8 +109,8 @@ int main()
 
     lama::DenseVector<ScalarType> lama_vec1;
     lama_vec1.setRawData( 10, plain_vec );
-    utilskernel::LArray<ScalarType> lama_array1 ( 10, plain_vec );
-    lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
+    hmemo::HArray<ScalarType> lama_array1 ( 10, plain_vec );
+    auto lama_vec2 = lama::fill<lama::DenseVector<ScalarType>>( 10, 0 );
     lama_vec2.setDenseValues( lama_array1 );
     lama::DenseVector<ScalarType> lama_vec3( lama_array1 );
     std::cout << "DenseVector with rand values filled" << std::endl;
@@ -122,13 +119,13 @@ int main()
     //
     hmemo::ContextPtr cudaContext;
 
-    if ( hmemo::Context::canCreate( hmemo::Context::CUDA ) )
+    if ( hmemo::Context::canCreate( common::ContextType::CUDA ) )
     {
-        cudaContext = hmemo::Context::getContextPtr( hmemo::Context::CUDA, 0 );
+        cudaContext = hmemo::Context::getContextPtr( common::ContextType::CUDA, 0 );
     }
     else
     {
-        cudaContext = hmemo::Context::getContextPtr( hmemo::Context::Host );
+        cudaContext = hmemo::Context::getContextPtr( common::ContextType::Host );
     }
 
     lama_vec1.setContextPtr( cudaContext );
@@ -153,8 +150,8 @@ int main()
     // Plane rotation of two vectors:
     // Computes (x,y) <- (alpha * x + beta * y, -beta * x + alpha * y)
     //
-    lama::Scalar alpha( 1.1f );
-    lama::Scalar beta( 2.3f );
+    ScalarType alpha = 1.1;
+    ScalarType beta = 2.3;
     lama_vec1 = alpha * lama_vec1 + beta * lama_vec2;
     lama_vec2 = -beta * lama_vec1 + alpha * lama_vec2;
     std::cout << "plain rotation calculated" << std::endl;

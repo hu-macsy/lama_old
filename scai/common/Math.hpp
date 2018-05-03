@@ -35,6 +35,7 @@
 #pragma once
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/cuda/CUDACallable.hpp>
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 #include <scai/common/Complex.hpp>
@@ -59,22 +60,19 @@ struct Math
      */
 
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER
-    typename TypeTraits<ValueType>::AbsType abs( const ValueType& x );
+    static inline typename TypeTraits<ValueType>::RealType abs( const ValueType& x );
 
     /*
      * Getter for the real part
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER
-    typename TypeTraits<ValueType>::AbsType real( const ValueType& x );
+    static inline typename TypeTraits<ValueType>::RealType real( const ValueType& x );
 
     /*
      * Getter for the imag part
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER
-    typename TypeTraits<ValueType>::AbsType imag( const ValueType& x );
+    static inline typename TypeTraits<ValueType>::RealType imag( const ValueType& x );
 
     /** Square root function for ValueType
      *
@@ -87,117 +85,116 @@ struct Math
      *  \endcode
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType sqrt( const ValueType& x );
+    static inline ValueType sqrt( const ValueType& x );
 
     /*
      * Computes the conjugated value of a given value
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType conj( const ValueType& x );
+    static inline ValueType conj( const ValueType& x );
 
     /*
      * Computes the exponential function of a given value
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType exp( const ValueType& x );
+    static inline ValueType exp( const ValueType& x );
 
     /*
      * pow-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType pow( const ValueType& base, const ValueType& exponent );
+    static inline ValueType pow( const ValueType& base, const ValueType& exponent );
 
     /*
      * mod-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType mod( const ValueType& x, const ValueType& y );
+    static inline ValueType mod( const ValueType& x, const ValueType& y );
 
     /*
      * log-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType log( const ValueType& x );
+    static inline ValueType log( const ValueType& x );
 
     /*
      * floor-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType floor( const ValueType& x );
+    static inline ValueType floor( const ValueType& x );
 
     /*
      * ceil-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType ceil( const ValueType& x );
+    static inline ValueType ceil( const ValueType& x );
 
     /*
      * sin-function for ValueType
      */
 
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType sin( const ValueType& x );
+    static inline ValueType sin( const ValueType& x );
 
     /*
      * sinh-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType sinh( const ValueType& x );
+    static inline ValueType sinh( const ValueType& x );
 
     /*
      * cos-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType cos( const ValueType& x );
+    static inline ValueType cos( const ValueType& x );
 
     /*
      * cosh-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType cosh( const ValueType& x );
+    static inline ValueType cosh( const ValueType& x );
 
     /*
      * tan-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType tan( const ValueType& x );
+    static inline ValueType tan( const ValueType& x );
 
     /*
      * atan-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType atan( const ValueType& x );
+    static inline ValueType atan( const ValueType& x );
 
     /*
      * arg function for ValueType, only used for complex
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER
-    typename TypeTraits<ValueType>::AbsType arg( const ValueType& x );
+    static inline typename TypeTraits<ValueType>::RealType arg( const ValueType& x );
 
     /*
      * atan2-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType atan2( const ValueType& y, const ValueType& x );
+    static inline ValueType atan2( const ValueType& y, const ValueType& x );
 
     /*
      * copysign-function for ValueType
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER ValueType copysign( const ValueType& y, const ValueType& x );
+    static inline ValueType copysign( const ValueType& y, const ValueType& x );
 
     /*
      * min operation
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER ValueType min( const ValueType& x, const ValueType& y );
+    static inline CUDA_CALLABLE_MEMBER ValueType min( const ValueType& x, const ValueType& y );
 
     /*
      * max operation
      */
     template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER ValueType max( const ValueType& x, const ValueType& y );
+    static inline CUDA_CALLABLE_MEMBER ValueType max( const ValueType& x, const ValueType& y );
 
     /*
      * @brief random value betweem 0 and bound inclusive
@@ -216,7 +213,11 @@ struct Math
      *  @returns   a boolean value
      */
     static inline bool randomBool( const float trueRatio );
+ 
+    /** @brief return the exponent p for the smallest power that satisfies $2^p \ge n$ */
 
+    template<typename ValueType>
+    static inline CUDA_CALLABLE_MEMBER ValueType nextpow2( ValueType n );
 };
 
 // -------------------------------- sqrt ----------------------------
@@ -774,6 +775,23 @@ bool Math::randomBool( const float trueRatio )
     }
 }
 
+// -------------------------------- nextpow2  ------------------------
+
+template<typename ValueType>
+ValueType Math::nextpow2( const ValueType n )
+{
+    ValueType a = Math::abs( n );
+    ValueType p2 = 1;
+    ValueType p = 0;
+
+    while ( p2 < a )
+    {
+        p2 *= 2;
+        p  += 1;
+    }
+
+    return p;
+}
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
@@ -781,6 +799,9 @@ bool Math::randomBool( const float trueRatio )
 
 // Workaround for template function: code for complex abs function as macro
 // Reason: template function causes compiler warnings with attribute CUDA_CALLABLE
+//
+// Note: Make sure to give the same result as real numbers when the
+// complex number is purely real or purely imaginary.
 
 #define ABS_FUNCTION_CODE                       \
     ValueType x = a.real();                     \
@@ -792,6 +813,14 @@ bool Math::randomBool( const float trueRatio )
     if ( s == ValueType( 0 ) )                  \
     {                                           \
         return s;                               \
+    }                                           \
+    else if ( ay == ValueType ( 0 ) )           \
+    {                                           \
+        return ax;                              \
+    }                                           \
+    else if ( ax == ValueType ( 0 ) )           \
+    {                                           \
+        return ay;                              \
     }                                           \
                                                 \
     x /= s;                                     \
@@ -812,7 +841,7 @@ template<>
 inline CUDA_CALLABLE_MEMBER
 double Math::abs( const Complex<double>& a )
 {
-    typedef float ValueType;
+    typedef double ValueType;
 
     ABS_FUNCTION_CODE
 }
@@ -879,14 +908,14 @@ Complex<long double> Math::sqrt( const Complex<long double>& a )
 // ------------------ Math::conj --------------------------------
 
 template<>
-inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER 
+inline CUDA_CALLABLE_MEMBER
 Complex<float> Math::conj( const Complex<float>& a )
 {
     return Complex<float>( a.real(), -a.imag() );
 }
 
 template<>
-inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER 
+inline CUDA_CALLABLE_MEMBER
 Complex<double> Math::conj( const Complex<double>& a )
 {
     return Complex<double>( a.real(), -a.imag() );
@@ -902,7 +931,7 @@ Complex<long double> Math::conj( const Complex<long double>& a )
 // ------------------ Math::exp --------------------------------
 
 template<>
-inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER 
+inline CUDA_CALLABLE_MEMBER
 Complex<float> Math::exp( const Complex<float>& a )
 {
     float s, c;
@@ -913,7 +942,7 @@ Complex<float> Math::exp( const Complex<float>& a )
 }
 
 template<>
-inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER 
+inline CUDA_CALLABLE_MEMBER
 Complex<double> Math::exp( const Complex<double>& a )
 {
     double s, c;
@@ -924,8 +953,7 @@ Complex<double> Math::exp( const Complex<double>& a )
 }
 
 template<>
-inline MIC_CALLABLE_MEMBER 
-Complex<long double> Math::exp( const Complex<long double>& a )
+inline Complex<long double> Math::exp( const Complex<long double>& a )
 {
     long double s, c;
     long double e = ::expl( a.real() );
@@ -997,8 +1025,7 @@ Complex<double> Math::pow( const Complex<double>& base, const Complex<double>& e
 }
 
 template<>
-inline MIC_CALLABLE_MEMBER 
-Complex<long double> Math::pow( const Complex<long double>& base, const Complex<long double>& exponent )
+inline Complex<long double> Math::pow( const Complex<long double>& base, const Complex<long double>& exponent )
 {
     return Math::exp( exponent * Math::log( base ) );
 }

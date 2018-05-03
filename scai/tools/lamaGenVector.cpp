@@ -35,11 +35,8 @@
 #include <scai/lama.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/lama/expression/all.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/Settings.hpp>
 
@@ -90,17 +87,17 @@ static bool isValue( const char* arg )
     return true;
 }
 
-static common::scalar::ScalarType getType()
+static common::ScalarType getType()
 {
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
+    common::ScalarType type = common::TypeTraits<double>::stype;
 
     std::string val;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+        scai::common::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
 
-        if ( env_type == scai::common::scalar::UNKNOWN )
+        if ( env_type == scai::common::ScalarType::UNKNOWN )
         {
             std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
         }
@@ -116,9 +113,9 @@ struct CommandLineOptions
     string outFileName;
     string matFileName;
 
-    common::scalar::ScalarType outDataType;
+    common::ScalarType outDataType;
 
-    Scalar value;   // value for the vector
+    intern::Scalar value;   // value for the vector
 
     bool random;    // if true generate random numbers
 
@@ -129,7 +126,7 @@ struct CommandLineOptions
         outFileName = "";
         matFileName = "";
         outDataType = getType();
-        value       = Scalar( 1 );
+        value       = 1;
         size        = 0;
         random      = false;
     }
@@ -186,23 +183,16 @@ struct CommandLineOptions
 
     void checkOutDataType()
     {
-        if ( outDataType != common::scalar::INTERNAL )
+        if ( outDataType != common::ScalarType::INTERNAL )
         {
             return;
         }
 
         // take double or complex double
 
-        if ( conj( value ) == value )
-        {
-            outDataType = common::scalar::DOUBLE;
-        }
-        else
-        {
-            outDataType = common::scalar::DOUBLE_COMPLEX;
-        }
+        outDataType = common::ScalarType::DOUBLE;
 
-        cout << "No output data type specified, take " << outDataType << " due to value = " << value << endl;
+        cout << "No output data type specified, take " << outDataType << endl;
     }
 };
 
@@ -216,6 +206,58 @@ void printUsage( const char* progName )
     cout << "   val is the value for each entry" << endl;
     cout << "    -random each entry is multiplied with a random value from 0..1" << endl;
     cout << "   matrix_filename : if set, compute vector as rhs of matrix * vector" << endl;
+}
+
+template<typename ValueType>
+void generate( const CommandLineOptions& options )
+{
+    // use vector of outDataType so no information is lost
+
+    CSRSparseMatrix<ValueType> matrix;
+    DenseVector<ValueType> v;
+ 
+    ValueType initValue = options.value.getValue<ValueType>();
+
+    if ( options.matFileName != "" )
+    {
+        matrix.readFromFile( options.matFileName );
+        cout << "Read in matrix from file " << options.matFileName << ": " << matrix << endl;
+
+        v.setSameValue( matrix.getColDistributionPtr(), initValue );
+    }
+    else
+    {
+        v.setSameValue( options.size, initValue );
+    }
+
+    cout << "Vector (initialized): " << v << endl;
+
+    if ( options.random )
+    {
+        // generate random number for the vector, in range (0, 1)
+
+        v.fillRandom( 1 ); 
+
+        // scale random numbers from 0 .. 1 with options.value
+
+        v *= initValue;
+    }
+
+    cout << "Vector generated: " << v << endl;
+
+    if ( v.getDistribution() == matrix.getColDistribution() )
+    {
+        DenseVector<ValueType> rhs;
+        rhs = matrix * v;
+        v = rhs;
+        cout << "Vector now rhs of multiplication with matrix: " << v << endl;
+    }
+
+    cout << "write to output file " << options.outFileName << ", data type = " << options.outDataType;
+    cout << endl;
+    v.writeToFile( options.outFileName );
+
+    cout << "Done." << endl;
 }
 
 int main( int argc, const char* argv[] )
@@ -248,53 +290,12 @@ int main( int argc, const char* argv[] )
     options.checkOutDataType();
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
 
-    // use vector of outDataType so no information is lost
-    common::shared_ptr<Matrix> matrix;
-    common::shared_ptr<_DenseVector> v ( _DenseVector::create( options.outDataType ) );
+#define DO_GENERATE( ValueType )                                        \
+    if ( options.outDataType == common::TypeTraits<ValueType>::stype )  \
+    {                                                                   \
+        generate<ValueType>( options );                                 \
+    }                                                                  
 
-    if ( options.matFileName != "" )
-    {
-        MatrixCreateKeyType matrixType( Format::CSR, options.outDataType );
-        matrix.reset( Matrix::create( MatrixCreateKeyType ( matrixType ) ) );
-        matrix->readFromFile( options.matFileName );
-        cout << "Read in matrix from file " << options.matFileName << ": " << *matrix << endl;
-    }
+    SCAI_COMMON_LOOP( DO_GENERATE, SCAI_NUMERIC_TYPES_HOST )
 
-    if ( options.size == 0 && matrix.get() )
-    {
-        v->setSameValue( matrix->getColDistributionPtr(), options.value );
-    }
-    else
-    {
-        v->setSameValue( options.size, options.value );
-    }
-
-    cout << "Vector (initialized): " << *v << endl;
-
-    if ( options.random )
-    {
-        // generate random number for the vector, in range (0, 1)
-
-        v->fillRandom( 1 ); 
-
-        // scale random numbers from 0 .. 1 with options.value
-
-        *v *= options.value;
-    }
-
-    cout << "Vector generated: " << *v << endl;
-
-    if ( matrix.get() )
-    {
-        common::shared_ptr<_DenseVector> rhs ( _DenseVector::create( options.outDataType ) );
-        *rhs = *matrix * *v;
-        v = rhs;
-        cout << "Vector now rhs of multiplication with matrix: " << *v << endl;
-    }
-
-    cout << "write to output file " << options.outFileName;
-    cout << ", data type = " << options.outDataType;
-    cout << endl;
-    v->writeToFile( options.outFileName );
-    cout << "Done." << endl;
 }

@@ -57,7 +57,7 @@ const string& PMVBenchmark::getGroupId()
 PMVBenchmark::PMVBenchmark( const string& argument ) :
 
     LAMAMPIBenchmark( getCreateId(), getGroupId() ),
-    mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
+    mContext( hmemo::Context::getContextPtr( common::ContextType::Host ) ),
     mNumFloatingPointOperations( 0 ),
     mNumProcessedIndexes( 0 ),
     mNumProcessedValues( 0 )
@@ -75,25 +75,25 @@ PMVBenchmark::PMVBenchmark( const string& argument ) :
 
     SCAI_ASSERT_EQ_ERROR( argTokens.size(), 2, "format, type expected as argument" )
 
-    Matrix::MatrixStorageFormat format = str2Format( argTokens[0].c_str() );
+    Format format = str2Format( argTokens[0].c_str() );
 
-    if ( format == Matrix::UNDEFINED )
+    if ( format == Format::UNDEFINED )
     {
         COMMON_THROWEXCEPTION( "unknowm matrix format: " << argTokens[0] )
     }
 
     mType = common::str2ScalarType( argTokens[1].c_str() );
 
-    if ( mType == common::scalar::UNKNOWN )
+    if ( mType == common::ScalarType::UNKNOWN )
     {
         COMMON_THROWEXCEPTION( "unknowm value type: " << argTokens[1] )
     }
 
     // allocate source and target storage of the required type
 
-    mMatrixA.reset( Matrix::create( MatrixCreateKeyType( format, mType ) ) );
-    mVectorX.reset( _DenseVector::create( mType ) );
-    mVectorY.reset( _DenseVector::create( mType ) );
+    mMatrixA.reset( Matrix<ValueType>::getMatrix( format ) );
+    mVectorX.reset( new DenseVector<ValueType>() );
+    mVectorY.reset( new DenseVector<ValueType>() );
 
     mArgument = argTokens[0] + ", " + argTokens[1];
 
@@ -105,7 +105,7 @@ PMVBenchmark::~PMVBenchmark()
     // Note: mMatrixA, mVectorX, mVectorY will be freed
 }
 
-common::scalar::ScalarType PMVBenchmark::getValueType() const
+common::ScalarType PMVBenchmark::getValueType() const
 {
     return mType;
 }
@@ -177,8 +177,7 @@ void PMVBenchmark::initialize()
     *mVectorX = inputX;
     mVectorX->redistribute( mDistribution );
 
-    mVectorY->allocate( mDistribution );
-    *mVectorY = Scalar( 0 );
+    mVectorY->setSameValue( mDistribution, ValueType( 0 ) );
 
     SCAI_LOG_DEBUG( logger, "convert and redistribute the input matrix " << inputA );
 
@@ -222,11 +221,11 @@ void PMVBenchmark::getComplexity(
     CounterType& numFlops,
     CounterType& numProcessedIndexes,
     CounterType& numProcessedValues,
-    const Matrix& matrix )
+    const Matrix<ValueType>& matrix )
 {
     IndexType numRows = matrix.getNumRows(); // used for all formats
 
-    if ( matrix.getMatrixKind() == Matrix::DENSE )
+    if ( matrix.getMatrixKind() == MatrixKind::DENSE )
     {
         IndexType numCols = matrix.getNumColumns();
         numFlops = numRows * ( 2 * numCols - 1 );
@@ -265,26 +264,24 @@ void PMVBenchmark::shutdown()
 
     // set the maximal difference that is allowed, depends on ValueType
 
-    Scalar maxDiff = 1E-4f;
+    RealType<ValueType> maxDiff = 1E-4f;
 
     try
     {
-        const _DenseVector& computedResult = *mVectorY;
+        const DenseVector<ValueType>& computedResult = *mVectorY;
 
         SCAI_LOG_INFO( logger, "computed result: " << computedResult );
 
-        // Note: there might be type conversion from double to float
-
-        DenseVector<double> correctResult( result );
+        DenseVector<ValueType> correctResult( result );
 
         SCAI_LOG_INFO( logger, "result ( by inputSet ): " << result );
         SCAI_LOG_INFO( logger, "correct result: " << correctResult );
 
-        Vector& diff = correctResult;
+        Vector<ValueType>& diff = correctResult;
 
         diff = computedResult - correctResult;
 
-        Scalar diffNorm = maxNorm( diff );
+        auto diffNorm = maxNorm( diff );
 
         SCAI_LOG_INFO( logger, "max diff = " << diffNorm );
 

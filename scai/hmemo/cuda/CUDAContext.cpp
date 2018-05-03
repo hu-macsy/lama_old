@@ -55,8 +55,8 @@
 namespace scai
 {
 
-using common::Thread;
 using tasking::SyncToken;
+using tasking::StreamType;
 using tasking::CUDAStreamSyncToken;
 using tasking::CUDAStreamPool;
 
@@ -71,7 +71,7 @@ SCAI_LOG_DEF_LOGGER( CUDAContext::logger, "Context.CUDAContext" )
 
 CUDAContext::CUDAContext( int deviceNr ) :
 
-    Context( common::context::CUDA ),
+    Context( common::ContextType::CUDA ),
     CUDACtx( deviceNr )
 
 {
@@ -165,7 +165,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
     // CUDA device can use only data on same CUDA device
 
-    if ( other.getType() == memtype::CUDAMemory )
+    if ( other.getType() == MemoryType::CUDAMemory )
     {
         const CUDAMemory* otherCUDAMem = dynamic_cast<const CUDAMemory*>( &other );
         SCAI_ASSERT( otherCUDAMem, "serious type mismatch" )
@@ -174,7 +174,7 @@ bool CUDAContext::canUseMemory( const Memory& other ) const
 
     // Zero-Copy: we can use CUDA Host memory
 
-    if ( other.getType() == memtype::CUDAHostMemory )
+    if ( other.getType() == MemoryType::CUDAHostMemory )
     {
         const CUDAHostMemory* otherCUDAHostMem = dynamic_cast<const CUDAHostMemory*>( &other );
         SCAI_ASSERT( otherCUDAHostMem, "serious type mismatch" )
@@ -193,21 +193,21 @@ CUDAStreamSyncToken* CUDAContext::getComputeSyncToken() const
     // ToDo: A possible problem might be that this CUDAContext is deleted before
     // synchronization has taken place. Solution: add a dummy routine where
     // one argument is bind to this context.
-    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::ComputeStream );
+    return new CUDAStreamSyncToken( *this, StreamType::ComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 SyncToken* CUDAContext::getSyncToken() const
 {
-    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::ComputeStream );
+    return new CUDAStreamSyncToken( *this, StreamType::ComputeStream );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 {
-    return new CUDAStreamSyncToken( *this, CUDAStreamSyncToken::TransferStream );
+    return new CUDAStreamSyncToken( *this, StreamType::TransferStream );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -226,7 +226,7 @@ static int getDefaultDeviceNr()
 /*      Factory::Register - create( int )                                        */
 /* ----------------------------------------------------------------------------- */
 
-static common::weak_ptr<CUDAContext> mCUDAContext[SCAI_MAX_CUDA_DEVICES];
+static std::weak_ptr<CUDAContext> mCUDAContext[SCAI_MAX_CUDA_DEVICES];
 
 ContextPtr CUDAContext::create( int deviceNr )
 {
@@ -244,12 +244,12 @@ ContextPtr CUDAContext::create( int deviceNr )
             "device = " << cudaDeviceNr << " out of range" << ", max supported device = " << SCAI_MAX_CUDA_DEVICES )
     }
 
-    common::shared_ptr<CUDAContext> context = common::shared_ptr<CUDAContext>();
+    std::shared_ptr<CUDAContext> context = std::shared_ptr<CUDAContext>();
 
     if ( mCUDAContext[cudaDeviceNr].expired() )
     {
         // create a new context for the device and return the shared pointer
-        context = common::shared_ptr<CUDAContext>( new CUDAContext( cudaDeviceNr ) );
+        context = std::shared_ptr<CUDAContext>( new CUDAContext( cudaDeviceNr ) );
         // we keep a weak pointer so that we can return
         mCUDAContext[cudaDeviceNr] = context;
     }

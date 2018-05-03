@@ -37,8 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
-#include <scai/lama/expression/all.hpp>
+// _Matrix & vector related includes
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
@@ -46,12 +45,16 @@
 
 using namespace scai::lama;
 using namespace scai::hmemo;
-using namespace std;
+using std::cout;
+using std::endl;
+using std::setw;
+using scai::IndexType;
 using scai::common::Walltime;
+using scai::common::ContextType;
 
 //static bool verboseFlag = false;
 
-static void bench( Matrix& b, Matrix& a )
+static void bench( _Matrix& b, _Matrix& a )
 {
     ContextPtr host = Context::getHostPtr();
     a.setContextPtr( host );
@@ -63,11 +66,11 @@ static void bench( Matrix& b, Matrix& a )
 
     for ( int k = 0; k < nrepeat; ++k )
     {
-        b = a;
+        b.assign( a );
     }
 
     timeHost = Walltime::get() - timeHost;
-    ContextPtr gpu = Context::getContextPtr( Context::CUDA );
+    ContextPtr gpu = Context::getContextPtr( ContextType::CUDA );
     a.setContextPtr( gpu );
     b.setContextPtr( gpu );
     a.prefetch();
@@ -76,7 +79,7 @@ static void bench( Matrix& b, Matrix& a )
 
     for ( int k = 0; k < nrepeat; ++k )
     {
-        b = a;
+        b.assign( a );
     }
 
     timeGPU = Walltime::get() - timeGPU;
@@ -95,14 +98,14 @@ static void bench( Matrix& b, Matrix& a )
 
 int main()
 {
-    if ( !Context::hasContext( Context::CUDA ) )
+    if ( !Context::hasContext( ContextType::CUDA ) )
     {
         cout << "This examples compares the Host and CUDA implementation. You build without CUDA, so it's skipped." << endl;
         return 0;
     }
 
     IndexType sizes[] = { 10000, 30000 };
-    double fillrates[] = { 0.001, 0.002, 0.003 };
+    float fillrates[] = { 0.001, 0.002, 0.003 };
     int nsizes = sizeof( sizes ) / sizeof( IndexType );
     int nrates = sizeof( fillrates ) / sizeof( double );
 
@@ -121,32 +124,34 @@ int main()
             // take the second supported value type
             typedef SCAI_COMMON_FIRST_ARG( SCAI_COMMON_TAIL( SCAI_NUMERIC_TYPES_HOST ) ) ValueType1;
 #endif
-            double rate = fillrates[j];
-            CSRSparseMatrix<ValueType> a( size, size );
-            CSRSparseMatrix<ValueType> a1( size, size );
-            ELLSparseMatrix<ValueType1> b( size, size );
-            JDSSparseMatrix<ValueType1> c( size, size );
-            CSRSparseMatrix<ValueType1> d( size, size );
+            float rate = fillrates[j];
+
+            auto a  = zero<CSRSparseMatrix<ValueType>>( size, size );
+            auto a1 = zero<CSRSparseMatrix<ValueType>>( size, size );
+            auto b  = zero<ELLSparseMatrix<ValueType1>>( size, size );
+            auto c  = zero<JDSSparseMatrix<ValueType1>>( size, size );
+            auto d  = zero<CSRSparseMatrix<ValueType1>>( size, size );
+
             MatrixCreator::fillRandom( a, rate );
             cout << "ELL <-- CSR" << endl;
             bench( b, a );
             cout << "CSR <-- ELL" << endl;
             bench( a1, b );
             // test for same
-            Scalar maxDiff = a.maxDiffNorm( a1 );
-            cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
+            auto maxDiff = a.maxDiffNorm( a1 );
+            cout << "max diff = " << maxDiff << endl;
             cout << "JDS <-- CSR" << endl;
             bench( c, a );
             cout << "CSR <-- JDS" << endl;
             bench( a1, c );
             maxDiff = a.maxDiffNorm( a1 );
-            cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
+            cout << "max diff = " << maxDiff << endl;
             cout << "CSR <-- CSR" << endl;
             bench( d, a );
             cout << "CSR <-- CSR" << endl;
             bench( a1, d );
             maxDiff = a.maxDiffNorm( a1 );
-            cout << "max diff = " << maxDiff.getValue<ValueType>() << endl;
+            cout << "max diff = " << maxDiff << endl;
         }
     }
 }

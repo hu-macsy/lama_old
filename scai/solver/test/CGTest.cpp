@@ -52,22 +52,22 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CGTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<CG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    CG cgSolver( "CGTestSolver", slogger );
+    CG<ValueType> cgSolver( "CGTestSolver", slogger );
     BOOST_CHECK_EQUAL( cgSolver.getId(), "CGTestSolver" );
-    CG cgSolver2( "CGTestSolver2" );
+    CG<ValueType> cgSolver2( "CGTestSolver2" );
     BOOST_CHECK_EQUAL( cgSolver2.getId(), "CGTestSolver2" );
-    CG cgSolver3( cgSolver2 );
+    CG<ValueType> cgSolver3( cgSolver2 );
     BOOST_CHECK_EQUAL( cgSolver3.getId(), "CGTestSolver2" );
     BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
-    CG cgSolver4( "cgSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
+    CG<ValueType> cgSolver4( "cgSolver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
     cgSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
     cgSolver4.setStoppingCriterion( criterion );
-    CG cgSolver5( cgSolver4 );
+    CG<ValueType> cgSolver5( cgSolver4 );
     BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
     BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
 }

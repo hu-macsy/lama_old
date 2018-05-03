@@ -36,19 +36,20 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/expression/all.hpp>
 
 #include <iostream>
 #include <stdlib.h>
 
-using namespace scai::lama;
+using namespace scai;
+using namespace lama;
 
 int main()
 
 {
     /** Take default real type for this example. */
-    typedef RealType ValueType;
-    Scalar singleValue( 2.0 );
+    typedef DefaultReal ValueType;
+
+    ValueType singleValue = 2;
     //
     // Create a DenseVector out of a simple c array
     //

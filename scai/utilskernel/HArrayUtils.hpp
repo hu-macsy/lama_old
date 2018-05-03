@@ -41,6 +41,7 @@
 
 #include <scai/logging.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/CompareOp.hpp>
 #include <scai/common/UnaryOp.hpp>
 
 namespace scai
@@ -71,9 +72,15 @@ public:
      *  \endcode
      *  Size of target array will be the same as the source array.
      */
-    static void assign(
+    static void _assign(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename TargetValueType, typename SourceValueType>
+    static void assign(
+        hmemo::HArray<TargetValueType>& target,
+        const hmemo::HArray<SourceValueType>& source,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -81,42 +88,69 @@ public:
      *
      *  target[i] op= source[indexes[i]]
      */
-    static void gather(
+    static void _gather(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& indexes,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    static void sparseGather(
+    /**
+     *  @brief Gathering of values in sparse array
+     *
+     *  This operation is the same as gather but here the source array is reprensented
+     *  as a sparse version.
+     *
+     *  @param target will contain results, can be any type
+     *  @param sourceZeroValue default value of source array if index does not appear in sourceNonZeroIndexes
+     *  @param sourceNonZeroIndexes indexes of source array with non-zero values
+     *  @param sourceNonZeroValues same size as sourceNonZeroIndexes, contains values of source array
+     *  @param indexes same size as target, indexes of source array to gather
+     *  @param op specifies binary op how to combine with existing values, can be COPY
+     *  @param prefLoc preferred location where to execute the operation
+     *
+     *  \code
+     *     for ( i = 0; i < indexes.size(); ++i )
+     *       if ( there is j with sourceNonZeroIndexes[j] == indexes[i] )
+     *         target[i] = target[i] op sourceNonZeroValues[j] ;
+     *       else
+     *         target[i] = target[i] op sourceZeroValue;
+     *  \endcode
+     *
+     *  As sourceNonZeroIndexes is sorted (ascending), binary search can be applied to find j for i
+     */
+    template<typename SourceValueType>
+    static void _sparseGather(
         hmemo::_HArray& target,
-        const hmemo::_HArray& sourceNonZeroValues,
+        const SourceValueType sourceZeroValue,
+        const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
         const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
         const hmemo::HArray<IndexType>& indexes,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
      *  @brief Gathering (unstructured read of values) with HArrays, template typed version
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void gatherImpl(
+    static void gather(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
         const hmemo::HArray<IndexType>& indexes,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
      *  @brief Gathering (unstructured read of values) for sparse data, typed version
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void sparseGatherImpl(
+    static void sparseGather(
         hmemo::HArray<TargetValueType>& target,
+        const SourceValueType sourceZero,
         const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
         const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
         const hmemo::HArray<IndexType>& indexes,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -124,12 +158,12 @@ public:
      *
      *  target[index[i]] = source[i]
      */
-    static void scatter(
+    static void _scatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
         const bool unique,
         const hmemo::_HArray& source,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -138,41 +172,29 @@ public:
      *  target[index[i]] = source[i]
      */
     template<typename TargetValueType, typename SourceValueType>
-    static void scatterImpl(
+    static void scatter(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
         const bool unique,
         const hmemo::HArray<SourceValueType>& source,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    /**
-     *  @brief Setting one scalar element for all elements of HArray
-     *
-     *  target[i] _op_= value
-     */
-    template<typename ValueType>
-    static void assignScalar(
-        hmemo::_HArray& target,
-        const ValueType value,
-        const common::binary::BinaryOp op,
-        hmemo::ContextPtr prefLoc  = hmemo::ContextPtr() )
-    __attribute__( ( noinline ) );
 
     /** This method sets a single value in a heterogeneous array.
      *
      *  @param[in,out] target  Harray where a value to set
      *  @param[in]     index  position to set ( 0 <= index < target.size() )
      *  @param[in]     val    value to set
+     *  @param[in]     op     specifies how to combine with current value
      *
      *  The value will be set at a valid context.
      */
-
     template<typename ValueType>
-    static void setVal( hmemo::_HArray& target, const IndexType index, const ValueType val );
-
-    template<typename ValueType>
-    static ValueType getVal( const hmemo::_HArray& array, const IndexType index );
+    static void setVal(
+        hmemo::HArray<ValueType>& target,
+        const IndexType index,
+        const ValueType val,
+        const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Axpy: result += beta * y
      *
@@ -235,7 +257,8 @@ public:
      *  @param[in]  y       second input array
      *  @param[in]  prefLoc location where operation should be done if possible
      *
-     *  Any alias of the arrays x, y, result is supported.
+     *  Any alias of the arrays x, y, result is supported. If no alias exists
+     *  result will be allocated with the same size as x and y.
      */
 
     template<typename ValueType>
@@ -246,20 +269,31 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** @brief Append an array to a given array 
+     *
+     *  @param[in,out] array1  is the array that will be extended
+     *  @param[in]     array2  is the array that willl be appended
+     *  @param[in]     context array1 should be valid here afterwards 
+     */
+    template<typename ValueType>
+    static void appendArray(
+        hmemo::HArray<ValueType>& array1,
+        const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
     /*
      * Implementation of functions
      */
-    static void setArray(
+    static void _setArray(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename TargetValueType, typename SourceValueType>
-    static void setArrayImpl(
+    static void setArray(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** General version for setting sectioned arrays.
@@ -275,7 +309,7 @@ public:
      *  @param context is the preferred context where option is done
      */
 
-    static void setArraySection(
+    static void _setArraySection(
         hmemo::_HArray& target,
         const IndexType targetOffset,
         const IndexType targetStride,
@@ -283,13 +317,13 @@ public:
         const IndexType sourceOffset,
         const IndexType sourceStride,
         const IndexType n,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** Typed version for setting sectioned arrays */
 
     template<typename TargetValueType, typename SourceValueType>
-    static void setArraySectionImpl(
+    static void setArraySection(
         hmemo::HArray<TargetValueType>& target,
         const IndexType targetOffset,
         const IndexType targetStride,
@@ -297,41 +331,98 @@ public:
         const IndexType sourceOffset,
         const IndexType sourceStride,
         const IndexType n,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static void setScalar(
         hmemo::HArray<ValueType>& target,
         const ValueType value,
-        const common::binary::BinaryOp op,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
-    __attribute__( ( noinline ) );
+        const common::BinaryOp op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Computing the transpose of two-dimensional array.
+     *
+     *  @param[out] target result array, size will be n1 * n2
+     *  @param[in]  n1 number of rows of 2D array
+     *  @param[in]  n2 number of cols of 2D array
+     *  @param[in]  source array with size n2 * n1
+     *  @param[in]  conj   if true, compuate conjugate-transpose
+     *  @param[in]  prefLoc location where result is computed.
+     *
+     *  Alias of target and source is suppported. On the host, 
+     *  this operation is done in-place, on a device a temporary array
+     *  is used.
+     */
     template<typename ValueType>
-    static void setValImpl(
+    static void transpose(
         hmemo::HArray<ValueType>& target,
-        const IndexType index,
+        const IndexType n1, 
+        const IndexType n2, 
+        const hmemo::HArray<ValueType>& source,
+        const bool conj,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+  
+    /** Initialize an array with a certain size and a given value.
+     *
+     *  @param[out] array    is the array that will be allocated and set
+     *  @param[in]  n        is the number of values
+     *  @param[in]  val      is the value for each entry of the array
+     *  @param[in]  prefLoc  is the location where the array is initialized, defaults to Host
+     */
+    template<typename ValueType>
+    static void setSameValue(
+        hmemo::HArray<ValueType>& array,
+        const IndexType n,
         const ValueType val,
-        const common::binary::BinaryOp op );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Provide a version of setSameValue that deals with untyped HArray. */
 
     template<typename ValueType>
-    static ValueType getValImpl(
+    static void _setSameValue(
+        hmemo::_HArray& target,
+        const IndexType n,
+        const ValueType val,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static ValueType getVal(
         const hmemo::HArray<ValueType>& array,
         const IndexType index );
 
     template<typename ValueType>
     static ValueType reduce(
         const hmemo::HArray<ValueType>& array,
-        const common::binary::BinaryOp redOp,
+        const common::BinaryOp redOp,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static inline ValueType min(
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static inline ValueType max(
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static inline RealType<ValueType> maxNorm(
+        const hmemo::HArray<ValueType>& array,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static inline ValueType sum(
+        const hmemo::HArray<ValueType>& array,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static ValueType reduce2(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
-        const common::binary::BinaryOp binOp,
-        const common::binary::BinaryOp redOp,
+        const common::BinaryOp binOp,
+        const common::BinaryOp redOp,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Functions that returns true if the element-wise comparison 
@@ -344,7 +435,7 @@ public:
     template<typename ValueType>
     static bool all(
         const hmemo::HArray<ValueType>& array1,
-        const common::binary::CompareOp compareOp,
+        const common::CompareOp compareOp,
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -359,22 +450,22 @@ public:
     template<typename ValueType>
     static bool allScalar(
         const hmemo::HArray<ValueType>& array,
-        const common::binary::CompareOp compareOp,
+        const common::CompareOp compareOp,
         const ValueType value,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static ValueType asum(
+    static RealType<ValueType> l1Norm(
         const hmemo::HArray<ValueType>& array,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static ValueType nrm2(
+    static RealType<ValueType> l2Norm(
         const hmemo::HArray<ValueType>& array,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
-    static ValueType absMaxDiffVal(
+    static RealType<ValueType> maxDiffNorm(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
@@ -385,7 +476,7 @@ public:
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Elementwise unary operation on array: result[i] = op( x[i] )
+    /** Elementwise UnaryOp operation on array: result[i] = op( x[i] )
      *
      *  @param[out] result  output array
      *  @param[in]  x       input array
@@ -397,7 +488,7 @@ public:
     static void unaryOp(
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
-        const common::unary::UnaryOp op,
+        const common::UnaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Elementwise binary operation on array: result[i] = op( x[i], y[i] )
@@ -413,7 +504,7 @@ public:
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
         const hmemo::HArray<ValueType>& y,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Elementwise binary operation on array: result[i] = op( x[i], y ), second arg is scalar
@@ -432,7 +523,7 @@ public:
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
         const ValueType y,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapScalar,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -442,7 +533,7 @@ public:
     static void compute(
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const ValueType y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
     {
@@ -455,7 +546,7 @@ public:
     static void compute(
         hmemo::HArray<ValueType>& result,
         const ValueType x,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
     {
@@ -480,7 +571,7 @@ public:
     template<typename ValueType>
     static bool isSorted( 
         const hmemo::HArray<ValueType>& array, 
-        const common::binary::CompareOp op,
+        const common::CompareOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build the running sums within an array
@@ -652,10 +743,10 @@ public:
      *  /code
      *    in:    indexes[] = { 0, 1, 5, 7, 7, 9, 9 };    
      *    in:    values [] = { 0, 1, 2, 3, 4, 5, 6 };
-     *    elimDoubles ( indexes, values, binary::COPY )
+     *    elimDoubles ( indexes, values, BinaryOp::COPY )
      *    out:   indexes[] = { 0, 1, 5, 7, 9 };    
      *    out:   values [] = { 0, 1, 2, 4, 6 };
-     *    elimDoubles ( indexes, values, binary::ADD )
+     *    elimDoubles ( indexes, values, BinaryOp::ADD )
      *    out:   indexes[] = { 0, 1, 5, 7, 9 };    
      *    out:   values [] = { 0, 1, 2, 7, 11 };
      *  /endcode
@@ -664,7 +755,7 @@ public:
     static void elimDoubles(
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /** Initialize an array with the sequence 0, .., n-1
      *
@@ -722,10 +813,10 @@ public:
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
      */
     template<typename ValueType>
-    static void fillRandomImpl( hmemo::HArray<ValueType>& array,
-                                IndexType bound,
-                                float fillRate,
-                                hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void fillRandom( hmemo::HArray<ValueType>& array,
+                            IndexType bound,
+                            float fillRate,
+                            hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Create an array of sparse indexes where an index value appears only with a certain probability.
      *
@@ -735,29 +826,27 @@ public:
      */
     static void randomSparseIndexes( hmemo::HArray<IndexType>& array, const IndexType n, const float probability );
 
-    /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
-
-    static void buildSparseArray(
-        hmemo::_HArray& sparseArray,
-        hmemo::HArray<IndexType>& sparseIndexes,
-        const hmemo::_HArray& denseArray,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    /** Build sparse indexes only, useful if sparseArray is not really needed */
-
+    /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector 
+     *
+     *  @param[out] sparseArray contains the non-zero values
+     *  @param[out] sparseIndexes contains the indexes of sparseArray in original array
+     *  @param[in]  denseArray    contains the array with all values
+     *  @param[in]  zeroValue     is the value that is considered as zero in denseArray
+     *  @param[in]  prefLoc       is the preferred location where operation is done
+     * 
+     *  \code
+     *    buildSparseArray( sparseArray, sparseIndexes, HArray<double>( { 0, 2, 1, 2, 1 } ), 1 )
+     *    -> sparseArray = HArray<double> ( { 0, 2, 2 } ); sparseIndexes = HArray<indexes> ( { 0, 1, 3 } )
+     *    buildSparseArray( sparseArray, sparseIndexes, HArray<double>( { 0, 2, 1, 2, 1 } ), 2 )
+     *    -> sparseArray = HArray<double> ( { 0, 1, 1 } ); sparseIndexes = HArray<indexes> ( { 0, 2, 4 } )
+     *  \endcode
+     */
     template<typename TargetType, typename SourceType>
-    static void buildSparseArrayImpl(
+    static void buildSparseArray(
         hmemo::HArray<TargetType>& sparseArray,
         hmemo::HArray<IndexType>& sparseIndexes,
         const hmemo::HArray<SourceType>& denseArray,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
-    /** Build sparse indexes only, useful if sparseArray is not really needed */
-
-    template<typename ValueType>
-    static void buildSparseIndexes(
-        hmemo::HArray<IndexType>& sparseIndexes,
-        const hmemo::HArray<ValueType>& denseArray,
+        const SourceType zeroValue,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Add new value in a sorted array, larger values are shifted up
@@ -791,35 +880,43 @@ public:
 
     /** Build dense array from sparse array, needed for conversion SparseVector -> DenseVector
      *
-     *  @param[out]  denseArray will contain the dense data (input its only its size)
-     *  @param[in]   denseN is the size of the dense array
-     *  @param[in]   sparseArray contains non-zero values
+     *  @param[out]  denseArray    will contain the dense data (input its only its size)
+     *  @param[in]   denseN        is the size of the dense array
+     *  @param[in]   sparseArray   contains non-zero values
      *  @param[in]   sparseIndexes are the positions of the non-zero values
-     *  @param[in]   prefLoc is the context where operation should be done
+     *  @param[in]   zero          is the default value for all positions not specifiedin sparseIndexes
+     *  @param[in]   prefLoc       is the context where operation should be done
      *
      *  Note: sparseIndexes must contain only indexes between 0 and denseN - 1
      */
-
+    template<typename ValueType>
     static void buildDenseArray(
-        hmemo::_HArray& denseArray,
+        hmemo::HArray<ValueType>& denseArray,
         const IndexType denseN,
-        const hmemo::_HArray& sparseArray,
+        const hmemo::HArray<ValueType>& sparseArray,
         const hmemo::HArray<IndexType>& sparseIndexes,
+        const ValueType zero,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Find an index in an array of sorted indexes 
      *
      *  @param[in] indexes is an array of sorted indexes
      *  @param[in] index is the value to be found in indexes array
-     *  @return position of index in indexes if found, nIndex otherwise
+     *  @return position of index in indexes if found, invalidIndex otherwise
      *
      *  \code
      *     HArray<IndexType> indexes ( 5, { 0, 5, 11, 18, 19 } );
      *     findPosInSortedIndexes( indexes, 5  ) -> 1
-     *     findPosInSortedIndexes( indexes, 31 ) -> nIndex
+     *     findPosInSortedIndexes( indexes, 31 ) -> invalidIndex
      *  \endcode
      */
     static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType index );
+
+    /** Find many indexes in an array of sorted indexes */
+
+    static void findPosInSortedIndexesV( hmemo::HArray<IndexType>& outPos,
+                                         const hmemo::HArray<IndexType>& indexes,
+                                         const hmemo::HArray<IndexType> inPos );
 
     /** Add two sparse arrays 
      *
@@ -865,7 +962,7 @@ public:
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
         const ValueType zero2,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
@@ -877,7 +974,7 @@ public:
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
         const ValueType zero2,
-        const common::binary::CompareOp op,
+        const common::CompareOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Merge non-zero entries of sparse array
@@ -898,8 +995,62 @@ public:
         const hmemo::HArray<ValueType>& values1,
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Select real or imaginary part for an array of (complex) values 
+     *
+     *  @param[out] realValues gets same size as complexValues, will contain real or imaginary parts
+     *  @param[in]  complexValues input array with complex values
+     *  @param[in]  kind specifies whether to select real or imaginary part 
+     *  @param[in]  prefLoc location where selection should be done if possible
+     */
+    template<typename ValueType>
+    static void selectComplexPart(
+        hmemo::HArray<RealType<ValueType> >& realValues,
+        const hmemo::HArray<ValueType>& complexValues,
+        const common::ComplexPart kind,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build complex array by combining two real array, one for real and one for imag part
+     *
+     *  @param[out] complexValues gets same size as realValues and imagValues
+     *  @param[in]  realValues    input array with real parts for complex values
+     *  @param[in]  imagValues    input array with imag parts for complex values
+     *  @param[in]  prefLoc location where selection should be done if possible
+     */
+    template<typename ValueType>
+    static void buildComplex(
+        hmemo::HArray<ValueType>& complexValues,
+        const hmemo::HArray<RealType<ValueType> >& realValues,
+        const hmemo::HArray<RealType<ValueType> >& imagValues,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Merge two arrays and retain index maps from the original arrays into the result array.
+     *
+     * Merge the two *sorted* arrays `x` and `y` into the array `result`, overwriting any data in `result`,
+     * and retain two separate maps from the indexes of `x` and `y` into the indexes of `result`.
+     *
+     * The input arrays x and y must be sorted according to the specified comparator, and the
+     * result will also be sorted according to the same comparator.
+     *
+     *  @param[out] result     the resulting array after merging. Any data in the array will be overwritten. Size is x.size() + y.size().
+     *  @param[out] xMap       an array of indices such that result[xMap[i]] = x[i] for i = 0, .., x.size() - 1.
+     *  @param[out] yMap       an array of indices such that result[yMap[i]] = y[i] for i = 0, .., y.size() - 1.
+     *  @param[in]  x          a *sorted* array.
+     *  @param[in]  y          a *sorted* array.
+     *  @param[in]  comparator the operator to use for the comparison, i.e. LE for ascending or GE for descending sort
+     *  @param[in]  prefLoc    preferred context for computations.
+     */
+    template <typename ValueType>
+    static void mergeAndMap(
+        hmemo::HArray<ValueType>& result,
+        hmemo::HArray<IndexType>& xMap,
+        hmemo::HArray<IndexType>& yMap,
+        const hmemo::HArray<ValueType>& x,
+        const hmemo::HArray<ValueType>& y,
+        const common::CompareOp comparator = common::CompareOp::LE,
+        hmemo::ContextPtr prefLoc = hmemo::Context::getContextPtr() );
 
 private:
 
@@ -917,6 +1068,40 @@ private:
     HArrayUtils( const HArrayUtils& );
 
 };
+
+/* ============================================================================= */
+
+template<typename ValueType>
+ValueType HArrayUtils::min(
+    const hmemo::HArray<ValueType>& values,
+    hmemo::ContextPtr prefLoc )
+{
+    return HArrayUtils::reduce( values, common::BinaryOp::MIN, prefLoc );
+}
+
+template<typename ValueType>
+ValueType HArrayUtils::max(
+    const hmemo::HArray<ValueType>& values,
+    hmemo::ContextPtr prefLoc )
+{
+    return HArrayUtils::reduce( values, common::BinaryOp::MAX, prefLoc );
+}
+
+template<typename ValueType>
+ValueType HArrayUtils::sum(
+    const hmemo::HArray<ValueType>& values,
+    hmemo::ContextPtr prefLoc )
+{
+    return HArrayUtils::reduce( values, common::BinaryOp::ADD, prefLoc );
+}
+
+template<typename ValueType>
+RealType<ValueType> HArrayUtils::maxNorm(
+    const hmemo::HArray<ValueType>& values,
+    hmemo::ContextPtr prefLoc )
+{
+    return HArrayUtils::reduce( values, common::BinaryOp::ABS_MAX, prefLoc );
+}
 
 } /* end namespace utilskernel */
 

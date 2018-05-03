@@ -54,10 +54,11 @@
 #include <scai/lama/norm/L2Norm.hpp>
 #include <scai/lama/norm/L1Norm.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/tracing.hpp>
+
+#include <memory>
 
 /*********************************/
 
@@ -110,9 +111,9 @@ bool isComplexType()
 
     switch ( common::TypeTraits<ValueType>::stype )
     {
-        case common::scalar::DOUBLE_COMPLEX:
-        case common::scalar::COMPLEX:
-        case common::scalar::LONG_DOUBLE_COMPLEX :
+        case common::ScalarType::DOUBLE_COMPLEX:
+        case common::ScalarType::COMPLEX:
+        case common::ScalarType::LONG_DOUBLE_COMPLEX :
             isComplex = true;
             break;
 
@@ -294,14 +295,14 @@ void testSameVector( const DenseVector<ValueType>& v1, const DenseVector<ValueTy
     }
 }
 
-void solveIt( const std::string name, Vector& sol, const Matrix& mat, const Vector& rhs )
+void solveIt( const std::string name, Vector& sol, const _Matrix& mat, const Vector& rhs )
 {
     cout << "solveIt, matrix = " << mat << ", rhs = " << rhs << endl;
     LoggerPtr logger( new CommonLogger ( name,
                                          LogLevel::convergenceHistory,
                                          LoggerWriteBehaviour::toConsoleOnly
                                        ) );
-    common::unique_ptr<Solver> mySolver( Solver::create( name, name ) );
+    std::unique_ptr<Solver> mySolver( Solver::create( name, name ) );
     mySolver->setLogger( logger );
     IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
     SCAI_ASSERT( itSolver != NULL, "No iterative solver : " << *mySolver )
@@ -377,7 +378,7 @@ int main( int argc, char* argv[] )
     dMatrix.setContextPtr( ctx );
     checkSolVector.setContextPtr( ctx );
     rhsVector.setContextPtr( ctx );
-    dMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+    dMatrix.setCommunicationKind( _Matrix::SYNCHRONOUS );
     solveIt( argv[1], checkSolVector, dMatrix, rhsVector );
     cout << "Solution available, check for correctness." << endl;
     // testSameVector( checkSolVector, solVector );

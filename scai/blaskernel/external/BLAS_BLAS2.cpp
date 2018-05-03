@@ -69,8 +69,7 @@ SCAI_LOG_DEF_LOGGER( BLAS_BLAS2::logger, "BLAS.BLAS2" )
 
 template<typename ValueType>
 void BLAS_BLAS2::gemv(
-    const CBLAS_ORDER order,
-    const CBLAS_TRANSPOSE transA,
+    const common::MatrixOp opA,
     const IndexType m,
     const IndexType n,
     const ValueType alpha,
@@ -91,7 +90,16 @@ void BLAS_BLAS2::gemv(
         return; // empty X, Y, A
     }
 
+    if ( common::isComplex( TypeTraits<ValueType>::stype ) && opA == common::MatrixOp::CONJ_TRANSPOSE )
+    {
+        // this case is not handled by Fortran BLAS, so we call own implementation
+
+        OpenMPBLAS2::gemv( opA, m, n, alpha, a, lda, x, incX, beta, y, incY );
+        return;
+    }
+
     // N == 0: empty A, but deal with X, Y, we can handle this here
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -99,71 +107,21 @@ void BLAS_BLAS2::gemv(
         SCAI_LOG_WARN( logger, "asynchronous execution not supported yet." )
     }
 
-    // ToDo: error handling
+    // BLAS routines assume data in column-major format, so we work on transposded data
 
-//    BLASWrapper<ValueType>::gemv( order, transA, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ));
+    BLASTrait::BLASTrans b_opA = BLASTrait::castTrans( common::combine( opA, common::MatrixOp::TRANSPOSE ) );
 
-    if ( order == CblasColMajor )
-    {
-        BLASTrait::BLASTrans ta = '-';
+    auto b_n = static_cast<BLASTrait::BLASIndexType>( n );
+    auto b_m = static_cast<BLASTrait::BLASIndexType>( m );
 
-        switch ( transA )
-        {
-            case CblasNoTrans:
-                ta = 'N';
-                break;
+    auto b_lda = static_cast<BLASTrait::BLASIndexType>( lda );
+    auto b_incX = static_cast<BLASTrait::BLASIndexType>( incX );
+    auto b_incY = static_cast<BLASTrait::BLASIndexType>( incY );
 
-            case CblasTrans:
-                ta = 'T';
-                break;
-
-            case CblasConjTrans:
-                ta = 'C';
-                break;
-        }
-
-        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ) );
-    }
-    else if ( order == CblasRowMajor )
-    {
-        BLASTrait::BLASTrans ta = '-';
-
-        switch ( transA )
-        {
-            case CblasNoTrans:
-                ta = 'T';
-                break;
-
-            case CblasTrans:
-                ta = 'N';
-                break;
-
-            case CblasConjTrans:
-                ta = 'N';
-                break;
-        }
-
-        if ( common::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
-        {
-            // this case is not handled by Fortran BLAS, so we call own implementation
-
-            OpenMPBLAS2::gemv( order, transA, m, n, alpha, a, lda, x, incX, beta, y, incY );
-        }
-        else
-        {
-            BLASWrapper<ValueType>::gemv( ta,
-                                          static_cast<BLASTrait::BLASIndexType>( n ),
-                                          static_cast<BLASTrait::BLASIndexType>( m ),
-                                          alpha,
-                                          a,
-                                          static_cast<BLASTrait::BLASIndexType>( lda ),
-                                          x,
-                                          static_cast<BLASTrait::BLASIndexType>( incX ),
-                                          beta,
-                                          y,
-                                          static_cast<BLASTrait::BLASIndexType>( incY ) );
-        }
-    }
+    BLASWrapper<ValueType>::gemv( b_opA, b_n, b_m,
+                                  alpha, a, b_lda,
+                                  x, b_incX,
+                                  beta, y, b_incY );
 
     return;
 }
@@ -176,7 +134,7 @@ template<typename ValueType>
 void BLAS_BLAS2::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     bool useBLAS = false;
     int level = 0;
     useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );

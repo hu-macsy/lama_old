@@ -41,8 +41,10 @@
 
 //#include <complex>
 
-using namespace scai::lama;
-using namespace scai::common;
+using namespace scai;
+using namespace lama;
+using namespace common;
+using intern::Scalar;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
 // and vectors have not been instantiated for these types
@@ -63,13 +65,13 @@ BOOST_AUTO_TEST_CASE( ScalarGetTypeTest )
 {
     // Challenge: some of these types were not defined in module common but later in lama
     using namespace scai::common;
-    BOOST_CHECK_EQUAL( getScalarType<float>(), scalar::FLOAT );
-    BOOST_CHECK_EQUAL( getScalarType<double>(), scalar::DOUBLE );
-    BOOST_CHECK_EQUAL( getScalarType<LongDouble>(), scalar::LONG_DOUBLE );
+    BOOST_CHECK_EQUAL( getScalarType<float>(), ScalarType::FLOAT );
+    BOOST_CHECK_EQUAL( getScalarType<double>(), ScalarType::DOUBLE );
+    BOOST_CHECK_EQUAL( getScalarType<LongDouble>(), ScalarType::LONG_DOUBLE );
 #ifdef SCAI_COMPLEX_SUPPORTED
-    BOOST_CHECK_EQUAL( getScalarType<ComplexFloat>(), scalar::COMPLEX );
-    BOOST_CHECK_EQUAL( getScalarType<ComplexDouble>(), scalar::DOUBLE_COMPLEX );
-    BOOST_CHECK_EQUAL( getScalarType<ComplexLongDouble>(), scalar::LONG_DOUBLE_COMPLEX );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexFloat>(), ScalarType::COMPLEX );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexDouble>(), ScalarType::DOUBLE_COMPLEX );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexLongDouble>(), ScalarType::LONG_DOUBLE_COMPLEX );
 #endif
 }
 
@@ -80,21 +82,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AdditionTest, ValueType, test_types )
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
     Scalar u = s + t;
-    s += t;
     BOOST_CHECK_EQUAL( u.getValue<ValueType>(), 5.0 );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 5.0 );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( MultiplicationTest, ValueType, test_types )
 {
-    Scalar s ( 2.0 );
-    Scalar t ( 3.0 );
+    Scalar s ( 2 );
+    Scalar t ( 3 );
     Scalar u = s * t;
-    s *= t;
-    BOOST_CHECK_EQUAL( u.getValue<ValueType>(), 6.0 );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 6.0 );
+    BOOST_CHECK_EQUAL( u.getValue<ValueType>(), ValueType( 6 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -104,9 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SubtractionTest, ValueType, test_types )
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
     Scalar u = s - t;
-    s -= t;
     BOOST_CHECK_EQUAL( u.getValue<ValueType>(), -1.0 );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), -1.0 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -116,8 +112,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DivisionTest, ValueType, test_types )
     Scalar s ( 2.0 );
     Scalar t ( 3.0 );
     Scalar u = s / t;
-    s /= t;
-    SCAI_CHECK_CLOSE( u.getValue<ValueType>(), 0.6666, 1 );
+
+    ValueType v1 = u.getValue<ValueType>();
+    ValueType v2 = ValueType( 2 ) / ValueType( 3 );
+ 
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    BOOST_CHECK( common::Math::abs( v1 - v2 ) < eps );
 }
 
 /* --------------------------------------------------------------------- */
@@ -126,54 +127,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( NegativNumberTest, ValueType, test_types )
 {
     Scalar s( 2.0 );
     Scalar t( -s );
-    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), 2.0 );
-    BOOST_CHECK_EQUAL( t.getValue<ValueType>(), -2.0 );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( EqualityTest )
-{
-    Scalar s ( 2.0 );
-    Scalar t ( 2.0 );
-    Scalar u ( 3.0 );
-    BOOST_CHECK( s == t );
-    BOOST_CHECK( s != u );
-    BOOST_CHECK( s < u );
-    BOOST_CHECK( u > s );
-
-    // negative values
-    Scalar n ( -2.0 );
-    BOOST_CHECK( n < s );
-    BOOST_CHECK( n != s );
-    BOOST_CHECK( s > n );
-    BOOST_CHECK( !( n > s ) );
-    BOOST_CHECK( !( s < n ) );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( MiscTests )
-{
-    Scalar s( 6.25 );
-    Scalar t( 9.0 );
-    Scalar u( -2.5 );
-    BOOST_CHECK( sqrt( s ) == 2.5 );
-    BOOST_CHECK_EQUAL( sqrt( s ), 2.5 );
-    BOOST_CHECK_EQUAL( sqrt( t ), 3.0 );
-    BOOST_CHECK_EQUAL( abs( u ), 2.5 );
-    BOOST_CHECK_EQUAL( abs( t ), 9.0 );
-    BOOST_CHECK_EQUAL( max( s, t ), 9.0  );
-    BOOST_CHECK_EQUAL( min( s, t ), 6.25 );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-    Scalar c1( ComplexFloat( 3, 4 ) );
-    Scalar c2( ComplexFloat( 4, 2 ) );
-    BOOST_CHECK_EQUAL( max( abs( c1 ), abs( c2 ) ), abs( c1 ) );
-    BOOST_CHECK_EQUAL( min( abs( c1 ), abs( c2 ) ), abs( c2 ) );
-    // Pythagoras: 3^2 + 4^2 = 5^2
-    BOOST_CHECK_EQUAL( abs( c1 ), 5.0f );
-#endif
+    BOOST_CHECK_EQUAL( s.getValue<ValueType>(), ValueType( 2 ) );
+    BOOST_CHECK_EQUAL( t.getValue<ValueType>(), ValueType( -2 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -186,7 +141,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 /* --------------------------------------------------------------------- */
 
-void printtestmethod( std::string string, scalar::ScalarType type )
+void printtestmethod( std::string string, ScalarType type )
 {
     std::stringstream mStream;
     mStream << type;
@@ -196,12 +151,12 @@ void printtestmethod( std::string string, scalar::ScalarType type )
 
 BOOST_AUTO_TEST_CASE( printTest )
 {
-    printtestmethod( "float", scalar::FLOAT );
-    printtestmethod( "double", scalar::DOUBLE );
-    printtestmethod( "LongDouble", scalar::LONG_DOUBLE );
-    printtestmethod( "ComplexFloat", scalar::COMPLEX );
-    printtestmethod( "ComplexDouble", scalar::DOUBLE_COMPLEX );
-    printtestmethod( "ComplexLongDouble", scalar::LONG_DOUBLE_COMPLEX );
+    printtestmethod( "float", ScalarType::FLOAT );
+    printtestmethod( "double", ScalarType::DOUBLE );
+    printtestmethod( "LongDouble", ScalarType::LONG_DOUBLE );
+    printtestmethod( "ComplexFloat", ScalarType::COMPLEX );
+    printtestmethod( "ComplexDouble", ScalarType::DOUBLE_COMPLEX );
+    printtestmethod( "ComplexLongDouble", ScalarType::LONG_DOUBLE_COMPLEX );
 }
 
 /* --------------------------------------------------------------------- */

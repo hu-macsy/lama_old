@@ -40,10 +40,12 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/lama/norm/MaxNorm.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
+
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <limits>
@@ -56,107 +58,147 @@ using namespace lama;
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, BiCGstab<ValueType>::logger, "Solver.IterativeSolver.BiCGstab" )
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
-BiCGstab::BiCGstab( const std::string& id )
-    : IterativeSolver( id ) {}
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
 
+template<typename ValueType>
+_Solver* BiCGstab<ValueType>::create()
+{
+    return new BiCGstab<ValueType>( "_genByFactory" );
+}
 
-BiCGstab::BiCGstab( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id , logger ) {}
+template<typename ValueType>
+SolverCreateKeyType BiCGstab<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "BiCGstab" );
+}
 
-BiCGstab::BiCGstab( const BiCGstab& other )
-    : IterativeSolver( other ) {}
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
 
+template<typename ValueType>
+BiCGstab<ValueType>::BiCGstab( const std::string& id ) :
 
+    IterativeSolver<ValueType>( id )
+{
+}
 
-BiCGstab::BiCGstabRuntime::BiCGstabRuntime()
-    : IterativeSolverRuntime() {}
+template<typename ValueType>
+BiCGstab<ValueType>::BiCGstab( const std::string& id, LoggerPtr logger ) :
 
-BiCGstab::~BiCGstab() {}
+    IterativeSolver<ValueType>( id, logger )
+{
+}
 
-BiCGstab::BiCGstabRuntime::~BiCGstabRuntime() {}
+template<typename ValueType>
+BiCGstab<ValueType>::BiCGstab( const BiCGstab<ValueType>& other ) :
 
-void BiCGstab::initialize( const Matrix& coefficients )
+    IterativeSolver<ValueType>( other )
+{
+}
+
+template<typename ValueType>
+BiCGstab<ValueType>::~BiCGstab()
+{
+    SCAI_LOG_INFO( logger, "~BiCGstab<" << this->getValueType() << ">" )
+}
+
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
+
+template<typename ValueType>
+void BiCGstab<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-    IterativeSolver::initialize( coefficients );
+
+    IterativeSolver<ValueType>::initialize( coefficients );
+
     BiCGstabRuntime& runtime = getRuntime();
-    runtime.mAlpha  = 1.0;
-    runtime.mOmega = 1.0;
-    runtime.mRhoOld = 1.0;
-    runtime.mResNorm = 1.0;
-    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
+
+    runtime.mAlpha  = ValueType( 1 );
+    runtime.mOmega = ValueType( 1 );
+    runtime.mRhoOld = ValueType( 1 );
+    runtime.mResNorm = ValueType( 1 );
+
+    runtime.mEps = common::TypeTraits<ValueType>::eps1() * ValueType( 3 );
+
     // get runtime vectors with same row distribution / context / type as cofficients matrix
-    dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
-    runtime.mRes0.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecV.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecS.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecPT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecST.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecTT.reset( coefficients.newVector( rowDist ) );
+
+    runtime.mRes0.reset( coefficients.newTargetVector() );
+    runtime.mVecV.reset( coefficients.newTargetVector() );
+    runtime.mVecP.reset( coefficients.newTargetVector() );
+    runtime.mVecS.reset( coefficients.newTargetVector() );
+    runtime.mVecT.reset( coefficients.newTargetVector() );
+    runtime.mVecPT.reset( coefficients.newTargetVector() );
+    runtime.mVecST.reset( coefficients.newTargetVector() );
+    runtime.mVecTT.reset( coefficients.newTargetVector() );
 }
 
-void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
+/* ========================================================================= */
+/*    solve: init ( solution, rhs )                                          */
+/* ========================================================================= */
+
+template<typename ValueType>
+void BiCGstab<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
+    IterativeSolver<ValueType>::solveInit( solution, rhs );
+
     BiCGstabRuntime& runtime = getRuntime();
-    runtime.mRhs = &rhs;
-    runtime.mSolution = &solution;
 
-    if ( runtime.mCoefficients->getNumRows() != runtime.mRhs->size() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Size of rhs vector " << *runtime.mRhs << " does not match column size of matrix " << *runtime.mCoefficients );
-    }
-
-    if ( runtime.mCoefficients->getNumColumns() != solution.size() )
-    {
-        COMMON_THROWEXCEPTION(
-            "Size of solution vector " << solution << " does not match row size of matrix " << *runtime.mCoefficients );
-    }
-
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "distribution mismatch" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), runtime.mRhs->getDistribution(), "distribution mismatch" )
     // Initialize
+
     this->getResidual();
 
-    *runtime.mRes0 = *runtime.mResidual;
-    runtime.mVecV->setSameValue( rhs.getDistributionPtr(), 0 );
-    runtime.mVecP->setSameValue( rhs.getDistributionPtr(), 0 );
-    runtime.mSolveInit = true;
+    *runtime.mRes0 = *runtime.mResidual;    // deep copy of the residual
+
+    runtime.mVecV.reset( rhs.newVector() );
+    runtime.mVecP.reset( rhs.newVector() );
 }
 
-void BiCGstab::iterate()
+/* ========================================================================= */
+/*    solve: iterate ( one iteration step )                                  */
+/* ========================================================================= */
+
+template<typename ValueType>
+void BiCGstab<ValueType>::iterate()
 {
     BiCGstabRuntime& runtime    = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Vector& res0 = *runtime.mRes0;
-    Vector& res = *runtime.mResidual;
-    Vector& vecV = *runtime.mVecV;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecS = *runtime.mVecS;
-    Vector& vecT = *runtime.mVecT;
-    Vector& solution = *runtime.mSolution;
-    Vector& vecPT = *runtime.mVecPT;
-    Vector& vecST = *runtime.mVecST;
-    Vector& vecTT = *runtime.mVecTT;
-    Scalar& alpha = runtime.mAlpha;
-    Scalar& beta = runtime.mBeta;
-    Scalar& omega = runtime.mOmega;
-    Scalar& rhoOld = runtime.mRhoOld;
-    Scalar& rhoNew = runtime.mRhoNew;
-    const Scalar& eps = runtime.mEps;
-    Scalar& resNorm = runtime.mResNorm;
-    lama::L2Norm norm;
+
+    const Matrix<ValueType>& A = *runtime.mCoefficients;
+    const Vector<ValueType>& res0 = *runtime.mRes0;
+
+    Vector<ValueType>& res = *runtime.mResidual;
+    Vector<ValueType>& vecV = *runtime.mVecV;
+    Vector<ValueType>& vecP = *runtime.mVecP;
+    Vector<ValueType>& vecS = *runtime.mVecS;
+    Vector<ValueType>& vecT = *runtime.mVecT;
+    Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
+    Vector<ValueType>& vecPT = *runtime.mVecPT;
+    Vector<ValueType>& vecST = *runtime.mVecST;
+    Vector<ValueType>& vecTT = *runtime.mVecTT;
+
+    ValueType& alpha = runtime.mAlpha;
+    ValueType& beta = runtime.mBeta;
+    ValueType& omega = runtime.mOmega;
+    ValueType& rhoOld = runtime.mRhoOld;
+    ValueType& rhoNew = runtime.mRhoNew;
+    const RealType<ValueType>& eps = runtime.mEps;
+
+    RealType<ValueType>& resNorm = runtime.mResNorm;
+
     rhoNew = res0.dotProduct( res );
 
-    if ( resNorm < eps || rhoOld < eps || omega < eps ) // scalars are small
+    if ( resNorm < eps || 
+         common::Math::abs( rhoOld ) < eps || 
+         common::Math::abs( omega ) < eps ) // scalars are small
     {
         beta = 0.0;
     }
@@ -181,9 +223,10 @@ void BiCGstab::iterate()
     }
 
     vecV = A * vecPT;
-    Scalar innerProd = res0.dotProduct( vecV );
 
-    if ( resNorm < eps || innerProd < eps ) // scalar is small
+    ValueType innerProd = res0.dotProduct( vecV );
+
+    if ( resNorm < eps || common::Math::abs( innerProd ) < eps ) // scalar is small
     {
         alpha = 0.0;
     }
@@ -210,55 +253,69 @@ void BiCGstab::iterate()
         vecTT = vecT;
     }
 
-    innerProd = vecTT.dotProduct( vecTT );
+    RealType<ValueType> normTT2 = vecTT.dotProduct( vecTT );
 
-    if ( resNorm < eps || innerProd < eps ) //scalar is small
+    if ( resNorm < eps || normTT2 < eps ) //scalar is small
     {
         omega = 0.0;
     }
     else
     {
-        omega = vecTT.dotProduct( vecST ) / innerProd;
+        omega = vecTT.dotProduct( vecST ) / normTT2;
     }
 
     solution = solution + alpha * vecP;
     solution = solution + omega * vecS;
+
     res = vecS - omega * vecT;
     rhoOld = rhoNew;
-    resNorm = norm.apply( res );
-    //BiCGStab implementation end
-    mBiCGstabRuntime.mSolution.setDirty( false );
+    resNorm = l2Norm( res );
+
+    // as we have updated residual already here, we can mark solution as not dirty
+
+    mBiCGstabRuntime.mSolution.setDirty( false );  
 }
 
-SolverPtr BiCGstab::copy()
-{
-    return SolverPtr( new BiCGstab( *this ) );
-}
+/* ========================================================================= */
+/*       Getter runtime                                                      */
+/* ========================================================================= */
 
-BiCGstab::BiCGstabRuntime& BiCGstab::getRuntime()
-{
-    return mBiCGstabRuntime;
-}
-
-const BiCGstab::BiCGstabRuntime& BiCGstab::getConstRuntime() const
+template<typename ValueType>
+typename BiCGstab<ValueType>::BiCGstabRuntime& BiCGstab<ValueType>::getRuntime()
 {
     return mBiCGstabRuntime;
 }
 
-std::string BiCGstab::createValue()
+template<typename ValueType>
+const typename BiCGstab<ValueType>::BiCGstabRuntime& BiCGstab<ValueType>::getRuntime() const
 {
-    return "BiCGstab";
+    return mBiCGstabRuntime;
 }
 
-Solver* BiCGstab::create( const std::string name )
+/* ========================================================================= */
+/*       virtual methods                                                     */
+/* ========================================================================= */
+
+template<typename ValueType>
+BiCGstab<ValueType>* BiCGstab<ValueType>::copy()
 {
-    return new BiCGstab( name );
+    return new BiCGstab( *this );
 }
 
-void BiCGstab::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void BiCGstab<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "BiCGstab ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    const char* typeId = common::TypeTraits<ValueType>::id();
+
+    stream << "BiCGstab<" << typeId << "> ( id = " << this->getId()
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( BiCGstab, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace sovler */
 

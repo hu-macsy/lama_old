@@ -11,8 +11,7 @@ following headers to have the needed operators available:
 
 .. code-block:: c++
 
-    #include <scai/lama/expression/MatrixVectorExpressions.hpp>
-    #include <scai/lama/expression/VectorExpressions.hpp>
+    #include <scai/lama/expression/all.hpp>
 
 As mentioned before the problem of this task is to write a CG-Solver by creating
 a self-provided implementation. A pseudocode implementation of a CG-Solver can

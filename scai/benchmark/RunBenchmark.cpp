@@ -42,7 +42,6 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/LibModule.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
 using namespace scai;
@@ -95,7 +94,7 @@ int main( int argc, const char* argv[] )
 
     common::LibModule::loadLibsInDir( benchLibPath.c_str() );
 
-    common::unique_ptr<Benchmark> bench;
+    std::unique_ptr<Benchmark> bench;
 
     try
     {

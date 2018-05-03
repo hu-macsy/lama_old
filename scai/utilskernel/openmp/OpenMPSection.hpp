@@ -69,7 +69,7 @@ public:
         const IndexType targetDistances[],
         const ValueType sourceSection[],
         const IndexType sourceDistances[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     /** OpenMP implementation on host for SectionKernelTrait::assignScalar */
@@ -81,7 +81,7 @@ public:
         const IndexType sizes[],
         const IndexType distances[],
         ValueType val, 
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapOperands );
 
     /** OpenMP implementation on host for SectionKernelTrait::unaryOp */
@@ -94,17 +94,17 @@ public:
         const IndexType targetDistances[],
         const SourceValueType sourceSection[],
         const IndexType sourceDistances[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
-    /** OpenMP implementation on host for SectionKernelTrait::unary */
+    /** OpenMP implementation on host for SectionKernelTrait::UnaryOp */
 
     template <typename ValueType>
-    static void unary( 
+    static void UnaryOp( 
         ValueType section[],
         const IndexType nDims,
         const IndexType sizes[],
         const IndexType distances[],
-        const common::unary::UnaryOp op );
+        const common::UnaryOp op );
 
 private:
 

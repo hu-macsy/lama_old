@@ -44,6 +44,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
 #include <scai/common/UnaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -161,12 +162,12 @@ public:
 
     /** Implementation for CSRKernelTrait::scaleRows  */
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename ValueType>
     static void scaleRows(
-        ValueType1 csrValues[],
+        ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const ValueType2 values[] );
+        const ValueType values[] );
 
 
     template<typename ValueType>
@@ -177,8 +178,8 @@ public:
         const ValueType csrValues[],
         const IndexType numRows,
         const IndexType dim,
-        const common::binary::BinaryOp reduceOp,
-        const common::unary::UnaryOp elemOp );
+        const common::BinaryOp reduceOp,
+        const common::UnaryOp elemOp );
 
     /** Implementation for CSRKernelTrait::normalGEMV  */
 
@@ -191,10 +192,11 @@ public:
         const ValueType y[],
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType nnz,
+        const IndexType numValues,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
+        const ValueType csrValues[], 
+        const common::MatrixOp op );
 
     /** Implementation for CSRKernelTrait::sparseGEMV  */
 
@@ -207,37 +209,8 @@ public:
         const IndexType rowIndexes[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
-
-    /** Implementation for CSRKernelTrait::normalGEVM */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValues,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
-
-    /** Implementation for CSRKernelTrait::sparseGEVM  */
-
-    template<typename ValueType>
-    static void sparseGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const IndexType numColumns,
-        const IndexType numNonZeroRows,
-        const IndexType rowIndexes[],
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
+        const ValueType csrValues[],
+        const common::MatrixOp op );
 
     /** Implementation for CSRKernelTrait::Mult::gemm  */
 
@@ -370,7 +343,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[],
         const ValueType bValues[],
-        common::binary::BinaryOp op );
+        common::BinaryOp op );
 
     /** Implementation for CSRKernelTrait::Mult::matrixMultiply */
 
@@ -455,18 +428,6 @@ private:
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
     /** Constructor for registration. */
 
     OpenMPCSRUtils();
@@ -492,31 +453,6 @@ private:
     static ValueType absMaxDiffRowUnsorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
-
-    /** Help routine to use normalGEMV with maximal 9 args. */
-
-    template<typename ValueType>
-    static void normalGEMV_s(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
-        const IndexType numRows,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
-
-    template<typename ValueType>
-    static void normalGEVM_s(
-        ValueType result[],
-        std::pair<ValueType, const ValueType*> ax,
-        std::pair<ValueType, const ValueType*> by,
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType csrIA[],
-        const IndexType csrJA[],
-        const ValueType csrValues[] );
 };
 
 } /* end namespace sparsekernel */

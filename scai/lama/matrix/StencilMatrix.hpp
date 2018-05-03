@@ -72,8 +72,6 @@ class COMMON_DLL_IMPORTEXPORT StencilMatrix:
 
 public:
 
-    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
-
     /** Static method that returns the name of the matrix class. */
 
     static const char* typeName();
@@ -107,9 +105,21 @@ public:
      */
     ~StencilMatrix();
 
+    /** Override the default assignment operator that would not make deep copies. */
+
+    StencilMatrix& operator=( const StencilMatrix& matrix );
+
+    /** Override the default move assignment operator */
+
+    StencilMatrix& operator=( StencilMatrix&& matrix );
+
     /** Copy constructor */
 
     StencilMatrix( const StencilMatrix& other );
+
+    /** Move constructor */
+
+    StencilMatrix( StencilMatrix&& other ) noexcept;
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
@@ -119,30 +129,53 @@ public:
 
     virtual const CSRStorage<ValueType>& getHaloStorage() const;
 
-    /* Implementation of pure method Matrix::newMatrix with covariant return type */
+    /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 
     virtual StencilMatrix<ValueType>* newMatrix() const;
 
-    /* Implementation of pure method Matrix::copy with covariant return type */
+    /* Implementation of pure method _Matrix::copy with covariant return type */
 
     virtual StencilMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormat */
+    /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormat() const
+    virtual Format getFormat() const
     {
         return Format::CSR;
     }
+
+    /** Implementation of _Matrix::buildLocalStorage, overrides SparseMatrix<ValueType>::buildLocalStorage 
+     *
+     *  This method gets an own implementatin as it fails for SparseMatrix and as it might be implemented
+     *  more efficiently.
+     */
+    virtual void buildLocalStorage( _MatrixStorage& storage ) const;
 
     /* Query the stencil that has been used to define the stencil matrix */
 
     const common::Stencil<ValueType>& getStencil() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual const char* getTypeName() const;
 
+    using _Matrix::getNumRows;
+    using _Matrix::getNumColumns;
+    using _Matrix::setIdentity;
+
+    using _Matrix::getRowDistribution;
+    using _Matrix::getRowDistributionPtr;
+    using _Matrix::getColDistribution;
+    using _Matrix::getColDistributionPtr;
+
+
+    using Matrix<ValueType>::getValueType;
+    using SparseMatrix<ValueType>::operator=;
+    using SparseMatrix<ValueType>::operator-=;
+    using SparseMatrix<ValueType>::operator+=;
+
     using SparseMatrix<ValueType>::setContextPtr;
+    using SparseMatrix<ValueType>::redistribute;
 
 protected:
 

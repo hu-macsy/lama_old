@@ -41,7 +41,6 @@
 
 #include <scai/common/config.hpp>
 
-#include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/common/mepr/TypeListUtils.hpp>
 
@@ -65,8 +64,6 @@
  */
 namespace scai
 {
-}
-
 /** Data type that is used for indexing in LAMA.
  *
  *  Currently, it is still necessary that it is a signed data type.
@@ -75,15 +72,10 @@ namespace scai
  */
 typedef ${SCAI_INDEX_TYPE} IndexType;
 
-/** Data type long double to have it as one word. Otherwise certain macros
- *  might fail to work correctly.
- */
-typedef long double LongDouble;
-
 /** Definition for a constant value that indicates a non-available index.
  */
 
-COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const IndexType nIndex;
+COMMON_DLL_IMPORTEXPORT extern const IndexType invalidIndex;
 
 /** Data type that is used for numbering of partitions.
  *
@@ -94,7 +86,14 @@ typedef IndexType PartitionId;
 
 /** Definition for a constant value that indicates a non-available partition.
  */
-COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
+COMMON_DLL_IMPORTEXPORT extern const PartitionId invalidPartition;
+
+/** Data type long double to have it as one word. Otherwise certain macros
+ *  might fail to work correctly.
+ */
+typedef long double LongDouble;
+
+}
 
 /*
  * Lists of all supported numeric types
@@ -126,10 +125,9 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
  * Supported numeric types on different devices
  */
 
-#define SCAI_NUMERIC_TYPES_HOST     ${ALL_HOST_TYPES}
-#define SCAI_NUMERIC_TYPES_EXT_HOST ${EXT_HOST_TYPES}
-#define SCAI_NUMERIC_TYPES_CUDA     ${CUDA_TYPES}
-#define SCAI_NUMERIC_TYPES_MIC      ${MIC_TYPES}
+#define SCAI_NUMERIC_TYPES_HOST     ${CMAKE_NUMERIC_TYPES_HOST}
+#define SCAI_NUMERIC_TYPES_EXT_HOST ${CMAKE_NUMERIC_TYPES_EXT_HOST}
+#define SCAI_NUMERIC_TYPES_CUDA     ${CMAKE_NUMERIC_TYPES_CUDA}
 
 /*
  * Supported array types on different devices
@@ -137,10 +135,19 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
  * General rule: SCAI_ARRAY_TYPES_XXX is IndexType, SCAI_NUMERIC_TYPES_XXX
  */
 
-#define SCAI_ARRAY_TYPES_HOST     ${ARRAY_HOST_TYPES}
-#define SCAI_ARRAY_TYPES_EXT_HOST ${ARRAY_EXT_HOST_TYPES}
-#define SCAI_ARRAY_TYPES_CUDA     ${ARRAY_CUDA_TYPES}
-#define SCAI_ARRAY_TYPES_MIC      ${ARRAY_MIC_TYPES}
+#define SCAI_ARRAY_TYPES_HOST     ${CMAKE_ARRAY_TYPES_HOST}
+#define SCAI_ARRAY_TYPES_EXT_HOST ${CMAKE_ARRAY_TYPES_EXT_HOST}
+#define SCAI_ARRAY_TYPES_CUDA     ${CMAKE_ARRAY_TYPES_CUDA}
+
+/**
+ * Supported real (non-complex) types
+ */
+#define SCAI_REAL_TYPES_HOST      ${CMAKE_REAL_TYPES_HOST}
+
+/**
+ * Supported types for fft, only if ValueType and Complex<RealType<ValueType>> are both in NUMERIC_TYPES
+ */
+#define SCAI_FFT_TYPES_HOST       ${CMAKE_FFT_TYPES_HOST}
 
 /*
  * List creation
@@ -151,19 +158,23 @@ COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 #define SCAI_NUMERIC_TYPES_HOST_LIST       SCAI_TYPELIST( SCAI_NUMERIC_TYPES_HOST )
 #define SCAI_NUMERIC_TYPES_EXT_HOST_LIST   SCAI_TYPELIST( SCAI_NUMERIC_TYPES_EXT_HOST )
 #define SCAI_NUMERIC_TYPES_CUDA_LIST       SCAI_TYPELIST( SCAI_NUMERIC_TYPES_CUDA )
-#define SCAI_NUMERIC_TYPES_MIC_LIST        SCAI_TYPELIST( SCAI_NUMERIC_TYPES_MIC )
 
 #define SCAI_ARRAY_TYPES_HOST_LIST         SCAI_TYPELIST( SCAI_ARRAY_TYPES_HOST )
 #define SCAI_ARRAY_TYPES_EXT_HOST_LIST     SCAI_TYPELIST( SCAI_ARRAY_TYPES_EXT_HOST )
 #define SCAI_ARRAY_TYPES_CUDA_LIST         SCAI_TYPELIST( SCAI_ARRAY_TYPES_CUDA )
-#define SCAI_ARRAY_TYPES_MIC_LIST          SCAI_TYPELIST( SCAI_ARRAY_TYPES_MIC )
 
 #define SCAI_ALL_TYPES_LIST                SCAI_TYPELIST( SCAI_ALL_TYPES )
 
+namespace scai
+{
+
 /** Representation type for Scalar must be the numeric type with highest precision */
 
-typedef ${SCAI_SCALAR_REP_TYPE} ScalarRepType;
+typedef ${CMAKE_SCALAR_REP_TYPE} ScalarRepType;
 
-/** RealType: taken for example programs, usually double, but can also be float or LongDouble  */
+/** Default real type taken for example and test programs, usually double, but can also be float 
+    or LongDouble if double is not in NUMERIC types list  */
 
-typedef scai::common::mepr::TypeListUtilsVLL<double, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::ValueType RealType;
+typedef scai::common::mepr::TypeListUtilsVLL<double, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::ValueType DefaultReal;
+ 
+}

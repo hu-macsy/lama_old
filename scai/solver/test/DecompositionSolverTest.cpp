@@ -62,11 +62,13 @@
 
 #include <scai/common/TypeTraits.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
-using namespace scai::common;
+using namespace scai;
+
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
+using namespace dmemo;
+using namespace common;
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -76,15 +78,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DecompositionSolverTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
-    LoggerPtr slogger( new CommonLogger( "<GMRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    DecompositionSolver DecompositionSolverSolver( "DecompositionSolverSolver", slogger );
-    BOOST_CHECK_EQUAL( DecompositionSolverSolver.getId(), "DecompositionSolverSolver" );
-    DecompositionSolver DecompositionSolverSolver2( "DecompositionSolverSolver2" );
-    BOOST_CHECK_EQUAL( DecompositionSolverSolver2.getId(), "DecompositionSolverSolver2" );
-    DecompositionSolver DecompositionSolverSolver3( DecompositionSolverSolver2 );
-    BOOST_CHECK_EQUAL( DecompositionSolverSolver3.getId(), "DecompositionSolverSolver2" );
+    LoggerPtr slogger( new CommonLogger( "<Decomposition>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
+    DecompositionSolver<ValueType> solver( "DecompositionSolver", slogger );
+    BOOST_CHECK_EQUAL( solver.getId(), "DecompositionSolver" );
+    DecompositionSolver<ValueType> solver2( "solver2" );
+    BOOST_CHECK_EQUAL( solver2.getId(), "solver2" );
+    DecompositionSolver<ValueType> solver3( solver2 );
+    BOOST_CHECK_EQUAL( solver3.getId(), "solver2" );
 }
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -92,14 +94,14 @@ typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types )
 {
-    if ( TypeTraits<ValueType>::stype == scalar::LONG_DOUBLE ||
-            TypeTraits<ValueType>::stype == scalar::LONG_DOUBLE_COMPLEX )
+    if ( TypeTraits<ValueType>::stype == ScalarType::LONG_DOUBLE ||
+            TypeTraits<ValueType>::stype == ScalarType::LONG_DOUBLE_COMPLEX )
     {
         // skip because not supported by pardiso or cuSolver
         return;
     }
 
-    if ( TypeTraits<IndexType>::stype != scalar::INT )
+    if ( TypeTraits<IndexType>::stype != ScalarType::INT )
     {
         // skip because external solver can only deal with IndexType = int
         return;
@@ -115,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
                                };
     const ValueType rhsValues[] = { 39.0, 43.0, 6.0, 13.0 };
     const ValueType solValues[] = { 1.0, 2.0, -2.0, 3.0 };
-    const IndexType numRows = 4;
+    const IndexType size = 4;
     const IndexType nnz = 15;
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -125,21 +127,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
         return;   // DecompositionSolver not yet parallel
     }
 
-    DistributionPtr dist( new BlockDistribution( numRows, comm ) );
 
-    ContextPtr context = Context::getContextPtr();
+    auto local  = convertRawCSR<CSRStorage<ValueType>>( size, size, nnz, ia, ja, values );
+    auto dist   = std::make_shared<BlockDistribution>( size );
 
-    CSRSparseMatrix<ValueType> matrix;
-    matrix.setRawCSRData( dist, dist, nnz, ia, ja, values );
-    matrix.setContextPtr( context );
+    auto matrix = distribute<CSRSparseMatrix<ValueType>>( local, dist, dist );
 
-    DenseVector<ValueType> rhs( context );
-    rhs.setRawData( numRows, rhsValues );
-    DenseVector<ValueType> solution( numRows, 0.0, context );
+    DenseVector<ValueType> rhs( HArrayRef<ValueType>( size, rhsValues ) );
     rhs.redistribute( dist );
-    solution.redistribute( dist );
+    auto solution = fill<DenseVector<ValueType>>( dist, 0 );
 
-    DecompositionSolver solver( "DecompositionSolver" );
+    DecompositionSolver<ValueType> solver( "DecompositionSolver" );
     solver.initialize( matrix );
     solver.solve( solution, rhs );
 
@@ -147,7 +145,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
         ContextPtr host = Context::getHostPtr();
         ReadAccess<ValueType> rSol( solution.getLocalValues(), host );
 
-        for ( IndexType i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < size; ++i )
         {
             ValueType x = rSol[i] - solValues[i];
             BOOST_CHECK_SMALL( Math::real( x ), TypeTraits<ValueType>::small() );

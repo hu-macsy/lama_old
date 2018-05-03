@@ -46,7 +46,6 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/OpenMP.hpp>
 
 #include <scai/tracing.hpp>
@@ -54,6 +53,7 @@
 // std
 #include <cmath>
 #include <complex>
+#include <functional>
 
 namespace scai
 {
@@ -81,7 +81,7 @@ void OpenMPBLAS1::scal(
     if ( syncToken )
     {
         // run this routine with same arguments by another thread, running thread will have syncToken == NULL
-        syncToken->run( common::bind( scal<ValueType>, n, alpha, x, incX ) );
+        syncToken->run( std::bind( scal<ValueType>, n, alpha, x, incX ) );
         return;
     }
 
@@ -432,7 +432,7 @@ void OpenMPBLAS1::axpy(
     if ( syncToken )
     {
         SCAI_LOG_WARN( logger, "asynchronous execution starts now" )
-        syncToken->run( common::bind( axpy<ValueType>,  n, alpha, x, incX, y, incY ) );
+        syncToken->run( std::bind( axpy<ValueType>,  n, alpha, x, incX, y, incY ) );
         return;
     }
 
@@ -573,7 +573,7 @@ template<typename ValueType>
 void OpenMPBLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
 
     SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS1 OpenMP-routines for Host at kernel registry: " <<
                     "T = " << common::TypeTraits<ValueType>::id() )

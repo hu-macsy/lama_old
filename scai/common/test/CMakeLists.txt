@@ -34,8 +34,7 @@
 
 set ( CXX_SOURCES
 
-          atomicOpenMPTest
-          bindFunctionTest
+          AtomicOpenMPTest
           commonTest
           BinaryOpTest
           ConstantsTest
@@ -47,7 +46,7 @@ set ( CXX_SOURCES
           GridTest
           LibModuleTest
           MathTest
-          ptrTest
+          MatrixOpTest
           PrintableTest
           ThreadTest  
           TypeListTest

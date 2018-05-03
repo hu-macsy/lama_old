@@ -44,6 +44,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/kregistry/mepr/Registrator.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -137,25 +138,12 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
-        const IndexType numValues,
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const ValueType cooValues[] );
-
-    /** Implementation for COOKernelTrait::normalGEVM  */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
         const IndexType numColumns,
         const IndexType numValues,
         const IndexType cooIA[],
         const IndexType cooJA[],
-        const ValueType cooValues[] );
+        const ValueType cooValues[],
+        const common::MatrixOp op );
 
     /** Implementation for COOKernelTrait::jacobi  */
 
@@ -172,28 +160,6 @@ public:
         const IndexType numRows );
 
 private:
-
-    template<typename ValueType>
-    static void normalGEMV_a(
-        ValueType result[],
-        const std::pair<ValueType, const ValueType*> ax,
-        const std::pair<ValueType, const ValueType*> by,
-        const IndexType numRows,
-        const IndexType numValues,
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const ValueType cooValues[] );
-
-    template<typename ValueType>
-    static void normalGEVM_a(
-        ValueType result[],
-        const std::pair<ValueType, const ValueType*> ax,
-        const std::pair<ValueType, const ValueType*> by,
-        const IndexType numColumns,
-        const IndexType numValues,
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const ValueType cooValues[] );
 
     /** Struct for registration of methods without template arguments */
 

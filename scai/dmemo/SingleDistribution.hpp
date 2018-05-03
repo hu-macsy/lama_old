@@ -78,7 +78,7 @@ public:
 
     virtual PartitionId findOwner( const IndexType globalIndex ) const;
 
-    /** Implementation of pure method Distribution::getLocalSize 
+    /** Implementation of pure method Distribution::getLocalSize
      *
      *  Returns global size for the owner partition, all other return 0
      */
@@ -88,7 +88,7 @@ public:
 
     virtual IndexType getMaxLocalSize() const;
 
-    /** Implementation of pure method Distribution::getBlockDistributionSize 
+    /** Implementation of pure method Distribution::getBlockDistributionSize
      *
      *  Note: a single distribution is a special case of a general block distribution.
      */
@@ -113,6 +113,10 @@ public:
     /** Override Distribution::getOwnedIndexes with more efficient version. */
 
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
+
+    /** Implementation of pure method Distribution::hasAnyAddressing */
+
+    virtual bool hasAnyAddressing() const;
 
     /** Implementation of pure method Distribution::enableAnyAddressing */
 

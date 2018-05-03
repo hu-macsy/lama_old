@@ -50,10 +50,11 @@ namespace lama
  * @brief L2Norm is a functor specialization of Norm that calculates the l2 norm
  *        for the passed values.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT L2Norm:
 
-    public Norm,
-    public Norm::Register<L2Norm>
+    public Norm<ValueType>,
+    public Norm<ValueType>::template Register<L2Norm<ValueType> >
 
 {
 public:
@@ -70,11 +71,11 @@ public:
     /**
      * @brief calculates the l2 norm of the passed Scalar.
      *
-     * @param[in] scalar    the Scalar to calculate the l2 norm of.
+     * @param[in] scalar    the scalar to calculate the l2 norm of.
      *
      * @return              the l2 norm of the Scalar scalar.
      */
-    virtual Scalar apply( const Scalar& scalar ) const;
+    virtual RealType<ValueType> apply( const ValueType& scalar ) const;
 
     /**
      * @brief calculates the l2 norm of the passed Vector.
@@ -83,16 +84,16 @@ public:
      *
      * @return              the l2 norm of the Vector vector.
      */
-    virtual Scalar apply( const Vector& vector ) const;
+    virtual RealType<ValueType> apply( const Vector<ValueType>& vector ) const;
 
     /**
-     * @brief calculates the l2 norm of the passed Matrix.
+     * @brief calculates the l2 norm of the passed matrix.
      *
-     * @param[in] matrix    the Matrix to calculate the l2 norm of.
+     * @param[in] matrix    the _Matrix to calculate the l2 norm of.
      *
-     * @return              the l2 norm of the Matrix matrix.
+     * @return              the l2 norm of matrix.
      */
-    virtual Scalar apply( const Matrix& matrix ) const;
+    virtual RealType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
 
     /**
      *  Getter routine for key of this derived class used in Norm factory
@@ -102,7 +103,7 @@ public:
     /**
      *  Create method is just function version of constructor.
      */
-    static Norm* create();
+    static Norm<ValueType>* create();
 
     /** Override Printable::writeAt with version for this class. */
 
@@ -116,7 +117,11 @@ public:
  *
  * @return              the l2 norm of the Scalar scalar.
  */
-COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Scalar& scalar );
+template<typename ValueType>
+inline RealType<ValueType> l2Norm( const ValueType& scalar )
+{
+    return common::Math::abs( scalar );
+}
 
 /**
  * @brief calculates the l2 norm of the passed Vector.
@@ -125,16 +130,24 @@ COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Scalar& scalar );
  *
  * @return              the l2 norm of the Vector vector.
  */
-COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Vector& vector );
+template<typename ValueType>
+inline RealType<ValueType> l2Norm( const Vector<ValueType>& vector )
+{
+    return vector.l2Norm();
+}
 
 /**
- * @brief calculates the l2 norm of the passed Matrix.
+ * @brief calculates the l2 norm of the passed matrix.
  *
- * @param[in] matrix    the Matrix to calculate the l2 norm of.
+ * @param[in] matrix    the _Matrix to calculate the l2 norm of.
  *
- * @return              the l2 norm of the Matrix matrix.
+ * @return              the l2 norm of the _Matrix matrix.
  */
-COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Matrix& matrix );
+template<typename ValueType>
+inline RealType<ValueType> l2Norm( const Matrix<ValueType>& matrix )
+{
+    return matrix.l2Norm();
+}
 
 } /* end namespace lama */
 

@@ -40,7 +40,6 @@
 // local library
 #include <scai/common/config.hpp>
 #include <scai/common/cuda/CUDACallable.hpp>
-#include <scai/common/mic/MICCallable.hpp>
 
 // std
 #include <sstream>
@@ -136,7 +135,6 @@
  */
 
 #define COMPLEX_CONSTRUCTOR_CUDA( type, method )                                    \
-    MIC_CALLABLE_MEMBER                                                             \
     CUDA_CALLABLE_MEMBER                                                            \
     inline Complex( type value )                                                    \
     {                                                                               \
@@ -150,7 +148,6 @@
     }
 
 #define COMPLEX_CONSTRUCTOR_2_CUDA( type1, type2, method )                          \
-    MIC_CALLABLE_MEMBER                                                             \
     CUDA_CALLABLE_MEMBER                                                            \
     inline Complex( type1 value1, type2 value2 )                                    \
     {                                                                               \
@@ -168,13 +165,11 @@
  */
 
 #define COMPLEX_OPERATOR_CUDA( op, type, method )                                   \
-    MIC_CALLABLE_MEMBER                                                             \
     CUDA_CALLABLE_MEMBER                                                            \
     inline Complex<ValueType>& op( const type t )                                   \
     {                                                                               \
         method                                                                      \
     }                                                                               \
-    MIC_CALLABLE_MEMBER                                                             \
     CUDA_CALLABLE_MEMBER                                                            \
     inline volatile Complex<ValueType>& op( const type t ) volatile                 \
     {                                                                               \
@@ -196,7 +191,6 @@
  */
 
 #define COMPLEX_OPERATOR_CAST_CUDA( type, method )                                  \
-    MIC_CALLABLE_MEMBER                                                             \
     CUDA_CALLABLE_MEMBER                                                            \
     operator type() const                                                           \
     {                                                                               \
@@ -215,21 +209,18 @@
 
 #define COMPLEX_OPERATOR_EQUALITY_CUDA(op, sign, connection, type)                            \
     template<typename ValueType>                                                              \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                     \
     {                                                                                         \
         return a.real() sign b.real() connection a.imag() sign b.imag();                      \
     }                                                                                         \
     template<typename ValueType>                                                              \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline bool op( const Complex<ValueType>& a, const type& b )                              \
     {                                                                                         \
         return a.real() sign b connection a.imag() sign 0;                                    \
     }                                                                                         \
     template<typename ValueType>                                                              \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline bool op( const type& a, const Complex<ValueType>& b )                              \
     {                                                                                         \
@@ -259,7 +250,6 @@
 
 #define COMPLEX_OPERATOR_NONMEMBER_CUDA(op, sign, type)                                       \
     template<typename ValueType>                                                              \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )       \
     {                                                                                         \
@@ -268,7 +258,6 @@
         return x;                                                                             \
     }                                                                                         \
     template<typename ValueType>                                                              \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b )    \
     {                                                                                         \
@@ -276,7 +265,6 @@
         x sign b;                                                                             \
         return x;                                                                             \
     }                                                                                         \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )              \
     {                                                                                         \
@@ -285,7 +273,6 @@
         return x;                                                                             \
     }                                                                                         \
     template<typename ValueType>                                                              \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )                \
     {                                                                                         \
@@ -294,7 +281,6 @@
         return x;                                                                             \
     }                                                                                         \
     template<typename ValueType>                                                              \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )                \
     {                                                                                         \
@@ -303,7 +289,6 @@
         return x;                                                                             \
     }                                                                                         \
     template<typename ValueType>                                                              \
-    MIC_CALLABLE_MEMBER                                                                       \
     CUDA_CALLABLE_MEMBER                                                                      \
     inline Complex<ValueType> op( Complex<ValueType>& a, Complex<type>& b )                   \
     {                                                                                         \
@@ -363,12 +348,10 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Complex
 {
 public:
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     explicit Complex();
 
     template<typename OtherValueType>
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     explicit inline Complex( const OtherValueType value );
 
@@ -535,28 +518,24 @@ public:
      *
      * @return     the imaginary part of a complex number
      */
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void )
     {
         return mParts[1];
     }
 
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) const
     {
         return mParts[1];
     }
 
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) volatile
     {
         return mParts[1];
     }
 
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType imag( void ) const volatile
     {
@@ -568,14 +547,12 @@ public:
      *
      * @param[in] a    the new imaginary part of the complex number
      */
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline void imag( const ValueType a )
     {
         mParts[1] = a;
     }
 
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline void imag( const ValueType a ) volatile
     {
@@ -587,28 +564,24 @@ public:
      *
      * @return     the real part of a complex number
      */
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void )
     {
         return mParts[0];
     }
 
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) const
     {
         return mParts[0];
     }
 
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) volatile
     {
         return mParts[0];
     }
 
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline ValueType real( void ) const volatile
     {
@@ -620,14 +593,12 @@ public:
      *
      * @param[in] a    the new real part of the complex number
      */
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline void real( const ValueType a )
     {
         mParts[0] = a;
     }
 
-    MIC_CALLABLE_MEMBER
     CUDA_CALLABLE_MEMBER
     inline void real( const ValueType a ) volatile
     {
@@ -639,7 +610,6 @@ private:
 };
 
 template<typename ValueType>
-MIC_CALLABLE_MEMBER
 CUDA_CALLABLE_MEMBER
 Complex<ValueType>::Complex()
 {
@@ -673,7 +643,6 @@ COMPLEX_OPERATOR_EQUALITY_CUDA( operator!=, != , || , double )
 COMPLEX_OPERATOR_EQUALITY_NONCUDA( operator!=, != , || , long double )
 
 template<typename ValueType>
-MIC_CALLABLE_MEMBER
 CUDA_CALLABLE_MEMBER
 inline Complex<ValueType> operator-( const Complex<ValueType>& a )
 {
@@ -772,6 +741,12 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 
 } /* end namespace common */
 
+// define more convenient names
+
+typedef common::Complex<float> ComplexFloat;
+typedef common::Complex<double> ComplexDouble;
+typedef common::Complex<long double> ComplexLongDouble;
+
 } /* end namespace scai */
 
 #undef COMPLEX_SET_REAL
@@ -800,8 +775,3 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
 #undef COMPLEX_OPERATOR_NONMEMBER_CUDA
 #undef COMPLEX_OPERATOR_NONMEMBER_NONCUDA
 
-// define more convenient names
-
-typedef scai::common::Complex<float> ComplexFloat;
-typedef scai::common::Complex<double> ComplexDouble;
-typedef scai::common::Complex<long double> ComplexLongDouble;

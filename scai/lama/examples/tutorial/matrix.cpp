@@ -34,18 +34,16 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 
-using namespace scai::hmemo;
-using namespace scai::lama;
-using scai::utilskernel::LArray;
+using namespace scai;
+using namespace hmemo;
+using namespace lama;
 
 //
 // EXAMPLE multiplication of a dense vector with a sparse matrix in CSR format.
@@ -55,61 +53,67 @@ int main()
     //
     // Define the ValueType used for the vector
     //
-    typedef RealType ValueType;
-    //
+    typedef DefaultReal ValueType;
+
     // initialize matrix and vector values
     //
-    //    Our matrix:
-    //     6, 0,     0, 4,
-    //     7, 0,     0, 0,
-    //     0, 0, -9.3f, 4,
-    //     2, 5,     0, 3,
-    //     2, 0,     0, 1,
-    //     0, 0,     0, 0,
-    //     0, 1,     0, 2
-    IndexType numRows    = 7;
-    IndexType numColumns = 4;
+    //    matrix( 7 x 4 )   vector( 4 )
+    //     6  0   0  4          6
+    //     7  0   0  0          4
+    //     0  0  -9  4          7
+    //     2  5   0  3         -9
+    //     2  0   0  1 
+    //     0  0   0  0 
+    //     0  1   0  2
+
+    IndexType numRows    =  7;
+    IndexType numColumns =  4;
     IndexType numValues  = 12;
-    // VERY IMPORTANT for CSR format: ia is an offset array adding values of each row starting with 0.
-    // ja stores the position of each value within a line,
-    IndexType ia[] =
-    {   0, 2, 3, 5, 8, 10, 10, 12};
-    IndexType ja[] =
-    {   0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3};
-    ValueType matrixValues[] =
-    {   6.0f, 4.0f, 7.0f, -9.3f, 4.0f, 2.0f, 5.0f, 3.0f, 2.0f, 1.0f, 1.0f, 2.0f };
+
+    // VERY IMPORTANT for CSR format: ia is an offset array adding number of values for each row starting with 0.
+    // ja stores the column position of each value within a row
+
+    IndexType rawIA[]     = {   0,    2,    3,    5,       8,   10, 10,    12};
+    IndexType rawJA[]     = {   0, 3, 0,    2, 3, 0, 1, 3, 0, 3,    1,  3 };
+    ValueType rawValues[] = {   6, 4, 7,   -9, 4, 2, 5, 3, 2, 1,    1,  2 };
+
     // Vector values for our multiplication.
-    ValueType vectorValues[] = {   6.0f, 4.0f, 7.0f, -9.3f };
-    // All data has to be stored in LAMA Arrays.
-    const LArray<IndexType> matrixIA = LArray<IndexType>( numRows + 1, ia );
-    const LArray<IndexType> matrixJA = LArray<IndexType>( numValues, ja );
-    const LArray<ValueType> mValues  = LArray<ValueType>( numValues, matrixValues );
-    const LArray<ValueType> vValues  = LArray<ValueType>( numColumns, vectorValues );
+    ValueType rawVector[] = {   6, 4, 7, -9 };
+
+    // All raw data is copied into heterogeneous arrays to support operations on any device
+
+    HArray<IndexType> csrIA( numRows + 1, rawIA );
+    HArray<IndexType> csrJA( numValues, rawJA );
+    HArray<ValueType> csrValues( numValues, rawValues );
+    HArray<ValueType> vectorValues( numColumns, rawVector );
+
     // Create a CSRStorage.
-    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>( numRows, numColumns, numValues,
-            matrixIA, matrixJA, mValues );
-    //  Alternative code for the last line
-//    CSRStorage<ValueType>* csrStorage = new CSRStorage<ValueType>();
-//    csrStorage->setCSRData( numRows, numColumns, numValues, matrixIA, matrixJA, mValues );
+
+    CSRStorage<ValueType> csrStorage ( numRows, numColumns, csrIA, csrJA, csrValues );
+
+    // Create the CSRSparseMatrix.
+
+    CSRSparseMatrix<ValueType> csrMatrix( csrStorage );
+
     // Allocate and fill vector for the multiplication.
-    DenseVector<ValueType> vector( numColumns, 0.0 );
-    vector.setDenseValues( vValues );
+
+    DenseVector<ValueType> vector( vectorValues );
+
     // Allocation of the result vector.
-    DenseVector<ValueType> result( numRows, 0.0 );
-    // Distribution pointer are needed to construct a CSRSparseMatrix.
-    scai::dmemo::DistributionPtr rowDist( new scai::dmemo::NoDistribution( numRows ) );
-    scai::dmemo::DistributionPtr colDist( new scai::dmemo::NoDistribution( numColumns ) );
-    // Allocation of the CSRSparseMatrix.
-    CSRSparseMatrix<ValueType> csrMatrix( *csrStorage, rowDist, colDist );
+
+    DenseVector<ValueType> result( numRows, 0 );
+
     //
     // The multiplication itself.
     //
     result = csrMatrix * vector;
+    result = 2 * transpose( csrMatrix ) * vector + 2 * result;
     //
-    // print vector to file result.frm/.vec (SAMG format)
+    // print vector to file result.txt (simple ASCII format)
     //
-    result.writeToFile( "result.frv" );
-    std::cout << "DenseVector is written to 'result.frm/.vec'" << std::endl;
+    result.writeToFile( "result.txt" );
+
+    std::cout << "DenseVector result values have been written to 'result.txt'" << std::endl;
     //
     //  That's it.
     //

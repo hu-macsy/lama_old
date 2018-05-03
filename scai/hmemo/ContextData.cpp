@@ -68,6 +68,7 @@ ContextData::ContextData( MemoryPtr memory ) :
 {
 }
 
+/*
 ContextData::ContextData() :
 
     size( 0 ),
@@ -77,6 +78,7 @@ ContextData::ContextData() :
     allocated( false )
 {
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -84,6 +86,23 @@ ContextData::~ContextData()
 {
     SCAI_LOG_DEBUG( logger, "~ContextData @ " << *mMemory << ", size = " << size )
     free();
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextData::ContextData( ContextData&& other ) noexcept
+{
+    size = other.size;
+    mMemory = other.mMemory;
+    pointer = other.pointer;
+    valid = other.valid;
+    allocated = other.allocated;
+
+    // set the data of other in such a way that destructor will not damage anything
+
+    other.size = 0;
+    other.pointer = NULL;
+    other.valid = false;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -126,20 +145,25 @@ void ContextData::setRef( void* reference, const size_t size )
 
 void ContextData::free()
 {
-    SCAI_LOG_TRACE( logger, "free for " << *mMemory )
-
     if ( mMemory && pointer )
     {
         if ( allocated )
         {
+            SCAI_LOG_DEBUG( logger, "ContextData: free " << size )
             mMemory->free( pointer, size );
+        }
+        else
+        {
+            // data was only referenced
+            SCAI_LOG_DEBUG( logger, "ContextData: no more ref to " << size )
         }
     }
 
     pointer = 0;
     size = 0;
     valid = false;
-    // we do not delete the mMemory pointers as output will cause runtime errors
+
+    // we do not delete the mMemory pointers as output might cause runtime errors
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -172,6 +196,8 @@ void ContextData::realloc( const size_t newSize, const size_t validSize )
     }
 }
 
+/* ---------------------------------------------------------------------------------*/
+
 void ContextData::reserve( const size_t newSize, const size_t validSize, bool inUse )
 {
     if ( newSize <= size )
@@ -196,12 +222,16 @@ void ContextData::reserve( const size_t newSize, const size_t validSize, bool in
     realloc( newSize, validSize );
 }
 
+/* ---------------------------------------------------------------------------------*/
+
 void ContextData::writeAt( std::ostream& stream ) const
 {
     stream << "ContextData ( size = " << size
            << ", valid = " << valid << ", capacity = " << size
            << " ) @ " << *mMemory;
 }
+
+/* ---------------------------------------------------------------------------------*/
 
 void ContextData::copyFrom( const ContextData& other, size_t size )
 {
@@ -230,6 +260,8 @@ void ContextData::copyFrom( const ContextData& other, size_t size )
         // Note: calling routine can deal with it by involving ContextData available on host
     }
 }
+
+/* ---------------------------------------------------------------------------------*/
 
 SyncToken* ContextData::copyFromAsync( const ContextData& other, size_t size )
 {

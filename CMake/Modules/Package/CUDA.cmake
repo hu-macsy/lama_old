@@ -48,9 +48,9 @@ scai_pragma_once ()
 
 set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
-# MINIMUM_VERSION 4.0 because we explicitly use cublas_v2
+# MINIMUM_VERSION 7.0 because we require support of -std=c++11 
 
-find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} 4.0 )
+find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} 7.0 )
 
 # find out if host compiler version is supported by CUDA installation
 include ( Compiler/cuda/CheckHostCompilerCompatibility )
@@ -73,53 +73,42 @@ endmacro()
 
 if ( CUDA_FOUND AND USE_CUDA )
 
-    if    ( ${CUDA_VERSION_MAJOR} LESS 5 )
-        message ( FATAL_ERROR "LAMA supports CUDA with SDK greater 5.0, your installation is ${CUDA_VERSION}. Use a newer CUDA installation or disable CUDA." )
-    endif ( ${CUDA_VERSION_MAJOR} LESS 5 )
+    if ( ${CUDA_VERSION_MAJOR} LESS 7 )
+        message ( FATAL_ERROR "LAMA supports CUDA with SDK at least 7.0, your installation is ${CUDA_VERSION}. Use a newer CUDA installation or disable CUDA." )
+    endif ()
 
     # set nvcc compiler flags, if not added as external project (has flags from parent)
-    if    ( NOT SCAI_COMPLETE_BUILD )
+    if ( NOT SCAI_COMPLETE_BUILD )
         include ( Compiler/cuda/SetNVCCFlags )
-    endif ( NOT SCAI_COMPLETE_BUILD )
+    endif ()
     
     ### find cuda helper libraries when cmake does not
     # get directory ov blas library as hint
     get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
 
-    # cusparse showed up in version 3.2
-    # we expect version 4.0 or higher
-    #if    ( CUDA_VERSION VERSION_LESS "3.2" )
-    #    message ( WARN "CUDA_VERSION ${CUDA_VERSION} does not include cusparse. You need CUDA 3.2 or higher to use it.." )
-    #else  ( CUDA_VERSION VERSION_LESS "3.2" )
-    
-        ### Older cmake versions do not search for cusparse
-        if ( NOT CUDA_cusparse_LIBRARY )
-            ### cusparse is usually in same directory as cublas
-            find_library( CUDA_cusparse_LIBRARY NAMES cusparse HINTS ${HINT_CUDA_LIBRARY_DIR} )
-            mark_as_advanced( CUDA_cusparse_LIBRARY )
-        endif ( NOT CUDA_cusparse_LIBRARY )
+    # cusparse showed up in version 3.2, so it should be there
+    if ( NOT CUDA_cusparse_LIBRARY )
+        ### cusparse is usually in same directory as cublas
+        find_library( CUDA_cusparse_LIBRARY NAMES cusparse HINTS ${HINT_CUDA_LIBRARY_DIR} )
+        mark_as_advanced( CUDA_cusparse_LIBRARY )
+    endif ( NOT CUDA_cusparse_LIBRARY )
 
     #endif ( CUDA_VERSION VERSION_LESS "3.2" )
     
-    # cusolver showed up in version 7.0
-    if    ( CUDA_VERSION VERSION_LESS "7.0" )
-        message ( WARNING "CUDA_VERSION ${CUDA_VERSION} does not include cusolver. You need CUDA 7.0 or higher to use it." )
-    else  ( CUDA_VERSION VERSION_LESS "7.0" )
-
-        ### Older cmake versions do not search for cusolver
-        if    ( NOT CUDA_cusolver_LIBRARY )
-            ### cusolver is usually in same directory as cublas
-            find_library( CUDA_cusolver_LIBRARY NAMES cusolver HINTS ${HINT_CUDA_LIBRARY_DIR} )
-            mark_as_advanced( CUDA_cusolver_LIBRARY )
-        endif ( NOT CUDA_cusolver_LIBRARY ) 
-
-    endif ( CUDA_VERSION VERSION_LESS "7.0" )
+    # cusolver showed up in version 7.0 that is now already minimum
+    if ( NOT CUDA_cusolver_LIBRARY )
+        ### cusolver is usually in same directory as cublas
+        find_library( CUDA_cusolver_LIBRARY NAMES cusolver HINTS ${HINT_CUDA_LIBRARY_DIR} )
+        mark_as_advanced( CUDA_cusolver_LIBRARY )
+    endif ( NOT CUDA_cusolver_LIBRARY ) 
 
     # just for making it the same variable ending for all packages
     set ( SCAI_CUDA_INCLUDE_DIR ${CUDA_INCLUDE_DIRS} )
     
     # conclude all needed CUDA libraries
-    set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} ${CUDA_cusolver_LIBRARY} )
+    set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} 
+                              ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} 
+                              ${CUDA_cufft_LIBRARY} ${CUDA_cusolver_LIBRARY} )
 
     get_filename_component ( SCAI_CUDA_LIBRARY_PATH ${CUDA_CUDART_LIBRARY} PATH CACHE )
 
@@ -129,18 +118,16 @@ endif ( CUDA_FOUND AND USE_CUDA )
 mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD CUDA_HOST_COMPILER )
 
 # LAMA irrelevant entries will be removed from cmake GUI completely
+
 set ( CUDA_BUILD_CUBIN "${CUDA_BUILD_CUBIN}" CACHE INTERNAL "" )
 set ( CUDA_BUILD_EMULATION "${CUDA_BUILD_EMULATION}" CACHE INTERNAL "" )
 set ( CUDA_SEPARABLE_COMPILATION "${CUDA_SEPARABLE_COMPILATION}" CACHE INTERNAL "" )
 set ( CUDA_USE_STATIC_CUDA_RUNTIME "${CUDA_USE_STATIC_CUDA_RUNTIME}" CACHE INTERNAL "" )
 set ( CUDA_rt_LIBRARY "${CUDA_rt_LIBRARY}" CACHE INTERNAL "" )
-# CUDA_64_BIT_DEVICE_CODE CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE CUDA_GENERATED_OUTPUT_DIR CUDA_TARGET_CPU_ARCH
-# CUDA_TOOLKIT_INCLUDE CUDA_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_TARGET_DIR
-# CUDA_cublasemu_LIBRARY CUDA_cufft_LIBRARY CUDA_cufftemu_LIBRARY
 
-if    ( USE_CUDA AND NOT CUDA_FOUND )
+if ( USE_CUDA AND NOT CUDA_FOUND )
     message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
-endif ( USE_CUDA AND NOT CUDA_FOUND )
+endif ()
 
 scai_summary_external ( NAME       CUDA
                         ENABLED    ${USE_CUDA}

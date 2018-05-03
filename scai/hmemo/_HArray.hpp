@@ -76,25 +76,34 @@ class ReadAccess;
 template<typename ValueType>
 class WriteAccess;
 
-/** Common base class for typed HArray.
+/** Common base class for typed HArray class.
+ *
+ *  This base class provides all methods for heterogeneous array in an untyped fashion,
+ *  i.e. it knowns the size for one value entry but allocate, free, memory transfers are
+ *  just in terms of bytes.
  *
  *  Base class provides also a factory for creating arrays.
+ *  Base class derives also from SyncTokenMember, i.e. these arrays might be freed
+ *  only after an asynchronous operation on it has finished.
  */
-
 class COMMON_DLL_IMPORTEXPORT _HArray:
 
     public common::Printable,
     public tasking::SyncTokenMember,
-    public common::Factory<common::scalar::ScalarType, _HArray*>
+    public common::Factory<common::ScalarType, _HArray*>
 {
-    // Member variables of this class
 
-protected:
+private:
 
-    IndexType mSize;        //!< number of entries for the context array, common for all contexts
-    IndexType mValueSize;   //!< number of bytes needed for one data element
+    /* ==================================================================== */
+    /*    member variables                                                  */
+    /* ==================================================================== */
 
-    bool constFlag;         //!< if true the array cannot be written
+    IndexType mSize;              //!< number of entries for the context array, common for all contexts
+
+    const IndexType mValueSize;   //!< number of bytes needed for one data element, can never be changed
+
+    bool constFlag;               //!< if true the array cannot be written
 
     mutable ContextDataManager mContextDataManager;  //!< takes control of accesses and allocations
 
@@ -106,12 +115,66 @@ public:
     {
     }
 
+    /** Just create an entry for managed locations. */
+
+    void touch( ContextPtr ctx )
+    {
+        mContextDataManager.getContextData( ctx );
+    }
+
+    /** Just create an entry for certain memory. */
+
+    void touch( MemoryPtr memory )
+    {
+        mContextDataManager.getMemoryData( memory );
+    }
+
+    /**
+     * @brief reserve a certain amount of data at a specific context
+     *
+     * @param[in] context where a certain amount of data should be reserved
+     * @param[in] capacity amount of data to be allocated
+     *
+     */
+    inline void reserve( ContextPtr context, const IndexType capacity );
+
+    void _setRawData( const IndexType size, const void* src )
+    {
+        mSize = size;
+
+        // context manager copies the data to the first touch location
+
+        mContextDataManager.init( src, mValueSize * size );
+    }
+
+    /** 
+     *  @brief Get one value from the array at a certain pos
+     *
+     *  This operation uses memcpy to a valid context.
+     */
+    inline void _getValue( void* data, const IndexType pos ) const;
+
+    /** 
+     *  @brief Set one value from the array at a certain pos
+     *
+     *  This operation uses memcpy to a valid context.
+     */
+    inline void _setValue( const void* data, const IndexType pos );
+
+    /**
+     * @brief sets the size of this array to 0 an frees all memory
+     */
+    inline void purge();
+
+
+    bool isConst() const { return constFlag; } 
+
     /**
      * @brief Query the value type of the array elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::scalar::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
-    using common::Factory<common::scalar::ScalarType, _HArray*>::create;
+    using common::Factory<common::ScalarType, _HArray*>::create;
 
     /**
      *  @brief Create a new empty array with same value type.
@@ -190,7 +253,7 @@ public:
     /**
      * @brief Query the capacity ( in number of elements ) at a certain context.
      */
-    IndexType capacity( ContextPtr context ) const;
+    inline IndexType capacity( ContextPtr context ) const;
 
     /**
      * @brief Query if data is valid in a certain context
@@ -227,20 +290,68 @@ public:
      *  type is not known at compile time.
      *
      *  \code
-     *  common::unique_ptr<_Harray> arr1( _HArray::create( type ) );
-     *  common::unique_ptr<_Harray> arr2( _HArray::create( type ) );
+     *  std::unique_ptr<_Harray> arr1( _HArray::create( type ) );
+     *  std::unique_ptr<_Harray> arr2( _HArray::create( type ) );
      *  ...
      *  arr1.swap( arr2 );   // is okay as they have same 'unknown' type
      *  \endcode
      */
-    virtual void swap( _HArray& other ) = 0;
+    void swap( _HArray& other );
 
     bool isInitialized() 
     {
         return mContextDataManager.isInitialized();
     }
 
+    /** Method to override Printable::writeAt */
+
+    void writeAt( std::ostream& stream ) const;
+
+    /** Help method for writeAt of derived classes */
+
+    void writeAtTyped( std::ostream& stream, const char* typeName ) const;
+
+    /** This method initializes for an HArray reference.
+     *
+     *  @param[in] size is the number of entries 
+     *  @param[in] pointer is the reference to the data
+     */
+
+    void setHostRef( const IndexType size, void* pointer );
+
+    /** This method initializes for an HArray const reference.
+     *
+     *  @param[in] size is the number of entries 
+     *  @param[in] pointer is the reference to the data
+     */
+    void setHostRef( const IndexType size, const void* pointer );
+
 protected:
+
+    /** copy constructor, only visible for derived classes. */
+
+    _HArray( const _HArray& other );
+
+    /** move constructor, only visible for derived classes. */
+
+    _HArray( _HArray&& other ) noexcept;
+
+    /** Assignment operator, only visible for derived classes. */
+
+    _HArray& operator=( const _HArray& other );
+
+    /** move assignment operator, only visible for derived classes
+     *
+     *  Very important: this move assignment must only be called between arrays
+     *                  of the same value type, no type conversion supported here.
+     */
+    _HArray& operator=( _HArray&& other ) noexcept;
+
+
+    /** Assignment, but here the target array will have only valid data at the 
+     *  specified context. 
+     */
+    void assign( const _HArray& other, ContextPtr context );
 
     explicit _HArray( const IndexType n, const IndexType size ) :
 
@@ -251,6 +362,44 @@ protected:
     }
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    /** reserve of memory at a certain context/memory, i.e. pos is known 
+     *
+     *  @param[in] index must be legal index in the array on context data entries
+     *  @param[in] capacity is number of data entries for which memory has to be reserved
+     *
+     *  Note: position in array is used instead of reference as array might be resized
+     */
+    void reserveWithIndex( ContextDataIndex index, const IndexType capacity ) const;
+
+    /** resize of memory at a certain context/memory, i.e. pos is known */
+
+    void resizeWithIndex( ContextDataIndex index, const IndexType capacity );
+
+    /** Clear during a write access where index specifies current location. */
+
+    void clearWithIndex( const ContextDataIndex index );
+
+    /** Query the capacity for a certain access.
+     *
+     *  @param[in] index is the reference to the context data as the result of an acquired access.
+     */
+
+    inline IndexType capacityWithIndex( ContextDataIndex index ) const;
+
+    /** Get pointer to the data at a certain location */
+
+    void* get( ContextDataIndex index )
+    {
+        return mContextDataManager[index].get();
+    }
+
+    /** Get (read-only) pointer to the data at a certain location */
+
+    const void* get( ContextDataIndex index ) const
+    {
+        return mContextDataManager[index].get();
+    }
 
 public:
 
@@ -282,14 +431,7 @@ public:
 
     /** Release an acquired write access. */
 
-    void releaseWriteAccess( ContextDataIndex );
-
-    /** Query the capacity for a certain access.
-     *
-     *  @param[in] index is the reference to the context data as the result of an acquired access.
-     */
-
-    IndexType capacity( ContextDataIndex index ) const;
+    inline void releaseWriteAccess( ContextDataIndex );
 
     /** Query the memory for a certain access. */
 
@@ -344,6 +486,21 @@ inline void _HArray::resize( IndexType size )
 
 /* ---------------------------------------------------------------------------------*/
 
+void _HArray::reserve( ContextPtr context, const IndexType capacity )
+{
+    mContextDataManager.reserve( context, capacity * mValueSize, mSize * mValueSize );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _HArray::purge()
+{
+    mContextDataManager.purge();
+    mSize = 0;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 inline void _HArray::clear()
 {
     SCAI_ASSERT( !mContextDataManager.locked(), "Tried to clear a locked HArray " << *this )
@@ -360,7 +517,7 @@ inline IndexType _HArray::capacity( ContextPtr context ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-inline IndexType _HArray::capacity( ContextDataIndex index ) const
+IndexType _HArray::capacityWithIndex( ContextDataIndex index ) const
 {
     const ContextData& entry = mContextDataManager[index];
     return static_cast<IndexType>( entry.capacity() / mValueSize );
@@ -396,14 +553,14 @@ inline ContextDataIndex _HArray::acquireReadAccess( ContextPtr context ) const
     size_t allocSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
     size_t validSize = allocSize;                   // read access needs valid data in any case
 
-    return mContextDataManager.acquireAccess( context, common::context::Read, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, common::AccessKind::Read, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 inline void _HArray::releaseReadAccess( ContextDataIndex index ) const
 {
-    mContextDataManager.releaseAccess( index, common::context::Read );
+    mContextDataManager.releaseAccess( index, common::AccessKind::Read );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -415,14 +572,31 @@ inline ContextDataIndex _HArray::acquireWriteAccess( ContextPtr context, bool ke
     size_t allocSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
 
     size_t validSize = keepFlag ? allocSize : 0 ;    // valid data only if keepFlag is set
-    return mContextDataManager.acquireAccess( context, common::context::Write, allocSize, validSize );
+    return mContextDataManager.acquireAccess( context, common::AccessKind::Write, allocSize, validSize );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-inline void _HArray::releaseWriteAccess( ContextDataIndex index )
+void _HArray::releaseWriteAccess( ContextDataIndex index )
 {
-    mContextDataManager.releaseAccess( index, common::context::Write );
+    mContextDataManager.releaseAccess( index, common::AccessKind::Write );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _HArray::_getValue( void* data, const IndexType pos ) const
+{
+    mContextDataManager.getData( data, pos * mValueSize, mValueSize );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _HArray::_setValue( const void* data, const IndexType pos )
+{
+    size_t allocSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
+    size_t offset    = static_cast<size_t>( pos ) * static_cast<size_t>( mValueSize );
+
+    mContextDataManager.setData( data, offset, mValueSize, allocSize );
 }
 
 } /* end namespace hmemo */

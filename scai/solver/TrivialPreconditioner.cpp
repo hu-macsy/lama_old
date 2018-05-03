@@ -35,81 +35,94 @@
 // hpp
 #include <scai/solver/TrivialPreconditioner.hpp>
 
+#include <scai/common/macros/instantiate.hpp>
+
 namespace scai
 {
 
 using lama::Matrix;
+using lama::Vector;
 
 namespace solver
 {
 
-TrivialPreconditioner::TrivialPreconditioner( const std::string& id )
-    : Solver( id )
+template<typename ValueType>
+TrivialPreconditioner<ValueType>::TrivialPreconditioner( const std::string& id )
+    : Solver<ValueType>( id )
 {
 }
 
-TrivialPreconditioner::TrivialPreconditioner( const std::string& id, LoggerPtr logger )
-    : Solver( id, logger )
+template<typename ValueType>
+TrivialPreconditioner<ValueType>::TrivialPreconditioner( const std::string& id, LoggerPtr logger )
+    : Solver<ValueType>( id, logger )
 {
 }
 
-TrivialPreconditioner::TrivialPreconditioner( const TrivialPreconditioner& other )
-    : Solver( other )
+template<typename ValueType>
+TrivialPreconditioner<ValueType>::TrivialPreconditioner( const TrivialPreconditioner& other )
+    : Solver<ValueType>( other )
 {
 }
 
-TrivialPreconditioner::TrivialPreconditionerRuntime::TrivialPreconditionerRuntime()
-    : SolverRuntime()
+template<typename ValueType>
+TrivialPreconditioner<ValueType>::TrivialPreconditionerRuntime::TrivialPreconditionerRuntime()
 {
 }
 
-TrivialPreconditioner::~TrivialPreconditioner()
+template<typename ValueType>
+TrivialPreconditioner<ValueType>::~TrivialPreconditioner()
 {
 }
 
-TrivialPreconditioner::TrivialPreconditionerRuntime::~TrivialPreconditionerRuntime()
+template<typename ValueType>
+TrivialPreconditioner<ValueType>::TrivialPreconditionerRuntime::~TrivialPreconditionerRuntime()
 {
 }
 
-void TrivialPreconditioner::initialize( const Matrix& coefficients )
+template<typename ValueType>
+void TrivialPreconditioner<ValueType>::solveImpl()
 {
-    Solver::initialize( coefficients );
+    lama::Vector<ValueType>& solution  = getRuntime().mSolution.getReference();
+    const lama::Vector<ValueType>& rhs = *getRuntime().mRhs;
+
+    solution = rhs;
 }
 
-void TrivialPreconditioner::solveImpl()
+template<typename ValueType>
+TrivialPreconditioner<ValueType>* TrivialPreconditioner<ValueType>::copy()
 {
-    *( getRuntime().mSolution ) = *( getRuntime().mRhs );
+    return new TrivialPreconditioner( *this );
 }
 
-SolverPtr TrivialPreconditioner::copy()
-{
-    return SolverPtr( new TrivialPreconditioner( *this ) );
-}
-
-TrivialPreconditioner::TrivialPreconditionerRuntime& TrivialPreconditioner::getRuntime()
+template<typename ValueType>
+typename TrivialPreconditioner<ValueType>::TrivialPreconditionerRuntime& TrivialPreconditioner<ValueType>::getRuntime()
 {
     return mTrivialPreconditionerRuntime;
 }
 
-const TrivialPreconditioner::TrivialPreconditionerRuntime& TrivialPreconditioner::getConstRuntime() const
+template<typename ValueType>
+const typename TrivialPreconditioner<ValueType>::TrivialPreconditionerRuntime& TrivialPreconditioner<ValueType>::getRuntime() const
 {
     return mTrivialPreconditionerRuntime;
 }
 
-std::string TrivialPreconditioner::createValue()
+template<typename ValueType>
+std::string TrivialPreconditioner<ValueType>::createValue()
 {
     return "TrivialPreconditioner";
 }
 
-Solver* TrivialPreconditioner::create( const std::string name )
+template<typename ValueType>
+void TrivialPreconditioner<ValueType>::writeAt( std::ostream& stream ) const
 {
-    return new TrivialPreconditioner( name );
+    stream << "TrivialPreconditioner ( id = " << this->getId() << " )";
 }
 
-void TrivialPreconditioner::writeAt( std::ostream& stream ) const
-{
-    stream << "TrivialPreconditioner ( id = " << mId << " )";
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( TrivialPreconditioner, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

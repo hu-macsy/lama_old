@@ -66,15 +66,13 @@ ConvertMatrixStorageBenchmark<ValueType>::ConvertMatrixStorageBenchmark( const s
 
     SCAI_ASSERT_EQ_ERROR( storageTypes.size(), 2, "two storage types expected as arguments" )
 
-    _MatrixStorage::MatrixStorageFormat sourceFormat = str2Format( storageTypes[0].c_str() );
-    _MatrixStorage::MatrixStorageFormat targetFormat = str2Format( storageTypes[1].c_str() );
+    Format sourceFormat = str2Format( storageTypes[0].c_str() );
+    Format targetFormat = str2Format( storageTypes[1].c_str() );
 
-    common::scalar::ScalarType type = common::TypeTraits<ValueType>::stype;
+    // allocate source and target storage of the required format 
 
-    // allocate source and target storage of the required type
-
-    mSourceStorage.reset( _MatrixStorage::create( MatrixStorageCreateKeyType( sourceFormat, type ) ) );
-    mTargetStorage.reset( _MatrixStorage::create( MatrixStorageCreateKeyType( targetFormat, type ) ) );
+    mSourceStorage.reset( MatrixStorage<ValueType>::getStorage( sourceFormat ) );
+    mTargetStorage.reset( MatrixStorage<ValueType>::getStorage( targetFormat ) );
 
     mArgument = storageTypes[0] + ", " + storageTypes[1];
 }
@@ -86,7 +84,7 @@ ConvertMatrixStorageBenchmark<ValueType>::~ConvertMatrixStorageBenchmark()
 }
 
 template<typename ValueType>
-common::scalar::ScalarType ConvertMatrixStorageBenchmark<ValueType>::getValueType() const
+common::ScalarType ConvertMatrixStorageBenchmark<ValueType>::getValueType() const
 {
     return common::TypeTraits<ValueType>::stype;
 }
@@ -115,7 +113,7 @@ void ConvertMatrixStorageBenchmark<ValueType>::initialize()
 {
     SCAI_LOG_DEBUG( logger, "initialize, mInputSetId = " << mInputSetId )
 
-    common::unique_ptr<InputSet> mInputSet;
+    std::unique_ptr<InputSet> mInputSet;
 
     mInputSet.reset( benchmark::InputSet::createWithArgument( mInputSetId ) );
 
@@ -133,7 +131,7 @@ void ConvertMatrixStorageBenchmark<ValueType>::initialize()
 
     SCAI_LOG_DEBUG( logger, "csrStorage = " << csrStorage )
 
-    mSourceStorage->setCSRData( csrStorage.getNumRows(), csrStorage.getNumColumns(), csrStorage.getNumValues(),
+    mSourceStorage->setCSRData( csrStorage.getNumRows(), csrStorage.getNumColumns(),
                                 csrStorage.getIA(), csrStorage.getJA(), csrStorage.getValues() );
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();

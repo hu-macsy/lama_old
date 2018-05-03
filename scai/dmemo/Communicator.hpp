@@ -54,7 +54,6 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/macros/count.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/loop.hpp>
 
@@ -85,7 +84,7 @@ class Halo;
 
 class Communicator;
 
-typedef common::shared_ptr<const Communicator> CommunicatorPtr;
+typedef std::shared_ptr<const Communicator> CommunicatorPtr;
 
 /** @brief Own namespace for the enum type CommunicatorKind and its values */
 
@@ -96,7 +95,6 @@ struct _Communicator
     {
         NO,                  //!< No communicator
         MPI,                 //!< MPI communicator
-        GPI,                 //!< GPI communicator
         MAX_COMMUNICATOR     //!< dummy value for number of communicators
     } CommunicatorKind;
 
@@ -158,7 +156,8 @@ public:
      *  @returns shared pointer to the default communicator.
      *
      *  The rules for choosing the default communicator are as follows:
-     *   - take if available in this order: MPI, GPI, NO
+     *   - If MPI is available, use the MPI communicator.
+     *   - Otherwise, use no communicator.
      */
 
     static CommunicatorPtr getDefaultCommunicatorPtr();
@@ -304,7 +303,7 @@ public:
         const CommunicationPlan& recvPlan,
         const void* sendData,
         const CommunicationPlan& sendPlan,
-        const common::scalar::ScalarType stype ) const = 0;
+        const common::ScalarType stype ) const = 0;
 
     /* @brief Asynchronous exchange of data between all processors by communication plans.
      *
@@ -335,7 +334,7 @@ public:
         const CommunicationPlan& recvPlan,
         const void* sendData,
         const CommunicationPlan& sendPlan,
-        const common::scalar::ScalarType stype ) const = 0;
+        const common::ScalarType stype ) const = 0;
 
     /* @brief Scatter of an array of values from root to all other processors.
      *
@@ -350,7 +349,7 @@ public:
     /** Non-template version with coded ValueType is pure routine to be implemented by derived classes. */
 
     virtual void scatterImpl( void* myVals, const IndexType n, const PartitionId root,
-                              const void* allVals, common::scalar::ScalarType stype ) const = 0;
+                              const void* allVals, const common::ScalarType stype ) const = 0;
 
     /* @brief Scatter of an array of values from root to all other processors.
      *
@@ -364,7 +363,7 @@ public:
     void scatterV( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[], const IndexType sizes[] ) const;
 
     virtual void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
-                               const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const = 0;
+                               const void* allVals, const IndexType sizes[], const common::ScalarType stype ) const = 0;
 
     /* @brief Gather of an array of values from all processors to root.
      *
@@ -377,7 +376,7 @@ public:
     template<typename ValueType>
     void gather( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[] ) const;
 
-    virtual void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const = 0;
+    virtual void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, const common::ScalarType stype ) const = 0;
 
     /* @brief Gather of an array of double values from all processors to root.
      *
@@ -399,7 +398,7 @@ public:
         const PartitionId root,
         const void* myvals,
         const IndexType sizes[],
-        common::scalar::ScalarType stype ) const = 0;
+        const common::ScalarType stype ) const = 0;
 
     /* @brief Swap of an array with another processor.
      *
@@ -416,7 +415,7 @@ public:
         void* val,
         const IndexType n,
         PartitionId partner,
-        common::scalar::ScalarType stype ) const = 0;
+        const common::ScalarType stype ) const = 0;
 
     /* @brief This routine shifts data between neighbored processors.
      *
@@ -443,7 +442,7 @@ public:
         const void* oldVals,
         const IndexType oldSize,
         const PartitionId dest,
-        common::scalar::ScalarType stype ) const = 0;
+        const common::ScalarType stype ) const = 0;
 
     /* @brief Asynchronous version of shift.
      *
@@ -474,9 +473,11 @@ public:
         const void* oldVals,
         const PartitionId dest,
         const IndexType size,
-        common::scalar::ScalarType stype ) const = 0;
+        const common::ScalarType stype ) const = 0;
 
-    /** All-to-all exchange of an IndexType value between all processors.
+    /** All-to-all exchange of a single value between all processors.
+     *
+     * @tparam ValueType specifies the type of the elements for exchange
      *
      * @param[out] recvValues   will contain one value from each processor
      * @param[in]  sendValues   must contain one value for each processor
@@ -484,20 +485,38 @@ public:
      * recvValues and sendValues must both have a size of communicator size.
      * recvValues[i] on processor j contains sendValues[j] of processor i.
      */
-    virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const = 0;
-
     template<typename ValueType>
-    void all2allv( ValueType* recvVal[], IndexType recvCount[],
-                   ValueType* sendVal[], IndexType sendCount[] ) const;
+    void all2all( ValueType recvValues[], const ValueType sendValues[] ) const;
+
+    /** Same routine as all2all but uses void pointers and codes the ValueType so it can
+     *  become a virtual method that is provided by all derived communicator classes.
+     */
+    virtual void all2allImpl( 
+        void* recvBuffer, 
+        const void* sendBuffer,
+        const common::ScalarType stype ) const = 0;
+
+    /** All-to-all exchange of multiple values between all processors
+     *
+     *  @param[out] recvBuffer is an array where recvBuffer[i] is pointer to the data that will be received from processor i
+     *  @param[in]  recvCount is an array where recvCount[i] is the number of values to receive from processor i
+     *  @param[in]  sendBuffer is an array where sendBuffer[i] is pointer to the data to send to processor i
+     *  @param[in]  sendCount is an array where sendCount[i] is the number of values to send to processor i
+     *
+     *  Here the values of recvCount must already be available. Before, it might have been computed by all2all( recvCount, sendCount ).
+     */
+    template<typename ValueType>
+    void all2allv( ValueType* recvBuffer[], const IndexType recvCount[],
+                   const ValueType* sendBuffer[], const IndexType sendCount[] ) const;
 
     /** Same routine but uses void pointers and codes the ValueType so it can
      *  become a virtual method that is provided by all derived communicator classes.
      */
 
     virtual void all2allvImpl(
-        void* recvBuffer[], IndexType recvCount[],
-        void* sendBuffer[], IndexType sendCount[],
-        common::scalar::ScalarType stype ) const = 0;
+        void* recvBuffer[], const IndexType recvCount[],
+        const void* sendBuffer[], const IndexType sendCount[],
+        const common::ScalarType stype ) const = 0;
 
     /** Pure method for bcast
      *
@@ -506,7 +525,7 @@ public:
      *  @param[in]     root processor with correct values of val
      *  @param[in]     stype codes the used data type of values
      */
-    virtual void bcastImpl( void* values, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const = 0;
+    virtual void bcastImpl( void* values, const IndexType n, const PartitionId root, const common::ScalarType stype ) const = 0;
 
     /**************************************************************************************
      *                                                                                    *
@@ -569,15 +588,15 @@ public:
      *   @param[in]  n is the number of values in arrays inValues and outValues
      *   @param[in]  stype specifies the data type of the data
      */
-    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const = 0;
 
     /**  Find minimal values from all processes and distributes the result back to all processes. */
 
-    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const = 0;
 
     /**  Find maximal values from all processes and distributes the result back to all processes. */
 
-    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const = 0;
 
     /* @brief Maximal value combined with a location value where maximum was found.
      *
@@ -596,9 +615,9 @@ public:
     template<typename ValueType>
     void minloc( ValueType& val, IndexType& location, const PartitionId root ) const;
 
-    virtual void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
+    virtual void maxlocImpl( void* val, IndexType* location, PartitionId root, const common::ScalarType stype ) const = 0;
 
-    virtual void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
+    virtual void minlocImpl( void* val, IndexType* location, PartitionId root, const common::ScalarType stype ) const = 0;
 
     /** Scan values among the processor belonging to this communicator. */
 
@@ -607,7 +626,7 @@ public:
 
     /** Inclusive scan, similiar to sum but each processor has partial sums */
 
-    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const = 0;
 
     /** Default implementation */
 
@@ -621,7 +640,7 @@ public:
      *  @param[in] vType specifies the type of the reduction array values
      *  @param[in] iType specifies the index type used
      */
-    virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const = 0;
+    virtual bool supportsLocReduction( const common::ScalarType vType, const common::ScalarType iType ) const = 0;
 
     /** Default implementation for maxloc that uses a gather operation instead of reduction. */
 
@@ -688,9 +707,9 @@ public:
     template<typename ValueType>
     void bcastArray( hmemo::HArray<ValueType>& array, const PartitionId root ) const;
 
-    /** Broadcast of a heterogeneous array with known size 
+    /** Broadcast of a heterogeneous array with known size
      *
-     *  If the size of the array is known, an additional broadcast of the size is not required. 
+     *  If the size of the array is known, an additional broadcast of the size is not required.
      */
 
     template<typename ValueType>

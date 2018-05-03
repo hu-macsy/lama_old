@@ -39,9 +39,6 @@
 // base classes
 #include <scai/hmemo/Memory.hpp>
 
-// internal scai libraries
-#include <scai/common/Thread.hpp>
-
 // CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -78,7 +75,7 @@ public:
     /**
      * @brief Constructor for the CUDA memory management.
      */
-    CUDAMemory( common::shared_ptr<const class CUDAContext> cudaContext );
+    CUDAMemory( std::shared_ptr<const class CUDAContext> cudaContext );
 
     /**
      * @brief The destructor destroys this CUDA device, and frees the initialized
@@ -118,11 +115,15 @@ public:
 
     virtual ContextPtr getContextPtr() const;
 
+    /** Implementation of Memory::maxAllocatedbytes */
+
+    virtual size_t maxAllocatedBytes() const;
+
 private:
 
     bool canCopyCUDA( const CUDAMemory& other ) const;
 
-    common::shared_ptr<const CUDAContext> mCUDAContext;
+    std::shared_ptr<const CUDAContext> mCUDAContext;
 
     void memcpyFromHost( void* dst, const void* src, const size_t size ) const;
     void memcpyToHost( void* dst, const void* src, const size_t size ) const;
@@ -137,9 +138,9 @@ private:
     tasking::SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
     tasking::SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
 
-    mutable int mNumberOfAllocates; //!< variable counts allocates
-    mutable long long mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device
-    mutable long long mMaxNumberOfAllocatedBytes; //!< variable counts the maximum allocated bytes
+    mutable size_t mNumberOfAllocates; //!< variable counts allocates
+    mutable size_t mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device
+    mutable size_t mMaxAllocatedBytes; //!< variable counts the maximum allocated bytes
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

@@ -62,24 +62,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.SimpleAMGTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<SimpleAMG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    SimpleAMG SimpleAMGSolver( "SimpleAMGSolver", slogger );
-    BOOST_CHECK_EQUAL( SimpleAMGSolver.getId(), "SimpleAMGSolver" );
-    SimpleAMG SimpleAMGSolver2( "SimpleAMGSolver2" );
-    BOOST_CHECK_EQUAL( SimpleAMGSolver2.getId(), "SimpleAMGSolver2" );
-    SimpleAMG SimpleAMGSolver3( SimpleAMGSolver2 );
-    BOOST_CHECK_EQUAL( SimpleAMGSolver3.getId(), "SimpleAMGSolver2" );
-    BOOST_CHECK( SimpleAMGSolver3.getPreconditioner() == 0 );
-    SimpleAMG SimpleAMGSolver4( "SimpleAMGSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    SimpleAMGSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    SimpleAMGSolver4.setStoppingCriterion( criterion );
-    SimpleAMG SimpleAMGSolver5( SimpleAMGSolver4 );
-    BOOST_CHECK_EQUAL( SimpleAMGSolver5.getId(), SimpleAMGSolver4.getId() );
-    BOOST_CHECK_EQUAL( SimpleAMGSolver5.getPreconditioner()->getId(), SimpleAMGSolver4.getPreconditioner()->getId() );
+    SimpleAMG<ValueType> cgSolver( "SimpleAMGTestSolver", slogger );
+    BOOST_CHECK_EQUAL( cgSolver.getId(), "SimpleAMGTestSolver" );
+    SimpleAMG<ValueType> cgSolver2( "SimpleAMGTestSolver2" );
+    BOOST_CHECK_EQUAL( cgSolver2.getId(), "SimpleAMGTestSolver2" );
+    SimpleAMG<ValueType> cgSolver3( cgSolver2 );
+    BOOST_CHECK_EQUAL( cgSolver3.getId(), "SimpleAMGTestSolver2" );
+    BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
+    SimpleAMG<ValueType> cgSolver4( "cgSolver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    cgSolver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    cgSolver4.setStoppingCriterion( criterion );
+    SimpleAMG<ValueType> cgSolver5( cgSolver4 );
+    BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() ); 
+    BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -91,14 +91,14 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
     const IndexType N = 40;
     scai::lama::CSRSparseMatrix<ValueType> coefficients;
     scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
-    SimpleAMG SimpleAMGSolver( "SimpleAMGSolver" );
+    SimpleAMG<ValueType> SimpleAMGSolver( "SimpleAMGSolver" );
     /* cant not be tested: not getter
     SimpleAMGSolver.setHostOnlyLevel( IndexType hostOnlyLevel );
     SimpleAMGSolver.setHostOnlyVars( IndexType hostOnlyVars );
     SimpleAMGSolver.setReplicatedLevel( IndexType replicatedLevel );
     SimpleAMGSolver.setMaxLevels( unsigned int levels );
     SimpleAMGSolver.setMinVarsCoarseLevel( unsigned int vars );*/
-    SolverPtr cgSolver ( new CG ( "CGCoarseLevelSolver" ) );
+    SolverPtr<ValueType> cgSolver ( new CG<ValueType> ( "CGCoarseLevelSolver" ) );
     scai::hmemo::ContextPtr context = scai::hmemo::Context::getContextPtr();
     // does not work because coarselevelsolver in SingleGridSetup gets overridden by smoother
     //SimpleAMGSolver.setCoarseLevelSolver( cgSolver );
@@ -132,19 +132,19 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
     bool isPartitioned;
     PartitionIO::getPartitionFileName( pLoggerFileName, isPartitioned, comm );
 
-    common::shared_ptr<Timer> timer( new Timer() );
+    std::shared_ptr<Timer> timer( new Timer() );
 
     LoggerPtr slogger( new CommonLogger( "<SimpleAMG>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toFileOnly, pLoggerFileName, timer ) );
-    SimpleAMG simpleAMGSolver( "SimpleAMGSolver", slogger );
+    SimpleAMG<ValueType> simpleAMGSolver( "SimpleAMGSolver", slogger );
 
     simpleAMGSolver.initialize( coefficients );
 
-    for ( unsigned int i = 0; i < simpleAMGSolver.getNumLevels(); ++i )
+    for ( IndexType i = 0; i < simpleAMGSolver.getNumLevels(); ++i )
     {
-        const Matrix& galerkin    = simpleAMGSolver.getGalerkin( i );
-        const Matrix& restriction = simpleAMGSolver.getRestriction( i );
-        const Matrix& interpol    = simpleAMGSolver.getInterpolation( i );
-        const Solver& smoother    = simpleAMGSolver.getSmoother( i );
+        const Matrix<ValueType>& galerkin    = simpleAMGSolver.getGalerkin( i );
+        const Matrix<ValueType>& restriction = simpleAMGSolver.getRestriction( i );
+        const Matrix<ValueType>& interpol    = simpleAMGSolver.getInterpolation( i );
+        const Solver<ValueType>& smoother    = simpleAMGSolver.getSmoother( i );
 
         if ( i == 0 )
         {
@@ -156,14 +156,11 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
 
         // smoother must be an iterative solver
 
-        BOOST_CHECK( dynamic_cast<const IterativeSolver*>( &smoother ) );
+        BOOST_CHECK( dynamic_cast<const IterativeSolver<ValueType>*>( &smoother ) );
     }
 
-    DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr() );
-    DenseVector<ValueType> x( coefficients.getColDistributionPtr() );
-
-    rhs = ValueType( 1 );
-    x = ValueType( 0 );
+    auto rhs = fill<DenseVector<ValueType>>( coefficients.getRowDistributionPtr(), 1 );
+    auto x = fill<DenseVector<ValueType>>( coefficients.getColDistributionPtr(), 0 );
 
     simpleAMGSolver.solve( x, rhs );
 

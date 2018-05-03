@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
@@ -47,8 +47,16 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
+#include <scai/utilskernel.hpp>
+
 using namespace scai;
 using namespace lama;
+
+using common::Math;
+using hmemo::HArray;
+using utilskernel::HArrayUtils;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -72,7 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
     {
         ValueType zero = zeroValues[icase];
 
-        SparseVector<ValueType> v( n, zero );
+        auto v = fill<SparseVector<ValueType>>( n, zero );
 
         BOOST_CHECK_EQUAL( n, v.size() );
 
@@ -87,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( consistencyTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -102,7 +110,7 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     // usually it is not simple to make a vector inconsistent
 
-    hmemo::HArray<IndexType>& indexes = const_cast<hmemo::HArray<IndexType>&>( v.getNonZeroIndexes() );
+    HArray<IndexType>& indexes = const_cast<HArray<IndexType>&>( v.getNonZeroIndexes() );
 
     // make it inconsistent on one processor only, isConsistent can deal with it
 
@@ -115,7 +123,7 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     BOOST_CHECK( ! v.isConsistent() );
 
-    hmemo::HArray<ValueType>& values = const_cast<hmemo::HArray<ValueType>&>( v.getNonZeroValues() );
+    HArray<ValueType>& values = const_cast<HArray<ValueType>&>( v.getNonZeroValues() );
 
     if ( dist->getLocalSize() > 0 )
     {
@@ -142,26 +150,26 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
 BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 {
+    using namespace hmemo;
+
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 20;   // let it really small, this test is very inefficient
     IndexType bound = 1000;
-
-    utilskernel::LArray<ValueType> data( n, ValueType( 0 ) );
 
     common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
     const float fillRate = 0.2;   // makes it worth to be sparse
 
-    data.setSparseRandom( fillRate, bound ); // ~ 20% values are non-zero with value between 0 and 1
+    HArray<ValueType> data = utilskernel::sparseRandomHArray<ValueType>( n, 0, fillRate, bound );
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < dists.size(); ++i )
     {
-        utilskernel::LArray<ValueType> data1( n );
+        HArray<ValueType> data1( n );
 
         dmemo::DistributionPtr dist = dists[i];
 
@@ -169,16 +177,16 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 
         denseV.redistribute( dist );
 
-        SparseVector<ValueType> sparseV( denseV );
+        auto sparseV = convert<SparseVector<ValueType>>( denseV );
 
         // get each value from the distributed sparse vector
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = sparseV.getValue( k ).getValue<ValueType>();
+            data1[k] = sparseV.getValue( k );
         }
 
-        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+        BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
     }
 }
 
@@ -186,7 +194,7 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 
 BOOST_AUTO_TEST_CASE( SparseConstructorTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType values_raw[] = { 3, 4, 3, 1, 2 };
     IndexType indexes_raw[] = { 7, 3, 11, 13, 5 };
@@ -194,10 +202,10 @@ BOOST_AUTO_TEST_CASE( SparseConstructorTest )
     IndexType nnz = sizeof( values_raw ) / sizeof( ValueType );
     IndexType n   = 20;
 
-    hmemo::HArray<ValueType> values( nnz, values_raw );
-    hmemo::HArray<IndexType> indexes( nnz, indexes_raw );
+    HArray<ValueType> values( nnz, values_raw );
+    HArray<IndexType> indexes( nnz, indexes_raw );
 
-    Scalar zero = 1;
+    ValueType zero = 1;
 
     dmemo::DistributionPtr dist( new dmemo::NoDistribution( n ) );
 
@@ -205,11 +213,11 @@ BOOST_AUTO_TEST_CASE( SparseConstructorTest )
 
     SparseVector<ValueType> s( dist, indexes, values, zero );
 
-    const hmemo::HArray<IndexType>& spIndexes = s.getNonZeroIndexes();
+    const HArray<IndexType>& spIndexes = s.getNonZeroIndexes();
 
     // indexes must be sorted:  spIndexes[0] < spIndexes[1] < ... < spIndexes[nnz-1]
 
-    BOOST_CHECK( utilskernel::HArrayUtils::isSorted( spIndexes, common::binary::LT ) );
+    BOOST_CHECK( HArrayUtils::isSorted( spIndexes, common::CompareOp::LT ) );
     BOOST_CHECK_EQUAL( s.getZero(), zero );
 }
 
@@ -219,27 +227,25 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 20;   // let it really small, this test is very inefficient
-
-    utilskernel::LArray<ValueType> data( n, ValueType( 0 ) );
 
     common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
     const float fillRate = 0.2;   // makes it worth to be sparse
 
-    data.setSparseRandom( fillRate, 1 );
+    auto data = utilskernel::sparseRandomHArray<ValueType>( n, 0, fillRate, 1 );
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < dists.size(); ++i )
     {
-        utilskernel::LArray<ValueType> data1( n );
+        HArray<ValueType> data1( n );
 
         dmemo::DistributionPtr dist = dists[i];
 
-        SparseVector<ValueType> sparseV( data );
+        auto sparseV = convert<SparseVector<ValueType>>( data );
 
         sparseV.redistribute( dist );
 
@@ -247,10 +253,10 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = sparseV.getValue( k ).getValue<ValueType>();
+            data1[k] = sparseV.getValue( k );
         }
 
-        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+        BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
     }
 }
 
@@ -262,7 +268,7 @@ BOOST_AUTO_TEST_CASE( diffTest )
     // For comparison the same operations are computed with dense vectors
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -277,7 +283,9 @@ BOOST_AUTO_TEST_CASE( diffTest )
 
     xS1 -= xS2;
 
-    BOOST_CHECK( xS1.maxNorm() < Scalar( 1e-4 ) );
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    BOOST_CHECK( xS1.maxNorm() < eps );
 }
 
 /* --------------------------------------------------------------------- */
@@ -288,7 +296,7 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
     // For comparison the same operations are computed with dense vectors
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -300,6 +308,8 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( IndexType icase = 0; icase < 5; ++icase )
     {
         ValueType zero1 = 1.0;
@@ -308,10 +318,10 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
         SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
         SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
 
-        // use copy constructor to build equivalent dense vectors
+        // use convert function to build equivalent dense vectors
 
-        DenseVector<ValueType> xD1( xS1 );
-        DenseVector<ValueType> xD2( xS2 );
+        auto xD1 = convert<DenseVector<ValueType>>( xS1 );
+        auto xD2 = convert<DenseVector<ValueType>>( xS2 );
 
         SCAI_LOG_DEBUG( logger, "Run test case " << icase << " for binop on sparse vectors" )
 
@@ -319,21 +329,21 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
         {
             case 0 : xS1 += xS2; 
                      BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
-                     BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 + zero2 ) ) < Scalar( 0.0001 ) );
+                     BOOST_CHECK( Math::abs( xS1.getZero() - ( zero1 + zero2 ) ) < eps );
                      xD1 += xD2;
                      break;
-            case 1 : xS1 *= xS2; 
+            case 1 : xS1 *= xS2;
                      BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
-                     BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 * zero2 ) ) < Scalar( 0.0001 ) );
+                     BOOST_CHECK( Math::abs( xS1.getZero() - ( zero1 * zero2 ) ) < eps );
                      xD1 *= xD2;
                      break;
             case 2 : xS1 = 5 * xS1 - 2 * xS2; 
                      BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
-                     BOOST_CHECK( abs( xS1.getZero() - Scalar( 5 * zero1 - 2 * zero2 ) ) < Scalar( 0.0001 ) );
+                     BOOST_CHECK( Math::abs( xS1.getZero() - ( 5 * zero1 - 2 * zero2 ) ) < eps );
                      xD1 = 5 * xD1 - 2 * xD2;
                      break;
-            case 3 : xS1.invert();   // this op is okay if zero element is not 0
-                     xD1.invert();
+            case 3 : xS1.unaryOpInPlace( common::UnaryOp::RECIPROCAL );   // this op is okay if zero element is not 0
+                     xD1.unaryOpInPlace( common::UnaryOp::RECIPROCAL );
                      break;
             case 4 : xS1 += xD2;     // add with dense vector okay, but might be entry for each elem
                      xD1 += xD2;
@@ -344,7 +354,7 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
 
         xD1 -= xS1;
 
-        BOOST_CHECK( xD1.maxNorm() < Scalar( 1e-4 ) );
+        BOOST_CHECK( xD1.maxNorm() < eps );
     }
 }
 
@@ -355,7 +365,7 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
     // Test of different binary operations where result is dense vector
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -364,6 +374,8 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
 
     IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
     ValueType rawNonZeroValues2[] = { 5, 4, 9 };
+
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 
@@ -375,13 +387,13 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
         SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
         SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
 
-        DenseVector<ValueType> xD1( xS1 );
-        DenseVector<ValueType> xD2( xS2 );
+        auto xD1 = convert<DenseVector<ValueType>>( xS1 );
+        auto xD2 = convert<DenseVector<ValueType>>( xS2 );
 
         // use copy constructor to build equivalent dense vectors
 
-        DenseVector<ValueType> result1( n, ValueType( 5 ) );
-        DenseVector<ValueType> result2( n, ValueType( 5 ) );
+        auto result1 = fill<DenseVector<ValueType>>( n, 5 );
+        auto result2 = fill<DenseVector<ValueType>>( n, 5 );
 
         SCAI_LOG_DEBUG( logger, "Run test case " << icase << " for binop on sparse vectors" )
 
@@ -405,7 +417,8 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
 
         result1 -= result2;
 
-        BOOST_CHECK( result1.maxNorm() < Scalar( 1e-4 ) );
+
+        BOOST_CHECK( result1.maxNorm() < eps );
     }
 }
 
@@ -416,7 +429,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     // Test of different reduction operations on sparse vector
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -434,8 +447,8 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
     SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
 
-    DenseVector<ValueType> xD1( xS1 );
-    DenseVector<ValueType> xD2( xS2 );
+    auto xD1 = convert<DenseVector<ValueType>>( xS1 );
+    auto xD2 = convert<DenseVector<ValueType>>( xS2 );
 
     BOOST_CHECK_EQUAL( xS1.min(), xD1.min() );
     BOOST_CHECK_EQUAL( xS2.min(), xD2.min() );
@@ -449,6 +462,76 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     BOOST_CHECK_EQUAL( xS1.dotProduct( xS2 ), xD1.dotProduct(xD2 ) );
     BOOST_CHECK_EQUAL( xS1.dotProduct( xD2 ), xD1.dotProduct(xD2 ) );
     BOOST_CHECK_EQUAL( xD1.dotProduct( xS2 ), xD1.dotProduct(xD2 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( moveTest )
+{
+    // Test of different reduction operations on sparse vector
+    // Note: it is sufficient to consider one value type
+
+    typedef DefaultReal ValueType;
+
+    IndexType n = 10;
+
+    IndexType nnz = 3;
+    IndexType rawNonZeroIndexes[] = { 0, 5, 6 };
+    ValueType rawNonZeroValues[] = { 5, -6, 7 };
+    ValueType zero = 1;
+
+    SparseVector<ValueType> xS( n, nnz, rawNonZeroIndexes, rawNonZeroValues, zero );
+
+    SparseVector<ValueType> xS1( std::move( xS ) );
+
+    BOOST_CHECK_EQUAL( 0, xS.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( 0, xS.getNonZeroValues().size() );
+
+    BOOST_CHECK_EQUAL( nnz, xS1.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( nnz, xS1.getNonZeroValues().size() );
+
+    auto xS2 = fill<SparseVector<ValueType>>( n, zero );
+    xS2 = std::move( xS1 );
+
+    BOOST_CHECK_EQUAL( nnz, xS2.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( nnz, xS2.getNonZeroValues().size() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( compressTest )
+{   
+    // Test of different reduction operations on sparse vector
+    // Note: it is sufficient to consider one value type
+
+    typedef DefaultReal ValueType;
+
+    IndexType n = 10;
+    ValueType rawValues[] = { 2, 2, 1, 1, 1, 0, 0, 0, 0, 0 } ;
+
+    DenseVector<ValueType> xD( HArray<ValueType>( n, rawValues ) );
+
+    // Case 1: check constructor conversion: dense -> sparse
+
+    SparseVector<ValueType> xS0( xD, ValueType( 0 ) );
+
+    BOOST_CHECK_EQUAL( 5, xS0.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( 5, xS0.getNonZeroValues().size() );
+
+    // Case 2: same, but different zero element
+
+    SparseVector<ValueType> xS1( xD, ValueType( 1 ) );
+
+    BOOST_CHECK_EQUAL( n - 3, xS1.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( n - 3, xS1.getNonZeroValues().size() );
+
+    // Case 3: conversion from denso to sparse in assignment, should keep zero element
+
+    auto xS2 = fill<SparseVector<ValueType>>( n, 2 );
+    xS2 = xD;
+
+    BOOST_CHECK_EQUAL( n - 2, xS2.getNonZeroIndexes().size() );
+    BOOST_CHECK_EQUAL( n - 2, xS2.getNonZeroValues().size() );
 }
 
 /* --------------------------------------------------------------------- */

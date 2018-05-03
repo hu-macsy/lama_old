@@ -38,7 +38,6 @@
 #include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
@@ -66,6 +65,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using utilskernel::HArrayUtils;
 
 namespace lama
 {
@@ -184,11 +184,14 @@ void SAMGIO::writeArrayImpl(
     const HArray<ValueType>& array,
     const std::string& fileName )
 {
+
+    SCAI_LOG_INFO( logger, "writeArrayImpl<" << common::TypeTraits<ValueType>::id() << ">, array = " << array << " to " << fileName )
+
     // needed for header file: type size is size of data type used in output
 
     int typeSize = sizeof( ValueType );
 
-    if ( mScalarTypeData != common::scalar::INTERNAL )
+    if ( mScalarTypeData != common::ScalarType::INTERNAL )
     {
         typeSize = common::typeSize( mScalarTypeData );
     }
@@ -235,8 +238,12 @@ void SAMGIO::writeSparseImpl(
 {
     // sparse unsupported for SAMG file format, write it dense
 
+    SCAI_LOG_INFO( logger, "writeSparseImpl, size = " << size << ", nnz = " << values.size() << " to " << fileName );
+
     HArray<ValueType> denseArray;
-    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    ValueType zero = 0;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
+
     writeArrayImpl( denseArray, fileName );
 }
 
@@ -318,7 +325,7 @@ void SAMGIO::readArrayImpl( HArray<ValueType>& array, const std::string& fileNam
 
     IndexType nEntries = n;
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         nEntries = size - first;
     }
@@ -329,9 +336,9 @@ void SAMGIO::readArrayImpl( HArray<ValueType>& array, const std::string& fileNam
 
     // check if the specified data size fits the expected data type
 
-    common::scalar::ScalarType dataType = mScalarTypeData;
+    common::ScalarType dataType = mScalarTypeData;
 
-    if ( mScalarTypeData == common::scalar::INTERNAL )
+    if ( mScalarTypeData == common::ScalarType::INTERNAL )
     {
         dataType = common::TypeTraits<ValueType>::stype;
     }
@@ -380,9 +387,10 @@ void SAMGIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
+    ValueType zero = 0;
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -417,9 +425,9 @@ void SAMGIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
-    utilskernel::LArray<IndexType> csrIA;
-    utilskernel::LArray<IndexType> csrJA;
-    utilskernel::LArray<ValueType> csrValues;
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
 
     storage.buildCSRData( csrIA, csrJA, csrValues );
 
@@ -428,8 +436,8 @@ void SAMGIO::writeStorageImpl(
     const IndexType numRows = csrIA.size() - 1;
     const IndexType numValues = csrJA.size();
 
-    csrIA += 1;
-    csrJA += 1;
+    HArrayUtils::compute<IndexType>( csrIA, csrIA, common::BinaryOp::ADD, 1 );
+    HArrayUtils::compute<IndexType>( csrJA, csrJA, common::BinaryOp::ADD, 1 );
 
     bool binary = ( mFileMode != FORMATTED );
 
@@ -456,7 +464,7 @@ void SAMGIO::writeStorageImpl(
         outFile.writeBinary( csrIA, mScalarTypeIndex );
         outFile.writeBinary( csrJA, mScalarTypeIndex );
 
-        if ( mScalarTypeData != common::scalar::PATTERN )
+        if ( mScalarTypeData != common::ScalarType::PATTERN )
         {
             outFile.writeBinary( csrValues, mScalarTypeData );
         }
@@ -471,7 +479,7 @@ void SAMGIO::writeStorageImpl(
         outFile.writeFormatted( csrIA, precIndex );
         outFile.writeFormatted( csrJA, precIndex );
 
-        if ( mScalarTypeData != common::scalar::PATTERN )
+        if ( mScalarTypeData != common::ScalarType::PATTERN )
         {
             outFile.writeFormatted( csrValues, precData );
         }
@@ -568,7 +576,7 @@ void SAMGIO::readStorageImpl(
 
     IndexType numBlockRows = nRows;
 
-    if ( nRows == nIndex )
+    if ( nRows == invalidIndex )
     {
         numBlockRows = numRows - firstRow;
     }
@@ -590,14 +598,14 @@ void SAMGIO::readStorageImpl(
 
     IOStream inFile( dataFileName, flags );
 
-    utilskernel::LArray<IndexType> csrIA;
-    utilskernel::LArray<IndexType> csrJA;
-    utilskernel::LArray<ValueType> csrValues;
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
 
     size_t indexTypeSize = common::typeSize( mScalarTypeIndex );
     size_t valueTypeSize = sizeof( ValueType );
 
-    if ( mScalarTypeData != common::scalar::INTERNAL )
+    if ( mScalarTypeData != common::ScalarType::INTERNAL )
     {
         valueTypeSize = common::typeSize( mScalarTypeData );
     }
@@ -626,7 +634,7 @@ void SAMGIO::readStorageImpl(
 
     if ( binary )
     {
-        // Note: read operations can deal with scalar::INTERNAL, scalar::INDEX_TYPE
+        // Note: read operations can deal with ScalarType::INTERNAL, ScalarType::INDEX_TYPE
 
         inFile.skipBinary( firstRow, indexTypeSize );
         inFile.readBinary( csrIA, numBlockRows + 1, mScalarTypeIndex );
@@ -641,7 +649,7 @@ void SAMGIO::readStorageImpl(
 
     IndexType offsetBlock = csrIA[0];
 
-    csrIA -= offsetBlock;    // offset array will now start at 0
+    HArrayUtils::compute<IndexType>( csrIA, csrIA, common::BinaryOp::SUB, offsetBlock );   // offset array will now start at 0
 
     offsetBlock -= IndexType( 1 );        // SAMG indexing starts with 1, deal correctly for reading ja, values
 
@@ -663,11 +671,11 @@ void SAMGIO::readStorageImpl(
         inFile.skipFormatted( numValues - offsetBlock - numBlockValues );
     }
 
-    IndexType maxColumn = csrJA.max();   // maximal column index used
+    IndexType maxColumn = utilskernel::HArrayUtils::max( csrJA );   // maximal column index used
 
-    csrJA -= IndexType( 1 );
+    HArrayUtils::compute<IndexType>( csrJA, csrJA, common::BinaryOp::SUB, 1 );
 
-    if ( mScalarTypeData == common::scalar::PATTERN )
+    if ( mScalarTypeData == common::ScalarType::PATTERN )
     {
         csrValues.setSameValue( numBlockValues, ValueType( 1 ) );   // set values with default value
     }
@@ -695,7 +703,7 @@ void SAMGIO::readStorageImpl(
         numColumns = maxColumn;      // but might be bigger for partitioned data
     }
 
-    storage.setCSRData( numBlockRows, numColumns, numBlockValues, csrIA, csrJA, csrValues );
+    storage.setCSRData( numBlockRows, numColumns, csrIA, csrJA, csrValues );
 }
 
 /* --------------------------------------------------------------------------------- */

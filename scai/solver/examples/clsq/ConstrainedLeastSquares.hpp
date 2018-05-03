@@ -35,11 +35,11 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 
-#include <scai/common/unique_ptr.hpp>
-
 #include <scai/solver/logger/CommonLogger.hpp>
 
-#include "CentralPathHessian.hpp" 
+#include "CentralPathHessian.hpp"
+
+#include <memory>
 
 namespace scai
 
@@ -110,7 +110,7 @@ private:
 
     lama::CentralPathHessian mCentralPathHessian;
 
-    scai::common::unique_ptr<lama::CSRSparseMatrix<double> > mAT;
+    std::unique_ptr<lama::CSRSparseMatrix<double> > mAT;
 
     double mTolerance;
 

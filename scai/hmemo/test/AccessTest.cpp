@@ -41,6 +41,11 @@
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
+#include <scai/hmemo/HostReadAccess.hpp>
+#include <scai/hmemo/HostWriteAccess.hpp>
+#include <scai/hmemo/HostWriteOnlyAccess.hpp>
+
+#include <functional>
 
 using namespace boost;
 using namespace scai;
@@ -203,13 +208,13 @@ BOOST_AUTO_TEST_CASE( aliasTest )
 BOOST_AUTO_TEST_CASE( delayedReleaseTest )
 {
     ContextPtr testContext  = Context::getContextPtr();
-    ContextPtr hostContext  = Context::getContextPtr( Context::Host );
+    ContextPtr hostContext  = Context::getContextPtr( common::ContextType::Host );
 
     // host context: we use mock context
 
     if ( testContext.get() == hostContext.get() )
     {
-        testContext  = Context::getContextPtr( Context::UserContext, 1 );
+        testContext  = Context::getContextPtr( common::ContextType::UserContext, 1 );
     }
 
     SCAI_LOG_INFO( logger, "delayedReleaseTest, test context = " << *testContext )
@@ -222,7 +227,7 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
     {
         ReadAccess<double> read( X, hostContext );
     }
-    common::function<void()> delay;
+    std::function<void()> delay;
     // write access on test context, but delay the release
     {
         WriteAccess<double> write( X, testContext );
@@ -260,6 +265,419 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
     delay();  // now it is okay
     {
         WriteAccess<double> write( X, hostContext );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( readAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    ReadAccess<int> read1( array );
+    const auto data = read1.get();
+    const auto size = read1.size();
+
+    ReadAccess<int> read2( std::move( read1 ) );
+
+    BOOST_TEST( read2.get() == data );
+    BOOST_TEST( read2.size() == size );
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( read1.get(), scai::common::AssertException );
+}
+
+BOOST_AUTO_TEST_CASE( readAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    const auto read = readAccess( array );
+
+    BOOST_TEST( read.size() == 4 );
+    BOOST_TEST( read[0] ==  2 );
+    BOOST_TEST( read[1] ==  3 );
+    BOOST_TEST( read[2] == -5 );
+    BOOST_TEST( read[3] ==  1 );
+}
+
+BOOST_AUTO_TEST_CASE( readAccessFunctionGivesAccessForCorrectContext )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    const auto expectedDataPointer = [&] ()
+    {
+        return ReadAccess<int>( array, context ).get();
+    }
+    ();
+
+    auto read = readAccess( array, context );
+    BOOST_TEST( read.get() == expectedDataPointer );
+    BOOST_TEST( read.getMemory().getContextPtr() == context );
+}
+
+BOOST_AUTO_TEST_CASE( writeAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    WriteAccess<int> write1( array );
+    const auto data = write1.get();
+    const auto size = write1.size();
+
+    WriteAccess<int> write2( std::move( write1 ) );
+
+    BOOST_TEST( write2.get() == data );
+    BOOST_TEST( write2.size() == size );
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( write1.get(), scai::common::AssertException );
+}
+
+BOOST_AUTO_TEST_CASE( writeAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    auto write = writeAccess( array );
+
+    BOOST_TEST( write.size() == 4 );
+    BOOST_TEST( write[0] ==  2 );
+    BOOST_TEST( write[1] ==  3 );
+    BOOST_TEST( write[2] == -5 );
+    BOOST_TEST( write[3] ==  1 );
+}
+
+BOOST_AUTO_TEST_CASE( writeAccessFunctionGivesAccessForCorrectContext )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    const auto expectedDataPointer = [&] ()
+    {
+        return WriteAccess<int>( array, context ).get();
+    }
+    ();
+
+    auto write = writeAccess( array, context );
+    BOOST_TEST( write.get() == expectedDataPointer );
+    BOOST_TEST( write.getMemory().getContextPtr() == context );
+}
+
+BOOST_AUTO_TEST_CASE( writeOnlyAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    WriteOnlyAccess<int> write1( array, 4 );
+    const auto data = write1.get();
+    const auto size = write1.size();
+
+    WriteOnlyAccess<int> write2( std::move( write1 ) );
+
+    BOOST_TEST( write2.get() == data );
+    BOOST_TEST( write2.size() == size );
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( write1.get(), scai::common::AssertException );
+}
+
+BOOST_AUTO_TEST_CASE( writeOnlyAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    {
+        auto write = writeOnlyAccess( array, 3 );
+        BOOST_TEST( write.size() == 3 );
+        write[0] =  4;
+        write[1] =  6;
+        write[2] = -3;
+    }
+
+    {
+        HostReadAccess<int> read( array );
+        BOOST_TEST( read.size() == 3 );
+        BOOST_TEST( read[0] ==  4 );
+        BOOST_TEST( read[1] ==  6 );
+        BOOST_TEST( read[2] == -3 );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( writeOnlyAccessFunctionGivesAccessForCorrectContext )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    // For the writeOnlyAccess, we can not check that the pointer is the same
+    // like we did for ReadAccess and WriteAccess, because WriteOnly is permitted
+    // to allocate different memory, so we only verify that the context is correct.
+    BOOST_TEST( writeOnlyAccess( array, context, 3 ).getMemory().getContextPtr() == context );
+}
+
+BOOST_AUTO_TEST_CASE( hostReadAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    HostReadAccess<int> read1( array );
+    const auto data = read1.get();
+    const auto size = read1.size();
+
+    HostReadAccess<int> read2( std::move( read1 ) );
+
+    BOOST_TEST( read2.get() == data );
+    BOOST_TEST( read2.size() == size );
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( read1.get(), scai::common::AssertException );
+}
+
+BOOST_AUTO_TEST_CASE( hostReadAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    const auto read = hostReadAccess( array );
+
+    BOOST_TEST( read.size() == 4 );
+    BOOST_TEST( read[0] ==  2 );
+    BOOST_TEST( read[1] ==  3 );
+    BOOST_TEST( read[2] == -5 );
+    BOOST_TEST( read[3] ==  1 );
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    HostWriteAccess<int> write1( array );
+    const auto data = write1.get();
+    const auto size = write1.size();
+
+    HostWriteAccess<int> write2( std::move( write1 ) );
+
+    BOOST_TEST( write2.get() == data );
+    BOOST_TEST( write2.size() == size );
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( write1.get(), scai::common::AssertException );
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    auto write = hostWriteAccess( array );
+
+    BOOST_TEST( write.size() == 4 );
+    BOOST_TEST( write[0] ==  2 );
+    BOOST_TEST( write[1] ==  3 );
+    BOOST_TEST( write[2] == -5 );
+    BOOST_TEST( write[3] ==  1 );
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteOnlyAccessMoveConstructorTest )
+{
+    HArray<int> array { 2, 3, -1 };
+
+    HostWriteOnlyAccess<int> write1( array, 4 );
+    const auto data = write1.get();
+    const auto size = write1.size();
+
+    HostWriteOnlyAccess<int> write2( std::move( write1 ) );
+
+    BOOST_TEST( write2.get() == data );
+    BOOST_TEST( write2.size() == size );
+
+    // Trying to access the data should trigger an assertion
+    // (note: a more specific and documented exception would be preferable here)
+    BOOST_CHECK_THROW( write1.get(), scai::common::AssertException );
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteOnlyAccessFunctionTest )
+{
+    const auto context = Context::getContextPtr();
+    HArray<int> array ( { 2, 3, -5, 1 }, context );
+
+    {
+        auto write = hostWriteOnlyAccess( array, 3 );
+        BOOST_TEST( write.size() == 3 );
+        write[0] =  4;
+        write[1] =  6;
+        write[2] = -3;
+    }
+
+    {
+        HostReadAccess<int> read( array );
+        BOOST_TEST( read.size() == 3 );
+        BOOST_TEST( read[0] ==  4 );
+        BOOST_TEST( read[1] ==  6 );
+        BOOST_TEST( read[2] == -3 );
+    }
+
+}
+
+BOOST_AUTO_TEST_CASE( hostReadAccessSTLCompatibilityTest )
+{
+    const auto array = HArray<int> { 5, 3, 1, 2 };
+    const std::vector<int> expectedElements { 5, 3, 1, 2 };
+
+    // Range-based for
+    {
+        std::vector<int> elements;
+
+        for ( auto element : hostReadAccess( array ) )
+        {
+            elements.push_back( element );
+        }
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // copy, begin/end
+    {
+        std::vector<int> elements;
+        const auto access = hostReadAccess( array );
+        std::copy( access.begin(), access.end(), std::back_inserter( elements ) );
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // copy, cbegin/cend
+    {
+        std::vector<int> elements;
+        const auto access = hostReadAccess( array );
+        std::copy( access.cbegin(), access.cend(), std::back_inserter( elements ) );
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // is_heap, which requires a random access iterator (unlike copy which only requires an input iterator)
+    {
+        const auto access = hostReadAccess( array );
+
+        BOOST_TEST ( std::is_heap( access.begin(), access.end() ) );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteAccessSTLCompatibilityTest )
+{
+    const auto array = HArray<int> { 5, 3, 1, 2 };
+    const std::vector<int> expectedElements { 5, 3, 1, 2 };
+
+    // Range-based for, read-only
+    {
+        auto mutableArray = array;
+        std::vector<int> elements;
+
+        for ( auto element : hostWriteAccess( mutableArray ) )
+        {
+            elements.push_back( element );
+        }
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // Range-based for, write
+    {
+        auto mutableArray = array;
+
+        for ( auto& element : hostWriteAccess( mutableArray ) )
+        {
+            element = 2;
+        }
+
+        const std::vector<int> expectedMutated { 2, 2, 2, 2 };
+        BOOST_TEST( hostWriteAccess( mutableArray ) == expectedMutated, boost::test_tools::per_element() );
+    }
+
+    // copy, begin/end
+    {
+        auto mutableArray = array;
+        std::vector<int> elements;
+        const auto access = hostWriteAccess( mutableArray );
+        std::copy( access.begin(), access.end(), std::back_inserter( elements ) );
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // copy, cbegin/cend
+    {
+        auto mutableArray = array;
+        std::vector<int> elements;
+        const auto access = hostWriteAccess( mutableArray );
+        std::copy( access.cbegin(), access.cend(), std::back_inserter( elements ) );
+
+        BOOST_TEST( elements == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // is_heap, which requires a random access iterator (unlike copy which only requires an input iterator)
+    {
+        auto mutableArray = array;
+        const auto access = hostWriteAccess( mutableArray );
+
+        BOOST_TEST ( std::is_heap( access.begin(), access.end() ) );
+    }
+
+    // copy into HostWriteAccess, begin/end
+    {
+        auto mutableArray = array;
+        auto access = hostWriteAccess( mutableArray );
+        std::copy( expectedElements.begin(), expectedElements.end(), access.begin() );
+
+        BOOST_TEST( access == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // sort, requires random access
+    {
+        auto mutableArray = array;
+        auto access = hostWriteAccess( mutableArray );
+        std::sort( access.begin(), access.end() );
+
+        const std::vector<int> expectedSorted { 1, 2, 3, 5 };
+        BOOST_TEST ( access == expectedSorted, boost::test_tools::per_element() );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( hostWriteOnlyAccessSTLCompatibilityTest )
+{
+    const auto array = HArray<int> { 5, 3, 1, 2 };
+    const std::vector<int> expectedElements { 5, 3, 1, 2 };
+
+    // Range-based for, write
+    {
+        auto mutableArray = array;
+
+        for ( auto& element : hostWriteOnlyAccess( mutableArray, 3 ) )
+        {
+            element = 2;
+        }
+
+        const std::vector<int> expectedMutated { 2, 2, 2 };
+        BOOST_TEST( hostReadAccess( mutableArray ) == expectedMutated, boost::test_tools::per_element() );
+    }
+
+    // copy into HostWriteOnlyAccess, begin/end
+    {
+        auto mutableArray = array;
+        auto access = hostWriteOnlyAccess( mutableArray, 4 );
+        std::copy( expectedElements.begin(), expectedElements.end(), access.begin() );
+
+        BOOST_TEST( access == expectedElements, boost::test_tools::per_element() );
+    }
+
+    // copy into followed by sort, requires random access
+    {
+        auto mutableArray = array;
+        auto access = hostWriteOnlyAccess( mutableArray, 4 );
+        std::copy( expectedElements.begin(), expectedElements.end(), access.begin() );
+        std::sort( access.begin(), access.end() );
+
+        const std::vector<int> expectedSorted { 1, 2, 3, 5 };
+        BOOST_TEST ( access == expectedSorted, boost::test_tools::per_element() );
     }
 }
 

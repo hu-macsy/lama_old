@@ -45,15 +45,15 @@
 // std
 #include <iostream>
 #include <cstdlib>
+#include <memory>
+
+using std::shared_ptr;
 
 namespace scai
 {
 
 namespace tracing
 {
-
-using common::Thread;
-using common::shared_ptr;
 
 /* -------------------------------------------------------------------------- *
  *   Static class variables                                                   *
@@ -233,7 +233,7 @@ TraceConfig::TraceConfig()
     }
 
     // save id of this main thread
-    mMaster = Thread::getSelf();
+    mMaster = std::this_thread::get_id();
     SCAI_LOG_INFO( logger, "ThreadConfig: enabled = " << mEnabled )
     SCAI_LOG_INFO( logger, "ThreadConfig: call tree enabled = " << mCallTreeEnabled )
 }
@@ -294,7 +294,7 @@ TraceConfig::~TraceConfig()
 
 /* -------------------------------------------------------------------------- */
 
-static Thread::Mutex mapMutex; // needed to avoid conflicts for accesses on mTraceDataMap
+static std::mutex mapMutex; // needed to avoid conflicts for accesses on mTraceDataMap
 
 /* -------------------------------------------------------------------------- */
 
@@ -305,7 +305,7 @@ TraceData* TraceConfig::getTraceData()
         return NULL;
     }
 
-    ThreadId self = common::Thread::getSelf();
+    std::thread::id self = std::this_thread::get_id();
 
     if ( mThreadEnabled || self == mMaster )
     {
@@ -319,14 +319,14 @@ TraceData* TraceConfig::getTraceData()
 
 /* -------------------------------------------------------------------------- */
 
-TraceData* TraceConfig::getTraceData( ThreadId threadId )
+TraceData* TraceConfig::getTraceData( std::thread::id threadId )
 {
     // make sure that not two different threads try to allocate a table
     // read / write access at same time might also result in a crash
-    Thread::ScopedLock lock( mapMutex );
+    std::unique_lock<std::mutex> lock( mapMutex );
     shared_ptr<TraceData> traceData;
     // Old stuff: shared_ptr<TraceData> traceData = mTraceDataMap[threadId];
-    std::map<ThreadId, common::shared_ptr<TraceData> >::const_iterator it = mTraceDataMap.find( threadId );
+    std::map<ThreadId, std::shared_ptr<TraceData> >::const_iterator it = mTraceDataMap.find( threadId );
 
     if ( it == mTraceDataMap.end() )
     {

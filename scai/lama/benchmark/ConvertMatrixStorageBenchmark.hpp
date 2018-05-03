@@ -75,7 +75,7 @@ public:
 
     virtual ~ConvertMatrixStorageBenchmark();
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     virtual bool isThreadded() const;
 
@@ -108,8 +108,8 @@ private:
 
     ConvertMatrixStorageBenchmark();
 
-    common::unique_ptr<_MatrixStorage> mSourceStorage;
-    common::unique_ptr<_MatrixStorage> mTargetStorage;
+    std::unique_ptr<MatrixStorage<ValueType>> mSourceStorage;
+    std::unique_ptr<MatrixStorage<ValueType>> mTargetStorage;
 
     std::string mArgument;
 

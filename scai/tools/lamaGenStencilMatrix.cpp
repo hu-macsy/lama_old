@@ -38,7 +38,6 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/lama/io/PartitionIO.hpp>
@@ -185,7 +184,7 @@ struct CommandLineArguments
 
 /** Define the value type used in this example, take default real type. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -225,9 +224,11 @@ int main( int argc, const char* argv[] )
         // replace %s in file name with stencil description
         replaceStencil( matrixFileName, stencilName );
         CSRSparseMatrix<ValueType> m;
+
         MatrixCreator::buildPoisson( m, cmdArgs.dimension, cmdArgs.stencilType, cmdArgs.dimX, cmdArgs.dimY, cmdArgs.dimZ );
-        DenseVector<ValueType> lhs( m.getRowDistributionPtr(), 1.0 );
-        DenseVector<ValueType> rhs( m * lhs );
+
+        auto lhs = fill<DenseVector<ValueType>>( m.getRowDistributionPtr(), 1 );
+        auto rhs = eval<DenseVector<ValueType>>( m * lhs );
 
         HOST_PRINT( myRank, "Poisson matrix m = " << m )
 
@@ -279,7 +280,7 @@ int main( int argc, const char* argv[] )
 
             IndexType nb = m.getRowDistribution().getBlockDistributionSize();
 
-            if ( nb == nIndex )
+            if ( nb == invalidIndex )
             {
                 HOST_PRINT( myRank, "WARNING: matrix has no block distribution" )
             }

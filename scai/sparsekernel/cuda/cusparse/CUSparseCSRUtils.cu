@@ -120,7 +120,8 @@ void CUSparseCSRUtils::normalGEMV(
     const IndexType nnz,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[] )
+    const ValueType csrValues[],
+    const common::MatrixOp op )
 {
     SCAI_REGION( "CUSparse.CSR.normalGEMV" )
 
@@ -143,79 +144,20 @@ void CUSparseCSRUtils::normalGEMV(
         SCAI_CUSPARSE_CALL( cusparseSetStream( handle, stream ), "cusparseSetStream" )
     }
 
-    if ( y != result && beta != 0.0f )
+    if ( y != result && beta != ValueType( 0 ) )
     {
-        SCAI_CUDA_RT_CALL( cudaMemcpy( result, y, numRows * sizeof( ValueType ), cudaMemcpyDeviceToDevice ),
+        const IndexType n = common::isTranspose( op ) ? numColumns : numRows;
+
+        SCAI_CUDA_RT_CALL( cudaMemcpy( result, y, n * sizeof( ValueType ), cudaMemcpyDeviceToDevice ),
                            "cudaMemcpy for result = y" )
     }
 
     // call result = alpha * op(A) * x + beta * result of cusparse
     // Note: alpha, beta are passed as pointers
     SCAI_LOG_INFO( logger, "Start cusparseXcsrmv, stream = " << stream )
-    CUSPARSEWrapper<ValueType>::csrmv( handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-                                       numRows, numColumns, nnz, &alpha, descrCSR,
-                                       csrValues, csrIA, csrJA, x, &beta, result );
 
-    if ( syncToken )
-    {
-        // set back stream for cusparse
-        SCAI_CUSPARSE_CALL( cusparseSetStream( handle, 0 ), "cusparseSetStream" )
-    }
-    else
-    {
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparseXcsrmv" )
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                             normalGEMV                                                             */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void CUSparseCSRUtils::normalGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType nnz,
-    const IndexType csrIA[],
-    const IndexType csrJA[],
-    const ValueType csrValues[] )
-{
-    SCAI_REGION( "CUSparse.CSR.normalGEVM" )
-
-    SCAI_LOG_INFO( logger, "normalGEVM<" << common::getScalarType<ValueType>() << ">" <<
-                   " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
-    SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
-    SCAI_CHECK_CUDA_ACCESS
-    cudaStream_t stream = 0; // default stream if no syncToken is given
-    cusparseMatDescr_t descrCSR;
-    SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
-    cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
-    cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
-    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
-    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
-
-    if ( syncToken )
-    {
-        stream = syncToken->getCUDAStream();
-        SCAI_CUSPARSE_CALL( cusparseSetStream( handle, stream ), "cusparseSetStream" )
-    }
-
-    if ( y != result && beta != 0.0f )
-    {
-        SCAI_CUDA_RT_CALL( cudaMemcpy( result, y, numColumns * sizeof( ValueType ), cudaMemcpyDeviceToDevice ),
-                           "cudaMemcpy for result = y" )
-    }
-
-    // call result = alpha * op(A) * x + beta * result of cusparse
-    // Note: alpha, beta are passed as pointers
-    SCAI_LOG_INFO( logger, "Start cusparseXcsrmv, stream = " << stream )
-    CUSPARSEWrapper<ValueType>::csrmv( handle, CUSPARSE_OPERATION_TRANSPOSE,
+    CUSPARSEWrapper<ValueType>::csrmv( handle, 
+                                       common::isTranspose( op ) ? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE,
                                        numRows, numColumns, nnz, &alpha, descrCSR,
                                        csrValues, csrIA, csrJA, x, &beta, result );
 
@@ -398,7 +340,7 @@ void CUSparseCSRUtils::matrixMultiply(
     cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
-    if ( alpha != common::constants::ONE )
+    if ( alpha != common::Constants::ONE )
     {
         COMMON_THROWEXCEPTION( "cusparseMatrixMultiply only supports alpha = 1, but alpha = " << alpha )
     }
@@ -423,7 +365,7 @@ void CUSparseCSRUtils::matrixMultiply(
 void CUSparseCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
@@ -433,11 +375,10 @@ template<typename ValueType>
 void CUSparseCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register CUSparseCSRUtils CUSparse-routines for CUDA at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );

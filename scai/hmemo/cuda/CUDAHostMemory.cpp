@@ -47,11 +47,11 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 // std
 #include <cstring> // import ::memcpy
+#include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -64,10 +64,13 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 
-CUDAHostMemory::CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContext ) :
+CUDAHostMemory::CUDAHostMemory( std::shared_ptr<const CUDAContext> cudaContext ) :
 
-    Memory( memtype::CUDAHostMemory ),
-    mCUDAContext( cudaContext )
+    Memory( MemoryType::CUDAHostMemory ),
+    mCUDAContext( cudaContext ),
+    mNumberOfAllocates( 0 ),
+    mNumberOfAllocatedBytes( 0 ),
+    mMaxAllocatedBytes( 0 )
 
 {
     SCAI_ASSERT( cudaContext, "CUDAHostMemory requires valid CUDAContext, is NULL" )
@@ -96,6 +99,11 @@ void* CUDAHostMemory::allocate( const size_t size ) const
     // check if we can use HostMemory also for device computations
     SCAI_CUDA_RT_CALL( cudaHostGetDevicePointer( &pDevice, pointer, flags ), "cudaHostGetDevicePointer" )
     SCAI_ASSERT_EQUAL( pDevice, pointer, "Not yet supported: pointer conversion for different context" )
+
+    mNumberOfAllocatedBytes += size;
+    mMaxAllocatedBytes = std::max( mMaxAllocatedBytes, mNumberOfAllocatedBytes );
+    mNumberOfAllocates++;
+
     return pointer;
 }
 
@@ -107,8 +115,10 @@ void CUDAHostMemory::free( void* pointer, const size_t size ) const
     // as this defines a function and not a variable
     // General rule: never use shared_ptr temporaries implicitly
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-    SCAI_CUDA_DRV_CALL( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
+    SCAI_CUDA_DRV_CALL_NOTHROW( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
     SCAI_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
+    mNumberOfAllocatedBytes -= size;
+    mNumberOfAllocates--;
 }
 
 void CUDAHostMemory::memcpy( void* dst, const void* src, const size_t size ) const
@@ -124,7 +134,7 @@ void CUDAHostMemory::memset( void* dst, const int val, const size_t size ) const
 SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-    common::unique_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
+    std::unique_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
     SCAI_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),
@@ -143,7 +153,7 @@ ContextPtr CUDAHostMemory::getContextPtr() const
     // Currently Host device should do operations on Host memory
     // Possible extension: the corresponding CUDA device can also access the host memory
     //                     with limited PCIe bandwidth (Zero Copy, e.g. on Tegra K1)
-    ContextPtr host = Context::getContextPtr( common::context::Host );
+    ContextPtr host = Context::getContextPtr( common::ContextType::Host );
     return host;
 }
 
@@ -152,14 +162,14 @@ ContextPtr CUDAHostMemory::getContextPtr() const
 bool CUDAHostMemory::canCopyFrom( const Memory& other ) const
 {
     bool supported = false;
-    memtype::MemoryType otherType = other.getType();
+    MemoryType otherType = other.getType();
 
-    if ( otherType == memtype::HostMemory )
+    if ( otherType == MemoryType::HostMemory )
     {
         // CUDHostMem -> Host is supported
         supported = true;
     }
-    else if ( otherType == memtype::CUDAHostMemory )
+    else if ( otherType == MemoryType::CUDAHostMemory )
     {
         supported = true;
     }
@@ -170,14 +180,14 @@ bool CUDAHostMemory::canCopyFrom( const Memory& other ) const
 bool CUDAHostMemory::canCopyTo( const Memory& other ) const
 {
     bool supported = false;
-    memtype::MemoryType otherType = other.getType();
+    MemoryType otherType = other.getType();
 
-    if ( otherType == memtype::HostMemory )
+    if ( otherType == MemoryType::HostMemory )
     {
         // CUDHostMem -> Host is supported
         supported = true;
     }
-    else if ( otherType == memtype::CUDAHostMemory )
+    else if ( otherType == MemoryType::CUDAHostMemory )
     {
         supported = true;
     }
@@ -190,11 +200,11 @@ bool CUDAHostMemory::canCopyTo( const Memory& other ) const
 void CUDAHostMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void* src, size_t size ) const
 {
     // all kind of Host <-> CUDAHost is supported
-    if ( srcMemory.getType() == memtype::HostMemory )
+    if ( srcMemory.getType() == MemoryType::HostMemory )
     {
         ::memcpy( dst, src, size );
     }
-    else if ( srcMemory.getType() == memtype::CUDAHostMemory )
+    else if ( srcMemory.getType() == MemoryType::CUDAHostMemory )
     {
         ::memcpy( dst, src, size );
     }
@@ -210,11 +220,11 @@ void CUDAHostMemory::memcpyFrom( void* dst, const Memory& srcMemory, const void*
 void CUDAHostMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* src, size_t size ) const
 {
     // all kind of Host <-> CUDAHost is supported
-    if ( dstMemory.getType() == memtype::HostMemory )
+    if ( dstMemory.getType() == MemoryType::HostMemory )
     {
         ::memcpy( dst, src, size );
     }
-    else if ( dstMemory.getType() == memtype::CUDAHostMemory )
+    else if ( dstMemory.getType() == MemoryType::CUDAHostMemory )
     {
         ::memcpy( dst, src, size );
     }
@@ -223,6 +233,13 @@ void CUDAHostMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* s
         SCAI_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from " << *this << " not supported" )
     }
+}
+
+/* ----------------------------------------------------------------------------- */
+
+size_t CUDAHostMemory::maxAllocatedBytes() const
+{
+    return mMaxAllocatedBytes;
 }
 
 /* ----------------------------------------------------------------------------- */

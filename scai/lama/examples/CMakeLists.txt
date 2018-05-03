@@ -43,6 +43,7 @@ add_subdirectory ( stencil )
 add_subdirectory ( nbody )
 add_subdirectory ( tutorial )
 add_subdirectory ( io )
+add_subdirectory ( image )
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )

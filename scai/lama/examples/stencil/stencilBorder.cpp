@@ -34,10 +34,9 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
@@ -58,7 +57,7 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -87,7 +86,7 @@ int main( int argc, const char* argv[] )
 
     common::Grid1D grid( N1 );
 
-    grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+    grid.setBorderType( 0, common::Grid::BORDER_ABSORBING, common::Grid::BORDER_ABSORBING );
 
     StencilStorage<ValueType> st( grid, stencilFD8 );
 
@@ -113,7 +112,7 @@ int main( int argc, const char* argv[] )
         std::cout << std::endl;
     }
 
-    CSRStorage<ValueType> csr( st );
+    auto csr = convert<CSRStorage<ValueType>>( st );
 
     for ( IndexType i = 0; i < N1; ++i )
     {

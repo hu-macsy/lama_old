@@ -42,48 +42,68 @@
 // tracing
 #include <scai/tracing.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
+
 namespace scai
 {
 
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( SingleGridSetup::logger, "AMGSetup.SingleGridSetup" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SingleGridSetup<ValueType>::logger, "AMGSetup.SingleGridSetup" )
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
-std::string SingleGridSetup::createValue()
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_AMGSetup* SingleGridSetup<ValueType>::create()
 {
-    return "SingleGridSetup";
+    return (_AMGSetup*) ( new SingleGridSetup<ValueType>() );
 }
 
-AMGSetup* SingleGridSetup::create()
+template<typename ValueType>
+AMGSetupCreateKeyType SingleGridSetup<ValueType>::createValue()
 {
-    return new SingleGridSetup();
+    return AMGSetupCreateKeyType( common::getScalarType<ValueType>(), "SingleGridSetup" );
 }
 
-SingleGridSetup::SingleGridSetup()
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+SingleGridSetup<ValueType>::SingleGridSetup()
 {
     SCAI_LOG_DEBUG( logger, "SingleGridSetup" )
 }
 
-SingleGridSetup::~SingleGridSetup()
+template<typename ValueType>
+SingleGridSetup<ValueType>::~SingleGridSetup()
 {
 }
 
-void SingleGridSetup::initialize( const Matrix& coefficients )
+/* ========================================================================= */
+/*    Initialization                                                         */
+/* ========================================================================= */
+
+template<typename ValueType>
+void SingleGridSetup<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "initialize_SingleGridSetup" )
     SCAI_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
 
     // set default solver
+
     if ( !mSolver )
     {
         SCAI_LOG_DEBUG( logger, "new Jacobi" )
-        Jacobi* jacobiSolver = new Jacobi( "10x SingleGridSetup Jacobi Solver" );
-        CriterionPtr criterion( new IterationCount( 10 ) );
+        Jacobi<ValueType>* jacobiSolver = new Jacobi<ValueType>( "10x SingleGridSetup Jacobi Solver" );
+        CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
         jacobiSolver->setStoppingCriterion( criterion );
         mSolver.reset( jacobiSolver );
     }
@@ -96,96 +116,123 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     mIdentity->setIdentity( coefficients.getRowDistributionPtr() );
     SCAI_LOG_DEBUG( logger, "after identity" )
     SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    mSolutionVector.reset( coefficients.newVector( dist ) );
-    mRhsVector.reset( coefficients.newVector( dist ) );
-    mTmpResVector.reset( coefficients.newVector( dist ) );
+
+    mSolutionVector.reset( coefficients.newTargetVector() );
+    mRhsVector.reset( coefficients.newTargetVector() );
+    mTmpResVector.reset( coefficients.newTargetVector() );
 }
 
-Solver& SingleGridSetup::getCoarseLevelSolver()
+/* ========================================================================= */
+/*    Getter methods                                                         */
+/* ========================================================================= */
+
+template<typename ValueType>
+Solver<ValueType>& SingleGridSetup<ValueType>::getCoarseLevelSolver()
 {
     return *mSolver;
 }
 
-unsigned int SingleGridSetup::getNumLevels()
+template<typename ValueType>
+IndexType SingleGridSetup<ValueType>::getNumLevels()
 {
     return 2;
 }
 
-Solver& SingleGridSetup::getSmoother( const unsigned int )
+template<typename ValueType>
+Solver<ValueType>& SingleGridSetup<ValueType>::getSmoother( const IndexType )
 {
     return *mSolver;
 }
 
-const Matrix& SingleGridSetup::getGalerkin( const unsigned int )
+template<typename ValueType>
+const Matrix<ValueType>& SingleGridSetup<ValueType>::getGalerkin( const IndexType )
 {
     return mSolver->getCoefficients();
 }
 
-const Matrix& SingleGridSetup::getRestriction( const unsigned int )
+template<typename ValueType>
+const Matrix<ValueType>& SingleGridSetup<ValueType>::getRestriction( const IndexType )
 {
     return *mIdentity;
 }
 
-const Matrix& SingleGridSetup::getInterpolation( const unsigned int )
+template<typename ValueType>
+const Matrix<ValueType>& SingleGridSetup<ValueType>::getInterpolation( const IndexType )
 {
     return *mIdentity;
 }
 
-Vector& SingleGridSetup::getSolutionVector( const unsigned int )
+template<typename ValueType>
+Vector<ValueType>& SingleGridSetup<ValueType>::getSolutionVector( const IndexType )
 {
     return *mSolutionVector;
 }
 
-Vector& SingleGridSetup::getRhsVector( const unsigned int )
+template<typename ValueType>
+Vector<ValueType>& SingleGridSetup<ValueType>::getRhsVector( const IndexType )
 {
     return *mRhsVector;
 }
 
-Vector& SingleGridSetup::getTmpResVector( const unsigned int )
+template<typename ValueType>
+Vector<ValueType>& SingleGridSetup<ValueType>::getTmpResVector( const IndexType )
 {
     return *mTmpResVector;
 }
 
-std::string SingleGridSetup::getCouplingPredicateInfo() const
+template<typename ValueType>
+std::string SingleGridSetup<ValueType>::getCouplingPredicateInfo() const
 {
     return "No coupling predicate.";
 }
 
-std::string SingleGridSetup::getColoringInfo() const
+template<typename ValueType>
+std::string SingleGridSetup<ValueType>::getColoringInfo() const
 {
     return "No coloring.";
 }
 
-std::string SingleGridSetup::getInterpolationInfo() const
+template<typename ValueType>
+std::string SingleGridSetup<ValueType>::getInterpolationInfo() const
 {
     return "Identity.";
 }
 
-std::string SingleGridSetup::getSmootherInfo() const
+template<typename ValueType>
+std::string SingleGridSetup<ValueType>::getSmootherInfo() const
 {
     return mSolver->getId();
 }
 
-std::string SingleGridSetup::getCoarseLevelSolverInfo() const
+template<typename ValueType>
+std::string SingleGridSetup<ValueType>::getCoarseLevelSolverInfo() const
 {
     return mSolver->getId();
 }
 
-void SingleGridSetup::setCoarseLevelSolver( SolverPtr solver )
+template<typename ValueType>
+void SingleGridSetup<ValueType>::setCoarseLevelSolver( SolverPtr<ValueType> solver )
 {
     mSolver = solver;
 }
 
-void SingleGridSetup::setSmoother( SolverPtr solver )
+template<typename ValueType>
+void SingleGridSetup<ValueType>::setSmoother( SolverPtr<ValueType> solver )
 {
     mSolver = solver;
 }
 
-void SingleGridSetup::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void SingleGridSetup<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "SingleGridSetup";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( SingleGridSetup, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

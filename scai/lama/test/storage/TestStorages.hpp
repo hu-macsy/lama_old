@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./lama/test/storage/TestStorages.hpp
+ * @brief Utilities to set up storages for matrix storage unit tests.
  * @author Thomas Brandes
  * @date 08.04.2016
  */
@@ -35,16 +35,22 @@
 #pragma once
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/LArray.hpp>
+
 #include <scai/lama/storage/MatrixStorage.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
+
+#include <scai/utilskernel/HArrayUtils.hpp>
+
+namespace scai
+{
 
 template<typename ValueType>
 void getMatrix_7_4 ( IndexType& numRows,
                      IndexType& numColumns,
-                     scai::utilskernel::LArray<IndexType>& matrixRowSizes,
-                     scai::utilskernel::LArray<IndexType>& matrixJA,
-                     scai::utilskernel::LArray<ValueType>& matrixValues,
-                     scai::utilskernel::LArray<ValueType>& denseValues )
+                     hmemo::HArray<IndexType>& matrixRowSizes,
+                     hmemo::HArray<IndexType>& matrixJA,
+                     hmemo::HArray<ValueType>& matrixValues,
+                     hmemo::HArray<ValueType>& denseValues )
 {
     // Attention: ia array is not an offset array, it contains number of values in each row
     IndexType ia[] = { 2, 1, 2, 3, 2, 0, 2 };
@@ -67,7 +73,7 @@ void getMatrix_7_4 ( IndexType& numRows,
     matrixRowSizes.setRawData( numRows, ia );
     matrixJA.setRawData( numValues, ja );
     matrixValues.setRawData( numValues, values );
-    numColumns = matrixJA.max() + 1;
+    numColumns = utilskernel::HArrayUtils::max( matrixJA ) + 1;
     BOOST_REQUIRE_EQUAL( static_cast<size_t>( numRows * numColumns ), sizeof( resultMatrix ) / sizeof( ValueType ) );
     denseValues.setRawData( numRows * numColumns, resultMatrix );
 }
@@ -75,47 +81,45 @@ void getMatrix_7_4 ( IndexType& numRows,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void setRandomData( scai::lama::MatrixStorage<ValueType>& storage, const IndexType numRows, const IndexType numColumns )
+void setRandomData( lama::MatrixStorage<ValueType>& storage, const IndexType numRows, const IndexType numColumns )
 {
-    scai::hmemo::HArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
+    hmemo::HArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
     float fillRate = 0.5f;
-    scai::utilskernel::HArrayUtils::setSparseRandom( values, fillRate, 1 );
-    storage.setDenseData( numRows, numColumns, values );
+    utilskernel::HArrayUtils::setSparseRandom( values, fillRate, 1 );
+    storage.assign( lama::DenseStorage<ValueType>( numRows, numColumns, std::move( values ) ) );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void setDenseData( scai::lama::MatrixStorage<ValueType>& storage )
+void setDenseData( lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 8;
     const IndexType numColumns = 2;
     static ValueType values[] = { 6, 0, 0, 4, 7, 0, 0, 0, 0, 0, -9.3f, 4, 2, 5, 0, 3 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void setDenseSquareData( scai::lama::MatrixStorage<ValueType>& storage )
+void setDenseSquareData( lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
     // just make sure that number of entries in values matches the matrix size
     static ValueType values[] = { 10, 0, 0, 4, 3, 10, 0, 0, 0, 0, -9.3f, 4, 1, 5, 0, 13 };
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
     // Note: diagonal does not contain any zeros
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void setDenseRandom( scai::lama::MatrixStorage<ValueType>& storage )
+void setDenseRandom( lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
@@ -128,30 +132,28 @@ void setDenseRandom( scai::lama::MatrixStorage<ValueType>& storage )
     };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
     // Note: diagonal property of sparse matrices will be set due to square matrix
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void setDenseHalo( scai::lama::MatrixStorage<ValueType>& storage )
+void setDenseHalo( lama::MatrixStorage<ValueType>& storage )
 {
     const IndexType numRows = 4;
     const IndexType numColumns = 3;
     static ValueType values[] = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
     // Note: diagonal property of sparse matrices will be set due to square matrix
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void setSymDenseData( scai::lama::MatrixStorage<ValueType>& storage )
+void setSymDenseData( lama::MatrixStorage<ValueType>& storage )
 {
     /* Matrix:     1  2  0  5
      *             2  1  3  0
@@ -163,7 +165,7 @@ void setSymDenseData( scai::lama::MatrixStorage<ValueType>& storage )
     static ValueType values[] = { 1, 2, 0, 5, 2, 1, 3, 0, 0, 3, 1, 4, 5, 0, 4, 2 };
     // just make sure that number of entries in values matches the matrix size
     BOOST_CHECK_EQUAL( numRows * numColumns, IndexType( sizeof( values ) / sizeof ( ValueType ) ) );
-    ValueType eps = static_cast<ValueType>( 1E-5 );
-    storage.setRawDenseData( numRows, numColumns, values, eps );
+    storage.setRawDenseData( numRows, numColumns, values );
 }
 
+}

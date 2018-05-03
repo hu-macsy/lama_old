@@ -37,7 +37,7 @@
 
 // local library
 #include <scai/sparsekernel/DIAKernelTrait.hpp>
-
+#include <scai/utilskernel/cuda/CUDAUtils.hpp>
 
 // internal scai library
 #include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
@@ -50,13 +50,14 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
+
+#include <functional>
 
 using namespace scai::tasking;
 
@@ -255,23 +256,6 @@ __global__ void normal_gemv_kernel_alpha_one_beta_zero(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType, bool useTexture, bool useSharedMem>
-__global__
-void assign_kernel(
-    ValueType* result,
-    const ValueType* y,
-    const IndexType numRows )
-{
-    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < numRows )
-    {
-        result[i] = y[i];
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture, bool useSharedMem>
 __global__ void normal_gemv_kernel_alpha_one(
     ValueType* result,
     const ValueType* x,
@@ -323,43 +307,6 @@ __global__ void normal_gemv_kernel_alpha_one(
         }
 
         result[i] = temp + summand;
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture, bool useSharedMem>
-__global__ void normal_gemv_kernel_alpha_zero(
-    ValueType* result,
-    const ValueType* x,
-    const ValueType* y,
-    const ValueType beta,
-    const ValueType* diagonalValues,
-    const IndexType* offsets_d,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numDiagonals )
-{
-    extern __shared__ IndexType offsets_sm[];
-
-    if ( useSharedMem )
-    {
-        IndexType k = threadIdx.x;
-
-        while ( k < numDiagonals )
-        {
-            offsets_sm[k] = offsets_d[k];
-            k += blockDim.x;
-        }
-
-        __syncthreads();
-    }
-
-    IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < numRows )
-    {
-        result[i] = beta * y[i];
     }
 }
 
@@ -466,270 +413,6 @@ __global__ void normal_gemv_kernel_beta_zero(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void CUDADIAUtils::normalGEMV(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numDiagonals,
-    const IndexType diaOffsets[],
-    const ValueType diaValues[] )
-{
-    SCAI_REGION( "CUDA.DIA.normalGEMV" )
-    SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">"
-                   << " result[ " << numRows << "] = " << alpha
-                   << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
-    const IndexType blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    SCAI_CHECK_CUDA_ACCESS
-    cudaStream_t stream = 0;
-    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        stream = syncToken->getCUDAStream();
-    }
-
-    const bool useSharedMem = CUDASettings::useSharedMem();
-
-    const bool useTexture = CUDASettings::useTexture();
-
-    SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::id()
-                   << "> <<< blockSize = " << blockSize << ", stream = " << stream
-                   << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
-
-    int sharedMemSize = 0;
-
-    if ( useSharedMem )
-    {
-        sharedMemSize = numDiagonals * sizeof( int );
-    }
-
-    if ( useTexture )
-    {
-        vectorBindTexture( x );
-
-        if ( !useSharedMem )
-        {
-            vectorBindTexture( diaOffsets );
-        }
-
-        if ( useSharedMem )
-        {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_alpha_one_beta_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
-            {
-                assign_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, y, numRows );
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_alpha_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_alpha_zero<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( beta == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_beta_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( beta == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_beta_zero<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else
-            {
-                normal_gemv_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-        }
-        else
-        {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_alpha_one_beta_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
-            {
-                assign_kernel<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, y, numRows );
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_alpha_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_alpha_zero<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( beta == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_beta_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( beta == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_beta_zero<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else
-            {
-                normal_gemv_kernel<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-        }
-    }
-    else
-    {
-        if ( useSharedMem )
-        {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_alpha_one_beta_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
-            {
-                assign_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, y, numRows );
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_alpha_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_alpha_zero<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( beta == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_beta_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( beta == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_beta_zero<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else
-            {
-                normal_gemv_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-        }
-        else
-        {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_alpha_one_beta_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
-            {
-                assign_kernel<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, y, numRows );
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_alpha_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( alpha == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_alpha_zero<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( beta == scai::common::constants::ONE )
-            {
-                normal_gemv_kernel_beta_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else if ( beta == scai::common::constants::ZERO )
-            {
-                normal_gemv_kernel_beta_zero<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-            else
-            {
-                normal_gemv_kernel<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                    result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
-            }
-        }
-    }
-
-    if ( !syncToken )
-    {
-        // synchronize now, unbind used textures
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
-
-        if ( useTexture )
-        {
-            vectorUnbindTexture( x );
-
-            if ( !useSharedMem )
-            {
-                vectorUnbindTexture( diaOffsets );
-            }
-        }
-    }
-    else
-    {
-        // synchronize by syncToken, delay unbind texture
-        if ( useTexture )
-        {
-            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbindV, x ) );
-
-            if ( !useSharedMem )
-            {
-                syncToken->pushRoutine( common::bind( unbindI, diaOffsets ) );
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType, bool useTexture, bool useSharedMem>
 __global__ void normal_gevm_kernel(
     ValueType* result,
@@ -787,8 +470,8 @@ __global__ void normal_gevm_kernel(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void CUDADIAUtils::normalGEVM(
+template<typename ValueType, bool useTexture, bool useSharedMem>
+static inline void launchGEMV(
     ValueType result[],
     const ValueType alpha,
     const ValueType x[],
@@ -798,17 +481,105 @@ void CUDADIAUtils::normalGEVM(
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const ValueType diaValues[] )
+    const ValueType diaValues[],
+    const common::MatrixOp op,
+    cudaStream_t stream )
 {
-    SCAI_REGION( "CUDA.DIA.normalGEVM" )
-    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
-                   << " result[ " << numRows << "] = " << alpha
-                   << " * A( #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
     const IndexType blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
+
+    int sharedMemSize = useSharedMem ? numDiagonals * sizeof( IndexType ) : 0;
+
+    if ( common::isTranspose( op ) )
+    {
+        dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
+
+        normal_gevm_kernel<ValueType, useTexture, useSharedMem> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+             result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+    }
+    else
+    {
+        dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+        // Note: alpha == 0 has already been handled before
+
+        if ( alpha == common::Constants::ONE )
+        {
+            if ( beta == common::Constants::ZERO )
+            {
+                normal_gemv_kernel_alpha_one_beta_zero<ValueType, useTexture, useSharedMem> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == common::Constants::ONE )
+            {
+                normal_gemv_kernel_alpha_one_beta_one<ValueType, useTexture, useSharedMem> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                    result, x, y, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gemv_kernel_alpha_one<ValueType, useTexture, useSharedMem> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                    result, x, y, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+        }
+        else
+        {
+            if ( beta == common::Constants::ONE )
+            {
+                normal_gemv_kernel_beta_one<ValueType, useTexture, useSharedMem> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else if ( beta == common::Constants::ZERO )
+            {
+                normal_gemv_kernel_beta_zero<ValueType, useTexture, useSharedMem> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                    result, x, y, alpha, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+            else
+            {
+                normal_gemv_kernel<ValueType, useTexture, useSharedMem> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
+                    result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDADIAUtils::normalGEMV(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const ValueType y[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffsets[],
+    const ValueType diaValues[],
+    const common::MatrixOp op )
+{
+    SCAI_REGION( "CUDA.DIA.normalGEMV" )
+
+    IndexType nTarget = common::isTranspose( op ) ? numColumns : numRows;
+
+    SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">"
+                   << " result[ " << nTarget << "] = " << alpha
+                   << " * A( #diags = " << numDiagonals << " ), op = " << op << " * x + " << beta << " * y " )
+
+    if ( alpha == common::Constants::ZERO )
+    {
+        // result = beta * y 
+
+
+        utilskernel::CUDAUtils::binaryOpScalar( result, y, beta, nTarget, common::BinaryOp::MULT, false );
+
+        return;
+    }
+
     SCAI_CHECK_CUDA_ACCESS
+
     cudaStream_t stream = 0;
+
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -820,16 +591,9 @@ void CUDADIAUtils::normalGEVM(
 
     const bool useTexture = CUDASettings::useTexture();
 
-    SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << TypeTraits<ValueType>::id()
-                   << "> <<< blockSize = " << blockSize << ", stream = " << stream
+    SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::id()
+                   << "> <<< stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
-
-    int sharedMemSize = 0;
-
-    if ( useSharedMem )
-    {
-        sharedMemSize = numDiagonals * sizeof( int );
-    }
 
     if ( useTexture )
     {
@@ -837,38 +601,34 @@ void CUDADIAUtils::normalGEVM(
 
         if ( !useSharedMem )
         {
-            // @ToDo: be careful, some CUDA devices do not support multiple bind textures, e.g. GeForce 460
             vectorBindTexture( diaOffsets );
-        }
 
-        if ( useSharedMem )
-        {
-            normal_gevm_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            launchGEMV<ValueType, true, false>( result, alpha, x, beta, y, numRows, numColumns, 
+                                               numDiagonals, diaOffsets, diaValues, op, stream );
         }
         else
         {
-            normal_gevm_kernel<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            launchGEMV<ValueType, true, true>( result, alpha, x, beta, y, numRows, numColumns, 
+                                               numDiagonals, diaOffsets, diaValues, op, stream );
         }
     }
     else
     {
         if ( useSharedMem )
         {
-            normal_gevm_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            launchGEMV<ValueType, false, true>( result, alpha, x, beta, y, numRows, numColumns, 
+                                                numDiagonals, diaOffsets, diaValues, op, stream );
         }
         else
         {
-            normal_gevm_kernel<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream >>>(
-                result, x, y, alpha, beta, diaValues, diaOffsets, numRows, numColumns, numDiagonals );
+            launchGEMV<ValueType, false, false>( result, alpha, x, beta, y, numRows, numColumns, 
+                                                 numDiagonals, diaOffsets, diaValues, op, stream );
         }
     }
 
     if ( !syncToken )
     {
-        // synchronize now, unbind used textures
+        // synchronize now, unbind used texture
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "normalGEMV for DIA" )
 
         if ( useTexture )
@@ -888,11 +648,11 @@ void CUDADIAUtils::normalGEVM(
         {
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbindV, x ) );
+            syncToken->pushRoutine( std::bind( unbindV, x ) );
 
             if ( !useSharedMem )
             {
-                syncToken->pushRoutine( common::bind( unbindI, diaOffsets ) );
+                syncToken->pushRoutine( std::bind( unbindI, diaOffsets ) );
             }
         }
     }
@@ -906,9 +666,8 @@ void CUDADIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     using kregistry::KernelRegistry;
     SCAI_LOG_DEBUG( logger, "register DIAUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

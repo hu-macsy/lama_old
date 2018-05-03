@@ -1,4 +1,4 @@
-# LAMA (Version 2.1.0 Barrancas Blancas)
+# LAMA (Version 3.0.0 Chimborazo)
 
 For building LAMA on your system please consider the installation requirements below and install required packages. 
 
@@ -10,16 +10,14 @@ Required:
  * CMake >= 2.8.8
  * C/C++ compiler (optionally: OpenMP 3.0, recommended: capable of C++11)
  * Boost-Library (header, optional for tests: unit-test-framework )
- * pThread
 
 Recommended:
  * BLAS- and LAPACK-Library (Intel MKL, BLAS)
- * Nvidia GPU: CUDA >= 4.0 (with cuBLAS, cuSPARSE)
+ * Nvidia GPU: CUDA >= 7.0 (with cuBLAS, cuSPARSE)
  * Intel Xeon Phi: Intel MKL
  * MPI
 
 Optional:
- * GPI-2
  * Metis/ParMetis
  * Java
  * Documentation:

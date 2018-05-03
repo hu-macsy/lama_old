@@ -46,6 +46,8 @@
 // external
 #include <cublas_v2.h>
 
+#include <scai/common/MatrixOp.hpp>
+
 namespace scai
 {
 
@@ -55,9 +57,32 @@ namespace blaskernel
 class COMMON_DLL_IMPORTEXPORT CUBLASTrait
 {
 public:
+
     typedef int BLASIndexType;
     typedef cublasOperation_t BLASTrans;
+
+    static inline BLASTrans castTrans( const common::MatrixOp op );
 };
+
+CUBLASTrait::BLASTrans CUBLASTrait::castTrans( const common::MatrixOp op )
+{
+    CUBLASTrait::BLASTrans castOp = CUBLAS_OP_N;
+
+    if ( op == common::MatrixOp::NORMAL )
+    {
+        castOp = CUBLAS_OP_N;
+    }
+    else if ( op == common::MatrixOp::TRANSPOSE )
+    {
+        castOp = CUBLAS_OP_T;
+    }
+    else if ( op == common::MatrixOp::CONJ_TRANSPOSE )
+    {
+        castOp = CUBLAS_OP_C;
+    }
+
+    return castOp;
+}
 
 } /* end namespace blaskernel */
 

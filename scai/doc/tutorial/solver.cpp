@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief solver.cpp
- * @author kbuschulte
+ * @brief Example program for using a solver
+ * @author Kai Buschulte
  * @date 12.09.2012
  */
 
@@ -40,18 +40,23 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 // Solver related includes
-#include <scai/lama/solver/logger/CommonLogger.hpp>
-#include <scai/lama/solver/logger/Timer.hpp>
-#include <scai/lama/solver/criteria/IterationCount.hpp>
-#include <scai/lama/solver/CG.hpp>
+#include <scai/solver/logger/CommonLogger.hpp>
+#include <scai/solver/logger/Timer.hpp>
+#include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/CG.hpp>
 
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 
+using scai::IndexType;
 using namespace scai::lama;
+using namespace scai::solver;
 
 int main()
 {
+    const IndexType N1    = 100;
+    const IndexType N2    = 100;
+    const IndexType NIter = 140;
     //
     // Define the ValueType used for the vector
     //
@@ -59,13 +64,13 @@ int main()
     //
     // Create DenseVectors for solution and right hand side
     //
-    DenseVector<ValueType> solution( 10000, 2.0 );
-    const DenseVector<ValueType> rhs( solution.getDistributionPtr(), 1.0 );
+    DenseVector<ValueType> solution( N1 * N2, ValueType( 2 ) );
+    const DenseVector<ValueType> rhs( solution.getDistributionPtr(), ValueType( 1 ) );
     //
-    // Create a 2D Poisson Matrix with 9Points and dimension 100 in every direction
+    // Create a 2D Poisson Matrix with 9 points and dimension 100 in every direction
     //
     CSRSparseMatrix<ValueType> matrix;
-    MatrixCreator::buildPoisson2D( matrix, 9, 100, 100 );
+    MatrixCreator::buildPoisson2D( matrix, 9, N1, N2 );
     //
     // Set up CG solver
     //
@@ -75,18 +80,18 @@ int main()
             "<CG>: ",
             LogLevel::solverInformation,
             LoggerWriteBehaviour::toConsoleOnly,
-            scai::common::shared_ptr<Timer>( new Timer() ) ) );
-    // stopping criterion for solver: stopps after 10 iterations
-    CriterionPtr criterion( new IterationCount( 10 ) );
+            std::shared_ptr<Timer>( new Timer() ) ) );
+    // stopping criterion for solver: stopps after NIter iterations
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( NIter ) );
     // solver itself
-    CG solver( "mySolverName", logger );
+    CG<ValueType> solver( "mySolverName", logger );
     // initialization
     solver.setStoppingCriterion( criterion );
     solver.initialize( matrix );
     // solution phase
     solver.solve( solution, rhs );
-    solution.writeToFile( "solution", File::FORMATTED );
-    std::cout << "Solution vector is written to 'solution.frm/.vec'" << std::endl;
+    solution.writeToFile( "solution.txt" );
+    std::cout << "Solution vector is written to 'solution.txt'" << std::endl;
     //
     //  That's it.
     //

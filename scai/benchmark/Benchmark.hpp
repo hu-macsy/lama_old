@@ -244,7 +244,7 @@ public:
     /**
      * @brief Returns the value type of benchmark data.
      */
-    virtual common::scalar::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
     /**
      * @brief Returns the time, function execute( ) was run.

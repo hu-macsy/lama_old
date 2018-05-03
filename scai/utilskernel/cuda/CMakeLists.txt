@@ -34,15 +34,23 @@
 
 ### Add classes and header files ###
 
-scai_project(
-
-    CUDA_CLASSES
-
+set( CUDA_UTILS_CLASSES 
         CUDAUtils
         CUDASparseUtils
         CUDAReduceUtils
         CUDASortUtils
         CUDASection
+    )
+
+if ( USE_FFTW  AND SCAI_USE_COMPLEX )
+    set ( CUDA_UTILS_CLASSES ${CUDA_UTILS_CLASSES} CUFFT )
+endif()
+
+scai_project(
+
+    CUDA_CLASSES
+
+        ${CUDA_UTILS_CLASSES} 
         
     ADD_PARENT_SCOPE
 )

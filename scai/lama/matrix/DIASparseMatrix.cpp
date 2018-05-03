@@ -38,10 +38,13 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace scai
 {
 
-using common::shared_ptr;
 using namespace dmemo;
 
 namespace lama
@@ -55,27 +58,23 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIASparseMatrix<Valu
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::shared_ptr<MatrixStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage()
+std::shared_ptr<DIAStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage( hmemo::ContextPtr ctx )
 {
-    return shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
+    return shared_ptr<DIAStorage<ValueType> >( new StorageType( ctx ) );
 }
 
 template<typename ValueType>
-common::shared_ptr<MatrixStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage(
-    const IndexType numRows,
-    const IndexType numColumns )
+std::shared_ptr<DIAStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage( DIAStorage<ValueType>&& storage )
 {
-    shared_ptr<MatrixStorage<ValueType> > storage( new StorageType() );
-    storage->allocate( numRows, numColumns );
-    return storage;
+    return shared_ptr<DIAStorage<ValueType> >( new DIAStorage<ValueType>( std::move( storage ) ) );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix()
+DIASparseMatrix<ValueType>::DIASparseMatrix( hmemo::ContextPtr ctx ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( ctx ) )
 
 {
     SCAI_LOG_INFO( logger, "DIASparseMatrix()" )
@@ -84,152 +83,65 @@ DIASparseMatrix<ValueType>::DIASparseMatrix()
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const IndexType numRows, const IndexType numColumns )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const DIASparseMatrix& other ) : 
 
-    : SparseMatrix<ValueType>( createStorage( numRows, numColumns ) )
-
-{
-    SCAI_LOG_INFO( logger, "DIASparseMatrix( " << numRows << " x " << numColumns << " )" )
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
-
-    : SparseMatrix<ValueType>( createStorage( rowDist->getLocalSize(), colDist->getGlobalSize() ), rowDist,
-                               colDist )
-{
-    // Note: splitting of local rows to local + halo part is done by SparseMatrix constructor
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const DIASparseMatrix& other )
-
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 
 {
     this->setCommunicationKind( other.getCommunicationKind() );
-    this->setContextPtr( other.getContextPtr() );
     SparseMatrix<ValueType>::assign( other );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Matrix& other, bool transposeFlag )
+DIASparseMatrix<ValueType>::DIASparseMatrix( DIASparseMatrix&& other ) noexcept :
 
-    : SparseMatrix<ValueType>( createStorage() )
-
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 {
-    this->setContextPtr( other.getContextPtr() );
-    this->setCommunicationKind( other.getCommunicationKind() );
-
-    if ( transposeFlag )
-    {
-        SparseMatrix<ValueType>::assignTranspose( other );
-    }
-    else
-    {
-        SparseMatrix<ValueType>::assign( other );
-    }
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
+DIASparseMatrix<ValueType>&  DIASparseMatrix<ValueType>::operator=( DIASparseMatrix&& other ) 
+{
+    SparseMatrix<ValueType>::operator=( std::move( other ) );
+    return *this;
+}
 
-    : SparseMatrix<ValueType>( createStorage() )
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Matrix<ValueType>& other ) : 
+
+    SparseMatrix<ValueType>( createStorage( other.getContextPtr() ) )
 
 {
     this->setContextPtr( other.getContextPtr() );
     this->setCommunicationKind( other.getCommunicationKind() );
-    // this might be done more efficiently as assign introduces intermediate copy
+
     SparseMatrix<ValueType>::assign( other );
-    this->redistribute( rowDist, colDist );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const _MatrixStorage& globalData )
+DIASparseMatrix<ValueType>::DIASparseMatrix( DIAStorage<ValueType> globalStorage ) : 
 
-    : SparseMatrix<ValueType>( createStorage() )
+    SparseMatrix<ValueType>( createStorage( std::move( globalStorage ) ) )
 
 {
-    DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
-    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
-    SparseMatrix<ValueType>::assign( globalData, rowDist, colDist );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix(
-    const _MatrixStorage& localData,
-    DistributionPtr rowDist,
-    DistributionPtr colDist )
+DIASparseMatrix<ValueType>::DIASparseMatrix( DistributionPtr rowDist, DIAStorage<ValueType> localStorage ) :
 
-    : SparseMatrix<ValueType>( createStorage() )
-
+    SparseMatrix<ValueType>( rowDist, createStorage( std::move( localStorage ) ) )
 {
-    SparseMatrix<ValueType>::assign( localData, rowDist, colDist );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM& expression )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
-{
-    const Matrix& master = expression.getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM& expression )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
-{
-    const Matrix& master = expression.getArg1().getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM_SM& expression )
-
-    : SparseMatrix<ValueType>( createStorage() )
-{
-    // inherit context from matA in alpha * matA + beta * matB
-    const Matrix& master = expression.getArg1().getArg2();
-    SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
-    SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const std::string& filename )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
-{
-    this->readFromFile( filename );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -292,26 +204,13 @@ DIASparseMatrix<ValueType>::getHaloStorage() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIASparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
-{
-    // make sure that local storage fits into this sparse matrix
-    SCAI_ASSERT_EQUAL_ERROR( localStorage.getNumRows(), mLocalData->getNumRows() )
-    SCAI_ASSERT_EQUAL_ERROR( localStorage.getNumColumns(), mLocalData->getNumColumns() )
-    // make sure that local matrix storage has the correct format / value type
-    StorageType* localData = dynamic_cast<StorageType*>( mLocalData.get() );
-    SCAI_ASSERT_ERROR( localData, *mLocalData << ": does not fit matrix type " << typeName() )
-    localData->swap( localStorage );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<DIASparseMatrix<ValueType> > newSparseMatrix( new DIASparseMatrix<ValueType>() );
+    std::unique_ptr<DIASparseMatrix<ValueType> > newSparseMatrix( new DIASparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );
+    newSparseMatrix->allocate( getRowDistributionPtr(), getColDistributionPtr() );
     SCAI_LOG_INFO( logger,
                    *this << ": create -> " << *newSparseMatrix << " @ " << * ( newSparseMatrix->getContextPtr() )
                    << ", kind = " << newSparseMatrix->getCommunicationKind() );
@@ -340,7 +239,7 @@ const char* DIASparseMatrix<ValueType>::getTypeName() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Matrix* DIASparseMatrix<ValueType>::create()
+_Matrix* DIASparseMatrix<ValueType>::create()
 {
     return new DIASparseMatrix<ValueType>();
 }

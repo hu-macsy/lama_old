@@ -51,10 +51,8 @@ export SCAI_TRACE=time
 # check if installed LAMA version supports MPI communicator
 
 check_feature LAMA_SUPPORTS_MPI ./solverTest --SCAI_COMMUNICATOR=MPI --run_test=VersionTest 
-check_feature LAMA_SUPPORTS_GPI ./solverTest --SCAI_COMMUNICATOR=GPI --run_test=VersionTest
 
 check_feature LAMA_SUPPORTS_CUDA ./solverTest --SCAI_CONTEXT=CUDA --run_test=VersionTest
-check_feature LAMA_SUPPORTS_MIC ./solverTest --SCAI_CONTEXT=MIC --run_test=VersionTest
 
 # Running tests serial
 echo "Running solver tests on Host"
@@ -66,27 +64,15 @@ then
 	count_error mpirun -np 3 ./solverTest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1
 fi
 
-if [ "${LAMA_SUPPORTS_GPI}" -eq 1 ]
-then
-	echo "Running solver tests with 3 gpi-processes"
-	count_error gpirun -np 3 ./solverTest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1
-fi
-
 if [ "${LAMA_SUPPORTS_CUDA}" -eq 1 ]
 then
 	echo "Running solver tests on CUDA"
 	count_error ./solverTest --SCAI_CONTEXT=CUDA
 fi
 
-if [ "${LAMA_SUPPORTS_MIC}" -eq 1 ]
-then
-	echo "Running solver tests on MIC"
-	count_error ./solverTest --SCAI_CONTEXT=MIC
-fi
-
 exit_on_failure ${error_count}
 
-do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@/@MODULE_NAME@"
 
 exit_on_failure $?
 

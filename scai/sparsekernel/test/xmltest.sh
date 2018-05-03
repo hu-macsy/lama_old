@@ -51,11 +51,6 @@ then
     SCAI_CONTEXT_LIST="${SCAI_CONTEXT_LIST} CUDA"
 fi
 
-if [ -d ../mic ];
-then
-    SCAI_CONTEXT_LIST="${SCAI_CONTEXT_LIST} MIC"
-fi
-
 
 # Options specific for Boost Unit Test set for all test runs
 

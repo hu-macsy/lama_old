@@ -38,7 +38,7 @@
 
 // others
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/hmemo.hpp>
@@ -51,11 +51,8 @@
 using namespace scai;
 using namespace utilskernel;
 using namespace hmemo;
-using common::binary;
-
-/* --------------------------------------------------------------------- */
-
-extern ContextPtr testContext;
+using common::BinaryOp;
+using common::CompareOp;
 
 /* --------------------------------------------------------------------- */
 
@@ -70,9 +67,13 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     setVal.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
+
     SCAI_LOG_INFO( logger, "scaleTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     ValueType valuesValues[] =
     { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
@@ -80,11 +81,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
     ValueType expectedValues[] =
     { 0, 2, 4, 6, 8, 0, 2, 4, 6, 8, 0, 2, 4, 6, 8 };
     const ValueType mult = 2;
-    LArray<ValueType> values( nValues, valuesValues );
+    HArray<ValueType> values( nValues, valuesValues );
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        setVal[loc]( wValues.get(), nValues, mult, binary::MULT );
+        setVal[loc]( wValues.get(), nValues, mult, BinaryOp::MULT );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -99,7 +100,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     reduce.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     SCAI_LOG_INFO( logger, "sumTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
@@ -108,18 +112,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
         const ValueType expectedSum = 30;
-        LArray<ValueType> values( nValues, valuesValues );
+        HArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, ValueType( 0 ), binary::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, ValueType( 0 ), BinaryOp::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
         const ValueType expectedSum = 0;
-        LArray<ValueType> values;
+        HArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), ValueType( 0 ), binary::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), ValueType( 0 ), BinaryOp::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }
@@ -129,7 +133,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::reduce2<ValueType> > reduce2;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     reduce2.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     SCAI_LOG_INFO( logger, "reduce2Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
@@ -144,16 +151,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_array_test_types )
 
         SCAI_ASSERT_EQ_ERROR( nValues1, nValues2, "size mismatch" )
 
-        LArray<ValueType> values1( nValues1, valuesValues1 );
-        LArray<ValueType> values2( nValues2, valuesValues2 );
+        HArray<ValueType> values1( nValues1, valuesValues1 );
+        HArray<ValueType> values2( nValues2, valuesValues2 );
 
         ReadAccess<ValueType> rValues1( values1, loc );
         ReadAccess<ValueType> rValues2( values2, loc );
 
         SCAI_CONTEXT_ACCESS( loc );
 
-        binary::BinaryOp binop = binary::MULT;
-        binary::BinaryOp redop = binary::MAX;
+        BinaryOp binop = BinaryOp::MULT;
+        BinaryOp redop = BinaryOp::MAX;
 
         ValueType zero = 0;
 
@@ -168,19 +175,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     setVal.getSupportedContext( loc );
     SCAI_LOG_INFO( logger, "setValTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     {
         const IndexType n = 20;
-        LArray<ValueType> values;
+        HArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), 3 * n, 0, binary::COPY );
+            setVal[loc]( wValues.get(), 3 * n, 0, BinaryOp::COPY );
             // overwrite in the middle to check that there is no out-of-range set
-            setVal[loc]( wValues.get() + n, n, 10, binary::COPY );
+            setVal[loc]( wValues.get() + n, n, 10, BinaryOp::COPY );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -193,11 +203,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
     }
     {
         const IndexType n = 0;
-        LArray<ValueType> values;
+        HArray<ValueType> values;
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), n, 7, binary::COPY );
+            setVal[loc]( wValues.get(), n, 7, BinaryOp::COPY );
         }
     }
 }
@@ -207,7 +217,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     isSorted.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
     SCAI_LOG_INFO( logger, "isSortedTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
@@ -221,28 +234,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
         const IndexType nValues1 = sizeof( values1 ) / sizeof( ValueType );
         const IndexType nValues2 = sizeof( values2 ) / sizeof( ValueType );
         const IndexType nValues3 = sizeof( values3 ) / sizeof( ValueType );
-        LArray<ValueType> valueArray1( nValues1, values1 );
-        LArray<ValueType> valueArray2( nValues2, values2 );
-        LArray<ValueType> valueArray3( nValues3, values3 );
+        HArray<ValueType> valueArray1( nValues1, values1 );
+        HArray<ValueType> valueArray2( nValues2, values2 );
+        HArray<ValueType> valueArray3( nValues3, values3 );
         ReadAccess<ValueType> rValues1( valueArray1, loc );
         ReadAccess<ValueType> rValues2( valueArray2, loc );
         ReadAccess<ValueType> rValues3( valueArray3, loc );
         SCAI_CONTEXT_ACCESS( loc );
         // values1 are sorted, operator = LE
-        BOOST_CHECK( isSorted[loc]( rValues1.get(), nValues1, binary::LE ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues1.get(), nValues1, binary::GE ) );
+        BOOST_CHECK( isSorted[loc]( rValues1.get(), nValues1, CompareOp::LE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues1.get(), nValues1, CompareOp::GE ) );
         // values2 are sorted, ascending = false
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), nValues2, binary::GE ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues2.get(), nValues2, binary::LE ) );
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 0, binary::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), nValues2, CompareOp::GE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues2.get(), nValues2, CompareOp::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 0, CompareOp::LE ) );
         // only first two values are sorted
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 1, binary::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 1, CompareOp::LE ) );
         // only first two values are sorted
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 2, binary::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 2, CompareOp::LE ) );
         // only first two values are sorted
         // values3 are not sorted, neither ascending nor descending
-        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, binary::GE ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, binary::LE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, CompareOp::GE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, CompareOp::LE ) );
     }
 }
 
@@ -251,12 +264,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
 BOOST_AUTO_TEST_CASE( setOrderTest )
 {
     // setOrder is only for IndexType
-    ContextPtr loc = Context::getContextPtr();
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     SCAI_LOG_INFO( logger, "setOrderTest on " << *loc )
     static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
     {
         const IndexType n = 20;
-        LArray<IndexType> values;
+        HArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -271,7 +287,7 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
     }
     {
         const IndexType n = 0;
-        LArray<IndexType> values;
+        HArray<IndexType> values;
         {
             WriteOnlyAccess<IndexType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
@@ -285,20 +301,24 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpScalar1Test, ValueType, scai_numeric_test_types )
 {
     static LAMAKernel<UtilKernelTrait::binaryOpScalar<ValueType> > binop;
-    ContextPtr loc = testContext;
+
+    auto testContext = Context::getContextPtr();
+    auto loc         = testContext;
+
     binop.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
+
     SCAI_LOG_INFO( logger, "binaryOpScalar1Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     {
         // TODO: should it be possible to pass 0 elements? What should be the result?
         ValueType valuesValues[] =
         { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 };
         const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-        LArray<ValueType> values( nValues, valuesValues );
+        HArray<ValueType> values( nValues, valuesValues );
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            binop[loc]( wValues.get(), wValues.get(), ValueType( 1 ), nValues, binary::DIVIDE, true );
+            binop[loc]( wValues.get(), wValues.get(), ValueType( 1 ), nValues, BinaryOp::DIVIDE, true );
         }
 
         ReadAccess<ValueType> rValues( values );
@@ -326,13 +346,20 @@ BOOST_AUTO_TEST_CASE( countNonZerosTest )
 
     // count valid array
     {
-        const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
+        const IndexType values[] = { 3, 0, 2, 0, 0, 2, 0, 4 };
         const IndexType n = sizeof( values ) / sizeof( IndexType );
         HArray<IndexType> sizes( n, values, testContext );
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        IndexType count = countNonZeros[loc]( rSizes.get(), n, 0 );
-        BOOST_CHECK_EQUAL( IndexType( 4 ), count );
+
+        IndexType zero = 0;
+        IndexType eps  = 0;
+        BOOST_CHECK_EQUAL( IndexType( 4 ), countNonZeros[loc]( rSizes.get(), n, zero, eps ) );
+
+        zero = 2;
+        BOOST_CHECK_EQUAL( IndexType( 6 ), countNonZeros[loc]( rSizes.get(), n, zero, eps ) );
+        eps  = 1;  //  1 - 3 are also considered to be zero
+        BOOST_CHECK_EQUAL( IndexType( 5 ), countNonZeros[loc]( rSizes.get(), n, zero, eps ) );
     }
 
     // count empty array
@@ -340,8 +367,9 @@ BOOST_AUTO_TEST_CASE( countNonZerosTest )
         HArray<IndexType> sizes;
         ReadAccess<IndexType> rSizes( sizes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        IndexType count = countNonZeros[loc]( rSizes.get(), sizes.size(), 0 );
-        BOOST_CHECK_EQUAL( IndexType( 0 ), count );
+        IndexType zero = 1;
+        IndexType eps  = 0;
+        BOOST_CHECK_EQUAL( IndexType( 0 ), countNonZeros[loc]( rSizes.get(), 0, zero, eps ) );
     }
 }
 
@@ -368,7 +396,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
         ReadAccess<IndexType> rArray( denseArray, loc );
         WriteAccess<IndexType> wSparseIndexes( sparseIndexes, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        IndexType cnt = compress[loc]( NULL, wSparseIndexes.get(), rArray.get(), nDense, 0 );
+        IndexType cnt = compress[loc]( NULL, wSparseIndexes.get(), rArray.get(), nDense, 0, 0 );
 
         BOOST_REQUIRE_EQUAL( nSparse, cnt );
     }
@@ -537,12 +565,12 @@ BOOST_AUTO_TEST_CASE( sortIndexesTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType RealType;
+    typedef typename common::TypeTraits<ValueType>::RealType DefaultReal;
 
     ContextPtr testContext = Context::getContextPtr();
 
-    static LAMAKernel<UtilKernelTrait::sort<RealType> > sort;
-    static LAMAKernel<UtilKernelTrait::isSorted<RealType> > isSorted;
+    static LAMAKernel<UtilKernelTrait::sort<DefaultReal> > sort;
+    static LAMAKernel<UtilKernelTrait::isSorted<DefaultReal> > isSorted;
 
     ContextPtr loc = testContext;
     sort.getSupportedContext( loc, isSorted );
@@ -552,11 +580,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
     const IndexType n = 1000;
     const bool ascending = true;
 
-    HArray<RealType> values( loc );
+    HArray<DefaultReal> values( loc );
     {
         ContextPtr host = Context::getHostPtr();   // currently only available on host
 
-        WriteOnlyAccess<RealType> wValues( values, host, n );
+        WriteOnlyAccess<DefaultReal> wValues( values, host, n );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -567,12 +595,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
     HArray<IndexType> perm;
 
     WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
-    WriteAccess<RealType> wValues( values, loc );
+    WriteAccess<DefaultReal> wValues( values, loc );
 
     SCAI_CONTEXT_ACCESS( loc );
 
     sort[loc]( wPerm.get(), wValues.get(), wValues.get(), n, ascending );
-    bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending ? binary::LE : binary::GE );
+    bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending ? CompareOp::LE : CompareOp::GE );
 
     BOOST_CHECK( valuesSorted );
 }
@@ -581,7 +609,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
 
 BOOST_AUTO_TEST_CASE( sortInPlaceTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     ContextPtr testContext = Context::getContextPtr();
     static LAMAKernel<UtilKernelTrait::sortInPlace<ValueType> > sortInPlace;

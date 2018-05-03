@@ -84,7 +84,7 @@ public:
 
     /** OpenMP implementation for DenseKernelTrait::getCSRValues */
 
-    template<typename DenseValueType, typename CSRValueType>
+    template<typename CSRValueType, typename DenseValueType>
     static void getCSRValues(
         IndexType csrJA[],
         CSRValueType csrValues[],
@@ -103,7 +103,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType2 oldValues[],
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
@@ -124,7 +124,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType val,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setDiagonalValue::FuncType */
 
@@ -137,12 +137,12 @@ public:
 
     /** OpenMP implementation for DenseKernelTrait::scaleRows */
 
-    template<typename DenseValueType, typename OtherType>
+    template<typename ValueType>
     static void scaleRows(
-        DenseValueType denseValues[],
+        ValueType denseValues[],
         const IndexType numRows,
         const IndexType numColumns,
-        const OtherType rowValues[] );
+        const ValueType rowValues[] );
 
 private:
 

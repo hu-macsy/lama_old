@@ -43,6 +43,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/CompareOp.hpp>
 #include <scai/common/UnaryOp.hpp>
 #include <scai/kregistry/mepr/Registrator.hpp>
 
@@ -65,7 +66,7 @@ public:
         const ValueType array[],
         const IndexType n,
         const ValueType zero,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::reduce2 */
 
@@ -74,9 +75,9 @@ public:
         const ValueType array1[],
         const ValueType array2[],
         const IndexType n,
-        const common::binary::BinaryOp binOp,
+        const common::BinaryOp binOp,
         const ValueType zero,
-        const common::binary::BinaryOp redOp );
+        const common::BinaryOp redOp );
 
     /** CUDA implementation for UtilKernelTrait::scan */
 
@@ -91,7 +92,7 @@ public:
     /** CUDA implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>
-    static bool isSorted( const ValueType array[], const IndexType n, const common::binary::CompareOp op );
+    static bool isSorted( const ValueType array[], const IndexType n, const common::CompareOp op );
 
     /** CUDA implementation of UtilKernelTrait::validIndexes, contains bool reduction  */
 

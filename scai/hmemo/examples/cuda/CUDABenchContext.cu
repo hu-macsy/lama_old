@@ -96,8 +96,8 @@ void addHost( ValueType array[], const IndexType n )
 template<typename ValueType>
 void doBench( HArray<ValueType>& array, const IndexType N )
 {
-    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
-    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( common::ContextType::Host );
+    ContextPtr cudaContext = Context::getContextPtr( common::ContextType::CUDA );
     int nhost = 1;
     int ncuda = 1;
     int niter = 50;
@@ -150,8 +150,8 @@ void doBench( HArray<ValueType>& array, const IndexType N )
 int main()
 {
     const IndexType N = 8 * 1024 * 1024;  // 8 MB data
-    ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
-    ContextPtr cudaContextPtr = Context::getContextPtr( common::context::CUDA );
+    ContextPtr hostContextPtr = Context::getContextPtr( common::ContextType::Host );
+    ContextPtr cudaContextPtr = Context::getContextPtr( common::ContextType::CUDA );
     // First touch on host memory, never uses CUDA host memory
     std::cout << "Benchmark for array, first touch on host memory" << std::endl;
     HArray<double> data1( hostContextPtr->getMemoryPtr() );

@@ -38,8 +38,8 @@
 // others
 #include <scai/hmemo.hpp>
 #include <scai/kregistry.hpp>
+#include <scai/utilskernel.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/common/Settings.hpp>
@@ -57,6 +57,8 @@ using namespace hmemo;
 using namespace sparsekernel;
 using namespace utilskernel;
 using common::TypeTraits;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -250,9 +252,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    LArray<IndexType> csrIA( testContext );
-    LArray<IndexType> csrJA( testContext );
-    LArray<ValueType> csrValues( testContext );
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -357,7 +359,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<CSRKernelTrait::scaleRows<ValueType, ValueType> > scaleRows;
+    static LAMAKernel<CSRKernelTrait::scaleRows<ValueType> > scaleRows;
 
     ContextPtr loc = testContext;
 
@@ -495,7 +497,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 
 BOOST_AUTO_TEST_CASE( sortRowTest )
 {
-    typedef double ValueType;
+    typedef DefaultReal ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
 
@@ -527,7 +529,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
     HArray<IndexType> csrIA( numRows + 1, ia, testContext );
     HArray<IndexType> csrJA( numValues, ja_unsorted, testContext );
-    HArray<double> csrValues( numValues, values_unsorted, testContext );
+    HArray<ValueType> csrValues( numValues, values_unsorted, testContext );
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -645,7 +647,7 @@ BOOST_AUTO_TEST_CASE( countNonZeroTest )
 
 BOOST_AUTO_TEST_CASE( compressTest )
 {
-    typedef double ValueType;
+    typedef DefaultReal ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
 
@@ -675,11 +677,11 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
     HArray<IndexType> oldIA( numRows + 1, ia_original, testContext );
     HArray<IndexType> oldJA( oldNumValues, ja_original, testContext );
-    HArray<double>    oldValues( oldNumValues, values_original, testContext );
+    HArray<ValueType> oldValues( oldNumValues, values_original, testContext );
 
     HArray<IndexType> newIA( numRows + 1, ia_compress, testContext );
     HArray<IndexType> newJA;
-    HArray<double>    newValues;
+    HArray<ValueType> newValues;
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -694,7 +696,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
         ReadAccess<ValueType> roValues( oldValues, loc );
 
         bool diagonalFlag = false;
-        double eps = 0.000001;
+        ValueType eps = common::TypeTraits<ValueType>::small();
 
         compress[loc]( wJA.get(), wValues.get(), rIA.get(), roIA.get(), roJA.get(), roValues.get(), numRows, eps, diagonalFlag );
     }
@@ -730,9 +732,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    LArray<IndexType> csrIA( testContext );
-    LArray<IndexType> csrJA( testContext );
-    LArray<ValueType> csrValues( testContext );
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -765,7 +767,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
                 IndexType k   = i * numColumns + j;
 
-                if ( pos == nIndex )
+                if ( pos == invalidIndex )
                 {
                     BOOST_CHECK_EQUAL( rDense[ k ], zero );
                 }
@@ -940,22 +942,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
     IndexType numColumns1;
     IndexType numValues1;
 
-    LArray<IndexType> expIA( testContext );
-    LArray<IndexType> expJA( testContext );
-    LArray<ValueType> expValues( testContext );
+    HArray<IndexType> expIA( testContext );
+    HArray<IndexType> expJA( testContext );
+    HArray<ValueType> expValues( testContext );
 
     data1::getCSCTestData( numRows1, numColumns1, numValues1, expIA, expJA, expValues );
 
     // test cscIA = expJA, cscJA = expIA, cscValues = expValues
 
-    BOOST_REQUIRE_EQUAL( expJA.size(), cscIA.size() );
-    BOOST_CHECK_EQUAL( IndexType( 0 ), expJA.maxDiffNorm( cscIA ) );
-
-    BOOST_REQUIRE_EQUAL( expIA.size(), cscJA.size() );
-    BOOST_CHECK_EQUAL( IndexType( 0 ), expIA.maxDiffNorm( cscJA ) );
-
-    BOOST_REQUIRE_EQUAL( expValues.size(), cscValues.size() );
-    BOOST_CHECK_EQUAL( ValueType( 0 ), expValues.maxDiffNorm( cscValues ) );
+    BOOST_TEST( hostReadAccess( expJA ) == hostReadAccess( cscIA ), per_element() );
+    BOOST_TEST( hostReadAccess( expIA ) == hostReadAccess( cscJA ), per_element() );
+    BOOST_TEST( hostReadAccess( expValues ) == hostReadAccess( cscValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -974,7 +971,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_t
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
     SCAI_LOG_INFO( logger, "decomposition< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
-    if ( common::TypeTraits<IndexType>::stype != common::scalar::INT )
+    if ( common::TypeTraits<IndexType>::stype != common::ScalarType::INT )
     {
         // decomposition external, requires IndexType = INT
         return;
@@ -1390,7 +1387,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
 
             reduce[loc]( wResult.get(),
                          rIA.get(), rJA.get(), rValues.get(), numRows, dim,
-                         common::binary::ADD, common::unary::COPY );
+                         common::BinaryOp::ADD, common::UnaryOp::COPY );
         }
 
         HArray<ValueType> expectedRes;
@@ -1439,17 +1436,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
 
-    const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
-    const ValueType x_values[]   = { 3, -3, 2, -2 };
+    HArray<ValueType> x( { 3, -3, 2, -2 }, testContext );
+    HArray<ValueType> y( { 1, -1, 2, -2, 1, 1, -1 }, testContext );
 
-    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
-    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
-
-    HArray<ValueType> x( numColumns, x_values, testContext );
-    HArray<ValueType> y( numRows, y_values, testContext );
+    SCAI_ASSERT_EQ_ERROR( numColumns, x.size(), "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, y.size(), "size mismatch" );
 
     // use different alpha and beta values as kernels might be optimized for it
 
@@ -1480,14 +1471,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
             ReadAccess<ValueType> rY( y, loc );
             WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
 
-            normalGEMV[loc]( wResult.get(),
-                             alpha, rX.get(), beta, rY.get(),
-                             numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
+            common::MatrixOp op = common::MatrixOp::NORMAL;
+
+            if ( beta == 0 ) 
+            {
+                normalGEMV[loc]( wResult.get(),
+                                 alpha, rX.get(), beta, NULL,
+                                 numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get(), op );
+            }
+            else
+            {
+                normalGEMV[loc]( wResult.get(),
+                                 alpha, rX.get(), beta, rY.get(),
+                                 numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get(), op );
+            }
         }
 
-        HArray<ValueType> expectedRes;
-
-        data1::getGEMVResult( expectedRes, alpha, x, beta, y );
+        HArray<ValueType> expectedRes = data1::getGEMVNormalResult( alpha, x, beta, y );
 
         {
             ReadAccess<ValueType> rComputed( res, hostContext );
@@ -1503,16 +1503,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTransTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
+    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
 
     ContextPtr loc = testContext;
 
-    normalGEVM.getSupportedContext( loc );
+    normalGEMV.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
@@ -1557,9 +1557,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
 
         HArray<ValueType> res( testContext );
 
-        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * CSR + " << beta << " * y "
+        SCAI_LOG_DEBUG( logger, "compute res = " << alpha << " * x * CSR + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y
                        << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -1571,24 +1572,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
             ReadAccess<ValueType> rY( y, loc );
             WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
 
-            normalGEVM[loc]( wResult.get(),
+            common::MatrixOp op = common::MatrixOp::TRANSPOSE;
+
+            normalGEMV[loc]( wResult.get(),
                              alpha, rX.get(), beta, rY.get(),
-                             numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
+                             numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get(), op );
         }
 
-        HArray<ValueType> expectedRes;
+        HArray<ValueType> expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, y );
 
-        data1::getGEVMResult( expectedRes, alpha, x, beta, y );
-
-        {
-            ReadAccess<ValueType> rComputed( res, hostContext );
-            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
-
-            for ( IndexType j = 0; j < numColumns; ++j )
-            {
-                BOOST_CHECK_EQUAL( rExpected[j], rComputed[j] );
-            }
-        }
+        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
     }
 }
 
@@ -1625,16 +1618,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
 
-    const ValueType res_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
-    const ValueType x_values[]     = { 3, -3, 2, -2 };
+    HArray<ValueType> x( { 3, -3, 2, -2 }, testContext );
+    HArray<ValueType> y( { 1, -1, 2, -2, 1, 1, -1 }, testContext );
 
-    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
-    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
-
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
-
-    HArray<ValueType> x( numColumns, x_values, testContext );
+    SCAI_ASSERT_EQ_ERROR( numColumns, x.size(), "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, y.size(), "size mismatch" );
 
     // use different alpha and beta values as kernels might be optimized for it
 
@@ -1646,7 +1634,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
     {
         ValueType alpha = alpha_values[icase % n_alpha ];
 
-        HArray<ValueType> res( numRows, res_values, testContext );
+        HArray<ValueType> res( y );
 
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
                        << ", with x = " << x
@@ -1662,27 +1650,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
             ReadAccess<ValueType> rX( x, loc );
             WriteAccess<ValueType> wResult( res, loc );
 
+            auto op = common::MatrixOp::NORMAL;
+
             sparseGEMV[loc]( wResult.get(),
                              alpha, rX.get(),
-                             numNonEmptyRows, rIndexes.get(), rIA.get(), rJA.get(), rValues.get() );
+                             numNonEmptyRows, rIndexes.get(), rIA.get(), rJA.get(), rValues.get(), op );
 
         }
-
-        HArray<ValueType> expectedRes( numRows, res_values );
 
         ValueType beta = 1;  // res = alpha * A * x + 1 * res <-> res += alpha * A * x
 
-        data1::getGEMVResult( expectedRes, alpha, x, beta, expectedRes );
+        auto expectedRes = data1::getGEMVNormalResult( alpha, x, beta, y );
 
-        {
-            ReadAccess<ValueType> rComputed( res, hostContext );
-            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
-
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
-            }
-        }
+        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
     }
 }
 
@@ -1693,11 +1673,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<CSRKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
+    static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
 
     ContextPtr loc = testContext;
 
-    sparseGEVM.getSupportedContext( loc );
+    sparseGEMV.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
@@ -1755,9 +1735,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
             ReadAccess<ValueType> rX( x, loc );
             WriteAccess<ValueType> wResult( res, loc );
 
-            sparseGEVM[loc]( wResult.get(),
+            sparseGEMV[loc]( wResult.get(),
                              alpha, rX.get(),
-                             numColumns, numNonEmptyRows, rIndexes.get(), rIA.get(), rJA.get(), rValues.get() );
+                             numNonEmptyRows, rIndexes.get(), rIA.get(), rJA.get(), rValues.get(), common::MatrixOp::TRANSPOSE );
 
         }
 
@@ -1765,28 +1745,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
 
         ValueType beta = 1;  // res = alpha * x * A + 1 * res <-> res += alpha * x * A
 
-        data1::getGEVMResult( expectedRes, alpha, x, beta, expectedRes );
+        expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, expectedRes );
 
-        {
-            ReadAccess<ValueType> rComputed( res, hostContext );
-            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
-
-            for ( IndexType i = 0; i < numColumns; ++i )
-            {
-                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
-            }
-        }
+        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
     }
 }
 
 /* ------------------------------------------------------------------------------------- */
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
-
-BOOST_AUTO_TEST_CASE( gemmTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
 {
-    typedef float ValueType;
-
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
@@ -1879,11 +1847,8 @@ BOOST_AUTO_TEST_CASE( gemmTest )
                        numRows, nVectors, numColumns, rIA.get(), rJA.get(), rValues.get() );
         }
 
-        HArray<ValueType> expectedRes1;
-        HArray<ValueType> expectedRes2;
-
-        data1::getGEMVResult( expectedRes1, alpha, x1, beta, y1 );
-        data1::getGEMVResult( expectedRes2, alpha, x2, beta, y2 );
+        HArray<ValueType> expectedRes1 = data1::getGEMVNormalResult( alpha, x1, beta, y1 );
+        HArray<ValueType> expectedRes2 = data1::getGEMVNormalResult( alpha, x2, beta, y2 );
 
         {
             ReadAccess<ValueType> rComputed( res, hostContext );
@@ -1958,11 +1923,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
                          rOld.get(), rRhs.get(), omega, numRows );
         }
 
-        LArray<ValueType> expectedRes( testContext );
+        HArray<ValueType> expectedRes( testContext );
 
         data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
 
-        ValueType maxDiff = expectedRes.maxDiffNorm( res );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedRes, res );
 
         BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
 
@@ -2055,13 +2020,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
                              rOld.get(), omega, numNonEmptyRows );
         }
 
-        LArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+        HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
 
         data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
 
-        ValueType maxDiff = expectedSol.maxDiffNorm( solution );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedSol, solution );
 
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+        BOOST_CHECK( maxDiff < 0.1 );
 
         bool mustBeIdentical = false;
 
@@ -2145,13 +2110,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloDiagTest, ValueType, scai_numeric_test_
                                      rOld.get(), omega, numNonEmptyRows );
         }
 
-        LArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+        HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
 
         data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
 
-        ValueType maxDiff = expectedSol.maxDiffNorm( solution );
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedSol, solution );
 
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+        BOOST_CHECK( maxDiff < 0.1 );
 
         bool mustBeIdentical = false;
 

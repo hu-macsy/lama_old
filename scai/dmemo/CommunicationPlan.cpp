@@ -54,7 +54,7 @@ SCAI_LOG_DEF_LOGGER( CommunicationPlan::logger, "CommunicationPlan" )
 /* ------------------------------------------------------------------------- */
 
 CommunicationPlan::CommunicationPlan()
-    : mAllocated( false ), mQuantity( 0 )
+    : mAllocated( false ), mCompressed( true ), mQuantity( 0 )
 {
     SCAI_LOG_INFO( logger, "Communication plan constructed, not allocated" )
 }
@@ -62,51 +62,46 @@ CommunicationPlan::CommunicationPlan()
 /* ------------------------------------------------------------------------- */
 
 CommunicationPlan::CommunicationPlan(
-    const PartitionId noPartitions,
+    const PartitionId nPartitions,
     const PartitionId owners[],
     const IndexType nOwners,
     const bool compressFlag )
     : mAllocated( false ), mQuantity( 0 )
 {
-    allocate( noPartitions, owners, nOwners, compressFlag );
+    allocateByOwners( nPartitions, owners, nOwners, compressFlag );
 }
 
 /* ------------------------------------------------------------------------- */
 
-CommunicationPlan::CommunicationPlan(
-    const IndexType quantities[],
-    const PartitionId noPartitions,
-    const bool compressFlag )
-    : mAllocated( false ), mQuantity( 0 )
+void CommunicationPlan::multiplyConst( const IndexType n )
 {
-    allocate( quantities, noPartitions, compressFlag );
-}
-
-/* ------------------------------------------------------------------------- */
-
-CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const IndexType quantities[] )
-
-    : mAllocated( false ), mQuantity( 0 )
-{
-    SCAI_LOG_INFO( logger, "extend plan for quantity of quantites: " << other )
-    SCAI_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
-    // copy the entries of the available plan, partitionIds do not change
-    mEntries = other.mEntries;
-    // This routine only works for running offsets, but should be the case
-    IndexType offset = 0;
-
-    for ( size_t i = 0; i < mEntries.size(); i++ )
+    for ( size_t i = 0; i < mEntries.size(); ++i )
     {
         Entry& entry = mEntries[i];
-        SCAI_ASSERT_ERROR( entry.offset == offset, "illegal plan to extend for quantities" )
-        offset += entry.quantity;
+        entry.quantity *= n;          // each quantitiy is multiplied by n
+        entry.offset *= n;            // offsets are also multiplied by n
     }
 
-    offset = 0; // running for new offsets
+    mQuantity *= n;                   // update of total quantity
+}
+
+/* ------------------------------------------------------------------------- */
+
+void CommunicationPlan::multiplyRagged( const IndexType quantities[] )
+{
+    SCAI_LOG_INFO( logger, "extend plan with individual multiplicators: " << *this )
+
+    SCAI_ASSERT_ERROR( allocated(), "non allocated plan cannot be extended" )
+
+    IndexType newOffset = 0;    // new running sum 
+    IndexType oldOffset = 0;    // old running sum 
 
     for ( size_t i = 0; i < mEntries.size(); i++ )
     {
         Entry& entry = mEntries[i];
+
+        SCAI_ASSERT_EQ_ERROR( entry.offset, oldOffset, "serious mismatch" )
+
         IndexType newQuantity = 0;
 
         for ( IndexType k = 0; k < entry.quantity; k++ )
@@ -114,45 +109,16 @@ CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const Inde
             newQuantity += quantities[entry.offset + k];
         }
 
+        oldOffset += entry.quantity;
+
         entry.quantity = newQuantity;
-        entry.offset = offset;
-        offset += newQuantity;
+        entry.offset = newOffset;
+        newOffset += newQuantity;
     }
 
-    // set other member variables
-    mAllocated = true;
-    mCompressed = other.compressed();
-    mQuantity = offset;
+    mQuantity = newOffset;
+
     SCAI_LOG_INFO( logger, "extended quantity plan: " << *this )
-}
-
-/* ------------------------------------------------------------------------- */
-
-CommunicationPlan::CommunicationPlan( const CommunicationPlan& other, const IndexType n )
-
-    : mAllocated( false ), mQuantity( 0 )
-{
-    SCAI_LOG_INFO( logger, "Construct multiply plan: " << other << ", factor = " << n )
-    SCAI_ASSERT_ERROR( other.allocated(), "non allocated plan cannot be extended" )
-    // copy the entries of the available plan, partitionIds do not change
-    mEntries = other.mEntries;
-    // This routine only works for running offsets, but should be the case
-    IndexType offset = 0; // running for new offsets
-
-    for ( size_t i = 0; i < mEntries.size(); i++ )
-    {
-        Entry& entry = mEntries[i];
-        SCAI_ASSERT_EQ_DEBUG( entry.offset * n, offset, "offset mismatch" )
-        entry.quantity *= n; // each quantitiy is multiplied by n
-        entry.offset *= n; // offsets are also multiplied by n
-        offset += entry.quantity;
-    }
-
-    // set other member variables
-    mAllocated = true;
-    mCompressed = other.compressed();
-    mQuantity = offset;
-    SCAI_LOG_INFO( logger, "multiplied quantity plan: " << *this )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -184,15 +150,15 @@ void CommunicationPlan::purge()
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag )
+void CommunicationPlan::allocateBySizes( const IndexType quantities[], const PartitionId nPartitions, bool compressFlag )
 {
     mCompressed = false;
 
-    SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from quantities" )
-    mEntries.resize( noPartitions );
+    SCAI_LOG_INFO( logger, "allocate plan for " << nPartitions << " partitions from quantities" )
+    mEntries.resize( nPartitions );
     mQuantity = 0; // counts total quantity
 
-    for ( PartitionId i = 0; i < noPartitions; ++i )
+    for ( PartitionId i = 0; i < nPartitions; ++i )
     {
         Entry& entry = mEntries[i];
         entry.quantity = quantities[i];
@@ -213,17 +179,17 @@ void CommunicationPlan::allocate( const IndexType quantities[], const PartitionI
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::allocateByOffsets( const IndexType offsets[], const PartitionId noPartitions, bool compressFlag )
+void CommunicationPlan::allocateByOffsets( const IndexType offsets[], const PartitionId nPartitions, bool compressFlag )
 {
     mCompressed = false;
 
-    SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions by offsets" )
+    SCAI_LOG_INFO( logger, "allocate plan for " << nPartitions << " partitions by offsets" )
 
-    mEntries.resize( noPartitions );
+    mEntries.resize( nPartitions );
 
     SCAI_ASSERT_EQ_ERROR( offsets[0], 0, "Illegal offsets array" )
 
-    for ( PartitionId i = 0; i < noPartitions; ++i )
+    for ( PartitionId i = 0; i < nPartitions; ++i )
     {
         Entry& entry = mEntries[i];
         SCAI_ASSERT_LE_ERROR( offsets[i], offsets[i + 1], "illegal offsets for i = " << i )
@@ -234,7 +200,7 @@ void CommunicationPlan::allocateByOffsets( const IndexType offsets[], const Part
         SCAI_LOG_TRACE( logger, " mQuantity = " << mQuantity )
     }
 
-    mQuantity = offsets[noPartitions];   // total quantity
+    mQuantity = offsets[nPartitions];   // total quantity
 
     mAllocated = true;
 
@@ -246,18 +212,18 @@ void CommunicationPlan::allocateByOffsets( const IndexType offsets[], const Part
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::allocate(
-    const PartitionId noPartitions,
+void CommunicationPlan::allocateByOwners(
+    const PartitionId nPartitions,
     const PartitionId owners[],
     const IndexType nOwners,
     bool compressFlag )
 {
     mCompressed = false;
 
-    mEntries.resize( noPartitions );
-    SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
+    mEntries.resize( nPartitions );
+    SCAI_LOG_INFO( logger, "allocate plan for " << nPartitions << " partitions from owners" )
 
-    for ( PartitionId p = 0; p < noPartitions; ++p )
+    for ( PartitionId p = 0; p < nPartitions; ++p )
     {
         mEntries[p].quantity = 0;
         mEntries[p].partitionId = p;
@@ -266,14 +232,14 @@ void CommunicationPlan::allocate(
     for ( IndexType i = 0; i < nOwners; ++i )
     {
         const PartitionId& p = owners[i];
-        SCAI_ASSERT_VALID_INDEX( p, noPartitions, "Illegal owner value at owners[ " << i << "]" )
+        SCAI_ASSERT_VALID_INDEX( p, nPartitions, "Illegal owner value at owners[ " << i << "]" )
         ++mEntries[p].quantity;
         SCAI_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }
 
     mQuantity = 0; // counts total quantity
 
-    for ( PartitionId p = 0; p < noPartitions; ++p )
+    for ( PartitionId p = 0; p < nPartitions; ++p )
     {
         mEntries[p].offset = mQuantity;
         mQuantity += mEntries[p].quantity;
@@ -372,29 +338,6 @@ void CommunicationPlan::getInfo( IndexType& quantity, IndexType& offset, Partiti
 
 /* ----------------------------------------------------------------------- */
 
-void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const Communicator& comm )
-{
-    SCAI_ASSERT( plan.allocated(), "plan to reverse not allocated" )
-    const int size = comm.getSize();
-    comm.synchronize();
-    // plan might be compressed, so build values again
-    std::vector<IndexType> sendSizes( size, 0 );
-
-    for ( PartitionId i = 0; i < plan.size(); ++i )
-    {
-        sendSizes[plan[i].partitionId] = plan[i].quantity;
-    }
-
-    std::vector<IndexType> recvSizes( size, 0 );
-    // send each processor the number of indexes I require
-    // and receive the number of indexes that I have to provide
-    comm.all2all( &recvSizes[0], &sendSizes[0] );
-    // now we can allocate by quantities
-    allocate( &recvSizes[0], recvSizes.size() );
-}
-
-/* ----------------------------------------------------------------------- */
-
 void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const PartitionId p )
 {
     mEntries.clear();
@@ -411,7 +354,7 @@ void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const Par
             newEntry.offset = 0;
 
             mEntries.push_back( newEntry );
-        
+
             mQuantity += entry.quantity;
         }
     }
@@ -458,6 +401,51 @@ void CommunicationPlan::writeAt( std::ostream& stream ) const
 
     stream << ")";
 }
+
+/* ----------------------------------------------------------------------- */
+
+CommunicationPlan CommunicationPlan::buildBySizes( const IndexType sizes[], const PartitionId nPartitions, bool compressFlag )
+{
+    CommunicationPlan plan;
+    plan.allocateBySizes( sizes, nPartitions, compressFlag );
+    return plan;
+}
+
+CommunicationPlan CommunicationPlan::buildByOffsets( const IndexType offsets[], const PartitionId nPartitions, bool compressFlag )
+{
+    CommunicationPlan plan;
+    plan.allocateByOffsets( offsets, nPartitions, compressFlag );
+    return plan;
+}
+
+CommunicationPlan CommunicationPlan::transpose( const Communicator& comm ) const
+{
+    SCAI_ASSERT_ERROR( allocated(), "plan not allocated: " << *this )
+
+    const PartitionId np = comm.getSize();
+
+    // plan might be compressed, so build values again
+
+    std::vector<IndexType> sendSizes( np, 0 );
+
+    for ( PartitionId i = 0; i < size(); ++i )
+    {
+        const Entry& entry = mEntries[i];
+        sendSizes[entry.partitionId] = entry.quantity;
+    }
+
+    std::vector<IndexType> recvSizes( np, 0 );
+
+    // send each processor the number of indexes I require
+    // and receive the number of indexes that I have to provide
+
+    comm.all2all( &recvSizes[0], &sendSizes[0] );
+
+    // now we can allocate by quantities
+
+    return buildBySizes( &recvSizes[0], np );
+}
+
 
 } /* end namespace dmemo */
 

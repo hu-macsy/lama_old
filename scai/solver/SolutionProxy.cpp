@@ -33,6 +33,7 @@
  */
 
 #include <scai/solver/SolutionProxy.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -40,51 +41,61 @@ namespace scai
 namespace solver
 {
 
-SolutionProxy::SolutionProxy()
-    : mIsDirty( true )
+template<typename ValueType>
+SolutionProxy<ValueType>::SolutionProxy() : mIsDirty( true )
 {
 }
 
-SolutionProxy::SolutionProxy( lama::Vector* const solution )
-    : mSolution( solution ), mIsDirty( true )
+template<typename ValueType>
+SolutionProxy<ValueType>::SolutionProxy( lama::Vector<ValueType>* solution ) : 
+
+    mSolution( solution ), 
+    mIsDirty( true )
 {
 }
 
-SolutionProxy::~SolutionProxy()
+template<typename ValueType>
+SolutionProxy<ValueType>::~SolutionProxy()
 {
 }
 
-const lama::Vector& SolutionProxy::getConstReference() const
+template<typename ValueType>
+const lama::Vector<ValueType>& SolutionProxy<ValueType>::getConstReference() const
 {
-    return ( *mSolution );
+    return *mSolution;
 }
 
-lama::Vector& SolutionProxy::operator*()
-{
-    return getReference();
-}
-
-void SolutionProxy::operator=( lama::Vector* const newVector )
+template<typename ValueType>
+void SolutionProxy<ValueType>::operator=( lama::Vector<ValueType>* newVector )
 {
     setDirty( true );
     mSolution = newVector;
 }
 
-bool SolutionProxy::isDirty() const
+template<typename ValueType>
+bool SolutionProxy<ValueType>::isDirty() const
 {
     return mIsDirty;
 }
 
-void SolutionProxy::setDirty( bool isDirty )
+template<typename ValueType>
+void SolutionProxy<ValueType>::setDirty( bool isDirty )
 {
     mIsDirty = isDirty;
 }
 
-lama::Vector& SolutionProxy::getReference()
+template<typename ValueType>
+lama::Vector<ValueType>& SolutionProxy<ValueType>::getReference()
 {
-    setDirty( true );
+    this->setDirty( true );
     return *mSolution;
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( SolutionProxy, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

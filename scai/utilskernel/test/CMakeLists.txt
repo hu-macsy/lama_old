@@ -32,6 +32,16 @@
  # @date 18.07.2017
 ###
 
+
+set ( TEST_SOURCES 
+          UtilsKernelTest
+          HArrayUtilsTest
+          SectionTest
+          UtilsTest
+          TransferUtilsTest
+          FFTTest
+    )
+
 scai_project ( 
 
     CLASSES
@@ -42,11 +52,7 @@ scai_project (
 
     SOURCES
 
-        UtilsKernelTest
-        HArrayUtilsTest
-        SectionTest
-        UtilsTest
-        LArrayTest
+        ${TEST_SOURCES}
 )
 
 scai_test ( EXECUTABLE utilskernelTest 

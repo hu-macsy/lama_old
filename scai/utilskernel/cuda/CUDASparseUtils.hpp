@@ -75,13 +75,13 @@ public:
     /** CUDA implementation for UtilKernelTrait::set */
 
     template<typename ValueType, typename otherValueType>
-    static void set( ValueType out[], const otherValueType in[], const IndexType n, const common::binary::BinaryOp op );
+    static void set( ValueType out[], const otherValueType in[], const IndexType n, const common::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::setSection */
 
     template<typename ValueType, typename otherValueType>
     static void setSection( ValueType out[], const IndexType inc_out,
-                            const otherValueType in[], const IndexType inc_in, const IndexType n, const common::binary::BinaryOp op );
+                            const otherValueType in[], const IndexType inc_in, const IndexType n, const common::BinaryOp op );
 
 
     /** CUDA implementation for UtilKernelTrait::setGather */
@@ -91,7 +91,7 @@ public:
         ValueType out[],
         const otherValueType in[],
         const IndexType indexes[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::setScatter */
@@ -102,13 +102,17 @@ public:
         const IndexType indexes[],
         const bool unique,
         const otherValueType in[],
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const IndexType n );
 
     /** CUDA implementation of UtilKernelTrait::countNonZeros */
 
     template<typename ValueType>
-    static IndexType countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps );
+    static IndexType countNonZeros( 
+        const ValueType denseArray[], 
+        const IndexType n, 
+        const ValueType zero, 
+        ValueType eps );
 
     /** CUDA implementation of UtilKernelTrait::compress */
 
@@ -118,6 +122,7 @@ public:
         IndexType sparseIndexes[],
         const SourceValueType denseArray[],
         const IndexType n,
+        const SourceValueType zero,
         const SourceValueType eps );
 
 private:

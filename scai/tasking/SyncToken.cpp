@@ -37,14 +37,16 @@
 
 // internal scai libraries
 
-#include <scai/common/Thread.hpp>
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>
 
+#include <memory>
+#include <functional>
+
+using std::shared_ptr;
+
 namespace scai
 {
-
-using common::shared_ptr;
 
 namespace tasking
 {
@@ -121,7 +123,7 @@ void SyncToken::pushToken( shared_ptr<SyncTokenMember> member )
 
 /* ----------------------------------------------------------------------- */
 
-void SyncToken::pushRoutine( common::function<void()> routine )
+void SyncToken::pushRoutine( std::function<void()> routine )
 {
     mSynchronizedFunctions.push_back( routine );
 }
@@ -158,39 +160,36 @@ void SyncToken::setSynchronized()
 
 void SyncToken::setCurrent()
 {
-    SyncToken* current = currentSyncToken.get();
-
-    if ( current != NULL )
+    if ( currentSyncToken != NULL )
     {
-        SCAI_LOG_ERROR( logger, "setCurrent: " << *this << ", but current is: " << *current )
+        SCAI_LOG_ERROR( logger, "setCurrent: " << *this << ", but current is: " << *currentSyncToken )
     }
 
-    currentSyncToken.set( this );
+    currentSyncToken = this;
 }
 
 void SyncToken::unsetCurrent()
 {
-    SyncToken* current = currentSyncToken.get();
-
-    if ( current == NULL )
+    if ( currentSyncToken == NULL )
     {
         SCAI_LOG_WARN( logger, "unset current sync token, not available" )
     }
     else
     {
-        SCAI_LOG_INFO( logger, "no more current sync token " << *current )
-        currentSyncToken.set( NULL );
+        SCAI_LOG_INFO( logger, "no more current sync token " << *currentSyncToken )
+        currentSyncToken = NULL;
     }
 }
 
 SyncToken* SyncToken::getCurrentSyncToken()
 {
-    return currentSyncToken.get();
+    return currentSyncToken;
 }
 
 // we can rely on the fact that thread-private variable is initialized with NULL
 
-SCAI_THREAD_PRIVATE_PTR( SyncToken, SyncToken::currentSyncToken )
+thread_local SyncToken* SyncToken::currentSyncToken = NULL;
+
 
 /* ----------------------------------------------------------------------- */
 

@@ -35,33 +35,40 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/solver/SolutionProxy.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
 
-typedef Vector VectorType;
-typedef SolutionProxy ProxyType;
+typedef DefaultReal ValueType;
+typedef Vector<ValueType> VectorType;
+typedef SolutionProxy<ValueType> ProxyType;
 
 /* --------------------------------------------------------------------- */
 
+/** Test configuration generated for each individual test. */
+
 struct SolutionProxyTestConfig
 {
-    SolutionProxyTestConfig() : mProxy( new DenseVector<RealType>( 3, -5.0 ) )
+    SolutionProxyTestConfig() : 
+
+        vPtr( new DenseVector<ValueType>() ),
+        mProxy( vPtr.get() )
     {
+        vPtr->setSameValue( 3, -5 );
     }
 
     ~SolutionProxyTestConfig()
     {
-        // the vector must be deleted explicitly
-        VectorType& vec = mProxy.getReference();
-        delete &vec;
     }
 
+    std::unique_ptr<DenseVector<ValueType> > vPtr;
     ProxyType mProxy;
 };
+
+/* --------------------------------------------------------------------- */
 
 BOOST_FIXTURE_TEST_SUITE( SolutionProxyTest , SolutionProxyTestConfig )
 
@@ -74,9 +81,8 @@ BOOST_AUTO_TEST_CASE( testOperators )
     BOOST_CHECK_EQUAL( true, mProxy.isDirty() );
     mProxy.setDirty( false );
     BOOST_CHECK( ! mProxy.isDirty() );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy).getValue( 0 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy).getValue( 1 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy).getValue( 2 ) );
+    VectorType& vec = mProxy.getReference();
+    vec[0] = 3;
     // using reference makes proxy dirty
     BOOST_CHECK( mProxy.isDirty() );
 }
@@ -98,24 +104,10 @@ BOOST_AUTO_TEST_CASE( testGetConstReference )
     mProxy.setDirty( false );
     const VectorType& vec = mProxy.getConstReference();
     BOOST_CHECK( !mProxy.isDirty() );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 0 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 1 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 2 ) );
+    ValueType s = vec[0];
+    BOOST_CHECK_EQUAL( ValueType( -5 ), s );
     // using const reference makes proxy not dirty
     BOOST_CHECK( ! mProxy.isDirty() );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( testGetReference )
-{
-    mProxy.setDirty( false );
-    BOOST_CHECK( !mProxy.isDirty() );
-    VectorType& vec = mProxy.getReference();
-    BOOST_CHECK( mProxy.isDirty() );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 0 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 1 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 2 ) );
 }
 
 /* --------------------------------------------------------------------- */

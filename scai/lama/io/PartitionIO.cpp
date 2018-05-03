@@ -35,7 +35,7 @@
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/lama/io/FileIO.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
@@ -48,6 +48,7 @@ namespace scai
 {
 
 using namespace dmemo;
+using utilskernel::HArrayUtils;
 
 namespace lama
 {
@@ -210,10 +211,12 @@ bool PartitionIO::fileExists( const std::string& fileName, const dmemo::Communic
 
 DistributionPtr PartitionIO::readSDistribution( const string& inFileName, CommunicatorPtr comm )
 {
+    using hmemo::HArray;
+
     SCAI_LOG_INFO( logger, "read distribution from one single file " << inFileName )
 
-    utilskernel::LArray<IndexType> owners;
-    utilskernel::LArray<IndexType> localSizes( 1, 0 );  // at least one entry
+    HArray<IndexType> owners;
+    HArray<IndexType> localSizes( { 0 } );  // at least one entry
 
     typedef enum
     {
@@ -232,9 +235,9 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
 
             // Bucketsort of owners gives info about illegal values
 
-            utilskernel::HArrayUtils::bucketCount( localSizes, owners, comm->getSize() );
+            HArrayUtils::bucketCount( localSizes, owners, comm->getSize() );
 
-            IndexType nLegalValues = localSizes.sum();
+            IndexType nLegalValues = HArrayUtils::sum( localSizes );
 
             SCAI_LOG_INFO( logger, *comm << ": read owners = " << owners << ", #legal values = " << nLegalValues )
 
@@ -246,7 +249,7 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
             SCAI_LOG_ERROR( logger, "Reading distribution from file " << inFileName << " failed: " << e.what() )
         }
 
-        bool isAscending = utilskernel::HArrayUtils::isSorted( owners, common::binary::LE );
+        bool isAscending = HArrayUtils::isSorted( owners, common::CompareOp::LE );
 
         if ( isAscending )
         {
@@ -293,7 +296,7 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
 
 DistributionPtr PartitionIO::readPDistribution( const string& inFileName, CommunicatorPtr comm )
 {
-    utilskernel::LArray<IndexType> owners;
+    hmemo::HArray<IndexType> owners;
 
     SCAI_LOG_INFO( logger, *comm << ", read partitioned distribution from " << inFileName )
 

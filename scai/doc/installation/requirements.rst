@@ -33,18 +33,11 @@ All you need for the LAMA installation are the following software packages:
 
   - Optional: implementation of the |OpenMP_API|, version 2.0 or higher
 
-  - Recommended but not mandatory: support of the ISO-C++ standard C++11 (e.g. since gcc 4.7, icc 11.1, clang 2.9)
+  - Now mandatory: support of the ISO-C++ standard C++11 (e.g. since gcc 4.7, icc 11.1, clang 2.9)
 
-- :ref:`Boost <scaicommon:Boost>` (version 1.34 or later)
-
-  - Required if the C++11 standard is not supported by the C++ compiler
+- :ref:`Boost <scaicommon:Boost>` (version 1.59 or later)
 
   - Required if unit tests of the projects should be built
-
-- :ref:`PThread <scaicommon:PThread>` (version 1.34 or later)
-  
-  - Required for internal thread handling
-
 
 .. |OpenMP_API| raw:: html
 
@@ -61,32 +54,23 @@ All you need for the LAMA installation are the following software packages:
 Recommended Software
 ^^^^^^^^^^^^^^^^^^^^
 
-The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (CUDA, MIC) as well as distributed memory support:
+The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (currently LAMA supports CUDA) as well as distributed memory support:
 
 - :ref:`scaiblaskernel:BLAS`
 
   - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, BLAS. 
 
-- :ref:`CUDA <scaicommon:CUDA>` (version 4.0 or later)
+- :ref:`CUDA <scaicommon:CUDA>` (version 7.0 or later)
 
-  - Needed to utilize CUDA capable GPUs from Nvidia (support for compute capability since cc 1.3).
-  
-- :doc:`Intel MIC <configuration/mic>`
-
-  - Needed to utilize Intel Xeon Phi
+  - Needed to utilize CUDA capable GPUs from Nvidia (support for compute capability cc 2.0 or higher).
+  - C++11 support required for the CUDA compiler (since nvcc 7.0)
 
 - :ref:`MPI <scaidmemo:MPI>`
 
   - Needed for distributed memory parallelism through the Message Passing Interface.
 
-- :ref:`GPI-2 <scaidmemo:GPI>`
-
-  - Needed for distributed memory parallelism through the Global Address Space Programming Interface.
-
 .. toctree::
    :hidden:
-
-   MIC <configuration/mic>
 
 .. _optional:
 
@@ -135,13 +119,13 @@ We have tested the installation of LAMA with various versions of the required an
 
 Nevertheless we encountered different problems, and here are some general advices:
 
-- CXX Compilers
+- CXX Compiler (support of C++11 standard)
 
   We have very good experience with all versions of the GNU C++ compiler suite and the Intel C++ compiler
-  tools. We highly recommend using compiler versions that support the C++11 features, i.e. GCC 4.8.1 or higher,
+  tools. We now require using compiler versions that support the C++11 features, i.e. GCC 4.8.1 or higher,
   or Intel C++ 15.0 or higher. In this case, Boost is no more mandatory that also avoids a lot of problems.
 
-- Boost
+- Boost (Version 1.61 or higher)
 
   Most Linux distributions come with a Boost installation that fits well the default GNU C++ compiler. 
   Generally speaking, the Boost library should have been built with the same compiler that is exploited for the
@@ -151,8 +135,14 @@ Nevertheless we encountered different problems, and here are some general advice
   (e.g. g++ 5.3 ) using the boost functionality. In these cases, we strongly recommend to build a Boost installation with 
   the corresponding C++ compiler.
 
+.. code-block:: bash
 
-- CUDA
+   tar xvfz boost_1_61_0.tar.gz 
+   cd boost_1_61_0
+   bootstrap.sh --prefix=$BOOST_ROOT --with-libraries=test
+   ./b2
+
+- CUDA (Version 7.0 or higher)
 
   Unfortunately the CUDA toolkit versions cannot keep up with the latest GNU C++ compiler or Intel compiler version.
   In this case, you have to install/use a previous compiler version. E.g. CUDA Version 8.0 does not support gcc versions

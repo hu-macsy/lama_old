@@ -38,23 +38,29 @@ scai_project (
 
     CLASSES
 
+        _Matrix
+        Matrix
+
         COOSparseMatrix
         CSRSparseMatrix
         DenseMatrix
         DIASparseMatrix
         ELLSparseMatrix
         JDSSparseMatrix
-        Matrix
         SparseMatrix
         StencilMatrix
 
-        MatrixAssemblyAccess
+        MatrixAssembly
 
     HEADERS 
  
         all 
-        CRTPMatrix 
-        AbstractMatrix
+        MatrixKind 
+        SyncKind 
+        OperatorMatrix
+        MatrixWithT
+        GramianMatrix
+        HybridMatrix
 
     ADD_PARENT_SCOPE
 )

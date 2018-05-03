@@ -188,7 +188,7 @@
 #include <scai/logging/Logger.hpp>
 #include <scai/logging/LoggerProvider.hpp>
 
-#include <scai/common/Thread.hpp>
+#include <scai/common/thread.hpp>
 
 /*******************************************************
  *   Definitions for logging                           *
@@ -412,7 +412,7 @@
 
 #else
 
-#include <scai/common/Thread.hpp>
+#include <scai/common/thread.hpp>
 
 // macro defines a name for the current thread
 
@@ -420,7 +420,7 @@
     {                                                                          \
         std::ostringstream oname;                                              \
         oname << name;                                                         \
-        scai::common::Thread::defineCurrentThreadName( oname.str().c_str() );  \
+        scai::common::thread::defineCurrentThreadName( oname.str().c_str() );  \
     }
 
 #endif

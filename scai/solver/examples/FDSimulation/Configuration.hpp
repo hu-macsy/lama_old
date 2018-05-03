@@ -33,8 +33,6 @@
  */
 #pragma once
 
-#include <scai/lama/Scalar.hpp>
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -128,8 +126,8 @@ public:
 
         NT = static_cast<IndexType>( ( T / DT ) + 0.5 ); // MATLAB round(T/DT)
 
-        v_factor = lama::Scalar( DT / DH / rho );
-        p_factor = lama::Scalar( DT * M );
+        v_factor = DT / DH / rho;
+        p_factor = DT * M;
 
         source_index     = index( source_x,     source_y,     source_z,     NX, NY, NZ );
         seismogram_index = index( seismogram_x, seismogram_y, seismogram_z, NX, NY, NZ );
@@ -283,11 +281,11 @@ public:
         return NT;
     }
 
-    lama::Scalar& getVfactor()
+    ValueType& getVfactor()
     {
         return v_factor;
     }
-    lama::Scalar& getPfactor()
+    ValueType& getPfactor()
     {
         return p_factor;
     }
@@ -313,7 +311,7 @@ private:
         if ( z > NZ || x > NX || y > NY || z < 1 || x < 1 || y < 1 )
         {
             COMMON_THROWEXCEPTION ( "Could not map from coordinate to indize!" )
-            return nIndex;
+            return invalidIndex;
         }
         else
         {
@@ -361,8 +359,8 @@ private:
 
     IndexType NT;
 
-    lama::Scalar v_factor;
-    lama::Scalar p_factor;
+    ValueType v_factor;
+    ValueType p_factor;
 
     IndexType source_index;
     IndexType seismogram_index;

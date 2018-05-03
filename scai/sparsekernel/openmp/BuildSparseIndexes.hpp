@@ -39,8 +39,9 @@
 #include <scai/common/config.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/BinaryOp.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -114,7 +115,7 @@ public:
 
 private:
 
-    common::scoped_array<IndexType> mIndexList;
+    std::unique_ptr<IndexType[]> mIndexList;
 
     IndexType NINIT;
     IndexType END;
@@ -127,7 +128,7 @@ class COMMON_DLL_IMPORTEXPORT BuildSparseVector : public BuildSparseIndexes
 {
 public:
 
-    BuildSparseVector( const IndexType n, const common::binary::BinaryOp op ) :
+    BuildSparseVector( const IndexType n, const common::BinaryOp op ) :
 
         BuildSparseIndexes( n ),
         mValueList( new ValueType[n] ),
@@ -158,11 +159,11 @@ public:
 
 private:
 
-    common::scoped_array<ValueType> mValueList;
+    std::unique_ptr<ValueType[]> mValueList;
 
     ValueType mZero;
 
-    common::binary::BinaryOp mOp;
+    common::BinaryOp mOp;
 };
 
 

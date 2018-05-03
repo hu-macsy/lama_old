@@ -66,8 +66,6 @@ ownership of the device.
    ContextPtr cudaCtx = Context::getContextPtr( common::context::CUDA);      // default device
    ContextPtr cudaCtx = Context::getContextPtr( common::context::CUDA, 0);
 
-   ContextPtr micCtx = Context::getContextPtr( common::context::MIC, 0);
-
 The default device is specified by the environment variable:
 
 .. code-block:: c++

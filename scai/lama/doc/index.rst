@@ -75,11 +75,11 @@ Example
 
 .. code-block:: c++
 
-   #include <scai/hmemo.hpp>
-   #include <scai/dmemo.hpp>
    #include <scai/lama.hpp>
+   #include <scai/dmemo/BlockDistribution.hpp>
 
-   using namespace scai::lama;
+   using namespace scai;
+   using namespace lama;
 
    int main()
    {
@@ -87,18 +87,22 @@ Example
 
       IndexType size = 30;
 
-      dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
-      dmemo::DistribtionPtr dist( new dmemo::BlockDistribution( size, comm ) );
+      auto comm = dmemo::Communicator::getCommunicatorPtr();
 
-      hmemo::ContextPtr cudaCtx = hmemo::Context::getContextPtr( common::Context::CUDA, 0 );
+      auto cudaCtx = hmemo::Context::getContextPtr( common::ContextType::CUDA, 0 );
 
-      DenseVector<ValueType> x( size, 1.0, cudaCtx );
-      CSRSparseMatrix<ValueType> csrMatrix( "gr_30_30.mtx" );
-      csrMatrix.redistribute( dist );
-      csrMatrix.setContext( cudaCtx );
+      auto csrMatrix = read<CSRSparseMatrix<ValueType>>( "gr_30_30.mtx", cudaCtx );
 
-      DenseVector<ValueType> result( csrMatrix * vector ); // calculation takes place with CUDA (possibly distributed)
-      result.writeToFile( "resultVec.mtx", File::MATRIX_MARKET );
+      SCAI_ASSERT_EQ_ERROR( csrMatrix.getNumRows(), csrMatrix.getNumColumns(), "input matrix not square" )
+
+      auto dist = std::make_shared<dmemo::BlockDistribution>( csrMatrix.getNumRows(), comm );
+
+      csrMatrix.redistribute( dist, dist );
+      auto vector = fill<DenseVector<ValueType>>( dist, 1.0, cudaCtx );
+
+      auto result = eval<DenseVector<ValueType>>( csrMatrix * vector );
+
+      result.writeToFile( "result.mtx" );
    }
 
 .. *****************
@@ -148,8 +152,6 @@ And therefore inherit all there external dependencies:
 
    <a href="http://www.nvidia.com/object/cuda_home_new.html" target="_blank"> CUDA </a>
 
-* Compiler supporting Intel MIC Architecture for using the Xeon Phi Coprocessor
-
 * |MKL|: for Intel optimized blas routines [#f1]_
 
 .. |MKL| raw:: html
@@ -174,12 +176,6 @@ And therefore inherit all there external dependencies:
 .. |MPI| raw:: html
 
 	<a href="https://www.mpi-forum.org/docs/docs.html" target="_blank"> MPI </a>
-
-* |GPI| (Global Adress Programming Interface): for Interprocess Communication [#f1]_
-
-.. |GPI| raw:: html
-
-	<a href="http://www.gpi-site.com/gpi2" target="_blank"> GPI </a>
 
 * |Metis|: for Graph Partitioning [#f1]_
 

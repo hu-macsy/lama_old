@@ -10,7 +10,6 @@ Run it:
     hmemoTest --SCAI_CONTEXT=Host                  !! run it on Host
     hmemoTest --SCAI_CONTEXT=CUDA                  !! run it on CUDA, default device
     hmemoTest --SCAI_CONTEXT=CUDA --SCAI_DEVICE=1  !! run it on CUDA, further device
-    hmemoTest --SCAI_CONTEXT=MIC                   !! run it on MIC
 
 The following functionalities are tested:
 

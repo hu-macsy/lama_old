@@ -14,8 +14,7 @@ be called as kernel functions on different devices with the same signature.
 The BLASKernel library supports both approaches: either the BLAS or LAPACK routine is implemented by the library
 itself (internal version) or the BLAS or LAPACK routine of an efficient vendor library is wrapped (external version).
 The latter approach is usually the more efficient one as vendors provide optimized implementations on their
-hardware. This is not only the case for usual host CPUs but also for CUDA or Intel MIC devices, where libraries 
-like cuBLAS or the Intel MKL are available.
+hardware. This is not only the case for usual host CPUs but also for CUDA devices, where the cuBLAS library is available.
 
 The internal version of the BLAS and LAPACK routines is a fallback implementation on Host CPUs if no external BLAS or
 LAPACK library is available. In contrary to most vendor libraries the routines can be instantiated for any arithmetic value

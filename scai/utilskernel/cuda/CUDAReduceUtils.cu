@@ -128,20 +128,20 @@ ValueType CUDAReduceUtils::reduceMinVal( const ValueType array[], const IndexTyp
 
 // Be careful: template<ResultType, ArgumentType>, but unary_function<ArgumentType, ResultType> 
 
-template<typename AbsType, typename ValueType>
-struct absolute_value: public thrust::unary_function<ValueType, AbsType>
+template<typename RealType, typename ValueType>
+struct absolute_value: public thrust::unary_function<ValueType, RealType>
 {
     __host__ __device__
-    AbsType operator()( const ValueType& x ) const
+    RealType operator()( const ValueType& x ) const
     {
-        return static_cast<AbsType>( Math::abs( x ) );
+        return static_cast<RealType>( Math::abs( x ) );
     }
 };
 
 template<typename ValueType>
 ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "CUDA.Utils.reduceAbsMax" )
 
@@ -151,12 +151,12 @@ ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const Index
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-    AbsType result = thrust::transform_reduce(
+    RealType result = thrust::transform_reduce(
                            data,
                            data + n,
-                           absolute_value<AbsType, ValueType>(),
-                           AbsType( zero ),
-                           thrust::maximum<AbsType>() );
+                           absolute_value<RealType, ValueType>(),
+                           RealType( zero ),
+                           thrust::maximum<RealType>() );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
@@ -166,36 +166,36 @@ ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const Index
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, const ValueType zero, binary::BinaryOp op )
+ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, const ValueType zero, BinaryOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
 
     ValueType result;
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType absResult;
-    AbsType absZero = zero;
-    const AbsType* absArray = reinterpret_cast<const AbsType*>( array );
+    RealType redResult;
+    RealType redZero = zero;
+    const RealType* redArray = reinterpret_cast<const RealType*>( array );
 
     switch ( op )
     {
-        case binary::ADD :
+        case BinaryOp::ADD :
             result = reduceSum( array, n, zero );
             break;
 
-        case binary::MAX :
-            // SCAI_ASSERT_EQ_ERROR( common::TypeTraits<AbsType>::stype, common::TypeTraits<ValueType>::stype, "MAX not supported for complex" )
-            absResult = reduceMaxVal( absArray, n, absZero );
-            result = absResult;
+        case BinaryOp::MAX :
+            // SCAI_ASSERT_EQ_ERROR( common::TypeTraits<RealType>::stype, common::TypeTraits<ValueType>::stype, "MAX not supported for complex" )
+            redResult = reduceMaxVal( redArray, n, redZero );
+            result = redResult;
             break;
 
-        case binary::MIN :
-            absResult = reduceMinVal( absArray, n, absZero );
-            result = absResult;
+        case BinaryOp::MIN :
+            redResult = reduceMinVal( redArray, n, redZero );
+            result = redResult;
             break;
 
-        case binary::ABS_MAX :
+        case BinaryOp::ABS_MAX :
             result = reduceAbsMaxVal( array, n, zero );
             break;
 
@@ -213,9 +213,9 @@ ValueType CUDAReduceUtils::reduce2(
     const ValueType array1[],
     const ValueType array2[],
     const IndexType n,
-    const binary::BinaryOp binOp,
+    const BinaryOp binOp,
     const ValueType zero,
-    const binary::BinaryOp redOp )
+    const BinaryOp redOp )
 {
     SCAI_REGION( "CUDA.Utils.reduce2" )
 
@@ -258,7 +258,7 @@ ValueType CUDAReduceUtils::scan( ValueType array[], const IndexType n, ValueType
         {
             thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
 
-            if ( first != common::constants::ZERO )
+            if ( first != common::Constants::ZERO )
             {
                 thrust::for_each( array_ptr, array_ptr + n + 1, _1 += first );
             }
@@ -281,7 +281,7 @@ ValueType CUDAReduceUtils::scan( ValueType array[], const IndexType n, ValueType
         {
             thrust::inclusive_scan( array_ptr, array_ptr + n, array_ptr );
 
-            if ( first != common::constants::ZERO )
+            if ( first != common::Constants::ZERO )
             {
 		        SCAI_LOG_INFO( logger, "now add first = " << first << ", n = " << n )
                 thrust::for_each( array_ptr, array_ptr + n, _1 += first );
@@ -299,18 +299,18 @@ ValueType CUDAReduceUtils::scan( ValueType array[], const IndexType n, ValueType
 
 template<typename ValueType>
 __global__
-void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values, const binary::CompareOp op )
+void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values, const CompareOp op )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numValues )
     {
-        result[i] = applyBinary( values[i], op, values[i + 1] );
+        result[i] = compare( values[i], op, values[i + 1] );
     }
 }
 
 template<typename ValueType>
-bool CUDAReduceUtils::isSorted( const ValueType array[], const IndexType n, const binary::CompareOp op )
+bool CUDAReduceUtils::isSorted( const ValueType array[], const IndexType n, const CompareOp op )
 {
     SCAI_REGION( "CUDA.Utils.isSorted" )
 
@@ -393,7 +393,7 @@ bool CUDAReduceUtils::validIndexes( const IndexType array[], const IndexType n, 
 void CUDAReduceUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::validIndexes>( validIndexes, ctx, flag );
@@ -403,7 +403,7 @@ template<typename ValueType>
 void CUDAReduceUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger, "registerV array UtilsKernel CUDA [" << flag
                     << "] --> ValueType = " << common::getScalarType<ValueType>() )

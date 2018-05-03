@@ -41,10 +41,9 @@
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/CG.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -57,7 +56,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-typedef RealType ValueType;  // is double, only float if double not instantiated
+typedef scai::DefaultReal ValueType;  // is double, only float if double not instantiated
 
 using namespace scai;
 using namespace lama;
@@ -76,6 +75,7 @@ using namespace solver;
 void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 {
     using namespace hmemo;
+    using namespace utilskernel;
 
     // set all non-zero non-diagonal elements to -1
     // set all diagonal elements to number of non-diagonal elements
@@ -84,7 +84,10 @@ void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 
     const HArray<IndexType>& ia = localStorage.getIA();
     const HArray<IndexType>& ja = localStorage.getJA();
-    HArray<ValueType>& values = localStorage.getValues();
+
+    // Okay, not very safe but we know what we do, and certainly do not change the size 
+
+    HArray<ValueType>& values = const_cast<HArray<ValueType>&>( localStorage.getValues() );
 
     {
         const ValueType minusOne = -1;
@@ -106,10 +109,10 @@ void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 
     // check that x = (1, 1, ..., 1 ) is eigenvector with eigenvalue 0
 
-    DenseVector<ValueType> x( L.getColDistributionPtr(), 1 );
-    DenseVector<ValueType> y( L * x );
+    auto x = fill<DenseVector<ValueType>>( L.getColDistributionPtr(), 1 );
+    auto y = eval<DenseVector<ValueType>>( L * x );
 
-    SCAI_ASSERT_LT_ERROR( y.maxNorm(), Scalar( 1e-8 ), "L not Laplacian matrix" )
+    SCAI_ASSERT_LT_ERROR( y.maxNorm(), ValueType( 1e-8 ), "L not Laplacian matrix" )
 }
 
 /** Main program to determine the Fiedler vector for a Laplacian matrix
@@ -135,7 +138,8 @@ int main( int argc, const char* argv[] )
     CSRSparseMatrix<ValueType> L;  // laplacian matrix
 
     IndexType kmax = 100;        // maximal number of iterations
-    Scalar    eps  = 1e-5;       // accuracy for maxNorm 
+
+    auto eps = common::Math::real( ValueType( 1e-5 ) );  // accuracy for maxNorm, must not be complex
 
     L.readFromFile( argv[1] );
 
@@ -145,28 +149,26 @@ int main( int argc, const char* argv[] )
 
     makeLaplacian( L );   // make the matrix Laplacian and check it
 
-    const IndexType n = L.getNumRows();
+    const auto n = L.getNumRows();
 
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    auto blockDist = std::make_shared<dmemo::BlockDistribution>( n );
 
-    dmemo::DistributionPtr blockDist( new dmemo::BlockDistribution( n, comm ) );
     L.redistribute( blockDist, blockDist );
 
-    DenseVector<ValueType> u( L.getRowDistributionPtr(), 1 );
+    auto u = fill<DenseVector<ValueType>>( L.getRowDistributionPtr(), 1 ); 
 
     ValueType n12 = common::Math::sqrt( ValueType( n  ) );
 
     u[0] = n12 + 1;
  
-    Scalar alpha = n + n12;
+    ValueType alpha = n + n12;
 
-    HouseholderTransformedMatrix HLH( L, u, alpha );
+    HouseholderTransformedMatrix<ValueType> HLH( L, u, alpha );
 
-    DenseVector<ValueType> t( L.getRowDistributionPtr(), 1.0 );
+    auto t = fill<DenseVector<ValueType>>( L.getRowDistributionPtr(), 1.0 );
 
     DenseVector<ValueType> y;
     DenseVector<ValueType> diff;
-
 
     t[0] = 0.0;
 
@@ -174,11 +176,12 @@ int main( int argc, const char* argv[] )
     
     // set up the CG solver that is used for the inverse power method
 
-    CG cgSolver( "InversePowerMethodSolver" );
-    CriterionPtr criterion1( new IterationCount( 50 ) );
-    NormPtr norm( Norm::create( "L2" ) );   // Norm from factory
-    CriterionPtr criterion2( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
-    CriterionPtr criterion( new Criterion( criterion1, criterion2, Criterion::OR ) );
+    CG<ValueType> cgSolver( "InversePowerMethodSolver" );
+
+    auto criterion1 = std::make_shared<IterationCount<ValueType>>( 50 );
+    NormPtr<ValueType> norm( Norm<ValueType>::create( "L2" ) );           // Norm from factory
+    auto criterion2 = std::make_shared<ResidualThreshold<ValueType>>( norm, eps, ResidualCheck::Absolute );
+    auto criterion  = std::make_shared<Criterion<ValueType>>( criterion1, criterion2, BooleanOp::OR );
 
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( HLH );
@@ -191,9 +194,11 @@ int main( int argc, const char* argv[] )
 
         y = HLH * t;
 
-        Scalar lambda = t.dotProduct( y );
+        auto lambda = t.dotProduct( y );
+
         diff = y - lambda * t;
-        Scalar diffNorm = diff.maxNorm();
+
+        auto diffNorm = diff.maxNorm();
 
         std::cout << "Iter " << k << ", lambda = " << lambda << ", diff = " << diffNorm << std::endl;
 
@@ -209,7 +214,7 @@ int main( int argc, const char* argv[] )
     }
 
     t[0] = 0.0;
-    Scalar beta = u.dotProduct( t ) / alpha;
+    ValueType beta = u.dotProduct( t ) / alpha;
     t = t - beta * u;
 
     time = common::Walltime::get() - time ;

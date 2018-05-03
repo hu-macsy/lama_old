@@ -39,7 +39,6 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/bind.hpp>
 
 #include <iostream>
 
@@ -115,7 +114,7 @@ int main( int argc, const char** argv )
     float* d_data = myAllocate( NSIZE );
     std::cout << "Allocated data on device, d_data = " << d_data << std::endl;
     {
-        CUDAStreamSyncToken token( ctx, CUDAStreamSyncToken::ComputeStream );
+        CUDAStreamSyncToken token( ctx, StreamType::ComputeStream );
         {
             // make sync token available for running compute kernels asynchronously
             SyncToken::ScopedAsynchronous scope( token );
@@ -126,7 +125,7 @@ int main( int argc, const char** argv )
     std::cout << "Initialized data on device done" << std::endl;
     float s = 0.0;
     {
-        CUDAStreamSyncToken token( ctx, CUDAStreamSyncToken::ComputeStream );
+        CUDAStreamSyncToken token( ctx, StreamType::ComputeStream );
         {
             SyncToken::ScopedAsynchronous scope( token );
             mySum( &s, d_data, NSIZE );

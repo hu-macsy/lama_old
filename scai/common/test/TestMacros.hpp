@@ -66,6 +66,12 @@ typedef boost::mpl::list<SCAI_NUMERIC_TYPES_HOST> scai_numeric_test_types;
 typedef boost::mpl::list<SCAI_ARRAY_TYPES_HOST> scai_array_test_types;
 
 /* -------------------------------------------------------------------------------- */
+/*  fft test types                                                                */
+/* -------------------------------------------------------------------------------- */
+
+typedef boost::mpl::list<SCAI_FFT_TYPES_HOST> scai_fft_test_types;
+
+/* -------------------------------------------------------------------------------- */
 /*  Define one type used for test where only one ARITHMETIC TYPE is needed          */
 /* -------------------------------------------------------------------------------- */
 

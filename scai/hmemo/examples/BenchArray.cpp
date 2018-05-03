@@ -40,8 +40,11 @@
 #include <vector>
 #include <scai/logging.hpp>
 
-using namespace std;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace hmemo;
+
+using std::cout;
+using std::endl;
 
 SCAI_LOG_DEF_LOGGER( logger, "BenchArray" )
 
@@ -135,63 +138,63 @@ int main()
         double res = 0.0;  // avoids dead code elimination
         routineLAMA( res, N ); // warm up
         routineLAMA( res, N ); // warm up
-        double time = scai::common::Walltime::get();
+        double time = common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineLAMA( res, N );
         }
 
-        double tl = ( scai::common::Walltime::get() - time );
+        double tl = ( common::Walltime::get() - time );
         tl *= 1000.0 * 1000.0 / ITER;
         routineVector( res, N );  // warm up
         routineVector( res, N );  // warm up
-        time = scai::common::Walltime::get();
+        time = common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineVector( res, N );
         }
 
-        double tv = ( scai::common::Walltime::get() - time );
+        double tv = ( common::Walltime::get() - time );
         tv *= 1000.0 * 1000.0 / ITER;
         routineSimple( res, N );   // warm up
         routineSimple( res, N );   // warm up
-        time = scai::common::Walltime::get();
+        time = common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineSimple( res, N );
         }
 
-        double ts = ( scai::common::Walltime::get() - time );
+        double ts = ( common::Walltime::get() - time );
         ts *= 1000.0 * 1000.0 / ITER;
-        time = scai::common::Walltime::get();
+        time = common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineSCAI_1( res );
         }
 
-        double tl1 = ( scai::common::Walltime::get() - time );
+        double tl1 = ( common::Walltime::get() - time );
         tl1 *= 1000.0 * 1000.0 / ITER;
-        time = scai::common::Walltime::get();
+        time = common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineSCAI_2( res, N );
         }
 
-        double tl2 = ( scai::common::Walltime::get() - time );
+        double tl2 = ( common::Walltime::get() - time );
         tl2 *= 1000.0 * 1000.0 / ITER;
-        time = scai::common::Walltime::get();
+        time = common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
         {
             routineSCAI_3( res, N );
         }
 
-        double tl3 = ( scai::common::Walltime::get() - time );
+        double tl3 = ( common::Walltime::get() - time );
         tl3 *= 1000.0 * 1000.0 / ITER;
         cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
         cout << "res = " << res << endl;

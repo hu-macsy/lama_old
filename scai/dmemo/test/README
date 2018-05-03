@@ -16,10 +16,3 @@ export SCAI_COMMUNICATOR=mpi
 mpirun -np 1 ./dmemoTest
 mpirun -np 2 ./dmemoTest
 mpirun -np 4 ./dmemoTest
-
-GPI Communicator
-================
-
-gaspi_run -np 1 ./dmemoTest
-gaspi_run -np 2 ./dmemoTest
-gaspi_run -np 4 ./dmemoTest

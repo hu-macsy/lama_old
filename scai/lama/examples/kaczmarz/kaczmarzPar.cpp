@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/expression/all.hpp>
@@ -100,7 +100,7 @@ int main( int argc, const char* argv[] )
         {
             IndexType localI = rowDist.global2local( i );
 
-            if ( localI == nIndex )
+            if ( localI == invalidIndex )
             {
                 continue;
             }

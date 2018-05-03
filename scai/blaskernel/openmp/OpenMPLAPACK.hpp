@@ -44,6 +44,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/kregistry/mepr/Registrator.hpp>
@@ -62,7 +63,6 @@ public:
 
     template<typename ValueType>
     static void getrf(
-        const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
         ValueType* const a,
@@ -73,7 +73,6 @@ public:
 
     template<typename ValueType>
     static void getri(
-        const CBLAS_ORDER order,
         const IndexType n,
         ValueType* const A,
         const IndexType lda,
@@ -88,9 +87,8 @@ public:
 
     template<typename ValueType>
     static void tptrs(
-        const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
-        const CBLAS_TRANSPOSE trans,
+        const common::MatrixOp trans,
         const CBLAS_DIAG diag,
         const IndexType n,
         const IndexType nrhs,

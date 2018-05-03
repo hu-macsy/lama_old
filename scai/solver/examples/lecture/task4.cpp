@@ -27,22 +27,19 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/examples/lecture/task4.cpp
+ * @brief Solver running with distributed data, example solution of lecture task 4.
  * @author Thomas Brandes
  * @date 15.05.2013
  */
-
-//Solution of task 4:
-
 #include <scai/lama.hpp>
 
-#include <scai/lama/storage/SparseAssemblyStorage.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/solver/CG.hpp>
-#include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/criteria/ResidualThreshold.hpp>
+#include <scai/solver/logger/CommonLogger.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -54,49 +51,59 @@ using namespace solver;
 using namespace hmemo;
 using namespace lama;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
-int main( int argc, char* argv[] )
+int main ( int argc, char* argv[] )
 {
     if ( argc < 2 )
     {
         std::cerr << "No input file specified" << std::endl;
-        exit( -1 );
+        return EXIT_FAILURE;
     }
 
-    CSRSparseMatrix<ValueType> m( argv[1] );
-    std::cout << "Read matrix m : " << m << std::endl;
-    IndexType size = m.getNumRows();
+    // Create communicator
     CommunicatorPtr comm( Communicator::getCommunicatorPtr() );
-    DistributionPtr dist( new BlockDistribution( size, comm ) );
-    m.redistribute( dist, dist );
-    DenseVector<ValueType> rhs( size , 0.0 );
-    WriteAccess<ValueType> hwarhs( rhs.getLocalValues() );
 
-    for ( IndexType i = 0; i < size; ++i )
-    {
-        hwarhs[i] = ValueType( i + 1 );
-    }
+    // Read a sparse matrix from the file that has been specified by command line argument
+    auto matrix = read<CSRSparseMatrix<ValueType>>( argv[1] );
+    std::cout << "Read matrix: " << matrix << std::endl;
 
-    std::cout << "Vector rhs : " << rhs << std::endl;
-    hwarhs.release();
-    rhs.redistribute( dist );
-    DenseVector<ValueType> solution( size, 0.0 );
-    solution.redistribute( dist );
+    // Create distribution, needs communicator as target argument
+    auto size = matrix.getNumRows ( );
+    auto dist = std::make_shared<BlockDistribution>( size, comm );
+    matrix.redistribute( dist, dist );
+    std::cout << "Redistributed matrix: " << matrix << std::endl;
+
+    // Create solution vector
+    auto solution = fill<DenseVector<ValueType>>( dist, 1 );
     std::cout << "Vector solution : " << solution << std::endl;
-    CG cgSolver( "CGTestSolver" );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    cgSolver.setStoppingCriterion( criterion );
-    cgSolver.initialize( m );
-    cgSolver.solve( solution, rhs );
-    std::cout << "The solution is: ";
 
-    for ( IndexType i = 0; i < solution.size(); ++i )
-    {
-        std::cout << solution.getValue( i ) << " ";
-    }
+    // Compute the rhs that fits our solution to be able to calculate the error later
+    auto rhs = eval<DenseVector<ValueType>>( matrix * solution );
+    std::cout << "Vector rhs : " << rhs << std::endl;
+    // Forget the solution, i.e. reset solution to zero so that there is something to solve
+    solution = 0;
 
-    std::cout << std::endl;
-    return 0;
+
+    // Allocate a common logger that prints convergenceHistory
+    auto logger = std::make_shared<CommonLogger>( "<CG>: ", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly );
+    // Create a CG solver
+    CG<ValueType> cgSolver ( "CGTestSolver" );
+    // Create a stopping criterion for the iterative solver cgSolver
+    auto norm = std::make_shared<L2Norm<ValueType>>( );
+    const ValueType eps = 1E-8;
+    auto criterion = std::make_shared<ResidualThreshold<ValueType>>( norm, eps, ResidualCheck::Absolute );
+    cgSolver.setStoppingCriterion ( criterion );
+
+    // Initialize the solver with the matrix
+    cgSolver.initialize ( matrix );
+    // Solve, i.e. find solution for given rhs
+    cgSolver.solve ( solution, rhs );
+
+    // calculate the error and its L2-Norm
+    auto error = fill<DenseVector<ValueType>>( dist, 1 );
+    error = error - solution;
+    std::cout << "L2-Norm of error is " << l2Norm( error ) << std::endl;
+
+    return EXIT_SUCCESS;
 }
-

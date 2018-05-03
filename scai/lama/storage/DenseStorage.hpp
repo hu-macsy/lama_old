@@ -38,7 +38,8 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/storage/CRTPMatrixStorage.hpp>
+#include <scai/lama/storage/MatrixStorage.hpp>
+#include <scai/lama/mepr/StorageWrapper.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -58,70 +59,150 @@ template<typename ValueType> class DenseStorage;
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseStorage:
-    public CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>,
+    public MatrixStorage<ValueType>,
     public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
 {
 public:
 
-    typedef ValueType StorageValueType;
-    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
+    /* ==================================================================== */
+    /*  static getter methods and corresponding pure methods                */
+    /* ==================================================================== */
 
-    /** get typename of the matrix storage format. */
+    /** Static method that returns a unique name for this storage class */
 
     static const char* typeName();
 
+    /** Implementation of pure method _MatrixStorage:getTypeName    */
+
+    virtual const char* getTypeName() const;
+
+    /** Statitc method that return the unique key for matrix storage factory. */
+
+    static MatrixStorageCreateKeyType createValue();
+
+    /** Implementation of pure method _MatrixStorage:getCreateValue    */
+
+    virtual MatrixStorageCreateKeyType getCreateValue() const;
+
+    /** Static method to create a new object of this storage type, used by factory. */
+
+    static _MatrixStorage* create();
+
+    /* ==================================================================== */
+    /*   Constructor / Destructor                                           */
+    /* ==================================================================== */
+
     /** @brief Default constructor for a dense storage of 0 x 0  */
 
-    DenseStorage();
+    DenseStorage( hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /**
-     * @brief Creates a dense matrix with all values set to zero.
+     * @brief Create a storage of a certain size 
      *
-     * @param[in] numRows       the number of rows of the matrix
-     * @param[in] numColumns    the number of columns of the matrix
+     * @param[in] numRows    number of rows
+     * @param[in] numColumns number of columns
+     * @param[in] ctx        specifies optionally the context where storage is located
+     *
+     * Attention: DEPRECATED
+     *
+     *  \code
+     *   DenseStorage<ValueType> dense( m, n, ctx );
+     *   auto dense = undefined<DenseStorage<ValueType>>( m, n, ctx );
+     *   DenseStorage<ValueType> dense( m, n, ctx );
+     *   dense.setZero();
+     *   auto dense = zero<DenseStorage<ValueType>>( m, n, ctx );
+     *  \endcode
      */
-    DenseStorage( const IndexType numRows, const IndexType numColumns );
+    DenseStorage( const IndexType numRows, const IndexType numColumns, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
-    /**
-     * @brief Creates a dense matrix with all values copied
+    /** Constructor for dense storage by passing the shape and the 'dense' array with values 
      *
-     * @param[in] data          is an array whose values will be copied
-     * @param[in] numRows       the number of rows of the matrix
-     * @param[in] numColumns    the number of columns of the matrix
+     *  @param[in] numRows number of rows
+     *  @param[in] numColumns number of columns
+     *  @param[in] data contains linearized matrix values (row major order), data.size() = numRows * numColumns
+     *  @param[in] ctx  is the context of the new constructed storage
+     *
+     *  The data array might also be passed via the move operator in which case the allocated
+     *  data is taken over by the constructed dense storage.
      */
-    DenseStorage( const hmemo::HArray<ValueType>& data, const IndexType numRows, const IndexType numColumns );
+    DenseStorage( 
+        const IndexType numRows, 
+        const IndexType numColumns, 
+        hmemo::HArray<ValueType> data,
+        hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /** Default copy constructor is overridden */
 
     DenseStorage( const DenseStorage<ValueType>& other );
 
-    /** Copy constructor that handles also type and format conversion. */
+    /** Default move constructor is overridden */
 
-    explicit DenseStorage( const _MatrixStorage& other );
-
-    /** Copy constructor can take any matrix storage or context. */
-
-    DenseStorage( const _MatrixStorage& other, const hmemo::ContextPtr context );
+    DenseStorage( DenseStorage<ValueType>&& other );
 
     /** Destructor of Dense matrix reference. */
 
     virtual ~DenseStorage();
 
-    /** Override MatrixStorage::getTypeName() */
+    /* ==================================================================== */
+    /*   assignment operator=                                               */
+    /* ==================================================================== */
 
-    const char* getTypeName() const;
-
-    /** General assignment operator */
-
-    DenseStorage<ValueType>& operator=( const _MatrixStorage& other );
-
-    /** Also overwrite the default assignment operator */
-
+    /**
+     *  Override default assignment operator.
+     */
     DenseStorage<ValueType>& operator=( const DenseStorage<ValueType>& other );
+
+    /**
+     *  Move assignment operator, reuses allocated data.
+     *
+     *  The input argument other becomes a zero matrix after successful completion.
+     */
+    DenseStorage& operator=( DenseStorage<ValueType>&& other );
+
+    /** Implementation of pure method _MatrixStorage::assign */
+
+    virtual void assign( const _MatrixStorage& other );
+
+    /**
+     * @brief Implemenation of pure method MatrixStorage<ValueType>::assignDiagonal
+     */
+    virtual void assignDiagonal( const hmemo::HArray<ValueType>& diagonal );
+
+    /**
+     *  @brief Implemenation of assignments for this class
+     */
+    template<typename OtherValueType>
+    void assignImpl( const MatrixStorage<OtherValueType>& other );
+
+    /**
+     *  @brief Implementation of assign method for same storage type. 
+     */
+    template<typename OtherValueType>
+    void assignDense( const DenseStorage<OtherValueType>& other );
+
+    /* ==================================================================== */
+    /*   Split up for reuse of member variables                             */
+    /* ==================================================================== */
+
+    /**
+     *  @brief extract data values from dense storage 
+     *
+     *  This dense storage itself behaves afterwards in the same way as it has been moved.
+     */
+    void splitUp( IndexType& numRows, IndexType& numColumns, hmemo::HArray<ValueType>& data );
+
+    /* ==================================================================== */
+    /*   Dynamic (virtual) constructors                                     */
+    /* ==================================================================== */
 
     /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
 
-    virtual DenseStorage<ValueType>* newMatrixStorage() const;
+    virtual DenseStorage<ValueType>* newMatrixStorage( const IndexType numRows, const IndexType numColumns ) const;
+
+    DenseStorage* newMatrixStorage() const
+    {
+        return newMatrixStorage( getNumRows(), getNumColumns() );
+    }
 
     /** Implementation of MatrixStorage::copy for derived class. */
 
@@ -134,19 +215,15 @@ public:
      */
     void check( const char* msg ) const;
 
-    /** Override default assignment for more efficient solutions */
-
-    virtual void assign( const _MatrixStorage& other );
-
     void transposeImpl();
 
     /** Getter routine for the data type of the elements. */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /** Getter routine for the enum value that stands for this format. */
 
-    virtual Format::MatrixStorageFormat getFormat() const;
+    virtual Format getFormat() const;
 
     /**
      * @brief sets data for identity matrix.
@@ -160,12 +237,28 @@ public:
      */
     void setZero();
 
+    /* ==================================================================== */
+    /*  set / get CSR data                                                  */
+    /* ==================================================================== */
+
+    /** Implementation of _MatrixStorage::setCSRData for this class.  */
+
+    void setCSRData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::_HArray& values )
+    {
+        mepr::StorageWrapper<DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, getContextPtr() );
+    }
+
     /**
-     * @brief fills dense storage by csr sparse data.
+     * @brief template (non-virtual) version of setCSRData with explicit other value type.
      *
      * @param[in] numRows    number of rows
      * @param[in] numColumns number of columns
-     * @param[in] numValues  the number of stored elements in the matrix
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
@@ -175,30 +268,46 @@ public:
     void setCSRDataImpl(
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
         const hmemo::HArray<OtherValueType>& values,
         const hmemo::ContextPtr loc );
 
-    /**
-     * @brief fills dense sparse matrix by dia sparse data.
+    /* ==================================================================== */
+    /*  build CSR data                                                      */
+    /* ==================================================================== */
+
+    /** Implementation for _MatrixStorage::buildCSRSizes */
+
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
+    {
+        hmemo::HArray<IndexType>* ja = NULL;
+        hmemo::HArray<ValueType>* values = NULL;
+        buildCSR( ia, ja, values, getContextPtr() );
+    }
+
+    /** Implementation for _MatrixStorage::buildCSRData */
+
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
+    {
+        mepr::StorageWrapper<DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
+            buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );
+    }
+
+    /** 
+     *  @brief Template (non-virtual) version of building CSR data
      *
-     * @param[in] numRows      number of rows
-     * @param[in] numColumns   number of columns
-     * @param[in] numDiagonals the number of stored diagonals
-     * @param[in] offsets      raw pointer of the input csr sparse matrix
-     * @param[in] values       the data values of the input csr sparse matrix
-     * @param[in] loc          is the context where filling takes place
+     *  @param[out] ia is the CSR offset array
+     *  @param[out] ja is the array with the column indexes (optional)
+     *  @param[out] values is the array with the non-zero matrix values (optional)
+     *  @param[in]  loc is the Context where conversion should be done
      */
     template<typename OtherValueType>
-    void setDIADataImpl(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const hmemo::HArray<IndexType>& offsets,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
+    void buildCSR(
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>* ja,
+        hmemo::HArray<OtherValueType>* values,
+        const hmemo::ContextPtr loc ) const;
 
     /* Print relevant information about matrix storage format. */
 
@@ -206,8 +315,8 @@ public:
 
     /** Get a value of the matrix.
      *
-     * @param[in] i is the row index, 0 <= i < mNumRows
-     * @param[in] j is the colum index, 0 <= j < mNumRows
+     * @param[in] i is the row index, 0 <= i < getNumRows
+     * @param[in] j is the colum index, 0 <= j < mNumColumns
      *
      * Out-of-range check is enabled for DEBUG version.
      */
@@ -217,7 +326,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for dense storage */
 
     void setValue( const IndexType i, const IndexType j, const ValueType val,
-                   const common::binary::BinaryOp op = common::binary::COPY );
+                   const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
@@ -233,7 +342,7 @@ public:
 
     /** Getter routine for the matrix data array (read-only). */
 
-    const hmemo::HArray<ValueType>& getData() const;
+    const hmemo::HArray<ValueType>& getValues() const;
 
     /** Getter routine for the number of stored values. */
 
@@ -244,8 +353,7 @@ public:
      */
     virtual void clear()
     {
-        mNumRows = 0;
-        mNumColumns = 0;
+        _MatrixStorage::setDimension( 0, 0 );
         mData.clear();
         mDiagonalProperty = checkDiagonalProperty();
     }
@@ -255,30 +363,29 @@ public:
      */
     virtual void purge()
     {
-        mNumRows = 0;
-        mNumColumns = 0;
+        _MatrixStorage::setDimension( 0, 0 );
         mData.purge();
         mDiagonalProperty = checkDiagonalProperty();
     }
 
-    /** Help routine to build any kind of CSR storage.
-     *
-     *
-     *  @param[out] csrIA is the CSR offset array
-     *  @param[out] csrJA is the array with the column indexes (optional)
-     *  @param[out] csrValues is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
-     */
-    template<typename OtherValueType>
-    void buildCSR(
-        hmemo::HArray<IndexType>& csrIA,
-        hmemo::HArray<IndexType>* csrJA,
-        hmemo::HArray<OtherValueType>* csrValues,
-        const hmemo::ContextPtr loc ) const;
-
     /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
 
     virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+
+    /* ========================================================================= */
+    /*       Filling dense storage with assembled COO data                      */
+    /* ========================================================================= */
+
+    /**
+     *  @brief Override MatrixStorage<ValueType>::fillCOO 
+     *
+     *  Default implementation (conversion to CSR and back) is very inefficient
+     */
+    virtual void fillCOO(
+        hmemo::HArray<IndexType> ia,
+        hmemo::HArray<IndexType> ja,
+        hmemo::HArray<ValueType> values,
+        const common::BinaryOp op = common::BinaryOp::COPY );
 
     /******************************************************************
      *   invert                                                        *
@@ -297,17 +404,8 @@ public:
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::HArray<ValueType>& y ) const;
-
-    /** Implementation of MatrixStorage::vectorTimesMatrix for Dense */
-    /** since 1.0.1 */
-
-    virtual void vectorTimesMatrix(
-        hmemo::HArray<ValueType>& result,
-        const ValueType alpha,
-        const hmemo::HArray<ValueType>& x,
-        const ValueType beta,
-        const hmemo::HArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y,
+        const common::MatrixOp op ) const;
 
     /** Implementation of MatrixStorage::matrixTimesTimes for Dense */
 
@@ -320,70 +418,70 @@ public:
 
     /** Implementation for MatrixStorage::l1Norm */
 
-    virtual ValueType l1Norm() const;
+    virtual RealType<ValueType> l1Norm() const;
 
     /** Implementation for MatrixStorage::l2Norm */
 
-    virtual ValueType l2Norm() const;
+    virtual RealType<ValueType> l2Norm() const;
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual StorageAbsType maxNorm() const;
+    virtual RealType<ValueType> maxNorm() const;
 
     /** Implementation for MatrixStorage::maxDiffNorm */
 
-    virtual StorageAbsType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /** Implementation of maxDiffNorm for dense matrices */
 
-    virtual ValueType maxDiffNormImpl( const DenseStorage<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNormImpl( const DenseStorage<ValueType>& other ) const;
 
-    /** Implementation of pure method MatrixStorage::getSparseRow */
+    /******************************************************************/
+    /*  set - get  row - column                                       */
+    /******************************************************************/
 
-    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const;
+    /** Implementation of pure method MatrixStorage<ValueType>::getRow */
+
+    virtual void getRow( hmemo::HArray<ValueType>& row, const IndexType i ) const;
+
+    /** Implementation of pure method MatrixStorage<ValueType>::getColumn */
+
+    virtual void getColumn( hmemo::HArray<ValueType>& column, const IndexType j ) const;
+
+    /** Implementation of pure method MatrixStorage<ValueType>::getSparseRow */
+
+    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::HArray<ValueType>& values, const IndexType i ) const;
 
     /** Implementation of pure method MatrixStorage::getSparseColumn */
 
-    virtual void getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const;
+    virtual void getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::HArray<ValueType>& values, const IndexType j ) const;
 
-    /** Template version of getRow */
+    /** Implementation of pure method MatrixStorage<ValueType>::setRow */
 
-    template<typename OtherType>
-    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+    virtual void setRow( const hmemo::HArray<ValueType>& row, const IndexType i, const common::BinaryOp op );
 
-    /** Template version of setRow */
+    /** Implementation of pure method MatrixStorage<ValueType>::setColumn */
 
-    template<typename OtherType>
-    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
-                     const common::binary::BinaryOp op );
+    virtual void setColumn( const hmemo::HArray<ValueType>& column, const IndexType j, const common::BinaryOp op );
 
-    /** Implementation of pure method MatrixStorage::getColumn */
+    /******************************************************************/
+    /*  set / get diagonal                                            */
+    /******************************************************************/
 
-    void getColumn( hmemo::_HArray& column, const IndexType j ) const;
-
-    /** Template version of setColumn */
-
-    template<typename OtherType>
-    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
-                        const common::binary::BinaryOp op );
-
-    /** Template method for getting diagonal. */
-
-    template<typename OtherType>
-    void getDiagonalImpl( hmemo::HArray<OtherType>& diagonal ) const;
-
-    /** This method replaces the diagonal
-     *
-     * @param[in] diagonal  is the source array
-     *
-     * Calculations are dependent to the diagonal property
+    /** 
+     * Implementation of pure method MatrixStorage<ValueType>::getDiagonal
      */
-    template<typename OtherType>
-    void setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal );
+    virtual void getDiagonal( hmemo::HArray<ValueType>& diagonal ) const;
 
-    /** Implementation of pure method. */
+    /** 
+     * Implementation of pure method MatrixStorage<ValueType>::setDiagonalV
+     */
+    virtual void setDiagonalV( const hmemo::HArray<ValueType>& diagonal );
 
-    void setDiagonalImpl( const ValueType value );
+    /** 
+     * Implementation of pure method MatrixStorage<ValueType>::setDiagonal
+     */
+    virtual void setDiagonal( const ValueType value );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
@@ -391,12 +489,11 @@ public:
 
     /** Template version used for virtual routine scale with known value type. */
 
-    template<typename OtherType>
-    void scaleImpl( const hmemo::HArray<OtherType>& values );
+    void scaleRows( const hmemo::HArray<ValueType>& values );
 
     /** Implementation of pure method.  */
 
-    virtual void scaleImpl( const ValueType value );
+    virtual void scale( const ValueType value );
 
     /** Implementation of pure method.  */
 
@@ -404,13 +501,9 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    void swapImpl( DenseStorage<ValueType>& other );
+    void swap( DenseStorage<ValueType>& other );
 
-    void swap( _MatrixStorage& other );
-
-    /** This swap operation allows to set the dense data values with an existing array without copy */
-
-    void swap( hmemo::HArray<ValueType>& other, const IndexType numRows, const IndexType numColumns );
+    /** Implementation of pure method _MatrixStorage::allocate */
 
     void allocate( const IndexType numRows, const IndexType numColumns );
 
@@ -418,17 +511,15 @@ public:
 
     virtual void print( std::ostream& ) const;
 
-    template<typename OtherType>
-    void assignDenseStorageImpl( const DenseStorage<OtherType>& otherDenseStorage );
-
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::assign;
-    using MatrixStorage<ValueType>::getTypeName;
+    using MatrixStorage<ValueType>::getContextPtr;
+
+    using _MatrixStorage::getNumRows;
+    using _MatrixStorage::getNumColumns;
 
 protected:
 
-    using MatrixStorage<ValueType>::mNumRows;
-    using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mContext;
 
@@ -457,16 +548,6 @@ private:
     void invertDense( const DenseStorage<ValueType>& other );
 
     static std::string initTypeName();
-
-public:
-
-    // static create method that will be used to register at MatrixStorage factory
-
-    static _MatrixStorage* create();
-
-    // key for factory
-
-    static MatrixStorageCreateKeyType createValue();
 };
 
 /* --------------------------------------------------------------------------- */

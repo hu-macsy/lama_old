@@ -40,7 +40,7 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/Walltime.hpp>
 
-typedef IndexType myType; // for bigger testcases need size_t
+typedef scai::IndexType myType; // for bigger testcases need size_t
 
 using scai::common::Math;
 

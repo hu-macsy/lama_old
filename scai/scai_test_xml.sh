@@ -58,12 +58,6 @@ then
 	CONTEXTS+=(CUDA)
 fi
 
-# Use MIC
-if [ -d hmemo/mic ]
-then
-	CONTEXTS+=(MIC)
-fi
-
 # Define some recurring arguments
 
 BOOST_TEST_ARGS="--output_format=XML --log_level=${ERROR_LEVEL} --report_level=no"

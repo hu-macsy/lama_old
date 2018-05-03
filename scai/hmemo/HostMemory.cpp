@@ -48,10 +48,13 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/bind.hpp>
+#include <scai/common/safer_memcpy.hpp>
 
 // std
 #include <cstring>
+#include <functional>
+
+using scai::common::safer_memcpy;
 
 namespace scai
 {
@@ -61,13 +64,15 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 
-HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) :
+HostMemory::HostMemory( std::shared_ptr<const HostContext> hostContextPtr ) :
 
-    Memory( memtype::HostMemory ),
-    mHostContextPtr( hostContextPtr )
+    Memory( MemoryType::HostMemory ),
+    mHostContextPtr( hostContextPtr ),
+    mNumberOfAllocates( 0 ),
+    mNumberOfAllocatedBytes( 0 ),
+    mMaxAllocatedBytes( 0 )
+
 {
-    mNumberOfAllocatedBytes = 0;
-    mNumberOfAllocates = 0;
     SCAI_LOG_INFO( logger, "HostMemory created" )
 }
 
@@ -105,9 +110,12 @@ void* HostMemory::allocate( const size_t size ) const
     }
 
     // allocate must be thread-safe in case where multiple threads use LAMA arrays
-    common::Thread::ScopedLock lock( allocate_mutex );
+    std::unique_lock<std::recursive_mutex> lock( allocate_mutex );
+
     mNumberOfAllocatedBytes += size;
+    mMaxAllocatedBytes = std::max( mNumberOfAllocatedBytes, mMaxAllocatedBytes );
     mNumberOfAllocates++;
+
     SCAI_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
     return pointer;
 }
@@ -117,7 +125,7 @@ void HostMemory::free( void* pointer, const size_t size ) const
     SCAI_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
     SCAI_ASSERT( mNumberOfAllocates >= 1, "Invalid free, because there are no open allocates." )
     ::free( pointer );
-    common::Thread::ScopedLock lock( allocate_mutex );
+    std::unique_lock<std::recursive_mutex> lock( allocate_mutex );
     mNumberOfAllocatedBytes -= size;
     mNumberOfAllocates--;
 }
@@ -126,7 +134,7 @@ void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
 {
     SCAI_REGION( "Memory.Host_memcpy" )
     SCAI_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
-    ::memcpy( dst, src, size );
+    safer_memcpy( dst, src, size );
 }
 
 void HostMemory::memset( void* dst, const int val, const size_t size ) const
@@ -137,7 +145,7 @@ void HostMemory::memset( void* dst, const int val, const size_t size ) const
 
 tasking::SyncToken* HostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
-    return new tasking::TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
+    return new tasking::TaskSyncToken( std::bind( &::memcpy, dst, src, size ) );
 }
 
 ContextPtr HostMemory::getContextPtr() const
@@ -147,18 +155,23 @@ ContextPtr HostMemory::getContextPtr() const
 
 MemoryPtr HostMemory::getIt()
 {
-    static common::shared_ptr<HostMemory> instancePtr;
+    static std::shared_ptr<HostMemory> instancePtr;
 
     if ( !instancePtr.get() )
     {
         SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" )
-        ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
-        common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );
+        ContextPtr contextPtr = Context::getContextPtr( common::ContextType::Host );
+        std::shared_ptr<const HostContext> hostContextPtr = std::dynamic_pointer_cast<const HostContext>( contextPtr );
         SCAI_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
         instancePtr.reset( new HostMemory( hostContextPtr ) );
     }
 
     return instancePtr;
+}
+
+size_t HostMemory::maxAllocatedBytes() const
+{
+    return mMaxAllocatedBytes;
 }
 
 } /* end namespace hmemo */

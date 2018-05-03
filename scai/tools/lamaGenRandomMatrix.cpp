@@ -38,9 +38,8 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/matrix/MatrixAssemblyAccess.hpp>
+#include <scai/lama/matrix/MatrixAssembly.hpp>
 
 #include <scai/common/mepr/TypeListUtils.hpp>
 #include <scai/common/Settings.hpp>
@@ -76,23 +75,23 @@ static void printUsage( const char* prog_name )
 
 /** Get the value type used for this application.
  *
- *  Default value type is RealType( double ) but can be overwritten by
+ *  Default value type is DefaultReal( double ) but can be overwritten by
  *
  *   - environment variable SCAI_TYPE=float|double|LongDouble|ComplexFloat|ComplexDouble| ...
  *   - or command line argument --SCAI_TYPE=...
  */
 
-static common::scalar::ScalarType getType()
+static common::ScalarType getType()
 {
-    common::scalar::ScalarType type = common::TypeTraits<RealType>::stype;
+    common::ScalarType type = common::TypeTraits<DefaultReal>::stype;
 
     std::string val;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+        scai::common::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
 
-        if ( env_type == scai::common::scalar::UNKNOWN )
+        if ( env_type == scai::common::ScalarType::UNKNOWN )
         {
             std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
         }
@@ -101,6 +100,85 @@ static common::scalar::ScalarType getType()
     }
 
     return type;
+}
+
+template<typename ValueType> 
+void generate( const IndexType nrows, const IndexType ncols, const float fillRate, std::string& matrixFileName )
+{
+    MatrixAssembly<ValueType> assembly;
+
+    for ( IndexType i = 0; i < nrows; ++i )
+    {
+        for ( IndexType j = 0; j < ncols; ++j )
+        {
+            bool takeIt = common::Math::randomBool( fillRate );
+
+            if ( takeIt )
+            {
+                ValueType val = common::Math::random<ValueType>( 1 );
+                assembly.push( i, j, val );
+            }
+        }
+    }
+
+    auto m = convert<CSRSparseMatrix<ValueType>>( assembly.buildGlobalCOO( nrows, ncols ) );
+
+    DenseVector<ValueType> x;
+    DenseVector<ValueType> b;
+
+    x.setRandom( m.getColDistributionPtr(), 1 );
+    b = m * x;
+
+    cout << "m = " << m << endl;
+    cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;
+    cout << "x = " << x << endl;
+    cout << "b = " << b << endl;
+    cout << endl;
+
+    string suffix = FileIO::getSuffix( matrixFileName );
+
+    string vectorXFileName = matrixFileName;
+    string vectorBFileName = matrixFileName;
+
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // known suffix so we can use it directly
+
+        vectorXFileName.replace( vectorXFileName.length() - suffix.length(), 1, "_x." );
+        vectorBFileName.replace( vectorBFileName.length() - suffix.length(), 1, "_b." );
+
+        if ( suffix == ".frm" )
+        {
+            // SAMG format uses two different suffixes for matrix and vector
+            // take <filename>.frv instead of <filename>.frm
+
+            vectorXFileName.replace( vectorXFileName.length() - 1, 1, "v" );
+            vectorBFileName.replace( vectorBFileName.length() - 1, 1, "v" );
+        }
+    }
+    else
+    {
+        if ( suffix.length() > 0 )
+        {
+            cout << "ATTENTION: " << suffix << " is unknown suffix, take SAMG format" << endl;
+        }
+
+        matrixFileName += ".frm";
+        vectorXFileName += "_x.frv";
+        vectorBFileName += "_b.frv";
+
+    }
+
+    cout << "Write matrix to file " << matrixFileName;
+    cout << ", vector x to " << vectorXFileName;
+    cout << ", and vector b to file " << vectorBFileName << endl;
+
+    b.writeToFile( vectorBFileName );
+    cout << "Written vector b (rhs) to file " << vectorBFileName << endl;
+    x.writeToFile( vectorXFileName );
+    cout << "Written matrix to file " << matrixFileName << endl;
+    m.writeToFile( matrixFileName );
+    cout << "Written vector x (solution) to file " << vectorXFileName << endl;
 }
 
 int main( int argc, const char* argv[] )
@@ -158,92 +236,17 @@ int main( int argc, const char* argv[] )
 
     cout << "Generate random file " << matrixFileName << ", fillRate = " << fillRate << endl;
 
-    common::scalar::ScalarType stype = getType();
+    common::ScalarType stype = getType();
 
-    common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, stype ) );
+#define DO_GENERATE( ValueType )                                        \
+    if ( stype == common::TypeTraits<ValueType>::stype )                \
+    {                                                                   \
+        generate<ValueType>( nrows, ncols, fillRate, matrixFileName );  \
+    }                                                                  
 
-    Matrix& m = *matrixPtr;
+    SCAI_COMMON_LOOP( DO_GENERATE, SCAI_NUMERIC_TYPES_HOST )
 
-    m.allocate( nrows, ncols );
-
-    {
-        MatrixAssemblyAccess<double> access( m, common::binary::COPY );
-
-        for ( IndexType i = 0; i < nrows; ++i )
-        {
-            for ( IndexType j = 0; j < ncols; ++j )
-            {
-                bool takeIt = common::Math::randomBool( fillRate );
-
-                if ( takeIt )
-                {
-                    double val = common::Math::random<double>( 1 );
-                    access.push( i, j, val );
-                }
-            }
-        }
-    }
-
-    scai::common::unique_ptr<Vector> xPtr( Vector::getVector( Vector::DENSE, stype ) );
-    scai::common::unique_ptr<Vector> bPtr( Vector::getVector( Vector::DENSE, stype ) );
-
-    Vector& x = *xPtr;
-    Vector& b = *bPtr;
-
-    x.setRandom( m.getColDistributionPtr(), 1 );
-    b = m * x;
-
-    cout << "m = " << m << endl;
-    cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;
-    cout << "x = " << x << endl;
-    cout << "b = " << b << endl;
-    cout << endl;
-
-    string suffix = FileIO::getSuffix( matrixFileName );
-
-    string vectorXFileName = matrixFileName;
-    string vectorBFileName = matrixFileName;
-
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // known suffix so we can use it directly
-
-        vectorXFileName.replace( vectorXFileName.length() - suffix.length(), 1, "_x." );
-        vectorBFileName.replace( vectorBFileName.length() - suffix.length(), 1, "_b." );
-
-        if ( suffix == ".frm" )
-        {
-            // SAMG format uses two different suffixes for matrix and vector
-            // take <filename>.frv instead of <filename>.frm
-
-            vectorXFileName.replace( vectorXFileName.length() - 1, 1, "v" );
-            vectorBFileName.replace( vectorBFileName.length() - 1, 1, "v" );
-        }
-    }
-    else
-    {
-        if ( suffix.length() > 0 )
-        {
-            cout << "ATTENTION: " << suffix << " is unknown suffix, take SAMG format" << endl;
-        }
-
-        matrixFileName += ".frm";
-        vectorXFileName += "_x.frv";
-        vectorBFileName += "_b.frv";
-
-    }
-
-    cout << "Write matrix to file " << matrixFileName;
-    cout << ", vector x to " << vectorXFileName;
-    cout << ", and vector b to file " << vectorBFileName << endl;
-
-    b.writeToFile( vectorBFileName );
-    cout << "Written vector b (rhs) to file " << vectorBFileName << endl;
-    x.writeToFile( vectorXFileName );
-    cout << "Written matrix to file " << matrixFileName << endl;
-    m.writeToFile( matrixFileName );
-    cout << "Written vector x (solution) to file " << vectorXFileName << endl;
+#undef DO_GENERATE
 
     return 0;
 }

@@ -35,10 +35,9 @@
 #include <scai/lama.hpp>
 
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
@@ -59,9 +58,9 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
-// RealType: double or float
+// DefaultReal: double or float
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -112,14 +111,15 @@ int main( int argc, const char* argv[] )
 
     repX.setRandom( repStencilMatrix.getColDistributionPtr(), 1 );
 
-    DenseVector<ValueType> distX( repX, distStencilMatrix.getColDistributionPtr() );
+    DenseVector<ValueType> distX( repX );
+    distX.redistribute( distStencilMatrix.getColDistributionPtr() );
 
     std::cout << "max diff X = " << repX.maxDiffNorm( distX ) << std::endl;
 
     // replicated and distributed matrix-vector multiplication
 
-    DenseVector<ValueType> repY( repStencilMatrix * repX );
-    DenseVector<ValueType> distY( distStencilMatrix * distX );
+    const auto repY  = eval<DenseVector<ValueType>>( repStencilMatrix * repX );
+    const auto distY = eval<DenseVector<ValueType>>( distStencilMatrix * distX );
 
     std::cout << "max diff Y = " << repY.maxDiffNorm( distY ) << std::endl;
 }

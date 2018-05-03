@@ -43,13 +43,14 @@
 
 #include <scai/tasking.hpp>
 #include <scai/hmemo.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/test/TestMacros.hpp>
+
+#include <memory>
 
 using namespace scai;
 using namespace hmemo;
@@ -58,8 +59,7 @@ using namespace tasking;
 using namespace utilskernel;
 
 using common::Exception;
-using common::unique_ptr;
-using common::scoped_array;
+using std::unique_ptr;
 
 /* --------------------------------------------------------------------- */
 
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
     PartitionId size = comm->getSize();
     IndexType n = 17;
 
-    LArray<IndexType> localIndexes;
+    HArray<IndexType> localIndexes;
 
     IndexType first = static_cast<IndexType>( rank ) * n;
     IndexType inc   = 1;
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
     GeneralDistribution dist( n * size, localIndexes, comm );
 
-    LArray<IndexType> nonLocalIndexes;
+    HArray<IndexType> nonLocalIndexes;
 
     IndexType pos = 0;
 
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
     BOOST_CHECK_EQUAL( pos, nonLocalIndexes.size() );
 
-    LArray<PartitionId> owners;
+    HArray<PartitionId> owners;
 
     comm->computeOwners( owners, dist, nonLocalIndexes );
 
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( joinTest, ValueType, scai_numeric_test_types )
 
     for ( IndexType rank = 0; rank < size; ++rank )
     {
-        ValueType expectedVal= static_cast<ValueType>( rank );
+        ValueType expectedVal = static_cast<ValueType>( rank );
 
         for ( IndexType k = 0; k <= rank; ++k )
         {
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( joinTest, ValueType, scai_numeric_test_types )
             pos++;
         }
     }
- 
+
     BOOST_CHECK_EQUAL( pos, expectedSize );
 }
 
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, scai_numeric_test_types )
     SCAI_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType N = 5;
     ValueType dummyVal = 13;
-    scoped_array<ValueType> vector( new ValueType[N + 1] );
+    unique_ptr<ValueType[]> vector( new ValueType[N + 1] );
     vector[N] = dummyVal;
 
     for ( PartitionId p = 0; p < size; p++ )
@@ -410,8 +410,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_numeric_test_types )
     }
 
     ValueType dummyVal = 13;
-    scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    scoped_array<ValueType> allvals( new ValueType[allN] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
     myvals[0] = 0;
     myvals[1] = 1;
     myvals[2] = static_cast<ValueType>( size ) + dummyVal;
@@ -451,9 +451,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_numeric_test_types 
     }
 
     ValueType dummyVal = 13;
-    scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    scoped_array<ValueType> allvals( new ValueType[allN] );
-    scoped_array<IndexType> sizes( new IndexType[size] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
+    unique_ptr<IndexType[]> sizes( new IndexType[size] );
 
     for ( IndexType i = 0; i <= n; i++ )
     {
@@ -505,8 +505,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_numeric_test_types )
     }
 
     ValueType dummyVal = -1;
-    scoped_array<ValueType> myvals( new ValueType[2] );
-    scoped_array<ValueType> allvals( new ValueType[allN] );
+    unique_ptr<ValueType[]> myvals( new ValueType[2] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
 
     if ( rank == root )
     {
@@ -538,58 +538,70 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
     using common::Math;
     using common::TypeTraits;
 
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;   // only here comparison
+    typedef typename TypeTraits<ValueType>::RealType RealType;   // only here comparison
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     Math::srandom( 1751 + comm->getRank() * 17 );
 
-    // test it for each processor to be the root
+    // test default ( kind == 0 ) and specific ( kind == 1 ) implementation
 
-    for ( PartitionId root = 0; root < comm->getSize(); ++root )
+    for ( int kind = 0; kind < 2; ++kind )
     {
-        IndexType N = 5;
-        LArray<AbsType> vals( N );
-        vals.setRandom( 1 );
-        AbsType localMax = vals[0];
-        IndexType localMaxLoc = 0;
+        // test it for each processor to be the root
 
-        for ( IndexType i = 0; i < N; ++i )
+        for ( PartitionId root = 0; root < comm->getSize(); ++root )
         {
-            AbsType v = vals[i];
+            const IndexType N = 10;
 
-            if ( v > localMax )
+            auto vals = utilskernel::randomHArray<RealType>( N, 1 );
+            RealType localMax = vals[0];
+            IndexType localMaxLoc = 0;
+
+            for ( IndexType i = 0; i < N; ++i )
             {
-                localMax = v;
-                localMaxLoc = i;
+                RealType v = vals[i];
+
+                if ( v > localMax )
+                {
+                    localMax = v;
+                    localMaxLoc = i;
+                }
             }
+
+            SCAI_LOG_INFO( logger, *comm << ": checkMaxLoc, local " << localMax << " @ " << localMaxLoc )
+
+            RealType globalMax1 = comm->max( localMax );
+
+            BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
+
+            IndexType globalMaxLoc = localMaxLoc;
+            RealType globalMax    = localMax;
+
+            if ( kind == 0 )
+            {
+                comm->maxlocDefault( globalMax, globalMaxLoc, root );
+            }
+            else
+            {
+                comm->maxloc( globalMax, globalMaxLoc, root );
+            }
+
+            comm->bcast( &globalMax, 1, root );
+            comm->bcast( &globalMaxLoc, 1, root );
+
+            BOOST_CHECK_EQUAL( globalMax1, globalMax );
+
+            SCAI_LOG_INFO( logger, *comm << ": checkMaxLoc, global " << globalMax << " @ " << globalMaxLoc )
+
+            BOOST_CHECK( Math::abs( globalMax ) >= Math::abs( localMax ) );
+
+            bool any = globalMaxLoc == localMaxLoc;
+
+            any = comm->any( any );
+
+            BOOST_CHECK( any );
         }
-
-        SCAI_LOG_INFO( logger, *comm << ": checkMaxLoc, local " << localMax << " @ " << localMaxLoc )
-
-        AbsType globalMax1 = comm->max( localMax );
-
-        BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
-
-        IndexType globalMaxLoc = localMaxLoc;
-        AbsType globalMax    = localMax;
-
-        comm->maxloc( globalMax, globalMaxLoc, root );
-
-        comm->bcast( &globalMax, 1, root );
-        comm->bcast( &globalMaxLoc, 1, root );
-
-        BOOST_CHECK_EQUAL( globalMax1, globalMax );
-
-        SCAI_LOG_INFO( logger, *comm << ": checkMaxLoc, global " << globalMax << " @ " << globalMaxLoc )
-
-        BOOST_CHECK( Math::abs( globalMax ) >= Math::abs( localMax ) );
-
-        bool any = globalMaxLoc == localMaxLoc;
-
-        any = comm->any( any );
-
-        BOOST_CHECK( any );
     }
 }
 
@@ -599,64 +611,73 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
 {
     using common::Math;
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;   // for comparison
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;   // for comparison
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     Math::srandom( 11171 + comm->getRank() * 17 );
 
-    // test it for each processor to be the root
-
-    for ( PartitionId root = 0; root < comm->getSize(); ++root )
+    // test default ( kind == 0 ) and specific ( kind == 1 ) implementation
+    for ( int kind = 0; kind < 2; ++kind )
     {
-        IndexType N = 5;
-        LArray<AbsType> vals( N );
-        vals.setRandom( 1 );
-        AbsType localMin = vals[0];
-        IndexType localMinLoc = 0;
-
-        for ( IndexType i = 0; i < N; ++i )
+        // test it for each processor to be the root
+        for ( PartitionId root = 0; root < comm->getSize(); ++root )
         {
-            AbsType v = vals[i];
+            IndexType N = 5;
+            auto vals = randomHArray<RealType>( N, 1 );
+            RealType localMin = vals[0];
+            IndexType localMinLoc = 0;
 
-            if ( v < localMin )
+            for ( IndexType i = 0; i < N; ++i )
             {
-                localMin = v;
-                localMinLoc = i;
+                RealType v = vals[i];
+
+                if ( v < localMin )
+                {
+                    localMin = v;
+                    localMinLoc = i;
+                }
             }
+
+            SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, local " << localMin << " @ " << localMinLoc )
+
+            RealType globalMin1 = comm->min( localMin );
+
+            bool error1 = localMin < globalMin1;
+
+            BOOST_CHECK( !error1 );
+
+            // BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
+
+            IndexType globalMinLoc = localMinLoc;
+            RealType globalMin = localMin;
+
+            if ( kind == 0 )
+            {
+                comm->minlocDefault( globalMin, globalMinLoc, root );
+            }
+            else
+            {
+                comm->minloc( globalMin, globalMinLoc, root );
+            }
+
+            comm->bcast( &globalMin, 1, root );
+            comm->bcast( &globalMinLoc, 1, root );
+
+            BOOST_CHECK_EQUAL( globalMin1, globalMin );
+
+            SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, global " << globalMin << " @ " << globalMinLoc )
+
+            bool error = RealType( localMin ) < RealType( globalMin );
+
+            BOOST_CHECK( !error );
+
+            bool any = globalMinLoc == localMinLoc;
+
+            any = comm->any( any );
+
+            BOOST_CHECK( any );
         }
-
-        SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, local " << localMin << " @ " << localMinLoc )
-
-        AbsType globalMin1 = comm->min( localMin );
-
-        bool error1 = localMin < globalMin1;
-
-        BOOST_CHECK( !error1 );
-
-        // BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
-
-        IndexType globalMinLoc = localMinLoc;
-        AbsType globalMin = localMin;
-
-        comm->minloc( globalMin, globalMinLoc, root );
-
-        comm->bcast( &globalMin, 1, root );
-        comm->bcast( &globalMinLoc, 1, root );
-
-        BOOST_CHECK_EQUAL( globalMin1, globalMin );
-
-        SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, global " << globalMin << " @ " << globalMinLoc )
-
-        bool error = AbsType( localMin ) < AbsType( globalMin );
-
-        BOOST_CHECK( !error );
-
-        bool any = globalMinLoc == localMinLoc;
-
-        any = comm->any( any );
-
-        BOOST_CHECK( any );
     }
 }
 
@@ -666,20 +687,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
 {
     using common::Math;
 
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;   // for comparison
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;   // for comparison
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     Math::srandom( 1751 + comm->getRank() * 17 );
 
     IndexType N = 5;
-    LArray<AbsType> vals( N );
-    vals.setRandom( 10 );
-    AbsType localMin = vals[0];
+    auto vals = randomHArray<RealType>( N, 10 );
+    RealType localMin = vals[0];
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        AbsType v = vals[i];
+        RealType v = vals[i];
         v = Math::abs( v );
 
         if ( v > localMin )
@@ -688,9 +708,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
         }
     }
 
-    AbsType globalMin = comm->min( localMin );
+    RealType globalMin = comm->min( localMin );
 
     BOOST_CHECK( Math::abs( globalMin ) <= Math::abs( localMin ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    ValueType i = common::TypeTraits<ValueType>::imaginaryUnit();
+
+    ValueType rank = static_cast<ValueType>( comm->getRank() );
+    ValueType size = static_cast<ValueType>( comm->getSize() );
+
+    ValueType val = ( rank + 1 ) + rank * i;
+
+    ValueType expected = size * ( size + 1 ) / 2 + size * ( size - 1 ) / 2 * i;
+
+    ValueType sum = comm->sum( val );
+
+    SCAI_LOG_DEBUG( logger, "sumTest<" << common::TypeTraits<ValueType>::id() << ">: comm = "
+                    << *comm << ", val = " << val << ", sum = " << sum << ", expected = " << expected )
+
+    BOOST_CHECK_EQUAL( expected, sum );
 }
 
 /* --------------------------------------------------------------------- */
@@ -704,16 +747,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumArrayTest, ValueType, scai_array_test_types )
     common::Math::srandom( 17511 );  // same vals on each processor
 
     IndexType N = 5;
-    LArray<ValueType> vals( N );
-    vals.setRandom( 1 );
+    auto vals = randomHArray<ValueType>( N, 1 );
 
-    LArray<ValueType> saveVals( vals );
+    HArray<ValueType> saveVals( vals );
 
     comm->sumArray( vals );
 
-    saveVals *= size;
+    HArrayUtils::setScalar<ValueType>( saveVals, size, common::BinaryOp::MULT );
 
-    BOOST_CHECK( vals.maxDiffNorm( saveVals ) < 0.0001 );
+    // be carful: values are not exactly the same
+
+    BOOST_CHECK( HArrayUtils::maxDiffNorm( vals, saveVals ) < 0.0001 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -732,22 +776,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, scai_array_test_types )
 
     PartitionId rank = comm->getRank();   // used to compute my value
 
-    // ValueType v = rank * 2 + 1;
-
-    ValueType v = f( rank );
-
-    ValueType scanV = comm->scan( v );
-
-    ValueType expected = 0;
-
-    for ( IndexType i = 0; i <= rank; ++i )
+    for ( int kind = 0; kind < 2; ++kind )
     {
-        expected += f( i );  // note: is inclusive scan
+        ValueType v = f( rank );    // ValueType v = rank * 2 + 1;
+
+        ValueType scanV = kind == 0 ? comm->scanDefault( v ) : comm->scan( v );
+
+        ValueType expected = 0;
+
+        for ( IndexType i = 0; i <= rank; ++i )
+        {
+            expected += f( i );  // note: is inclusive scan
+        }
+    
+        SCAI_LOG_DEBUG( logger, *comm << ": scan, kind = " << kind << ", v = " << v << ", scanV = " 
+                                << scanV << ", expected = " << expected )
+
+        BOOST_CHECK_EQUAL( expected, scanV );
     }
-
-    SCAI_LOG_DEBUG( logger, *comm << ": v = " << v << ", scanV = " << scanV << ", expected = " << expected )
-
-    BOOST_CHECK_EQUAL( expected, scanV );
 }
 
 /* --------------------------------------------------------------------- */
@@ -768,9 +814,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_numeric_test_types )
     }
 
     ValueType dummyVal = 13;
-    scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    scoped_array<ValueType> allvals( new ValueType[allN] );
-    scoped_array<IndexType> sizes( new IndexType[size] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
+    unique_ptr<IndexType[]> sizes( new IndexType[size] );
 
     for ( IndexType i = 0; i < n; i++ )
     {
@@ -815,6 +861,138 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( all2allTest, ValueType, scai_array_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    struct
+    {
+        inline ValueType operator() ( const PartitionId source, const PartitionId target )
+        {
+            return ValueType( source * 10 + target + 3 );
+        }
+    } f;
+
+    PartitionId rank = comm->getRank();   // used to compute my value
+    PartitionId size = comm->getSize();   // used for size of buffers
+
+    SCAI_LOG_INFO( logger, "all2allTest<" << common::TypeTraits<ValueType>::id() << ">" )
+
+    std::vector<ValueType> sendBuffer( size );
+    std::vector<ValueType> recvBuffer( size );
+    std::vector<ValueType> expRecvBuffer( size );
+
+    // fill the send buffer and expected recv buffer
+ 
+    for ( PartitionId i = 0; i < size; ++i )
+    {
+        sendBuffer[i] = f( rank, i );
+        expRecvBuffer[i] = f( i, rank );
+    }
+
+    comm->all2all( recvBuffer.data(), sendBuffer.data() );
+
+    BOOST_TEST( recvBuffer == expRecvBuffer, boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( all2allvTest, ValueType, scai_array_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    // functional computes for ( source, target ) the number of values to send
+
+    struct
+    {
+        inline IndexType operator() ( const PartitionId source, const PartitionId target )
+        {
+            return 1 + ( source % 2 ) + ( target % 3 );
+        }
+    } n;
+
+    // functional computes for ( source, target, k ) the k-th value sent from source to target
+
+    struct
+    {
+        inline ValueType operator() ( const PartitionId source, const PartitionId target, const IndexType k )
+        {
+            return ValueType( source * 100 + target + 12 - k );
+        }
+    } f;
+
+    PartitionId rank = comm->getRank();   // used to compute my value
+    PartitionId size = comm->getSize();   // used for size of buffers
+
+    std::vector<ValueType> sendValues;
+
+    std::vector<IndexType> sendSizes( size );
+    std::vector<IndexType> recvSizes( size );
+
+    // compute the send values
+
+    for ( IndexType i = 0; i < size; ++i )
+    {
+        sendSizes[i] = n( rank, i );
+
+        for ( IndexType k = 0; k < sendSizes[i]; ++k )
+        {
+            sendValues.push_back( f( rank, i, k ) );
+        }
+    }
+
+    comm->all2all( recvSizes.data(), sendSizes.data() );
+
+    IndexType recvSizeSum = 0;
+
+    for ( IndexType i = 0; i < size; ++i )
+    { 
+        auto nv = recvSizes[i];
+        BOOST_CHECK_EQUAL( nv, n( i, rank ) );
+        recvSizeSum += nv;
+    }
+
+    std::vector<ValueType> recvValues( recvSizeSum, ValueType( 0 ) );
+
+    // set up pointers for send and receive buffers
+
+    std::vector<ValueType*> recvBuffer( size );
+    std::vector<const ValueType*> sendBuffer( size );
+
+    IndexType offsetSend = 0;
+    IndexType offsetRecv= 0;
+
+    for ( IndexType i = 0; i < size; ++i )
+    {
+        sendBuffer[i] = &sendValues[ offsetSend ];
+        recvBuffer[i] = &recvValues[ offsetRecv];
+        offsetSend += sendSizes[i];
+        offsetRecv += recvSizes[i];
+    }
+
+    BOOST_REQUIRE_EQUAL( offsetRecv, recvSizeSum );
+    BOOST_REQUIRE_EQUAL( offsetSend, static_cast<IndexType>( sendValues.size() ) );
+
+    SCAI_LOG_INFO( logger, "all2allvTest<" << common::TypeTraits<ValueType>::id() << ">"
+                           << ", total send = " << sendValues.size() << ", total recv = " << recvValues.size() )
+
+    comm->all2allv( recvBuffer.data(), recvSizes.data(), sendBuffer.data(), sendSizes.data() );
+
+    std::vector<ValueType> expRecvValues;
+
+    for ( IndexType i = 0; i < size; ++i )
+    {
+        for ( IndexType k = 0; k < recvSizes[i]; ++k )
+        {
+            expRecvValues.push_back( f( i, rank, k ) );
+        }
+    }
+
+    BOOST_TEST( recvValues == expRecvValues, boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -822,7 +1000,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
     PartitionId rank = comm->getRank();
     PartitionId size = comm->getSize();
     IndexType n = 10;
-    scoped_array<ValueType> vector( new ValueType[n] );
+    unique_ptr<ValueType[]> vector( new ValueType[n] );
 
     // initialize vector individually for each processor
 
@@ -926,12 +1104,12 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
         BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] );
     }
 
-    posArray[0] = posArray[1] = posArray[2] = nPartition;
+    posArray[0] = posArray[1] = posArray[2] = invalidPartition;
 
     comm->getGrid2Rank( posArray, procArray );
 
     BOOST_CHECK_EQUAL( comm->getRank(), posArray[1] * procArray[0] + posArray[0] );
-    BOOST_CHECK_EQUAL( nPartition, posArray[2] );
+    BOOST_CHECK_EQUAL( invalidPartition, posArray[2] );
 
     comm->factorize3( procArray, 1, 16, 1 );
 
@@ -944,7 +1122,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
         BOOST_CHECK_EQUAL( comm->getSize(), procArray[1] );
     }
 
-    posArray[0] = posArray[1] = posArray[2] = nPartition;
+    posArray[0] = posArray[1] = posArray[2] = invalidPartition;
     comm->getGrid3Rank( posArray, procArray );
 
     BOOST_CHECK_EQUAL( comm->getRank(), posArray[2] * procArray[0] * procArray[1] + posArray[1] * procArray[0] + posArray[0] );

@@ -40,9 +40,6 @@
 // base classes
 #include <scai/solver/criteria/Criterion.hpp>
 
-// local library
-#include <scai/lama/Scalar.hpp>
-
 #include <scai/lama/norm/Norm.hpp>
 
 namespace scai
@@ -50,6 +47,20 @@ namespace scai
 
 namespace solver
 {
+
+/**
+ * @brief The possible check modes for the residue threshold
+ */
+enum class ResidualCheck
+{
+    Absolute, //!< stands for an absolute residue reduction
+    Relative, //!< stands for an relative residue reduction
+    Divergence //!< stands for an relative residue increase
+};
+
+/** @brief Provide output operator<< to print enum values. */
+
+std::ostream& operator<<( std::ostream& stream, const ResidualCheck checkMode );
 
 /**
  * @brief ResidualThreshold is a stopping criterion of a solver which checks the
@@ -60,19 +71,10 @@ namespace solver
  * absolute or relative to the initial residue.
  *
  */
-class COMMON_DLL_IMPORTEXPORT ResidualThreshold: public Criterion
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT ResidualThreshold: public Criterion<ValueType>
 {
 public:
-    /**
-     * @brief The possible check modes for the residue threshold
-     */
-    enum ResidualThresholdCheckMode
-    {
-        Absolute, //!< stands for an absolute residue reduction
-        Relative, //!< stands for an relative residue reduction
-        Divergence //!< stands for an relative residue increase
-    };
-
     /*
      * @brief Empty constructor first. Configured by setter methods.
      */
@@ -83,7 +85,7 @@ public:
      *
      * @param[in] norm      the norm to use for residue calculation
      */
-    ResidualThreshold( const lama::NormPtr norm );
+    ResidualThreshold( const lama::NormPtr<ValueType> norm );
 
     /**
      * @brief Creates a RedisualThreshold stopping criteria from the passed parameters.
@@ -93,7 +95,7 @@ public:
      * @param[in] checkMode if the residue should be check for an absolute or a relative
      *                      reduction.
      */
-    ResidualThreshold( const lama::NormPtr norm, lama::Scalar precision, ResidualThresholdCheckMode checkMode );
+    ResidualThreshold( const lama::NormPtr<ValueType> norm, const ValueType precision, const ResidualCheck checkMode );
 
     /**
      * @brief Creates a copy of the passed ResidualThreshold.
@@ -107,29 +109,35 @@ public:
      */
     virtual ~ResidualThreshold();
 
-    virtual Criterion* copy() const;
+    /** Implementation of pure method Criterion<ValueType>::copy with covariant return type. */
 
-    bool isSatisfied( const IterativeSolver& solver );
+    virtual ResidualThreshold<ValueType>* copy() const;
 
-    ResidualThresholdCheckMode getCheckMode() const;
+    bool isSatisfied( const IterativeSolver<ValueType>& solver );
+
+    ResidualCheck getCheckMode() const;
     IndexType getIterationExtrema() const;
-    lama::Scalar getFirstNormResult() const;
-    const lama::NormPtr getNorm() const;
-    lama::Scalar getPrecision() const;
+    ValueType getFirstNormResult() const;
+    const lama::NormPtr<ValueType> getNorm() const;
+    ValueType getPrecision() const;
 
-    void setCheckMode( ResidualThresholdCheckMode mCheckMode );
-    void setFirstNormResult( lama::Scalar firstNormResult );
-    void setPrecision( lama::Scalar precision );
+    void setCheckMode( ResidualCheck mCheckMode );
+    void setFirstNormResult( ValueType firstNormResult );
+    void setPrecision( ValueType precision );
 
     virtual void writeAt( std::ostream& stream ) const;
 
 protected:
-    SCAI_LOG_USING( Criterion::logger );
+
+    SCAI_LOG_USING( Criterion<ValueType>::logger );
+
 private:
-    const lama::NormPtr mNorm;
-    ResidualThresholdCheckMode mCheckMode;
-    lama::Scalar mPrecision;
-    lama::Scalar mFirstNormResult;
+
+    const lama::NormPtr<ValueType> mNorm;
+
+    ResidualCheck mCheckMode;
+    RealType<ValueType> mPrecision;
+    RealType<ValueType> mFirstNormResult;
 };
 
 } /* end namespace solver */

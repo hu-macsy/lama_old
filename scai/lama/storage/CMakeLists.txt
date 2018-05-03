@@ -33,21 +33,24 @@
 ###
 
 ### Add classes and header files ###
+
 set ( CLASSES
+
+        Format
+
+        _MatrixStorage
+        MatrixStorage
+
         COOStorage
         CSRStorage
         DenseStorage
         DIAStorage
         ELLStorage
         JDSStorage
-        MatrixStorage
-        SparseAssemblyStorage
         StencilStorage
+
         StorageMethods
-    )
-    
-set ( HEADERS
-        CRTPMatrixStorage
+        COOUtils
     )
     
 scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )

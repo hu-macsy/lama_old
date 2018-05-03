@@ -45,7 +45,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/loop.hpp>
 #include <scai/common/SCAITypes.hpp>
@@ -214,9 +213,9 @@ PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
 
     IndexType owner = 0;
 
-	IndexType localIndex = global2local( globalIndex );
+    IndexType localIndex = global2local( globalIndex );
 
-    if ( localIndex != nIndex )
+    if ( localIndex != invalidIndex )
     {
         SCAI_LOG_INFO( logger,
                        *this << ": owner of " << globalIndex << ", local index = " << localIndex )
@@ -280,15 +279,22 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::global2local( hmemo::HArray<IndexType>& ia ) const
+void Distribution::global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
 {
-    IndexType nnz = ia.size();
+    SCAI_REGION( "Distribution.global2localV" )
 
-    WriteAccess<IndexType> wIA( ia );
+    // fallback implementation calls global2local for each array element
+
+    IndexType nnz = globalIndexes.size();
+
+    ReadAccess<IndexType> rGlobal( globalIndexes );
+    WriteOnlyAccess<IndexType> wLocal( localIndexes, nnz );
+
+    #pragma omp parallel for
 
     for ( IndexType i = 0; i < nnz; ++i )
     {
-        wIA[i] = global2local( wIA[i] );
+        wLocal[i] = global2local( rGlobal[i] );
     }
 }
 
@@ -302,6 +308,7 @@ void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexT
 
     {
         WriteOnlyAccess<IndexType> wOwners( owners, n );
+
         for ( IndexType i = 0; i < getGlobalSize(); ++i )
         {
             wOwners[i] = getAnyOwner( i );
@@ -607,7 +614,7 @@ void Distribution::replicateRagged(
         {
             ReadAccess<IndexType> rIndexesReceive( indexesReceive, commContext );
             ReadAccess<ValueType> rValuesReceive( valuesReceive, commContext );
-            IndexType size = nIndex;
+            IndexType size = invalidIndex;
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );
             SCAI_LOG_DEBUG( logger,
                             comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" )

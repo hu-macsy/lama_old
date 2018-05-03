@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 #include <scai/hmemo/Context.hpp>
 #include <scai/dmemo/Communicator.hpp>
@@ -53,7 +53,7 @@ public:
     Config()
     {
         // overlap communication with local computation
-        mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
+        mCommunicationKind = scai::lama::SyncKind::SYNCHRONOUS;
         mComm              = scai::dmemo::Communicator::getCommunicatorPtr();
         mContext           = scai::hmemo::Context::getHostPtr();
         mMaxIters          = 1000;
@@ -86,21 +86,21 @@ public:
         }
         else if ( "HOST" == val )
         {
-            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::Context::Host );
+            mContext = scai::hmemo::Context::getContextPtr( scai::common::ContextType::Host );
         }
         else if ( ( "CUDA" == val ) || ( "GPU" == val ) )
         {
             // int device = mComm->getNodeRank();
             int device = 0;
-            mContext = scai::hmemo::Context::getContextPtr( scai::hmemo::Context::CUDA, device );
+            mContext = scai::hmemo::Context::getContextPtr( scai::common::ContextType::CUDA, device );
         }
         else if ( "SYNC" == val )
         {
-            mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
+            mCommunicationKind = scai::lama::SyncKind::SYNCHRONOUS;
         }
         else if ( "ASYNC" == val )
         {
-            mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
+            mCommunicationKind = scai::lama::SyncKind::ASYNC_LOCAL;
         }
         else if ( isNumber( val.c_str() ) )
         {
@@ -117,7 +117,7 @@ public:
         if ( mMatrixFormat == "" )
         {
             // choose default format by context: Host -> CSR, CUDA -> ELL
-            if ( mContext->getType() == scai::hmemo::Context::CUDA )
+            if ( mContext->getType() == scai::common::ContextType::CUDA )
             {
                 return "ELL";
             }
@@ -152,10 +152,10 @@ public:
         return *mComm;
     }
 
-    std::string            mMatrixFormat;
-    scai::hmemo::ContextPtr     mContext;
-    scai::lama::Matrix::SyncKind mCommunicationKind;
-    int                    mMaxIters;
+    std::string             mMatrixFormat;
+    scai::hmemo::ContextPtr mContext;
+    scai::lama::SyncKind    mCommunicationKind;
+    int                     mMaxIters;
 
     void writeAt( std::ostream& stream ) const
     {

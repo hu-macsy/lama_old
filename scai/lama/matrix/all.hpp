@@ -32,7 +32,6 @@
  * @date 21.05.2013
  */
 
-#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/SparseMatrix.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>

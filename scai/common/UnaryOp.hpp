@@ -49,42 +49,36 @@ namespace scai
 namespace common
 {
 
-/** Own struct for enum type of elementwise functions */
-
-struct unary
+/** Enumeration type for unary operators used in elemental array operation
+ *
+ *  The unary operator specifies the function to be applied for each (array) element
+ *
+ *  \code
+ *  A[i] = unary( A[i] )
+ *  \endcode
+ *
+ */
+enum class UnaryOp
 {
-    /** Enumeration type for unary operators used in elemental array operation
-     *
-     *  The unary operator specifies the function to be applied for each (array) element
-     *
-     *  \code
-     *  A[i] = unary( A[i] )
-     *  \endcode
-     *
-     */
-
-    typedef enum
-    {
-        COPY,    //!< just identity
-        CONJ,    //!< for conjugate of a vector
-        ABS,     //!< for absolute value
-        ASUM,    //!< sum of magnitudes of real and imaginary part, same as abs for real
-        SQR,     //!< square the value
-        MINUS,   //!< for negative value
-        EXP,     //!< call exp on each vector element
-        SQRT,    //!< call sqare root on each vector element
-        SIN,     //!< call sin on each vector element
-        COS,     //!< trigonometric function cos for each vector element
-        TAN,     //!< trigonometric function tan on each vector element
-        ATAN,    //!< call atan on each vector element
-        LOG,     //!< call log on each vector element
-        FLOOR,   //!< rounds downward
-        CEIL,    //!< rounds upward
+    COPY,       //!< just identity
+    CONJ,       //!< for conjugate of a vector
+    ABS,        //!< for absolute value
+    ASUM,       //!< sum of magnitudes of real and imaginary part, same as abs for real
+    SQR,        //!< square the value
+    MINUS,      //!< for negative value
+    EXP,        //!< call exp on each vector element
+    SQRT,       //!< call sqare root on each vector element
+    SIN,        //!< call sin on each vector element
+    COS,        //!< trigonometric function cos for each vector element
+    TAN,        //!< trigonometric function tan on each vector element
+    ATAN,       //!< call atan on each vector element
+    LOG,        //!< call log on each vector element
+    FLOOR,      //!< rounds downward
+    CEIL,       //!< rounds upward
+    RECIPROCAL, //!< builds multiplicate inverse, x^-1
 
 
-        MAX_UNARY_OP //!< internal use only
-
-    } UnaryOp;
+    MAX_UNARY_OP //!< internal use only
 };
 
 /** This method provides a general routine for applying an unary operator.
@@ -98,62 +92,64 @@ struct unary
  *  compiler optimization must be switched on.
  */
 template <typename ValueType>
-MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
-inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )
+CUDA_CALLABLE_MEMBER
+inline ValueType applyUnary( const UnaryOp op, const ValueType& x )
 {
     switch ( op )
     {
-        case unary::COPY:
+        case UnaryOp::COPY:
             return x;
-        case unary::CONJ:
+        case UnaryOp::CONJ:
             return common::Math::conj( x );
-        case unary::ABS:
+        case UnaryOp::ABS:
             return common::Math::abs( x );
-        case unary::ASUM:
+        case UnaryOp::ASUM:
             return common::Math::abs( common::Math::real( x ) ) + common::Math::abs( common::Math::imag( x ));
-        case unary::SQR:
+        case UnaryOp::SQR:
             return x * x;
-        case unary::MINUS:
+        case UnaryOp::MINUS:
             return -x;
-        case unary::EXP:
+        case UnaryOp::EXP:
             return common::Math::exp( x );
-        case unary::SQRT:
+        case UnaryOp::SQRT:
             return common::Math::sqrt( x );
-        case unary::SIN:
+        case UnaryOp::SIN:
             return common::Math::sin( x );
-        case unary::COS:
+        case UnaryOp::COS:
             return common::Math::cos( x );
-        case unary::TAN:
+        case UnaryOp::TAN:
             return common::Math::tan( x );
-        case unary::ATAN:
+        case UnaryOp::ATAN:
             return common::Math::atan( x );
-        case unary::LOG:
+        case UnaryOp::LOG:
             return common::Math::log( x );
-        case unary::FLOOR:
+        case UnaryOp::FLOOR:
             return common::Math::floor( x );
-        case unary::CEIL:
+        case UnaryOp::CEIL:
             return common::Math::ceil( x );
+        case UnaryOp::RECIPROCAL:
+            return ValueType( 1 ) / x;
         default:
             return ValueType( 0 );
     }
 }
 
 template <>
-inline IndexType applyUnary( const unary::UnaryOp op, const IndexType& x )
+inline IndexType applyUnary( const UnaryOp op, const IndexType& x )
 {
     switch ( op )
     {
-        case unary::COPY:
+        case UnaryOp::COPY:
             return x;
-        case unary::CONJ:
+        case UnaryOp::CONJ:
             return x;
-        case unary::ABS:
+        case UnaryOp::ABS:
             return common::Math::abs( x );
-        case unary::ASUM:
+        case UnaryOp::ASUM:
             return common::Math::abs( x );
-        case unary::MINUS:
+        case UnaryOp::MINUS:
             return -x;
-        case unary::SQR:
+        case UnaryOp::SQR:
             return x * x;
         default:
             return IndexType( 0 );
@@ -161,86 +157,90 @@ inline IndexType applyUnary( const unary::UnaryOp op, const IndexType& x )
 }
 
 template <typename ValueType>
-inline bool isUnarySupported( const unary::UnaryOp op )
+inline bool isUnarySupported( const UnaryOp op )
 {
-    return op < unary::MAX_UNARY_OP;
+    return op < UnaryOp::MAX_UNARY_OP;
 }
 
 template <>
-inline bool isUnarySupported<IndexType>( const unary::UnaryOp op )
+inline bool isUnarySupported<IndexType>( const UnaryOp op )
 {
-    return op <= unary::MINUS;
+    return op <= UnaryOp::MINUS;
 }
 
 /*
  * Output of UnaryOp in stream by writing strings instead of numbers
  */
 
-inline std::ostream& operator<<( std::ostream& stream, const unary::UnaryOp& op )
+inline std::ostream& operator<<( std::ostream& stream, const UnaryOp& op )
 {
     switch ( op )
     {
-        case unary::COPY:
+        case UnaryOp::COPY:
             stream << "COPY";
             break;
 
-        case unary::CONJ:
+        case UnaryOp::CONJ:
             stream << "CONJ";
             break;
 
-        case unary::ABS:
+        case UnaryOp::ABS:
             stream << "ABS";
             break;
 
-        case unary::ASUM:
+        case UnaryOp::ASUM:
             stream << "ASUM";
             break;
 
-        case unary::SQR:
+        case UnaryOp::SQR:
             stream << "SQR";
             break;
 
-        case unary::MINUS:
+        case UnaryOp::MINUS:
             stream << "MINUS";
             break;
 
-        case unary::EXP:
+        case UnaryOp::EXP:
             stream << "EXP";
             break;
 
-        case unary::SQRT:
+        case UnaryOp::SQRT:
             stream << "SQRT";
             break;
 
-        case unary::SIN:
+        case UnaryOp::SIN:
             stream << "SIN";
             break;
 
-        case unary::COS:
+        case UnaryOp::COS:
             stream << "COS";
             break;
 
-        case unary::TAN:
+        case UnaryOp::TAN:
             stream << "TAN";
             break;
 
-        case unary::ATAN:
+        case UnaryOp::ATAN:
             stream << "ATAN";
             break;
 
-        case unary::LOG:
+        case UnaryOp::LOG:
             stream << "LOG";
             break;
 
-        case unary::FLOOR:
+        case UnaryOp::FLOOR:
             stream << "FLOOR";
             break;
 
-        case unary::CEIL:
+        case UnaryOp::CEIL:
             stream << "CEIL";
             break;
 
-        case unary::MAX_UNARY_OP:
+        case UnaryOp::RECIPROCAL:
+            stream << "RECIPROCAL";
+            break;
+
+        case UnaryOp::MAX_UNARY_OP:
             stream << "MAX_UNARY_OP for tests";
             break;
 

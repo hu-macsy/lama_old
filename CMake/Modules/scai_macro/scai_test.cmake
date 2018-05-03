@@ -60,10 +60,6 @@ macro ( scai_test )
         message ( FATAL_ERROR "scai_test: EXECUTABLE argument not specified" )
     endif ()
 
-    if ( ${scai_test_UNIT_TEST} )
-        include_directories ( ${BOOST_INCLUDE_DIR} )
-    endif ()
-
     # define test executable, will not be a default built target, but wiht make check
 
     if ( ${scai_test_CUDA} )
@@ -77,10 +73,16 @@ macro ( scai_test )
     target_link_libraries ( ${scai_test_EXECUTABLE} ${MODULE_LIBRARY} )
 
     if ( ${scai_test_UNIT_TEST} )
+        if (NOT TESTSUPPORT_INCLUDE_DIR)
+            message(FATAL_ERROR "TESTSUPPORT_INCLUDE_DIR is not set, can not correctly prepare test executable for compilation.")
+        endif()
+
+        target_include_directories( ${scai_test_EXECUTABLE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} ${TESTSUPPORT_INCLUDE_DIR})
+
         if ( WIN32 )
             link_directories ( ${Boost_LIBRARY_DIRS} )
         else ()
-            target_link_libraries ( ${scai_test_EXECUTABLE} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+            target_link_libraries ( ${scai_test_EXECUTABLE} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} testsupport)
         endif ()
     endif ()
 

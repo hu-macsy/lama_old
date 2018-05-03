@@ -49,14 +49,12 @@ namespace scai
 namespace solver
 {
 
-class OmegaSolver;
-typedef common::shared_ptr<OmegaSolver> OldSolutionHandlerPtr;
-
 /**
  * @brief The OldSolutionHandler class only manages the omega parameter
  * For solvers like a Jacobi.
  */
-class COMMON_DLL_IMPORTEXPORT OmegaSolver: public IterativeSolver
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT OmegaSolver: public IterativeSolver<ValueType>
 {
 public:
 
@@ -73,7 +71,7 @@ public:
      * @param[in] id    The id of the solver.
      * @param[in] omega The omega parameter which is used by the jacobi solver.
      */
-    OmegaSolver( const std::string& id, const lama::Scalar omega );
+    OmegaSolver( const std::string& id, const ValueType omega );
 
     /**
      * @brief Creates a solver with the given id and logger.
@@ -90,7 +88,7 @@ public:
      * @param[in] omega  The omega parameter which is used by the jacobi solver.
      * @param[in] logger The logger used by the solver.
      */
-    OmegaSolver( const std::string& id, const lama::Scalar omega, LoggerPtr logger );
+    OmegaSolver( const std::string& id, const ValueType omega, LoggerPtr logger );
 
     /**
      * @brief Copy constructor that copies the status independent solver information
@@ -103,60 +101,85 @@ public:
     virtual ~OmegaSolver();
 
     /**
-     * @brief This abstract method is used by derived solvers to initialize a
-     *        omega solver.
-     */
-    virtual void initialize( const lama::Matrix& coefficients );
-
-    /**
      * @brief Sets the omega parameter of this.
      *
      * @param[in] omega The omega parameter of the omega solver.
      */
-    void setOmega( const lama::Scalar omega );
+    void setOmega( const ValueType omega );
 
     /**
      * @brief Returns omega.
      *
      * @return Omega.
      */
-    lama::Scalar getOmega() const;
-
-    struct OmegaSolverRuntime: IterativeSolverRuntime
-    {
-        OmegaSolverRuntime();
-        virtual ~OmegaSolverRuntime();
-    };
+    ValueType getOmega() const;
 
     /**
-     * @brief Returns the complete configuration of the derived class
+     * @brief Override the pure copy method to get a covariant return type
      */
-    virtual OmegaSolverRuntime& getRuntime() = 0;
-
-    /**
-     * @brief Returns the complete const configuration of the derived class
-     */
-    virtual const OmegaSolverRuntime& getConstRuntime() const = 0;
-
-    /**
-     * @brief Copies the status independent solver informations to create a new instance of the same
-     * type
-     *
-     * @return shared pointer of the copied solver
-     */
-    virtual SolverPtr copy() = 0;
+    virtual OmegaSolver* copy() = 0;
 
 protected:
-    /**
-     * @brief This abstract method is used by derived solvers to represent a
-     *        solver iteration.
-     */
-    virtual void iterate() = 0;
 
-    lama::Scalar mOmega;
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+    ValueType mOmega;
 };
+
+template<typename ValueType>
+OmegaSolver<ValueType>::OmegaSolver( const std::string& id ) : 
+
+    IterativeSolver<ValueType>( id ), 
+    mOmega( 0.5 )
+{
+}
+
+template<typename ValueType>
+OmegaSolver<ValueType>::OmegaSolver( const std::string& id, const ValueType omega ) : 
+
+    IterativeSolver<ValueType>( id ), 
+    mOmega( omega )
+{
+}
+
+template<typename ValueType>
+OmegaSolver<ValueType>::OmegaSolver( const std::string& id, LoggerPtr logger ) : 
+
+     IterativeSolver<ValueType>( id, logger ), 
+     mOmega( 0.5 )
+{
+}
+
+template<typename ValueType>
+OmegaSolver<ValueType>::OmegaSolver( const std::string& id, const ValueType omega, LoggerPtr logger ) : 
+
+    IterativeSolver<ValueType>( id, logger ), 
+    mOmega( omega )
+{
+}
+
+template<typename ValueType>
+OmegaSolver<ValueType>::OmegaSolver( const OmegaSolver<ValueType>& other ) : 
+
+    IterativeSolver<ValueType>( other ), 
+    mOmega( other.mOmega )
+{
+}
+
+template<typename ValueType>
+OmegaSolver<ValueType>::~OmegaSolver()
+{
+}
+
+template<typename ValueType>
+void OmegaSolver<ValueType>::setOmega( const ValueType omega )
+{
+    mOmega = omega;
+}
+
+template<typename ValueType>
+ValueType OmegaSolver<ValueType>::getOmega() const
+{
+    return mOmega;
+}
 
 } /* end namespace solver */
 

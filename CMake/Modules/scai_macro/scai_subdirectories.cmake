@@ -37,13 +37,12 @@
 ##
 ##   TEST      - add test only if TEST enabled and BOOST_TEST available
 ##   CUDA      - add cuda only if CUDA enabled
-##   MIC       - add mic only if USE_MIC
 
 macro ( scai_subdirectories )
 
     ## Note: no need to check if dir exists as CMake will give error message
 
-    set ( options TEST CUDA MIC EXAMPLES BENCHMARK )
+    set ( options TEST CUDA EXAMPLES BENCHMARK )
     set ( oneValueArgs )
     set ( multiValueArgs )
 
@@ -71,12 +70,6 @@ macro ( scai_subdirectories )
     if ( ${scai_subdirectories_CUDA} )
         if ( CUDA_FOUND AND USE_CUDA )
             add_subdirectory ( cuda )
-        endif ()
-    endif ()
-
-    if ( ${scai_subdirectories_MIC} )
-        if ( USE_MIC )
-            add_subdirectory ( mic )
         endif ()
     endif ()
 

@@ -45,6 +45,7 @@
 using namespace scai;
 using namespace scai::hmemo;
 using common::TypeTraits;
+using common::MatrixOp;
 
 /* --------------------------------------------------------------------- */
 
@@ -78,12 +79,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
     const ValueType beta = 13.0;
     const ValueType resultRowMajor[] =
     { -9.0, -1.0, -6.0, 0.0 };
-    const ValueType resultColMajor[] =
-    { -9.0, -6.0, -1.0, 0.0 };
     const IndexType n = 2;
     const IndexType m = 2;
     const IndexType k = 3;
-    // CblasRowMajor and 2 x CblasNoTrans
+    // 2 x MatrixOp::NORMAL
     {
         const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
@@ -102,7 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
-            gemm[loc->getType()]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
+            gemm[loc->getType()]( MatrixOp::NORMAL, MatrixOp::NORMAL, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
                                   wAmC.get(), ldc );
         }
         {
@@ -114,41 +113,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             }
         }
     }
-    // CblasColMajor and 2 x CblasNoTrans
-    {
-        const ValueType matrixA[] =
-        { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
-        const ValueType matrixB[] =
-        { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
-        ValueType matrixC[] =
-        { 15.0, 27.0, 13.0, 17.0 };
-        const IndexType lda = 2;
-        const IndexType ldb = 3;
-        const IndexType ldc = 2;
-        const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
-        const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
-        const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-        HArray<ValueType> AmA( nA, matrixA, testContext );
-        HArray<ValueType> AmB( nB, matrixB, testContext );
-        HArray<ValueType> AmC( nC, matrixC, testContext );
-        {
-            SCAI_CONTEXT_ACCESS( loc );
-            ReadAccess<ValueType> rAmA( AmA, loc );
-            ReadAccess<ValueType> rAmB( AmB, loc );
-            WriteAccess<ValueType> wAmC( AmC, loc );
-            gemm[loc->getType()]( CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                                  wAmC.get(), ldc );
-        }
-        {
-            ReadAccess<ValueType> rAmC( AmC );
-
-            for ( int i = 0; i < 4; ++i )
-            {
-                BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
-            }
-        }
-    }
-    // CblasRowMajor, CblasNoTrans for A and CblasTrans for B
+    // MatrixOp::NORMAL for A and MatrixOp::TRANSPOSE for B
     {
         const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
         const ValueType matrixB[] = { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
@@ -167,7 +132,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
-            gemm[loc->getType()]( CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
+            gemm[loc->getType()]( MatrixOp::NORMAL, MatrixOp::TRANSPOSE, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
                                   wAmC.get(), ldc );
         }
         {
@@ -179,38 +144,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             }
         }
     }
-    // CblasColMajor, CblasNoTrans for A and CblasTrans for B
-    {
-        const ValueType matrixA[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
-        const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
-        const ValueType matrixC[] = { 15.0, 27.0, 13.0, 17.0 };
-        const IndexType lda = 2;
-        const IndexType ldb = 2;
-        const IndexType ldc = 2;
-        const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
-        const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
-        const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-        HArray<ValueType> AmA( nA, matrixA, testContext );
-        HArray<ValueType> AmB( nB, matrixB, testContext );
-        HArray<ValueType> AmC( nC, matrixC, testContext );
-        {
-            SCAI_CONTEXT_ACCESS( loc );
-            ReadAccess<ValueType> rAmA( AmA, loc );
-            ReadAccess<ValueType> rAmB( AmB, loc );
-            WriteAccess<ValueType> wAmC( AmC, loc );
-            gemm[loc->getType()]( CblasColMajor, CblasNoTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                                  wAmC.get(), ldc );
-        }
-        {
-            ReadAccess<ValueType> rAmC( AmC );
 
-            for ( int i = 0; i < 4; ++i )
-            {
-                BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
-            }
-        }
-    }
-    // CblasRowMajor, CblasTrans for A and CblasNoTrans for B
+    // MatrixOp::TRANSPOSE for A and MatrixOp::NORMAL for B
     {
         const ValueType matrixA[] = { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
         const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
@@ -226,7 +161,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
-            gemm[loc->getType()]( CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
+            gemm[loc->getType()]( MatrixOp::TRANSPOSE, MatrixOp::NORMAL, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
                                   wAmC.get(), ldc );
         }
         {
@@ -238,83 +173,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             }
         }
     }
-    // CblasColMajor, CblasTrans for A and CblasNoTrans for B
+    // MatrixOp::TRANSPOSE for A and MatrixOp::TRANSPOSE for B
     {
-        const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
-        const ValueType matrixB[] = { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
-        ValueType matrixC[]       = { 15.0, 27.0, 13.0, 17.0 };
-        const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
-        const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
-        const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-        const IndexType lda = 3;
+        const ValueType matrixA[] =
+        { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
+        const ValueType matrixB[] =
+        { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
+        ValueType matrixC[] =
+        { 15.0, 13.0, 27.0, 17.0 };
+        const IndexType lda = 2;
         const IndexType ldb = 3;
         const IndexType ldc = 2;
-        HArray<ValueType> AmA( nA, matrixA, testContext );
-        HArray<ValueType> AmB( nB, matrixB, testContext );
-        HArray<ValueType> AmC( nC, matrixC, testContext );
-        // check for correct sizes, terminate to avoid memory access violations
-        BOOST_REQUIRE_EQUAL( nA, m * k );
-        BOOST_REQUIRE_EQUAL( nB, n * k );
-        BOOST_REQUIRE_EQUAL( nC, m * n );
-        {
-            SCAI_CONTEXT_ACCESS( loc );
-            ReadAccess<ValueType> rAmA( AmA, loc );
-            ReadAccess<ValueType> rAmB( AmB, loc );
-            WriteAccess<ValueType> wAmC( AmC, loc );
-            gemm[loc->getType()]( CblasColMajor, CblasTrans, CblasNoTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                                  wAmC.get(), ldc );
-        }
-        {
-            ReadAccess<ValueType> rAmC( AmC );
-
-            for ( int i = 0; i < 4; ++i )
-            {
-                BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
-            }
-        }
-        // CblasRowMajor, CblasTrans for A and CblasTrans for B
-        {
-            const ValueType matrixA[] =
-            { 1.0, 4.0, 2.0, 5.0, -3.0, -6.0 };
-            const ValueType matrixB[] =
-            { 2.0, -1.0, 4.0, 3.0, 1.0, 5.0 };
-            ValueType matrixC[] =
-            { 15.0, 13.0, 27.0, 17.0 };
-            const IndexType lda = 2;
-            const IndexType ldb = 3;
-            const IndexType ldc = 2;
-            const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
-            const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
-            const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
-            HArray<ValueType> AmA( nA, matrixA, testContext );
-            HArray<ValueType> AmB( nB, matrixB, testContext );
-            HArray<ValueType> AmC( nC, matrixC, testContext );
-            {
-                SCAI_CONTEXT_ACCESS( loc );
-                ReadAccess<ValueType> rAmA( AmA, loc );
-                ReadAccess<ValueType> rAmB( AmB, loc );
-                WriteAccess<ValueType> wAmC( AmC, loc );
-                gemm[loc->getType()]( CblasRowMajor, CblasTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
-                                      wAmC.get(), ldc );
-            }
-            {
-                ReadAccess<ValueType> rAmC( AmC );
-
-                for ( int i = 0; i < 4; ++i )
-                {
-                    BOOST_CHECK_EQUAL( resultRowMajor[i], rAmC[i] );
-                }
-            }
-        }
-    }
-    // CblasColMajor, CblasTrans for A and CblasTrans for B
-    {
-        const ValueType matrixA[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
-        const ValueType matrixB[] = { 2.0, 3.0, -1.0, 1.0, 4.0, 5.0 };
-        ValueType matrixC[]       = { 15.0, 27.0, 13.0, 17.0 };
-        const IndexType lda = 3;
-        const IndexType ldb = 2;
-        const IndexType ldc = 2;
         const IndexType nA = sizeof( matrixA ) / sizeof( ValueType );
         const IndexType nB = sizeof( matrixB ) / sizeof( ValueType );
         const IndexType nC = sizeof( matrixC ) / sizeof( ValueType );
@@ -326,7 +195,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
             ReadAccess<ValueType> rAmA( AmA, loc );
             ReadAccess<ValueType> rAmB( AmB, loc );
             WriteAccess<ValueType> wAmC( AmC, loc );
-            gemm[loc->getType()]( CblasColMajor, CblasTrans, CblasTrans, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
+            gemm[loc->getType()]( MatrixOp::TRANSPOSE, MatrixOp::TRANSPOSE, m, n, k, alpha, rAmA.get(), lda, rAmB.get(), ldb, beta,
                                   wAmC.get(), ldc );
         }
         {
@@ -334,10 +203,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, blas_test_types )
 
             for ( int i = 0; i < 4; ++i )
             {
-                BOOST_CHECK_EQUAL( resultColMajor[i], rAmC[i] );
+                BOOST_CHECK_EQUAL( resultRowMajor[i], rAmC[i] );
             }
         }
     }
+
 } // gemmTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */

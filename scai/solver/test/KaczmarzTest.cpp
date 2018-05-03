@@ -52,21 +52,21 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.KaczmarzTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<Kaczmarz>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    Kaczmarz cgSolver( "KaczmarzTestSolver", slogger );
-    BOOST_CHECK_EQUAL( cgSolver.getId(), "KaczmarzTestSolver" );
-    Kaczmarz cgSolver2( "KaczmarzTestSolver2" );
-    BOOST_CHECK_EQUAL( cgSolver2.getId(), "KaczmarzTestSolver2" );
-    Kaczmarz cgSolver3( cgSolver2 );
-    BOOST_CHECK_EQUAL( cgSolver3.getId(), "KaczmarzTestSolver2" );
-    BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
-    Kaczmarz cgSolver4( "cgSolver4" );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    cgSolver4.setStoppingCriterion( criterion );
-    Kaczmarz cgSolver5( cgSolver4 );
-    BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
+    Kaczmarz<ValueType> solver( "KaczmarzTestSolver", slogger );
+    BOOST_CHECK_EQUAL( solver.getId(), "KaczmarzTestSolver" );
+    Kaczmarz<ValueType> solver2( "KaczmarzTestSolver2" );
+    BOOST_CHECK_EQUAL( solver2.getId(), "KaczmarzTestSolver2" );
+    Kaczmarz<ValueType> solver3( solver2 );
+    BOOST_CHECK_EQUAL( solver3.getId(), "KaczmarzTestSolver2" );
+    BOOST_CHECK( solver3.getPreconditioner() == 0 );
+    Kaczmarz<ValueType> solver4( "solver4" );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    solver4.setStoppingCriterion( criterion );
+    Kaczmarz<ValueType> solver5( solver4 );
+    BOOST_CHECK_EQUAL( solver5.getId(), solver4.getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

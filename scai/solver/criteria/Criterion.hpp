@@ -44,10 +44,10 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <ostream>
+#include <memory>
 
 namespace scai
 {
@@ -55,11 +55,25 @@ namespace scai
 namespace solver
 {
 
-class IterativeSolver;
+template<typename ValueType> class IterativeSolver;
 
-class Criterion;
+template<typename ValueType> class Criterion;
 
-typedef common::shared_ptr<Criterion> CriterionPtr;
+template<typename ValueType>
+using CriterionPtr = std::shared_ptr<Criterion<ValueType> >;
+
+/**
+ * @brief Defines the operators which can be used to connect Criterions with.
+ */
+enum class BooleanOp
+{
+    AND, //!< stands for logical and composition
+    OR //!< stands for logical or composition
+};
+
+/** @brief Provide output operator<< to print enum values. */
+
+std::ostream& operator<<( std::ostream& stream, const BooleanOp op );
 
 /**
  * @brief The class Criterion is the base class for all stopping criterions
@@ -67,18 +81,10 @@ typedef common::shared_ptr<Criterion> CriterionPtr;
  *
  * Criterion can be composed with the logical operators &&, ||, and !.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Criterion: public common::Printable
 {
 public:
-
-    /**
-     * @brief Defines the operators which can be used to connect Criterions with.
-     */
-    enum BooleanOperator
-    {
-        AND, //!< stands for logical and composition
-        OR //!< stands for logical or composition
-    };
 
     /**
      * @brief Creates a Criterion which evaluates to true.
@@ -115,7 +121,7 @@ public:
      * @param[in] other     the boolean condition to take a altered copy from
      * @param[in] modifier  the bool value to modify the new Criterion with.
      */
-    Criterion( const CriterionPtr other, const bool modifier );
+    Criterion( const CriterionPtr<ValueType> other, const bool modifier );
 
     /**
      * @brief Creates a new Criterion which the logical composition of
@@ -126,7 +132,7 @@ public:
      * @param[in] operation     the logical operation to connect leftChild and
      *                          rightChild with.
      */
-    Criterion( const CriterionPtr leftChild, const CriterionPtr rightChild, BooleanOperator operation );
+    Criterion( const CriterionPtr<ValueType> leftChild, const CriterionPtr<ValueType> rightChild, BooleanOp operation );
 
     /** Destructor. */
 
@@ -139,19 +145,19 @@ public:
      * @param[in] solver    the solver to check the state of.
      * @return              if this Criterion is true for the state of solver.
      */
-    virtual bool isSatisfied( const IterativeSolver& solver );
+    virtual bool isSatisfied( const IterativeSolver<ValueType>& solver );
 
-    const CriterionPtr getLeftChild() const;
+    const CriterionPtr<ValueType> getLeftChild() const;
 
-    const CriterionPtr getRightChild() const;
+    const CriterionPtr<ValueType> getRightChild() const;
 
-    BooleanOperator getOperation() const;
+    BooleanOp getOperation() const;
 
-    void setLeftChild( const CriterionPtr leftChild );
+    void setLeftChild( const CriterionPtr<ValueType> leftChild );
 
-    void setRightChild( const CriterionPtr rightChild );
+    void setRightChild( const CriterionPtr<ValueType> rightChild );
 
-    void setOperation( const BooleanOperator operation );
+    void setOperation( const BooleanOp operation );
 
     /**
      * @brief Returns true if the boolean condition has a left child
@@ -169,7 +175,7 @@ public:
      */
     bool hasRightChild() const;
 
-    // unused: operator= always used on CriterionPtr
+    // unused: operator= always used on CriterionPtr<ValueType>
     // Criterion& operator =( const Criterion& other );
 
     virtual void writeAt( std::ostream& stream ) const;
@@ -179,20 +185,22 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private    :
-    CriterionPtr mLeftChild;
-    CriterionPtr mRightChild;
-    BooleanOperator mOperation;
+    CriterionPtr<ValueType> mLeftChild;
+    CriterionPtr<ValueType> mRightChild;
+    BooleanOp mOperation;
     const bool mModifier; // true: negate, false: do nothing
 };
 
-inline CriterionPtr operator||( CriterionPtr a, CriterionPtr b )
+template<typename ValueType>
+inline CriterionPtr<ValueType> operator||( CriterionPtr<ValueType> a, CriterionPtr<ValueType> b )
 {
-    return CriterionPtr( new Criterion( a, b, Criterion::OR ) );
+    return CriterionPtr<ValueType>( new Criterion<ValueType>( a, b, BooleanOp::OR ) );
 }
 
-inline CriterionPtr operator&&( CriterionPtr a, CriterionPtr b )
+template<typename ValueType>
+inline CriterionPtr<ValueType> operator&&( CriterionPtr<ValueType> a, CriterionPtr<ValueType> b )
 {
-    return CriterionPtr( new Criterion( a, b, Criterion::AND ) );
+    return CriterionPtr<ValueType>( new Criterion<ValueType>( a, b, BooleanOp::AND ) );
 }
 
 } /* end namespace solver */

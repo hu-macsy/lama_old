@@ -42,8 +42,7 @@
 #include <scai/solver/IterativeSolver.hpp>
 
 // scai internal libraries
-#include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
 // logging
@@ -59,13 +58,20 @@ namespace solver
  * @brief The class QMR represents a IterativeSolver which uses the krylov subspace stabilized Quasi Minimal Residual method
  *        to solve a system of linear equations iteratively.
  *
+ * This solver needs for solving a matrix A also the tranposed matrix - vector multiplication.
+ * For efficiency it is often better to build the transposed matrix explicitly. Therefore
+ * it is better to encapsulate a matrix A in an object AwithT.
+ *
  * Remark:
  * The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT QMR:
-    public IterativeSolver,
-    public Solver::Register<QMR>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<QMR<ValueType> >
+
 {
 public:
     /**
@@ -90,7 +96,7 @@ public:
 
     virtual ~QMR();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -98,38 +104,36 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual QMR<ValueType>* copy();
 
-    struct QMRRuntime: IterativeSolverRuntime
+    struct QMRRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        QMRRuntime();
-        virtual ~QMRRuntime();
+        lama::MatrixPtr<ValueType> mConjTransposeA;
 
-        lama::MatrixPtr mTransposeA;
-        lama::VectorPtr mInitialRes;
-        lama::VectorPtr mVecV;
-        lama::VectorPtr mVecW;
-        lama::VectorPtr mVecY;      /*preconditioning 1*/
-        lama::VectorPtr mVecZ;
+        std::unique_ptr<lama::Vector<ValueType>> mInitialRes;
+        std::unique_ptr<lama::Vector<ValueType>> mVecV;
+        std::unique_ptr<lama::Vector<ValueType>> mVecW;
+        std::unique_ptr<lama::Vector<ValueType>> mVecY;      /*preconditioning 1*/
+        std::unique_ptr<lama::Vector<ValueType>> mVecZ;
 
-        lama::VectorPtr mVecWT;
-        lama::VectorPtr mVecVT;
-        lama::VectorPtr mVecYT;
-        lama::VectorPtr mVecZT;
-        lama::VectorPtr mVecP;
-        lama::VectorPtr mVecQ;
-        lama::VectorPtr mVecPT;
-        lama::VectorPtr mVecS;
-        lama::VectorPtr mVecD;
+        std::unique_ptr<lama::Vector<ValueType>> mVecWT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecVT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecYT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecZT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecP;
+        std::unique_ptr<lama::Vector<ValueType>> mVecQ;
+        std::unique_ptr<lama::Vector<ValueType>> mVecPT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecS;
+        std::unique_ptr<lama::Vector<ValueType>> mVecD;
 
-        lama::Scalar mGamma;
-        lama::Scalar mTheta;
-        lama::Scalar mPsi;
-        lama::Scalar mRho;
-        lama::Scalar mEpsilon;
-        lama::Scalar mEta;
+        ValueType mGamma;
+        ValueType mTheta;
+        ValueType mPsi;
+        ValueType mRho;
+        ValueType mEpsilon;
+        ValueType mEta;
 
-        lama::Scalar mEps;
+        ValueType mEps;
     };
 
     /**
@@ -139,19 +143,26 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const QMRRuntime& getConstRuntime() const;
+    virtual const QMRRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
     virtual void iterate();
+
+    using IterativeSolver<ValueType>::mPreconditioner;
 
     /**
      *  @brief own implementation of Printable::writeAt

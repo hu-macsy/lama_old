@@ -50,7 +50,29 @@ namespace scai
 namespace solver
 {
 
-typedef common::shared_ptr<class AMGSetup> AMGSetupPtr;
+class _AMGSetup;
+
+// typedef std::shared_ptr<class AMGSetup> AMGSetupPtr;
+
+typedef std::pair<common::ScalarType, std::string> AMGSetupCreateKeyType;
+
+class COMMON_DLL_IMPORTEXPORT _AMGSetup :
+
+    public common::Printable,
+    public common::Factory<AMGSetupCreateKeyType, _AMGSetup*>
+{
+public:
+
+    /**
+     *  Provide a more convenient interface to the create method of the factory.
+     */
+
+    static _AMGSetup* getAMGSetup( const common::ScalarType scalarType, const std::string& setupType );
+
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+};
 
 /**
  * @brief The class AMGSetup should describe the Interace to an AMG Setup.
@@ -58,10 +80,10 @@ typedef common::shared_ptr<class AMGSetup> AMGSetupPtr;
  * @todo The current Interface of AMGSetup is just for evaluation so this should be changed to meet all requirements.
  *       (e.g. Pre and Post Smoothing)
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT AMGSetup :
 
-    public common::Factory<std::string, AMGSetup*>,
-    public common::Printable
+    public _AMGSetup
 
 {
 public:
@@ -70,25 +92,44 @@ public:
 
     virtual ~AMGSetup();
 
-    virtual void initialize( const lama::Matrix& coefficients ) = 0;
+    /**
+     * @brief Create a new AMGSetup of a certain type.
+     *
+     */
+    static AMGSetup* getAMGSetup( const std::string& setupType );
 
-    virtual Solver& getCoarseLevelSolver() = 0;
+    /**
+     *  Provide a more convenient interface to query for a setup type if value type is known. 
+     */
+    static inline bool canCreate( const std::string& setupType )
+    {
+        return _AMGSetup::canCreate( AMGSetupCreateKeyType( common::TypeTraits<ValueType>::stype, setupType ) );
+    }
 
-    virtual unsigned int getNumLevels() = 0;
+    /**
+     *  Get all setup types available for this value type by using _AMGSetup::createValues 
+     */
+    static void getCreateValues( std::vector<std::string>& values );
 
-    virtual Solver& getSmoother( const unsigned int level ) = 0;
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients ) = 0;
 
-    virtual const lama::Matrix& getGalerkin( const unsigned int level ) = 0;
+    virtual Solver<ValueType>& getCoarseLevelSolver() = 0;
 
-    virtual const lama::Matrix& getRestriction( const unsigned int level ) = 0;
+    virtual IndexType getNumLevels() = 0;
 
-    virtual const lama::Matrix& getInterpolation( const unsigned int level ) = 0;
+    virtual Solver<ValueType>& getSmoother( const IndexType level ) = 0;
 
-    virtual lama::Vector& getSolutionVector( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getGalerkin( const IndexType level ) = 0;
 
-    virtual lama::Vector& getRhsVector( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getRestriction( const IndexType level ) = 0;
 
-    virtual lama::Vector& getTmpResVector( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getInterpolation( const IndexType level ) = 0;
+
+    virtual lama::Vector<ValueType>& getSolutionVector( const IndexType level ) = 0;
+
+    virtual lama::Vector<ValueType>& getRhsVector( const IndexType level ) = 0;
+
+    virtual lama::Vector<ValueType>& getTmpResVector( const IndexType level ) = 0;
 
     virtual std::string getCouplingPredicateInfo() const = 0;
 
@@ -100,9 +141,9 @@ public:
 
     virtual std::string getCoarseLevelSolverInfo() const = 0;
 
-    virtual void setMaxLevels( const unsigned int level ) = 0;
+    virtual void setMaxLevels( const IndexType level ) = 0;
 
-    virtual void setMinVarsCoarseLevel( const unsigned int vars ) = 0;
+    virtual void setMinVarsCoarseLevel( const IndexType vars ) = 0;
 
     virtual void setHostOnlyLevel( IndexType hostOnlyLevel );
 
@@ -110,12 +151,12 @@ public:
 
     virtual void setReplicatedLevel( IndexType replicatedLevel );
 
-    virtual void setCoarseLevelSolver( SolverPtr solver ) = 0;
+    virtual void setCoarseLevelSolver( SolverPtr<ValueType> solver ) = 0;
 
     /**
      * @brief Sets smoother for all level
      */
-    virtual void setSmoother( SolverPtr solver ) = 0;
+    virtual void setSmoother( SolverPtr<ValueType> solver ) = 0;
 
 protected:
 

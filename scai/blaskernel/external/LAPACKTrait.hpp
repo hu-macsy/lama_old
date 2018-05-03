@@ -36,6 +36,7 @@
 
 // internal scai libraries
 #include <scai/common/config.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 //macros
 #define FORTRAN_LAPACK_NAME( name, prefix ) prefix##name##_
@@ -79,21 +80,21 @@ public:
         }
     }
 
-    static inline LAPACKFlag enum2char( const CBLAS_TRANSPOSE trans )
+    static inline LAPACKFlag enum2char( const common::MatrixOp op )
     {
-        switch ( trans )
+        switch ( op )
         {
-            case CblasNoTrans:
+            case common::MatrixOp::NORMAL:
                 return 'N';
 
-            case CblasTrans:
+            case common::MatrixOp::TRANSPOSE:
                 return 'T';
 
-            case CblasConjTrans:
+            case common::MatrixOp::CONJ_TRANSPOSE:
                 return 'C';
 
             default:
-                COMMON_THROWEXCEPTION( "Illegal trans: " << trans );
+                COMMON_THROWEXCEPTION( "Illegal matrix op: " << op );
         }
     }
 
@@ -135,13 +136,13 @@ extern "C"
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 // ComplexFloat
-    FORTRAN_LAPACK_DEF( getrf, c, void, CALL_DEF_GETRF( ComplexFloat ) )
-    FORTRAN_LAPACK_DEF( getri, c, void, CALL_DEF_GETRI( ComplexFloat ) )
-    FORTRAN_LAPACK_DEF( tptrs, c, void, CALL_DEF_TPTRS( ComplexFloat ) )
+    FORTRAN_LAPACK_DEF( getrf, c, void, CALL_DEF_GETRF( scai::ComplexFloat ) )
+    FORTRAN_LAPACK_DEF( getri, c, void, CALL_DEF_GETRI( scai::ComplexFloat ) )
+    FORTRAN_LAPACK_DEF( tptrs, c, void, CALL_DEF_TPTRS( scai::ComplexFloat ) )
 // ComplexDouble
-    FORTRAN_LAPACK_DEF( getri, z, void, CALL_DEF_GETRI( ComplexDouble ) )
-    FORTRAN_LAPACK_DEF( getrf, z, void, CALL_DEF_GETRF( ComplexDouble ) )
-    FORTRAN_LAPACK_DEF( tptrs, z, void, CALL_DEF_TPTRS( ComplexDouble ) )
+    FORTRAN_LAPACK_DEF( getri, z, void, CALL_DEF_GETRI( scai::ComplexDouble ) )
+    FORTRAN_LAPACK_DEF( getrf, z, void, CALL_DEF_GETRF( scai::ComplexDouble ) )
+    FORTRAN_LAPACK_DEF( tptrs, z, void, CALL_DEF_TPTRS( scai::ComplexDouble ) )
 #endif
 
 #undef CALL_DEF_GETRI

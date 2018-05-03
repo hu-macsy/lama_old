@@ -42,6 +42,7 @@
 
 // internal scai library
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <scai/logging.hpp>
 
@@ -63,62 +64,14 @@ class COMMON_DLL_IMPORTEXPORT CUDABLAS3
 private:
 
     /**
-     * @brief gemm computes the product of matrix A and matrix B,
-     * multiplies the result by scalar alpha,
-     * and adds the sum to the product of matrix C and scalar beta.
-     * It performs one of the matrix‐matrix operations:
-     *
-     * C = alpha * op(A) * op(B) + beta * C,
-     * where op(X) = X or op(X) = XT
-     *
-     * alpha and beta are scalars.
-     * A, B, and C are matrices consisting of elements,
-     * with op(A) an m×k matrix,
-     * op(B) a k×n matrix,
-     * C an m×n matrix.
-     * matrix A, B, and C are stored in column‐major format,
-     * lda, ldb, and ldc are the leading dimensions of the two‐dimensional arrays
-     * containing A, B, and C.
-     *
-     * @param[in] order   TODO[doxy] Complete Description.
-     * @param[in] transa  specifies op(A)
-     *                    If transa = 'N', 'n'
-     *                    op(A) = A
-     *                    If transa == 'T', 't', 'C', 'c'
-     *                    op(A) = AT
-     * @param[in] transb  specifies op(B)
-     *                    If transb = 'N', 'n'
-     *                    op(B) = B
-     *                    If transb == 'T', 't', 'C', 'c'
-     *                    op(B) = BT
-     * @param[in] m       number of rows of matrix op(A) and rows of matrix C;
-     *                    m must be at least zero.
-     * @param[in] n       number of columns of matrix op(B) and number of columns of C;
-     *                    n must be at least zero.
-     * @param[in] k       number of columns of matrix op(A) and number of rows of op(B);
-     *                    k must be at least zero.
-     * @param[in] alpha   scalar multiplier applied to op(A) * op(B)
-     * @param[in] A       array of dimensions (lda, k)
-     *                    if transa == 'N' or 'n', and of dimensions (lda, m) otherwise.
-     *                    If transa == 'N' or 'n', lda must be at least max(1, m);
-     *                    otherwise, lda must be at least max(1, k).
-     * @param[in] lda     leading dimension of two-dimensional array used to store matrix A.
-     * @param[in] B       array of dimensions (ldb, n)
-     *                    if transb == 'N' or 'n', and of dimensions (ldb, k) otherwise.
-     *                    If transb == 'N' or 'n', ldb must be at least max(1, k);
-     *                    otherwise, lda must be at least max(1, n).
-     * @param[in] ldb     leading dimension of two-dimensional array used to store matrix B.
-     * @param[in] beta    scalar multiplier applied to C.
-     *                    If zero, C does not have to be a valid input
-     * @param[in] C       array of dimensions (ldc,n);
-     *                    ldc must be at least max(1,m).
-     * @param[in] ldc     leading dimension of two-dimensional array used to store matrix C.
+     * @brief CUDA implementation of BLASKernelTrait::gemm
+     * 
+     * This implementation will call a corresponding cuBLAS function.
      */
     template<typename ValueType>
     static void gemm(
-        const CBLAS_ORDER order,
-        const CBLAS_TRANSPOSE transa,
-        const CBLAS_TRANSPOSE transb,
+        const common::MatrixOp opA,
+        const common::MatrixOp opB,
         const IndexType m,
         const IndexType n,
         const IndexType k,

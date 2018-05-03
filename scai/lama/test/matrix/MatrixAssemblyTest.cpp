@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test routines for MatrixAssemblyAccess
+ * @brief Test routines for MatrixAssembly
  * @author Thomas Brandes
  * @date 07.09.2017
  */
@@ -35,8 +35,12 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/matrix/MatrixAssemblyAccess.hpp>
+#include <scai/lama.hpp>
+#include <scai/lama/matrix/MatrixAssembly.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/test/TestDistributions.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -53,7 +57,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MatrixAssemblyTest" );
 
 /** For the matrix tests here it is sufficient to take only one of the possible value types. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 /* ------------------------------------------------------------------------- */
 
@@ -73,61 +77,75 @@ BOOST_AUTO_TEST_CASE( simpleTest )
 
     IndexType nnz = sizeof( raw_ia ) / sizeof( IndexType );
 
+    hmemo::HArrayRef<IndexType> cooIA( nnz, raw_ia );
+    hmemo::HArrayRef<IndexType> cooJA( nnz, raw_ja );
+    hmemo::HArrayRef<ValueType> cooValues( nnz, raw_val );
+
+    COOStorage<ValueType> coo( numRows, numColumns, cooIA, cooJA, cooValues );
+
     SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_ja ) / sizeof( IndexType ), "" )
     SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_val ) / sizeof( ValueType ), "" )
 
-    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( numRows, comm ) );
-    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( numColumns ) );
+    MatrixAssembly<ValueType> assembly;
 
-    CSRSparseMatrix<ValueType> matrix1( rowDist, colDist );
-
-    // Assemble matrix data by arbitrary processors, entries at same location are ignored
-
+    for ( IndexType i = 0; i < nnz; ++i )
     {
-        MatrixAssemblyAccess<ValueType> assembly( matrix1 );
+        // choose two processors that push the elements
 
-        for ( IndexType i = 0; i < nnz; ++i )
+        if ( i % commSize == commRank )
         {
-            // choose two processors that push the elements
-
-            PartitionId p1 = i % commSize;
-            PartitionId p2 = ( i * 5 - 2 ) % commSize;
-
-            if ( p1 == commRank )
-            {
-                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
-            }
-            if ( p2 == commRank )
-            {
-                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
-            }
+            assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
         }
     }
 
-    SCAI_LOG_INFO( logger, *comm << ": assembled this matrix with REPLACE: " << matrix1 )
+    BOOST_CHECK_EQUAL( 10, assembly.getNumRows() );
+    BOOST_CHECK_EQUAL( 10, assembly.getNumColumns() );
 
-    // Assemble matrix data by arbitrary processors, entries at same location are summed up
+    dmemo::TestDistributions rowDists( numRows );
 
+    auto colDist = std::make_shared<dmemo::NoDistribution>( numColumns );
+
+    for ( size_t j = 0; j < rowDists.size(); ++j )
     {
-        MatrixAssemblyAccess<ValueType> assembly( matrix1, common::binary::ADD );
+        dmemo::DistributionPtr rowDist = rowDists[j];
 
-        for ( IndexType i = 0; i < nnz; ++i )
+        if ( rowDist->getCommunicator() != assembly.getCommunicator() )
         {
-            PartitionId p1 = ( i + 2 ) % commSize;
-            PartitionId p2 = ( i * 3 + 7 ) % commSize;
-
-            if ( p1 == commRank )
-            {
-                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
-            }
-            if ( p2 == commRank )
-            {
-                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
-            }
+            continue;
         }
-    }
 
-    SCAI_LOG_INFO( logger, *comm << ": assembled this matrix with SUM: " << matrix1 )
+        auto matrixAssembled = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
+
+        matrixAssembled.fillFromAssembly( assembly );
+
+        auto matrixExpected = distribute<CSRSparseMatrix<ValueType>>( coo, rowDist, colDist );
+
+        // verify that both matrices are same
+
+        const CSRStorage<ValueType>& local1 = matrixAssembled.getLocalStorage();
+        const CSRStorage<ValueType>& local2 = matrixExpected.getLocalStorage();
+
+        BOOST_CHECK_EQUAL( local1.maxDiffNorm( local2 ), 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( globalTest )
+{
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    PartitionId commSize = comm->getSize();
+    PartitionId commRank = comm->getRank();
+
+    IndexType numRows    = 10;
+    IndexType numColumns = 15;
+
+    IndexType raw_ia[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2 };
+    IndexType raw_ja[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3 };
+    ValueType raw_val[] = { 1, -1, 1, -1, 2, 1, 3, 4, 5, 8, -3, -2, -4 };
+
+    IndexType nnz = sizeof( raw_ia ) / sizeof( IndexType );
 
     hmemo::HArrayRef<IndexType> cooIA( nnz, raw_ia );
     hmemo::HArrayRef<IndexType> cooJA( nnz, raw_ja );
@@ -135,16 +153,163 @@ BOOST_AUTO_TEST_CASE( simpleTest )
 
     COOStorage<ValueType> coo( numRows, numColumns, cooIA, cooJA, cooValues );
 
-    CSRSparseMatrix<ValueType> matrix2( coo, rowDist, colDist );
+    SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_ja ) / sizeof( IndexType ), "" )
+    SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_val ) / sizeof( ValueType ), "" )
 
-    matrix2 *= 3;    // entries have been inserted once and added twice
+    MatrixAssembly<ValueType> assembly;
+
+    for ( IndexType i = 0; i < nnz; ++i )
+    {
+        // choose two processors that push the elements
+
+        if ( i % commSize == commRank )
+        {
+            assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+        }
+    }
+
+    COOStorage<ValueType> cooGlobal = assembly.buildGlobalCOO( numRows, numColumns );
+ 
+    BOOST_REQUIRE_EQUAL( numRows, cooGlobal.getNumRows() );
+    BOOST_REQUIRE_EQUAL( numColumns, cooGlobal.getNumColumns() );
+
+    BOOST_CHECK_EQUAL( coo.maxDiffNorm( cooGlobal ), 0 );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( failTest )
+{
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    PartitionId commSize = comm->getSize();
+    PartitionId commRank = comm->getRank();
+
+    IndexType numRows    = 10;
+    IndexType numColumns = 15;
+
+    IndexType raw_ia[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2 };
+    IndexType raw_ja[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3 };
+    ValueType raw_val[] = { 1, -1, 1, -1, 2, 1, 3, 4, 5, 8, -3, -2, -4 };
+
+    IndexType nnz = sizeof( raw_ia ) / sizeof( IndexType );
+
+    SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_ja ) / sizeof( IndexType ), "" )
+    SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_val ) / sizeof( ValueType ), "" )
+
+    MatrixAssembly<ValueType> assembly( comm );
+
+    for ( IndexType i = 0; i < nnz; ++i )
+    {
+        // choose two processors that push the elements
+
+        if ( i % commSize == commRank )
+        {
+            assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+        }
+    }
+
+    auto dist = std::make_shared<dmemo::BlockDistribution>( numRows, comm);
+
+    COOStorage<ValueType> localStorage;
+
+    localStorage = assembly.buildLocalCOO( *dist, numColumns );
+
+    BOOST_CHECK_EQUAL( comm->sum( localStorage.getNumValues() ), nnz );
+
+    // number of columns too small
+
+    BOOST_CHECK_THROW( {
+        localStorage = assembly.buildLocalCOO( *dist, 5 );
+    }, common::Exception );
+
+    // number of rows too small
+
+    dist = std::make_shared<dmemo::BlockDistribution>( 5, comm);
+
+    BOOST_CHECK_THROW( {
+        localStorage = assembly.buildLocalCOO( *dist, numColumns );
+    }, common::Exception );
+
+    // building local data only with distribution that has same communicator
+
+    auto noDist = std::make_shared<dmemo::NoDistribution>( numRows );
+
+    if ( noDist->getCommunicator() != assembly.getCommunicator() )
+    {
+        SCAI_LOG_INFO( logger, "noDist::comm = " << noDist->getCommunicator() <<
+                               " != assembly::comm = " << assembly.getCommunicator() )
+        BOOST_CHECK_THROW( {
+            localStorage = assembly.buildLocalCOO( *noDist, numColumns );
+        }, common::Exception );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( operatorTest )
+{
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    PartitionId commSize = comm->getSize();
+    PartitionId commRank = comm->getRank();
+
+    IndexType numRows    = 10;
+    IndexType numColumns = 15;
+
+    IndexType raw_ia[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2 };
+    IndexType raw_ja[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3 };
+    ValueType raw_val[] = { 1, -1, 1, -1, 2, 1, 3, 4, 5, 8, -3, -2, -4 };
+
+    IndexType nnz = sizeof( raw_ia ) / sizeof( IndexType );
+
+    hmemo::HArrayRef<IndexType> cooIA( nnz, raw_ia );
+    hmemo::HArrayRef<IndexType> cooJA( nnz, raw_ja );
+    hmemo::HArrayRef<ValueType> cooValues( nnz, raw_val );
+
+    COOStorage<ValueType> coo( numRows, numColumns, cooIA, cooJA, cooValues );
+
+    SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_ja ) / sizeof( IndexType ), "" )
+    SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_val ) / sizeof( ValueType ), "" )
+
+    MatrixAssembly<ValueType> assembly;
+
+    for ( IndexType i = 0; i < nnz; ++i )
+    {
+        // choose two processors that push the elements
+
+        if ( i % commSize == commRank )
+        {
+            assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+        }
+        if ( ( i * 5 + 2 ) % commSize == commRank )
+        {
+            assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+        }
+    }
+
+    BOOST_CHECK_EQUAL( 10, assembly.getNumRows() );
+    BOOST_CHECK_EQUAL( 10, assembly.getNumColumns() );
+    // BOOST_CHECK_EQUAL( 2 * nnz, assembly.getNumValues() );
+
+    dmemo::TestDistributions rowDists( numRows );
+
+    auto rowDist = std::make_shared<dmemo::BlockDistribution>( numRows );
+    auto colDist = std::make_shared<dmemo::NoDistribution>( numColumns );
+
+    auto matrixAssembled = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
+
+    // fillFromAssembly will redistribute the assembled data and add it to the matrix
+
+    matrixAssembled.fillFromAssembly( assembly, common::BinaryOp::ADD );
+
+    auto matrixExpected = distribute<CSRSparseMatrix<ValueType>>( coo, rowDist, colDist );
+
+    matrixExpected = 2 * matrixExpected;
 
     // verify that both matrices are same
-
-    const CSRStorage<ValueType>& local1 = matrix1.getLocalStorage();
-    const CSRStorage<ValueType>& local2 = matrix2.getLocalStorage();
-
-    BOOST_CHECK_EQUAL( local1.maxDiffNorm( local2 ), 0 );
+  
+    BOOST_CHECK_EQUAL( matrixExpected.maxDiffNorm( matrixAssembled ), 0 );
 }
 
 /* ------------------------------------------------------------------------- */

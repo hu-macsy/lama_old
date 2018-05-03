@@ -28,35 +28,36 @@
  * @endlicense
  *
  * @brief simple.cpp
- * @author
+ * @author The LAMA development team
  * @date 17.05.2013
  */
 
 #include <scai/lama.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 
-using namespace scai::lama;
+using namespace scai;
+using namespace lama;
 
 /** Take default real type for this example. */
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main()
 {
     //
-    // Create a DenseVector of size 8 with value 1.1 in each row
+    // Create a DenseVector of size 8 with value 1.1 in each position
     //
     IndexType size = 8;
-    DenseVector<ValueType> v( size, 1.1 );
+
+    const auto v = fill<DenseVector<ValueType>>( size, 1.1 );
     //
-    // Getting the L1 norm of the vector and printing out the scalar
+    // Compute the L1 norm of the vector and print it
     //
-    Scalar s = v.l1Norm();
-    std::cout << "L1 norm of v = " << s.getValue<ValueType>() << std::endl;
+    ValueType s = v.l1Norm();
+    std::cout << "L1 norm of v = " << s << std::endl;
     //
     //  That's it.
     //

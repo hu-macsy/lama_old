@@ -28,12 +28,14 @@
  * @endlicense
  *
  * @brief Instantitions for template class COOStorage.
- * @author Lauretta Schubert
+ * @author Lauretta Schubert, Thomas Brandes
  * @date 25.05.2011
  */
 
 // hpp
 #include <scai/lama/storage/COOStorage.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/lama/storage/COOUtils.hpp>
 
 // internal scai libraries
 #include <scai/sparsekernel/COOKernelTrait.hpp>
@@ -51,24 +53,24 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/macros/loop.hpp>
+#include <scai/common/macros/unsupported.hpp>
 
 // sqrt for all value types
 #include <cmath>
+#include <memory>
+
+using std::unique_ptr;
 
 using namespace scai::hmemo;
 
 namespace scai
 {
-
-using common::unique_ptr;
-using common::shared_ptr;
 
 using tasking::SyncToken;
 
@@ -78,6 +80,8 @@ using utilskernel::HArrayUtils;
 
 using sparsekernel::COOKernelTrait;
 using sparsekernel::CSRKernelTrait;
+
+using common::BinaryOp;
 
 namespace lama
 {
@@ -89,55 +93,200 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, COOStorage<ValueType
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOStorage<ValueType>::COOStorage( const IndexType numRows, const IndexType numColumns )
-    :
+COOStorage<ValueType>::COOStorage( ContextPtr ctx ) : 
 
-    CRTPMatrixStorage<COOStorage<ValueType>, ValueType>( numRows, numColumns ), mNumValues( 0 )
+    MatrixStorage<ValueType>( 0, 0, ctx ),
+    mIA( ctx ),
+    mJA( ctx ),
+    mValues( ctx )
 {
-    SCAI_LOG_DEBUG( logger, "COOStorage for matrix " << mNumRows << " x " << mNumColumns << ", no non-zero elements" )
+    SCAI_LOG_DEBUG( logger, "COOStorage for matrix " << getNumRows() 
+                             << " x " << getNumColumns() << ", no non-zero elements @ " << *ctx )
+   
+    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOStorage<ValueType>::COOStorage(
-    const IndexType numRows,
+COOStorage<ValueType>::COOStorage( IndexType numRows, IndexType numColumns, ContextPtr ctx ) : 
+
+    MatrixStorage<ValueType>( numRows, numColumns, ctx ),
+    mIA( ctx ),
+    mJA( ctx ),
+    mValues( ctx )
+{
+    SCAI_LOG_DEBUG( logger, "COOStorage for matrix " << getNumRows() 
+                             << " x " << getNumColumns() << ", no non-zero elements @ " << *ctx )
+   
+    _MatrixStorage::resetDiagonalProperty();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOStorage<ValueType>::COOStorage( 
+    const IndexType numRows, 
     const IndexType numColumns,
-    const HArray<IndexType>& ia,
-    const HArray<IndexType>& ja,
-    const HArray<ValueType>& values )
+    HArray<IndexType> ia, 
+    HArray<IndexType> ja, 
+    HArray<ValueType> values, 
+    ContextPtr ctx ) : 
 
-    : CRTPMatrixStorage<COOStorage<ValueType>, ValueType>()
+    MatrixStorage<ValueType>( numRows, numColumns, ctx ),
+
+    mIA( std::move( ia ) ),
+    mJA( std::move( ja ) ),
+    mValues( std::move( values ) )
+
 {
-    // all array must have the same size
-    IndexType numValues = ia.size();
-    setCOOData( numRows, numColumns, numValues, ia, ja, values );
+    SCAI_ASSERT_EQ_ERROR( mIA.size(), mJA.size(), "serious mismatch for sizes of ia, ja" )
+    SCAI_ASSERT_EQ_ERROR( mIA.size(), mValues.size(), "serious mismatch for sizes of ia, ja" )
+
+    // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
+
+#ifdef SCAI_ASSERT_LEVEL_DEBUG
+    check( "COOStorage( m, n, ia, ja, values)" );
+#endif
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOStorage<ValueType>::COOStorage( const COOStorage<ValueType>& other )
+COOStorage<ValueType>::COOStorage( const COOStorage<ValueType>& other ) : 
 
-    : CRTPMatrixStorage<COOStorage<ValueType>, ValueType>( 0, 0 )
+    MatrixStorage<ValueType>( other )
+
 {
-    // ToDo: copy of same storage format should be more efficient
-    assign( other );
+    assignImpl( other );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOStorage<ValueType>::COOStorage()
-    : CRTPMatrixStorage<COOStorage<ValueType>, ValueType>( 0, 0 ), mNumValues( 0 )
+COOStorage<ValueType>::COOStorage( COOStorage<ValueType>&& other ) :
+
+    MatrixStorage<ValueType>( std::move( other ) ),
+
+    mIA( std::move( other.mIA ) ),
+    mJA( std::move( other.mJA ) ),
+    mValues( std::move( other.mValues ) )
 {
-    SCAI_LOG_DEBUG( logger, "COOStorage, matrix is 0 x 0." )
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat COOStorage<ValueType>::getFormat() const
+COOStorage<ValueType>::~COOStorage()
+{
+    SCAI_LOG_DEBUG( logger, "~COOStorage for matrix " << getNumRows() << " x " << getNumColumns() )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOStorage<ValueType>& COOStorage<ValueType>::operator=( const COOStorage<ValueType>& other )
+{
+    assignCOO( other );
+    return *this;
+}
+
+template<typename ValueType>
+COOStorage<ValueType>& COOStorage<ValueType>::operator=( COOStorage<ValueType>&& other )
+{
+    // call of move assignment for base class 
+
+    MatrixStorage<ValueType>::moveImpl( std::move( other ) );
+
+    // move of all member variables
+
+    mIA = std::move( other.mIA );
+    mJA = std::move( other.mJA );
+    mValues = std::move( other.mValues );
+
+    return *this;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::assign( const _MatrixStorage& other )
+{
+    // translate virtual call to specific template call via wrapper
+
+    mepr::StorageWrapper<COOStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::assignImpl( this, other );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void COOStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& other )
+{
+    ContextPtr ctx = getContextPtr();   // will force a valid copy in this context
+
+    if ( other.getFormat() == Format::COO )
+    {
+        // both storage have COO format, use special method for it
+
+        assignCOO( static_cast<const COOStorage<OtherValueType> & >( other ) );
+    }
+    else if ( other.getFormat() == Format::CSR )
+    {
+        const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
+
+        setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(), 
+                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues(), ctx );
+    }
+    else 
+    {
+        HArray<IndexType>  csrIA( ctx );
+        HArray<IndexType>  csrJA( ctx );
+        HArray<ValueType>  csrValues( ctx );     // might also be OtherValueType, depending on size
+
+        other.buildCSRData( csrIA, csrJA, csrValues );
+
+        // just a thought for optimization: use mIA, mJA, mValues instead of csrIA, csrJA, csrValues
+        // but does not help much at all as resort of entries requires already temporaries.
+
+        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues, ctx );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void COOStorage<ValueType>::assignCOO( const COOStorage<OtherValueType>& other )
+{
+    if ( other.getValueType() == getValueType() )
+    {
+        if ( reinterpret_cast<const COOStorage<ValueType>*>( &other ) == this )
+        {
+            SCAI_LOG_INFO( logger, typeName() << ": self assign, skipped, matrix = " << other )
+            return;
+        }
+    }
+
+    auto ctx = getContextPtr();
+
+    // both storage have COO format, we can just copy the corresponding arrays to the right context
+
+    _MatrixStorage::_assign( other );
+
+    HArrayUtils::setArray( mIA, other.getIA(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::setArray( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
+    HArrayUtils::setArray( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
+
+    _MatrixStorage::resetDiagonalProperty();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Format COOStorage<ValueType>::getFormat() const
 {
     return Format::COO;
 }
@@ -148,13 +297,13 @@ template<typename ValueType>
 void COOStorage<ValueType>::print( std::ostream& stream ) const
 {
     using std::endl;
-    stream << "COOStorage " << mNumRows << " x " << mNumColumns << ", #values = " << mNumValues << endl;
+    stream << "COOStorage " << getNumRows() << " x " << getNumColumns() << ", #values = " << getNumValues() << endl;
     ContextPtr host = Context::getHostPtr();
     ReadAccess<IndexType> ia( mIA, host );
     ReadAccess<IndexType> ja( mJA, host );
     ReadAccess<ValueType> values( mValues, host );
 
-    for ( IndexType i = 0; i < mNumValues; i++ )
+    for ( IndexType i = 0; i < mIA.size(); i++ )
     {
         stream << "@[ " << ia[i] << ", " << ja[i] << " ] = " << values[i] << endl;
     }
@@ -167,11 +316,11 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
 {
     bool diagonalProperty = true;
 
-    if ( mNumRows != mNumColumns )
+    if ( getNumRows() != getNumColumns() )
     {
         diagonalProperty = false;
     }
-    else if ( mNumRows == 0 )
+    else if ( getNumRows() == 0 )
     {
         // zero sized matrix
         diagonalProperty = true;
@@ -188,7 +337,7 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
         hasDiagonalProperty.getSupportedContext( loc );
         ReadAccess<IndexType> ia( mIA, loc );
         ReadAccess<IndexType> ja( mJA, loc );
-        diagonalProperty = hasDiagonalProperty[loc]( ia.get(), ja.get(), mNumRows );
+        diagonalProperty = hasDiagonalProperty[loc]( ia.get(), ja.get(), getNumRows() );
     }
 
     SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
@@ -200,12 +349,12 @@ bool COOStorage<ValueType>::checkDiagonalProperty() const
 template<typename ValueType>
 void COOStorage<ValueType>::clear()
 {
-    mNumRows = 0;
-    mNumColumns = 0;
-    mNumValues = 0;
+    _MatrixStorage::setDimension( 0, 0 );
+
     mIA.clear();
     mJA.clear();
     mValues.clear();
+
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -214,23 +363,14 @@ void COOStorage<ValueType>::clear()
 template<typename ValueType>
 void COOStorage<ValueType>::check( const char* msg ) const
 {
-    SCAI_ASSERT_EQUAL_ERROR( mNumValues, mIA.size() )
-    SCAI_ASSERT_EQUAL_ERROR( mNumValues, mJA.size() )
-    SCAI_ASSERT_EQUAL_ERROR( mNumValues, mValues.size() )
-    // check row indexes in IA and column indexes in JA
-    {
-        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
-        ContextPtr loc = getContextPtr();
-        validIndexes.getSupportedContext( loc );  // find location where routine is available
-        ReadAccess<IndexType> rJA( mJA, loc );
-        ReadAccess<IndexType> rIA( mIA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        bool okayIA = validIndexes[ loc ]( rIA.get(), mNumValues, mNumRows );
-        SCAI_ASSERT_ERROR( okayIA,  *this << " @ " << msg << ": illegel indexes in IA" )
-        bool okayJA = validIndexes[ loc ]( rJA.get(), mNumValues, mNumColumns );
-        SCAI_ASSERT_ERROR( okayJA, *this << " @ " << msg << ": illegel indexes in JA" )
-        SCAI_LOG_INFO( logger, "check, msg = " << msg << ", okayIA = " << okayIA << ", okayJA = " << okayJA )
-    }
+    SCAI_ASSERT_EQ_ERROR( mIA.size(), mJA.size(), msg << ": serious mismatch for sizes of ia, ja" )
+    SCAI_ASSERT_EQ_ERROR( mIA.size(), mValues.size(), msg << ": serious mismatch for sizes of ia, values" )
+
+    const IndexType m = getNumRows();
+    const IndexType n = getNumColumns();
+
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mIA, m ), msg << ": invalid row indexes, #rows = " << m );
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mJA, n ), msg << ": invalid column indexes, #cols = " << n );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -238,21 +378,31 @@ void COOStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 void COOStorage<ValueType>::setIdentity( const IndexType size )
 {
+    _MatrixStorage::setDimension( size, size );
+
     SCAI_LOG_INFO( logger, "set identity values for " << size )
-    mNumRows = size;
-    mNumColumns = size;
-    mNumValues = mNumRows;
-    static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    ContextPtr loc = this->getContextPtr();
-    setOrder.getSupportedContext( loc, setVal );  // setOrder, setVal must be available at loc
-    WriteOnlyAccess<IndexType> ia( mIA, loc, mNumValues );
-    WriteOnlyAccess<IndexType> ja( mJA, loc, mNumValues );
-    WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
-    SCAI_CONTEXT_ACCESS( loc )
-    setOrder[loc]( ia.get(), mNumValues );
-    setOrder[loc]( ja.get(), mNumValues );
-    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), common::binary::COPY );
+
+    HArrayUtils::setOrder( mIA, size, getContextPtr() );
+    HArrayUtils::setOrder( mJA, size, getContextPtr() );
+
+    HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), getContextPtr() );
+
+    mDiagonalProperty = true;
+}
+
+/* --------------------------------------------------------------------------- */
+template<typename ValueType>
+void COOStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
+{
+    const IndexType size = diagonal.size();
+
+    _MatrixStorage::setDimension( size, size );
+
+    HArrayUtils::setOrder( mIA, size, getContextPtr() );
+    HArrayUtils::setOrder( mJA, size, getContextPtr() );
+
+    HArrayUtils::setArray( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
+
     mDiagonalProperty = true;
 }
 
@@ -268,15 +418,19 @@ void COOStorage<ValueType>::setCOOData(
     const _HArray& values )
 {
     // check the sizes of the arrays
-    SCAI_ASSERT_EQUAL_ERROR( numValues, ia.size() )
-    SCAI_ASSERT_EQUAL_ERROR( numValues, ja.size() )
-    SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() )
+
+    SCAI_ASSERT_EQ_ERROR( numValues, ia.size(), "illegal size for ia" )
+    SCAI_ASSERT_EQ_ERROR( numValues, ja.size() , "illegal size for ja" )
+    SCAI_ASSERT_EQ_ERROR( numValues, values.size() , "illegal size for values" )
+
     _MatrixStorage::setDimension( numRows, numColumns );
-    mNumValues = numValues;
+
     ContextPtr loc = getContextPtr();
+
     HArrayUtils::assign( mIA, ia, loc );
     HArrayUtils::assign( mJA, ja, loc );
-    HArrayUtils::assign( mValues, values, loc ); // supports type conversion
+    HArrayUtils::_assign( mValues, values, loc ); // supports type conversion
+
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 #ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "COOStorage.setCOOData" );
@@ -288,27 +442,15 @@ void COOStorage<ValueType>::setCOOData(
 
 /* --------------------------------------------------------------------------- */
 
-
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-COOStorage<ValueType>::~COOStorage()
-{
-    SCAI_LOG_DEBUG( logger, "~COOStorage for matrix " << mNumRows << " x " << mNumColumns )
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType>
 void COOStorage<ValueType>::purge()
 {
-    mNumColumns = 0;
-    mNumRows = 0;
-    mNumValues = 0;
+    _MatrixStorage::setDimension( 0, 0 );
+
     mIA.purge();
     mJA.purge();
     mValues.purge();
+
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -318,9 +460,13 @@ template<typename ValueType>
 void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     SCAI_LOG_INFO( logger, "allocate COO sparse matrix of size " << numRows << " x " << numColumns )
-    clear(); // all variables are set for a zero-sized matrix
-    mNumRows = numRows;
-    mNumColumns = numColumns;
+
+    _MatrixStorage::setDimension( numRows, numColumns );
+
+    mIA.clear();
+    mJA.clear();
+    mValues.clear();
+
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -330,8 +476,8 @@ template<typename ValueType>
 void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "COOStorage<" << common::getScalarType<ValueType>()
-           << ">( size = " << mNumRows << " x " << mNumColumns
-           << ", nnz = " << mNumValues << " )" ;
+           << ">( size = " << getNumRows() << " x " << getNumColumns()
+           << ", nnz = " << getNumValues() << " )" ;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -339,8 +485,8 @@ void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
 
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
 
@@ -353,13 +499,15 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
     ReadAccess<IndexType> rIa( mIA, loc );
     ReadAccess<IndexType> rJa( mJA, loc );
 
-    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), mNumValues );
+    IndexType numValues = mIA.size();
+
+    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), numValues );
 
     ValueType val = 0;
 
-    if ( pos != nIndex )
+    if ( pos != invalidIndex )
     {
-        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, numValues, "illegal value position for ( " << i << ", " << j << " )" );
 
         val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
     }
@@ -373,10 +521,10 @@ template<typename ValueType>
 void COOStorage<ValueType>::setValue( const IndexType i,
                                       const IndexType j,
                                       const ValueType val,
-                                      const common::binary::BinaryOp op )
+                                      const BinaryOp op )
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
 
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
 
@@ -389,16 +537,17 @@ void COOStorage<ValueType>::setValue( const IndexType i,
     ReadAccess<IndexType> rIa( mIA, loc );
     ReadAccess<IndexType> rJa( mJA, loc );
 
-    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), mNumValues );
+    IndexType nnz = getNumValues();
+    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), nnz );
 
-    if ( pos == nIndex )
+    if ( pos == invalidIndex )
     {
         COMMON_THROWEXCEPTION( "COO storage has no entry ( " << i << ", " << j << " ) " )
     }
 
-    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mValues.size(), "illegal value position for ( " << i << ", " << j << " )" );
 
-    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
+    utilskernel::HArrayUtils::setVal( mValues, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -440,15 +589,17 @@ const HArray<ValueType>& COOStorage<ValueType>::getValues() const
 template<typename ValueType>
 IndexType COOStorage<ValueType>::getNumValues() const
 {
-    return mNumValues;
+    return mIA.size();
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
+void COOStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    SCAI_ASSERT_ERROR( this->hasDiagonalProperty(), "cannot set diagonal for COO, no diagonal property" )
+
+    IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );
     ContextPtr loc = Context::getHostPtr();
     WriteAccess<ValueType> wValues( mValues, loc );
     ReadAccess<IndexType> rJa( mJA, loc );
@@ -465,23 +616,22 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::conj()
 {
-    HArrayUtils::unaryOp( mValues, mValues, common::unary::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::scaleImpl( const HArray<OtherType>& values )
+void COOStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 {
-    static LAMAKernel<COOKernelTrait::scaleRows<ValueType, OtherType> > scaleRows;
+    static LAMAKernel<COOKernelTrait::scaleRows<ValueType, ValueType> > cooScaleRows;
     ContextPtr loc = this->getContextPtr();
-    scaleRows.getSupportedContext( loc );
+    cooScaleRows.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<OtherType> rValues( values, loc );
+    ReadAccess<ValueType> rValues( values, loc );
     WriteAccess<ValueType> wValues( mValues, loc );  // update
     ReadAccess<IndexType> rIa( mIA, loc );
-    scaleRows[loc]( wValues.get(), rValues.get(), rIa.get(), mNumValues );
+    cooScaleRows[loc]( wValues.get(), rValues.get(), rIa.get(), mValues.size() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -497,65 +647,62 @@ void COOStorage<ValueType>::wait() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::swap( _MatrixStorage& other )
+void COOStorage<ValueType>::swap( COOStorage<ValueType>& other )
 {
-    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
-    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+    // swap base class
 
-    // only in debug mode use the more expensive dynamic cast for verification
+    MatrixStorage<ValueType>::swap( other );
 
-    SCAI_ASSERT_DEBUG( dynamic_cast<COOStorage<ValueType>* >( &other ), "illegal storage to swap" )
+    // swap member varibles
 
-    swapImpl( reinterpret_cast<COOStorage<ValueType>& >( other ) );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void COOStorage<ValueType>::swapImpl( COOStorage<ValueType>& other )
-{
-    std::swap( mNumValues, other.mNumValues );
     mIA.swap( other.mIA );
     mJA.swap( other.mJA );
     mValues.swap( other.mValues );
 
-    MatrixStorage<ValueType>::swapMS( other );
+    // verify that row and column indexes in ia, ja are legal
+
+#ifdef SCAI_ASSERT_LEVEL_DEBUG
+    check( "COOStorage.swap( ia, ja, values)" );
+#endif
+
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values )
+void COOStorage<ValueType>::splitUp( 
+    IndexType& numRows, 
+    IndexType& numColumns, 
+    HArray<IndexType>& ia, 
+    HArray<IndexType>& ja, 
+    HArray<ValueType>& values )
 {
-    IndexType numValues = ia.size();
+    numRows    = getNumRows();
+    numColumns = getNumColumns();
 
-    SCAI_ASSERT_EQUAL( numValues, ja.size(), "mismatch of coo IA and JA array" );
-    SCAI_ASSERT_EQUAL( numValues, values.size(), "mismatch of coo IA and Values array" );
+    ia = std::move( mIA );
+    ja = std::move( mJA );
+    values = std::move( mValues );
 
-    mIA.swap( ia );
-    mJA.swap( ja );
-    mValues.swap( values );
+    // this storage should never be used afterwards, but make it consistent for safety
 
-    // guarantee consistency of the new array
-
-    mNumValues = numValues;
-    mDiagonalProperty = checkDiagonalProperty();
+    _MatrixStorage::setDimension( 0, 0 );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType COOStorage<ValueType>::l1Norm() const
+RealType<ValueType> COOStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     // asum over the full array mValues
-    return HArrayUtils::asum( mValues, this->getContextPtr() );
+    return HArrayUtils::l1Norm( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType COOStorage<ValueType>::l2Norm() const
+RealType<ValueType> COOStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     ValueType res = HArrayUtils::dotProduct( mValues, mValues, this->getContextPtr() );
@@ -565,10 +712,10 @@ ValueType COOStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename COOStorage<ValueType>::StorageAbsType COOStorage<ValueType>::maxNorm() const
+RealType<ValueType> COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
-    return HArrayUtils::reduce( mValues, common::binary::ABS_MAX, this->getContextPtr() );
+    return HArrayUtils::reduce( mValues, BinaryOp::ABS_MAX, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -591,13 +738,15 @@ SyncToken* COOStorage<ValueType>::incGEMV(
     HArray<ValueType>& result,
     const ValueType alpha,
     const HArray<ValueType>& x,
+    const common::MatrixOp op,
     bool async ) const
 {
     SCAI_LOG_INFO( logger, "incGEMV ( async = " << async << " ) , result += " << alpha << " * storage * x" )
+
     static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
     ContextPtr loc = this->getContextPtr();
     normalGEMV.getSupportedContext( loc );
-    common::unique_ptr<SyncToken> syncToken;
+    std::unique_ptr<SyncToken> syncToken;
 
     if ( async )
     {
@@ -614,8 +763,8 @@ SyncToken* COOStorage<ValueType>::incGEMV(
     // use general kernel, might change
     ValueType beta = 1;
     normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(),
-                     mNumRows, mNumValues,
-                     cooIA.get(), cooJA.get(), cooValues.get() );
+                     getNumRows(), getNumColumns(), mIA.size(),
+                     cooIA.get(), cooJA.get(), cooValues.get(), op );
 
     if ( async )
     {
@@ -633,129 +782,17 @@ SyncToken* COOStorage<ValueType>::incGEMV(
 
 template<typename ValueType>
 void COOStorage<ValueType>::matrixTimesVector(
-
     HArray<ValueType>& result,
     const ValueType alpha,
     const HArray<ValueType>& x,
     const ValueType beta,
-    const HArray<ValueType>& y ) const
+    const HArray<ValueType>& y,
+    const common::MatrixOp op ) const
 
 {
-    SCAI_LOG_INFO( logger,
-                   *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
-    SCAI_REGION( "Storage.COO.matrixTimesVector" )
-
-    if ( alpha == common::constants::ZERO || mNumValues == 0 )
-    {
-        // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
-        return;
-    }
-
-    ContextPtr loc = this->getContextPtr();
-
-    // Due to COO format GEMV does not benefit of coupling all in one operation, so split it
-
-    // Step 1: result = beta * y
-
-    if ( beta == common::constants::ZERO )
-    {
-        result.clear();
-        result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
-    }
-    else
-    {
-        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
-    }
-
-    bool async = false;
-    SyncToken* token = incGEMV( result, alpha, x, async );
-    SCAI_ASSERT( token == NULL, "syncrhonous execution cannot have token" )
-}
-
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* COOStorage<ValueType>::incGEVM(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    bool async ) const
-{
-    SCAI_LOG_INFO( logger, "incGEVM ( async = " << async << " ) , result += " << alpha << " * x * storage" )
-    static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
-    ContextPtr loc = this->getContextPtr();
-    normalGEVM.getSupportedContext( loc );
-    common::unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> cooIA( mIA, loc );
-    ReadAccess<IndexType> cooJA( mJA, loc );
-    ReadAccess<ValueType> cooValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    WriteAccess<ValueType> wResult( result, loc, mNumColumns );
-    // use general kernel, might change
-    ValueType beta = 1;
-    normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(),
-                     mNumColumns, mNumValues,
-                     cooIA.get(), cooJA.get(), cooValues.get() );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( cooValues.releaseDelayed() );
-        syncToken->pushRoutine( cooIA.releaseDelayed() );
-        syncToken->pushRoutine( cooJA.releaseDelayed() );
-    }
-
-    return syncToken.release();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void COOStorage<ValueType>::vectorTimesMatrix(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const ValueType beta,
-    const HArray<ValueType>& y ) const
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": vectorTimesMatrix, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
-    SCAI_REGION( "Storage.COO.VectorTimesMatrix" )
-    ContextPtr loc = this->getContextPtr();
-
-    // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
-
-    // Step 1: result = beta * y
-
-    if ( beta == common::constants::ZERO )
-    {
-        result.clear();
-        result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
-    }
-    else
-    {
-        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
-    }
-
-    // Step 2: result = alpha * x * this + 1 * result
-    bool async = false;
-    SyncToken* token = incGEVM( result, alpha, x, async );
-    SCAI_ASSERT( NULL == token, "syncrhonous execution has no token" )
+    bool async = false; // synchronously execution, no SyncToken required
+    SyncToken* token = gemv( result, alpha, x, beta, y, op, async );
+    SCAI_ASSERT( token == NULL, "There should be no sync token for synchronous execution" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -766,54 +803,85 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     const ValueType alpha,
     const HArray<ValueType>& x,
     const ValueType beta,
-    const HArray<ValueType>& y ) const
+    const HArray<ValueType>& y,
+    const common::MatrixOp op ) const
 {
-    SCAI_LOG_INFO( logger,
-                   *this << ": matrixTimesVectorAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
-    SCAI_REGION( "Storage.COO.matrixTimesVectorAsync" )
-    ContextPtr loc = this->getContextPtr();
+    bool async = true;
+    SyncToken* token = gemv( result, alpha, x, beta, y, op, async );
+    SCAI_ASSERT( token, "NULL token not allowed for asynchronous execution gemv, alpha = " << alpha << ", beta = " << beta )
+    return token;
+}
 
-    if ( alpha == common::constants::ZERO || mNumValues == 0 )
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* COOStorage<ValueType>::gemv(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y,
+    const common::MatrixOp op,
+    bool async ) const
+{
+    SCAI_REGION( "Storage.COO.gemv" )
+
+    const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
+
+    SCAI_LOG_INFO( logger,
+                   "GEMV ( op = " << op << ", async = " << async
+                   << " ), result [" << nTarget << "] = " << alpha << " * A * x + " << beta << " * y "
+                   << ", result = " << result << ", x = " << x << ", y = " << y
+                   << ", A (this) = " << *this );
+
+    if ( alpha == common::Constants::ZERO || getNumValues() == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
-        return new tasking::NoSyncToken();
+
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, getContextPtr() );
+
+        if ( async )
+        {
+            return new tasking::NoSyncToken();
+        }
+        else
+        {
+            return NULL;
+        }
     }
 
     // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
-        result.clear();
-        result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), getContextPtr() );
     }
     else
     {
-        // Note: binary::MULT will deal with
-        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
+        // Note: BinaryOp::MULT will deal with
+        SCAI_ASSERT_EQUAL( y.size(), nTarget, "size mismatch y, beta = " << beta )
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, getContextPtr() );
     }
 
-    bool async = true;
-    SyncToken* token = incGEMV( result, alpha, x, async );
-    SCAI_ASSERT( token, "asyncrhonous execution cannot have NULL token" )
-    return token;
+    return incGEMV( result, alpha, x, op, async );
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 template<typename OtherValueType>
 void COOStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType numValues,
     const hmemo::HArray<IndexType>& ia,
     const hmemo::HArray<IndexType>& ja,
     const hmemo::HArray<OtherValueType>& values,
     const hmemo::ContextPtr prefLoc )
 {
+    IndexType numValues = ja.size();
+
     SCAI_LOG_DEBUG( logger, "set CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
     if ( ia.size() == numRows )
@@ -822,20 +890,22 @@ void COOStorage<ValueType>::setCSRDataImpl(
         hmemo::HArray<IndexType> offsets;
         IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
         SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
-        setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
+        setCSRDataImpl( numRows, numColumns, offsets, ja, values, prefLoc );
         return;
     }
+
+    _MatrixStorage::setDimension( numRows, numColumns );
 
     SCAI_REGION( "Storage.COO.buildCSR" )
 
     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
+
     hmemo::ContextPtr loc = prefLoc;
+
     // ReadAccess<IndexType> csrJA( ja, loc );
     // ReadAccess<OtherValueType> csrValues( values, loc );
-    mNumRows = numRows;
-    mNumColumns = numColumns;
+
     // check if input csr data has the diagonal property and inherit it
     int numDiagonals = std::min( numRows, numColumns );
     {
@@ -855,17 +925,16 @@ void COOStorage<ValueType>::setCSRDataImpl(
         numDiagonals = 0; // do not store diagonal data at the beginning in COO data
     }
 
-    mNumValues = numValues;
     SCAI_LOG_DEBUG( logger,
-                    "input csr data with " << mNumValues << "entries,  has diagonal property = " << mDiagonalProperty )
+                    "input csr data with " << numValues << "entries,  has diagonal property = " << mDiagonalProperty )
     {
         static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::offsets2ia> offsets2ia;
         hmemo::ContextPtr loc = this->getContextPtr();
         offsets2ia.getSupportedContext( loc );
         hmemo::ReadAccess<IndexType> csrIA( ia, loc );
-        hmemo::WriteOnlyAccess<IndexType> cooIA( mIA, loc, mNumValues );
+        hmemo::WriteOnlyAccess<IndexType> cooIA( mIA, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc )
-        offsets2ia[loc]( cooIA.get(), mNumValues, csrIA.get(), mNumRows, numDiagonals );
+        offsets2ia[loc]( cooIA.get(), numValues, csrIA.get(), numRows, numDiagonals );
     }
     {
         static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
@@ -873,9 +942,9 @@ void COOStorage<ValueType>::setCSRDataImpl(
         setCSRData.getSupportedContext( loc );    // supported location
         hmemo::ReadAccess<IndexType> csrIA( ia, loc );
         hmemo::ReadAccess<IndexType> csrJA( ja, loc );
-        hmemo::WriteOnlyAccess<IndexType> cooJA( mJA, loc, mNumValues );
+        hmemo::WriteOnlyAccess<IndexType> cooJA( mJA, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc )
-        setCSRData[loc]( cooJA.get(), csrJA.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+        setCSRData[loc]( cooJA.get(), csrJA.get(), numValues, csrIA.get(), numRows, numDiagonals );
     }
     {
         static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::setCSRData<ValueType, OtherValueType> > setCSRData;
@@ -883,65 +952,52 @@ void COOStorage<ValueType>::setCSRDataImpl(
         setCSRData.getSupportedContext( loc );    // supported location
         hmemo::ReadAccess<IndexType> csrIA( ia, loc );
         hmemo::ReadAccess<OtherValueType> csrValues( values, loc );
-        hmemo::WriteOnlyAccess<ValueType> cooValues( mValues, loc, mNumValues );
+        hmemo::WriteOnlyAccess<ValueType> cooValues( mValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc )
-        setCSRData[loc]( cooValues.get(), csrValues.get(), numValues, csrIA.get(), mNumRows, numDiagonals );
+        setCSRData[loc]( cooValues.get(), csrValues.get(), numValues, csrIA.get(), getNumRows(), numDiagonals );
     }
 }
 
 template<typename ValueType>
-template<typename OtherValueType>
-void COOStorage<ValueType>::setDIADataImpl(
-    const IndexType /*numRows*/,
-    const IndexType /*numColumns*/,
-    const IndexType /*numDiagonals*/,
-    const HArray<IndexType>& /*offsets*/,
-    const HArray<OtherValueType>& /*values*/,
-    const ContextPtr /*prefLoc*/ )
+void COOStorage<ValueType>::setDiagonalV( const hmemo::HArray<ValueType>& diagonal )
 {
-    COMMON_THROWEXCEPTION( "not yet implemeted" )
-}
+    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for COO, no diagonal property" )
 
-template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal )
-{
-    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<ValueType, OtherType> > set;
+    const IndexType numDiagonalElements = std::min( diagonal.size(), std::min( getNumColumns(), getNumRows() ) );
+    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<ValueType, ValueType> > set;
     hmemo::ContextPtr loc = this->getContextPtr();
     set.getSupportedContext( loc );
-    hmemo::ReadAccess<OtherType> rDiagonal( diagonal, loc );
+    hmemo::ReadAccess<ValueType> rDiagonal( diagonal, loc );
     hmemo::WriteAccess<ValueType> wValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // diagonal elements are the first entries of mValues
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::binary::COPY );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, BinaryOp::COPY );
 }
 
 template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherType>& diagonal ) const
+void COOStorage<ValueType>::getDiagonal( hmemo::HArray<ValueType>& diagonal ) const
 {
     // diagional[0:numDiagonalElements] = mValues[0:numDiagonalElements]
     // Note: using HArrayUtils::setArray not possible, as we only need part of mValues
-    const IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
-    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<OtherType, ValueType> > set;
+    const IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );
+    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<ValueType, ValueType> > set;
     hmemo::ContextPtr loc = this->getContextPtr();
     set.getSupportedContext( loc );
-    hmemo::WriteOnlyAccess<OtherType> wDiagonal( diagonal, loc, numDiagonalElements );
+    hmemo::WriteOnlyAccess<ValueType> wDiagonal( diagonal, loc, numDiagonalElements );
     hmemo::ReadAccess<ValueType> rValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // diagonal elements are the first entries of mValues
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::binary::COPY );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+void COOStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::HArray<ValueType>& values, const IndexType i ) const
 {
     SCAI_REGION( "Storage.COO.getSparseRow" )
 
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
 
     // resize the output arrays, invalidate old data before
 
@@ -955,14 +1011,14 @@ void COOStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
     {
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteOnlyAccess<IndexType> wColIndexes( jA, loc, mNumColumns );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumColumns );
+        WriteOnlyAccess<IndexType> wColIndexes( jA, loc, getNumColumns() );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumColumns() );
 
         ReadAccess<IndexType> rIA( mIA, loc );
         ReadAccess<IndexType> rJA( mJA, loc );
 
         IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
-                                             rIA.get(), mNumColumns, rJA.get(), mNumValues );
+                                             rIA.get(), getNumColumns(), rJA.get(), getNumValues() );
 
         wColIndexes.resize( cnt );
         wValuePos.resize( cnt );
@@ -971,18 +1027,17 @@ void COOStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
     values.clear();
     values.resize( valuePos.size());
 
-    HArrayUtils::gather( values, mValues, valuePos, common::binary::COPY, loc );
+    HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const
+void COOStorage<ValueType>::getRow( hmemo::HArray<ValueType>& row, const IndexType i ) const
 {
     SCAI_REGION( "Storage.COO.getRow" )
 
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
 
     static LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
 
@@ -997,38 +1052,37 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
     {
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, mNumColumns );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumColumns );
+        WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, getNumColumns() );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumColumns() );
 
         ReadAccess<IndexType> rIA( mIA, loc );
         ReadAccess<IndexType> rJA( mJA, loc );
 
         IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
-                                             rIA.get(), mNumColumns, rJA.get(), mNumValues );
+                                             rIA.get(), getNumColumns(), rJA.get(), getNumValues() );
 
         wColIndexes.resize( cnt );
         wValuePos.resize( cnt );
     }
 
-    row.setSameValue( mNumColumns, ValueType( 0 ) );
+    row.setSameValue( getNumColumns(), ValueType( 0 ) );
 
     // row[ colIndexes ] = mValues[ pos ];
 
-    HArrayUtils::gatherImpl( rowValues, mValues, valuePos, common::binary::COPY, loc );
-    HArrayUtils::scatterImpl( row, colIndexes, true, rowValues, common::binary::COPY, loc );
+    HArrayUtils::gather( rowValues, mValues, valuePos, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( row, colIndexes, true, rowValues, BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
-                                        const common::binary::BinaryOp op )
+void COOStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexType i,
+                                    const BinaryOp op )
 {
     SCAI_REGION( "Storage.COO.setRow" )
 
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
-    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), getNumColumns(), "row array to small for set" )
 
     // get sparse vector with column indexes and positions
 
@@ -1045,14 +1099,14 @@ void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
     {
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, mNumColumns );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumColumns );
+        WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, getNumColumns() );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumColumns() );
 
         ReadAccess<IndexType> rIA( mIA, loc );
         ReadAccess<IndexType> rJA( mJA, loc );
 
         IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
-                                             rIA.get(), mNumColumns, rJA.get(), mNumValues );
+                                             rIA.get(), getNumColumns(), rJA.get(), getNumValues() );
 
         wColIndexes.resize( cnt );
         wValuePos.resize( cnt );
@@ -1060,18 +1114,18 @@ void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 
     // mValues[pos] = row[ colIndexes ]
 
-    HArrayUtils::gatherImpl( rowValues, row, colIndexes, common::binary::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, true, rowValues, op, loc );
+    HArrayUtils::gather( rowValues, row, colIndexes, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( mValues, valuePos, true, rowValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const
+void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::HArray<ValueType>& values, const IndexType j ) const
 {   
     SCAI_REGION( "Storage.COO.getSparseCol" )
     
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "col index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "col index out of range" )
     
     static LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
 
@@ -1084,14 +1138,14 @@ void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo
     {
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, mNumRows );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, getNumRows() );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumRows() );
 
         ReadAccess<IndexType> rIA( mIA, loc );
         ReadAccess<IndexType> rJA( mJA, loc );
 
         IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), mNumRows, rJA.get(), mNumValues );
+                                             rIA.get(), getNumRows(), rJA.get(), getNumValues() );
 
         wRowIndexes.resize( cnt );
         wValuePos.resize( cnt );
@@ -1099,13 +1153,13 @@ void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo
 
     // column[ row ] = mValues[ pos ];
 
-    HArrayUtils::gather( values, mValues, valuePos, common::binary::COPY, loc );
+    HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) const
+void COOStorage<ValueType>::getColumn( HArray<ValueType>& column, const IndexType j ) const
 {
     SCAI_REGION( "Storage.COO.getDenseCol" )
 
@@ -1114,20 +1168,18 @@ void COOStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) cons
 
     getSparseColumn( rowIndexes, colValues, j );
 
-    HArrayUtils::buildDenseArray( column, mNumRows, colValues, rowIndexes );
+    HArrayUtils::buildDenseArray( column, getNumRows(), colValues, rowIndexes, ValueType( 0 ) );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-        const common::binary::BinaryOp op )
+void COOStorage<ValueType>::setColumn( const HArray<ValueType>& column, const IndexType j, const BinaryOp op )
 {
     SCAI_REGION( "Storage.COO.setCol" )
 
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
-    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), getNumRows(), "column array to small for set" )
 
     static LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
 
@@ -1142,14 +1194,14 @@ void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
     {
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, getNumRows() );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumRows() );
 
         ReadAccess<IndexType> rIA( mIA, loc );
         ReadAccess<IndexType> rJA( mJA, loc );
 
         IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), mNumRows, rJA.get(), mNumValues );
+                                             rIA.get(), getNumRows(), rJA.get(), getNumValues() );
 
         wRowIndexes.resize( cnt );
         wValuePos.resize( cnt );
@@ -1157,55 +1209,17 @@ void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
     //  mValues[ pos ] op= column[ rowIndexes ]
 
-    HArrayUtils::gatherImpl( colValues, column, rowIndexes, common::binary::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
+    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( mValues, valuePos, true, colValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::scaleImpl( const ValueType value )
+void COOStorage<ValueType>::scale( const ValueType value )
 {
     // multiply value with each entry of mValues
-    utilskernel::HArrayUtils::setScalar( mValues, value, common::binary::MULT, this->getContextPtr() );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const ValueType beta,
-    const HArray<ValueType>& y ) const
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": vectorTimesMatrixAsync, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
-    SCAI_REGION( "Storage.COO.vectorTimesMatrixAsync" )
-    ContextPtr loc = this->getContextPtr();
-
-    // Due to COO format GEVM does not benefit of coupling all in one operation, so split it
-
-    // Step 1: result = beta * y
-
-    if ( beta == common::constants::ZERO )
-    {
-        result.clear();
-        result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
-    }
-    else
-    {
-        SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
-    }
-
-    // Step 2: result = alpha * x * this + 1 * result
-    bool async = true;
-    SyncToken* token = incGEVM( result, alpha, x, async );
-    SCAI_ASSERT( token, "asyncrhonous execution cannot have NULL token" )
-    return token;
+    utilskernel::HArrayUtils::setScalar( mValues, value, BinaryOp::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1226,9 +1240,9 @@ void COOStorage<ValueType>::jacobiIterate(
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, rhs.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )              // matrix must be square
+    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), oldSolution.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), rhs.size() )
+    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), getNumColumns() )              // matrix must be square
     static LAMAKernel<COOKernelTrait::jacobi<ValueType> > jacobi;
     ContextPtr loc = this->getContextPtr();
     jacobi.getSupportedContext( loc );
@@ -1237,11 +1251,11 @@ void COOStorage<ValueType>::jacobiIterate(
     ReadAccess<ValueType> cooValues( mValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
-    WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, getNumRows() );
     // Due to diagonal property there is no advantage by taking row indexes
     SCAI_CONTEXT_ACCESS( loc )
-    jacobi[loc]( wSolution.get(), mNumValues, cooIA.get(), cooJA.get(), cooValues.get(),
-                 rOldSolution.get(), rRhs.get(), omega, mNumRows );
+    jacobi[loc]( wSolution.get(), getNumValues(), cooIA.get(), cooJA.get(), cooValues.get(),
+                 rOldSolution.get(), rRhs.get(), omega, getNumRows() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1262,7 +1276,7 @@ void COOStorage<ValueType>::buildCSR(
 
         SCAI_LOG_INFO( logger, "build CSR sizes from " << *this )
 
-        utilskernel::HArrayUtils::bucketCount( csrIA, mIA, mNumRows, preferredLoc );
+        utilskernel::HArrayUtils::bucketCount( csrIA, mIA, getNumRows(), preferredLoc );
         return;
     }
 
@@ -1270,17 +1284,117 @@ void COOStorage<ValueType>::buildCSR(
 
     HArray<IndexType> perm;  // help array for resorting the values
 
-    utilskernel::HArrayUtils::bucketSort( csrIA, perm, mIA, mNumRows );
+    utilskernel::HArrayUtils::bucketSort( csrIA, perm, mIA, getNumRows() );
 
-    SCAI_ASSERT_EQ_DEBUG( mNumRows + 1, csrIA.size(), "serious mismatch, should not happen" )
+    SCAI_ASSERT_EQ_DEBUG( getNumRows() + 1, csrIA.size(), "serious mismatch, should not happen" )
     SCAI_ASSERT_EQ_ERROR( perm.size(), mIA.size(), "Illegal entries in mIA of COO storage" )
 
     // CSR array ja, values are the COO arrays resorted
 
-    utilskernel::HArrayUtils::gatherImpl( *csrJA, mJA, perm, common::binary::COPY, preferredLoc );
-    utilskernel::HArrayUtils::gatherImpl( *csrValues, mValues, perm, common::binary::COPY, preferredLoc );
+    utilskernel::HArrayUtils::gather( *csrJA, mJA, perm, BinaryOp::COPY, preferredLoc );
+    utilskernel::HArrayUtils::gather( *csrValues, mValues, perm, BinaryOp::COPY, preferredLoc );
 
     // Note: sort is stable, so diagonal values remain first in each row
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::matrixPlusMatrix(
+    const ValueType alpha,
+    const MatrixStorage<ValueType>& a,
+    const ValueType beta,
+    const MatrixStorage<ValueType>& b )
+{
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", with A = " << a << ", B = " << b )
+
+    SCAI_REGION( "Storage.COO.plusMatrix" )
+
+    if ( a.getFormat() != Format::COO )
+    {
+        matrixPlusMatrix( alpha, convert<COOStorage<ValueType>>( a ), beta, b );
+    } 
+    else if ( b.getFormat() != Format::COO )
+    {
+        matrixPlusMatrix( alpha, a, beta, convert<COOStorage<ValueType>>( b ) );
+    }
+    else
+    {
+        // a and b have the right format so we just cast it correctly
+
+        matrixPlusMatrixImpl( alpha, static_cast<const COOStorage<ValueType>&>( a ), 
+                              beta, static_cast<const COOStorage<ValueType>&>( b ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::matrixPlusMatrixImpl(
+    const ValueType alpha,
+    const COOStorage<ValueType>& a,
+    const ValueType beta,
+    const COOStorage<ValueType>& b )
+{
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+        COOStorage<ValueType> tmp;
+        tmp.matrixPlusMatrixImpl( alpha, a, beta, b );
+        SCAI_LOG_DEBUG( logger, "swap this = " << *this << " and tmp = " << tmp )
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+        return;
+    }
+
+    SCAI_REGION( "Storage.COO.plusImpl" )
+
+    // for COO we do not require that a and b have same size
+
+    _MatrixStorage::setDimension( common::Math::max( a.getNumRows(), b.getNumRows() ),
+                                  common::Math::max( a.getNumColumns(), b.getNumColumns() ) );
+
+    const IndexType nnz1 = a.getNumValues();
+    const IndexType nnz2 = b.getNumValues();
+
+    SCAI_LOG_INFO( logger,
+                   "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are COO" )
+
+    // concatenae the COO data of both storages
+
+    mIA.resize( nnz1 + nnz2 );
+    mJA.resize( nnz1 + nnz2 );
+    mValues.resize( nnz1 + nnz2 );
+
+    HArrayUtils::setArraySection( mIA, 0, 1, a.getIA(), 0, 1, nnz1 );
+    HArrayUtils::setArraySection( mIA, nnz1, 1, b.getIA(), 0, 1, nnz2 );
+    HArrayUtils::setArraySection( mJA, 0, 1, a.getJA(), 0, 1, nnz1 );
+    HArrayUtils::setArraySection( mJA, nnz1, 1, b.getJA(), 0, 1, nnz2 );
+
+    HArray<ValueType> tmp;
+
+    HArrayUtils::binaryOpScalar( tmp, a.getValues(), alpha, BinaryOp::MULT, false );
+    HArrayUtils::setArraySection( mValues, 0, 1, tmp, 0, 1, nnz1 );
+    HArrayUtils::binaryOpScalar( tmp, b.getValues(), beta, BinaryOp::MULT, false );
+    HArrayUtils::setArraySection( mValues, nnz1, 1, tmp, 0, 1, nnz2 );
+
+    // sort it and make it unique
+
+    COOUtils::sort( mIA, mJA, mValues );
+    COOUtils::unique( mIA, mJA, mValues, BinaryOp::ADD );
+
+    SCAI_LOG_INFO( logger, "COO matrix add: nnz = " << getNumValues() << " from " << nnz1 << " + " << nnz2 )
+}
+
+/* ========================================================================= */
+/*  Halo stuff                                                               */
+/* ========================================================================= */
+
+template<typename ValueType>
+void COOStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+{
+    halo.halo2Global( mJA );
+    _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
+    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1294,28 +1408,16 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOStorage<ValueType>* COOStorage<ValueType>::newMatrixStorage() const
+COOStorage<ValueType>* COOStorage<ValueType>::newMatrixStorage( const IndexType numRows, const IndexType numColumns ) const
 {
-    common::unique_ptr<COOStorage<ValueType> > storage( new COOStorage<ValueType>() );
-    storage->setContextPtr( this->getContextPtr() );
+    std::unique_ptr<COOStorage<ValueType> > storage( new COOStorage<ValueType>( getContextPtr() ) );
+    storage->allocate( numRows, numColumns );
     return storage.release();
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-_MatrixStorage* COOStorage<ValueType>::create()
-{
-    return new COOStorage<ValueType>();
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-MatrixStorageCreateKeyType COOStorage<ValueType>::createValue()
-{
-    return MatrixStorageCreateKeyType( Format::COO, common::getScalarType<ValueType>() );
-}
+/* ========================================================================= */
+/*  Static fatory methods and related virtual methods                        */
+/* ========================================================================= */
 
 template<typename ValueType>
 std::string COOStorage<ValueType>::initTypeName()
@@ -1332,30 +1434,46 @@ const char* COOStorage<ValueType>::typeName()
     return  s.c_str();
 }
 
+template<typename ValueType>
+const char* COOStorage<ValueType>::getTypeName() const
+{
+    return typeName();
+}
+
+template<typename ValueType>
+MatrixStorageCreateKeyType COOStorage<ValueType>::createValue()
+{
+    return MatrixStorageCreateKeyType( Format::COO, common::getScalarType<ValueType>() );
+}
+
+template<typename ValueType>
+MatrixStorageCreateKeyType COOStorage<ValueType>::getCreateValue() const
+{
+    return createValue();
+}
+
+template<typename ValueType>
+_MatrixStorage* COOStorage<ValueType>::create()
+{
+    return new COOStorage<ValueType>();
+}
+
 /* ========================================================================= */
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
+
 SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
 
-#define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
-    template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>* values,const hmemo::ContextPtr ) const;                                         \
-    template void COOStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
-    template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
-    template void COOStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
-            const common::binary::BinaryOp );                          \
-    template void COOStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
-            const common::binary::BinaryOp );                       \
-    template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
-    template void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-    template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
-    template void COOStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
+#define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                   \
+    template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,     \
+            hmemo::HArray<OtherValueType>* values,const hmemo::ContextPtr ) const;                           \
+    template void COOStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& other );           \
+    template void COOStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                   \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
-#define COO_STORAGE_INST_LVL1( ValueType )                                                                                  \
+#define COO_STORAGE_INST_LVL1( ValueType )                                                                   \
     SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
 SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )

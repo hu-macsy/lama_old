@@ -189,7 +189,7 @@ public:
         _MatrixStorage& storage,
         const std::string& fileName,
         const IndexType offsetRow = 0,
-        const IndexType nRows = nIndex ) = 0;
+        const IndexType nRows = invalidIndex ) = 0;
 
     /** Read in the size of an array saved in a file
      *
@@ -217,7 +217,7 @@ public:
      *  @param[out] array    will contain the corresponding array values
      *  @param[in]  fileName name of the input file with array data
      *  @param[in]  offset   first entry to read
-     *  @param[in]  n        number of entries to read, nIndex stands for all remaining entries
+     *  @param[in]  n        number of entries to read, invalidIndex stands for all remaining entries
      *
      *  This method has exactly the same behavior as readArray but with the difference that only
      *  a part of the array is read.
@@ -226,7 +226,7 @@ public:
         hmemo::_HArray& array,
         const std::string& fileName,
         const IndexType offset = 0,
-        const IndexType n = nIndex ) = 0;
+        const IndexType n = invalidIndex ) = 0;
 
     virtual void readGridArray(
         hmemo::_HArray& array,
@@ -263,11 +263,11 @@ public:
 
     /** Setter for representation type used for indexes in file. */
 
-    void setIndexType( common::scalar::ScalarType type );
+    void setIndexType( common::ScalarType type );
 
     /** Setter for representation type used for data values in file. */
 
-    void setDataType( common::scalar::ScalarType type );
+    void setDataType( common::ScalarType type );
 
     /** Enable/Disable binary mode. */
 
@@ -309,7 +309,7 @@ public:
     static void write(
         const hmemo::_HArray& array,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     /** Static method to write a sparse array into a file.
      *
@@ -324,7 +324,7 @@ public:
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& values,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     /** Static method to read an array or a contiguous section of an array from a file.
      *
@@ -332,10 +332,10 @@ public:
      *  @param[in]  fileName is the name of the input file where the array is saved
      *  @param[in]  dataType specifies the type that has been used for the values in the input file
      *  @param[in]  first index of the first element to read, defaults to 0
-     *  @param[in]  n     number of elements, default is nIndex that stands for up to the end
+     *  @param[in]  n     number of elements, default is invalidIndex that stands for up to the end
      *
      *  \code
-     *      LArray<double> data;
+     *      HArray<double> data;
      *      FileIO::read( data, "myData.txt" )           // reads the full array
      *      FileIO::read( data, "myData.txt", 50 )       // reads array but skips first 50 entries
      *      FileIO::read( data, "myData.txt", 50, 10 )   // reads for pos 50 next 10 elements
@@ -344,16 +344,16 @@ public:
     static void read(
         hmemo::_HArray& array,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
+        const common::ScalarType dataType = common::ScalarType::INTERNAL,
         const IndexType first = 0,
-        const IndexType n = nIndex );
+        const IndexType n = invalidIndex );
 
     static void read(
         IndexType& size,
         hmemo::HArray<IndexType>& indexes,
         hmemo::_HArray& array,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     /** Stati method to read a multi-dimensional array from a file. */
 
@@ -361,7 +361,7 @@ public:
         hmemo::_HArray& array,
         common::Grid& grid,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     /** Return the size of an array saved in a file. */
 
@@ -386,13 +386,13 @@ protected:
      *  @param[in] valueType is the actual type of values to be printed
      */
 
-    int getDataPrecision( common::scalar::ScalarType valueType );
+    int getDataPrecision( common::ScalarType valueType );
 
     FileMode mFileMode;                     //!< if true binary mode must be respected
     bool mAppendMode;                       //!< if true output is appended to existing files
 
-    common::scalar::ScalarType mScalarTypeIndex; //!< representation type of row indexes
-    common::scalar::ScalarType mScalarTypeData;  //!< representation type of array/matrix value entries
+    common::ScalarType mScalarTypeIndex; //!< representation type of row indexes
+    common::ScalarType mScalarTypeData;  //!< representation type of array/matrix value entries
 
 protected:
 

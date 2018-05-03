@@ -42,9 +42,9 @@
 #include <scai/common/Settings.hpp>
 
 #include <scai/common/test/cuda/CUDAKernel.hpp>
-#include <scai/common/bind.hpp>
 
 #include <iostream>
+#include <functional>
 
 using namespace scai;
 using namespace common;

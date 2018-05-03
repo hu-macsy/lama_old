@@ -44,106 +44,114 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
 {
     int count = 0;
 
-    for ( int type = 0; type < unary::MAX_UNARY_OP; ++type )
+    for ( int type = 0; type < static_cast<int>( UnaryOp::MAX_UNARY_OP ); ++type )
     {
+        UnaryOp op = UnaryOp( type );
+
         std::ostringstream s;
-        s << unary::UnaryOp( type );
+        s << op;
         BOOST_CHECK( s.str().length() > 0 );
 
         // check if all strings are correct
 
-        if ( type == unary::COPY )
+        if ( op == UnaryOp::COPY )
         {
             BOOST_CHECK_EQUAL( s.str(), "COPY" );
             count++;
         }
 
-        if ( type == unary::CONJ )
+        if ( op == UnaryOp::CONJ )
         {
             BOOST_CHECK_EQUAL( s.str(), "CONJ" );
             count++;
         }
 
-        if ( type == unary::SQR )
+        if ( op == UnaryOp::SQR )
         {
             BOOST_CHECK_EQUAL( s.str(), "SQR" );
             count++;
         }
 
-        if ( type == unary::MINUS )
+        if ( op == UnaryOp::MINUS )
         {
             BOOST_CHECK_EQUAL( s.str(), "MINUS" );
             count++;
         }
 
-        if ( type == unary::ABS )
+        if ( op == UnaryOp::ABS )
         {
             BOOST_CHECK_EQUAL( s.str(), "ABS" );
             count++;
         }
 
-        if ( type == unary::ASUM )
+        if ( op == UnaryOp::ASUM )
         {
             BOOST_CHECK_EQUAL( s.str(), "ASUM" );
             count++;
         }
 
-        if ( type == unary::EXP )
+        if ( op == UnaryOp::EXP )
         {
             BOOST_CHECK_EQUAL( s.str(), "EXP" );
             count++;
         }
 
-        if ( type == unary::SQRT )
+        if ( op == UnaryOp::SQRT )
         {
             BOOST_CHECK_EQUAL( s.str(), "SQRT" );
             count++;
         }
 
-        if ( type == unary::SIN )
+        if ( op == UnaryOp::SIN )
         {
             BOOST_CHECK_EQUAL( s.str(), "SIN" );
             count++;
         }
 
-        if ( type == unary::COS )
+        if ( op == UnaryOp::COS )
         {
             BOOST_CHECK_EQUAL( s.str(), "COS" );
             count++;
         }
 
-        if ( type == unary::TAN )
+        if ( op == UnaryOp::TAN )
         {
             BOOST_CHECK_EQUAL( s.str(), "TAN" );
             count++;
         }
 
-        if ( type == unary::ATAN )
+        if ( op == UnaryOp::ATAN )
         {
             BOOST_CHECK_EQUAL( s.str(), "ATAN" );
             count++;
         }
 
-        if ( type == unary::LOG )
+        if ( op == UnaryOp::LOG )
         {
             BOOST_CHECK_EQUAL( s.str(), "LOG" );
             count++;
         }
 
-        if ( type == unary::FLOOR )
+        if ( op == UnaryOp::FLOOR )
         {
             BOOST_CHECK_EQUAL( s.str(), "FLOOR" );
             count++;
         }
 
-        if ( type == unary::CEIL )
+        if ( op == UnaryOp::CEIL )
         {
             BOOST_CHECK_EQUAL( s.str(), "CEIL" );
+            count++;
+        }
+
+        if ( op == UnaryOp::RECIPROCAL )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "RECIPROCAL" );
             count++;
         }
 
     }
 
     // check if all types are tested
-    BOOST_CHECK_EQUAL( count, unary::MAX_UNARY_OP );
+    BOOST_CHECK_EQUAL( UnaryOp( count ), UnaryOp::MAX_UNARY_OP );
 }

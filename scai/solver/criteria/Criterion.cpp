@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -47,52 +48,81 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( Criterion::logger, "Criterion" );
+std::ostream& operator<<( std::ostream& stream, const BooleanOp op )
+{
+    switch ( op )
+    {
+        case BooleanOp::AND :
+            stream << "AND";
+            break;
+        case BooleanOp::OR :
+            stream << "OR";
+            break;
+        default:
+            stream << "<unknown_boolean_op>";
+    }
 
-Criterion::Criterion()
-    : mOperation( AND ), mModifier( true )
+    return stream;
+}
+
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, Criterion<ValueType>::logger, "Criterion" );
+
+template<typename ValueType>
+Criterion<ValueType>::Criterion() : 
+
+    mOperation( BooleanOp::AND ), 
+    mModifier( true )
 {
 }
 
-Criterion::Criterion( const bool boolean )
-    : mOperation( AND ), mModifier( boolean )
+template<typename ValueType>
+Criterion<ValueType>::Criterion( const bool boolean ) : 
+
+    mOperation( BooleanOp::AND ), 
+    mModifier( boolean )
 {
 }
 
-Criterion::Criterion( const Criterion& other )
-    : Printable( other ), mLeftChild( other.mLeftChild ), mRightChild( other.mRightChild ), mOperation(
-        other.mOperation ), mModifier( false )
+template<typename ValueType>
+Criterion<ValueType>::Criterion( const Criterion<ValueType>& other ) : 
+
+    Printable( other ), 
+    mLeftChild( other.mLeftChild ), 
+    mRightChild( other.mRightChild ), 
+    mOperation( other.mOperation ), 
+    mModifier( false )
 {
 }
 
-Criterion::Criterion( const CriterionPtr other, const bool modifier )
-    : mLeftChild( other->mLeftChild ), mRightChild( other->mRightChild ), mOperation( other->mOperation ), mModifier(
-        modifier == other->mModifier )
+template<typename ValueType>
+Criterion<ValueType>::Criterion( const CriterionPtr<ValueType> other, const bool modifier ) : 
+
+    mLeftChild( other->mLeftChild ), 
+    mRightChild( other->mRightChild ), 
+    mOperation( other->mOperation ), 
+    mModifier( modifier == other->mModifier )
 {
 }
 
-Criterion::Criterion( const CriterionPtr leftChild, const CriterionPtr rightChild, BooleanOperator operation )
-    : mLeftChild( leftChild ), mRightChild( rightChild ), mOperation( operation ), mModifier( false )
+template<typename ValueType>
+Criterion<ValueType>::Criterion( const CriterionPtr<ValueType> leftChild, const CriterionPtr<ValueType> rightChild, BooleanOp operation ) : 
+
+    mLeftChild( leftChild ), 
+    mRightChild( rightChild ), 
+    mOperation( operation ), 
+    mModifier( false )
 {
-    SCAI_ASSERT_DEBUG( leftChild.get() != NULL, "Left child is a NULL pointer." );
-    SCAI_ASSERT_DEBUG( rightChild.get() != NULL, "Right child is a NULL pointer." );
+    SCAI_ASSERT_DEBUG( leftChild, "Left child is a NULL pointer." );
+    SCAI_ASSERT_DEBUG( rightChild, "Right child is a NULL pointer." );
 }
 
-Criterion::~Criterion()
+template<typename ValueType>
+Criterion<ValueType>::~Criterion()
 {
 }
 
-/* unused: operator= always used on CriterionPtr
-Criterion& Criterion::operator=( const Criterion& other )
-{
-    mLeftChild = other.mLeftChild;
-    mRightChild = other.mRightChild;
-    mOperation = other.mOperation;
-
-    return *this;
-}*/
-
-bool Criterion::isSatisfied( const IterativeSolver& solver )
+template<typename ValueType>
+bool Criterion<ValueType>::isSatisfied( const IterativeSolver<ValueType>& solver )
 {
     SCAI_LOG_INFO( logger, "isSatisfied: " << *this );
     bool satisfied = true;
@@ -110,7 +140,7 @@ bool Criterion::isSatisfied( const IterativeSolver& solver )
     {
         satisfied = mLeftChild->isSatisfied( solver );
     }
-    else if ( mOperation == AND )
+    else if ( mOperation == BooleanOp::AND )
     {
         satisfied = mLeftChild->isSatisfied( solver ) && mRightChild->isSatisfied( solver );
     }
@@ -122,47 +152,56 @@ bool Criterion::isSatisfied( const IterativeSolver& solver )
     return mModifier != satisfied; //XOR
 }
 
-const CriterionPtr Criterion::getLeftChild() const
+template<typename ValueType>
+const CriterionPtr<ValueType> Criterion<ValueType>::getLeftChild() const
 {
     return mLeftChild;
 }
 
-const CriterionPtr Criterion::getRightChild() const
+template<typename ValueType>
+const CriterionPtr<ValueType> Criterion<ValueType>::getRightChild() const
 {
     return mRightChild;
 }
 
-Criterion::BooleanOperator Criterion::getOperation() const
+template<typename ValueType>
+BooleanOp Criterion<ValueType>::getOperation() const
 {
     return mOperation;
 }
 
-void Criterion::setLeftChild( const CriterionPtr leftChild )
+template<typename ValueType>
+void Criterion<ValueType>::setLeftChild( const CriterionPtr<ValueType> leftChild )
 {
     mLeftChild = leftChild;
 }
 
-void Criterion::setRightChild( const CriterionPtr rightChild )
+template<typename ValueType>
+void Criterion<ValueType>::setRightChild( const CriterionPtr<ValueType> rightChild )
 {
     mRightChild = rightChild;
 }
 
-bool Criterion::hasLeftChild() const
+template<typename ValueType>
+bool Criterion<ValueType>::hasLeftChild() const
 {
     return mLeftChild.get();
 }
 
-bool Criterion::hasRightChild() const
+template<typename ValueType>
+bool Criterion<ValueType>::hasRightChild() const
 {
     return mRightChild.get();
 }
 
-void Criterion::setOperation( const Criterion::BooleanOperator operation )
+template<typename ValueType>
+void Criterion<ValueType>::setOperation( const BooleanOp operation )
 {
     mOperation = operation;
 }
 
-void Criterion::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void Criterion<ValueType>::writeAt( std::ostream& stream ) const
 {
     if ( hasLeftChild() && hasRightChild() ) //boolean operation
     {
@@ -173,7 +212,7 @@ void Criterion::writeAt( std::ostream& stream ) const
 
         stream << "(" << *getLeftChild();
 
-        if ( getOperation() == Criterion::AND )
+        if ( getOperation() == BooleanOp::AND )
         {
             stream << " && ";
         }
@@ -209,6 +248,12 @@ void Criterion::writeAt( std::ostream& stream ) const
         stream << "leaf<" << mModifier << ">";
     }
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( Criterion, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

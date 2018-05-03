@@ -33,6 +33,8 @@
  */
 #include <scai/hmemo.hpp>
 #include <scai/utilskernel.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 
 using namespace scai;
 
@@ -40,7 +42,7 @@ void add( hmemo::HArray<double> res, const hmemo::HArray<double> a, const hmemo:
 {
     SCAI_ASSERT_LE( a.size(), b.size(), "size mismatch" )
     IndexType n = a.size();
-    hmemo::ContextPtr hostCtx = hmemo::Context::getContextPtr( common::context::Host );
+    hmemo::ContextPtr hostCtx = hmemo::Context::getContextPtr( common::ContextType::Host );
     hmemo::ReadAccess<double> read1( a, hostCtx );
     hmemo::ReadAccess<double> read2( b, hostCtx );
     hmemo::WriteOnlyAccess<double> write( res, hostCtx, n );
@@ -59,12 +61,12 @@ int main( int, char** )
     int size = 10;
     hmemo::HArray<double> a, b, c;
     static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::setVal<double> > setVal;
-    hmemo::ContextPtr loc = hmemo::Context::getContextPtr( common::context::Host );
+    hmemo::ContextPtr loc = hmemo::Context::getContextPtr( common::ContextType::Host );
     setVal.getSupportedContext( loc );
     hmemo::WriteOnlyAccess<double> writeB( b, loc, size );
     hmemo::WriteOnlyAccess<double> writeC( c, loc, size );
-    setVal[loc]( writeB.get(), size, double( 2 ), common::binary::COPY );
-    setVal[loc]( writeC.get(), size, double( 3 ), common::binary::COPY );
+    setVal[loc]( writeB.get(), size, double( 2 ), common::BinaryOp::COPY );
+    setVal[loc]( writeC.get(), size, double( 3 ), common::BinaryOp::COPY );
     writeB.release();
     writeC.release();
     add ( a, b, c );

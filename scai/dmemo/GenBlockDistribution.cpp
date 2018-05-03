@@ -39,11 +39,9 @@
 #include <scai/dmemo/Distributed.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
-// internal scai libraries
-#include <scai/common/unique_ptr.hpp>
-
 // std
 #include <fstream>
+#include <memory>
 
 #define MASTER 0
 
@@ -94,7 +92,7 @@ void GenBlockDistribution::setOffsets(
 
 void GenBlockDistribution::setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize )
 {
-    common::scoped_array<IndexType> localSizes( new IndexType[numPartitions] );
+    std::unique_ptr<IndexType[]> localSizes( new IndexType[numPartitions] );
     // rank 0 is root
     mCommunicator->gather( localSizes.get(), 1, 0, &mySize );
     mCommunicator->bcast( localSizes.get(), numPartitions, 0 );
@@ -107,7 +105,7 @@ void GenBlockDistribution::setOffsets( const PartitionId rank, const PartitionId
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const std::vector<IndexType>& localSizes,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
     Distribution( globalSize, communicator )
 {
@@ -126,9 +124,9 @@ GenBlockDistribution::GenBlockDistribution(
     const IndexType firstGlobalIdx,
     const IndexType lastGlobalIdx,
     bool,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
-    Distribution( globalSize, communicator ) 
+    Distribution( globalSize, communicator )
 
 {
     SCAI_ASSERT_LE_ERROR( firstGlobalIdx, lastGlobalIdx, "illegal local range" )
@@ -146,7 +144,7 @@ GenBlockDistribution::GenBlockDistribution(
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const IndexType localSize,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
     Distribution( globalSize, communicator )
 
@@ -161,7 +159,7 @@ GenBlockDistribution::GenBlockDistribution(
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const float weight,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
     Distribution( globalSize, communicator )
 
@@ -186,7 +184,7 @@ GenBlockDistribution::GenBlockDistribution(
     SCAI_LOG_INFO( logger,
                    "GenBlockDistribution of " << getGlobalSize() << " elements" << ", total weight = " << totalWeight )
 
-    mOffsets.reset( new IndexType[size+1] );
+    mOffsets.reset( new IndexType[size + 1] );
     float sumWeight = 0.0f;
 
     mOffsets[0] = 0;
@@ -227,7 +225,7 @@ PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
 
     if ( ! common::Utils::validIndex( globalIndex, mOffsets[last] ) )
     {
-        return nPartition; // out of range
+        return invalidPartition; // out of range
     }
 
     // binary search in the array mOffsets
@@ -279,7 +277,7 @@ IndexType GenBlockDistribution::local2global( const IndexType localIndex ) const
 
 IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) const
 {
-    IndexType localIndex = nIndex;   // default value if globalIndex is not local
+    IndexType localIndex = invalidIndex;   // default value if globalIndex is not local
 
     if ( globalIndex >= mLB && globalIndex < mUB )
     {
@@ -329,6 +327,11 @@ IndexType GenBlockDistribution::getBlockDistributionSize() const
 }
 
 /* ---------------------------------------------------------------------- */
+
+bool GenBlockDistribution::hasAnyAddressing() const
+{
+    return true;
+}
 
 void GenBlockDistribution::enableAnyAddressing() const
 {

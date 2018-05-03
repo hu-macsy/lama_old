@@ -36,7 +36,9 @@
 // base class
 #include <scai/lama/io/IOStream.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <scai/common/safer_memcpy.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -76,7 +78,7 @@ public:
      *  The read element needs further parsing to read storage/array data.
      */
 
-    uint32_t readDataElement( common::scoped_array<char>& dataElement );
+    uint32_t readDataElement( std::unique_ptr<char[]>& dataElement );
 
     /**
      * @param[in] buffer is the string that contains the data element
@@ -128,13 +130,13 @@ public:
         MAT_UINT64_CLASS   = 15
     } MATClass;
 
-    static common::scalar::ScalarType matlabType2ScalarType( uint32_t dataType );
+    static common::ScalarType matlabType2ScalarType( uint32_t dataType );
 
-    static uint32_t scalarType2MatlabType( common::scalar::ScalarType dataType );
+    static uint32_t scalarType2MatlabType( common::ScalarType dataType );
 
-    static common::scalar::ScalarType class2ScalarType( uint32_t dataType );
+    static common::ScalarType class2ScalarType( uint32_t dataType );
 
-    static MATClass scalarType2Class( common::scalar::ScalarType stype );
+    static MATClass scalarType2Class( common::ScalarType stype );
 
     template<typename ValueType>
     uint32_t writeData( const ValueType* data, uint32_t size, bool dryRun );
@@ -170,7 +172,7 @@ public:
         const IndexType shape[],
         const IndexType nDims,
         const uint32_t nBytes,
-        common::scalar::ScalarType stype,
+        common::ScalarType stype,
         bool dryRun );
 
     static uint32_t getMatrixInfo( MATClass& matClass, IndexType dims[], const IndexType maxDims, IndexType& ndims,
@@ -187,7 +189,7 @@ private:
 template<typename ValueType>
 uint32_t MATIOStream::writeData( const ValueType* data, uint32_t size, bool dryRun )
 {
-    common::scalar::ScalarType stype = common::getScalarType<ValueType>();
+    common::ScalarType stype = common::getScalarType<ValueType>();
 
     uint32_t dataType  = scalarType2MatlabType( stype );
     uint32_t nBytes    = size * sizeof( ValueType );
@@ -223,7 +225,7 @@ uint32_t MATIOStream::getData( ValueType* data, uint32_t size, const char* buffe
     SCAI_ASSERT_EQ_ERROR( nBytes, size * sizeof( ValueType ), "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( dataType, scalarType2MatlabType( common::TypeTraits<ValueType>::stype ), "type mismatch" )
 
-    ::memcpy( data, dataPtr, nBytes );
+    scai::common::safer_memcpy( data, dataPtr, nBytes );
 
     return wBytes;
 }
@@ -247,7 +249,7 @@ uint32_t MATIOStream::getDataN( ValueType* data, IndexType& nSize, IndexType max
     SCAI_ASSERT_GE_ERROR( maxSize, nSize, "Insuffient buffer for reading values" )
     SCAI_ASSERT_EQ_ERROR( dataType, scalarType2MatlabType( common::TypeTraits<ValueType>::stype ), "type mismatch" )
 
-    ::memcpy( data, dataPtr, nBytes );
+    scai::common::safer_memcpy( data, dataPtr, nBytes );
 
     return wBytes;
 }
@@ -274,7 +276,7 @@ uint32_t MATIOStream::getString( char* name, uint32_t nameSize, const char* buff
     SCAI_ASSERT_EQ_ERROR( dataType, MAT_INT8, "type mismatch" )
     SCAI_ASSERT_LT_ERROR( nBytes, nameSize - 1, "too long string" )
 
-    ::memcpy( name, dataPtr, nBytes );
+    scai::common::safer_memcpy( name, dataPtr, nBytes );
 
     name[nBytes] = '\0';   // finalize string
 

@@ -43,43 +43,8 @@
 
 /** Test of swap method that is defined only for two storages of same format, type. */
 
-template<typename StorageType>
-void storageSwapTest()
+namespace scai
 {
-    using namespace scai;
-    using namespace hmemo;
-    using namespace utilskernel;
-    using namespace lama;
-    typedef typename StorageType::StorageValueType ValueType;
-    ContextPtr context = Context::getContextPtr();
-    StorageType csr1;
-    StorageType csr2;
-    setDenseData( csr1 );
-    IndexType n = csr1.getNumRows();
-    IndexType m = csr1.getNumColumns();
-    LArray<ValueType> x( m, context );
-    LArray<ValueType> y( n, context );
-    LArray<ValueType> z1( context );
-    LArray<ValueType> z2( context );
-    ValueType alpha = 1.3;
-    ValueType beta  = -0.5;
-    IndexType range = 1;
-    HArrayUtils::setRandom( x, range );
-    HArrayUtils::setRandom( y, range );
-    csr1.matrixTimesVector( z1, alpha, x, beta, y );
-    csr1.swap( csr2 );
-    // now check sizes
-    BOOST_CHECK_EQUAL( n, csr2.getNumRows() );
-    BOOST_CHECK_EQUAL( m, csr2.getNumColumns() );
-    BOOST_CHECK_EQUAL( IndexType( 0 ), csr1.getNumRows() );
-    BOOST_CHECK_EQUAL( IndexType( 0 ), csr1.getNumColumns() );
-    // now check that the other matrix contains the right values
-    csr2.matrixTimesVector( z2, alpha, x, beta, y );
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
-    AbsType diff = common::Math::real( z1.maxDiffNorm( z2 ) );
-    // even if storages are the same we can have different rounding errors
-    BOOST_CHECK( diff < 0.001 );
-}
 
 /** Each storage class has a static method typeName that is tested here.
  *
@@ -106,17 +71,24 @@ void copyStorageTest()
     BOOST_CHECK( fullThreshold != defaultThreshold );
     storage.setCompressThreshold( fullThreshold );
     setDenseHalo( storage );
-    const scai::lama::MatrixStorage<ValueType>& matrixStorage = storage;
+    const lama::MatrixStorage<ValueType>& matrixStorage = storage;
+
     StorageType copyStorage1( storage );          // default copy constructor
-    StorageType copyStorage2( matrixStorage );    // own copy constructor
+    StorageType copyStorage2 = lama::convert<StorageType>( matrixStorage );    // own copy constructor
     StorageType copyStorage3;                     // default assignment operator
     copyStorage3 = storage;
     StorageType copyStorage4;                     // own assignment operator
-    copyStorage4 = matrixStorage;
-    // if default constructors are not overwritten compressThreshold is also copied
-    BOOST_CHECK_EQUAL( copyStorage1.getCompressThreshold(), defaultThreshold );
+    copyStorage4.assign( matrixStorage );
+
+    // copy constructors take over the threshold
+
+    BOOST_CHECK_EQUAL( copyStorage1.getCompressThreshold(), fullThreshold );
+
+    // assignment operator do not modify the threshold
+
     BOOST_CHECK_EQUAL( copyStorage2.getCompressThreshold(), defaultThreshold );
     BOOST_CHECK_EQUAL( copyStorage3.getCompressThreshold(), defaultThreshold );
     BOOST_CHECK_EQUAL( copyStorage4.getCompressThreshold(), defaultThreshold );
 }
 
+}

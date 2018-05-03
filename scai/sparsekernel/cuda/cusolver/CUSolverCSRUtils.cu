@@ -141,7 +141,7 @@ void CUSolverCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kern
 {
     using kregistry::KernelRegistry;
 
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_INFO( logger, "register CUSolverCSRUtils CUSolver-routines for CUDA at kernel registry ["
                    << flag << " --> " << common::getScalarType<ValueType>() << "]" )

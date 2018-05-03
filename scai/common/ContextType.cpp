@@ -43,23 +43,20 @@ namespace scai
 namespace common
 {
 
-const char* contextType2str( const context::ContextType type )
+const char* contextType2str( const ContextType type )
 {
     switch ( type )
     {
-        case context::Host :
+        case ContextType::Host :
             return "Host";
 
-        case context::CUDA :
+        case ContextType::CUDA :
             return "CUDA";
 
-        case context::MIC :
-            return "MIC";
-
-        case context::OpenCL :
+        case ContextType::OpenCL :
             return "OpenCL";
 
-        case context::UserContext :
+        case ContextType::UserContext :
             return "UserContext";
 
         default:
@@ -69,45 +66,26 @@ const char* contextType2str( const context::ContextType type )
 
 /* -----------------------------------------------------------------------------*/
 
-context::ContextType str2ContextType( const char* str )
+ContextType str2ContextType( const char* str )
 {
-    for ( int type = context::Host; type < context::MaxContext; ++type )
+    for ( int type = 0; type < static_cast<int>( ContextType::MaxContext ); ++type )
     {
-        if ( strcmp( contextType2str( context::ContextType( type ) ), str ) == 0 )
+        ContextType ctx = ContextType( type );
+
+        if ( strcmp( contextType2str( ctx ), str ) == 0 )
         {
-            return context::ContextType( type );
+            return ctx;
         }
     }
 
-    return context::MaxContext;
+    return ContextType::MaxContext;
 }
 
 /* -----------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const context::ContextType& type )
+std::ostream& operator<<( std::ostream& stream, const ContextType& type )
 {
     stream << contextType2str( type );
-    return stream;
-}
-
-/* -----------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const context::AccessKind& kind )
-{
-    switch ( kind )
-    {
-        case context::Write :
-            stream << "Write";
-            break;
-
-        case context::Read :
-            stream << "Read";
-            break;
-
-        default:
-            stream << "AccessKind_" << ( int ) kind;
-    }
-
     return stream;
 }
 

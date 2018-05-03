@@ -45,8 +45,8 @@
 namespace scai
 {
 
-using common::binary;
-using common::unary;
+using common::BinaryOp;
+using common::UnaryOp;
 using common::TypeTraits;
 
 namespace utilskernel
@@ -87,7 +87,7 @@ void OpenMPSection::assign(
     const IndexType targetDistances[],
     const ValueType sourceSection[],
     const IndexType sourceDistances[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     if ( nDims == 0 )
@@ -124,7 +124,7 @@ void OpenMPSection::assign(
     }
     else if ( nDims == 2 )
     {
-        if ( op == common::binary::COPY && !swapOperands )
+        if ( op == BinaryOp::COPY && !swapOperands )
         {
             copy2( targetSection, sizes, targetDistances, sourceSection, sourceDistances );
             return;
@@ -226,20 +226,20 @@ void OpenMPSection::unaryOp(
     const IndexType targetDistances[],
     const SourceValueType sourceSection[],
     const IndexType sourceDistances[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     SCAI_LOG_INFO( logger, "unaryOp<" << common::TypeTraits<TargetValueType>::id() 
                             << ", " << common::TypeTraits<SourceValueType>::id() 
                             << ">, #dims = " << nDims << ", op = " << op )
     if ( nDims == 0 )
     {
-        SCAI_REGION( "OpenMP.Section.unary0" )
+        SCAI_REGION( "OpenMP.Section.UnaryOp0" )
 
         *targetSection = static_cast<TargetValueType>( applyUnary( op, *sourceSection ) );
     }
     else if ( nDims == 1 )
     {
-        SCAI_REGION( "OpenMP.Section.unary1" )
+        SCAI_REGION( "OpenMP.Section.UnaryOp1" )
 
         #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
@@ -252,7 +252,7 @@ void OpenMPSection::unaryOp(
     }
     else if ( nDims == 2 )
     {
-        SCAI_REGION( "OpenMP.Section.unary2" )
+        SCAI_REGION( "OpenMP.Section.UnaryOp2" )
 
         #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
@@ -268,7 +268,7 @@ void OpenMPSection::unaryOp(
     }
     else if ( nDims == 3 )
     {
-        SCAI_REGION( "OpenMP.Section.unary3" )
+        SCAI_REGION( "OpenMP.Section.UnaryOp3" )
 
         #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
@@ -289,7 +289,7 @@ void OpenMPSection::unaryOp(
     }
     else if ( nDims == 4 )
     {
-        SCAI_REGION( "OpenMP.Section.unary4" )
+        SCAI_REGION( "OpenMP.Section.UnaryOp4" )
 
         #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
@@ -326,7 +326,7 @@ void OpenMPSection::assignScalar(
     const IndexType sizes[],
     const IndexType distances[],
     ValueType val,
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     if ( nDims == 0 )
@@ -406,12 +406,12 @@ void OpenMPSection::assignScalar(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPSection::unary( 
+void OpenMPSection::UnaryOp( 
     ValueType section[],
     const IndexType nDims,
     const IndexType sizes[],
     const IndexType distances[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     if ( nDims == 1 )
     {
@@ -489,20 +489,20 @@ template<typename ValueType>
 void OpenMPSection::ArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register SectionKernel OpenMP routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<SectionKernelTrait::assign<ValueType> >( assign, ctx, flag );
     KernelRegistry::set<SectionKernelTrait::assignScalar<ValueType> >( assignScalar, ctx, flag );
-    KernelRegistry::set<SectionKernelTrait::unary<ValueType> >( unary, ctx, flag );
+    KernelRegistry::set<SectionKernelTrait::UnaryOp<ValueType> >( UnaryOp, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void OpenMPSection::BinOpKernels<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
 
     SCAI_LOG_DEBUG( logger, "register SectionKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )

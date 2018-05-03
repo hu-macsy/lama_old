@@ -45,16 +45,28 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
+
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 
+#include <scai/testsupport/uniquePathComm.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
+
 using namespace scai;
 using namespace lama;
 using namespace dmemo;
+
+using scai::testsupport::uniquePathSharedAmongNodes;
+using scai::testsupport::GlobalTempDir;
+
+using hmemo::HArray;
+using utilskernel::HArrayUtils;
+
+using boost::test_tools::per_element;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
@@ -120,7 +132,14 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         SCAI_LOG_INFO( logger, "DistributionSingleIO: dist[" << i <<  "] = " << *dist )
 
         CommunicatorPtr comm = dist->getCommunicatorPtr();
-        const std::string distFileName = "TestDist.txt";
+        const std::string distFileName = uniquePathSharedAmongNodes(
+                                            GlobalTempDir::getPath(),
+                                            *comm,
+                                            "TestDist"
+                                         ) + ".txt";
+
+        BOOST_TEST_MESSAGE("DistributionSingleIO: distFilename = " << distFileName);
+
         SCAI_LOG_INFO( logger, *comm << ": writeDistribution " << *dist )
         PartitionIO::write( *dist, distFileName );
         // Hint:      We assume a common file system for all processors
@@ -129,12 +148,12 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         DistributionPtr newDist = PartitionIO::readDistribution( distFileName, comm );
         SCAI_LOG_INFO( logger, *comm << ": readDistribution " << *newDist )
         // should be equal
-        utilskernel::LArray<IndexType> myIndexes1;
-        utilskernel::LArray<IndexType> myIndexes2;
+        HArray<IndexType> myIndexes1;
+        HArray<IndexType> myIndexes2;
         dist->getOwnedIndexes( myIndexes1 );
         newDist->getOwnedIndexes( myIndexes2 );
-        BOOST_REQUIRE_EQUAL( myIndexes1.size(), myIndexes2.size() );
-        BOOST_CHECK_EQUAL( IndexType( 0 ), myIndexes1.maxDiffNorm( myIndexes2 ) );
+
+        BOOST_TEST( hostReadAccess( myIndexes1 ) == hostReadAccess( myIndexes2 ), per_element() );
 
 #ifdef DELETE_OUTPUT_FILES
         // only one processor should delete the file
@@ -162,7 +181,14 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
-        const std::string fileName  = "TestDist%r.txt";
+        const std::string fileName = uniquePathSharedAmongNodes(
+                                        GlobalTempDir::getPath(),
+                                        *comm,
+                                        "TestDist%r"
+                                        ) + ".txt";
+
+        BOOST_TEST_MESSAGE("DistributionMultipleIO: fileName = " << fileName);
+
         std::string pFileName = fileName;
         bool isPartitioned;
         PartitionIO::getPartitionFileName( pFileName, isPartitioned, *comm );
@@ -178,12 +204,12 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         DistributionPtr newDist = PartitionIO::readDistribution( fileName, comm );
         SCAI_LOG_INFO( logger, *comm << ": readDistribution " << *newDist << " from " << pFileName )
         // collect all owners on root processor and then compare
-        utilskernel::LArray<IndexType> owners1;
-        utilskernel::LArray<IndexType> owners2;
+        HArray<IndexType> owners1;
+        HArray<IndexType> owners2;
         dist->allOwners( owners1, 0 );
         newDist->allOwners( owners2, 0 );
-        BOOST_REQUIRE_EQUAL( owners1.size(), owners2.size() );
-        BOOST_CHECK_EQUAL( IndexType( 0 ), owners1.maxDiffNorm( owners2 ) );
+
+        BOOST_TEST( hostReadAccess( owners1 ) == hostReadAccess( owners2 ), per_element() );
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = PartitionIO::removeFile( fileName, *comm );
@@ -198,7 +224,7 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
 
 BOOST_AUTO_TEST_CASE( VectorSingleIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     const IndexType n = 18;
 
@@ -221,7 +247,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         // now write the distributed vector and its distribution, each to a single file
 
-        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *dist, distFileName );
 
         DenseVector<ValueType> readVector;
@@ -240,7 +266,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
 
-        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
+        ValueType diff = utilskernel::HArrayUtils::maxDiffNorm( local, readLocal );
 
         BOOST_CHECK( diff == ValueType( 0 ) );
 
@@ -260,7 +286,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
 BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     const IndexType n = 18;
 
@@ -279,14 +305,14 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 
         vector.setRandom( dist, 1 );
 
-        bool withDist = dist->getBlockDistributionSize() == nIndex;
+        bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
         if ( withDist )
         {
             PartitionIO::write( *dist, distFileName );
         }
 
-        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
 
         DenseVector<ValueType> readVector;
 
@@ -316,11 +342,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         const hmemo::HArray<ValueType>& local = vector.getLocalValues();
         const hmemo::HArray<ValueType>& readLocal = readVector.getLocalValues();
 
-        BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
-
-        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        BOOST_TEST( hostReadAccess( local ) == hostReadAccess( readLocal ), per_element() );
 
         int rc = PartitionIO::removeFile( vectorFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
@@ -340,7 +362,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 
 BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     const IndexType n = 18;
 
@@ -361,14 +383,14 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 
         vector.setSparseRandom( dist, 0, fillRate, 1 );
 
-        bool withDist = dist->getBlockDistributionSize() == nIndex;
+        bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
         if ( withDist )
         {
             PartitionIO::write( *dist, distFileName );
         }
 
-        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
 
         SparseVector<ValueType> readVector;
 
@@ -398,11 +420,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
         const hmemo::HArray<ValueType>& local = vector.getNonZeroValues();
         const hmemo::HArray<ValueType>& readLocal = readVector.getNonZeroValues();
 
-        BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
-
-        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        BOOST_TEST( hostReadAccess( local ) == hostReadAccess( readLocal ), per_element() );
 
         int rc = PartitionIO::removeFile( vectorFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
@@ -420,9 +438,9 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( MatrixSingleIO )
+BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     const IndexType numRows = 15;   // # rows for global matrix
     const IndexType numCols = 15;   // # cols for global matrix
@@ -440,13 +458,14 @@ BOOST_AUTO_TEST_CASE( MatrixSingleIO )
         DistributionPtr rowDist = testDists[i];
         CommunicatorPtr comm = rowDist->getCommunicatorPtr();
 
-        CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+        auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 
         float fillRate = 0.2f;
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
-        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
+
         PartitionIO::write( *rowDist, distFileName );
 
         CSRSparseMatrix<ValueType> readMatrix;
@@ -463,9 +482,7 @@ BOOST_AUTO_TEST_CASE( MatrixSingleIO )
         BOOST_REQUIRE_EQUAL( local.getNumRows(), readLocal.getNumRows() );
         BOOST_REQUIRE_EQUAL( local.getNumColumns(), readLocal.getNumColumns() );
 
-        ValueType diff = local.maxDiffNorm( readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        BOOST_CHECK_EQUAL( local.maxDiffNorm( readLocal ), 0 );
 
         int rc = PartitionIO::removeFile( matrixFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
@@ -479,9 +496,9 @@ BOOST_AUTO_TEST_CASE( MatrixSingleIO )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
+BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     IndexType numRows = 15;   // # rows for global matrix
     IndexType numCols = 15;   // # cols for global matrix
@@ -499,15 +516,15 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
         DistributionPtr rowDist = testDists[i];
         CommunicatorPtr comm = rowDist->getCommunicatorPtr();
 
-        CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+        auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 
         float fillRate = 0.2f;
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
-        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
 
-        bool withDist = rowDist->getBlockDistributionSize() == nIndex;
+        bool withDist = rowDist->getBlockDistributionSize() == invalidIndex;
 
         if ( withDist )
         {
@@ -553,9 +570,7 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
         BOOST_REQUIRE_EQUAL( local.getNumRows(), readLocal.getNumRows() );
         BOOST_REQUIRE_EQUAL( local.getNumColumns(), readLocal.getNumColumns() );
 
-        ValueType diff = local.maxDiffNorm( readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        BOOST_CHECK_EQUAL( local.maxDiffNorm( readLocal ), 0 );
 
         int rc = PartitionIO::removeFile( matrixFileName, *comm );
         BOOST_CHECK_EQUAL( 0, rc );
@@ -572,9 +587,9 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( MatrixColPartitionIO )
+BOOST_AUTO_TEST_CASE( _MatrixColPartitionIO )
 {
-    typedef RealType ValueType;   // no focus here on type
+    typedef DefaultReal ValueType;   // no focus here on type
 
     CSRSparseMatrix<ValueType> stencilMatrix;
 
@@ -593,11 +608,11 @@ BOOST_AUTO_TEST_CASE( MatrixColPartitionIO )
 
         CommunicatorPtr comm = rowDist->getCommunicatorPtr();
 
-        CSRSparseMatrix<ValueType> matrix( stencilMatrix, rowDist, colDist );
+        auto matrix = distribute<CSRSparseMatrix<ValueType>>( stencilMatrix, rowDist, colDist );
 
         // Stencil matrix has diagonal property so we know the distribution
 
-        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
 
         SCAI_LOG_INFO( logger, "written matrix " << matrix << " to partitioned file, dist in col indexes" )
 

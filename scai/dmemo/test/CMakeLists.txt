@@ -69,6 +69,7 @@ scai_project (
     HEADERS
 
         TestDistributions
+        dmemoTestMain
     )
 
 ### checks ####

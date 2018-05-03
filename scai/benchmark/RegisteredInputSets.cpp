@@ -38,7 +38,6 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/LibModule.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <vector>
 
@@ -73,7 +72,7 @@ int main( void )
     {
         SCAI_LOG_INFO( logger, "  Registered values[" << i << "] = " << values[i]  )
 
-        common::unique_ptr<InputSet> input( InputSet::create( values[i], "" ) );
+        std::unique_ptr<InputSet> input( InputSet::create( values[i], "" ) );
 
         SCAI_LOG_INFO( logger, "InputSet " << i << " of " << values.size() << ": key = " << values[i]
                                 << ", Id = " << input->getGroup() << ", Name = " << input->getName() )

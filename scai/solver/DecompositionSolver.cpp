@@ -45,10 +45,11 @@
 #include <scai/hmemo/Context.hpp>
 
 #include <scai/tracing.hpp>
-#include <scai/common/unique_ptr.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <sstream>
+#include <memory>
 
 namespace scai
 {
@@ -56,88 +57,97 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( DecompositionSolver::logger, "Solver.DecompositionSolver" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, 
+                              DecompositionSolver<ValueType>::logger, "Solver.DecompositionSolver" )
 
-DecompositionSolver::DecompositionSolver( const std::string& id )
-    : Solver( id )
+using lama::Matrix;
+using lama::Vector;
+using lama::DenseVector;
+
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_Solver* DecompositionSolver<ValueType>::create()
 {
-    SCAI_LOG_INFO( DecompositionSolver::logger, "DecompositionSolver, id = " << id )
+    return new DecompositionSolver<ValueType>( "_genByFactory" );
 }
 
-DecompositionSolver::DecompositionSolver( const std::string& id, LoggerPtr logger )
-    : Solver( id, logger )
+template<typename ValueType>
+SolverCreateKeyType DecompositionSolver<ValueType>::createValue()
 {
-    SCAI_LOG_INFO( DecompositionSolver::logger, "DecompositionSolver, id = " << id )
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "DecompositionSolver" );
 }
 
-DecompositionSolver::DecompositionSolver( const DecompositionSolver& other )
-    : Solver( other )
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+DecompositionSolver<ValueType>::DecompositionSolver( const std::string& id ) : 
+
+    Solver<ValueType>( id )
+
 {
-    SCAI_LOG_INFO( DecompositionSolver::logger, "DecompositionSolver, id = " << other.mId )
+    SCAI_LOG_INFO( DecompositionSolver<ValueType>::logger, "DecompositionSolver, id = " << id )
 }
 
-DecompositionSolver::DecompositionSolverRuntime::DecompositionSolverRuntime()
-    : SolverRuntime()
+template<typename ValueType>
+DecompositionSolver<ValueType>::DecompositionSolver( const std::string& id, LoggerPtr logger ) : 
+
+    Solver<ValueType>( id, logger )
 {
+    SCAI_LOG_INFO( DecompositionSolver<ValueType>::logger, "DecompositionSolver, id = " << id )
 }
 
-DecompositionSolver::~DecompositionSolver()
+template<typename ValueType>
+DecompositionSolver<ValueType>::DecompositionSolver( const DecompositionSolver<ValueType>& other ) : 
+ 
+    Solver<ValueType>( other )
+{
+    SCAI_LOG_INFO( DecompositionSolver<ValueType>::logger, "DecompositionSolver, id = " << other.getId() )
+}
+
+template<typename ValueType>
+DecompositionSolver<ValueType>::~DecompositionSolver()
 {
     SCAI_LOG_INFO( logger, "~DecompositionSolver" )
 }
 
-DecompositionSolver::DecompositionSolverRuntime::~DecompositionSolverRuntime()
-{
-}
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
-/* --------------------------------------------------------------------------- */
-
-void DecompositionSolver::initialize( const lama::Matrix& coefficients )
+template<typename ValueType>
+void DecompositionSolver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.DecompositionSolver.intialize" )
+
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
-    Solver::initialize( coefficients );
+
+    Solver<ValueType>::initialize( coefficients );
+
     // TODO: check symmetry
+
     DecompositionSolverRuntime& runtime = getRuntime();
     runtime.mIsSymmetric = false;
 }
 
-/* --------------------------------------------------------------------------- */
-
-void DecompositionSolver::solveImpl()
-{
-    SCAI_REGION( "Solver.DecompositionSolver.solveImpl" )
-    // for each supported arithmetic type we have to dynamic cast and instantiate typed version
-#define SCAI_SOLVER_TYPE_CAST( _type )                                                                                  \
-    {                                                                                               \
-        const lama::SparseMatrix<_type>* sparseTypedCoefficients =                                  \
-                dynamic_cast<const lama::SparseMatrix<_type>*>( getRuntime().mCoefficients );       \
-        if ( sparseTypedCoefficients )                                                              \
-        {                                                                                           \
-            solveImplTyped( *sparseTypedCoefficients );                                             \
-            return;                                                                                 \
-        }                                                                                           \
-    }
-    SCAI_COMMON_LOOP( SCAI_SOLVER_TYPE_CAST, SCAI_NUMERIC_TYPES_HOST )
-#undef SCAI_SOLVER_TYPE_CAST
-    // has already been check in initialize, but in any case
-    COMMON_THROWEXCEPTION        (
-        getConstRuntime().mCoefficients << ": unsupported matrix type (only SparseMatrix<ValueType> supported)." )
-}
-
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*    solve : implemantation                                                 */
+/* ========================================================================= */
 
 template <typename ValueType>
-void DecompositionSolver::solveImplTyped( const lama::SparseMatrix<ValueType>& coefficients )
+void DecompositionSolver<ValueType>::solveImpl()
 {
     SCAI_REGION( "Solver.DecompositionSolver.solve" )
-
-    SCAI_LOG_TRACE( logger, "solveImplTyped<" << scai::common::TypeTraits<ValueType>::stype
-                    << ">, coefficients = " << coefficients )
 
     DecompositionSolverRuntime& runtime = getRuntime();
 
     logStartSolve();
+
+    const Matrix<ValueType>& coefficients = *runtime.mCoefficients;
 
     // only implemented for replicated matrices
 
@@ -153,7 +163,7 @@ void DecompositionSolver::solveImplTyped( const lama::SparseMatrix<ValueType>& c
 
     // from now on we do it all on storage, but we need CSR storage for the solver
 
-    common::unique_ptr<lama::CSRStorage<ValueType> > tmpCSRStorage;
+    std::unique_ptr<lama::CSRStorage<ValueType> > tmpCSRStorage;
 
     const lama::CSRStorage<ValueType>* csrStorage;
 
@@ -163,7 +173,8 @@ void DecompositionSolver::solveImplTyped( const lama::SparseMatrix<ValueType>& c
     }
     else
     {
-        tmpCSRStorage.reset( new lama::CSRStorage<ValueType>( coefficients.getLocalStorage() ) );
+        tmpCSRStorage.reset( new lama::CSRStorage<ValueType>() );
+        tmpCSRStorage->assign( coefficients.getLocalStorage() );
         SCAI_LOG_WARN( logger, "new tmp csr storage = " << *tmpCSRStorage )
         csrStorage = tmpCSRStorage.get();
     }
@@ -176,8 +187,11 @@ void DecompositionSolver::solveImplTyped( const lama::SparseMatrix<ValueType>& c
 
     SCAI_LOG_INFO( logger, "csrStorage = " << *csrStorage )
 
-    lama::DenseVector<ValueType>& denseSolution = dynamic_cast<lama::DenseVector<ValueType>&>( *getRuntime().mSolution );
-    const lama::DenseVector<ValueType>& denseRhs = dynamic_cast<const lama::DenseVector<ValueType>&>( *getRuntime().mRhs );
+    Vector<ValueType>& solution = getRuntime().mSolution.getReference();  // -> dirty
+    const Vector<ValueType>& rhs = *getRuntime().mRhs;
+
+    DenseVector<ValueType>& denseSolution = reinterpret_cast<DenseVector<ValueType>&>( solution );
+    const DenseVector<ValueType>& denseRhs = reinterpret_cast<const lama::DenseVector<ValueType>&>( rhs );
 
     SCAI_LOG_INFO( logger, "solution = " << denseSolution << ", rhs = " << denseRhs )
 
@@ -215,61 +229,67 @@ void DecompositionSolver::solveImplTyped( const lama::SparseMatrix<ValueType>& c
 
 /* --------------------------------------------------------------------------- */
 
-void DecompositionSolver::logStartSolve()
+template<typename ValueType>
+void DecompositionSolver<ValueType>::logStartSolve()
 {
     mLogger->startTimer( "SolutionTimer" );
 }
 
 /* --------------------------------------------------------------------------- */
 
-void DecompositionSolver::logEndSolve()
+template<typename ValueType>
+void DecompositionSolver<ValueType>::logEndSolve()
 {
-    lama::L2Norm l2Norm;
+    lama::L2Norm<ValueType> l2Norm;
     mLogger->logResidual( LogLevel::convergenceHistory, *this, l2Norm, "Final " );
     mLogger->logTime( "SolutionTimer", LogLevel::solverInformation, "Total Runtime [s]: " );
     mLogger->stopAndResetTimer( "SolutionTimer" );
     mLogger->logNewLine( LogLevel::solverInformation );
 }
 
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Runtime                                                             */
+/* ========================================================================= */
 
-DecompositionSolver::DecompositionSolverRuntime& DecompositionSolver::getRuntime()
+template<typename ValueType>
+typename DecompositionSolver<ValueType>::DecompositionSolverRuntime& DecompositionSolver<ValueType>::getRuntime()
 {
     return mDecompositionSolverRuntime;
 }
 
 /* --------------------------------------------------------------------------- */
 
-const DecompositionSolver::DecompositionSolverRuntime& DecompositionSolver::getConstRuntime() const
+template<typename ValueType>
+const typename DecompositionSolver<ValueType>::DecompositionSolverRuntime& DecompositionSolver<ValueType>::getRuntime() const
 {
     return mDecompositionSolverRuntime;
 }
 
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Virtual methods                                                     */
+/* ========================================================================= */
 
-SolverPtr DecompositionSolver::copy()
+template<typename ValueType>
+DecompositionSolver<ValueType>* DecompositionSolver<ValueType>::copy()
 {
-    return SolverPtr( new DecompositionSolver( *this ) );
+    return new DecompositionSolver( *this );
 }
 
 /* --------------------------------------------------------------------------- */
 
-void DecompositionSolver::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void DecompositionSolver<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "DecompositionSolver ( id = " << mId << " )";
+    const char* typeId = common::TypeTraits<ValueType>::id();
+
+    stream << "DecompositionSolver<" << typeId << "> ( id = " << this->getId() << " )";
 }
 
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-std::string DecompositionSolver::createValue()
-{
-    return "DecompositionSolver";
-}
-
-Solver* DecompositionSolver::create( const std::string name )
-{
-    return new DecompositionSolver( name );
-}
+SCAI_COMMON_INST_CLASS( DecompositionSolver, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

@@ -34,10 +34,9 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
@@ -74,7 +73,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
     std::cout << *comm << ": distribution = " << *gridDistribution << std::endl;
 
-    lama::Matrix::SyncKind syncKind = lama::Matrix::SYNCHRONOUS;
+    lama::SyncKind syncKind = lama::SyncKind::SYNCHRONOUS;
 
     // by default do matrix-vector operations synchronously, but can be set via environment
 
@@ -84,7 +83,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
     {
         if ( isSet )
         {
-            syncKind = scai::lama::Matrix::ASYNCHRONOUS;
+            syncKind = scai::lama::SyncKind::ASYNC_LOCAL;
         }
     }
 
@@ -105,12 +104,10 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
     std::cout << "csrStencilMatrix " << csrMatrix << std::endl;
 
-    DenseVector<ValueType> x( stencilMatrix.getColDistributionPtr() );
+    auto x = fill<DenseVector<ValueType>>( stencilMatrix.getColDistributionPtr(), 1 );
 
-    x = 1.0;
-
-    DenseVector<ValueType> y1 ( stencilMatrix.getRowDistributionPtr(), 0.0 );
-    DenseVector<ValueType> y2 ( csrMatrix.getRowDistributionPtr(), 0.0 );
+    auto y1 = fill<DenseVector<ValueType>>( stencilMatrix.getRowDistributionPtr(), 0 );
+    auto y2 = fill<DenseVector<ValueType>>( csrMatrix.getRowDistributionPtr(), 0 );
 
     double timeStencil;
     double timeCSR;
@@ -157,7 +154,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
 int main( int argc, const char* argv[] )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // relevant SCAI arguments: 
     //   SCAI_CONTEXT = ...    set default context

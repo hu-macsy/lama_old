@@ -41,8 +41,9 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
-using namespace scai::lama;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace lama;
+using namespace hmemo;
 
 extern bool base_test_case;
 extern std::string testcase;
@@ -61,9 +62,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_numeric_test_t
 
     IndexType n = 4;
     ValueType val = 5.0;
-    DenseVector<ValueType> vec( n, val );
-    L1Norm l1norm;
+
+    auto vec = fill<DenseVector<ValueType>>( n, val );
+
+    L1Norm<ValueType> l1norm;
+
     ValueType expected = ValueType( n ) * val;
+
     BOOST_CHECK_EQUAL( expected, l1norm( vec ) );
     BOOST_CHECK_EQUAL( vec.l1Norm(), l1norm( vec ) );
     WriteAccess<ValueType> hwa( vec.getLocalValues() );
@@ -79,11 +84,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_numeric_test_t
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( L1NormScalarTests )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormScalarTests, ValueType, scai_numeric_test_types )
 {
-    Scalar scalar( -4.0 );
-    L1Norm l1norm;
-    BOOST_CHECK_EQUAL( Scalar( 4.0 ), l1norm( scalar ) );
+    ValueType scalar( -4.0 );
+    L1Norm<ValueType> l1norm;
+    BOOST_CHECK_EQUAL( ValueType( 4.0 ), l1norm( scalar ) );
 }
 
 /* --------------------------------------------------------------------- */

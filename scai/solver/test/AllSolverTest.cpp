@@ -40,9 +40,12 @@
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/test/TestMacros.hpp>
+
+using scai::IndexType;
 
 using namespace scai::lama;
 using namespace scai::solver;
@@ -57,64 +60,71 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.AllSolverTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( writeAtTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( writeAtTest, ValueType, scai_numeric_test_types )
 {
     // Get all available solvers
-    std::vector<std::string> values;
-    Solver::getCreateValues( values );
-    const int numSolvers = ( int )values.size();
 
-    for ( int i = 0; i < numSolvers; i++ )
+    std::vector<std::string> values;
+
+    Solver<ValueType>::getCreateValues( values );
+
+    for ( size_t i = 0; i < values.size(); i++ )
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        SolverPtr solver( Solver::create( values[i], "" ) );
+        SolverPtr<ValueType> solver( Solver<ValueType>::getSolver( values[i] ) );
         SCAI_COMMON_WRITEAT_TEST( *solver );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( copyTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
 {
     // Get all available solvers
+
     std::vector<std::string> values;
-    Solver::getCreateValues( values );
+    Solver<ValueType>::getCreateValues( values );
     const int numSolvers = ( int )values.size();
 
     for ( int i = 0; i < numSolvers; i++ )
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        SolverPtr solver( Solver::create( values[i], "" ) );
-        SolverPtr solverCpyPtr = solver->copy();
-        // TODO: do a more proper test here!
-        BOOST_CHECK_EQUAL( solverCpyPtr->getId(), "" );
+        SolverPtr<ValueType> solver1( Solver<ValueType>::getSolver( values[i] ) );
+        SolverPtr<ValueType> solver2( solver1->copy() );
+        BOOST_CHECK_EQUAL( solver1->getId(), solver2->getId() );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( solveWithoutInitialization )
+BOOST_AUTO_TEST_CASE_TEMPLATE( solveWithoutInitialization, ValueType, scai_numeric_test_types )
 {
-    typedef SCAI_TEST_TYPE ValueType;
     // Some test data are required to call the solve method, we don't want to work with these data
     // therefore we do not need to set a context or a proper distribution here
+
     const IndexType N1 = 4;
     const IndexType N2 = 4;
+
     CSRSparseMatrix<ValueType> coefficients;
     MatrixCreator::buildPoisson2D( coefficients, 9, N1, N2 );
+
     const ValueType solutionInitValue = 1.0;
-    DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
-    DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );
-    DenseVector<ValueType> rhs( coefficients * exactSolution );
-    // Get all available solvers
+    auto colDist = coefficients.getColDistributionPtr();
+
+    auto solution      = fill<DenseVector<ValueType>>( colDist, solutionInitValue );
+    auto exactSolution = fill<DenseVector<ValueType>>( colDist, solutionInitValue + 1 );
+    auto rhs           = eval<DenseVector<ValueType>>( coefficients * exactSolution );
+
+    // Test for all registered solvers ( with this value type )
+
     std::vector<std::string> values;
-    Solver::getCreateValues( values );
+    Solver<ValueType>::getCreateValues( values );
     const int numSolvers = ( int )values.size();
 
     for ( int i = 0; i < numSolvers; i++ )
     {
         SCAI_LOG_INFO( logger, "Testing solver " << values[i] );
-        SolverPtr solver( Solver::create( values[i], "" ) );
+        SolverPtr<ValueType> solver( Solver<ValueType>::getSolver( values[i] ) );
         BOOST_CHECK_THROW ( {solver->solve( solution, rhs );}, scai::common::Exception );
     }
 }

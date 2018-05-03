@@ -37,8 +37,6 @@
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
-
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/HArrayRef.hpp>
 
@@ -49,7 +47,9 @@
 
 using namespace scai;
 using namespace lama;
-using utilskernel::LArray;
+using hmemo::HArray;
+
+using boost::test_tools::per_element;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -57,24 +57,12 @@ using utilskernel::LArray;
 
 void checkEqual( const _MatrixStorage& storage1, const _MatrixStorage& storage2 )
 {
-    BOOST_REQUIRE_EQUAL( storage1.getNumRows(), storage2.getNumRows() );
-    BOOST_REQUIRE_EQUAL( storage1.getNumColumns(), storage2.getNumColumns() );
-    // take ScalarRepType that uses highest available precision
-    LArray<ScalarRepType> row1;
-    LArray<ScalarRepType> row2;
+    using namespace hmemo;
 
-    for ( IndexType i = 0; i < storage1.getNumRows(); ++i )
-    {
-        storage1.getRow( row1, i );
-        storage2.getRow( row2, i );
-        hmemo::ReadAccess<ScalarRepType> rRow1( row1 );
-        hmemo::ReadAccess<ScalarRepType> rRow2( row2 );
+    auto dense1 = convert<DenseStorage<ScalarRepType>>( storage1 );
+    auto dense2 = convert<DenseStorage<ScalarRepType>>( storage2 );
 
-        for ( IndexType j = 0; j < storage1.getNumColumns(); ++j )
-        {
-            BOOST_CHECK_EQUAL( rRow1[j], rRow2[j] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( dense1.getValues() ) == hostReadAccess( dense2.getValues() ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -90,7 +78,7 @@ void initStorage( _MatrixStorage& storage )
                                          2, 5, 0, 3, 8
                                        };
     hmemo::HArrayRef<ValueType> data( numRows * numColumns, values );
-    DenseStorage<ValueType> dense( data, numRows, numColumns );
+    DenseStorage<ValueType> dense( numRows, numColumns, data );
     storage.assign( dense );
 }
 
@@ -105,8 +93,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.AllStorageTest" )
 BOOST_AUTO_TEST_CASE( factoryTest )
 {
     Storages allMatrixStorages;    // is created by factory
-    size_t nFormats = Format::UNDEFINED;
-     nFormats -= 1; // not for STENCIL
+    size_t nFormats = static_cast<size_t>( Format::UNDEFINED );
+    nFormats -= 1; // not for STENCIL
     size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_NUMERIC_TYPES_HOST );
     SCAI_LOG_INFO( logger, "#formats = " << nFormats << ", #types = " << nTypes )
     SCAI_LOG_INFO( logger, "Test all storages of factory to be empty, #storages = " << allMatrixStorages.size() )
@@ -139,23 +127,22 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( setIdentityTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setIdentityTest, ValueType, scai_numeric_test_types )
 {
-    typedef SCAI_TEST_TYPE ValueType;
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     const IndexType N = 15;        // size of the matrix storage
-    Storages allMatrixStorages( context );    // is created by factory
+    TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages for setIdentity" )
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
-        _MatrixStorage& storage = *allMatrixStorages[s];
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         storage.setIdentity(  N );
         SCAI_LOG_DEBUG( logger, "Identity matrix, N = " << N << " : " << storage )
         BOOST_REQUIRE_EQUAL( N, storage.getNumRows() );
         BOOST_REQUIRE_EQUAL( N, storage.getNumColumns() );
         BOOST_REQUIRE_EQUAL( N, storage.getNumValues() );
-        LArray<ValueType> row;
+        HArray<ValueType> row;
 
         for ( IndexType i = 0; i < N; ++i )
         {
@@ -179,29 +166,29 @@ BOOST_AUTO_TEST_CASE( setIdentityTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( allocateTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( allocateTest, ValueType, scai_numeric_test_types )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
-    ScalarRepType zero = 0;
-    Storages allMatrixStorages( context );    // is created by factory
+    ValueType zero = 0;
+    TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages for setIdentity" )
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
-        _MatrixStorage& storage = *allMatrixStorages[s];
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         storage.allocate( numRows, numColumns );
         SCAI_LOG_DEBUG( logger, "Zero matrix " << numRows << " x " << numColumns << " : " << storage )
         BOOST_REQUIRE_EQUAL( numRows, storage.getNumRows() );
         BOOST_REQUIRE_EQUAL( numColumns, storage.getNumColumns() );
         BOOST_REQUIRE_EQUAL( IndexType( 0 ), storage.getNumValues() );
-        LArray<ScalarRepType> row;
+        HArray<ValueType> row;
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
             storage.getRow( row, i );
-            hmemo::ReadAccess<ScalarRepType> rRow( row );
+            hmemo::ReadAccess<ValueType> rRow( row );
 
             for ( IndexType j = 0; j < numColumns; ++j )
             {
@@ -250,29 +237,28 @@ BOOST_AUTO_TEST_CASE( assignDenseTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( getColTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getColTest, ValueType, scai_numeric_test_types )
 {
-    typedef SCAI_TEST_TYPE ValueType;
     DenseStorage<ValueType> denseStorage;
     initStorage( denseStorage );
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    Storages allMatrixStorages( context );    // is created by factory
+    TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
 
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
-        _MatrixStorage& storage = *allMatrixStorages[s];
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         initStorage( storage );
 
-        LArray<ValueType> col1;
-        LArray<ValueType> col2;
+        HArray<ValueType> col1;
+        HArray<ValueType> col2;
 
         for ( IndexType j = 0; j < denseStorage.getNumColumns(); ++j )
         {
             storage.getColumn( col1, j );
             denseStorage.getColumn( col2, j );
 
-            BOOST_CHECK( col1.maxDiffNorm( col2 ) < ValueType( 0.0001 ) );
+            BOOST_TEST( hostReadAccess( col1 ) == hostReadAccess( col2 ), per_element() );
         }
     }
 }
@@ -303,18 +289,28 @@ BOOST_AUTO_TEST_CASE( conversionTest )
     Storages allMatrixStorages( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages for any conversion" )
 
-    for ( size_t s1 = 0; s1 < allMatrixStorages.size(); ++s1 )
+    const size_t n = allMatrixStorages.size();
+
+    for ( size_t s1 = 0; s1 < n; ++s1 )
     {
-        for ( size_t s2 = 0; s2 < allMatrixStorages.size(); ++s2 )
+        for ( size_t s2 = 0; s2 < n; ++s2 )
         {
             _MatrixStorage& storage1 = *allMatrixStorages[s1];
             _MatrixStorage& storage2 = *allMatrixStorages[s2];
+
             initStorage( storage1 );
+
+            SCAI_LOG_DEBUG( logger, "conversionTest " << s1 << " x " << s2 << " of " << n << " x " << n 
+                                    << ", storage1 = " << storage1 << ", -> storage2  = " << storage2 )
+
+
             storage2 = storage1;   // converts both: type and format
-            SCAI_LOG_DEBUG( logger, "Conversion: " << storage1 << " -> " << storage2 )
             checkEqual( storage1, storage2 );
+
             storage1.clear();
+
             // assignment of zero matrix, checks for consistent storage data
+
             storage2 = storage1;
             checkEqual( storage1, storage2 );
         }

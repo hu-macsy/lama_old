@@ -32,11 +32,15 @@
  * @date 05.07.2015
  */
 
+#pragma once
+
 #include <scai/hmemo/Memory.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/bind.hpp>
-#include <scai/common/weak_ptr.hpp>
+#include <scai/common/safer_memcpy.hpp>
+
+#include <memory>
+#include <functional>
 
 /** Exampes of a new memory class that implements all relevant routines. */
 
@@ -52,7 +56,7 @@ public:
 
     // MockMemory uses the type UserContext as its type
 
-    MockMemory( int deviceNr ) : scai::hmemo::Memory( scai::hmemo::memtype::UserMemory )
+    MockMemory( int deviceNr ) : scai::hmemo::Memory( scai::hmemo::MemoryType::UserMemory )
     {
         mDeviceNr = deviceNr;
     }
@@ -74,12 +78,12 @@ public:
 
     virtual scai::hmemo::ContextPtr getContextPtr() const
     {
-        return scai::hmemo::Context::getContextPtr( scai::common::context::UserContext, mDeviceNr );
+        return scai::hmemo::Context::getContextPtr( scai::common::ContextType::UserContext, mDeviceNr );
     }
 
-    virtual scai::hmemo::memtype::MemoryType getType() const
+    virtual scai::hmemo::MemoryType getType() const
     {
-        return scai::hmemo::memtype::UserMemory;
+        return scai::hmemo::MemoryType::UserMemory;
     }
 
     virtual void* allocate( const size_t size ) const
@@ -92,9 +96,14 @@ public:
         ::free( pointer );
     }
 
+    virtual size_t maxAllocatedBytes() const
+    {
+        return 0;
+    }
+
     virtual void memcpy( void* target, const void* source, const size_t size ) const
     {
-        ::memcpy( target, source, size );
+        scai::common::safer_memcpy( target, source, size );
     }
 
     virtual void memset( void* target, const int val, const size_t size ) const
@@ -104,31 +113,31 @@ public:
 
     static scai::tasking::SyncToken* theMemcpyAsync( void* dst, const void* src, const size_t size )
     {
-        return new scai::tasking::TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) );
+        return new scai::tasking::TaskSyncToken( std::bind( &::memcpy, dst, src, size ) );
     }
 
     virtual scai::tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const
     {
-        return new scai::tasking::TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) );
+        return new scai::tasking::TaskSyncToken( std::bind( &::memcpy, dst, src, size ) );
     }
 
     virtual bool canCopyFrom( const scai::hmemo::Memory& other ) const
     {
         // copy from host to this context should always be supported
-        return other.getType() == scai::hmemo::memtype::HostMemory;
+        return other.getType() == scai::hmemo::MemoryType::HostMemory;
     }
 
     virtual bool canCopyTo( const scai::hmemo::Memory& other ) const
     {
         // copy from this context to host should always be supported
-        return other.getType() == scai::hmemo::memtype::HostMemory;
+        return other.getType() == scai::hmemo::MemoryType::HostMemory;
     }
 
     virtual void memcpyFrom( void* dst, const scai::hmemo::Memory& srcMemory, const void* src, size_t size ) const
     {
-        if ( srcMemory.getType() == scai::hmemo::memtype::HostMemory )
+        if ( srcMemory.getType() == scai::hmemo::MemoryType::HostMemory )
         {
-            ::memcpy( dst, src, size );
+            scai::common::safer_memcpy( dst, src, size );
         }
         else
         {
@@ -138,9 +147,9 @@ public:
 
     virtual void memcpyTo( const scai::hmemo::Memory& dstMemory, void* dst, const void* src, size_t size ) const
     {
-        if ( dstMemory.getType() == scai::hmemo::memtype::HostMemory )
+        if ( dstMemory.getType() == scai::hmemo::MemoryType::HostMemory )
         {
-            ::memcpy( dst, src, size );
+            scai::common::safer_memcpy( dst, src, size );
         }
         else
         {

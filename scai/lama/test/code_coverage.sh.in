@@ -49,10 +49,8 @@ export SCAI_UNSUPPORTED=IGNORE
 # check if installed LAMA version supports MPI communicator
 
 check_feature LAMA_SUPPORTS_MPI ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=MPI --run_test=SparseMatrixTest/localConstructorTest
-check_feature LAMA_SUPPORTS_GPI ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=GPI --run_test=SparseMatrixTest/localConstructorTest
 
 check_feature LAMA_SUPPORTS_CUDA ./lamaTest --SCAI_CONTEXT=CUDA --run_test=VersionTest
-check_feature LAMA_SUPPORTS_MIC ./lamaTest --SCAI_CONTEXT=MIC --run_test=VersionTest
 
 # Running lama tests
 echo "Running serial lama tests on Host"
@@ -81,21 +79,6 @@ then
 	count_error ./matrix/lamaMatrixTest --SCAI_CONTEXT=CUDA
 fi
 
-if [ ${LAMA_SUPPORTS_MIC} -eq 1 ]
-then
-	# Running lama tests
-	echo "Running serial lama tests on MIC"
-	count_error ./lamaTest --SCAI_CONTEXT=MIC
-	
-	#Running lama storage tests
-	echo "Running serial lama storage tests on MIC"
-	count_error ./storage/lamaStorageTest --SCAI_CONTEXT=MIC
-	
-	#Running lama matrix tests
-	echo "Running serial lama matrix tests on MIC"
-	count_error ./matrix/lamaMatrixTest --SCAI_CONTEXT=MIC
-fi
-
 if [ ${LAMA_SUPPORTS_MPI} -eq 1 ];
 then
     echo "Running lamaTest with 3 processes"
@@ -105,34 +88,9 @@ then
     count_error mpirun -np 3 ./matrix/lamaMatrixTest --SCAI_CONTEXT=Host --SCAI_NUM_THREADS=1
 fi
 
-## TODO: test this in jenkins, is untested
-if [ ${LAMA_SUPPORTS_GPI} -eq 1 ];
-then
-	i=3
-
-    hostname > machines
-    for (( k=2; k<=$i; k++ ))
-    do
-        hostname >> machines
-    done
-    cat machines
-
-    echo "Running lamaTest with 3 processes"
-    # For GPI-2: only root processor output is available
-    gaspi_run -m machines ${PWD}/lamaTest ${BOOST_TEST_ARGS} --SCAI_CONTEXT=Host --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1 1> ${dirname}/lama_tests_gpi_${i}.xml
-    # wait a little bit to get resources freed
-    sleep 1
-
-    echo "Running lamaMatrixTest with 3 processes"
-    # For GPI-2: only root processor output is available
-    gaspi_run -m machines ${PWD}/matrix/lamaMatrixTest ${BOOST_TEST_ARGS} --SCAI_CONTEXT=Host --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1 1> ${dirname}/lama_tests_gpi_${i}.xml
-    # wait a little bit to get resources freed
-    sleep 1
-fi
-
 exit_on_failure ${error_count}
 
-do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@/@MODULE_NAME@"
 
 exit_on_failure $?
 

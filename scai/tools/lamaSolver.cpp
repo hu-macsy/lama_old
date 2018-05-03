@@ -45,15 +45,22 @@
 #include <scai/partitioning/Partitioning.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
-#include <scai/solver/GMRES.hpp>
-#include <scai/solver/SimpleAMG.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/CG.hpp>
+#include <scai/solver/SimpleAMG.hpp>
+#include <scai/solver/GMRES.hpp>
+#include <scai/solver/Kaczmarz.hpp>
+#include <scai/solver/Richardson.hpp>
+#include <scai/solver/BiCGstab.hpp>
+#include <scai/solver/DecompositionSolver.hpp>
+#include <scai/solver/QMR.hpp>
+#include <scai/solver/TFQMR.hpp>
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace std;
 using namespace scai;
@@ -61,9 +68,9 @@ using namespace dmemo;
 using namespace lama;
 using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
-#define HOST_PRINT( rank, msg )             \
+#define HOST_PRINT( rank, msg )                 \
     {                                           \
         if ( rank == 0 )                        \
         {                                       \
@@ -108,18 +115,68 @@ static bool isNumeric( double& val, const string& str )
 
 /** Help routine to combine criterions. */
 
-static void orCriterion( CriterionPtr& crit, const CriterionPtr& add )
+template<typename ValueType>
+static void orCriterion( CriterionPtr<ValueType>& crit, const CriterionPtr<ValueType>& add )
 {
     if ( crit )
     {
         // combine current one with the new one by an OR
 
-        crit.reset( new Criterion ( crit, add, Criterion::OR ) );
+        crit.reset( new Criterion<ValueType> ( crit, add, BooleanOp::OR ) );
     }
     else
     {
         crit = add;
     }
+}
+
+template<typename ValueType>
+void doPartitioning( Matrix<ValueType>& matrix, Vector<ValueType>& rhs, Vector<ValueType>& solution )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    if ( comm->getSize() < 2 )
+    {
+        return;
+    }
+
+    SCAI_REGION( "lamaSolver.redistribute" )
+
+    LamaTiming timer( *comm, "Redistribution" );
+
+    // determine a new distribution so that each processor gets part of the matrix according to its weight
+
+    float weight = 1.0f;
+
+    common::Settings::getEnvironment( weight, "SCAI_WEIGHT" );
+  
+    std::string parKind = "BLOCK";     // default partitioning strategy
+
+    common::Settings::getEnvironment( parKind, "SCAI_PARTITIONING" );
+
+    using namespace partitioning;
+
+    DistributionPtr dist;
+
+    if ( parKind == "OFF" )
+    {
+        // let it unchanged
+ 
+        dist = matrix.getRowDistributionPtr();
+    }
+    else 
+    {
+        PartitioningPtr graphPartitioning( Partitioning::create( parKind ) );
+
+        std::cout << "Partitioning, kind = " << parKind << ", weight = " << weight << ", partitioner = " << *graphPartitioning << std::endl;
+
+        dist = graphPartitioning->partitionIt( comm, matrix, weight );
+    }
+
+    matrix.redistribute( dist, dist );
+
+    rhs.redistribute ( dist );
+    solution.redistribute ( dist );
 }
 
 /**
@@ -140,7 +197,6 @@ int main( int argc, const char* argv[] )
     const Communicator& comm = lamaconf.getCommunicator();
 
     int myRank   = comm.getRank();
-    int numProcs = comm.getSize();
 
     // accept only 2 - 4 arguments, --SCAI_xxx do not count here
 
@@ -163,18 +219,13 @@ int main( int argc, const char* argv[] )
 
         // use auto pointer so that matrix will be deleted at program exit
 
-        scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
-        scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
+        MatrixPtr<ValueType> matrixPtr( lamaconf.getMatrix<ValueType>() );
+        Matrix<ValueType>& matrix = *matrixPtr;
 
-        Matrix& matrix   = *matrixPtr;
-        Vector& rhs      = *rhsPtr;
-        Vector& solution = *solutionPtr;
+        DenseVector<ValueType> rhs( matrixPtr->getRowDistributionPtr(), 0 );
+        DenseVector<ValueType> solution;
 
-        // input matrix will be CSR format
-
-        scai::common::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
-        Matrix& inMatrix = *inMatrixPtr;
+        CSRSparseMatrix<ValueType> inMatrix;  // matrix read fromfile
 
         // Here each processor should print its configuration
 
@@ -234,7 +285,7 @@ int main( int argc, const char* argv[] )
 
             if ( isNumeric( val, rhsFilename ) )
             {
-                rhs.setSameValue( inMatrix.getRowDistributionPtr(), Scalar( val ) );
+                rhs.setSameValue( inMatrix.getRowDistributionPtr(), val );
 
                 HOST_PRINT( myRank, "Set rhs = " << val )
             }
@@ -248,10 +299,7 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
-                Vector& x = *xPtr;
-
-                x.setSameValue( inMatrix.getColDistributionPtr(), 1 );
+                auto x = fill<DenseVector<ValueType>>( inMatrix.getColDistributionPtr(), ValueType( 1 ) );
 
                 rhs = inMatrix * x;
 
@@ -281,54 +329,7 @@ int main( int argc, const char* argv[] )
                                "size mismatch: #cols of matrix must be equal size of initial solution" )
         }
 
-        // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
-
-        int numRows = inMatrix.getNumRows();
-
-        // distribute data (trivial block partitioning)
-
-        if ( numProcs > 1 )
-        {
-            SCAI_REGION( "Main.redistribute" )
-
-            LamaTiming timer( comm, "Redistribution" );
-            // determine a new distribution so that each processor gets part of the matrix according to its weight
-            float weight = lamaconf.getWeight();
-
-            DistributionPtr oldDist = inMatrix.getRowDistributionPtr();
-
-            DistributionPtr dist;
-
-            if ( lamaconf.useMetis() )
-            {
-                using namespace partitioning;
-
-                LamaTiming timer( comm, "Metis" );
-
-                PartitioningPtr graphPartitioning( Partitioning::create( "METIS" ) );
-                SCAI_ASSERT_ERROR( graphPartitioning.get(), "METIS partitioning not available" )
-                dist = graphPartitioning->partitionIt( lamaconf.getCommunicatorPtr(), inMatrix, weight );
-            }
-            else if ( *oldDist == dmemo::SingleDistribution( numRows, oldDist->getCommunicatorPtr(), 0 ) )
-            {
-                // one single processor only has read the matrix, redistribute among all available processors
-
-                dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
-            }
-            else
-            {
-                // was a distributed read, so take this as distribution
-
-                dist = inMatrix.getRowDistributionPtr();
-            }
-
-            inMatrix.redistribute( dist, dist );
-
-            rhs.redistribute ( dist );
-            solution.redistribute ( dist );
-
-            HOST_PRINT( myRank, "matrix redistributed = " << inMatrix )
-        }
+        doPartitioning( inMatrix, solution, rhs );
 
         // Now convert to th desired matrix format
 
@@ -360,7 +361,7 @@ int main( int argc, const char* argv[] )
 
         string solverName = "<" + lamaconf.getSolverName() + ">";
 
-        scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
+        std::unique_ptr<Solver<ValueType> > mySolver( Solver<ValueType>::getSolver( lamaconf.getSolverName() ) );
 
         // setting up a common logger, prints also rank of communicator
 
@@ -379,22 +380,22 @@ int main( int argc, const char* argv[] )
 
         // Set up stopping criterion, take thresholds and max iterations if specified
 
-        CriterionPtr crit;
+        CriterionPtr<ValueType> crit;
 
-        NormPtr norm( Norm::create( lamaconf.getNorm() ) );   // Norm from factory
+        NormPtr<ValueType> norm( Norm<ValueType>::create( lamaconf.getNorm() ) );   // Norm from factory
 
         double eps = lamaconf.getAbsoluteTolerance();
 
         if ( eps > 0.0 )
         {
-            crit.reset( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
         eps = lamaconf.getRelativeTolerance();
 
         if ( eps > 0.0 )
         {
-            CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Relative ) );
+            CriterionPtr<ValueType> rt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Relative ) );
 
             orCriterion( crit, rt );
         }
@@ -403,14 +404,14 @@ int main( int argc, const char* argv[] )
 
         if ( eps > 0.0 )
         {
-            CriterionPtr dt( new ResidualThreshold( norm, eps, ResidualThreshold::Divergence ) );
+            CriterionPtr<ValueType> dt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Divergence ) );
 
             orCriterion( crit, dt );
         }
 
         if ( lamaconf.hasMaxIter() )
         {
-            CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
+            CriterionPtr<ValueType> it( new IterationCount<ValueType>( lamaconf.getMaxIter() ) );
 
             orCriterion( crit, it );
         }
@@ -421,12 +422,12 @@ int main( int argc, const char* argv[] )
 
             eps = 0.001;
 
-            crit.reset( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
         // Stopping criterion can ony be set for an iterative solver
 
-        IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
+        IterativeSolver<ValueType>* itSolver = dynamic_cast<IterativeSolver<ValueType>*>( mySolver.get() );
 
         if ( itSolver != NULL )
         {
@@ -439,6 +440,9 @@ int main( int argc, const char* argv[] )
 
         // Allow individual settings for GMRES solver
 
+        // ToDo: enable GMRES
+
+        /*
         GMRES* gmresSolver = dynamic_cast<GMRES*>( mySolver.get() );
 
         if ( gmresSolver )
@@ -465,6 +469,8 @@ int main( int argc, const char* argv[] )
             amgSolver->setMaxLevels( 25 );
             amgSolver->setMinVarsCoarseLevel( 200 );
         }
+
+        */
 
         // Initialization with timing
 
@@ -499,12 +505,13 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                scai::common::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
-                Vector& compSolution = *compSolutionPtr;
+
+                DenseVector<ValueType> compSolution;
+
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
-                Scalar maxDiff = compSolution.maxNorm();
+                RealType<ValueType> maxDiff = compSolution.maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else
@@ -514,6 +521,8 @@ int main( int argc, const char* argv[] )
                 solution.writeToFile( finalSolutionFilename );
             }
         }
+
+        HOST_PRINT( myRank, "lamaSolver finished, solver = " << *mySolver << ", A = " << matrix )
     }
     catch ( common::Exception& e )
     {

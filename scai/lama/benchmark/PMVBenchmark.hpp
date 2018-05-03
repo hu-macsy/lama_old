@@ -59,15 +59,17 @@ class PMVBenchmark:
 {
 public:
 
+    typedef double ValueType;     // should become a template argument
+
     /** Constructor of the benchmark.
      *
-     *  @param[in] argument must be a string like "CSR, double"
+     *  @param[in] argument must be a string for the format like "CSR"
      */
     PMVBenchmark( const std::string& argument );
 
     virtual ~PMVBenchmark();
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     virtual bool isThreadded() const;
 
@@ -116,19 +118,19 @@ private:
         CounterType& numFlops, 
         CounterType& numProcessedIndexes, 
         CounterType& numPprocessedValues,
-        const Matrix& matrix );
+        const Matrix<ValueType>& matrix );
 
-    common::unique_ptr<benchmark::InputSet> mInputSet;
+    std::unique_ptr<benchmark::InputSet> mInputSet;
     const LAMAInputSet* mLAMAInputSet;
 
-    common::unique_ptr<Matrix> mMatrixA;
-    common::unique_ptr<_DenseVector> mVectorX;
-    common::unique_ptr<_DenseVector> mVectorY;
+    std::unique_ptr<Matrix<ValueType>> mMatrixA;
+    std::unique_ptr<DenseVector<ValueType>> mVectorX;
+    std::unique_ptr<DenseVector<ValueType>> mVectorY;
 
     hmemo::ContextPtr mContext;
-    Matrix::SyncKind mCommunicationKind;
+    SyncKind mCommunicationKind;
 
-    common::scalar::ScalarType mType;  // value type of input data
+    common::ScalarType mType;  // value type of input data
 
     CounterType mNumFloatingPointOperations;
     CounterType mNumProcessedIndexes;

@@ -38,7 +38,7 @@
 #include <scai/lama/storage/StencilStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/lama/test/storage/StorageTemplateTests.hpp>
 
@@ -46,6 +46,8 @@ using namespace scai;
 using namespace lama;
 using namespace utilskernel;
 using namespace hmemo;
+
+using boost::test_tools::per_element;
 
 /* ------------------------------------------------------------------------- */
 
@@ -83,7 +85,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
 
     StencilStorage<ValueType> storage1( grid, stencil );
     StencilStorage<ValueType> storage2( storage1 );
-    common::unique_ptr<StencilStorage<ValueType> > storage3( storage1.copy() );
+    std::unique_ptr<StencilStorage<ValueType> > storage3( storage1.copy() );
 
     BOOST_CHECK_EQUAL( storage1.getNumRows(), storage2.getNumRows() );
     BOOST_CHECK_EQUAL( storage1.getNumRows(), storage3->getNumRows() );
@@ -108,7 +110,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertTest, ValueType, scai_numeric_test_types )
     common::Stencil2D<ValueType> stencil( 5 ); // take 5-point stencil
 
     StencilStorage<ValueType> stencilStorage( grid, stencil );
-    CSRStorage<ValueType> csrStorage( stencilStorage );
+
+    auto csrStorage = convert<CSRStorage<ValueType>>( stencilStorage );
 
     // 5 entries for each grid element, but subract one for all border elements
 
@@ -145,28 +148,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( transposeTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
-    for ( int b1 = 0; b1 < 3; b1++ )
+    for ( int b1 = 0; b1 < 2; b1++ )
     {
-        for ( int b2 = 0; b2 < 3; b2++ )
+        for ( int b2 = 0; b2 < 2; b2++ )
         {
             const IndexType N1 = 6;
             const IndexType N2 = 8;
 
             common::Grid2D grid( N1, N2 );
-
-            // transpose not possible for reflecting boundaries
-
-            if ( common::Grid::BORDER_REFLECTING == common::Grid::BorderType( b1 ) )
-            {
-                continue;
-            }
-
-            if ( common::Grid::BORDER_REFLECTING == common::Grid::BorderType( b2 ) )
-            {
-                continue;
-            }
 
             // transpose only if boundary conditions are same
 
@@ -188,18 +179,18 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
             StencilStorage<ValueType> stencilStorageT( grid, stencilT );
         
-            CSRStorage<ValueType> csrStorage( stencilStorage );
+            auto csrStorage = convert<CSRStorage<ValueType>>( stencilStorage );
             csrStorage.sortRows( false );
             csrStorage.compress( ValueType( 0 ) );
 
-            CSRStorage<ValueType> csrStorageT( stencilStorageT );
+            auto csrStorageT = convert<CSRStorage<ValueType>>( stencilStorageT );
             csrStorageT.sortRows( false );
             csrStorageT.compress( ValueType( 0 ) );
         
             CSRStorage<ValueType> csrStorageT1;
             csrStorageT1.assignTranspose( csrStorage );
 
-            BOOST_CHECK_EQUAL( ValueType( 0 ), csrStorageT.maxDiffNorm( csrStorageT1 ) );
+            BOOST_CHECK_EQUAL( csrStorageT.maxDiffNorm( csrStorageT1 ), 0 );
         }
     }
 }
@@ -208,7 +199,7 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
 BOOST_AUTO_TEST_CASE( getTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType N1 = 6;
     const IndexType N2 = 8;
@@ -223,17 +214,18 @@ BOOST_AUTO_TEST_CASE( getTest )
 
     StencilStorage<ValueType> stencilStorage( grid, stencil );
 
-    CSRStorage<ValueType> csrStorage( stencilStorage );
+    auto csrStorage = convert<CSRStorage<ValueType>>( stencilStorage );
 
     for ( IndexType i = 0; i < N1; i++ )
     {
-        LArray<ValueType> row1;
-        LArray<ValueType> row2;
+        HArray<ValueType> row1;
+        HArray<ValueType> row2;
 
         stencilStorage.getRow( row1, i );
         BOOST_CHECK_EQUAL( row1.size(), N1 * N2 );
         csrStorage.getRow( row2, i );
-        BOOST_CHECK_EQUAL( row1.maxDiffNorm( row2 ), 0 );
+
+        BOOST_TEST( hostReadAccess( row1 ) == hostReadAccess( row2 ), per_element() );
     }
 
     for ( IndexType i = 0; i < N1; i++ )

@@ -40,7 +40,7 @@
 using namespace scai::lama;
 using namespace scai::hmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, char** argv )
 {
@@ -99,7 +99,7 @@ int main( int argc, char** argv )
 
     std::cout << "Write png of size " << height << " x " << width << std::endl;
 
-    Bitmap pic( height, width );
+    Bitmap<ValueType> pic( height, width );
     pic.drawCSR( matrix.getNumRows(), matrix.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
     pic.write( imageFileName );
 

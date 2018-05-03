@@ -38,8 +38,9 @@
 #include <scai/hmemo.hpp>
 
 using namespace boost;
-using namespace scai::common;
-using namespace scai::hmemo;
+using namespace scai;
+using namespace common;
+using namespace hmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -68,8 +69,8 @@ static void update( ValueType* data, size_t size )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( refTest, ValueType, test_types )
 {
-    ContextPtr mock = Context::create( context::UserContext, 0 );
-    ContextPtr host = Context::create( context::Host, -1 );
+    ContextPtr mock = Context::create( ContextType::UserContext, 0 );
+    ContextPtr host = Context::create( ContextType::Host, -1 );
     BOOST_CHECK( mock );
     BOOST_CHECK( host );
     const IndexType N = 10;

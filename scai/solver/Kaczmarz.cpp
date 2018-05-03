@@ -36,7 +36,7 @@
 #include <scai/solver/Kaczmarz.hpp>
 
 // internal scai libraries
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -44,6 +44,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -51,50 +52,91 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( Kaczmarz::logger, "Solver.IterativeSolver.Kaczmarz" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, Kaczmarz<ValueType>::logger, "Solver.IterativeSolver.Kaczmarz" )
 
 using lama::Matrix;
+using lama::MatrixKind;
 using lama::Vector;
-using lama::Scalar;
+using lama::VectorKind;
 
-Kaczmarz::Kaczmarz( const std::string& id )
-    : IterativeSolver( id )
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_Solver* Kaczmarz<ValueType>::create()
+{
+    return new Kaczmarz<ValueType>( "_genByFactory" );
+}
+
+template<typename ValueType>
+SolverCreateKeyType Kaczmarz<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "Kaczmarz" );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+Kaczmarz<ValueType>::Kaczmarz( const std::string& id ) : 
+
+    IterativeSolver<ValueType>( id )
 {
 }
 
-Kaczmarz::Kaczmarz( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id, logger )
+template<typename ValueType>
+Kaczmarz<ValueType>::Kaczmarz( const std::string& id, LoggerPtr logger ) : 
+
+    IterativeSolver<ValueType>( id, logger )
 {
 }
 
-Kaczmarz::Kaczmarz( const Kaczmarz& other )
-    : IterativeSolver( other )
+template<typename ValueType>
+Kaczmarz<ValueType>::Kaczmarz( const Kaczmarz& other ) : 
+
+    IterativeSolver<ValueType>( other )
 {
 }
 
-Kaczmarz::~Kaczmarz()
+template<typename ValueType>
+Kaczmarz<ValueType>::~Kaczmarz()
 {
 }
 
-Kaczmarz::KaczmarzRuntime::KaczmarzRuntime()
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
-    : IterativeSolverRuntime()
-{
-}
-
-Kaczmarz::KaczmarzRuntime::~KaczmarzRuntime()
-{
-}
-
-void Kaczmarz::initialize( const Matrix& coefficients )
+template<typename ValueType>
+void Kaczmarz<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.Kaczmarz.initialize" )
-    IterativeSolver::initialize( coefficients );
+
+    IterativeSolver<ValueType>::initialize( coefficients );
+
     KaczmarzRuntime& runtime = getRuntime();
-    runtime.mRow.reset( coefficients.newVector( coefficients.getRowDistributionPtr() ) );
+
+    // matrix type dense or sparse decides whether vector mRow is dense or sparse
+
+    VectorKind kind = VectorKind::DENSE;
+
+    if ( coefficients.getMatrixKind() == MatrixKind::SPARSE )
+    {
+        kind = VectorKind::SPARSE;
+    }
+
+    runtime.mRow.reset( Vector<ValueType>::getVector( kind ) );
+    runtime.mRow->allocate( coefficients.getRowDistributionPtr() );
 }
 
-void Kaczmarz::iterate()
+/* ========================================================================= */
+/*    IterativeSolver: one iteration                                         */
+/* ========================================================================= */
+
+template<typename ValueType>
+void Kaczmarz<ValueType>::iterate()
 {
     SCAI_REGION( "Solver.Kaczmarz.iterate" )
 
@@ -107,13 +149,13 @@ void Kaczmarz::iterate()
         this->getResidual();
     }
 
-    const Matrix& A = *runtime.mCoefficients;
+    const Matrix<ValueType>& A = *runtime.mCoefficients;
 
-    const Vector& b = *runtime.mRhs;
+    const Vector<ValueType>& b = *runtime.mRhs;
 
-    Vector& x = *runtime.mSolution;
+    Vector<ValueType>& x = runtime.mSolution.getReference(); // -> dirty
 
-    Vector& z = *runtime.mRow;
+    Vector<ValueType>& z = *runtime.mRow;
 
     SCAI_LOG_INFO( logger, "Iteration " << iter )
 
@@ -127,9 +169,9 @@ void Kaczmarz::iterate()
 
         z.redistribute( x.getDistributionPtr() );
 
-        Scalar bi = b( iRow );
+        ValueType bi = b[ iRow ];
 
-        Scalar p = ( bi - z.dotProduct( x ) ) / z.dotProduct( z );
+        ValueType p = ( bi - z.dotProduct( x ) ) / z.dotProduct( z );
 
         x = x + p * z;
     }
@@ -140,35 +182,44 @@ void Kaczmarz::iterate()
     mKaczmarzRuntime.mSolution.setDirty( true );
 }
 
-SolverPtr Kaczmarz::copy()
-{
-    return SolverPtr( new Kaczmarz( *this ) );
-}
+/* ========================================================================= */
+/*       Runtime getter                                                      */
+/* ========================================================================= */
 
-Kaczmarz::KaczmarzRuntime& Kaczmarz::getRuntime()
+template<typename ValueType>
+typename Kaczmarz<ValueType>::KaczmarzRuntime& Kaczmarz<ValueType>::getRuntime()
 {
     return mKaczmarzRuntime;
 }
 
-const Kaczmarz::KaczmarzRuntime& Kaczmarz::getConstRuntime() const
+template<typename ValueType>
+const typename Kaczmarz<ValueType>::KaczmarzRuntime& Kaczmarz<ValueType>::getRuntime() const
 {
     return mKaczmarzRuntime;
 }
 
-std::string Kaczmarz::createValue()
+/* ========================================================================= */
+/*       Virtual methods                                                     */
+/* ========================================================================= */
+
+template<typename ValueType>
+Kaczmarz<ValueType>* Kaczmarz<ValueType>::copy()
 {
-    return "Kaczmarz";
+    return new Kaczmarz( *this );
 }
 
-Solver* Kaczmarz::create( const std::string name )
+template<typename ValueType>
+void Kaczmarz<ValueType>::writeAt( std::ostream& stream ) const
 {
-    return new Kaczmarz( name );
+    stream << "Kaczmarz<" << common::TypeTraits<ValueType>::id() << "> ( id = " << Solver<ValueType>::getId()
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
 
-void Kaczmarz::writeAt( std::ostream& stream ) const
-{
-    stream << "Kaczmarz ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( Kaczmarz, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

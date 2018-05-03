@@ -82,41 +82,41 @@ SCAI_LOG_DEF_LOGGER( CUDASortUtils::logger, "CUDA.Utils" )
 template<typename ValueType>
 void CUDASortUtils::sortBoth( ValueType array[], IndexType perm[], const IndexType n, bool ascending )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "CUDA.Utils.sortBoth" )
 
-    thrust::device_ptr<AbsType> array_d( reinterpret_cast<AbsType*>( array ) );
+    thrust::device_ptr<RealType> array_d( reinterpret_cast<RealType*>( array ) );
     thrust::device_ptr<IndexType> perm_d( perm );
 
     // stable sort, descending order, so override default comparison
 
     if ( ascending )
     {
-        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::less<AbsType>() );
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::less<RealType>() );
     }
     else
     {
-        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<AbsType>() );
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<RealType>() );
     }
 }
 
 template<typename ValueType>
 void CUDASortUtils::sortValues( ValueType array[], const IndexType n, bool ascending )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "CUDA.Utils.sortValues" )
 
-    thrust::device_ptr<AbsType> array_d( reinterpret_cast<AbsType*>( array ) );
+    thrust::device_ptr<RealType> array_d( reinterpret_cast<RealType*>( array ) );
 
     if ( ascending )
     {
-        thrust::sort( array_d, array_d + n, thrust::less<AbsType>() );
+        thrust::sort( array_d, array_d + n, thrust::less<RealType>() );
     }
     else
     {
-        thrust::sort( array_d, array_d + n, thrust::greater<AbsType>() );
+        thrust::sort( array_d, array_d + n, thrust::greater<RealType>() );
     }
 }
 
@@ -156,29 +156,29 @@ struct myGreater
 template<typename ValueType>
 void CUDASortUtils::sortPerm( IndexType perm[], const ValueType array[], const IndexType n, bool ascending )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "CUDA.Utils.sortValues" )
 
     thrust::device_ptr<IndexType> perm_d( perm );
 
-    if ( TypeTraits<ValueType>::stype != TypeTraits<AbsType>::stype )
+    if ( TypeTraits<ValueType>::stype != TypeTraits<RealType>::stype )
     {
         COMMON_THROWEXCEPTION( "sort unsupported for complex values" )
     }
     else
     {
-        const AbsType* absArray = reinterpret_cast<const AbsType*>( array );
+        const RealType* absArray = reinterpret_cast<const RealType*>( array );
 
         // stable sort, descending order, so override default comparison
 
         if ( ascending )
         {
-            thrust::stable_sort( perm_d, perm_d + n, myLess<AbsType>( absArray ) );
+            thrust::stable_sort( perm_d, perm_d + n, myLess<RealType>( absArray ) );
         }
         else
         {
-            thrust::stable_sort( perm_d, perm_d + n, myGreater<AbsType>( absArray ) );
+            thrust::stable_sort( perm_d, perm_d + n, myGreater<RealType>( absArray ) );
         }
     }
 }
@@ -208,7 +208,7 @@ void CUDASortUtils::sort(
 
         if ( inValues != outValues )
         {
-            CUDASparseUtils::set( outValues, inValues, n, binary::COPY );
+            CUDASparseUtils::set( outValues, inValues, n, BinaryOp::COPY );
         }
 
         if ( n > 1 )
@@ -236,7 +236,7 @@ void CUDASortUtils::sort(
 
     if ( inValues != outValues )
     {
-        CUDASparseUtils::set( outValues, inValues, n, common::binary::COPY );
+        CUDASparseUtils::set( outValues, inValues, n, common::BinaryOp::COPY );
     }
 
     if ( n > 1 )
@@ -286,7 +286,7 @@ template<typename ValueType>
 void CUDASortUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger, "registerV array UtilsKernel CUDA [" << flag
                     << "] --> ValueType = " << common::getScalarType<ValueType>() )

@@ -57,7 +57,7 @@ int main( int argc, const char* argv[] )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    DenseMatrix<RealType> mat( size, size );
+    DenseMatrix<DefaultReal> mat( size, size );
 
     mat.setContextPtr( ctx );
 
@@ -71,14 +71,14 @@ int main( int argc, const char* argv[] )
 
     mat.redistribute( dist, dist );
 
-    DenseVector<RealType> row( ctx );
+    DenseVector<DefaultReal> row( ctx );
 
     double tstart = common::Walltime::get();
 
     for ( IndexType i = 0; i < size; ++i )
     {
         mat.getRow( row, i );
-        mat.setRow( row, i, common::binary::SUB );
+        mat.setRow( row, i, common::BinaryOp::SUB );
     }
 
     double time = common::Walltime::get() - tstart;
@@ -94,7 +94,7 @@ int main( int argc, const char* argv[] )
         MatrixCreator::fillRandom( mat, 0.1f );
     }
 
-    DenseVector<RealType> col( ctx );
+    DenseVector<DefaultReal> col( ctx );
 
     mat.redistribute( dist, dist );
 
@@ -103,7 +103,7 @@ int main( int argc, const char* argv[] )
     for ( IndexType j = 0; j < size; ++j )
     {
         mat.getColumn( col, j );
-        mat.setColumn( col, j, common::binary::SUB );
+        mat.setColumn( col, j, common::BinaryOp::SUB );
     }
 
     time = common::Walltime::get() - tstart;

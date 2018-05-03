@@ -34,10 +34,9 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
@@ -62,7 +61,7 @@ static const IndexType NITER = 10;
 
 int main( int argc, const char* argv[] )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // relevant SCAI arguments: 
     //   SCAI_CONTEXT = ...    set default context
@@ -76,12 +75,12 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    ContextPtr ctx = Context::getContextPtr();
+    // read in a CSR matrix from file, name specified by command line argument
 
-    CSRSparseMatrix<ValueType> csrMatrix( argv[1] );
+    auto csrMatrix = read<CSRSparseMatrix<ValueType>>( argv[1] );
 
-    DenseVector<ValueType> x( csrMatrix.getColDistributionPtr(), 1 );
-    DenseVector<ValueType> y( csrMatrix.getRowDistributionPtr(), 0 );
+    auto x = fill<DenseVector<ValueType>>( csrMatrix.getColDistributionPtr(), 1 );
+    auto y = fill<DenseVector<ValueType>>( csrMatrix.getRowDistributionPtr(), 0 );
 
     for ( IndexType i = 0; i < NITER; ++i )
     {

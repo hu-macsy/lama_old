@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief BiCGstab.hpp
- * @author lschubert
+ * @author Lauretta Schubert
  * @date 06.08.2013
  */
 
@@ -40,6 +40,7 @@
 // base classes
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/IterativeSolver.hpp>
+#include <scai/lama/Vector.hpp>
 
 // logging
 #include <scai/logging/Logger.hpp>
@@ -58,9 +59,11 @@ namespace solver
  * The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT BiCGstab:
-    public IterativeSolver,
-    public Solver::Register<BiCGstab>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<BiCGstab<ValueType> >
 {
 public:
     /**
@@ -85,7 +88,7 @@ public:
 
     virtual ~BiCGstab();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -93,51 +96,63 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual BiCGstab<ValueType>* copy();
 
-    struct BiCGstabRuntime: IterativeSolverRuntime
+    /** 
+     *  @brief Runtime variables for BiCGstab solver.
+     *
+     *  Note: due to polymorphism we use unique pointers for temporary vectors
+     *        (will be DenseVector in most cases).
+     */
+    struct BiCGstabRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        BiCGstabRuntime();
-        virtual ~BiCGstabRuntime();
+        std::unique_ptr<lama::Vector<ValueType>> mRes0;
+        std::unique_ptr<lama::Vector<ValueType>> mVecV;
+        std::unique_ptr<lama::Vector<ValueType>> mVecP;
+        std::unique_ptr<lama::Vector<ValueType>> mVecS;
+        std::unique_ptr<lama::Vector<ValueType>> mVecT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecPT;
+        std::unique_ptr<lama::Vector<ValueType>> mVecST;
+        std::unique_ptr<lama::Vector<ValueType>> mVecTT;
 
-        common::shared_ptr<lama::Vector> mRes0;
-        common::shared_ptr<lama::Vector> mVecV;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecS;
-        common::shared_ptr<lama::Vector> mVecT;
-        common::shared_ptr<lama::Vector> mVecPT;
-        common::shared_ptr<lama::Vector> mVecST;
-        common::shared_ptr<lama::Vector> mVecTT;
-
-        lama::Scalar mEps;
-        lama::Scalar mResNorm;
-        lama::Scalar mOmega;
-        lama::Scalar mAlpha;
-        lama::Scalar mBeta;
-        lama::Scalar mRhoOld;
-        lama::Scalar mRhoNew;
+        RealType<ValueType> mEps;      // used in comparison
+        RealType<ValueType> mResNorm;  // norm is always real
+        ValueType mOmega;
+        ValueType mAlpha;
+        ValueType mBeta;
+        ValueType mRhoOld;
+        ValueType mRhoNew;
     };
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
     virtual BiCGstabRuntime& getRuntime();
+
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const BiCGstabRuntime& getConstRuntime() const;
+    virtual const BiCGstabRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
     virtual void iterate();
+
+    using IterativeSolver<ValueType>::mPreconditioner;
+
     /**
      *  @brief own implementation of Printable::writeAt
      */

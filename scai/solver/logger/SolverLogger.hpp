@@ -47,7 +47,6 @@
 
 // internal scai libraries
 #include <scai/lama/norm/Norm.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <string>
@@ -60,10 +59,10 @@ namespace scai
 namespace solver
 {
 
-class Solver;
+template<typename ValueType> class Solver;
 class SolverLogger;
 
-typedef common::shared_ptr<SolverLogger> LoggerPtr;
+typedef std::shared_ptr<SolverLogger> LoggerPtr;
 
 /**
  * @brief A logger abstraction.
@@ -102,8 +101,8 @@ public:
      */
     SolverLogger(
         const std::string& id,
-        LogLevel::LogLevel level,
-        LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+        LogLevel level,
+        LoggerWriteBehaviour writeBehaviour,
         bool ignoreRank = false );
 
     /**
@@ -127,9 +126,9 @@ public:
      */
     SolverLogger(
         const std::string& id,
-        LogLevel::LogLevel level,
-        LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
-        common::shared_ptr<Timer> timer,
+        LogLevel level,
+        LoggerWriteBehaviour writeBehaviour,
+        std::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**
@@ -159,10 +158,10 @@ public:
      */
     SolverLogger(
         const std::string& id,
-        LogLevel::LogLevel level,
-        LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+        LogLevel level,
+        LoggerWriteBehaviour writeBehaviour,
         const std::string& logFileName,
-        common::shared_ptr<Timer> timer,
+        std::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**
@@ -175,14 +174,14 @@ public:
      *
      * @return   The log level of this.
      */
-    LogLevel::LogLevel getLogLevel() const;
+    LogLevel getLogLevel() const;
 
     /**
      * @brief Sets the internal LogLevel
      *
      * @param level   The log level.
      */
-    void setLogLevel( LogLevel::LogLevel level );
+    void setLogLevel( LogLevel level );
 
     /**
      * @brief Logs a user specified message
@@ -192,14 +191,14 @@ public:
      * @param level     The LogLevel of the message.
      * @param message   The message to log.
      */
-    void logMessage( LogLevel::LogLevel level, const std::string& message );
+    void logMessage( LogLevel level, const std::string& message );
 
     /**
      * @brief Logs an empty line.
      *
      * @param level   The LogLevel at which the empty line shall be logged
      */
-    void logNewLine( LogLevel::LogLevel level );
+    void logNewLine( LogLevel level );
 
     /**
      * @brief Logs the residual of the solver.
@@ -209,10 +208,11 @@ public:
      * @param[in] norm              The Norm used to calculate the residual
      * @param[in] iterationPrefix   A Prefix to put in front of the generated log message (Default: "" )
      */
+    template<typename ValueType>
     void logResidual(
-        LogLevel::LogLevel level,
-        const Solver& solver,
-        const lama::Norm& norm,
+        LogLevel level,
+        const Solver<ValueType>& solver,
+        const lama::Norm<ValueType>& norm,
         const std::string iterationPrefix = "" );
 
     /**
@@ -226,7 +226,7 @@ public:
      * @param[in] level     The loglevel of the message.
      * @param[in] message   The message to log.
      */
-    void logTime( const std::string& timerId, LogLevel::LogLevel level, const std::string& message );
+    void logTime( const std::string& timerId, LogLevel level, const std::string& message );
 
     /**
      * @brief Starts an internal timer of the logger.
@@ -270,7 +270,7 @@ public:
      *                      The << operator must be defined for it!
      */
     template<typename ValueType>
-    void logType( LogLevel::LogLevel level, const std::string& message, ValueType arg );
+    void logType( LogLevel level, const std::string& message, ValueType arg );
 
 protected:
 
@@ -280,7 +280,7 @@ protected:
      * @param[in] level     The LogLevel to log the string at.
      * @param[in] message   The string to be logged.
      */
-    virtual void logString( LogLevel::LogLevel level, const std::string& message );
+    virtual void logString( LogLevel level, const std::string& message );
 
     /**
      * @brief Logs the message. DOES NOT perform a LogLevel check.
@@ -298,20 +298,20 @@ protected:
     /**
      * @brief Timer used for timings.
      */
-    common::shared_ptr<Timer> mTimer;
+    std::shared_ptr<Timer> mTimer;
 
     std::string mId;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private    :
-    LogLevel::LogLevel mLogLevel;
-    LoggerWriteBehaviour::LoggerWriteBehaviour mWriteBehaviour;
+    LogLevel mLogLevel;
+    LoggerWriteBehaviour mWriteBehaviour;
     bool mIgnoreRank;
 };
 
 template<typename ValueType>
-void SolverLogger::logType( LogLevel::LogLevel level, const std::string& message, ValueType arg )
+void SolverLogger::logType( LogLevel level, const std::string& message, ValueType arg )
 {
     if ( level <= mLogLevel )
     {

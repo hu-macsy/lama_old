@@ -41,8 +41,6 @@ message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
 emptyline()
 
-# LAMA MIC
-
 heading ( "External Software/Packages:" )
 
 ## SCAI_SUMMARY has been defined by the module projects via scai_summary
@@ -79,6 +77,7 @@ indent_message ( "1" "Used SCAI modules   : ${USED_LIST}" )
 indent_message ( "1" "Unused SCAI modules : ${UNUSED_LIST}" )
 emptyline()
 indent_message ( "1" "Build Type          : ${CMAKE_BUILD_TYPE}" )
+indent_message ( "1" "Install Prefix      : ${CMAKE_INSTALL_PREFIX}" )
 indent_message ( "1" "Library Type        : ${SCAI_LIBRARY_TYPE}" )
 indent_message ( "1" "Numeric Types       : ${INST_LIST}" )
 indent_message ( "1" "IndexType           : ${SCAI_INDEX_TYPE}" )

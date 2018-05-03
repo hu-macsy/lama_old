@@ -61,7 +61,7 @@ public:
     /** CUDA implementation of UtilKernelTrait::setVal  */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::binary::BinaryOp op );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::scaleVectorAddScalar */
 
@@ -76,12 +76,12 @@ public:
     /** CUDA implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::unary::UnaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::UnaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::binaryOp */
 
     template<typename ValueType>
-    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const common::binary::BinaryOp op );
+    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const common::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::binaryOpScalar */
 
@@ -91,7 +91,7 @@ public:
         const ValueType in[],
         const ValueType value,
         const IndexType n,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapScalar );
 
     /** CUDA implementation for UtilKernelTrait::scatterVal */

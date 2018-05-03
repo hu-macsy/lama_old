@@ -43,20 +43,21 @@
 
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/weak_ptr.hpp>
+
+#include <memory>
+
+using std::shared_ptr;
+using std::weak_ptr;
 
 namespace scai
 {
-
-using  common::shared_ptr;
-using  common::weak_ptr;
 
 namespace hmemo
 {
 
 SCAI_LOG_DEF_LOGGER( HostContext::logger, "Context.HostContext" )
 
-HostContext::HostContext() : Context( common::context::Host )
+HostContext::HostContext() : Context( common::ContextType::Host )
 {
     SCAI_LOG_INFO( logger, "HostContext created" )
 }
@@ -114,11 +115,11 @@ bool HostContext::canUseMemory( const Memory& other ) const
 {
     bool canUseIt = false;
 
-    if ( other.getType() == memtype::HostMemory )
+    if ( other.getType() == MemoryType::HostMemory )
     {
         canUseIt = true;
     }
-    else if ( other.getContext().getType() == common::context::Host )
+    else if ( other.getContext().getType() == common::ContextType::Host )
     {
         // If other memory can be used on Host it is okay
         canUseIt = true;

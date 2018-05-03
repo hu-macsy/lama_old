@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Benchmarking of binary and unary operations
+ * @brief Benchmarking of binary and UnaryOp operations
  * @author Thomas Brandes
  * @date 21.10.2016
  */
@@ -41,8 +41,8 @@ using namespace std;
 using namespace scai;
 using namespace hmemo;
 using namespace utilskernel;
-using common::binary;
-using common::unary;
+using common::BinaryOp;
+using common::UnaryOp;
 
 int main( int argc, const char* argv[] )
 {
@@ -50,7 +50,7 @@ int main( int argc, const char* argv[] )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType N = 10 * 1000 * 1000;
 
@@ -66,12 +66,12 @@ int main( int argc, const char* argv[] )
 
     // move random values in range 1.0 - 3.0 instead of 0 .. 2 
 
-    HArrayUtils::setScalar( values1, ValueType( 1 ), binary::ADD );
-    HArrayUtils::setScalar( values2, ValueType( 1 ), binary::ADD );
+    HArrayUtils::setScalar( values1, ValueType( 1 ), BinaryOp::ADD );
+    HArrayUtils::setScalar( values2, ValueType( 1 ), BinaryOp::ADD );
 
-    for ( int i = 0; i < unary::MAX_UNARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( UnaryOp::MAX_UNARY_OP ); ++i )
     {
-        unary::UnaryOp op = unary::UnaryOp( i );
+        UnaryOp op = UnaryOp( i );
 
         double start = common::Walltime::get();
 
@@ -82,12 +82,12 @@ int main( int argc, const char* argv[] )
 
         double time1 = common::Walltime::get() - start;
 
-        cout << "Time for unary op = " << op << ": " << time1 << " seconds." << endl;
+        cout << "Time for UnaryOp op = " << op << ": " << time1 << " seconds." << endl;
     }
 
-    for ( int i = 0; i < binary::MAX_BINARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
-        binary::BinaryOp op = binary::BinaryOp( i );
+        BinaryOp op = BinaryOp( i );
 
         double start = common::Walltime::get();
 
@@ -101,13 +101,13 @@ int main( int argc, const char* argv[] )
         cout << "Time for binary op = " << op << ": " << time1 << " seconds." << endl;
     }
 
-    for ( int i = 0; i < binary::MAX_BINARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
         ValueType sum = 0;
 
-        binary::BinaryOp op = binary::BinaryOp( i );
+        BinaryOp op = BinaryOp( i );
 
-        if ( op != binary::ADD && op != binary::MAX && op != binary::MIN && op != binary::ABS_MAX )
+        if ( op != BinaryOp::ADD && op != BinaryOp::MAX && op != BinaryOp::MIN && op != BinaryOp::ABS_MAX )
         {
             continue;
         }

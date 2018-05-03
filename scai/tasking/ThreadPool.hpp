@@ -38,15 +38,13 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/Thread.hpp>
 #include <scai/common/NonCopyable.hpp>
-#include <scai/common/function.hpp>
-#include <scai/common/shared_ptr.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 // std
 #include <climits>
 #include <queue>
+#include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -75,7 +73,7 @@ struct COMMON_DLL_IMPORTEXPORT ThreadPoolTask
         FINISHED    //!< Task is terminated, structure still exists
     };
 
-    common::function<void()> mWork;  //!< task function to be executed
+    std::function<void()> mWork;  //!< task function to be executed
 
     volatile TaskState mState; //!< current state of the task
 
@@ -87,8 +85,8 @@ struct COMMON_DLL_IMPORTEXPORT ThreadPoolTask
 
     /** Create a new task as a shared pointer */
 
-    static common::shared_ptr<ThreadPoolTask> create(
-        common::function<void()> work,
+    static std::shared_ptr<ThreadPoolTask> create(
+        std::function<void()> work,
         unsigned int taskId,
         int numOmpThreads = 0 );
 };
@@ -125,11 +123,11 @@ public:
      *  @return shared pointer for the task
      */
 
-    common::shared_ptr<ThreadPoolTask> schedule( common::function<void()> work, int numOmpThreads = 0 );
+    std::shared_ptr<ThreadPoolTask> schedule( std::function<void()> work, int numOmpThreads = 0 );
 
     /** Wait on completion of a task. */
 
-    void wait( common::shared_ptr<ThreadPoolTask> task );
+    void wait( std::shared_ptr<ThreadPoolTask> task );
 
     /** Wait on completion of all scheduled tasks */
 
@@ -161,16 +159,16 @@ private:
 
     // use scoped array instead of vector as no copy constructor is available
 
-    common::scoped_array<common::Thread> mThreads;    // worker threads of this pool
-    common::scoped_array<ThreadData> mThreadArgs;     // arguments for each worker thread
+    std::unique_ptr<std::thread[]> mThreads;    // worker threads of this pool
+    std::unique_ptr<ThreadData[]> mThreadArgs;     // arguments for each worker thread
 
-    std::queue<common::shared_ptr<ThreadPoolTask> > mTaskQueue;
+    std::queue<std::shared_ptr<ThreadPoolTask> > mTaskQueue;
 
-    common::Thread::Condition mNotifyFinished;// notify about finished tasks
-    common::Thread::Condition mNotifyTask;// notify about new task
+    std::condition_variable_any mNotifyFinished;// notify about finished tasks
+    std::condition_variable_any mNotifyTask;// notify about new task
 
-    common::Thread::Mutex mTaskQueueMutex;// make access to taskqueue thread-safe
-    common::Thread::Mutex mNotifyFinishMutex;// used for wait on mNotifyFinished
+    std::mutex mTaskQueueMutex;      // make access to taskqueue thread-safe
+    std::mutex mNotifyFinishMutex;   // used for wait on mNotifyFinished
 
     enum WorkerState
     {

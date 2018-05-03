@@ -86,7 +86,7 @@ private:
      *  @param[in] replace if TRUE a registered entry might be overwritten
      */
 
-    static void registerContextFunction( const KernelRegistryKey& key, common::context::ContextType ctx, VoidFunction fn, bool replace );
+    static void registerContextFunction( const KernelRegistryKey& key, common::ContextType ctx, VoidFunction fn, bool replace );
 
     /** Method that unregisters a function pointer for a given context in the registry.
      *
@@ -95,7 +95,7 @@ private:
      *  @param[in] fn is the pointer to the function that has been registered
      */
 
-    static void unregisterContextFunction( const KernelRegistryKey& key, common::context::ContextType ctx, VoidFunction fn );
+    static void unregisterContextFunction( const KernelRegistryKey& key, common::ContextType ctx, VoidFunction fn );
 
 public:
 
@@ -124,7 +124,7 @@ public:
      */
 
     template<typename FunctionType>
-    static void set( FunctionType fn, const char* name, const common::context::ContextType ctx, const KernelRegistryFlag flag )
+    static void set( FunctionType fn, const char* name, const common::ContextType ctx, const KernelRegistryFlag flag )
     {
         KernelRegistryKey key( typeid( FunctionType ), name );
 
@@ -151,13 +151,13 @@ public:
      */
 
     template<typename KernelTrait>
-    static void set( typename KernelTrait::FuncType fn, const common::context::ContextType ctx, const KernelRegistryFlag flag )
+    static void set( typename KernelTrait::FuncType fn, const common::ContextType ctx, const KernelRegistryFlag flag )
     {
         set( fn, KernelTrait::getId(), ctx, flag );
     }
 
     template<typename FunctionType>
-    static void get( FunctionType& fn, const char* name, common::context::ContextType ctx )
+    static void get( FunctionType& fn, const char* name, common::ContextType ctx )
     {
         KernelRegistry& kreg = getInstance();
         KernelRegistryKey key( typeid( FunctionType ), name );

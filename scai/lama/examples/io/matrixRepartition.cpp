@@ -39,12 +39,12 @@
 #include <scai/lama/io/PartitionIO.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Communicator.hpp>
 
-#include <scai/utilskernel/LArray.hpp>
+#include <memory>
+#include <vector>
 
 using namespace std;
 
@@ -55,28 +55,7 @@ using namespace lama;
 
 /** Define StoragePtr as shared pointer to any storage */
 
-typedef common::shared_ptr<_MatrixStorage> StoragePtr;
-
-static common::scalar::ScalarType getType()
-{
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
-
-    string val;
-
-    if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
-    {
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
-
-        if ( env_type == scai::common::scalar::UNKNOWN )
-        {
-            cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << endl;
-        }
-
-        type = env_type;
-    }
-
-    return type;
-}
+typedef std::shared_ptr<_MatrixStorage> StoragePtr;
 
 void printHelp( const char* cmd )
 {
@@ -88,12 +67,11 @@ void printHelp( const char* cmd )
     cout << endl;
     cout << "   Note: file format is chosen by suffix, e.g. frm, mtx, txt, psc"  << endl;
     cout << endl;
-    cout << "   --SCAI_TYPE=<data_type> is data type of input file and used for internal representation" << endl;
     cout << "   --SCAI_IO_BINARY=0|1 to force formatted or binary output file" << endl;
     cout << "   --SCAI_IO_TYPE_DATA=<data_type> is data type used for file output" << endl;
     cout << "   " << endl;
     cout << "   Supported types: ";
-    vector<common::scalar::ScalarType> dataTypes;
+    vector<common::ScalarType> dataTypes;
     hmemo::_HArray::getCreateValues( dataTypes );
 
     for ( size_t i = 0; i < dataTypes.size(); ++i )
@@ -110,11 +88,17 @@ void printHelp( const char* cmd )
  *  @param[in]  inFileName name of the input file, must contain a "%r" to have unique file name for each block
  *  @param[in]  np         number of files among which the matrix is partitioned
  */
-void readStorageBlocked( _MatrixStorage& storage, const string& inFileName, const IndexType np )
+template<typename ValueType>
+void readStorageBlocked( MatrixStorage<ValueType>& storage, const string& inFileName, const IndexType np )
 {
-    vector<StoragePtr> storageVector;
+    std::vector<IndexType> coo_ia;
+    std::vector<IndexType> coo_ja;
+    std::vector<ValueType> coo_values;
 
     // proof that all input files are available, read them and push the storages
+
+    IndexType numRows = 0;
+    IndexType numColumns = 0;
 
     for ( PartitionId ip = 0; ip < np; ++ ip )
     {
@@ -128,30 +112,38 @@ void readStorageBlocked( _MatrixStorage& storage, const string& inFileName, cons
                      "Input file for block " << ip << " of " << np << " = "
                      << inFileNameBlock << " could not be opened" )
 
-        StoragePtr blockStorage( storage.newMatrixStorage() );   // new temporary storage for each block
+        auto storage = read<CSRStorage<ValueType>>( inFileNameBlock );
 
-        blockStorage->readFromFile( inFileNameBlock );
+        std::cout << "Read block " << ip << " of " << np << " from file " << inFileNameBlock << ": "
+                  << storage << ", added at row = " << numRows << std::endl;
 
-        storageVector.push_back( blockStorage );
-    }
+        auto ia     = hostReadAccess( storage.getIA() );
+        auto ja     = hostReadAccess( storage.getJA() );
+        auto values = hostReadAccess( storage.getValues() );
 
-    if ( storageVector.size() == 1 )
-    {
-        storage.swap( *storageVector[0] );
-    }
-    else
-    {
-        IndexType ns = storageVector.size();
+        // traverse the CSR storage and assemble the entries with the new offsets
 
-        common::scoped_array<const _MatrixStorage*> storages( new const _MatrixStorage*[ ns ] );
-
-        for ( IndexType i = 0; i < ns; ++i )
+        for ( IndexType i = 0; i < storage.getNumRows(); ++i )
         {
-            storages[i] = storageVector[i].get();
+            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
+            {
+                coo_ia.push_back( i + numRows );;
+                coo_ja.push_back( ja[jj] );
+                coo_values.push_back( values[jj] );
+            }
         }
-
-        storage.cat( 0, storages.get(), ns );   // vertical concatenation, dim = 0
+ 
+        numRows += storage.getNumRows();
+        numColumns = std::max( numColumns, storage.getNumColumns() );
     }
+
+    HArrayRef<IndexType> cooIA( coo_ia );
+    HArrayRef<IndexType> cooJA( coo_ja );
+    HArrayRef<ValueType> cooValues( coo_values );
+
+    COOStorage<ValueType> coo( numRows, numColumns, std::move( cooIA ), std::move( cooJA ), std::move( cooValues ) );
+
+    storage = coo;
 }
 
 /** The following method is a special case where the input file contains the full matrix
@@ -159,15 +151,12 @@ void readStorageBlocked( _MatrixStorage& storage, const string& inFileName, cons
  *
  *  Important: this algorithm does not require memory for the full matrix
  */
+template<typename ValueType>
 void directPartitioning( const string& inFileName, const string& outFileName, const PartitionId np_out )
 {
-    common::scalar::ScalarType type = getType();
+    std::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
 
-    common::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
-
-    MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, type );
-
-    common::unique_ptr<_MatrixStorage> storage( _MatrixStorage::create( key ) );
+    CSRStorage<ValueType> storage;
 
     IndexType numRows;     // partitioning is done among numbers of rows
     IndexType numColumns;  // dummy here
@@ -188,12 +177,12 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
 
         dmemo::BlockDistribution::getLocalRange( lb, ub, numRows, ip, np_out );
 
-        cout << "Matrix stroage block " << ip << " has range " << lb << " - " << ub
+        cout << "Matrix storage block " << ip << " has range " << lb << " - " << ub
              << ", write to file " << outFileNameBlock << endl;
 
-        inputIO->readStorage( *storage, inFileName, lb, ub - lb );
+        inputIO->readStorage( storage, inFileName, lb, ub - lb );
 
-        storage->writeToFile( outFileNameBlock );
+        storage.writeToFile( outFileNameBlock );
     }
 }
 
@@ -205,12 +194,12 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
  *
  *  This method is exaclty the same as writing the matrix block distributed with np number of processors.
  */
-
-void writeStorageBlocked( const _MatrixStorage& storage, const string& outFileName, const IndexType np )
+template<typename ValueType>
+void writeStorageBlocked( const MatrixStorage<ValueType>& storage, const string& outFileName, const IndexType np )
 {
     // create temporary storage for each block of same type / format
 
-    common::unique_ptr<_MatrixStorage> blockStorage( storage.newMatrixStorage() );
+    std::unique_ptr<MatrixStorage<ValueType> > blockStorage( storage.newMatrixStorage() );
 
     IndexType numRows = storage.getNumRows();
 
@@ -260,14 +249,7 @@ int main( int argc, const char* argv[] )
         printHelp( argv[0] );
         return -1;
     }
-
-    common::scalar::ScalarType type = getType();
-
-    MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, type );
-
-    // common::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
-    // common::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );
-
+     
     // take double as default
 
     string inFileName  = argv[1];
@@ -288,13 +270,15 @@ int main( int argc, const char* argv[] )
 
     SCAI_ASSERT( !input2.fail(), "illegal: np_out=" << argv[4] << " in argument list" )
 
+    typedef DefaultReal ValueType;
+
     if ( np_in < 1 && np_out > 1 )
     {
         cout << "Partitioning is done block-wise from input file " << inFileName << endl;
 
         try
         {
-            directPartitioning( inFileName, outFileName, np_out );
+            directPartitioning<ValueType>( inFileName, outFileName, np_out );
             return 0;
         }
         catch ( common::Exception& ex )
@@ -304,7 +288,7 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    StoragePtr fullStorage( _MatrixStorage::create( key ) );
+    CSRStorage<ValueType> fullStorage;
 
     // read in one or all partitions in the memory
 
@@ -317,15 +301,15 @@ int main( int argc, const char* argv[] )
             cout << "Attention: np_in = " << np_in << " ignored, no %r in filename " << inFileName << endl;
         }
 
-        fullStorage->readFromFile( inFileName );
+        fullStorage.readFromFile( inFileName );
     }
     else
     {
-        // write the storage in np_out block partitions in separate files
+        // read the storage in np_in block partitions from separate files and concatenate
 
-        readStorageBlocked( *fullStorage, inFileName, np_in );
+        readStorageBlocked( fullStorage, inFileName, np_in );
 
-        cout << "Storage (merged of " << np_in << " blocks) : " << *fullStorage << endl;
+        cout << "Storage (merged of " << np_in << " blocks) : " << fullStorage << endl;
     }
 
     if ( outFileName.find( "%r" ) == string::npos )
@@ -337,7 +321,7 @@ int main( int argc, const char* argv[] )
             cout << "WARNING: np_out = " << np_out << " ignored, no %r in filename " << outFileName << endl;
         }
 
-        fullStorage->writeToFile( outFileName );
+        fullStorage.writeToFile( outFileName );
     }
     else
     {
@@ -345,6 +329,6 @@ int main( int argc, const char* argv[] )
 
         // write the storage in np_out block partitions in separate files
 
-        writeStorageBlocked( *fullStorage, outFileName, np_out );
+        writeStorageBlocked( fullStorage, outFileName, np_out );
     }
 }

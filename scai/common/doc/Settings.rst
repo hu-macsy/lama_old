@@ -135,14 +135,15 @@ Name                       Type    Description
 ========================   ======  ========================================================================
 SCAI_LOG                   path    path to configuration file for logging
 SCAI_UNSUPPORTED           string  IGNORE, WARN, or ERROR
-SCAI_CONTEXT               string  specifies default context, e.g. Host, CUDA, MIC  
+SCAI_CONTEXT               string  specifies default context, e.g. Host, CUDA
 SCAI_DEVICE                int     default device when getting a context
 SCAI_THREADPOOL_SIZE       int     number of threads for asynchronous execuctions on CPU, default is 1
+SCAI_ASYNCHRONOUS          int     0 (synchron), 1 (asynchron communication), or 2 (asynchron local computations) for certain routines
 SCAI_CUDA_USE_CUSPARSE     bool    default true, uses cuSparse library instead of own kernels
 SCAI_CUDA_USE_SHARED_MEM   bool    default true, uses cuSparse library instead of own kernels
 SCAI_CUDA_USE_TEXTURE      bool    default true, uses cuSparse library instead of own kernels
 SCAI_CUDA_BLOCK_SIZE       int     number of thread within one cude block, default is 128
-SCAI_COMMUNICATOR          string  specifies default communicator, e.g. NO, MPI, or GPI
+SCAI_COMMUNICATOR          string  specifies default communicator, e.g. NO, MPI
 SCAI_MPI_CUDA              bool    false, set true if MPI is CUDAaware
 SCAI_USE_MKL               bool    false, use MKL library for BLAS routines
 SCAI_AMG_SETUP_LIBRARY     path    library with dynamic module that that register at factory for AMG Setup

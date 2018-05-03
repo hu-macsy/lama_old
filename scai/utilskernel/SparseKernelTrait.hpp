@@ -43,8 +43,6 @@
 namespace scai
 {
 
-/** Namespace for utilities on heterogeneous arrays (HArray) and derived class LArray */
-
 namespace utilskernel
 {
 
@@ -64,11 +62,12 @@ struct SparseKernelTrait
          *
          *  @param[in] denseArray are the values
          *  @param[in] n          number of elements in the dense array
+         *  @param[in] zero       specifizes the zero element
          *  @param[in] eps        threshold when a value is to be considered as non-zero
          *  @returns   number of non-zero elements in denseArray
          */
 
-        typedef IndexType ( *FuncType ) ( const ValueType denseArray[], const IndexType n, const ValueType eps );
+        typedef IndexType ( *FuncType ) ( const ValueType denseArray[], const IndexType n, const ValueType zero, const ValueType eps );
 
         static const char* getId()
         {
@@ -85,6 +84,7 @@ struct SparseKernelTrait
          *  @param[out] sparseIndexes   indexes of the non-zero values of input array
          *  @param[in]  denseArray      array with dense values
          *  @param[in]  n               number of elements in the dense array
+         *  @param[in]  zero            values that is taken as zero element from the dense array
          *  @param[in]  eps             threshold when a value is still considered as zero
          *  @returns    number of non-zero elements in denseArray
          *
@@ -97,6 +97,7 @@ struct SparseKernelTrait
             IndexType sparseIndexes[],
             const SourceValueType denseArray[],
             const IndexType n,
+            const SourceValueType zero,
             const SourceValueType eps );
 
         static const char* getId()
@@ -207,7 +208,7 @@ struct SparseKernelTrait
             const ValueType values2[],
             const ValueType zero2,
             const IndexType n2,
-            const common::binary::BinaryOp op );
+            const common::BinaryOp op );
 
         static const char* getId()
         {
@@ -242,7 +243,7 @@ struct SparseKernelTrait
             const ValueType values2[],
             const ValueType zero2,
             const IndexType n2,
-            const common::binary::CompareOp op );
+            const common::CompareOp op );
 
         static const char* getId()
         {
@@ -279,7 +280,7 @@ struct SparseKernelTrait
             const IndexType indexes2[],
             const ValueType values2[],
             const IndexType n2,
-            const common::binary::BinaryOp op );
+            const common::BinaryOp op );
 
         static const char* getId()
         {

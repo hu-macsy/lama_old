@@ -42,12 +42,15 @@
 #include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/weak_ptr.hpp>
+#include <scai/common/safer_memcpy.hpp>
 
 #include <cstring>
+#include <memory>
 #include <unistd.h>
 
 using namespace std;
+
+using scai::common::safer_memcpy;
 
 namespace scai
 {
@@ -82,49 +85,51 @@ Communicator::ThreadSafetyLevel NoCommunicator::getThreadSafetyLevel() const
     return Communicator::Multiple;
 }
 
-void NoCommunicator::all2all( IndexType recvValues[], const IndexType sendValues[] ) const
+void NoCommunicator::all2allImpl( void* recvBuffer, const void* sendBuffer, const common::ScalarType stype ) const
 {
-    recvValues[0] = sendValues[0];
+    // exchange one single element on a single processor
+
+    safer_memcpy( recvBuffer, sendBuffer, typeSize( stype ) );
 }
 
-void NoCommunicator::sumImpl( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+void NoCommunicator::sumImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
 {
     if ( outData == inData )
     {
         return;   // IN_PLACE
     }
 
-    memcpy( outData, inData, typeSize( stype ) * n );
+    safer_memcpy( outData, inData, typeSize( stype ) * n );
 }
 
-void NoCommunicator::minImpl( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+void NoCommunicator::minImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
 {
     if ( outData == inData )
     {
         return;   // IN_PLACE
     }
 
-    memcpy( outData, inData, typeSize( stype ) * n );
+    safer_memcpy( outData, inData, typeSize( stype ) * n );
 }
 
-void NoCommunicator::maxImpl( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+void NoCommunicator::maxImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
 {
     if ( outData == inData )
     {
         return;   // IN_PLACE
     }
 
-    memcpy( outData, inData, typeSize( stype ) * n );
+    safer_memcpy( outData, inData, typeSize( stype ) * n );
 }
 
-void NoCommunicator::scanImpl( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+void NoCommunicator::scanImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
 {
     if ( outData == inData )
     {
         return;   // IN_PLACE
     }
 
-    memcpy( outData, inData, typeSize( stype ) * n );
+    safer_memcpy( outData, inData, typeSize( stype ) * n );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -136,7 +141,7 @@ void NoCommunicator::exchangeByPlanImpl(
     const CommunicationPlan& recvPlan,
     const void* sendData,
     const CommunicationPlan& sendPlan,
-    const common::scalar::ScalarType stype ) const
+    const common::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( recvPlan.size(), sendPlan.size(), "size mismatch" )
 
@@ -155,7 +160,7 @@ void NoCommunicator::exchangeByPlanImpl(
 
     // self copy of send data to recv data
 
-    memcpy( recvData, sendData, quantity * common::typeSize( stype ) );
+    safer_memcpy( recvData, sendData, quantity * common::typeSize( stype ) );
 }
 
 tasking::SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
@@ -163,7 +168,7 @@ tasking::SyncToken* NoCommunicator::exchangeByPlanAsyncImpl(
     const CommunicationPlan& recvPlan,
     const void* sendData,
     const CommunicationPlan& sendPlan,
-    const common::scalar::ScalarType stype ) const
+    const common::ScalarType stype ) const
 {
     exchangeByPlanImpl( recvData, recvPlan, sendData, sendPlan, stype );
     return new tasking::NoSyncToken();
@@ -180,7 +185,7 @@ IndexType NoCommunicator::shiftImpl(
     const void*,
     const IndexType,
     const PartitionId,
-    const common::scalar::ScalarType ) const
+    const common::ScalarType ) const
 {
     COMMON_THROWEXCEPTION( "shiftImpl should never be called for NoCommunicator" )
 }
@@ -191,7 +196,7 @@ tasking::SyncToken* NoCommunicator::shiftAsyncImpl(
     const void*,
     const PartitionId,
     const IndexType,
-    const common::scalar::ScalarType ) const
+    const common::ScalarType ) const
 {
     COMMON_THROWEXCEPTION( "shiftAsyncImpl should never be called for NoCommunicator" )
 }
@@ -200,35 +205,44 @@ tasking::SyncToken* NoCommunicator::shiftAsyncImpl(
 /*              minloc/maxloc                                                         */
 /* ---------------------------------------------------------------------------------- */
 
-void NoCommunicator::maxlocImpl( void*, IndexType*, PartitionId root, common::scalar::ScalarType ) const
+void NoCommunicator::maxlocImpl( void*, IndexType*, PartitionId root, common::ScalarType ) const
 {
     // nothing to do
     SCAI_ASSERT_EQ_ERROR( root, 0, "illegal root partition" )
 }
 
-void NoCommunicator::minlocImpl( void*, IndexType*, PartitionId root, common::scalar::ScalarType ) const
+void NoCommunicator::minlocImpl( void*, IndexType*, PartitionId root, common::ScalarType ) const
 {
     // nothing to do
     SCAI_ASSERT_EQ_ERROR( root, 0, "illegal root partition" )
 }
 
-bool NoCommunicator::supportsLocReduction( common::scalar::ScalarType, common::scalar::ScalarType ) const
+bool NoCommunicator::supportsLocReduction( common::ScalarType, common::ScalarType ) const
 {
     return true;
 }
 
 /* ---------------------------------------------------------------------------------- */
 
-void NoCommunicator::bcastImpl( void*, const IndexType, const PartitionId root, common::scalar::ScalarType ) const
+void NoCommunicator::bcastImpl( void*, const IndexType, const PartitionId root, common::ScalarType ) const
 {
     // Nothing to do as root is the only one processor
-    SCAI_ASSERT_EQ_ERROR( root, 0, "" )
+    SCAI_ASSERT_EQ_ERROR( root, 0, "root can only be processor 0" )
 }
 
 /* ---------------------------------------------------------------------------------- */
 
-void NoCommunicator::all2allvImpl( void*[], IndexType[], void*[], IndexType[], common::scalar::ScalarType ) const
+void NoCommunicator::all2allvImpl( 
+    void* recvBuffer[], 
+    const IndexType recvSizes[], 
+    const void* sendBuffer[], 
+    const IndexType sendSizes[], 
+    const common::ScalarType stype ) const
 {
+    SCAI_ASSERT_EQ_ERROR( sendSizes[0], recvSizes[0], "serious mismatch" )
+
+    SCAI_LOG_INFO( logger, "all2allv<" << stype << ">, size = " << sendSizes[0] )
+    safer_memcpy( recvBuffer[0], sendBuffer[0], typeSize( stype ) * sendSizes[0] );
 }
 
 void NoCommunicator::scatterImpl(
@@ -236,11 +250,13 @@ void NoCommunicator::scatterImpl(
     const IndexType n,
     const PartitionId root,
     const void* allVals,
-    const common::scalar::ScalarType stype ) const
+    const common::ScalarType stype ) const
 {
+    SCAI_LOG_INFO( logger, "scatter<" << stype << ">, size = " << n << ", root = " << root )
+
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
-    memcpy( myVals, allVals, common::typeSize( stype ) * n );
+    safer_memcpy( myVals, allVals, common::typeSize( stype ) * n );
 }
 
 void NoCommunicator::scatterVImpl(
@@ -249,12 +265,12 @@ void NoCommunicator::scatterVImpl(
     const PartitionId root,
     const void* allVals,
     const IndexType sizes[],
-    const common::scalar::ScalarType stype ) const
+    const common::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
     SCAI_ASSERT_EQ_ERROR( sizes[0], n , "size mismatch" )
 
-    memcpy( myVals, allVals, common::typeSize( stype ) * n );
+    safer_memcpy( myVals, allVals, common::typeSize( stype ) * n );
 }
 
 void NoCommunicator::gatherImpl(
@@ -262,11 +278,11 @@ void NoCommunicator::gatherImpl(
     const IndexType n,
     const PartitionId root,
     const void* myVals,
-    common::scalar::ScalarType stype ) const
+    common::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
 
-    memcpy( allVals, myVals, common::typeSize( stype ) * n );
+    safer_memcpy( allVals, myVals, common::typeSize( stype ) * n );
 }
 
 void NoCommunicator::gatherVImpl(
@@ -275,15 +291,15 @@ void NoCommunicator::gatherVImpl(
     const PartitionId root,
     const void* myVals,
     const IndexType sizes[],
-    common::scalar::ScalarType stype ) const
+    common::ScalarType stype ) const
 {
     SCAI_ASSERT_EQ_ERROR( root, 0, "" )
     SCAI_ASSERT_EQ_ERROR( sizes[0], n, "" )
 
-    memcpy( allVals, myVals, common::typeSize( stype ) * n );
+    safer_memcpy( allVals, myVals, common::typeSize( stype ) * n );
 }
 
-void NoCommunicator::swapImpl( void*, const IndexType, const PartitionId partner, const common::scalar::ScalarType ) const
+void NoCommunicator::swapImpl( void*, const IndexType, const PartitionId partner, const common::ScalarType ) const
 {
     SCAI_ASSERT_EQ_ERROR( partner, 0, "" )
 }
@@ -320,18 +336,18 @@ void NoCommunicator::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------- */
 
-static common::weak_ptr<class NoCommunicator> theNoCommunicatorInstance;
+static std::weak_ptr<class NoCommunicator> theNoCommunicatorInstance;
 
 CommunicatorPtr NoCommunicator::create()
 {
-    common::shared_ptr<NoCommunicator> communicator;
+    std::shared_ptr<NoCommunicator> communicator;
 
     // use the last communicatorInstance if it is still valid
 
     if ( theNoCommunicatorInstance.expired() )
     {
         // create a new instance of NoCommunicator and keep it for further uses
-        communicator = common::shared_ptr<NoCommunicator>( new NoCommunicator() );
+        communicator = std::shared_ptr<NoCommunicator>( new NoCommunicator() );
         theNoCommunicatorInstance = communicator;
     }
     else

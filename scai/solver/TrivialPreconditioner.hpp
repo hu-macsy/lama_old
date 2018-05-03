@@ -46,24 +46,25 @@ namespace scai
 namespace solver
 {
 
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT TrivialPreconditioner:
-    public Solver,
-    public Solver::Register<TrivialPreconditioner>
+
+    public Solver<ValueType>
+
 {
 public:
+
     TrivialPreconditioner( const std::string& id );
     TrivialPreconditioner( const std::string& id, LoggerPtr logger );
     TrivialPreconditioner( const TrivialPreconditioner& other );
 
     virtual ~TrivialPreconditioner();
 
-    void initialize( const lama::Matrix& coefficients );
-
     virtual void solveImpl();
 
-    virtual SolverPtr copy();
+    virtual TrivialPreconditioner* copy();
 
-    struct TrivialPreconditionerRuntime: SolverRuntime
+    struct TrivialPreconditionerRuntime: Solver<ValueType>::SolverRuntime
     {
         TrivialPreconditionerRuntime();
         virtual ~TrivialPreconditionerRuntime();
@@ -71,10 +72,11 @@ public:
 
     virtual TrivialPreconditionerRuntime& getRuntime();
 
-    virtual const TrivialPreconditionerRuntime& getConstRuntime() const;
+    virtual const TrivialPreconditionerRuntime& getRuntime() const;
 
     static std::string createValue();
-    static Solver* create( const std::string name );
+
+    static Solver<ValueType>* create( const std::string name );
 
 protected:
     TrivialPreconditionerRuntime mTrivialPreconditionerRuntime;

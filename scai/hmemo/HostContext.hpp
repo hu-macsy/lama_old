@@ -40,14 +40,11 @@
 
 // base classes
 #include <scai/hmemo/Context.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/Thread.hpp>
-
-// common
+#include <memory>
 
 namespace scai
 {
@@ -67,7 +64,7 @@ class COMMON_DLL_IMPORTEXPORT HostContext:
 
     public Context,
     private Context::Register<HostContext>,
-    public common::enable_shared_from_this<HostContext>
+    public std::enable_shared_from_this<HostContext>
 {
 
 public:
@@ -80,7 +77,7 @@ public:
 
     /** Static method required for Context::Register */
 
-    static common::context::ContextType createValue();
+    static common::ContextType createValue();
 
     /** Override Printable::writeAt with version for this class. */
 
@@ -101,9 +98,9 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-inline common::context::ContextType HostContext::createValue()
+inline common::ContextType HostContext::createValue()
 {
-    return common::context::Host;
+    return common::ContextType::Host;
 }
 
 } /* end namespace hmemo */

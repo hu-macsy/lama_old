@@ -38,43 +38,18 @@
 #endif
 
 #define BOOST_TEST_MODULE lamaStorageTest
-
 #define BOOST_TEST_NO_MAIN
 
-#include <boost/test/unit_test.hpp>
-#include <boost/test/unit_test_suite.hpp>
-
+#include <scai/testsupport/dmemoTestMain.hpp>
 #include <scai/hmemo/test/ContextFix.hpp>
-#include <scai/common/Settings.hpp>
-
-#include <cstdio>
-
-/* Use global fixture for context and define the static variable.
- * Avoids expensive calls of reserve/release routines of the Context for each test.
- */
 
 BOOST_GLOBAL_FIXTURE( ContextFix );
 
+/** Static variables of ContextFix are defined here */
+
 scai::hmemo::ContextPtr ContextFix::testContext;
-
-/** The init function returns true if it can get the specified context. */
-
-bool init_function()
-{
-    try
-    {
-        scai::hmemo::ContextPtr ctx = scai::hmemo::Context::getContextPtr();
-        return true;
-    }
-    catch ( scai::common::Exception& ex )
-    {
-        std::cerr << "Could not get context for test: " << ex.what() << std::endl;
-        return false;
-    }
-}
 
 int main( int argc, char* argv[] )
 {
-    scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
-    return boost::unit_test::unit_test_main( &init_function, argc, argv );
+    return scai::testsupport::dmemoTestMain(argc, argv);
 }

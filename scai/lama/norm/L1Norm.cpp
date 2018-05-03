@@ -35,8 +35,8 @@
 // hpp
 #include <scai/lama/norm/L1Norm.hpp>
 
-template scai::lama::Norm::Register<scai::lama::L1Norm>::RegisterGuard
-scai::lama::Norm::Register<scai::lama::L1Norm>::registerGuard;
+#include <scai/common/macros/instantiate.hpp>
+
 
 namespace scai
 {
@@ -44,58 +44,57 @@ namespace scai
 namespace lama
 {
 
-L1Norm::L1Norm()
+template<typename ValueType>
+L1Norm<ValueType>::L1Norm()
 {
 }
 
-L1Norm::~L1Norm()
+template<typename ValueType>
+L1Norm<ValueType>::~L1Norm()
 {
 }
 
-std::string L1Norm::createValue()
+template<typename ValueType>
+std::string L1Norm<ValueType>::createValue()
 {
     return "L1";
 }
 
-Norm* L1Norm::create()
+template<typename ValueType>
+Norm<ValueType>* L1Norm<ValueType>::create()
 {
     return new L1Norm();
 }
 
-void L1Norm::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void L1Norm<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "L1Norm";
 }
 
-Scalar L1Norm::apply( const Scalar& scalar ) const
+template<typename ValueType>
+RealType<ValueType> L1Norm<ValueType>::apply( const ValueType& scalar ) const
 {
     return l1Norm( scalar );
 }
 
-Scalar L1Norm::apply( const Vector& vector ) const
+template<typename ValueType>
+RealType<ValueType> L1Norm<ValueType>::apply( const Vector<ValueType>& vector ) const
 {
     return l1Norm( vector );
 }
 
-Scalar L1Norm::apply( const Matrix& matrix ) const
+template<typename ValueType>
+RealType<ValueType> L1Norm<ValueType>::apply( const Matrix<ValueType>& matrix ) const
 {
     return l1Norm( matrix );
 }
 
-Scalar l1Norm( const Scalar& scalar )
-{
-    return abs( scalar );
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-Scalar l1Norm( const Vector& vector )
-{
-    return vector.l1Norm();
-}
-
-Scalar l1Norm( const Matrix& matrix )
-{
-    return matrix.l1Norm();
-}
+SCAI_COMMON_INST_CLASS( L1Norm, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

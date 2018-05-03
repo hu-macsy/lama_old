@@ -40,7 +40,7 @@ The following flags can be used to enable or disable ASSERT macros:
 .. code-block:: c++
 
     SCAI_ASSERT( n1 == n2, "n1 and n2 have different values" )
-    SCAI_ASSERT_EQUAL( n1, n2, "size mismatch, both vectors must have same length" )
+    SCAI_ASSERT_EQ( n1, n2, "size mismatch, both vectors must have same length" )
 
 The SCAI_ASSERT-macro relies on getting a boolean value which will be evaluated. You can
 enter every possible term which results in a boolean value. Besides this some additional
@@ -50,8 +50,8 @@ are listed below:
 
 .. code-block:: c++
 
-    SCAI_ASSERT( n1 == n2, .. )     SCAI_ASSERT_EQUAL( n1, n2, .. )
-    SCAI_ASSERT( n1 != n2, .. )     SCAI_ASSERT_UNEQUAL( n1, n2, .. )
+    SCAI_ASSERT( n1 == n2, .. )     SCAI_ASSERT_EQ( n1, n2, .. )
+    SCAI_ASSERT( n1 != n2, .. )     SCAI_ASSERT_NE( n1, n2, .. )
     SCAI_ASSERT( n1 <= n2, .. )     SCAI_ASSERT_LE( n1, n2, .. )
     SCAI_ASSERT( n1 < n2, .. )      SCAI_ASSERT_LT( n1, n2, .. )
     SCAI_ASSERT( n1 >= n2, .. )     SCAI_ASSERT_GE( n1, n2, .. )

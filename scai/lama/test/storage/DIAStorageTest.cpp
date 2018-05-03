@@ -37,7 +37,7 @@
 
 #include <scai/lama/storage/DIAStorage.hpp>
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/lama/test/storage/StorageTemplateTests.hpp>
 
@@ -57,92 +57,50 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_types )
 {
     // Test the full DIAStorge constructor and the individual getter routines of DIA storage
+
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
-    const IndexType offsets[] =
-    { 0, 1 };
-    const ValueType values[] =
-    { 0.5f, 0.5f, 0.3f, 0.2f, 0.1f, 0.0f };
-    const IndexType numValues = sizeof( values ) / sizeof( ValueType );
-    const IndexType numDiagonals = sizeof( offsets ) / sizeof( IndexType );
-    LArray<IndexType> diaOffsets( 2, offsets );
-    LArray<ValueType> diaValues( numValues, values );
-    DIAStorage<ValueType> diaStorage( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+
+    // test storage =  ( ( 0.5, 0.2, 0.0 ), ( 0.0, 0.5, 0.1 ), ( 0.0, 0.0, 0.3 ) )
+
+    HArray<IndexType> diaOffsets( { 0, 1 } );
+    HArray<ValueType> diaValues( { 0.5, 0.5, 0.3, 0.2, 0.1, 0.0 } );
+
+    // just verify correct sizes of the arrays
+
+    SCAI_ASSERT_EQ_ERROR( diaValues.size(), numRows * diaOffsets.size(), "illegal DIA data" )
+
+    DIAStorage<ValueType> diaStorage( numRows, numColumns, diaOffsets, diaValues );
+
     BOOST_REQUIRE_EQUAL( numRows, diaStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, diaStorage.getNumColumns() );
-    BOOST_REQUIRE_EQUAL( numDiagonals, diaStorage.getNumDiagonals() );
-    {
-        ReadAccess<IndexType> diaOffsets( diaStorage.getOffsets() );
-        ReadAccess<ValueType> diaValues( diaStorage.getValues() );
+    BOOST_REQUIRE_EQUAL( diaOffsets.size(), diaStorage.getNumDiagonals() );
 
-        // DIA keeps values in same order
+	BOOST_TEST( hostReadAccess( diaValues ) == hostReadAccess( diaStorage.getValues() ), boost::test_tools::per_element() );
 
-        for ( IndexType i = 0; i < numDiagonals; ++i )
-        {
-            BOOST_CHECK_EQUAL( offsets[i], diaOffsets[i] );
-        }
+    HArray<IndexType> csrIa;
+    HArray<IndexType> csrJa;
+    HArray<ValueType> csrValues;
 
-        for ( IndexType i = 0; i < numValues; ++i )
-        {
-            BOOST_CHECK_EQUAL( values[i], diaValues[i] );
-        }
-    }
-    // copy constructor (TODO Bea: on all available locations, after host runs without mistake
-    // DIAStorage<ValueType> diaStorageCopy( diaStorage, loc );
-//    TODO ThoBra: weiter unten die "Nachbildung" des Copy-Constructors laeuft fehlerfrei,
-//    hier knallt es beim letzten BOOST_CHECK_EQUAL
-//    DIAStorage<ValueType> diaStorageCopy( diaStorage );
-//    SCAI_LOG_INFO( logger, "copy constructor" );
-//
-//    BOOST_REQUIRE_EQUAL( numRows, diaStorageCopy.getNumRows() );
-//    BOOST_REQUIRE_EQUAL( numColumns, diaStorageCopy.getNumColumns() );
-//    BOOST_REQUIRE_EQUAL( numDiagonals, diaStorageCopy.getNumDiagonals() );
-//
-//    {
-//        ReadAccess<ValueType> diaValues( diaStorageCopy.getValues() );
-//        BOOST_CHECK_EQUAL( diaValues.size(), numValues );
-//
-//        BOOST_CHECK_EQUAL( values[0], diaValues[0] );
-//        BOOST_CHECK_EQUAL( values[1], diaValues[1] );
-//        BOOST_CHECK_EQUAL( values[2], diaValues[2] );
-//        BOOST_CHECK_EQUAL( values[3], diaValues[3] );
-//        BOOST_CHECK_EQUAL( values[4], diaValues[4] );
-//        BOOST_CHECK_EQUAL( values[5], diaValues[5] );
-//    }
-    LArray<IndexType> csrIa;
-    LArray<IndexType> csrJa;
-    LArray<ValueType> csrValues;
-    // const IndexType csrIaResult[] = { 0, 2, 4, 5 };
-    // const IndexType csrJaResult[] = { 0, 1, 1, 2, 2 };
-    // const ValueType csrValuesResult[] = { 0.5, 0.2, 0.5, 0.1, 0.3 };
+    HArray<IndexType> expectedIA( { 0, 2, 4, 5 } );
+    HArray<IndexType> expectedJA( { 0, 1, 1, 2, 2 } );
+    HArray<ValueType> expectedValues( { 0.5, 0.2, 0.5, 0.1, 0.3 } );
+
     diaStorage.buildCSRData( csrIa, csrJa, csrValues );
-    IndexType numRowsDia = diaStorage.getNumRows();
-    IndexType numColumnsDia = diaStorage.getNumColumns();
-    IndexType numValuesCSR = csrJa.size();
-    diaStorage.setCSRData( numRowsDia, numColumnsDia, numValuesCSR, csrIa, csrJa, csrValues );
-    {
-        ReadAccess<ValueType> diaValues( diaStorage.getValues() );
-        SCAI_LOG_INFO( logger, "diaValues.size() = " << diaValues.size() );
-        BOOST_CHECK_EQUAL( diaValues.size(), numValues );
 
-        for ( IndexType i = 0; i < numValues; ++i )
-        {
-            BOOST_CHECK_EQUAL( values[0], diaValues[0] );
-            BOOST_CHECK_EQUAL( values[1], diaValues[1] );
-            BOOST_CHECK_EQUAL( values[2], diaValues[2] );
-            BOOST_CHECK_EQUAL( values[3], diaValues[3] );
-            BOOST_CHECK_EQUAL( values[4], diaValues[4] );
-            BOOST_CHECK_EQUAL( values[5], diaValues[5] );
-        }
-    }
-}
+	BOOST_TEST( hostReadAccess( expectedIA ) == hostReadAccess( csrIa ), boost::test_tools::per_element() );
+	BOOST_TEST( hostReadAccess( expectedJA ) == hostReadAccess( csrJa ), boost::test_tools::per_element() );
+	BOOST_TEST( hostReadAccess( expectedValues ) == hostReadAccess( csrValues ), boost::test_tools::per_element() );
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+    DIAStorage<ValueType> diaStorage1;
+    diaStorage1.setCSRData( numRows, numColumns, csrIa, csrJa, csrValues );
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
-{
-    // use template storage test
-    storageSwapTest<DIAStorage<ValueType> >();
+    auto diaRead = hostReadAccess( diaValues );
+    auto diaRead1 = hostReadAccess( diaStorage1.getValues() );
+
+	// BOOST_TEST( hostReadAccess( diaValues ) == hostReadAccess( diaStorage1.getValues() ), boost::test_tools::per_element() );
+
+    BOOST_CHECK_EQUAL_COLLECTIONS( diaRead.begin(), diaRead.end(), diaRead1.begin(), diaRead1.end() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

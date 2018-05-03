@@ -42,7 +42,6 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
 
@@ -57,23 +56,16 @@ class SyncToken;    // forward declaration
 namespace hmemo
 {
 
-/** Namespace for enumeration of memory types */
-
-namespace memtype
-{
-
 /** Enumeration type for the supported memory locations.
  *
  *  The same memory type does not imply that two Memory objects are the same.
  *  E.g. the memory of two different CUDA devices are not the same.
  */
-enum MemoryType
+enum class MemoryType
 {
     HostMemory,       //!< memory for CPU as host, is main memory
     CUDAMemory,       //!< CUDA GPU memory on a device
     CUDAHostMemory,   //!< pinned memory that allows faster transfer to a certain CUDA Device
-    MICMemory,        //!< Memory on Intel MIC
-    GPIMemory,        //!< Pinned memory for GPI communication
     UserMemory        //!< can be used for a new derived Context class
 };
 
@@ -81,8 +73,6 @@ enum MemoryType
  * This method make is possible to use enum values of MemoryType in output streams.
  */
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const MemoryType& type );
-
-}
 
 /** @brief This class is a common base class for all memory classes.
  *
@@ -106,7 +96,7 @@ public:
 
     /** Method to get the type of the memory. */
 
-    memtype::MemoryType getType() const;
+    MemoryType getType() const;
 
     /** Predicate to check whether copy from other memory to this memory is supported.
      *  If the method returns true, a call of memcpyFrom with srcMemory is safe.
@@ -162,6 +152,10 @@ public:
      */
 
     virtual void* allocate( const size_t size ) const = 0;
+
+    /** This method returns the maximal number of allocated bytes during the lifetime of the memory. */
+
+    virtual size_t maxAllocatedBytes() const = 0;
 
     /**
      * This method free's allocated data allocated by this allocator.
@@ -223,18 +217,18 @@ protected:
 
     /** Constructor, can only be called by derived classes. */
 
-    Memory( memtype::MemoryType type );
+    Memory( MemoryType type );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    memtype::MemoryType mMemoryType;
+    MemoryType mMemoryType;
 
 private:
 
     Memory();  // disable default constructor
 };
 
-inline memtype::MemoryType Memory::getType() const
+inline MemoryType Memory::getType() const
 {
     return mMemoryType;
 }

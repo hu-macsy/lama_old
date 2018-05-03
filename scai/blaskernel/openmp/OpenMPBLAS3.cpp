@@ -50,6 +50,7 @@ namespace scai
 
 using tasking::TaskSyncToken;
 using common::TypeTraits;
+using common::MatrixOp;
 
 namespace blaskernel
 {
@@ -58,9 +59,8 @@ SCAI_LOG_DEF_LOGGER( OpenMPBLAS3::logger, "OpenMP.BLAS3" )
 
 template<typename ValueType>
 void OpenMPBLAS3::gemm(
-    const CBLAS_ORDER order,
-    const CBLAS_TRANSPOSE TransA,
-    const CBLAS_TRANSPOSE TransB,
+    const MatrixOp opA,
+    const MatrixOp opB,
     const IndexType m,
     const IndexType n,
     const IndexType k,
@@ -87,272 +87,132 @@ void OpenMPBLAS3::gemm(
                    << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc
                    << ", alpha = " << alpha << ", beta = " << beta )
 
-    if ( order == CblasColMajor )
+    if ( opA == MatrixOp::TRANSPOSE )
     {
-        if ( TransA == CblasTrans )
+        if ( opB == MatrixOp::NORMAL )
         {
-            //'T'
-            if ( TransB == CblasNoTrans )
-            {
-                ValueType temp;
-                #pragma omp parallel for collapse(2) private(temp) 
+            ValueType temp;
+            #pragma omp parallel for collapse(2) private(temp) 
 
-                for ( IndexType h = 0; h < n; h++ )
+            for ( IndexType h = 0; h < n; h++ )
+            {
+                for ( IndexType i = 0; i < m; i++ )
                 {
-                    for ( IndexType i = 0; i < m; i++ )
+                    temp = static_cast<ValueType>( 0.0 );
+
+                    for ( IndexType j = 0; j < k; j++ )
                     {
-                        temp = static_cast<ValueType>( 0.0 );
-
-                        for ( IndexType j = 0; j < k; j++ )
-                        {
-                            temp += A[lda * h + j] * B[ldb * i + j];
-                        }
-
-                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
+                        temp += A[lda * j + i] * B[ldb * j + h];
                     }
+
+                    C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                 }
-            }
-            else if ( TransB == CblasConjTrans )
-            {
-                COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
-            }
-            else if ( TransB == CblasTrans )
-            {
-                ValueType temp;
-                #pragma omp parallel for collapse(2) private(temp) 
-
-                for ( IndexType h = 0; h < n; h++ )
-                {
-                    for ( IndexType i = 0; i < m; i++ )
-                    {
-                        temp = static_cast<ValueType>( 0.0 );
-
-                        for ( IndexType j = 0; j < k; j++ )
-                        {
-                            temp += A[lda * h + j] * B[ldb * j + i];
-                        }
-
-                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
-                    }
-                }
-            }
-            else
-            {
-                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
-        else if ( TransA == CblasConjTrans )
+        else if ( opB == MatrixOp::CONJ_TRANSPOSE )
         {
-            // Todo: implement
             COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
-            //'C'
-            /*
-            if( TransB == CblasNoTrans )
-            {
-
-            }
-            else if( TransB == CblasConjTrans )
-            {
-
-            }
-            else if( TransB == CblasTrans )
-            {
-
-            }
-            else
-            {
-                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
-            }*/
         }
-        else if ( TransA == CblasNoTrans )
+        else if ( opB == MatrixOp::TRANSPOSE )
         {
-            if ( TransB == CblasNoTrans )
-            {
-                ValueType temp;
-                #pragma omp parallel for collapse(2) private(temp) 
+            ValueType temp;
+            #pragma omp parallel for collapse(2) private(temp) 
 
-                for ( IndexType h = 0; h < n; h++ )
+            for ( IndexType h = 0; h < n; h++ )
+            {
+                for ( IndexType i = 0; i < m; i++ )
                 {
-                    for ( IndexType i = 0; i < m; i++ )
+                    temp = static_cast<ValueType>( 0.0 );
+
+                    for ( IndexType j = 0; j < k; j++ )
                     {
-                        temp = static_cast<ValueType>( 0.0 );
-
-                        for ( IndexType j = 0; j < k; j++ )
-                        {
-                            temp += A[lda * j + h] * B[ldb * i + j];
-                        }
-
-                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
+                        temp += A[lda * j + i] * B[ldb * h + j];
                     }
+
+                    C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                 }
-            }
-            else if ( TransB == CblasConjTrans )
-            {
-                COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
-            }
-            else if ( TransB == CblasTrans )
-            {
-                ValueType temp;
-                #pragma omp parallel for collapse(2) private(temp) 
-
-                for ( IndexType h = 0; h < n; h++ )
-                {
-                    for ( IndexType i = 0; i < m; i++ )
-                    {
-                        temp = static_cast<ValueType>( 0.0 );
-
-                        for ( IndexType j = 0; j < k; j++ )
-                        {
-                            temp += A[lda * j + h] * B[ldb * j + i];
-                        }
-
-                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
-                    }
-                }
-            }
-            else
-            {
-                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
         else
         {
-            COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+            COMMON_THROWEXCEPTION( "illegal opA setting " << opA )
         }
     }
-    else if ( order == CblasRowMajor )
+    else if ( opA == MatrixOp::NORMAL )
     {
-        if ( TransA == CblasTrans )
+        if ( opB == MatrixOp::NORMAL )
         {
-            if ( TransB == CblasNoTrans )
-            {
-                ValueType temp;
-                #pragma omp parallel for collapse(2) private(temp) 
+            // A = 'N'; B = 'N'
+            //std::cout << "lda:" << lda << ", ldb:" << ldb << ", ldc:" << ldc << "\n";
+            //std::cout << "n:" << n << ", m:" << m << ", k:" << k << "\n";
+            ValueType temp;
+            #pragma omp parallel for collapse(2) private(temp) 
 
-                for ( IndexType h = 0; h < n; h++ )
+            for ( IndexType h = 0; h < n; h++ )
+            {
+                for ( IndexType i = 0; i < m; i++ )
                 {
-                    for ( IndexType i = 0; i < m; i++ )
+                    temp = static_cast<ValueType>( 0.0 );
+
+                    for ( IndexType j = 0; j < k; j++ )
                     {
-                        temp = static_cast<ValueType>( 0.0 );
-
-                        for ( IndexType j = 0; j < k; j++ )
-                        {
-                            temp += A[lda * j + i] * B[ldb * j + h];
-                        }
-
-                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
+                        temp += A[lda * i + j] * B[ldb * j + h];
                     }
+
+                    C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                 }
-            }
-            else if ( TransB == CblasConjTrans )
-            {
-                COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
-            }
-            else if ( TransB == CblasTrans )
-            {
-                ValueType temp;
-                #pragma omp parallel for collapse(2) private(temp) 
-
-                for ( IndexType h = 0; h < n; h++ )
-                {
-                    for ( IndexType i = 0; i < m; i++ )
-                    {
-                        temp = static_cast<ValueType>( 0.0 );
-
-                        for ( IndexType j = 0; j < k; j++ )
-                        {
-                            temp += A[lda * j + i] * B[ldb * h + j];
-                        }
-
-                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
-                    }
-                }
-            }
-            else
-            {
-                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
-        else if ( TransA == CblasNoTrans )
+        else if ( opB == MatrixOp::TRANSPOSE )
         {
-            if ( TransB == CblasNoTrans )
-            {
-                // A = 'N'; B = 'N'
-                //std::cout << "lda:" << lda << ", ldb:" << ldb << ", ldc:" << ldc << "\n";
-                //std::cout << "n:" << n << ", m:" << m << ", k:" << k << "\n";
-                ValueType temp;
-                #pragma omp parallel for collapse(2) private(temp) 
+            ValueType temp;
+            #pragma omp parallel for collapse(2) private(temp) 
 
-                for ( IndexType h = 0; h < n; h++ )
+            for ( IndexType h = 0; h < n; h++ )
+            {
+                for ( IndexType i = 0; i < m; i++ )
                 {
-                    for ( IndexType i = 0; i < m; i++ )
+                    temp = static_cast<ValueType>( 0.0 );
+
+                    for ( IndexType j = 0; j < k; j++ )
                     {
-                        temp = static_cast<ValueType>( 0.0 );
-
-                        for ( IndexType j = 0; j < k; j++ )
-                        {
-                            temp += A[lda * i + j] * B[ldb * j + h];
-                        }
-
-                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
+                        temp += A[lda * i + j] * B[ldb * h + j];
                     }
+
+                    C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                 }
-            }
-            else if ( TransB == CblasTrans )
-            {
-                ValueType temp;
-                #pragma omp parallel for collapse(2) private(temp) 
-
-                for ( IndexType h = 0; h < n; h++ )
-                {
-                    for ( IndexType i = 0; i < m; i++ )
-                    {
-                        temp = static_cast<ValueType>( 0.0 );
-
-                        for ( IndexType j = 0; j < k; j++ )
-                        {
-                            temp += A[lda * i + j] * B[ldb * h + j];
-                        }
-
-                        C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
-                    }
-                }
-            }
-            else if ( TransB == CblasConjTrans )
-            {
-                COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
-            }
-            else
-            {
-                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
             }
         }
-        else if ( TransA == CblasConjTrans )
+        else if ( opB == MatrixOp::CONJ_TRANSPOSE )
         {
-            // Todo: implement
             COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
-            /*
-            if( TransB == CblasNoTrans )
-            {
-
-            }
-            else if( TransB == CblasConjTrans )
-            {
-
-            }
-            else if( TransB == CblasTrans )
-            {
-
-            }
-            else
-            {
-                COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
-            }*/
+        }
+        else
+        {
+            COMMON_THROWEXCEPTION( "illegal opA setting " << opA )
         }
     }
-    else
+    else if ( opA == MatrixOp::CONJ_TRANSPOSE )
     {
-        COMMON_THROWEXCEPTION( "illegal order setting " << order )
+        // Todo: implement
+        COMMON_THROWEXCEPTION( "gemm for complexe matrix is not supported yet" )
+        /*
+        if( opB == MatrixOp::NORMAL )
+        {
+
+        }
+        else if( opB == MatrixOp::CONJ_TRANSPOSE )
+        {
+
+        }
+        else if( opB == MatrixOp::TRANSPOSE )
+        {
+
+        }
+        else
+        {
+            COMMON_THROWEXCEPTION( "illegal transA setting " << TransA )
+        }*/
     }
 
     return;
@@ -366,7 +226,7 @@ template<typename ValueType>
 void OpenMPBLAS3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "set BLAS3 routines for OpenMP in Interface" )
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, ctx, flag );
 }

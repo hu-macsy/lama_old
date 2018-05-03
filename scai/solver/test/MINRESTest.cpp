@@ -52,24 +52,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MINRESTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<MINRES>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    MINRES MINRESSolver( "MINRESSolver", slogger );
-    BOOST_CHECK_EQUAL( MINRESSolver.getId(), "MINRESSolver" );
-    MINRES MINRESSolver2( "MINRESSolver2" );
-    BOOST_CHECK_EQUAL( MINRESSolver2.getId(), "MINRESSolver2" );
-    MINRES MINRESSolver3( MINRESSolver2 );
-    BOOST_CHECK_EQUAL( MINRESSolver3.getId(), "MINRESSolver2" );
-    BOOST_CHECK( MINRESSolver3.getPreconditioner() == 0 );
-    MINRES MINRESSolver4( "MINRESSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    MINRESSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    MINRESSolver4.setStoppingCriterion( criterion );
-    MINRES MINRESSolver5( MINRESSolver4 );
-    BOOST_CHECK_EQUAL( MINRESSolver5.getId(), MINRESSolver4.getId() );
-    BOOST_CHECK_EQUAL( MINRESSolver5.getPreconditioner()->getId(), MINRESSolver4.getPreconditioner()->getId() );
+    MINRES<ValueType> cgSolver( "MINRESTestSolver", slogger );
+    BOOST_CHECK_EQUAL( cgSolver.getId(), "MINRESTestSolver" );
+    MINRES<ValueType> cgSolver2( "MINRESTestSolver2" );
+    BOOST_CHECK_EQUAL( cgSolver2.getId(), "MINRESTestSolver2" );
+    MINRES<ValueType> cgSolver3( cgSolver2 );
+    BOOST_CHECK_EQUAL( cgSolver3.getId(), "MINRESTestSolver2" );
+    BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
+    MINRES<ValueType> cgSolver4( "cgSolver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    cgSolver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    cgSolver4.setStoppingCriterion( criterion );
+    MINRES<ValueType> cgSolver5( cgSolver4 );
+    BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
+    BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

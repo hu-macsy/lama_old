@@ -35,17 +35,21 @@
 #pragma once
 
 // local library
+#include <scai/lama/storage/_MatrixStorage.hpp>
+
+#include <scai/lama/freeFunction.hpp>
+
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/storage/Format.hpp>
 
 #include <scai/dmemo/Communicator.hpp>
+#include <scai/hmemo.hpp>
 
 // internal scai libraries
 #include <scai/common/BinaryOp.hpp>
 #include <scai/common/UnaryOp.hpp>
-#include <scai/hmemo.hpp>
-
+#include <scai/common/MatrixOp.hpp>
 #include <scai/common/Factory.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <ostream>
@@ -72,607 +76,12 @@ namespace lama
 {
 
 template<typename ValueType> class CSRStorage;
-template<typename ValueType> class DenseStorage;
-
-/** Enumeration type for different matrix storage formats.
- *
- *  Note: operator<< is implemented for this type and should be adapted in case of modifications.
- */
-struct Format
-{
-
-    typedef enum
-    {
-        DENSE,    //!< Dense, all elements are stored
-        CSR,      //!< Compressed Sparse Row
-        ELL,      //!< ELLPack
-        DIA,      //!< Diagonal
-        JDS,      //!< Jagged Diagonal Storage
-        COO,      //!< Coordinate list
-        STENCIL,  //!< stencil pattern
-        ASSEMBLY, //!<  Matrix storage used for assembling of values
-        UNDEFINED //!<  Default value
-    } MatrixStorageFormat;
-
-}; /* end struct Format */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageFormat& storageFormat );
-
-COMMON_DLL_IMPORTEXPORT const char* format2Str( const Format::MatrixStorageFormat storageFormat );
-
-COMMON_DLL_IMPORTEXPORT Format::MatrixStorageFormat str2Format( const char* str );
-
-/** Key type used for the Matrix factory.
- *
- *  Note: own struct instead of std::pair to allow definition of operator <<
- */
-
-typedef std::pair<Format::MatrixStorageFormat, common::scalar::ScalarType> MatrixStorageCreateKeyType;
-
-/** The class _MatrixStorage is the base class for all matrix storage classes
- supported by LAMA.
-
- In contratry to a matrix a matrix storage is never distributed. It contains
- local parts of a distributed matrix that are typically submatrices.
-
- This base class is also common for all supported value types for matrix
- elements.
-
- Note: Default copy constructor and assignment operator can be used.
-
- Each matrix storage has a context that will be taken as the preferred
- location where the matrix data resides and where operations on the matrix
- storage should take place.
- */
-
-class COMMON_DLL_IMPORTEXPORT _MatrixStorage:
-    public Format,
-    public common::Factory<MatrixStorageCreateKeyType, _MatrixStorage*>,
-    public common::Printable
-{
-public:
-
-    /** Default constructor */
-
-    _MatrixStorage();
-
-    /** Destructor. */
-
-    virtual ~_MatrixStorage();
-
-    /** This method returns the type name of a matrix storage, e.g. CSRStorage<double>.
-     *
-     *  This routine is more convenient for error messages than typeid(*this).name()
-     */
-
-    virtual const char* getTypeName() const = 0;
-
-    /** Set the dimension of the storage.
-     *
-     *  @param numRows, numColumns specifiy the size of the matrix
-     */
-
-    void setDimension( const IndexType numRows, const IndexType numColumns );
-
-    /** Objects of this class should give info about their value type. */
-
-    virtual common::scalar::ScalarType getValueType() const = 0;
-
-    /** Clear the matrix storage, resets size to 0 x 0.
-     *
-     *  Clearing of matrix storage will not free allocated data, so resize to the original size
-     *  is a cheap operation.
-     */
-    virtual void clear() = 0;
-
-    /** Purge clears the matrix and even frees the allocated memory.
-     */
-
-    virtual void purge() = 0;
-
-    /** Each storage provides a routine that prints the storage values. */
-
-    virtual void print( std::ostream& stream ) const = 0;
-
-    /** print vithout an argument for stream takes std::cout */
-
-    void print() const
-    {
-        print( std::cout );
-    }
-
-    /** This method allocates new matrix storage for the matrix. The
-     *  matrix contains only zero elements.
-     *
-     *  Note: This method contains an implicit clear, but not a purge.
-     *        So allocation of a much smaller matrix compared to the existing
-     *        one might result in some waste of memory.
-     *
-     *  Note: For dense matrices all values are set to zero; for sparse matrices
-     *        zero values are usually not stored and no initialization is done.
-     *
-     *  Note: Operations are done on the context set for the matrix storage.
-     */
-
-    virtual void allocate( const IndexType numRows, const IndexType numColumns ) = 0;
-
-    /******************************************************************
-     *  mContext  : setter / getter for preferred context              *
-     ******************************************************************/
-
-    /** @brief Set the preferred context for the matrix storage.
-     *
-     *  @param[in] context specifies where the storage should be allocated and where operations should be done
-     */
-
-    void setContextPtr( hmemo::ContextPtr context );
-
-    /** @brief Getter for the preferred context of the storage data, returns pointer. */
-
-    inline hmemo::ContextPtr getContextPtr() const;
-
-    /** @brief Pure method that prefetches storage data into a given context.
-     *
-     *  @param context specifies location where data will resize
-     */
-
-    virtual void prefetch( const hmemo::ContextPtr context ) const = 0;
-
-    /** @brief Method that prefetches storage data to its preferred location. */
-
-    void prefetch() const
-    {
-        prefetch( mContext );
-    }
-
-    /** Will wait for all outstanding asynchronous data transfers. */
-
-    virtual void wait() const = 0;
-
-    /** Allow for additional row compression. */
-
-    void setCompressThreshold( float ratio );
-
-    /** Query the threshold  */
-
-    float getCompressThreshold() const
-    {
-        return mCompressThreshold;
-    }
-
-    /** Getter routine for the number of rows. */
-
-    inline IndexType getNumRows() const;
-
-    /** Getter routine for the number of rows. */
-
-    inline IndexType getNumColumns() const;
-
-    virtual void writeAt( std::ostream& stream ) const;
-
-    void resetDiagonalProperty();
-
-    inline bool hasDiagonalProperty() const;
-
-    virtual Format::MatrixStorageFormat getFormat() const = 0;
-
-    /** This method sets storage for the identity matrix
-     *
-     *  @param[in] n is the size of the square matrix
-     */
-
-    virtual void setIdentity( const IndexType n ) = 0;
-
-    /** This method resorts column indexes in such a way that the diagonal element is always the
-     *  first one in a row.
-     *
-     *  This method throws an exception if the matrix storage is not square. Furthermore
-     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
-     *  element in a sparse format.
-     */
-    virtual void setDiagonalProperty();
-
-    /** This method returns the i-th row of the matrix
-     *
-     * @param[out] row is the destination array that will contain the row
-     * @param[in] i is the row index
-     *
-     */
-    virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
-
-    /** This method returns the i-th row of the matrix as a sparse array, i.e. indexes + values
-     *
-     * @param[out] jA are column positions with non-zero values
-     * @param[out] values are the values at the corresponding column positions.
-     * @param[in] i is the row index
-     *
-     */
-    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const = 0;
-
-    /** This method returns the j-th col of the matrix as a sparse array, i.e. indexes + values
-     *
-     * @param[out] iA are row positions with non-zero values
-     * @param[out] values are the values at the corresponding row positions.
-     * @param[in] j is the index for queried column
-     *
-     */
-    virtual void getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const = 0;
-
-    virtual void setRow( const hmemo::_HArray& row, const IndexType i, common::binary::BinaryOp op ) = 0;
-
-    virtual void setColumn( const hmemo::_HArray& column, const IndexType j,
-                            common::binary::BinaryOp op            ) = 0;
-
-    /** This method returns the j-th column of the matrix
-     *
-     * @param[out] column is the destination array that will contain the column
-     * @param[in] j is the row index
-     *
-     */
-    virtual void getColumn( hmemo::_HArray& column, const IndexType j ) const = 0;
-
-    /** This method returns the diagonal of the matrix.
-     *
-     * @param[out] diagonal is the destination array
-     *
-     * The values will be stored in diagonal that can be of any type
-     * for which implicit conversion is available.
-     */
-
-    virtual void getDiagonal( hmemo::_HArray& diagonal ) const = 0;
-
-    /** Get for each row the first column index with value entry.
-     *  If diagonal flag is set, the column index will be the same as the (global) row
-     *  index. I.e. for a local storage this routine gives the owned indexes to reconstruct
-     *  the distribution.
-     */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
-
-    /** This method sets the diagonal of a matrix storage.
-     *
-     * Implementation of this routine must be provided by all derived classes.
-     */
-    virtual void setDiagonalV( const hmemo::_HArray& diagonal ) = 0;
-
-    /******************************************************************
-     *  Scaling of elements in a matrix                                *
-     ******************************************************************/
-
-    /** This method scales each row of a matrix with a separate value.
-     *
-     * @param[in] values contains one scale factor for each row.
-     *
-     * Each row of the matrix is scaled with the corresponding value.
-     */
-    virtual void scaleRows( const hmemo::_HArray& values ) = 0;
-
-    /******************************************************************
-     *  General operations on a matrix                                 *
-     ******************************************************************/
-
-    /** This operation localizes the matrix storage of a full matrix to
-     *  the part that is owned by this processor. This means that only
-     *  the owned rows of the matrix will be kept.
-     *
-     *  Notes:
-     *
-     *    * routine can also be used if global is aliased with this matrix.
-     *    * this routine is the same as an assign in case of a replicated distribution
-     */
-
-    virtual void localize( const _MatrixStorage& global, const dmemo::Distribution& rowDist );
-
-    /** Get the total number of non-zero values in the matrix.
-     *
-     *  @return total number of non-zero values
-     *
-     *  An element is considered to be non-zero if its absolute value
-     *  is greater equal than mEpsilon. Zero diagonal elements are also
-     *  counted if this->hasDiagonalProperty() is given.
-     *
-     *  This routine does not count zero elements even if they are stored
-     *  (e.g. for dense or dia storage data).
-     *
-     *  This routine gives exactly the same number of elements that will be
-     *  the size of the ja and values array when calling buildCSRData.
-     *
-     *  The default implementation uses the routine buildCSRSizes, but derived
-     *  classes should override it if they can do it more efficiently.
-     */
-
-    virtual IndexType getNumValues() const;
-
-    inline const hmemo::HArray<IndexType>& getRowIndexes() const;
-
-    /**
-     * @brief Get the number of entries in each row.
-     *
-     * @param[out] csrIA size array for rows, csrIA.size() == numRows
-     *
-     * If this->hasDiagonalProperty() is true, diagonal elements are also counted.
-     *
-     * \code
-     *     DenseStorage<double> dense( ... )
-     *     HArray<IndexType> ia;
-     *     dense.buildCSRSizes( ia );
-     * \endcode
-     *
-     * This routine must be provided by each matrix storage format.
-     */
-
-    virtual void buildCSRSizes( hmemo::HArray<IndexType>& csrIA ) const = 0;
-
-    /**
-     * @brief Get the matrix data of the storage in CSR format.
-     *
-     * @param[out] csrIA offset array for rows, csrIA.size() == numRows + 1
-     * @param[out] csrJA column indexes, csrJA.size() == csrIA[ csrIA.size() ]
-     * @param[out] csrValues are the non-zero matrix values, csrJA.size() == csrValues.size()
-     *
-     * The csr data will have the diagonal property if this->hasDiagonalProperty() is true.
-     *
-     * Note: This routine supports also type conversion between different value types.
-     *
-     * \code
-     *     DenseStorage<double> dense( ... )
-     *     HArray<IndexType> ia, ja;
-     *     HArray<float> values;
-     *     // get non-zero values of dense matrix as float values
-     *     dense.buildCSRData( ia, ja, values );
-     * \endcode
-     *
-     * This routine must be provided by each matrix storage format.
-     */
-
-    virtual void buildCSRData(
-        hmemo::HArray<IndexType>& csrIA,
-        hmemo::HArray<IndexType>& csrJA,
-        hmemo::_HArray& csrValues ) const = 0;
-
-    /** Each storage class must provide a routine to set CSR storage data.
-     *
-     *  @param numRows number of rows
-     *  @param numColumns number of columns
-     *  @param numValues number of non-zero values
-     *  @param csrIA offset array ia for column indexes, size is numRows + 1
-     *  @param csrJA are the column indexes of matrix entries, size is numValues
-     *  @param csrValues are the values of matrix entries, size is numValues
-     */
-
-    virtual void setCSRData(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValues,
-        const hmemo::HArray<IndexType>& csrIA,
-        const hmemo::HArray<IndexType>& csrJA,
-        const hmemo::_HArray& csrValues ) = 0;
-
-    /** Each storage class must provide a routine to set DIA storage data.
-     *
-     *  @param[in] numRows number of rows
-     *  @param[in] numColumns number of columns
-     *  @param[in] numDiagonals number of stored diagonals
-     *  @param[in] offsets offsets of the stored diagonals to the main diagonal
-     *  @param[in] values contains the matrix values for each diagonal
-     */
-
-    virtual void setDIAData(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const hmemo::HArray<IndexType>& offsets,
-        const hmemo::_HArray& values ) = 0;
-
-    /** Assign of matrix storage with any format or value type.
-     *
-     *  Format conversion and type conversion is done implicitly.
-     *  Derived clauses might override this method with more efficient solutions.
-     *
-     *  @param[in] other is the matrix storage to be assigned
-     */
-    virtual void assign( const _MatrixStorage& other ) = 0;
-
-    /** Concatenation of matrix storages, either rowwise( dim = 0, vertical ) or colwise( dim = 1, horizontal ) */
-
-    virtual void cat( const IndexType dim, const _MatrixStorage* others[], const IndexType n ) = 0;
-
-    /** The opposite routine to assign, for convenience as the other way around is
-     *  sometimes more efficient
-     */
-    virtual void copyTo( _MatrixStorage& other ) const = 0;
-
-    /**
-     *  Extract a contiguous block of n rows in a new storage
-     *
-     *  @param[out] other  will contain the corresponding storage of n x mNumColumns
-     *  @param[in]  first  index of first row to extract
-     *  @param[in]  n      number of rows to extract
-     */
-    virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const = 0;
-
-    /** Override default assignment operator. */
-
-    _MatrixStorage& operator=( const _MatrixStorage& other );
-
-    /******************************************************************
-     *   Help routines (ToDo: -> HArrayUtils ?? )                   *
-     ******************************************************************/
-
-    /** Help routines to convert arrays with sizes to offsets and vice versa */
-
-    static void offsets2sizes( hmemo::HArray<IndexType>& offsets );
-
-    static void offsets2sizes( hmemo::HArray<IndexType>& sizes, const hmemo::HArray<IndexType>& offsets );
-
-    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets );
-
-    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets, const hmemo::HArray<IndexType>& sizes, const hmemo::ContextPtr loc );
-
-    /** Returns the number of bytes needed for the current matrix.
-     *
-     *  Note: This routine does not tell how many memory is really allocated. Storage data
-     *        might be allocated on more than one device. Furthermore, it is possible that
-     *        arrays have more memory reserved than needed for its current size.
-     */
-
-    /******************************************************************
-     *   Query routines                                                *
-     ******************************************************************/
-
-    size_t getMemoryUsage() const;
-
-    virtual void check( const char* msg ) const = 0;
-
-    /** Each matrix storage must provide a routine that makes a new copy
-     *  of the input matrix (same format and same value type).
-     *
-     *  The implementations in derived classes should use covariant
-     *  return types to allow polymorphic creation of objects.
-     *
-     *  Note: as shared_ptr cannot be used for for covariant return types
-     *        this routine returns directly a new created object that should
-     *        be wrapped as a shared pointer at calling site.
-     */
-
-    virtual _MatrixStorage* copy() const = 0;
-
-    /**  Each matrix storage must provide a routine that creates a new matrix storage
-      *  of the same type (same format, same value type, same context)
-      */
-
-    virtual _MatrixStorage* newMatrixStorage() const = 0;
-
-    /**  Returning a pair of storage format and value type for using with
-      *  the factory
-      */
-
-    virtual MatrixStorageCreateKeyType getCreateValue() const = 0;
-
-    /**
-     * @brief transformation from matrix type to a csr graph
-     *
-     * transformation from matrix type to a csr graph,
-     * so that (Par)Metis can work with it.
-     *
-     * @param[out]  adjIA   the ia array of the csr graph
-     * @param[out]  adjJA   the ja array of the csr graph
-     * @param[out]  vwgt    ToDo
-     * @param[in]   globalRowIndexes are the global indexes of the local rows ( can be NULL for identity )
-     * @since 1.1.0
-     */
-    virtual void buildCSRGraph(
-        IndexType adjIA[],
-        IndexType adjJA[],
-        IndexType vwgt[],
-        const IndexType* globalRowIndexes ) const;
-
-    /**
-     * @brief read the matrix storage from an input file
-     *
-     * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
-     * @param[in] firstRow is the first row to read
-     * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
-     *
-     * Note: default argument for nRows is nIndex as the number of rows in full storage might not be known
-     */
-    virtual void readFromFile(
-        const std::string& fileName,
-        const IndexType firstRow = 0,
-        const IndexType nRows = nIndex ) = 0;
-
-    /**
-     * @brief write the matrix storage to an output file
-     *
-     * @param[in] fileName  is the name of the output file (suffix must be added according to the file type)
-     * @param[in] type      format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
-     * @param[in] dataType  representation type for output values, default is same type as matrix values
-     * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
-     * @param[in] fileMode  use BINARY or FORMATTED to force a certain mode, otherwise DEFAULT
-     *
-     * If one of the arguments dataType, indexType or fileMode is set, it will overwrite
-     * any setting specified by the corresponding environment variables SCAI_IO_TYPE_DATA, SCAI_IO_TYPE_INDEX
-     * or SCAI_IO_BINARY
-     */
-
-    virtual void writeToFile(
-        const std::string& fileName,
-        const std::string& type = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const = 0;
-
-    virtual bool checkSymmetry() const = 0;
-
-    /** Swap data with other storage to avoid additional memory allocation.
-     *
-     *  @param[in,out] other storage for swapping, must have same value type and same format
-     *
-     *  This method allows swapping for storages where the value
-     *  type or the format is not known at compile time.
-     *
-     *  \code
-     *  _MatrixStorage& arg;
-     *  common::unique_ptr<_MatrixStorage> tmp( arg.newMatrixStorage() );
-     *  ...
-     *  arg.swap( tmp );   // is okay as they have same 'unknown' type and 'unknown' format
-     *  \endcode
-     */
-    virtual void swap( _MatrixStorage& other ) = 0;
-
-protected:
-
-    /** Swaps this with other.
-     *
-     * swap is protected to avoid accidently wrong swaps of base classes which do not
-     * implement their own swap.
-     *
-     * @param[in,out] other the _MatrixStorage to swap this with
-     */
-    void _swapMS( _MatrixStorage& other );
-
-    virtual void _assignTranspose( const _MatrixStorage& other );
-
-    virtual void _assign( const _MatrixStorage& other );
-
-    /** Returns the number of bytes needed for the current matrix.
-     *
-     *  This pure function must be implemented by each derived class. Relevant for the number
-     *  of bytes is the current size of the used (LAMA) arrays.
-     *
-     *  Note: This routine does not tell how many memory is really allocated. Storage data
-     *        might be allocated on more than one device. Furthermore, it is possible that
-     *        arrays have more memory reserved than needed for its current size.
-     */
-
-    virtual size_t getMemoryUsageImpl() const = 0;
-
-    IndexType mNumRows; //!< numbers of matrix rows
-
-    IndexType mNumColumns; //!< number of matrix columns
-
-    hmemo::HArray<IndexType> mRowIndexes; //!< used in case of sparse representation of ia
-
-    float mCompressThreshold; //!< ratio at which compression is done, 0 for never, 1 for always
-
-    bool mDiagonalProperty; //!< if true, diagonal elements are always stored at first position in each row
-
-    hmemo::ContextPtr mContext;//!< preferred context for the storage
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
-
-protected:
-
-    /** checkDiagonalProperty checks if the diagonal property of this is full filled.
-     *
-     * @return true if the diagonal property is fulfilled for the matrix data
-     */
-
-    virtual bool checkDiagonalProperty() const = 0;
-};
 
 /** The template class MatrixStorage<ValueType> is the base
  *  class for all matrix storage classes of a given ValueType.
+ *
+ *  It is derived from the non-templace class _MatrixStorage and
+ *  does not add any new member variable.
  *
  *  @tparam ValueType is the value type of the matrix values.
  */
@@ -682,15 +91,6 @@ class COMMON_DLL_IMPORTEXPORT MatrixStorage: public _MatrixStorage
 public:
 
     typedef ValueType StorageValueType;
-    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
-
-    /** Constructor of matrix storage contains dimensions of the matrix. */
-
-    MatrixStorage( const IndexType numRows, const IndexType numColumns );
-
-    /** Overwrite default constructor, same as MatrixStorage(0,0)  */
-
-    MatrixStorage();
 
     /** Destructor. */
 
@@ -702,61 +102,68 @@ public:
 
     /** Override _MatrixStorage::newMatrixStorage with routine that uses covariant return type. */
 
-    virtual MatrixStorage* newMatrixStorage() const = 0;
+    virtual MatrixStorage* newMatrixStorage( const IndexType numRows, const IndexType numColumns ) const = 0;
+
+    MatrixStorage* newMatrixStorage() const
+    {
+        return newMatrixStorage( getNumRows(), getNumColumns() );
+    }
 
     /** Implementation of pure method. */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
-    /** Construct a matrix from a dense matrix in row-major order (C-style).
-     *  Values of the matrix will be considered as zero if their absolute value is smaller than eps.
+    /** Construct a matrix stroage from raw data in row-major order (C-style).
+     *  Values of the matrix will be considered as zero if their value is exact zero.
      *
      * @param[in] numRows      number of rows
      * @param[in] numColumns   number of columns
      * @param[in] values       the dense matrix values in row-major order (C-style)
-     * @param[in] eps          threshold value for non-zero elements
      *
-     * Sparse matrix formats will have the diagonal property if numRows == numColums
+     * Sparse formats will have the diagonal property if numRows == numColums
      */
-
     template<typename OtherValueType>
     void setRawDenseData(
         const IndexType numRows,
         const IndexType numColumns,
-        const OtherValueType values[],
-        const ValueType eps = 0.0 );
-
-    void setDenseData(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const hmemo::_HArray& values,
-        const ValueType eps = 0.0 );
+        const OtherValueType values[] );
 
     /** This method scales all matrix values with a scalar
      *
      * @param[in] value is the source value
      */
     virtual void scale( const ValueType value ) = 0;
+
     virtual void conj() = 0;
-    virtual void setDiagonal( const ValueType value ) = 0;
+
+    /******************************************************************
+     *  Scaling of elements in a matrix                                *
+     ******************************************************************/
+
+    /** This method scales each row of a matrix with a separate value.
+     *
+     * @param[in] values contains one scale factor for each row.
+     *
+     * Each row of the matrix is scaled with the corresponding value.
+     */
+    virtual void scaleRows( const hmemo::HArray<ValueType>& values ) = 0;
 
     virtual void reduce( 
         hmemo::HArray<ValueType>& array, 
         const IndexType dim, 
-        const common::binary::BinaryOp reduceOp, 
-        const common::unary::UnaryOp elemOp );
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp );
 
     /**
-     * @brief fills matrix storage by csr sparse data.
+     * @brief fills any matrix storage by raw csr sparse data.
      *
-     * @param[in] numRows    number of rows
+     * @param[in] numRows    number of rows,
      * @param[in] numColumns number of columns
      * @param[in] numValues  the number of stored elements in the matrix
-     * @param[in] ia         row pointer of the input csr sparse matrix
-     * @param[in] ja         column indexes of the input csr sparse matrix
-     * @param[in] values     the data values of the input csr sparse matrix
+     * @param[in] ia         csr offset array, size is numRows + 1
+     * @param[in] ja         column indexes of the input csr sparse matrix, size is numValues
+     * @param[in] values     the data values of the input csr sparse matrix, size is numValues
      */
-
     template<typename OtherValueType>
     void setRawCSRData(
         const IndexType numRows,
@@ -766,23 +173,103 @@ public:
         const IndexType* const ja,
         const OtherValueType* const values );
 
-    /**
-     * @brief fills matrix storage by dia sparse data.
-     *
-     * @param[in] numRows      number of rows
-     * @param[in] numColumns   number of columns
-     * @param[in] numDiagonals the number of stored diagonals
-     * @param[in] offsets      raw pointer of the offset array
-     * @param[in] values       raw pointer of the data array
-     */
+    /* =========================================================== */
+    /*    set/get for rows + columns                               */
+    /* =========================================================== */
 
-    template<typename OtherValueType>
-    void setRawDIAData(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const IndexType* const offsets,
-        const OtherValueType* const values );
+    /** This method returns the i-th row of the matrix
+     *
+     * @param[out] row is the destination array that will contain the row
+     * @param[in] i is the row index
+     */
+    virtual void getRow( hmemo::HArray<ValueType>& row, const IndexType i ) const = 0;
+
+    /** This method updates the i-th row of the matrix
+     *
+     * @param[in] row is the source array that will contain the update values
+     * @param[in] i is the row index
+     * @param[in] op specifies how the elements should e combined
+     *
+     * Note: in sparse matrices only existing entries are updated.
+     */
+    virtual void setRow( const hmemo::HArray<ValueType>& row, const IndexType i, const common::BinaryOp op ) = 0;
+
+    /** This method returns the i-th row of the matrix as a sparse array, i.e. indexes + values
+     *
+     * @param[out] jA are column positions with non-zero values
+     * @param[out] values are the values at the corresponding column positions.
+     * @param[in] i is the row index
+     *
+     */
+    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::HArray<ValueType>& values, const IndexType i ) const = 0;
+
+    /** This method returns the j-th col of the matrix as a sparse array, i.e. indexes + values
+     *
+     * @param[out] iA are row positions with non-zero values
+     * @param[out] values are the values at the corresponding row positions.
+     * @param[in] j is the index for queried column
+     *
+     */
+    virtual void getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::HArray<ValueType>& values, const IndexType j ) const = 0;
+
+    virtual void setColumn( const hmemo::HArray<ValueType>& column, const IndexType j,
+                            common::BinaryOp op            ) = 0;
+
+    /** This method returns the j-th column of the matrix
+     *
+     * @param[out] column is the destination array that will contain the column
+     * @param[in] j is the row index
+     *
+     */
+    virtual void getColumn( hmemo::HArray<ValueType>& column, const IndexType j ) const = 0;
+
+    /* =========================================================== */
+    /*    set/get for diagonals                                    */
+    /* =========================================================== */
+
+    /**
+     * @brief Assign this matrix a diagonal matrix specified by an array with the diagonal elements.
+     *
+     * @param[in] diagonal contains the values for the diagonal
+     *
+     * \code
+     *     MatrixStorage<ValueType>& m = ...
+     *     // m.setIdentity( n ) can also be written as follows
+     *     m.assignDiagonal( HArray<ValueType>( n, ValueType( 1 ) ) );  
+     * \endcode
+     */
+    virtual void assignDiagonal( const hmemo::HArray<ValueType>& diagonal ) = 0;
+
+    /** This method sets the diagonal of a matrix storage.
+     *
+     * Implementation of this routine must be provided by all derived classes.
+     * It might throw an exception if the diagonal property is not given 
+     * (e.g. the sparse pattern has not all entries for the diagonal elements) or
+     * if the matrix storage format does not support this operation at all.
+     */
+    virtual void setDiagonalV( const hmemo::HArray<ValueType>& diagonal ) = 0;
+
+    /**
+     * This method sets the diagonal of a matrix storage with the same single value.
+     *
+     * Implementation of this routine must be provided by all derived classes.
+     * It might throw an exception if the diagonal property is not given 
+     * (e.g. the sparse pattern has not all entries for the diagonal elements) or
+     * if the matrix storage format does not support this operation at all.
+     */
+    virtual void setDiagonal( const ValueType value ) = 0;
+
+    /** This method returns the diagonal of this matrix storage.
+     *
+     * @param[out] diagonal will contain the diagonal of this matrix.
+     *
+     * The size of the output array will be min( nRows, nCols ).
+     *
+     * This pure method must be implemented by all storage classes. 
+     * It might throw an exception if the diagonal property is not given.
+     * ToDo: getDiagonal in any case by filling missing entries with 0
+     */
+    virtual void getDiagonal( hmemo::HArray<ValueType>& diagonal ) const = 0;
 
     /** Join local and halo storage back into one storage as needed for NoDistribution.
      *  This matrix storage is used as output matrix.
@@ -834,6 +321,31 @@ public:
 
     virtual void buildHalo( dmemo::Halo& halo, const dmemo::Distribution& colDist );
 
+    /** This method translates the halo column indexes back to global indexes 
+     * 
+     *  @param halo provides the method for translation of halo to global indexes
+     *  @param globalNumColumns will be the new number of columns for this matrix
+     * 
+     *  The default implementation uses CSR storage to globalize the indexes.
+     */
+    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+
+    /**
+     * @brief This method removes all zero elements of a sparse storage, i.e. only entries whose absolute
+     *        value is greater than eps are considered to be non-zero.
+     *
+     * @param[in] eps  is the threshold when a values is to be considered as zero
+     * @param[in] keepDiagonal if true existing diagonal elements will not be removed
+     *
+     * The default implementation uses temporary CSR storage to compress it.
+     *
+     * \code
+     *    auto diffStorage = eval<CSRStorage<ValueType>>( storage1 - storage2 );
+     *    diffStorage.compress( 0.0001, false );
+     * \endcode
+     */
+    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+
     /** This method build for this matrix the local part of a global matrix.
      *
      *  The row distribution specifies which rows of the global matrix will
@@ -855,8 +367,8 @@ public:
 
     /** Get a value of the matrix.
      *
-     * @param[in] i is the row index, 0 <= i < mNumRows
-     * @param[in] j is the colum index, 0 <= j < mNumColumns
+     * @param[in] i is the row index, 0 <= i < getNumRows()
+     * @param[in] j is the colum index, 0 <= j < getNumColumns()
      * @throw Exception out-of-range is enabled for ASSERT_LEVEL=DEBUG.
      */
 
@@ -864,8 +376,8 @@ public:
 
     /** Set/update an existing value of the matrix.
      *
-     *  @param[in] i is the row index, 0 <= i < mNumRows
-     *  @param[in] j is the col index, 0 <= j < mNumColumns
+     *  @param[in] i is the row index, 0 <= i < getNumRows()
+     *  @param[in] j is the col index, 0 <= j < getNumColumns()
      *  @param[in] val is the value to be set
      *  @param[in] op specifies how to combine old and new value
      *
@@ -874,7 +386,7 @@ public:
     virtual void setValue( const IndexType i,
                            const IndexType j,
                            const ValueType val,
-                           const common::binary::BinaryOp op = common::binary::COPY ) = 0;
+                           const common::BinaryOp op = common::BinaryOp::COPY ) = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.
@@ -889,16 +401,12 @@ public:
     /** Format conversion of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
      */
-    virtual void assign( const _MatrixStorage& other );
+    virtual void assignDummy( const _MatrixStorage& other );
 
     /** The opposite routine to assign, for convenience as the other way around is
      *  sometimes more efficient
      */
     virtual void copyTo( _MatrixStorage& other ) const;
-
-    /** Implmentation of _MatrixStorage::rowCat for typed storages. */
-
-    virtual void cat( const IndexType dim, const _MatrixStorage* others[], const IndexType n );
 
     /**
      *  Implementation of _MatrixStorage::copyBlockTo
@@ -966,13 +474,15 @@ public:
      */
     MatrixStorage& operator=( const _MatrixStorage& other );
 
+    MatrixStorage& operator=( const MatrixStorage<ValueType>& other );
+
     /** Implementation of pure routine _MatrixStorage::writeToFile */
 
     virtual void writeToFile(
         const std::string& fileName,
         const std::string& fileType = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
+        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void writeToFile(
@@ -980,11 +490,11 @@ public:
         const PartitionId rank,
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
+        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
-    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = nIndex );
+    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
 
     virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
@@ -1001,13 +511,12 @@ public:
     virtual void invert( const MatrixStorage<ValueType>& other );
 
     /******************************************************************
-     *   Matrix * ( Vector | Matrix )                                  *
+     *   _Matrix * ( Vector | _Matrix )                                  *
      ******************************************************************/
 
     /** This method implements result = alpha * thisMatrix * x + beta * y.
      *
      *  Each matrix storage must provide this kind of matrix-vector multiplication.
-     *  Default implementation throws exception for non-availability in derived class.
      */
 
     virtual void matrixTimesVector(
@@ -1015,14 +524,8 @@ public:
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::HArray<ValueType>& y ) const;
-
-    virtual void vectorTimesMatrix(
-        hmemo::HArray<ValueType>& result,
-        const ValueType alpha,
-        const hmemo::HArray<ValueType>& x,
-        const ValueType beta,
-        const hmemo::HArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y,
+        const common::MatrixOp op ) const = 0;
 
     virtual void matrixTimesVectorN(
         hmemo::HArray<ValueType>& result,
@@ -1046,14 +549,8 @@ public:
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::HArray<ValueType>& y ) const;
-
-    virtual tasking::SyncToken* vectorTimesMatrixAsync(
-        hmemo::HArray<ValueType>& result,
-        const ValueType alpha,
-        const hmemo::HArray<ValueType>& x,
-        const ValueType beta,
-        const hmemo::HArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y,
+        const common::MatrixOp op ) const;
 
     /** Assign this = alpha * a
      *
@@ -1105,7 +602,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual ValueType l1Norm() const = 0;
+    virtual RealType<ValueType> l1Norm() const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -1114,14 +611,14 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual ValueType l2Norm() const = 0;
+    virtual RealType<ValueType> l2Norm() const = 0;
 
     /** Get the maximum norm of this matrix
      *
      *  @return maximal absolute value of matrix elements
      */
 
-    virtual StorageAbsType maxNorm() const = 0;
+    virtual RealType<ValueType> maxNorm() const = 0;
 
     /** Gets the maximal absolute element-wise difference between two matrices
      *
@@ -1132,7 +629,7 @@ public:
      *        and computing maxNorm of it.
      */
 
-    virtual StorageAbsType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual RealType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /******************************************************************
      *   Solver methods (e.g. Jacobi )                                 *
@@ -1204,15 +701,6 @@ public:
     // Note: Asynchronous version of jacobiIterateHalo not supported
 
     using _MatrixStorage::getContextPtr;
-    using _MatrixStorage::scaleRows;
-    using _MatrixStorage::setDiagonalV;
-
-    // Use this method to change epsiolon temporarily
-
-    void swapEpsilon( ValueType& epsilon ) const
-    {
-        std::swap( epsilon, mEpsilon );
-    }
 
     /**
      * @brief Returns whether the matrix storage is symmetric or not.
@@ -1221,73 +709,62 @@ public:
      */
     virtual bool checkSymmetry() const;
 
+    /* ========================================================================= */
+    /*       Filling matrix storage with assembled COO data                      */
+    /* ========================================================================= */
+
+    /**
+     *  @brief Add assembled data in coordinate format (COO) to the matrix storage
+     *
+     *  @param[in] ia     array with row positions
+     *  @param[in] ja     array with col positions, same size as ia
+     *  @param[in] values same size as ia, ja, values[k] is value for ( ia[k], ja[k] )
+     *  @param[in] op     specifies how to combine with existing entries.
+     *
+     *  A default implementation is provided here, derived classes might override it.
+     */
+    virtual void fillCOO( 
+        hmemo::HArray<IndexType> ia, 
+        hmemo::HArray<IndexType> ja, 
+        hmemo::HArray<ValueType> values,
+        const common::BinaryOp op = common::BinaryOp::COPY );
+               
 protected:
 
-    /** The value mEpsilon is an individual value for each matrix storage that
-     *  specifies a threshold when a matrix values can be considered as zero.
-     *  It is used internally especially when setting dense data or when
-     *  the storage data is compressed.
+    /** Constructor of matrix storage contains dimensions of the matrix. */
+
+    MatrixStorage( const IndexType numRows, const IndexType numColumns, hmemo::ContextPtr ctx );
+
+    /** Move constructor that can be used by derived classes */
+
+    MatrixStorage( MatrixStorage<ValueType>&& other ) noexcept;
+
+    /** Copy constructor that can be used by derived classes. */
+
+    MatrixStorage( const MatrixStorage<ValueType>& other );
+
+    /** Move assignment operator, explicity deleted as there is no virtual move semantic.
      */
+    MatrixStorage& operator=( MatrixStorage<ValueType>&& other ) = delete;
 
-    mutable ValueType mEpsilon;
-
-    /** Swap member variables of base class MatrixStorage<ValueType>
+    /** Method that provides move semantic for this base class.
      *
-     * @param[in,out] other the MatrixStorage to swap this with
-     *
-     * swap is protected to avoid accidently wrong swaps of derived classes which do not
-     * implement their own swap or where storages of different format or types are involved.
-     *
-     * \code
-     * CSRStorage<float> csr;
-     * CSRStorage<double> csr1;
-     * ELLStorage<float> ell;
-     * csr.swap( ell ); // NOT ALLOWED, different format
-     * csr.swap( csr1 ); // NOT ALLOWED, different type
-     * \endcode
+     *  Note: this method only moves member variables of this base class but
+     *        not those of the derived classes.
      */
-
-    void swapMS( MatrixStorage<ValueType>& other );
+    void moveImpl( MatrixStorage<ValueType>&& other );
 
 public:
+
     static MatrixStorage<ValueType>* create( const MatrixStorageCreateKeyType key );
 
-private:
+    /** Create a new storage of a certain format, value type as given by this class */
 
-    void vcat( const _MatrixStorage* others[], const IndexType n );
-    void hcat( const _MatrixStorage* others[], const IndexType n );
-
+    static MatrixStorage<ValueType>* getStorage( const Format format );
 };
 
 /* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-/* ------------------------------------------------------------------------- */
-
-hmemo::ContextPtr _MatrixStorage::getContextPtr() const
-{
-    return mContext;
-}
-
-IndexType _MatrixStorage::getNumRows() const
-{
-    return mNumRows;
-}
-
-IndexType _MatrixStorage::getNumColumns() const
-{
-    return mNumColumns;
-}
-
-bool _MatrixStorage::hasDiagonalProperty() const
-{
-    return mDiagonalProperty;
-}
-
-const hmemo::HArray<IndexType>& _MatrixStorage::getRowIndexes() const
-{
-    return mRowIndexes;
-}
-
+/* Implementation of inline methods                                          */
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1305,33 +782,7 @@ void MatrixStorage<ValueType>::setRawCSRData(
     hmemo::HArrayRef<IndexType> csrJA( numValues, ja );
     hmemo::HArrayRef<OtherValueType> csrValues( numValues, values );
     // now set the data on the context of this storage via virtual method
-    setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void MatrixStorage<ValueType>::setRawDIAData(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numDiagonals,
-    const IndexType* const offsets,
-    const OtherValueType* const values )
-{
-    // wrap the pointer data into LAMA arrays ( without copies )
-    hmemo::HArrayRef<IndexType> diaOffsets( numDiagonals, offsets );
-    hmemo::HArrayRef<OtherValueType> diaValues( numRows * numDiagonals, values );
-    // now set the data on the context of this storage via virtual method
-    setDIAData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )
-{
-    return reinterpret_cast<MatrixStorage<ValueType>* >( _MatrixStorage::create( key ) );
+    setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
 }
 
 } /* end namespace lama */

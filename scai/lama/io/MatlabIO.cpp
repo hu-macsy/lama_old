@@ -35,7 +35,6 @@
 #include <scai/lama/io/MatlabIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -49,12 +48,15 @@
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/IOException.hpp>
+#include <scai/common/safer_memcpy.hpp>
 
 #include <sstream>
+#include <memory>
 
 #define MAT_SUFFIX ".mat"
+
+using scai::common::safer_memcpy;
 
 using namespace std;
 
@@ -126,7 +128,7 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
         // no temporary array required
 
         hmemo::WriteOnlyAccess<ArrayType> wData( array, arraySize );
-        ::memcpy( wData.get(), data, nBytes );
+        safer_memcpy( wData.get(), data, nBytes );
 
     }
     else
@@ -140,10 +142,12 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
 
         {
             hmemo::WriteOnlyAccess<DataType> wData( tmp, arraySize );
-            ::memcpy( wData.get(), data, nBytes );
+            safer_memcpy( wData.get(), data, nBytes );
         }
 
-        HArrayUtils::assign( array, tmp );
+        // Attention: not all conversions might be supported
+
+        HArrayUtils::_assign( array, tmp );
     }
 }
 
@@ -204,7 +208,7 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     inFile.readDataElement( dataElement );
 
@@ -224,7 +228,7 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
         COMMON_THROWEXCEPTION( "File " << arrayFileName << " contains sparse matrix, but not array" )
     }
 
-    if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+    if ( MATIOStream::class2ScalarType( matClass ) == common::ScalarType::UNKNOWN )
     {
         COMMON_THROWEXCEPTION( "File " << arrayFileName << " contains unsupported matrix class = " << matClass )
     }
@@ -254,8 +258,8 @@ void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
     ValueType i = -1;    // Note: will never be called here
 #endif
 
-    utilskernel::HArrayUtils::compute( imagValues, imagValues, common::binary::MULT, i );
-    utilskernel::HArrayUtils::binaryOp( array, array, imagValues, common::binary::ADD );
+    utilskernel::HArrayUtils::compute( imagValues, imagValues, common::BinaryOp::MULT, i );
+    utilskernel::HArrayUtils::binaryOp( array, array, imagValues, common::BinaryOp::ADD );
 
 }
 
@@ -298,7 +302,7 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
 
         utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), colMajorDist, 
                                             rIn.get(), rowMajorDist, 
-                                            common::binary::COPY, false );
+                                            common::BinaryOp::COPY, false );
     }
     else
     {
@@ -306,7 +310,7 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
 
         utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), rowMajorDist, 
                                             rIn.get(), colMajorDist, 
-                                            common::binary::COPY, false );
+                                            common::BinaryOp::COPY, false );
     }
 }
 
@@ -326,7 +330,7 @@ void MatlabIO::readArrayImpl(
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     uint32_t nBytes = inFile.readDataElement( dataElement );
 
@@ -353,7 +357,7 @@ void MatlabIO::readArrayImpl(
 
     if ( isComplex )
     {
-        utilskernel::LArray<ValueType> imagValues;
+        HArray<ValueType> imagValues;
 
         offset += getArrayData( imagValues, elementPtr + offset, nBytes - offset );
 
@@ -374,9 +378,10 @@ void MatlabIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
+    ValueType zeroValue = 0;
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -388,9 +393,9 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 
     if ( isComplex ( array.getValueType() ) )
     {
-        typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+        typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-        HArray<AbsType> real;
+        HArray<RealType> real;
 
         utilskernel::HArrayUtils::setArray( real, array );
 
@@ -402,7 +407,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 #else
         ValueType minusi = -1;  // unreachable code at all here
 #endif
-        utilskernel::HArrayUtils::compute( tmp, array, common::binary::MULT, minusi );
+        utilskernel::HArrayUtils::compute( tmp, array, common::BinaryOp::MULT, minusi );
         utilskernel::HArrayUtils::setArray( real, tmp );
 
         wBytes += writeArrayData( outFile, real, dryRun );
@@ -429,14 +434,14 @@ void MatlabIO::writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueTy
 {
     SCAI_ASSERT_EQ_ERROR( array.size(), grid.size(), "array size / dims mismatch" )
 
-    common::scalar::ScalarType stype = array.getValueType();
+    common::ScalarType stype = array.getValueType();
 
-    if ( mScalarTypeData == common::scalar::PATTERN )
+    if ( mScalarTypeData == common::ScalarType::PATTERN )
     {
         COMMON_THROWEXCEPTION( "Cannot write data as pattern" )
     }
 
-    if ( mScalarTypeData != common::scalar::INTERNAL )
+    if ( mScalarTypeData != common::ScalarType::INTERNAL )
     {
         if ( stype != mScalarTypeData )
         {
@@ -530,7 +535,8 @@ void MatlabIO::writeSparseImpl(
     // sparse unsupported for this file format, write it dense
 
     HArray<ValueType> denseArray;
-    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    ValueType zero = 0;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
     writeArrayImpl( denseArray, fileName );
 }
 
@@ -551,7 +557,7 @@ void MatlabIO::writeStorageImpl(
 
     outFile.writeMATFileHeader();
 
-    if ( numValues * 2 >= numRows* numCols && mScalarTypeData != common::scalar::PATTERN )
+    if ( numValues * 2 >= numRows* numCols && mScalarTypeData != common::ScalarType::PATTERN )
     {
         SCAI_LOG_INFO( logger, "Write storage as dense matrix to file " << fileName << ": " << storage )
 
@@ -559,7 +565,7 @@ void MatlabIO::writeStorageImpl(
 
         denseStorage.assignTranspose( storage );   // MATLAB stores it column-wise
 
-        HArray<ValueType>& array = denseStorage.getData();
+        const HArray<ValueType>& array = denseStorage.getValues();
 
         common::Grid2D grid( numRows, numCols );
 
@@ -589,7 +595,7 @@ void MatlabIO::writeStorageImpl(
             wBytes += writeArrayData( outFile, ia, dryRun );
             wBytes += writeArrayData( outFile, ja, dryRun );
 
-            if ( mScalarTypeData != common::scalar::PATTERN )
+            if ( mScalarTypeData != common::ScalarType::PATTERN )
             {
                 wBytes += writeArrayData( outFile, values, dryRun );
             }
@@ -612,7 +618,7 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     inFile.readDataElement( dataElement );
 
@@ -629,7 +635,7 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
 
     if ( matClass != MATIOStream::MAT_SPARSE_CLASS )
     {
-        if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+        if ( MATIOStream::class2ScalarType( matClass ) == common::ScalarType::UNKNOWN )
         {
             COMMON_THROWEXCEPTION( "File " << fileName << " contains unsupported matrix class = " << matClass )
         }
@@ -684,7 +690,7 @@ uint32_t MatlabIO::getSparseStorage( MatrixStorage<ValueType>& storage,
     offset += getArrayData( ia, dataElementPtr + offset, nBytes - offset );
     offset += getArrayData( ja, dataElementPtr + offset, nBytes - offset );
 
-    if ( mScalarTypeData == common::scalar::PATTERN )
+    if ( mScalarTypeData == common::ScalarType::PATTERN )
     {
         values.setSameValue( nnz, ValueType( 1 ) );   // set values with default value
     }
@@ -811,7 +817,7 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
     {
         COMMON_THROWEXCEPTION( "Object MAT-File Data Element Format not supported yet" )
     }
-    else if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+    else if ( MATIOStream::class2ScalarType( matClass ) == common::ScalarType::UNKNOWN )
     {
         COMMON_THROWEXCEPTION( "File contains unsupported matrix class = " << matClass )
     }
@@ -820,7 +826,7 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
         SCAI_LOG_INFO( logger, "Get dense<" << common::TypeTraits<ValueType>::stype << "> matrix "
                        << dims[0] << " x " << dims[1] )
 
-        LArray<ValueType> values;
+        HArray<ValueType> values;
 
         offset += getArrayData( values, dataElementPtr + offset, nBytes - offset );
 
@@ -833,8 +839,8 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
 
         // MATLAB stores it columnwise, so we transpose the data
 
-        storage.setDenseData( dims[1], dims[0], values );
-        storage.assignTranspose( storage );
+        DenseStorage<ValueType> denseStorage( dims[1], dims[0], std::move( values ) );
+        storage.assignTranspose( denseStorage );
     }
 
     SCAI_ASSERT_EQ_ERROR( offset, nBytes, "mismatch read bytes and size bytes, maybe COMPLEX" )
@@ -856,11 +862,11 @@ void MatlabIO::readStorageImpl(
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     uint32_t nBytes = inFile.readDataElement( dataElement );
 
-    if ( firstRow == 0 && nRows == nIndex )
+    if ( firstRow == 0 && nRows == invalidIndex )
     {
         getStorage( storage, dataElement.get(), nBytes );
         SCAI_LOG_INFO( logger, "readStorage: " << storage )
@@ -898,7 +904,7 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     uint32_t nBytes = inFile.readDataElement( dataElement );
 
@@ -918,7 +924,7 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
         COMMON_THROWEXCEPTION( "File " << gridFileName << " contains sparse matrix, but not grid array" )
     }
 
-    if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+    if ( MATIOStream::class2ScalarType( matClass ) == common::ScalarType::UNKNOWN )
     {
         COMMON_THROWEXCEPTION( "File " << gridFileName << " contains unsupported matrix class = " << matClass )
     }
@@ -935,7 +941,7 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
     if ( isComplex )
     {
-        utilskernel::LArray<ValueType> imagValues;
+        HArray<ValueType> imagValues;
 
         offset += getArrayData( imagValues, elementPtr + offset, nBytes - offset );
 

@@ -36,13 +36,18 @@
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 #include <memory>
+#include <functional>
+
+using std::bind;
 
 using namespace scai::common;
 using namespace scai::tasking;
+
+using std::bind;
+using std::ref;
 
 static const int WORKLOAD = 1000000;
 
@@ -87,7 +92,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     int in  = 15;
     int out = 3;
     {
-        TaskSyncToken token( bind( &work, ref( out ), in ) );
+        TaskSyncToken token( bind( &work, std::ref( out ), in ) );
     }
     BOOST_CHECK_EQUAL( in, out );
 }
@@ -99,7 +104,7 @@ BOOST_AUTO_TEST_CASE( runTest )
     for ( int i = 0; i < 10; ++i )
     {
         int out = 3;
-        TaskSyncToken token( bind( &work, ref( out ), i ) );
+        TaskSyncToken token( bind( &work, std::ref( out ), i ) );
         token.wait();
         BOOST_CHECK_EQUAL( i, out );
     }
@@ -110,7 +115,7 @@ BOOST_AUTO_TEST_CASE( runTest )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     int out = 0;
-    TaskSyncToken testToken( bind( &work, ref( out ), 1 ) );
+    TaskSyncToken testToken( bind( &work, std::ref( out ), 1 ) );
     SCAI_COMMON_WRITEAT_TEST( testToken );
     testToken.wait();
     BOOST_CHECK_EQUAL( 1, out );
@@ -126,7 +131,7 @@ BOOST_AUTO_TEST_CASE( fullTest )
 
     for ( int i = 0; i < N; ++i )
     {
-        tokenArray[i] = new TaskSyncToken( bind( &work, ref( out[i] ), i ) );
+        tokenArray[i] = new TaskSyncToken( std::bind( &work, std::ref( out[i] ), i ) );
     }
 
     for ( int i = 0; i < N; ++i )

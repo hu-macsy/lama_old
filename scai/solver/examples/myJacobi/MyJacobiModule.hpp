@@ -41,31 +41,37 @@
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/OmegaSolver.hpp>
 
+#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/DenseVector.hpp>
+
 // logging
 #include <scai/logging/Logger.hpp>
 
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT MyJacobi:
-    public scai::solver::OmegaSolver,
-    public scai::solver::Solver::Register<MyJacobi>
+
+    public scai::solver::OmegaSolver<ValueType>,
+    public scai::solver::_Solver::Register<MyJacobi<ValueType> >
 {
 public:
+
     MyJacobi( const std::string& id );
 
     MyJacobi( const std::string& id, scai::solver::LoggerPtr logger );
 
-    MyJacobi( const std::string& id, const scai::lama::Scalar omega ); //2nd param Matrix.Scalar
+    MyJacobi( const std::string& id, const ValueType omega ); 
 
-    MyJacobi( const std::string& id, const scai::lama::Scalar omega, scai::solver::LoggerPtr logger );
+    MyJacobi( const std::string& id, const ValueType omega, scai::solver::LoggerPtr logger );
 
     /**
      * @brief Copy constructor that copies the status independent solver information
      */
-    MyJacobi( const MyJacobi& other );
+    MyJacobi( const MyJacobi<ValueType>& other );
 
     virtual ~MyJacobi();
 
     /**
-     * @brief Initializes the solver by calculating D^(-1)*C from A = D + C.
+     * @brief Initializes the solver by calculating D^(-1) * C from A = D + C.
      *
      * This specialized initialization for the Jacobi solver does the
      * one-time calculation of D^(-1)*C where D is the diagonal Matrix
@@ -73,32 +79,30 @@ public:
      *
      * @param coefficients The matrix A from A*u=f
      */
-    virtual void initialize( const scai::lama::Matrix& coefficients );
+    virtual void initialize( const scai::lama::Matrix<ValueType>& coefficients );
 
-    virtual void solve( scai::lama::Vector& solution, const scai::lama::Vector& rhs );
-
-    virtual void solveInit( scai::lama::Vector& solution, const scai::lama::Vector& rhs );
-
-    virtual void solveFinalize();
+    /** 
+     * @brief Override default implementation 
+     */
+    virtual void solveInit( scai::lama::Vector<ValueType>& solution, const scai::lama::Vector<ValueType>& rhs );
 
     /**
-     * @brief Copies the status independent solver informations to create a new instance of the same
-     * type
-     *
-     * @return shared pointer of the copied solver
+     * @brief Implementation of pure copy method with covariant return type.
      */
-    virtual scai::solver::SolverPtr copy();
+    virtual MyJacobi* copy();
 
-    struct MyJacobiRuntime: OmegaSolverRuntime
+    using scai::solver::IterativeSolver<ValueType>::IterativeSolverRuntime;
+
+    struct MyJacobiRuntime:scai::solver::IterativeSolver<ValueType>::IterativeSolverRuntime
     {
         MyJacobiRuntime();
+
         virtual ~MyJacobiRuntime();
 
-        scai::common::shared_ptr<scai::lama::Matrix> mDiagonalTimesLU;
-        scai::common::shared_ptr<scai::lama::Matrix> mDiagonalInverted;
-        scai::common::shared_ptr<scai::lama::Vector> mDiagonalTimesRhs;
-        scai::common::shared_ptr<scai::lama::Vector> mOldSolution;
-        scai::solver::SolutionProxy mProxyOldSolution;
+        scai::lama::MatrixPtr<ValueType>   mDiagonalTimesLU;   // modified copy of A required
+        scai::lama::DenseVector<ValueType> mDiagonalInverted;  // keeps 1 / D
+        scai::lama::DenseVector<ValueType> mDiagonalTimesRhs;  // rhs * D, only computed once
+        scai::lama::DenseVector<ValueType> mOldSolution;       // temporary, used to swap with solution
     };
 
     /**
@@ -109,21 +113,19 @@ public:
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const MyJacobiRuntime& getConstRuntime() const;
+    virtual const MyJacobiRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factory
+
+    static scai::solver::SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static scai::solver::_Solver* create();
 
 protected:
-    MyJacobiRuntime mMyJacobiRuntime;
 
-    /**
-     * @brief Performs one Jacobi iteration based on Matrix/Vector operations
-     *
-     * In addition to the Jacobi iteration the term D^(-1)*f from A=u*f and
-     * A = D + C is evaluated before the first iteration.
-     */
-    virtual void iterate();
+    MyJacobiRuntime mMyJacobiRuntime;
 
     /**
      *  @brief own implementation of Printable::writeAt
@@ -134,9 +136,10 @@ protected:
 
 private:
 
-    template<typename ValueType>
-    void initialize( const scai::lama::Matrix& coefficients );
-
-    template<typename ValueType>
-    void iterate();
+    /** Implementation of pure methode Iterativesolver<ValueType>::iterate
+     *
+     * In addition to the Jacobi iteration the term D^(-1)*f from A=u*f and
+     * A = D + C is evaluated before the first iteration.
+     */
+    virtual void iterate();
 };

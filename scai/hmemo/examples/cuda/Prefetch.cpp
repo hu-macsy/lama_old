@@ -71,7 +71,7 @@ void workload( double& A, int NITER )
 
 void setval( HArray<double>& array, double val, IndexType N )
 {
-    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+    ContextPtr hostContext = Context::getContextPtr( common::ContextType::Host );
     WriteOnlyAccess<double> writeArray( array, hostContext, N );
 
     for ( IndexType i = 0; i < N; ++i )
@@ -92,8 +92,8 @@ int main( int argc, char** )
     int    N     = 4 * 1024 * 1024;  // array size
     // use pinned Host memory in case of at least one argument
     bool isPinned = argc > 1;
-    ContextPtr cudaContext = Context::getContextPtr( common::context::CUDA );
-    ContextPtr hostContext = Context::getContextPtr( common::context::Host );
+    ContextPtr cudaContext = Context::getContextPtr( common::ContextType::CUDA );
+    ContextPtr hostContext = Context::getContextPtr( common::ContextType::Host );
     ContextPtr homeContext = isPinned ? cudaContext : hostContext;
     cudaContext->enableZeroCopy( true );
     // HArray<double> A( homeContext );  // uses pinned Host memory if first touch is on CUDA

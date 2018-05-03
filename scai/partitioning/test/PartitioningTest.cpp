@@ -40,10 +40,16 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
 
+#include <scai/utilskernel/HArrayUtils.hpp>
+
 using namespace scai;
 using namespace dmemo;
 using namespace partitioning;
+using namespace utilskernel;
 using namespace lama;
+
+using common::Grid3D;
+using common::Stencil3D;
 
 /* --------------------------------------------------------------------- */
 
@@ -55,12 +61,20 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.PartitioningTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( partitionTest )
+BOOST_AUTO_TEST_CASE( serialPartitioning )
 {
+    // This test is only for a single node where an examples matrix is partitioned for a certain number of processors
 
     dmemo::CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    float weight = 1.0f; // same weight for all processors
+    if ( comm->getSize() > 1 )
+    {
+        return;     //  this is a test for partitioning on a single node
+    }
+
+    hmemo::HArray<float> weights( { 1.0f, 1.3f, 1.5f } );
+
+    IndexType nPart = weights.size();   // number of partitions used
 
     std::vector<std::string> values;  // string is create type for the factory
 
@@ -70,15 +84,25 @@ BOOST_AUTO_TEST_CASE( partitionTest )
     {
         PartitioningPtr part( Partitioning::create( values[i] ) );
 
-        common::Stencil3D<RealType> stencil( 27 );
-        common::Grid3D grid( 20, 20, 20 );
-        StencilMatrix<RealType> stencilMatrix( grid, stencil );
-        CSRSparseMatrix<RealType> csrMatrix( stencilMatrix );
+        // generate a 27-point stencil matrix on 3D grid 20 x 20 x 20 
 
-        dmemo::DistributionPtr dist( part->partitionIt( comm, csrMatrix, weight ) );
+        StencilMatrix<DefaultReal> stencilMatrix( Grid3D( 20, 20, 20 ), Stencil3D<DefaultReal>( 27 ) );
 
-        BOOST_REQUIRE( dist.get() );
-        BOOST_CHECK_EQUAL( dist->getGlobalSize(), grid.size() );
+        // generate a (replicated) CSR matrix from the stencil matrix
+
+        CSRSparseMatrix<DefaultReal> csrMatrix( stencilMatrix );
+
+        hmemo::HArray<PartitionId> newLocalOwners;
+
+        SCAI_LOG_DEBUG( logger, *comm << ": partitioning of matrix " << csrMatrix << " via " << *part )
+
+        // call the virtual partitioning method
+
+        part->squarePartitioning( newLocalOwners, csrMatrix, weights );
+
+        BOOST_CHECK_EQUAL( newLocalOwners.size(), csrMatrix.getRowDistribution().getLocalSize() );
+
+        BOOST_CHECK( HArrayUtils::validIndexes( newLocalOwners, nPart ) );
     }
 }
 

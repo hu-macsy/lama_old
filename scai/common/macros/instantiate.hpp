@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./macros/instantiate.hpp
+ * @brief Macro for template instantiation                      
  * @author eschricker
  * @date 15.03.2016
  */

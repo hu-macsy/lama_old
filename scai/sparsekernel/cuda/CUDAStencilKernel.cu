@@ -43,11 +43,12 @@
 #include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Grid.hpp>
-#include <scai/common/bind.hpp>
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/copy.h>
+
+#include <functional>
 
 namespace scai
 {
@@ -78,7 +79,7 @@ __constant__ common::Grid::BorderType gridBordersD[ 2 * SCAI_GRID_MAX_DIMENSION 
 
 /* --------------------------------------------------------------------------- */
 
-/** Help routine to determine the left position in a dimension with a certain bounary type. */
+/** Help routine to determine the left position in a dimension with a certain boUnaryOp type. */
 
 __inline__ __device__ 
 bool getBorderPosL( IndexType& pos, const IndexType offset, const IndexType size, const Grid::BorderType border )
@@ -97,15 +98,11 @@ bool getBorderPosL( IndexType& pos, const IndexType offset, const IndexType size
     {
         pos = ( pos + size ) - offset;
     }
-    else if ( border == Grid::BORDER_REFLECTING )
-    {
-        pos = offset - ( pos + 1 );
-    }
 
     return valid;
 }
 
-/** Help routine to determine the right position in a dimension with a certain bounary type. */
+/** Help routine to determine the right position in a dimension with a certain boUnaryOp type. */
 
 __inline__ __device__ 
 bool getBorderPosR( IndexType& pos, const IndexType offset, const IndexType size, const Grid::BorderType border )
@@ -123,10 +120,6 @@ bool getBorderPosR( IndexType& pos, const IndexType offset, const IndexType size
     else if ( border == Grid::BORDER_PERIODIC )
     {
         pos = ( pos + offset ) - size; 
-    }
-    else if ( border == Grid::BORDER_REFLECTING )
-    {
-        pos = 2 * size - ( pos + 1 + offset );
     }
     return valid;
 }
@@ -495,8 +488,8 @@ void CUDAStencilKernel::stencilGEMV3(
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbind1 ) ( const int* ) = &vectorUnbindTexture;
             // delay unbind until synchroniziaton
-            syncToken->pushRoutine( common::bind( unbind, stencilVal ) );
-            syncToken->pushRoutine( common::bind( unbind1, stencilOffset ) );
+            syncToken->pushRoutine( std::bind( unbind, stencilVal ) );
+            syncToken->pushRoutine( std::bind( unbind1, stencilOffset ) );
         }
     }
     else
@@ -699,7 +692,7 @@ void CUDAStencilKernel::RegistratorV<ValueType>::registerKernels( kregistry::Ker
 {
     using kregistry::KernelRegistry;
 
-    common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger,
                     "register StencilKernel CUDA-routines for Host at kernel registry [" << flag 

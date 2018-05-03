@@ -37,6 +37,7 @@
 
 // local library
 #include <scai/solver/IterativeSolver.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <iostream>
@@ -48,35 +49,58 @@ namespace scai
 namespace solver
 {
 
-ResidualStagnation::ResidualStagnation( lama::NormPtr norm )
-    : Criterion(), mNorm( norm ), mLookback( 1 ), //TODO check default value
-      mLastResidualNorms( 1 ), mNextEntry( 0 ), mEntriesReady( false ), mPrecision( 0.1 ) //TODO check default value
+template<typename ValueType>
+ResidualStagnation<ValueType>::ResidualStagnation( lama::NormPtr<ValueType> norm ) : 
+
+    Criterion<ValueType>(), 
+    mNorm( norm ), 
+    mLookback( 1 ), //TODO check default value
+    mLastResidualNorms( 1 ), 
+    mNextEntry( 0 ), 
+    mEntriesReady( false ), 
+    mPrecision( 0.1 ) //TODO check default value
 {
 }
 
-ResidualStagnation::ResidualStagnation( lama::NormPtr norm, IndexType lookback, lama::Scalar precision )
-    : Criterion(), mNorm( norm ), mLookback( lookback ), mLastResidualNorms( lookback ), mNextEntry( 0 ), mEntriesReady(
-        false ), mPrecision( precision )
+template<typename ValueType>
+ResidualStagnation<ValueType>::ResidualStagnation( lama::NormPtr<ValueType> norm, IndexType lookback, ValueType precision ) : 
+
+    Criterion<ValueType>(), 
+    mNorm( norm ), 
+    mLookback( lookback ), 
+    mLastResidualNorms( lookback ), 
+    mNextEntry( 0 ), 
+    mEntriesReady( false ), 
+    mPrecision( precision )
 {
 }
 
-ResidualStagnation::ResidualStagnation( const ResidualStagnation& other )
-    : Criterion(), mNorm( other.mNorm ), mLookback( other.mLookback ), mLastResidualNorms(
-        other.mLastResidualNorms ), mNextEntry( other.mNextEntry ), mEntriesReady(
-            other.mEntriesReady ), mPrecision( other.mPrecision )
+template<typename ValueType>
+ResidualStagnation<ValueType>::ResidualStagnation( const ResidualStagnation& other ) : 
+
+    Criterion<ValueType>(), 
+    mNorm( other.mNorm ), 
+    mLookback( other.mLookback ), 
+    mLastResidualNorms( other.mLastResidualNorms ), 
+    mNextEntry( other.mNextEntry ), 
+    mEntriesReady( other.mEntriesReady ), 
+    mPrecision( other.mPrecision )
 {
 }
 
-ResidualStagnation::~ResidualStagnation()
+template<typename ValueType>
+ResidualStagnation<ValueType>::~ResidualStagnation()
 {
 }
 
-Criterion* ResidualStagnation::copy() const
+template<typename ValueType>
+ResidualStagnation<ValueType>* ResidualStagnation<ValueType>::copy() const
 {
-    return new ResidualStagnation( *this );
+    return new ResidualStagnation<ValueType>( *this );
 }
 
-bool ResidualStagnation::isSatisfied( const IterativeSolver& solver )
+template<typename ValueType>
+bool ResidualStagnation<ValueType>::isSatisfied( const IterativeSolver<ValueType>& solver )
 {
     mLastResidualNorms[mNextEntry] = ( *mNorm )( solver.getResidual() );
     mNextEntry = ( mNextEntry + 1 ) % mLookback;
@@ -88,46 +112,58 @@ bool ResidualStagnation::isSatisfied( const IterativeSolver& solver )
 
     if ( mEntriesReady )
     {
-        lama::Scalar min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
-        lama::Scalar max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
-        min = std::max( std::numeric_limits<lama::Scalar>::min(), min );
+        RealType<ValueType> min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
+        RealType<ValueType> max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
+        min = std::max( std::numeric_limits<RealType<ValueType> >::min(), min );
         //std::cout<< " max ="<<max<<"       min = "<<min<<"      max/min = "<<max/min<<"1+p = "<<(1.0+mPrecision)<<std::endl;
         mEntriesReady = false;
-        return ( ( max / min ) < ( 1.0 + mPrecision ) );
+        return ( ( max / min ) < ( RealType<ValueType>( 1 ) + mPrecision ) );
     }
 
     return false;
 }
 
-IndexType ResidualStagnation::getLookback() const
+template<typename ValueType>
+IndexType ResidualStagnation<ValueType>::getLookback() const
 {
     return mLookback;
 }
 
-const lama::NormPtr ResidualStagnation::getNorm() const
+template<typename ValueType>
+const lama::NormPtr<ValueType> ResidualStagnation<ValueType>::getNorm() const
 {
     return mNorm;
 }
 
-const lama::Scalar ResidualStagnation::getPrecision() const
+template<typename ValueType>
+const ValueType ResidualStagnation<ValueType>::getPrecision() const
 {
     return mPrecision;
 }
 
-void ResidualStagnation::setLookback( IndexType lookback )
+template<typename ValueType>
+void ResidualStagnation<ValueType>::setLookback( IndexType lookback )
 {
     mLookback = lookback;
 }
 
-void ResidualStagnation::setPrecision( const lama::Scalar precision )
+template<typename ValueType>
+void ResidualStagnation<ValueType>::setPrecision( const ValueType precision )
 {
     mPrecision = precision;
 }
 
-void ResidualStagnation::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void ResidualStagnation<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "ResStgn<" << getPrecision() << ", " << getLookback() << ">";
+    stream << "ResidualStagnation<" << getPrecision() << ", " << getLookback() << ">";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( ResidualStagnation, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

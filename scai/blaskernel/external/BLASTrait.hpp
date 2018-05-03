@@ -35,6 +35,7 @@
 #pragma once
 
 #include <cstdio>
+#include <scai/common/MatrixOp.hpp>
 
 // macros
 #define FORTRAN_BLAS_NAME( name, prefix ) prefix##name##_
@@ -62,7 +63,29 @@ public:
 #else
     typedef char BLASTrans;
 #endif
+
+    static inline BLASTrans castTrans( const common::MatrixOp op );
 };
+
+BLASTrait::BLASTrans BLASTrait::castTrans( const common::MatrixOp op )
+{
+    BLASTrait::BLASTrans castOp = ' ';
+
+    if ( op == common::MatrixOp::NORMAL )
+    {
+        castOp = 'N';
+    }
+    else if ( op == common::MatrixOp::TRANSPOSE )
+    {
+        castOp = 'T';
+    }
+    else if ( op == common::MatrixOp::CONJ_TRANSPOSE )
+    {
+        castOp = 'C';
+    }
+
+    return castOp;
+}
 
 } /* end namespace blaskernel */
 
@@ -105,34 +128,33 @@ extern "C"
     FORTRAN_BLAS_DEF( gemv, d, void, CALL_DEF_GEMV( double ) );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-// ComplexFloat
-    FORTRAN_BLAS_DEF( swap, c, void, CALL_DEF_SWAP( ComplexFloat ) );
-    FORTRAN_BLAS_DEF( copy, c, void, CALL_DEF_COPY( ComplexFloat ) );
-    FORTRAN_BLAS_DEF( axpy, c, void, CALL_DEF_AXPY( ComplexFloat ) );
+    FORTRAN_BLAS_DEF( swap, c, void, CALL_DEF_SWAP( scai::ComplexFloat ) );
+    FORTRAN_BLAS_DEF( copy, c, void, CALL_DEF_COPY( scai::ComplexFloat ) );
+    FORTRAN_BLAS_DEF( axpy, c, void, CALL_DEF_AXPY( scai::ComplexFloat ) );
 
 // should not be used
-    FORTRAN_BLAS_DEF( dotc, c, float, CALL_DEF_DOT( ComplexFloat ) );
+    FORTRAN_BLAS_DEF( dotc, c, float, CALL_DEF_DOT( scai::ComplexFloat ) );
 
-    FORTRAN_BLAS_DEF( scal, c, void, CALL_DEF_SCAL( ComplexFloat ) );
-    FORTRAN_BLAS_DEF( nrm2, sc, float, CALL_DEF_NRM2( ComplexFloat ) );
-    FORTRAN_BLAS_DEF( asum, sc, float, CALL_DEF_ASUM( ComplexFloat ) );
-    FORTRAN_BLAS_DEF( amax, ic, scai::blaskernel::BLASTrait::BLASIndexType, CALL_DEF_AMAX( ComplexFloat ) );
-    FORTRAN_BLAS_DEF( gemv, c, void, CALL_DEF_GEMV( ComplexFloat ) );
-    FORTRAN_BLAS_DEF( gemm, c, void, CALL_DEF_GEMM( ComplexFloat ) );
+    FORTRAN_BLAS_DEF( scal, c, void, CALL_DEF_SCAL( scai::ComplexFloat ) );
+    FORTRAN_BLAS_DEF( nrm2, sc, float, CALL_DEF_NRM2( scai::ComplexFloat ) );
+    FORTRAN_BLAS_DEF( asum, sc, float, CALL_DEF_ASUM( scai::ComplexFloat ) );
+    FORTRAN_BLAS_DEF( amax, ic, scai::blaskernel::BLASTrait::BLASIndexType, CALL_DEF_AMAX( scai::ComplexFloat ) );
+    FORTRAN_BLAS_DEF( gemv, c, void, CALL_DEF_GEMV( scai::ComplexFloat ) );
+    FORTRAN_BLAS_DEF( gemm, c, void, CALL_DEF_GEMM( scai::ComplexFloat ) );
 // ComplexDouble
-    FORTRAN_BLAS_DEF( swap, z, void, CALL_DEF_SWAP( ComplexDouble ) );
-    FORTRAN_BLAS_DEF( copy, z, void, CALL_DEF_COPY( ComplexDouble ) );
-    FORTRAN_BLAS_DEF( axpy, z, void, CALL_DEF_AXPY( ComplexDouble ) );
+    FORTRAN_BLAS_DEF( swap, z, void, CALL_DEF_SWAP( scai::ComplexDouble ) );
+    FORTRAN_BLAS_DEF( copy, z, void, CALL_DEF_COPY( scai::ComplexDouble ) );
+    FORTRAN_BLAS_DEF( axpy, z, void, CALL_DEF_AXPY( scai::ComplexDouble ) );
 
 // should not be used
-    FORTRAN_BLAS_DEF( dotc, z, double, CALL_DEF_DOT( ComplexDouble ) );
+    FORTRAN_BLAS_DEF( dotc, z, double, CALL_DEF_DOT( scai::ComplexDouble ) );
 
-    FORTRAN_BLAS_DEF( scal, z, void, CALL_DEF_SCAL( ComplexDouble ) );
-    FORTRAN_BLAS_DEF( nrm2, dz, double, CALL_DEF_NRM2( ComplexDouble ) );
-    FORTRAN_BLAS_DEF( asum, dz, double, CALL_DEF_ASUM( ComplexDouble ) );
-    FORTRAN_BLAS_DEF( amax, iz, scai::blaskernel::BLASTrait::BLASIndexType, CALL_DEF_AMAX( ComplexDouble ) );
-    FORTRAN_BLAS_DEF( gemv, z, void, CALL_DEF_GEMV( ComplexDouble ) );
-    FORTRAN_BLAS_DEF( gemm, z, void, CALL_DEF_GEMM( ComplexDouble ) );
+    FORTRAN_BLAS_DEF( scal, z, void, CALL_DEF_SCAL( scai::ComplexDouble ) );
+    FORTRAN_BLAS_DEF( nrm2, dz, double, CALL_DEF_NRM2( scai::ComplexDouble ) );
+    FORTRAN_BLAS_DEF( asum, dz, double, CALL_DEF_ASUM( scai::ComplexDouble ) );
+    FORTRAN_BLAS_DEF( amax, iz, scai::blaskernel::BLASTrait::BLASIndexType, CALL_DEF_AMAX( scai::ComplexDouble ) );
+    FORTRAN_BLAS_DEF( gemv, z, void, CALL_DEF_GEMV( scai::ComplexDouble ) );
+    FORTRAN_BLAS_DEF( gemm, z, void, CALL_DEF_GEMM( scai::ComplexDouble ) );
 #endif
 
 #undef CALL_DEF_SWAP

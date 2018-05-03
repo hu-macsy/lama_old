@@ -69,8 +69,7 @@ SCAI_LOG_DEF_LOGGER( CUDABLAS2::logger, "CUDA.BLAS2" )
 
 template<typename ValueType>
 void CUDABLAS2::gemv(
-    const CBLAS_ORDER order,
-    const CBLAS_TRANSPOSE trans,
+    const common::MatrixOp op,
     const IndexType m,
     const IndexType n,
     const ValueType alpha,
@@ -82,40 +81,13 @@ void CUDABLAS2::gemv(
     ValueType* const y,
     const IndexType incy )
 {
-    typedef CUBLASTrait::BLASTrans BLASTrans;
-    IndexType order_m = m;
-    IndexType order_n = n;
-//    char trans_char = ' ';
-    BLASTrans trans_char;
+    // Attention: cuBLAS expects the matrix A stored in column-major format, 
+    //            so we deal the transposed problem here 
 
-    //switch stuff because columnmajor to rowmajor
-    if ( order == CblasRowMajor )
-    {
-        if ( trans == CblasNoTrans )
-        {
-            trans_char = CUBLAS_OP_T;
-        }
-        else
-        {
-            trans_char = CUBLAS_OP_N;
-        }
-
-        order_m = n;
-        order_n = m;
-    }
-    else
-    {
-        if ( trans == CblasNoTrans )
-        {
-            trans_char = CUBLAS_OP_N;
-        }
-        else
-        {
-            trans_char = CUBLAS_OP_T;
-        }
-    }
+    CUBLASTrait::BLASTrans transA = CUBLASTrait::castTrans( common::combine( op, common::MatrixOp::TRANSPOSE ) );
 
     SCAI_CHECK_CUDA_ACCESS
+
     cudaStream_t stream = 0; // default stream if no syncToken is given
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
@@ -125,11 +97,15 @@ void CUDABLAS2::gemv(
     }
 
     cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
+
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
                       "CUDABLAS2::gemv set cublas kernel stream = " << stream );
     SCAI_LOG_INFO( logger,
-                   "gemv<" << TypeTraits<ValueType>::id() << "> with cuBLAS: m = " << order_m << " x " << order_n )
-    CUBLASWrapper<ValueType>::gemv( handle, trans_char,  order_m ,  order_n , alpha, A,  lda, x, incx , beta, y, incy );
+                   "gemv<" << TypeTraits<ValueType>::id() << "> with cuBLAS: m = " << m << " x " << n )
+
+    // as we work on transposed data we swap here m and n
+
+    CUBLASWrapper<ValueType>::gemv( handle, transA,  n,  m, alpha, A,  lda, x, incx , beta, y, incy );
 
     // No error check here possible as kernel is started asynchronously
 
@@ -142,6 +118,47 @@ void CUDABLAS2::gemv(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CUDABLAS2::geam(
+    ValueType* C,
+    const IndexType ldc,
+    const IndexType m,
+    const IndexType n,
+    const ValueType alpha,
+    const ValueType* A,
+    const IndexType lda,
+    const common::MatrixOp opA,
+    const ValueType beta,
+    const ValueType* B,
+    const IndexType ldb,
+    const common::MatrixOp opB )
+{
+    cublasHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuBLASHandle();
+
+    typedef CUBLASTrait::BLASTrans BLASTrans;
+
+    BLASTrans transA = CUBLASTrait::castTrans( opA );
+    BLASTrans transB = CUBLASTrait::castTrans( opB );
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
+                      "CUDABLAS2::geam set cublas kernel stream = " << stream );
+
+    // we swap m and n as geam expects matrices in columns-major format
+
+    CUBLASWrapper<ValueType>::geam( handle, transA, transB, n, m,
+                                    alpha, A, lda, 
+                                    beta, B, ldb,
+                                    C, ldc );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "cudaStreamSynchronize( stream = " << stream << " )" );
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -149,9 +166,10 @@ template<typename ValueType>
 void CUDABLAS2::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register BLAS2 routines implemented by CuBLAS in KernelRegistry [" << flag << "]" )
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( CUDABLAS2::gemv, ctx, flag );
+    KernelRegistry::set<BLASKernelTrait::geam<ValueType> >( CUDABLAS2::geam, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

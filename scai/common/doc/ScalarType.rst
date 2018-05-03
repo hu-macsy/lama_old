@@ -44,7 +44,7 @@ a derived template class ``Data`` that might be instantiated for different arith
       ...
       virtual ScalarType getValueType()
       {
-          return TypeTraits<ValueType>::scalarType;
+          return TypeTraits<ValueType>::stype;
       }
   }
 
@@ -61,10 +61,10 @@ template class the object belongs.
 
       std::cout << "array has type " << type << std::endl;
       switch ( type ) :
-          case scalar::FLOAT :
+          case ScalarType::FLOAT :
              Data<float>& f_array = static_cast< Data<float>& >( array );
              ...
-          case scalar::DOUBLE ::
+          case ScalarType::DOUBLE ::
              Data<double>& d_array = static_cast< Data<double>& >( array );
              ...
       ...

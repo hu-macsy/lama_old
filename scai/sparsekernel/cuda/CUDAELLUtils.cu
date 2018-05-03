@@ -40,6 +40,7 @@
 
 // internal scai library
 #include <scai/utilskernel/cuda/CUDAUtils.hpp>
+#include <scai/utilskernel/cuda/CUDAReduceUtils.hpp>
 #include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
@@ -49,7 +50,6 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -73,6 +73,8 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+#include <functional>
+
 namespace scai
 {
 
@@ -80,6 +82,7 @@ using common::TypeTraits;
 using common::CUDASettings;
 using tasking::CUDAStreamSyncToken;
 using utilskernel::CUDAUtils;
+using utilskernel::CUDAReduceUtils;
 
 namespace sparsekernel
 {
@@ -244,10 +247,10 @@ void CUDAELLUtils::check(
 /*                                                  getRow                                                            */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType>
 __global__
 void getRowKernel(
-    OtherValueType* row,
+    ValueType* row,
     const IndexType i,
     const IndexType numRows,
     const IndexType numColumns,
@@ -260,13 +263,13 @@ void getRowKernel(
     if ( jj < rowNumColumns )
     {
         IndexType pos = jj * numRows + i;
-        row[ja[pos]] = static_cast<OtherValueType>( values[pos] );
+        row[ja[pos]] = values[pos];
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType>
 void CUDAELLUtils::getRow(
-    OtherValueType* row,
+    ValueType* row,
     const IndexType i,
     const IndexType numRows,
     const IndexType numColumns,
@@ -277,7 +280,7 @@ void CUDAELLUtils::getRow(
 {
     SCAI_LOG_TRACE( logger, "get row #i = " << i )
     SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<OtherValueType> rowPtr( const_cast<OtherValueType*>( row ) );
+    thrust::device_ptr<ValueType> rowPtr( const_cast<ValueType*>( row ) );
     thrust::fill( rowPtr, rowPtr + numColumns, static_cast<ValueType>( 0.0 ) );
     thrust::device_ptr<IndexType> iaPtr( const_cast<IndexType*>( ia ) );
     thrust::host_vector<IndexType> rowNumColumns( iaPtr + i, iaPtr + i + 1 );
@@ -355,29 +358,29 @@ ValueType CUDAELLUtils::getValue(
 /*                                                  scaleValue                                                        */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
-void CUDAELLUtils::scaleValue(
+template<typename ValueType>
+void CUDAELLUtils::scaleRows(
+    ValueType ellValues[],
     const IndexType numRows,
     const IndexType SCAI_UNUSED( numValuesPerRow ),
     const IndexType ia[],
-    ValueType ellValues[],
-    const OtherValueType values[] )
+    const ValueType values[] )
 {
     SCAI_LOG_INFO( logger,
-                   "scaleValue, #numRows = " << numRows << ", ia = " << ia << ", ellValues = " << ellValues << ", values = " << values )
+                   "scaleRows, #numRows = " << numRows << ", ia = " << ia << ", ellValues = " << ellValues << ", values = " << values )
     SCAI_CHECK_CUDA_ACCESS
     thrust::device_ptr<IndexType> ia_ptr( const_cast<IndexType*>( ia ) );
     thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
-    thrust::device_ptr<OtherValueType> values_ptr( const_cast<OtherValueType*>( values ) );
+    thrust::device_ptr<ValueType> values_ptr( const_cast<ValueType*>( values ) );
 
-    IndexType maxCols = CUDAUtils::reduce( ia, numRows, IndexType( 0 ), common::binary::MAX );
+    IndexType maxCols = CUDAReduceUtils::reduce( ia, numRows, IndexType( 0 ), common::BinaryOp::MAX );
 
     // TODO: maybe find better implementation
 
     for ( IndexType i = 0; i < maxCols; i++ )
     {
         thrust::transform( ellValues_ptr + i * numRows, ellValues_ptr + i * numRows + numRows, values_ptr,
-                           ellValues_ptr + i * numRows, multiply<ValueType, OtherValueType>() );
+                           ellValues_ptr + i * numRows, multiply<ValueType, ValueType>() );
     }
 }
 
@@ -812,6 +815,38 @@ void normal_gemv_kernel_beta_zero(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+/*    Kernel for  result += alpha * transpose( matrix_ell ) * vector_x                                                */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+__global__
+void normal_gevm_kernel(
+    ValueType result[],
+    const ValueType x[],
+    const ValueType alpha,
+    const IndexType ellSizes[],
+    const IndexType ellJA[],
+    const ValueType ellValues[],
+    IndexType numRows )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        ValueType xi  = x[i];
+        IndexType pos = i;
+
+        for ( IndexType kk = 0; kk < ellSizes[i]; ++kk )
+        {
+            IndexType j = ellJA[pos];
+            ValueType v = alpha * ellValues[pos] * xi;
+            common::CUDAUtils::atomicAdd( &result[j], v );
+            pos += numRows;
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 void CUDAELLUtils::normalGEMV(
@@ -821,16 +856,22 @@ void CUDAELLUtils::normalGEMV(
     const ValueType beta,
     const ValueType y[],
     const IndexType numRows,
+    const IndexType numColumns,
     const IndexType numNonZerosPerRow,
     const IndexType ellIA[],
     const IndexType ellJA[],
-    const ValueType ellValues[] )
+    const ValueType ellValues[],
+    const common::MatrixOp op )
 {
-    SCAI_REGION( "CUDA.ELL.normalGEMV" )
+    SCAI_REGION( common::isTranspose( op ) ? "CUDA.ELL.gemv_t" : "CUDA_ELL.gemv_n" )
+
+    const IndexType nTarget = common::isTranspose( op ) ? numColumns : numRows;
+
     SCAI_LOG_INFO( logger, "normalGEMV<" << TypeTraits<ValueType>::id() << ">" <<
-                   " result[ " << numRows << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
-    SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
+                   " result[ " << nTarget << "] = " << alpha << " * A(ell) * x + " << beta << " * y " )
+
     SCAI_CHECK_CUDA_ACCESS
+
     cudaStream_t stream = 0;
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
@@ -852,51 +893,64 @@ void CUDAELLUtils::normalGEMV(
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ">>>" )
 
-    if ( useTexture )
+    // set result = beta * y, not needed if beta == 1 and y == result
+
+    if ( common::isTranspose( op ) )
+    {
+        useTexture = false;    // does not help here 
+
+        CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
+
+        SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
+    
+        normal_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>> (
+            result, x, alpha, ellIA, ellJA, ellValues, numRows );
+    }
+    else if ( useTexture )
     {
         vectorBindTexture( x );
 
-        if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
+        if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             normal_gemv_kernel_alpha_one_beta_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>> (
                 result, x, y, ellValues, ellJA, numRows, ellIA );
         }
-        else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
+        else if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ZERO )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             normal_gemv_kernel_alpha_one_beta_zero<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>> (
                 result, x, y, ellValues, ellJA, numRows, ellIA );
         }
-        else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
+        else if ( alpha == scai::common::Constants::ZERO && beta == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             assign_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>> ( result, y, numRows );
         }
-        else if ( alpha == scai::common::constants::ONE )
+        else if ( alpha == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             normal_gemv_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>> (
                 result, x, y, beta, ellValues, ellJA, numRows, ellIA );
         }
-        else if ( alpha == scai::common::constants::ZERO )
+        else if ( alpha == scai::common::Constants::ZERO )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             scale_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>> ( result, y, beta, numRows );
         }
-        else if ( beta == scai::common::constants::ONE )
+        else if ( beta == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             normal_gemv_kernel_beta_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>> (
                 result, x, y, alpha, ellValues, ellJA, numRows, ellIA );
         }
-        else if ( beta == scai::common::constants::ZERO )
+        else if ( beta == scai::common::Constants::ZERO )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -913,47 +967,47 @@ void CUDAELLUtils::normalGEMV(
     }
     else
     {
-        if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
+        if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             normal_gemv_kernel_alpha_one_beta_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>> (
                 result, x, y, ellValues, ellJA, numRows, ellIA );
         }
-        else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
+        else if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ZERO )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             normal_gemv_kernel_alpha_one_beta_zero<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>> (
                 result, x, y, ellValues, ellJA, numRows, ellIA );
         }
-        else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
+        else if ( alpha == scai::common::Constants::ZERO && beta == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             assign_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>> ( result, y, numRows );
         }
-        else if ( alpha == scai::common::constants::ONE )
+        else if ( alpha == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             normal_gemv_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>> (
                 result, x, y, beta, ellValues, ellJA, numRows, ellIA );
         }
-        else if ( alpha == scai::common::constants::ZERO )
+        else if ( alpha == scai::common::Constants::ZERO )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             scale_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>> ( result, y, beta, numRows );
         }
-        else if ( beta == scai::common::constants::ONE )
+        else if ( beta == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             normal_gemv_kernel_beta_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>> (
                 result, x, y, alpha, ellValues, ellJA, numRows, ellIA );
         }
-        else if ( beta == scai::common::constants::ZERO )
+        else if ( beta == scai::common::Constants::ZERO )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
@@ -984,39 +1038,7 @@ void CUDAELLUtils::normalGEMV(
         if ( useTexture )
         {
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbind, x ) );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*    Kernel for  SVM + SV                                                                                            */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-__global__
-void normal_gevm_kernel(
-    ValueType result[],
-    const ValueType x[],
-    const ValueType alpha,
-    const IndexType ellSizes[],
-    const IndexType ellJA[],
-    const ValueType ellValues[],
-    IndexType numRows )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < numRows )
-    {
-        ValueType xi  = x[i];
-        IndexType pos = i;
-
-        for ( IndexType kk = 0; kk < ellSizes[i]; ++kk )
-        {
-            IndexType j = ellJA[pos];
-            ValueType v = alpha * ellValues[pos] * xi;
-            common::CUDAUtils::atomicAdd( &result[j], v );
-            pos += numRows;
+            syncToken->pushRoutine( std::bind( unbind, x ) );
         }
     }
 }
@@ -1051,62 +1073,6 @@ void sparse_gevm_kernel(
             common::CUDAUtils::atomicAdd( &result[j], v );
             pos += numRows;
         }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void CUDAELLUtils::normalGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numValuesPerRow,
-    const IndexType ellSizes[],
-    const IndexType ellJA[],
-    const ValueType ellValues[] )
-{
-    SCAI_REGION( "CUDA.ELL.normalGEVM" )
-
-    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
-                   << " result[ " << numColumns << "] = " << alpha
-                   << " * x[ " << numRows << "]"
-                   << " * A(ell)[" << numRows << " x " << numColumns << "]"
-                   << " * x[ " << numRows << " + " << beta << " * y [" << numColumns << "]" )
-
-    SCAI_CHECK_CUDA_ACCESS
-
-    cudaStream_t stream = 0; // default stream if no syncToken is given
-
-    const int blockSize = CUDASettings::getBlockSize();
-
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-
-    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        stream = syncToken->getCUDAStream();
-    }
-
-    // set result = beta * y, not needed if beta == 1 and y == result
-
-    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
-
-    SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
-
-    normal_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>> (
-        result, x, alpha, ellSizes, ellJA, ellValues, numRows );
-
-    if ( !syncToken )
-    {
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEVM, stream = " << stream )
-        SCAI_LOG_DEBUG( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << "> synchronized" )
     }
 }
 
@@ -1198,7 +1164,8 @@ void CUDAELLUtils::sparseGEMV(
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ValueType ellValues[] )
+    const ValueType ellValues[],
+    const common::MatrixOp op )
 {
     SCAI_REGION( "CUDA.ELL.sparseGEMV" )
     SCAI_LOG_INFO( logger, "sparseGEMV<" << TypeTraits<ValueType>::id() << ">" << ", #non-zero rows = " << numNonZeroRows )
@@ -1219,18 +1186,22 @@ void CUDAELLUtils::sparseGEMV(
 
     bool useTexture = CUDASettings::useTexture();
 
-    if ( useTexture )
-    {
-        vectorBindTexture( x );
-    }
-
     SCAI_LOG_INFO( logger, "Start ell_sparse_gemv_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ">>>" );
 
-    if ( useTexture )
+    if ( common::isTranspose( op ) )
     {
-        if ( alpha == scai::common::constants::ONE )
+        useTexture = false;
+
+        sparse_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream >>>
+        ( result, x, alpha, ellSizes, ellJA, ellValues, numRows, rowIndexes, numNonZeroRows );
+    }
+    else if ( useTexture )
+    {
+        vectorBindTexture( x );
+
+        if ( alpha == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
                                "cudaFuncSetCacheConfig failed" )
@@ -1247,7 +1218,7 @@ void CUDAELLUtils::sparseGEMV(
     }
     else
     {
-        if ( alpha == scai::common::constants::ONE )
+        if ( alpha == scai::common::Constants::ONE )
         {
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
                                "cudaFuncSetCacheConfig failed" )
@@ -1278,53 +1249,8 @@ void CUDAELLUtils::sparseGEMV(
         if ( useTexture )
         {
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbind, x ) );
+            syncToken->pushRoutine( std::bind( unbind, x ) );
         }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void CUDAELLUtils::sparseGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numNonZerosPerRow,
-    const IndexType numNonZeroRows,
-    const IndexType rowIndexes[],
-    const IndexType ellSizes[],
-    const IndexType ellJA[],
-    const ValueType ellValues[] )
-{
-    SCAI_REGION( "CUDA.ELL.sparseGEVM" )
-
-    SCAI_LOG_INFO( logger,
-                   "sparseGEVM<" << TypeTraits<ValueType>::id() << ">" << ", #non-zero rows = " << numNonZeroRows )
-    SCAI_CHECK_CUDA_ACCESS
-    cudaStream_t stream = 0;
-    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        stream = syncToken->getCUDAStream();
-    }
-
-    const IndexType blockSize = CUDASettings::getBlockSize( numNonZeroRows );
-
-    dim3 dimBlock( blockSize, 1, 1 );
-
-    dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
-
-    sparse_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream >>>
-    ( result, x, alpha, ellSizes, ellJA, ellValues, numRows, rowIndexes, numNonZeroRows );
-
-    if ( !syncToken )
-    {
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "sparseGEVM, stream = " << stream )
-        SCAI_LOG_INFO( logger, "sparseGEVM<" << TypeTraits<ValueType>::id() << "> synchronized" )
     }
 }
 
@@ -1445,7 +1371,7 @@ void CUDAELLUtils::jacobi(
         if ( useTexture )
         {
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbind, oldSolution ) );
+            syncToken->pushRoutine( std::bind( unbind, oldSolution ) );
         }
     }
 }
@@ -1554,7 +1480,8 @@ void ell_compressIA_kernel(
     const ValueType* ellValues,
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
+    const RealType<ValueType> eps,
+    bool keepDiagonal,
     IndexType* newIA )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -1567,15 +1494,17 @@ void ell_compressIA_kernel(
         {
             IndexType pos = jj * numRows + i;
 
-            if ( JA[pos] == i )
+            if ( keepDiagonal && JA[pos] == i )
             {
                 continue;
             }
 
-            if ( common::Math::abs( ellValues[pos] ) <= common::Math::real( eps ) )
+            if ( common::Math::abs( ellValues[pos] ) > eps )
             {
-                length--;
+                continue;
             }
+
+            length--;
         }
 
         newIA[i] = length;
@@ -1584,13 +1513,14 @@ void ell_compressIA_kernel(
 
 template<typename ValueType>
 void CUDAELLUtils::compressIA(
+    IndexType newIA[],
     const IndexType IA[],
     const IndexType JA[],
     const ValueType ellValues[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
-    IndexType newIA[] )
+    const RealType<ValueType> eps,
+    const bool keepDiagonal )
 {
     SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
 
@@ -1600,7 +1530,7 @@ void CUDAELLUtils::compressIA(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    ell_compressIA_kernel <<< dimGrid, dimBlock>>>( IA, JA, ellValues, numRows, numValuesPerRow, eps, newIA );
+    ell_compressIA_kernel <<< dimGrid, dimBlock>>>( IA, JA, ellValues, numRows, numValuesPerRow, eps, keepDiagonal, newIA );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
 }
@@ -1615,7 +1545,8 @@ void ell_compressValues_kernel(
     const ValueType* values,
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
+    const RealType<ValueType> eps,
+    bool keepDiagonal,
     const IndexType newNumValuesPerRow,
     IndexType* newJA,
     ValueType* newValues )
@@ -1624,66 +1555,51 @@ void ell_compressValues_kernel(
 
     if ( i < numRows )
     {
-        IndexType* gaps = new IndexType[numValuesPerRow];
+        IndexType gap = 0;
 
-        for ( IndexType j = 0; j < numValuesPerRow; ++j )
+        for ( IndexType jj = 0; jj < IA[i]; jj++ )
         {
-            gaps[j] = 0;
-        }
+            IndexType pos = jj * numRows + i;
 
-        for ( IndexType j = 0; j < IA[i]; j++ )
-        {
-            IndexType pos = j * numRows + i;
+            // delete it if zero and not diagonal entry
 
-            if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
-            {
-                gaps[j] = 1;
-            }
-        }
-
-        IndexType totalGaps = 0;
-        IndexType lastNewPos = static_cast<IndexType>( -1 );
-
-        for ( IndexType j = 0; j < IA[i]; j++ )
-        {
-            totalGaps += gaps[j];
-
-            IndexType pos    = j * numRows + i;
-            IndexType newpos = ( j - totalGaps ) * numRows + i;
-
-            if ( newpos != lastNewPos )
-            {
+            if ( common::Math::abs( values[pos] ) > eps || ( keepDiagonal && JA[pos] == i ) )
+            {   
+                // move entry gap positions back in this row
+                
+                IndexType newpos = ( jj - gap ) * numRows + i; 
                 newValues[newpos] = values[pos];
                 newJA[newpos] = JA[pos];
             }
-
-            lastNewPos = newpos;
+            else
+            {   
+                gap++;
+            }
         }
 
         // fill up to top
 
-        for (  IndexType j = IA[i] - totalGaps; j < newNumValuesPerRow; j++ )
+        for (  IndexType jj = IA[i] - gap; jj < newNumValuesPerRow; jj++ )
         {
-            IndexType newpos = j * numRows + i;
+            IndexType newpos = jj * numRows + i; 
             newValues[newpos] = 0;
             newJA[newpos] = 0;
         }
-
-        delete gaps;
     }
 }
 
 template<typename ValueType>
 void CUDAELLUtils::compressValues(
+    IndexType newJA[],
+    ValueType newValues[],
+    const IndexType newNumValuesPerRow,
     const IndexType IA[],
     const IndexType JA[],
     const ValueType values[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const ValueType eps,
-    const IndexType newNumValuesPerRow,
-    IndexType newJA[],
-    ValueType newValues[] )
+    const RealType<ValueType> eps,
+    const bool keepDiagonal )
 {
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
                    << ", values per row (old/new) = " << numValuesPerRow << " / " << newNumValuesPerRow
@@ -1695,7 +1611,7 @@ void CUDAELLUtils::compressValues(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    ell_compressValues_kernel <<< dimGrid, dimBlock>>>( IA, JA, values, numRows, numValuesPerRow, eps,
+    ell_compressValues_kernel <<< dimGrid, dimBlock>>>( IA, JA, values, numRows, numValuesPerRow, eps, keepDiagonal,
             newNumValuesPerRow, newJA, newValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
@@ -1708,7 +1624,7 @@ void CUDAELLUtils::compressValues(
 void CUDAELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
@@ -1719,29 +1635,27 @@ template<typename ValueType>
 void CUDAELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getRow<ValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::compressIA<ValueType> >( compressIA, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::compressValues<ValueType> >( compressValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void CUDAELLUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }

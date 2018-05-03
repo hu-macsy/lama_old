@@ -55,7 +55,7 @@ SCAI_LOG_DEF_LOGGER( GridDistribution::logger, "Distribution.GridDistribution" )
 /* ---------------------------------------------------------------------- */
 
 GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPtr communicator, const Grid& procGrid ) :
- 
+
     Distribution( globalGrid.size(), communicator ),
 
     mGlobalGrid( globalGrid ),
@@ -71,7 +71,7 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
 /* ---------------------------------------------------------------------- */
 
 GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPtr communicator ) :
- 
+
     Distribution( globalGrid.size(), communicator ),
 
     mGlobalGrid( globalGrid ),
@@ -101,7 +101,7 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
         mProcGrid.setSize( 0, procGrid[0] );
         mProcGrid.setSize( 1, procGrid[1] );
     }
-    else 
+    else
     {
         PartitionId procGrid[3];
 
@@ -117,7 +117,7 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
         mProcGrid.setSize( 1, procGrid[1] );
         mProcGrid.setSize( 2, procGrid[2] );
 
-        // set the remaining dimensions to 1 
+        // set the remaining dimensions to 1
 
         for ( IndexType i = 3; i < nDims; ++i )
         {
@@ -180,27 +180,27 @@ void GridDistribution::localize()
 
     PartitionId pRank = mCommunicator->getRank();
 
-    // determine my grid position in procGrid 
+    // determine my grid position in procGrid
 
     if ( pRank < mProcGrid.size() )
     {
         mProcGrid.gridPos( mRank, pRank );
-    
+
         // compute block sizes and local ranges
 
         for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
         {
             if ( mProcGrid.size( idim ) == 1 )
             {
-                 // this dimension is not distributed at all
+                // this dimension is not distributed at all
 
-                 mLB[idim] = 0;
-                 mUB[idim] = mGlobalGrid.size( idim );
+                mLB[idim] = 0;
+                mUB[idim] = mGlobalGrid.size( idim );
 
-                 // note: border types of the local grid do not change in this dimension
+                // note: border types of the local grid do not change in this dimension
             }
             else
-            {  
+            {
                 BlockDistribution::getLocalRange( mLB[idim], mUB[idim], mGlobalGrid.size( idim ), mRank[idim], mProcGrid.size( idim ) );
 
                 // Be careful: size = 5, np = 4 ->  0:2, 2:4, 4:5, 6:5
@@ -220,27 +220,17 @@ void GridDistribution::localize()
                 Grid::BorderType left  = Grid::BORDER_ABSORBING;
                 Grid::BorderType right = Grid::BORDER_ABSORBING;
 
-                if ( mGlobalGrid.borders()[2 * idim] == Grid::BORDER_REFLECTING && mRank[idim] == 0 )
-                {
-                    left = Grid::BORDER_REFLECTING;
-                } 
-
-                if ( mGlobalGrid.borders()[2 * idim + 1] == Grid::BORDER_REFLECTING && mRank[idim] == mProcGrid.size( idim ) - 1 )
-                {
-                    right = Grid::BORDER_REFLECTING;
-                } 
-
                 mLocalGrid.setBorderType ( idim, left, right );
             }
         }
     }
     else
     {
-         // set some convenient default values for rank, lb, ub, and mLocalGrid
+        // set some convenient default values for rank, lb, ub, and mLocalGrid
 
         for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
         {
-            mRank[ idim ] = nIndex;
+            mRank[ idim ] = invalidIndex;
             mLB[ idim ]   = 0;
             mUB[ idim ]   = 0;
 
@@ -262,7 +252,7 @@ bool GridDistribution::isLocal( const IndexType globalIndex ) const
 {
     //  check that this processor belongs to processor array
 
-    if ( mCommunicator->getRank() >= mProcGrid.size() ) 
+    if ( mCommunicator->getRank() >= mProcGrid.size() )
     {
         return false;
     }
@@ -270,11 +260,18 @@ bool GridDistribution::isLocal( const IndexType globalIndex ) const
     IndexType globalGridPos[ SCAI_GRID_MAX_DIMENSION ];
 
     mGlobalGrid.gridPos( globalGridPos, globalIndex );
- 
+
     for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
     {
-        if ( globalGridPos[idim] < mLB[idim] ) return false;
-        if ( globalGridPos[idim] >= mUB[idim] ) return false;
+        if ( globalGridPos[idim] < mLB[idim] )
+        {
+            return false;
+        }
+
+        if ( globalGridPos[idim] >= mUB[idim] )
+        {
+            return false;
+        }
     }
 
     return true;
@@ -318,7 +315,7 @@ IndexType GridDistribution::getMaxLocalSize() const
     // multiply maximal block sizes for each dimension
 
     IndexType maxSize = 1;
-    
+
     for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
     {
         maxSize *= mBlockSize[idim];
@@ -342,14 +339,14 @@ IndexType GridDistribution::getBlockDistributionSize() const
             isBlocked = false;
         }
     }
-   
+
     if ( isBlocked )
     {
         return mLocalGrid.size();
     }
     else
     {
-        return nIndex;
+        return invalidIndex;
     }
 }
 
@@ -385,7 +382,7 @@ bool GridDistribution::global2local( IndexType localGridPos[], const IndexType g
     bool isLocal = true;
 
     for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
-    { 
+    {
         if ( globalGridPos[idim] < mLB[idim ] || globalGridPos[idim] >= mUB[idim] )
         {
             isLocal = false;
@@ -413,7 +410,7 @@ IndexType GridDistribution::global2local( const IndexType globalIndex ) const
     if ( !isLocal )
     {
         SCAI_LOG_DEBUG( logger, "globalIndex = " << globalIndex << " not local, dist = " << *this )
-        return nIndex;
+        return invalidIndex;
     }
 
     return mLocalGrid.linearPos( localGridPos );
@@ -456,6 +453,11 @@ void GridDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexe
 
 /* ---------------------------------------------------------------------- */
 
+bool GridDistribution::hasAnyAddressing() const
+{
+    return true;
+}
+
 void GridDistribution::enableAnyAddressing() const
 {
     // nothing to do, we have closed formulas
@@ -497,7 +499,7 @@ IndexType GridDistribution::getAnyLocalIndex( const IndexType globalIndex, const
     mGlobalGrid.gridPos( gridPos, globalIndex );
 
     for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
-    {   
+    {
         gridPos[idim] = gridPos[idim] % mBlockSize[ idim ];
     }
 
@@ -512,7 +514,7 @@ IndexType GridDistribution::getAnyLocalIndex( const IndexType globalIndex, const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GridDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner) const
+IndexType GridDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const
 {
     Grid localGrid( mGlobalGrid );
 
@@ -525,7 +527,7 @@ IndexType GridDistribution::getAnyGlobalIndex( const IndexType localIndex, const
     mProcGrid.gridPos( gridRank, owner );
 
     for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
-    {   
+    {
         gridPos[idim] = gridPos[idim] + mBlockSize[idim] * gridRank[idim];
     }
 
@@ -563,7 +565,7 @@ void GridDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
 
-    stream << "GridDistribution( comm = " << *mCommunicator << ", grid = " << mGlobalGrid 
+    stream << "GridDistribution( comm = " << *mCommunicator << ", grid = " << mGlobalGrid
            << " onto " << mProcGrid << ", local grid = " << mLocalGrid << " )";
 }
 
@@ -598,7 +600,7 @@ Distribution* GridDistribution::create( const DistributionArguments arg )
             break;   // makes sure that loop runs only up to sqrt( globalSize )
         }
 
-        if ( i1 * i2  != globalSize )
+        if ( i1* i2  != globalSize )
         {
             continue;
         }

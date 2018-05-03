@@ -36,21 +36,25 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/io/IOStream.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
+#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
+
 using namespace scai;
 using namespace common;
 using namespace lama;
-using namespace utilskernel;
 
-/* ------------------------------------------------------------------------- */
+using hmemo::HArray;
+using utilskernel::HArrayUtils;
 
-/** Define a filename used for the tests here. */
+using scai::testsupport::uniquePath;
+using scai::testsupport::GlobalTempDir;
 
-static const char testFileName[] = "IOStream.tmp.data";
+using boost::test_tools::per_element;
 
 /* ------------------------------------------------------------------------- */
 
@@ -66,28 +70,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_type
 
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    LArray<ValueType> data( n, values );
+    HArray<ValueType> data( n, values );
 
     int precision = 3;
+
+    const auto testFileName = uniquePath(GlobalTempDir::getPath(), "IOStreamTest.writeFormatted");
 
     IOStream outFile( testFileName, std::ios::out );
     outFile.writeFormatted( data, precision );
     outFile.close();
 
-    LArray<ValueType> data1;
+    HArray<ValueType> data1;
 
     IOStream inFile( testFileName, std::ios::in );
     inFile.readFormatted( data1, n );
     inFile.close();
 
-    BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
+    BOOST_CHECK( HArrayUtils::maxDiffNorm( data, data1 ) < 1e-3 );
 
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-    AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
-
-    BOOST_CHECK( diff < 1e-3 );
-
-    int rc = std::remove( testFileName );
+    int rc = std::remove( testFileName.c_str() );
     BOOST_CHECK_EQUAL( 0, rc );
 }
 
@@ -98,26 +99,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
     const IndexType n = 5;
     const IndexType randomRange = 100;
 
-    LArray<ValueType> data( n );
-    data.setRandom( randomRange );  // random value between 0 and 100
+    auto data = utilskernel::randomHArray<ValueType>( n, randomRange );
 
-    // scalar::ScalarType type = TypeTraits<ValueType>::stype;
+    // ScalarType type = TypeTraits<ValueType>::stype;
+
+    const auto testFileName = uniquePath(GlobalTempDir::getPath(), "IOStreamTest.BinaryTest");
 
     IOStream outFile( testFileName, std::ios::out | std::ios::binary );
 
-    scalar::ScalarType stype = scalar::PATTERN;   // that should throw an exception
+    ScalarType stype = ScalarType::PATTERN;   // that should throw an exception
 
     BOOST_CHECK_THROW(
     {
         outFile.writeBinary( data, stype );
     }, common::Exception );
 
-    stype = scalar::INTERNAL;  // use the same type as data
+    stype = ScalarType::INTERNAL;  // use the same type as data
 
     outFile.writeBinary( data, stype );
     outFile.close();
 
-    LArray<ValueType> data1;
+    HArray<ValueType> data1;
 
     IOStream inFile( testFileName, std::ios::in | std::ios::binary );
 
@@ -130,14 +132,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
     inFile.readBinary( data1, n, stype );
     inFile.close();
 
-    BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
+    BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
 
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-    AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
-
-    BOOST_CHECK_EQUAL( diff, 0 );
-
-    int rc = std::remove( testFileName );
+    int rc = std::remove( testFileName.c_str() );
     BOOST_CHECK_EQUAL( 0, rc );
 }
 
@@ -149,16 +146,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
 
     const IndexType n = 5;
 
-    LArray<ValueType> data( n );
-    data.setRandom( 1 );
+    auto data = utilskernel::randomHArray<ValueType>( n, 1 );
 
-    scalar::ScalarType stype = TypeTraits<ScalarRepType>::stype;
+    ScalarType stype = TypeTraits<ScalarRepType>::stype;
+
+    const auto testFileName = uniquePath(GlobalTempDir::getPath(), "BinaryConvertTest");
 
     IOStream outFile( testFileName, std::ios::out | std::ios::binary );
     outFile.writeBinary( data, stype );
     outFile.close();
 
-    LArray<ValueType> data1;
+    HArray<ValueType> data1;
 
     IOStream inFile( testFileName, std::ios::in | std::ios::binary );
 
@@ -171,14 +169,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
     inFile.readBinary( data1, n, stype );
     inFile.close();
 
-    BOOST_REQUIRE_EQUAL( data.size(), data1.size() );
+    // binary should guarantee exactly same values
 
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-    AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
+    BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
 
-    BOOST_CHECK_EQUAL( diff, 0 );
-
-    int rc = std::remove( testFileName );
+    int rc = std::remove( testFileName.c_str() );
     BOOST_CHECK_EQUAL( 0, rc );
 }
 

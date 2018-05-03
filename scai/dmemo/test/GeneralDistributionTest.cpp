@@ -40,7 +40,8 @@
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
-#include <scai/utilskernel/LArray.hpp>
+
+#include <scai/utilskernel.hpp>
 
 using namespace scai;
 using namespace dmemo;
@@ -117,39 +118,42 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     GeneralDistribution genDist1( size * N, localIndexes, comm );
     const GeneralDistribution& genDist2 = genDist1;
     GeneralDistribution genDist3( size * N, localIndexes, comm );
-    GeneralDistribution genDist4( genDist1 );
-    BlockDistribution bdist( size * N, comm );
-    GeneralDistribution genDist5( bdist );
-    GeneralDistribution genDist6( BlockDistribution( size * ( N + 1 ), comm ) );
+
+    // general distributions can be compared with each other
 
     BOOST_CHECK_EQUAL( genDist1, genDist2 );  // pointer equality
     BOOST_CHECK_EQUAL( genDist2, genDist1 );  // pointer equality
     BOOST_CHECK_EQUAL( genDist1, genDist3 );  // same constructor equality
     BOOST_CHECK_EQUAL( genDist3, genDist1 );  // same constructor equality
-    BOOST_CHECK_EQUAL( genDist1, genDist4 );  // copy equality
-    BOOST_CHECK_EQUAL( genDist4, genDist1 );  // copy equality
-
-    if ( size != 1 )
-    {
-        BOOST_CHECK( genDist1 != bdist );         // do not compare block dist and general dist
-    }
-
-    BOOST_CHECK_EQUAL( genDist1, genDist5 );  // but if block is copied to a general dist
-    BOOST_CHECK( genDist1 != genDist6 );      // different global sizes
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( copyConstructorTest )
+BOOST_AUTO_TEST_CASE( getBlockDistributedOwnersTest )
 {
-    IndexType N = 15;
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
 
-    BlockDistribution bdist( N, comm );
-    GeneralDistribution gdist( bdist );
+    const GeneralDistribution* genDist = dynamic_cast<const GeneralDistribution*>( dist.get() );
 
-    // maybe they are not equal, but we compare local sizes
+    BOOST_REQUIRE( genDist != NULL );
 
-    BOOST_CHECK_EQUAL( bdist.getLocalSize(), gdist.getLocalSize() );
+    const hmemo::HArray<PartitionId>& localOwners = genDist->getMyBlockDistributedOwners();
+
+    hmemo::HArray<PartitionId> expectedOwners;
+
+    {
+        auto wExpected = hmemo::hostWriteOnlyAccess( expectedOwners, elemsPerPartition );
+
+        for ( IndexType i = 0; i < elemsPerPartition; ++i )
+        {
+            IndexType globalIndex = i + rank * elemsPerPartition;   
+            PartitionId owner = globalIndex % size; 
+            wExpected[i] = owner;
+        }
+    }
+  
+    BOOST_TEST( hostReadAccess( expectedOwners ) == hostReadAccess( localOwners ), boost::test_tools::per_element() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -180,24 +184,24 @@ BOOST_AUTO_TEST_CASE( redistConstructorTest )
 
             for ( IndexType i = 0; i < nLocal; ++i )
             {
-                 // choose owner as if it will be a Cyclic(1) distribution
+                // choose owner as if it will be a Cyclic(1) distribution
 
-                 IndexType globalIndex = dist.local2global( i );
-                 wOwners[i] = globalIndex % size;
+                IndexType globalIndex = dist.local2global( i );
+                wOwners[i] = globalIndex % size;
             }
         }
 
         SCAI_LOG_DEBUG( logger, "redistribute, dist = " << dist << ", owners = " << owners )
 
         GeneralDistribution gdist( dist, owners );
-    
+
         CyclicDistribution cyclic( N, 1, comm );
 
         BOOST_REQUIRE_EQUAL( gdist.getLocalSize(), cyclic.getLocalSize() );
-    
+
         for ( IndexType i = 0; i < cyclic.getLocalSize(); ++i )
         {
-            BOOST_CHECK_EQUAL( cyclic.local2global( i ), gdist.local2global(i ) );
+            BOOST_CHECK_EQUAL( cyclic.local2global( i ), gdist.local2global( i ) );
         }
     }
 }

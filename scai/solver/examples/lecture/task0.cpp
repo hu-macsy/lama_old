@@ -27,67 +27,70 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/examples/lecture/task0.cpp
+ * @brief Initial version of a solver to be used as task 0 in lecture.
  * @author Thomas Brandes
  * @date 15.05.2013
  */
-//Solution of task 0:
 
 #include <scai/lama.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
-// includes operators (+,*) for book syntax
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/solver/CG.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 
 #include <iostream>
+#include <cstdlib>
 
-using namespace scai::lama;
-using namespace scai::solver;
+using namespace scai;
+using namespace lama;
+using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main ( int argc, char* argv[] )
 {
     if ( argc < 2 )
     {
         std::cerr << "No input file specified" << std::endl;
-        exit ( -1 );
+        return EXIT_FAILURE;
     }
 
-    //Read a sparse matrix from the passed input file
-    CSRSparseMatrix<ValueType> m ( argv[1] );
-    std::cout << "Read matrix m : " << m << std::endl;
-    IndexType size = m.getNumRows ( );
-    //Create rhs vector
-    DenseVector<ValueType> rhs ( size, 0.0 );
-    std::cout << "Vector rhs : " << rhs << std::endl;
-    //Create solution vector
-    DenseVector<ValueType> solution ( size, 1.0 );
+    // Read a sparse matrix from the file that has been specified by command line argument
+    auto matrix = read<CSRSparseMatrix<ValueType>>( argv[1] );
+    std::cout << "Read matrix: " << matrix << std::endl;
+
+    IndexType size = matrix.getNumRows ( );
+    // Create solution vector
+    auto solution = fill<DenseVector<ValueType>>( size, 1 );
     std::cout << "Vector solution : " << solution << std::endl;
-    //Compute the rhs that fits our solution to be able to calculate the error later
-    rhs = m * solution;
-    //Reset solution to zero so that there is something to solve
-    solution = 0.0;
-    //Create a CG solver
-    CG cgSolver ( "CGTestSolver" );
-    //Create a stopping criterion for the iterative solver cgSolver
-    NormPtr norm = NormPtr ( new L2Norm ( ) );
-    CriterionPtr criterion ( new ResidualThreshold ( norm, 1E-8, ResidualThreshold::Absolute ) );
+    // Compute the rhs that fits our solution to be able to calculate the error later
+    auto rhs = eval<DenseVector<ValueType>>( matrix * solution );
+    std::cout << "Vector rhs : " << rhs << std::endl;
+    // Forget the solution, i.e. reset solution to zero so that there is something to solve
+    solution = ValueType( 0 );
+
+    // Create a CG solver
+    CG<ValueType> cgSolver ( "CGTestSolver" );
+    // Create a stopping criterion for the iterative solver cgSolver
+    auto norm = std::make_shared<L2Norm<ValueType>>( );
+    const ValueType eps = 1E-8;
+    auto criterion = std::make_shared<ResidualThreshold<ValueType>>( norm, eps, ResidualCheck::Absolute );
     cgSolver.setStoppingCriterion ( criterion );
-    //Initialize the solver
-    cgSolver.initialize ( m );
-    //Solve m * solution = rhs
+
+    // Initialize the solver with the matrix
+    cgSolver.initialize ( matrix );
+    // Solve, i.e. find solution for given rhs
     cgSolver.solve ( solution, rhs );
-    //calculate the error and its L2-Norm
-    DenseVector<ValueType> error ( size, 1.0 );
+
+    // calculate the error and its L2-Norm
+    auto error = fill<DenseVector<ValueType>>( size, 1 );
     error = error - solution;
     std::cout << "L2-Norm of error is " << l2Norm ( error ) << std::endl;
-    return 0;
+
+    return EXIT_SUCCESS;
 }
 

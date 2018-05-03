@@ -44,6 +44,7 @@
 
 // internal scai libraries
 #include <scai/tracing.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <sstream>
@@ -54,89 +55,131 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( InverseSolver::logger, "Solver.InverseSolver" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, InverseSolver<ValueType>::logger, "Solver.InverseSolver" )
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
-InverseSolver::InverseSolver( const std::string& id )
-    : Solver( id )
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_Solver* InverseSolver<ValueType>::create()
 {
-    SCAI_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
+    return new InverseSolver<ValueType>( "_genByFactory" );
 }
 
-InverseSolver::InverseSolver( const std::string& id, LoggerPtr logger )
-    : Solver( id, logger )
+template<typename ValueType>
+SolverCreateKeyType InverseSolver<ValueType>::createValue()
 {
-    SCAI_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << id )
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "InverseSolver" );
 }
 
-InverseSolver::InverseSolver( const InverseSolver& other )
-    : Solver( other )
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+InverseSolver<ValueType>::InverseSolver( const std::string& id ) : 
+
+    Solver<ValueType>( id )
+
 {
-    SCAI_LOG_INFO( InverseSolver::logger, "InverseSolver, id = " << other.mId )
+    SCAI_LOG_INFO( InverseSolver<ValueType>::logger, "InverseSolver, id = " << id )
 }
 
-InverseSolver::InverseSolverRuntime::InverseSolverRuntime()
-    : SolverRuntime()
+template<typename ValueType>
+InverseSolver<ValueType>::InverseSolver( const std::string& id, LoggerPtr logger ) : 
+
+    Solver<ValueType>( id, logger )
+
 {
+    SCAI_LOG_INFO( InverseSolver<ValueType>::logger, "InverseSolver, id = " << id )
 }
 
-InverseSolver::~InverseSolver()
+template<typename ValueType>
+InverseSolver<ValueType>::InverseSolver( const InverseSolver& other ) : 
+
+    Solver<ValueType>( other )
+
+{
+    SCAI_LOG_INFO( InverseSolver<ValueType>::logger, "InverseSolver, id = " << other.getId() )
+}
+
+template<typename ValueType>
+InverseSolver<ValueType>::~InverseSolver()
 {
     SCAI_LOG_INFO( logger, "~InverseSolver" )
 }
 
-InverseSolver::InverseSolverRuntime::~InverseSolverRuntime()
-{
-}
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
-/* --------------------------------------------------------------------------- */
-
-void InverseSolver::initialize( const Matrix& coefficients )
+template<typename ValueType>
+void InverseSolver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.Inverse.intialize" )
+
+    Solver<ValueType>::initialize( coefficients );
+
+    // allocate and build the inverse matrix, might be very time consuming
+
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
-    getRuntime().mInverse = lama::MatrixPtr( coefficients.newMatrix() );
-    getRuntime().mInverse->invert( coefficients );
-    getRuntime().mInverse->setContextPtr( coefficients.getContextPtr() );
-    getRuntime().mInverse->prefetch();
-    Solver::initialize( coefficients );
+
+    getRuntime().mInverse.reset( coefficients.newMatrix() );
+
+    Matrix<ValueType>& inverse = *getRuntime().mInverse;
+
+    inverse.invert( coefficients );
+    inverse.setContextPtr( coefficients.getContextPtr() );
+    inverse.prefetch();
 }
 
 /* --------------------------------------------------------------------------- */
 
-const Matrix& InverseSolver::getInverse() const
+template<typename ValueType>
+const Matrix<ValueType>& InverseSolver<ValueType>::getInverse() const
 {
-    SCAI_ASSERT_ERROR( getConstRuntime().mInverse, "inverse not available (no call of initialize before)" );
-    return *getConstRuntime().mInverse;
+    SCAI_ASSERT_ERROR( getRuntime().mInverse, "inverse not available (no call of initialize before)" );
+    return *getRuntime().mInverse;
 }
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::solveImpl()
+template<typename ValueType>
+void InverseSolver<ValueType>::solveImpl()
 {
     SCAI_REGION( "Solver.Inverse.solve" )
     InverseSolverRuntime& runtime = getRuntime();
     SCAI_ASSERT_ERROR( runtime.mInverse.get(), "solve, but mInverse is NULL" )
     logStartSolve();
-    *runtime.mSolution = ( *runtime.mInverse ) * ( *runtime.mRhs );
+
+    const Matrix<ValueType>& inverse = *runtime.mInverse;
+    const Vector<ValueType>& rhs      = *runtime.mRhs;
+
+    Vector<ValueType>& solution = runtime.mSolution.getReference(); // dirty
+
+    solution = inverse * rhs;
+
     logEndSolve();
 }
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::logStartSolve()
+template<typename ValueType>
+void InverseSolver<ValueType>::logStartSolve()
 {
     mLogger->startTimer( "SolutionTimer" );
 }
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::logEndSolve()
+template<typename ValueType>
+void InverseSolver<ValueType>::logEndSolve()
 {
-    lama::L2Norm l2Norm;
+    lama::L2Norm<ValueType> l2Norm;
     mLogger->logResidual( LogLevel::convergenceHistory, *this, l2Norm, "Final " );
     mLogger->logTime( "SolutionTimer", LogLevel::solverInformation, "Total Runtime [s]: " );
     mLogger->stopAndResetTimer( "SolutionTimer" );
@@ -145,43 +188,42 @@ void InverseSolver::logEndSolve()
 
 /* --------------------------------------------------------------------------- */
 
-InverseSolver::InverseSolverRuntime& InverseSolver::getRuntime()
+template<typename ValueType>
+typename InverseSolver<ValueType>::InverseSolverRuntime& InverseSolver<ValueType>::getRuntime()
 {
     return mInverseSolverRuntime;
 }
 
 /* --------------------------------------------------------------------------- */
 
-const InverseSolver::InverseSolverRuntime& InverseSolver::getConstRuntime() const
+template<typename ValueType>
+const typename InverseSolver<ValueType>::InverseSolverRuntime& InverseSolver<ValueType>::getRuntime() const
 {
     return mInverseSolverRuntime;
 }
 
 /* --------------------------------------------------------------------------- */
 
-SolverPtr InverseSolver::copy()
+template<typename ValueType>
+InverseSolver<ValueType>* InverseSolver<ValueType>::copy()
 {
-    return SolverPtr( new InverseSolver( *this ) );
+    return new InverseSolver( *this );
 }
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void InverseSolver<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "InverseSolver ( id = " << mId << " )";
+    stream << "InverseSolver<" << common::TypeTraits<ValueType>::id()
+           << "> ( id = " << Solver<ValueType>::getId() << " )";
 }
 
-/* --------------------------------------------------------------------------- */
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-std::string InverseSolver::createValue()
-{
-    return "InverseSolver";
-}
-
-Solver* InverseSolver::create( const std::string name )
-{
-    return new InverseSolver( name );
-}
+SCAI_COMMON_INST_CLASS( InverseSolver, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

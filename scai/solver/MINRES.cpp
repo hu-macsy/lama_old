@@ -42,9 +42,10 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <limits>
@@ -55,52 +56,85 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( MINRES::logger, "Solver.MINRES" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MINRES<ValueType>::logger, "Solver.IterativeSolver.MINRES" )
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
-MINRES::MINRES( const std::string& id )
-    : IterativeSolver( id ) {}
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_Solver* MINRES<ValueType>::create()
+{   
+    return new MINRES<ValueType>( "_genByFactory" );
+}
+
+template<typename ValueType>
+SolverCreateKeyType MINRES<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "MINRES" );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+MINRES<ValueType>::MINRES( const std::string& id ) : 
+
+    IterativeSolver<ValueType>( id ) 
+{
+}
+
+template<typename ValueType>
+MINRES<ValueType>::MINRES( const std::string& id, LoggerPtr logger ) : 
+
+    IterativeSolver<ValueType>( id , logger ) 
+{
+}
+
+template<typename ValueType>
+MINRES<ValueType>::MINRES( const MINRES<ValueType>& other ) : 
+
+    IterativeSolver<ValueType>( other )
+{
+}
 
 
-MINRES::MINRES( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id , logger ) {}
+template<typename ValueType>
+MINRES<ValueType>::~MINRES() 
+{
+}
 
-MINRES::MINRES( const MINRES& other )
-    : IterativeSolver( other ) {}
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
-
-
-MINRES::MINRESRuntime::MINRESRuntime()
-    : IterativeSolverRuntime() {}
-
-MINRES::~MINRES() {}
-
-MINRES::MINRESRuntime::~MINRESRuntime() {}
-
-void MINRES::initialize( const Matrix& coefficients )
+template<typename ValueType>
+void MINRES<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-    IterativeSolver::initialize( coefficients );
+    IterativeSolver<ValueType>::initialize( coefficients );
     MINRESRuntime& runtime = getRuntime();
     runtime.mBetaNew = 0.0;
     runtime.mC = 1.0;
     runtime.mCNew = 1.0;
     runtime.mS = 0.0;
     runtime.mSNew = 0.0;
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    runtime.mVecV.reset( coefficients.newVector( dist ) );
-    runtime.mVecVOld.reset( coefficients.newVector( dist ) );
-    runtime.mVecVNew.reset( coefficients.newVector( dist ) );
-    runtime.mVecP.reset( coefficients.newVector( dist ) );
-    runtime.mVecPOld.reset( coefficients.newVector( dist ) );
-    runtime.mVecPNew.reset( coefficients.newVector( dist ) );
-    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
+
+    runtime.mVecV.reset( coefficients.newTargetVector() );
+    runtime.mVecVOld.reset( coefficients.newTargetVector() );
+    runtime.mVecVNew.reset( coefficients.newTargetVector() );
+    runtime.mVecP.reset( coefficients.newTargetVector() );
+    runtime.mVecPOld.reset( coefficients.newTargetVector() );
+    runtime.mVecPNew.reset( coefficients.newTargetVector() );
+    runtime.mEps = common::TypeTraits<ValueType>::eps1() * 3;
 }
 
-void MINRES::solveInit( Vector& solution, const Vector& rhs )
+template<typename ValueType>
+void MINRES<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     MINRESRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -111,73 +145,85 @@ void MINRES::solveInit( Vector& solution, const Vector& rhs )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
     // Initialize
     this->getResidual();
+
     *runtime.mVecVNew = *runtime.mResidual;
-    *runtime.mVecV *= Scalar( 0 );
-    *runtime.mVecP *= Scalar( 0 );
-    *runtime.mVecPNew *= Scalar( 0 );
-    lama::L2Norm norm;
-    runtime.mZeta = norm.apply( *runtime.mResidual );
-    *runtime.mVecVNew /= runtime.mZeta;
+    *runtime.mVecV = 0;
+    *runtime.mVecP = 0;
+    *runtime.mVecPNew = 0;
+
+    runtime.mZeta = runtime.mResidual->l2Norm();
+    *runtime.mVecVNew /= runtime.mZeta;  // *runtime.mVecVNew /= runtime.mZeta
     runtime.mSolveInit = true;
 }
 
-void MINRES::Lanczos()
+template<typename ValueType>
+void MINRES<ValueType>::Lanczos()
 {
     MINRESRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    Vector& vecV = *runtime.mVecV;
-    Vector& vecVOld = *runtime.mVecVOld;
-    Vector& vecVNew = *runtime.mVecVNew;
-    Scalar& alpha = runtime.mAlpha;
-    Scalar& betaNew = runtime.mBetaNew;
-    Scalar& beta = runtime.mBeta;
-    Scalar& eps = runtime.mEps;
-    lama::L2Norm norm;
+
+    const Matrix<ValueType>& A = *runtime.mCoefficients;
+
+    Vector<ValueType>& vecV = *runtime.mVecV;
+    Vector<ValueType>& vecVOld = *runtime.mVecVOld;
+    Vector<ValueType>& vecVNew = *runtime.mVecVNew;
+
+    ValueType& alpha = runtime.mAlpha;
+    RealType<ValueType>& betaNew = runtime.mBetaNew;
+    RealType<ValueType>& beta = runtime.mBeta;
+    RealType<ValueType>& eps = runtime.mEps;
+
     beta = betaNew;
     vecVOld.swap( vecV );
     vecV.swap( vecVNew );
-    vecVNew = A * vecV - beta * vecVOld;
+    vecVNew = A * vecV - ValueType( beta ) * vecVOld;
     alpha = vecV.dotProduct( vecVNew );
     vecVNew = vecVNew - alpha * vecV;
-    betaNew = norm.apply( vecVNew );
+    betaNew = vecVNew.l2Norm();
 
-    if ( abs( betaNew ) < eps || 1.0 / abs( betaNew ) < eps )
+    if ( common::Math::abs( betaNew ) < eps || 1 / common::Math::abs( betaNew ) < eps )
     {
-        vecVNew *= 0;
+        vecVNew = ValueType( 0 );
     }
     else
     {
-        vecVNew = vecVNew / betaNew;
+        vecVNew = vecVNew / ValueType( betaNew );
     }
 }
 
-void MINRES::applyGivensRotation()
+template<typename ValueType>
+void MINRES<ValueType>::applyGivensRotation()
 {
     MINRESRuntime& runtime = getRuntime();
-    Scalar& c = runtime.mC;
-    Scalar& cOld = runtime.mCOld;
-    Scalar& cNew = runtime.mCNew;
-    Scalar& s = runtime.mS;
-    Scalar& sOld = runtime.mSOld;
-    Scalar& sNew = runtime.mSNew;
-    Scalar& alpha = runtime.mAlpha;
-    Scalar& beta = runtime.mBeta;
-    Scalar& betaNew = runtime.mBetaNew;
-    Scalar rho1, rho2, rho3;
-    Scalar& eps = runtime.mEps;
+    ValueType& c = runtime.mC;
+    ValueType& cOld = runtime.mCOld;
+    ValueType& cNew = runtime.mCNew;
+    ValueType& s = runtime.mS;
+    ValueType& sOld = runtime.mSOld;
+    ValueType& sNew = runtime.mSNew;
+    ValueType& alpha = runtime.mAlpha;
+    RealType<ValueType>& beta = runtime.mBeta;
+    RealType<ValueType>& betaNew = runtime.mBetaNew;
+
+    RealType<ValueType>& eps = runtime.mEps;
+
     //Old Givens-rotation
+
     cOld = c;
     c = cNew;
     sOld = s;
     s = sNew;
-    rho1 = sOld * beta;
-    rho2 = c * cOld * beta + s * alpha;
-    rho3 = c * alpha - s * cOld * beta;
-    Scalar tau, nu;
-    //New Givens-rotation
-    tau = abs( rho3 ) + betaNew;
 
-    if ( abs( tau ) < eps || 1.0 / abs( tau ) < eps )
+    ValueType rho1 = sOld * beta;
+    ValueType rho2 = c * cOld * beta + s * alpha;
+    ValueType rho3 = c * alpha - s * cOld * beta;
+
+    //New Givens-rotation
+
+    RealType<ValueType> tau = common::Math::abs( rho3 ) + betaNew;
+
+    ValueType nu;
+
+    if ( common::Math::abs( tau ) < eps || 1.0 / common::Math::abs( tau ) < eps )
     {
         nu = 1.0;
         rho3 = 1.0;
@@ -186,69 +232,84 @@ void MINRES::applyGivensRotation()
     }
     else
     {
-        nu = tau * sqrt( ( rho3 / tau ) * ( rho3 / tau ) + ( betaNew / tau ) * ( betaNew / tau ) );
+        nu = tau * common::Math::sqrt( ( rho3 / tau ) * ( rho3 / tau ) + ( betaNew / tau ) * ( betaNew / tau ) );
         cNew = rho3 / nu;
         sNew = betaNew / nu;
         rho3 = nu;
     }
 
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecPOld = *runtime.mVecPOld;
-    Vector& vecPNew = *runtime.mVecPNew;
-    const Vector& vecV = *runtime.mVecV;
-    //Update P
+    std::swap( runtime.mVecPOld, runtime.mVecP );
+    std::swap( runtime.mVecP, runtime.mVecPNew );
+
+    Vector<ValueType>& vecP    = *runtime.mVecP;
+    Vector<ValueType>& vecPOld = *runtime.mVecPOld;
+    Vector<ValueType>& vecPNew = *runtime.mVecPNew;
+
+    const Vector<ValueType>& vecV = *runtime.mVecV;
+
+    /*
+    // update P(new) -> P -> POld
+
     vecPOld.swap( vecP );
     vecP.swap( vecPNew );
+    */
+
     vecPNew = vecV - rho1 * vecPOld;
     vecPNew = vecPNew - rho2 * vecP;
     vecPNew = vecPNew / rho3;
 }
 
-void MINRES::iterate()
+template<typename ValueType>
+void MINRES<ValueType>::iterate()
 {
     MINRESRuntime& runtime = getRuntime();
-    const Vector& vecPNew = *runtime.mVecPNew;
-    Vector& solution = *runtime.mSolution;
-    Scalar& cNew = runtime.mCNew;
-    Scalar& sNew = runtime.mSNew;
-    Scalar& zeta = runtime.mZeta;
+
     Lanczos();
     applyGivensRotation();
-    //New approximation
+
+    const Vector<ValueType>& vecPNew = *runtime.mVecPNew;
+    Vector<ValueType>& solution = runtime.mSolution.getReference(); // dirty
+
+    ValueType& cNew = runtime.mCNew;
+    ValueType& sNew = runtime.mSNew;
+    ValueType& zeta = runtime.mZeta;
+
+    // New approximation
+
     solution = solution + cNew * zeta * vecPNew;
     zeta = -sNew * zeta;
-    //MINRES Implementation End
 }
 
-SolverPtr MINRES::copy()
+template<typename ValueType>
+MINRES<ValueType>* MINRES<ValueType>::copy()
 {
-    return SolverPtr( new MINRES( *this ) );
+    return new MINRES( *this );
 }
 
-MINRES::MINRESRuntime& MINRES::getRuntime()
-{
-    return mMINRESRuntime;
-}
-
-const MINRES::MINRESRuntime& MINRES::getConstRuntime() const
+template<typename ValueType>
+typename MINRES<ValueType>::MINRESRuntime& MINRES<ValueType>::getRuntime()
 {
     return mMINRESRuntime;
 }
 
-void MINRES::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+const typename MINRES<ValueType>::MINRESRuntime& MINRES<ValueType>::getRuntime() const
 {
-    stream << "MINRES ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    return mMINRESRuntime;
 }
 
-std::string MINRES::createValue()
+template<typename ValueType>
+void MINRES<ValueType>::writeAt( std::ostream& stream ) const
 {
-    return "MINRES";
+    stream << "MINRES<" << common::TypeTraits<ValueType>::id() << "> ( id = " << Solver<ValueType>::getId()
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
 
-Solver* MINRES::create( const std::string name )
-{
-    return new MINRES( name );
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( MINRES, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

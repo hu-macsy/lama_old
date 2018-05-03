@@ -71,8 +71,8 @@ public:
      */
     CommonLogger(
         const std::string& id,
-        LogLevel::LogLevel level,
-        LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+        LogLevel level,
+        LoggerWriteBehaviour writeBehaviour,
         bool ignoreRank = false );
 
     /**
@@ -96,9 +96,9 @@ public:
      */
     CommonLogger(
         const std::string& id,
-        LogLevel::LogLevel level,
-        LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
-        common::shared_ptr<Timer> timer,
+        LogLevel level,
+        LoggerWriteBehaviour writeBehaviour,
+        std::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**
@@ -124,10 +124,10 @@ public:
      */
     CommonLogger(
         const std::string& id,
-        LogLevel::LogLevel level,
-        LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
+        LogLevel level,
+        LoggerWriteBehaviour writeBehaviour,
         const std::string& logFileName,
-        common::shared_ptr<Timer> timer,
+        std::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**

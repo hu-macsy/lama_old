@@ -43,12 +43,12 @@ scai_project(
 
     CUDA_CLASSES  # .cu, .hpp
 
-#       CUDACOOUtils
-#       CUDACSRUtils
-#       CUDADIAUtils
-#       CUDAELLUtils
-#       CUDAJDSUtils
-#       CUDAStencilKernel
+       CUDACOOUtils
+       CUDACSRUtils
+       CUDADIAUtils
+       CUDAELLUtils
+       CUDAJDSUtils
+       CUDAStencilKernel
 
     CUDA_SOURCES   # .cu
 

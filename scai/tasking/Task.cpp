@@ -37,11 +37,11 @@
 
 // internal scai libraries
 #include <scai/common/macros/throw.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/Settings.hpp>
 
 // std
 #include <limits>
+#include <functional>
 
 namespace scai
 {
@@ -51,7 +51,7 @@ namespace tasking
 
 /* ------------------------------------------------------------------------- */
 
-common::shared_ptr<ThreadPool> Task::theThreadPool;
+std::shared_ptr<ThreadPool> Task::theThreadPool;
 
 /* ------------------------------------------------------------------------- */
 
@@ -74,7 +74,7 @@ SCAI_LOG_DEF_LOGGER( Task::logger, "Task" )
 
 /* ------------------------------------------------------------------------- */
 
-Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
+Task::Task( std::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 
 {
     SCAI_LOG_DEBUG( logger, "Creating Task" )

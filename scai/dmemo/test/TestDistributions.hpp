@@ -37,7 +37,6 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/SingleDistribution.hpp>
-#include <scai/utilskernel.hpp>
 
 namespace scai
 {
@@ -96,28 +95,28 @@ public:
 
         // Create a random general distribution, must be same on all processors
 
-        utilskernel::LArray<PartitionId> owners;
+        hmemo::HArray<PartitionId> owners;
 
         {
             PartitionId owner = 315;
-            PartitionId nPartitions = comm->getSize();
+            PartitionId numPartitions = comm->getSize();
 
             hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, globalSize );
 
             for ( IndexType i = 0; i < globalSize; ++i )
             {
                 owner = owner * 119 % 185;
-                wOwners[i] = owner % nPartitions;
+                wOwners[i] = owner % numPartitions;
             }
         }
 
-        push_back( DistributionPtr( new GeneralDistribution( owners, comm ) ) );
+        push_back( std::make_shared<GeneralDistribution>( owners, comm ) );
 
         // Create a general block distribution with different weights on each processor
 
         float weight = static_cast<float>( comm->getRank() + 1 );
 
-        push_back( DistributionPtr( new GenBlockDistribution( globalSize, weight, comm ) ) );
+        push_back( std::make_shared<GenBlockDistribution>( globalSize, weight, comm ) );
 
         // Create a single distributon, not on first processor
         //  1 -> 0, 2 ->1, 3 -> 1, 4 -> 2

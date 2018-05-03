@@ -41,9 +41,10 @@
 #include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include "utility.hpp"
+
+#include <memory>
 
 using namespace std;
 
@@ -64,7 +65,7 @@ int main( int argc, const char* argv[] )
         cout << "   --SCAI_IO_TYPE_DATA=<data_type> is data type used for file output" << endl;
         cout << "   " << endl;
         cout << "   Supported types: ";
-        vector<common::scalar::ScalarType> dataTypes;
+        vector<common::ScalarType> dataTypes;
         hmemo::_HArray::getCreateValues( dataTypes );
 
         for ( size_t i = 0; i < dataTypes.size(); ++i )
@@ -78,13 +79,13 @@ int main( int argc, const char* argv[] )
 
     // take double as default
 
-    common::scalar::ScalarType type = getType();
+    common::ScalarType type = getType();
 
     // oops, no factory for storage, only for matrix
 
-    common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
+    _MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, type ) );
 
-    Matrix& matrix = *matrixPtr;
+    _Matrix& matrix = *matrixPtr;
 
     std::string inFileName = argv[1];
 

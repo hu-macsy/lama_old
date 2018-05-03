@@ -172,18 +172,17 @@ bool Grid::operator==( const Grid& other ) const
     return true;
 }
 
-static inline char codeBorder( Grid::BorderType border )
+static inline const char* codeBorder( Grid::BorderType border, bool leftFlag )
 {
     switch ( border )
     {
-        case Grid::BORDER_ABSORBING:
-            return 'A';
         case Grid::BORDER_PERIODIC:
-            return 'P';
-        case Grid::BORDER_REFLECTING:
-            return 'R';
+            if ( leftFlag ) 
+                return "P ";
+            else
+                return " P";
         default:
-            return 'U';
+            return "";
     }
 }
 
@@ -192,16 +191,16 @@ std::ostream& operator<<( std::ostream& stream, const Grid& grid )
     const Grid::BorderType* borders = grid.borders();
 
     stream << "Grid" << grid.nDims() << "D( "
-           << codeBorder( borders[0] ) 
-           << " " << grid.size( 0 ) << " " 
-           << codeBorder( borders[1] );
+           << codeBorder( borders[0], true ) 
+           << grid.size( 0 ) 
+           << codeBorder( borders[1], false );
 
     for ( IndexType i = 1; i < grid.nDims(); ++i )
     {
         stream << " x "
-               << codeBorder( borders[ 2 * i ] ) 
-               << " " << grid.size(i) << " " 
-               << codeBorder( borders[ 2 * i + 1 ] );
+               << codeBorder( borders[ 2 * i ], true ) 
+               << grid.size(i) 
+               << codeBorder( borders[ 2 * i + 1 ], false );
     }
 
     // print size values not equal 1, might be helpful for debugging
@@ -235,10 +234,6 @@ static bool inline getBorderPosL( IndexType& pos, const IndexType offset, const 
     {
         pos = ( pos + size ) - offset;
     }
-    else if ( border == Grid::BORDER_REFLECTING )
-    {
-        pos = offset - ( pos + 1 ); 
-    }
 
     return valid;
 }
@@ -266,10 +261,6 @@ static bool inline getBorderPosR( IndexType& pos, const IndexType offset, const 
     else if ( border == Grid::BORDER_PERIODIC )
     {
         pos = ( pos + offset ) - size;
-    }
-    else if ( border == Grid::BORDER_REFLECTING )
-    {
-        pos = 2 * size - ( pos + 1 + offset ); 
     }
     return valid;
 }

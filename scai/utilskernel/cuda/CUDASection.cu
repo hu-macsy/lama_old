@@ -52,8 +52,8 @@
 namespace scai
 {
 
-using common::binary;
-using common::unary;
+using common::BinaryOp;
+using common::UnaryOp;
 using common::TypeTraits;
 
 namespace utilskernel
@@ -74,7 +74,7 @@ __global__
 void assign0Kernel( 
     ValueType target[],
     const ValueType source[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -98,7 +98,7 @@ template<typename ValueType>
 void CUDASection::assign0(
     ValueType targetSection[],
     const ValueType sourceSection[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assign0" )
@@ -118,7 +118,7 @@ __global__
 void assign1Kernel( 
     ValueType targetSection[],
     const ValueType sourceSection[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -146,7 +146,7 @@ void CUDASection::assign1(
     ValueType targetSection[],
     const ValueType sourceSection[],
     const IndexType sizes[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assign1" )
@@ -170,7 +170,7 @@ __global__
 void assign2Kernel( 
     ValueType targetSection[],
     const ValueType sourceSection[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i1 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -199,7 +199,7 @@ void CUDASection::assign2(
     ValueType targetSection[],
     const ValueType sourceSection[],
     const IndexType sizes[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assign2" )
@@ -226,7 +226,7 @@ __global__
 void assign3Kernel( 
     ValueType targetSection[],
     const ValueType sourceSection[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i2 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -256,7 +256,7 @@ void CUDASection::assign3(
     ValueType targetSection[],
     const ValueType sourceSection[],
     const IndexType sizes[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assign3" )
@@ -285,7 +285,7 @@ __global__
 void assign4Kernel( 
     ValueType targetSection[],
     const ValueType sourceSection[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i3 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -322,7 +322,7 @@ void CUDASection::assign4(
     ValueType targetSection[],
     const ValueType sourceSection[],
     const IndexType sizes[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assign3" )
@@ -355,7 +355,7 @@ void CUDASection::assign(
     const IndexType targetDistances[],
     const ValueType sourceSection[],
     const IndexType sourceDistances[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_CHECK_CUDA_ACCESS
@@ -400,7 +400,7 @@ __global__
 void unaryOp1Kernel( 
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -420,7 +420,7 @@ void CUDASection::unaryOp1(
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const IndexType sizes[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     SCAI_REGION( "CUDA.Section.unaryOp1" )
 
@@ -444,7 +444,7 @@ __global__
 void unaryOp2Kernel( 
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     const IndexType i1 = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType i0 = blockIdx.y * blockDim.y + threadIdx.y;
@@ -465,7 +465,7 @@ void CUDASection::unaryOp2(
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const IndexType sizes[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     SCAI_REGION( "CUDA.Section.unaryOp2" )
 
@@ -493,7 +493,7 @@ __global__
 void unaryOp3Kernel( 
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     const IndexType i2 = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType i1 = blockIdx.y * blockDim.y + threadIdx.y;
@@ -515,7 +515,7 @@ void CUDASection::unaryOp3(
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const IndexType sizes[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     SCAI_REGION( "CUDA.Section.unaryOp3" )
 
@@ -545,7 +545,7 @@ __global__
 void unaryOp4Kernel( 
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     const IndexType i3  = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType i2  = blockIdx.y * blockDim.y + threadIdx.y;
@@ -572,7 +572,7 @@ void CUDASection::unaryOp4(
     TargetValueType targetSection[],
     const SourceValueType sourceSection[],
     const IndexType sizes[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     SCAI_REGION( "CUDA.Section.unaryOp3" )
 
@@ -606,7 +606,7 @@ void CUDASection::unaryOp(
     const IndexType targetDistances[],
     const SourceValueType sourceSection[],
     const IndexType sourceDistances[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     SCAI_CHECK_CUDA_ACCESS
 
@@ -644,7 +644,7 @@ __global__
 void assignScalar0Kernel( 
     ValueType target[],
     const ValueType source,
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -668,7 +668,7 @@ template<typename ValueType>
 void CUDASection::assignScalar0(
     ValueType targetSection[],
     const ValueType source,
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assignScalar0" )
@@ -699,7 +699,7 @@ __global__
 void assignScalar1Kernel(
     ValueType targetSection[],
     const ValueType val,
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -726,7 +726,7 @@ void CUDASection::assignScalar1(
     ValueType targetSection[],
     const ValueType val,
     const IndexType sizes[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assignScalar1" )
@@ -752,7 +752,7 @@ __global__
 void assignScalar2Kernel( 
     ValueType targetSection[],
     const ValueType val,
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i1 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -780,7 +780,7 @@ void CUDASection::assignScalar2(
     ValueType targetSection[],
     const ValueType val,
     const IndexType sizes[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assignScalar2" )
@@ -810,7 +810,7 @@ __global__
 void assignScalar3Kernel( 
     ValueType targetSection[],
     const ValueType val,
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i2 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -839,7 +839,7 @@ void CUDASection::assignScalar3(
     ValueType targetSection[],
     const ValueType val,
     const IndexType sizes[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assignScalar3" )
@@ -871,7 +871,7 @@ __global__
 void assignScalar4Kernel( 
     ValueType targetSection[],
     const ValueType val,
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     const IndexType i3 = blockIdx.x * blockDim.x + threadIdx.x;
@@ -903,7 +903,7 @@ void CUDASection::assignScalar4(
     ValueType targetSection[],
     const ValueType val,
     const IndexType sizes[],
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_REGION( "CUDA.Section.assignScalar4" )
@@ -936,7 +936,7 @@ void CUDASection::assignScalar(
     const IndexType sizes[],
     const IndexType distances[],
     ValueType val,
-    const common::binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapOperands )
 {
     SCAI_CHECK_CUDA_ACCESS
@@ -976,9 +976,9 @@ void CUDASection::assignScalar(
 
 template<typename ValueType>
 __global__
-void unary1Kernel( 
+void UnaryOp1Kernel( 
     ValueType section[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -992,32 +992,32 @@ void unary1Kernel(
 }
 
 template<typename ValueType>
-void CUDASection::unary1(
+void CUDASection::UnaryOp1(
     ValueType section[],
     const IndexType sizes[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Section.unary1" )
+    SCAI_REGION( "CUDA.Section.UnaryOp1" )
 
     IndexType n0 = sizes[0];
 
-    SCAI_LOG_INFO( logger,  "unary1<" << common::TypeTraits<ValueType>::id() << "> on " << n0 << " grid" )
+    SCAI_LOG_INFO( logger,  "UnaryOp1<" << common::TypeTraits<ValueType>::id() << "> on " << n0 << " grid" )
 
     dim3 threadsPerBlock( 256 );
     dim3 numBlocks( ( n0 + threadsPerBlock.x - 1 ) / threadsPerBlock.x );
 
-    unary1Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
+    UnaryOp1Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unary1Kernel failed" ) ;
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "UnaryOp1Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 __global__
-void unary2Kernel( 
+void UnaryOp2Kernel( 
     ValueType section[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     const IndexType i1 = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType i0 = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1032,35 +1032,35 @@ void unary2Kernel(
 }
 
 template<typename ValueType>
-void CUDASection::unary2(
+void CUDASection::UnaryOp2(
     ValueType section[],
     const IndexType sizes[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Section.unary2" )
+    SCAI_REGION( "CUDA.Section.UnaryOp2" )
 
     IndexType n0 = sizes[0];
     IndexType n1 = sizes[1];
 
-    SCAI_LOG_INFO( logger,  "unary2<" << common::TypeTraits<ValueType>::id() << "> on " << n0 << " x " << n1 << " grid" )
+    SCAI_LOG_INFO( logger,  "UnaryOp2<" << common::TypeTraits<ValueType>::id() << "> on " << n0 << " x " << n1 << " grid" )
 
     dim3 threadsPerBlock( 16, 16 );
 
     dim3 numBlocks( ( n1 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
                     ( n0 + threadsPerBlock.y - 1 ) / threadsPerBlock.y );
 
-    unary2Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
+    UnaryOp2Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unary2Kernel failed" ) ;
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "UnaryOp2Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 __global__
-void unary3Kernel( 
+void UnaryOp3Kernel( 
     ValueType section[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     const IndexType i2 = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType i1 = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1076,18 +1076,18 @@ void unary3Kernel(
 }
 
 template<typename ValueType>
-void CUDASection::unary3(
+void CUDASection::UnaryOp3(
     ValueType section[],
     const IndexType sizes[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Section.unary3" )
+    SCAI_REGION( "CUDA.Section.UnaryOp3" )
 
     IndexType n0 = sizes[0];
     IndexType n1 = sizes[1];
     IndexType n2 = sizes[2];
 
-    SCAI_LOG_INFO( logger,  "unary3<" << common::TypeTraits<ValueType>::id() << "> on " 
+    SCAI_LOG_INFO( logger,  "UnaryOp3<" << common::TypeTraits<ValueType>::id() << "> on " 
                                       << n0 << " x " << n1 << " x " << n2 << " grid" )
 
     dim3 threadsPerBlock( 16, 4, 4 );
@@ -1096,18 +1096,18 @@ void CUDASection::unary3(
                     ( n1 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
                     ( n0 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
 
-    unary3Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
+    UnaryOp3Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unary3Kernel failed" ) ;
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "UnaryOp3Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 __global__
-void unary4Kernel( 
+void UnaryOp4Kernel( 
     ValueType section[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     const IndexType i3 = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType i2 = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1127,19 +1127,19 @@ void unary4Kernel(
 }
 
 template<typename ValueType>
-void CUDASection::unary4(
+void CUDASection::UnaryOp4(
     ValueType section[],
     const IndexType sizes[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Section.unary4" )
+    SCAI_REGION( "CUDA.Section.UnaryOp4" )
 
     IndexType n0 = sizes[0];
     IndexType n1 = sizes[1];
     IndexType n2 = sizes[2];
     IndexType n3 = sizes[3];
 
-    SCAI_LOG_INFO( logger,  "unary4<" << common::TypeTraits<ValueType>::id() << "> on " 
+    SCAI_LOG_INFO( logger,  "UnaryOp4<" << common::TypeTraits<ValueType>::id() << "> on " 
                                       << n0 << " x " << n1 << " x " << n2 << " x " << n3 << " grid" )
 
     dim3 threadsPerBlock( 16, 4, 4 );
@@ -1148,20 +1148,20 @@ void CUDASection::unary4(
                     ( n2 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
                     ( n1 * n0 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
 
-    unary4Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
+    UnaryOp4Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unary4Kernel failed" ) ;
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "UnaryOp4Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDASection::unary( 
+void CUDASection::UnaryOp( 
     ValueType section[],
     const IndexType nDims,
     const IndexType sizes[],
     const IndexType distances[],
-    const common::unary::UnaryOp op )
+    const common::UnaryOp op )
 {
     SCAI_CHECK_CUDA_ACCESS
 
@@ -1171,19 +1171,19 @@ void CUDASection::unary(
                        "copy2Device failed" );
     switch ( nDims )
     {
-        case 1 : unary1( section, sizes, op );
+        case 1 : UnaryOp1( section, sizes, op );
                  break;
 
-        case 2 : unary2( section, sizes, op );
+        case 2 : UnaryOp2( section, sizes, op );
                  break;
 
-        case 3 : unary3( section, sizes, op );
+        case 3 : UnaryOp3( section, sizes, op );
                  break;
 
-        case 4 : unary4( section, sizes, op );
+        case 4 : UnaryOp4( section, sizes, op );
                  break;
 
-        default: COMMON_THROWEXCEPTION( "unary for nDims = " << nDims << " not supported yet" )
+        default: COMMON_THROWEXCEPTION( "UnaryOp for nDims = " << nDims << " not supported yet" )
     }
 }
 
@@ -1195,20 +1195,20 @@ template<typename ValueType>
 void CUDASection::ArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_DEBUG( logger, "register SectionKernel CUDA routines for GPU at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<SectionKernelTrait::assign<ValueType> >( assign, ctx, flag );
     KernelRegistry::set<SectionKernelTrait::assignScalar<ValueType> >( assignScalar, ctx, flag );
-    KernelRegistry::set<SectionKernelTrait::unary<ValueType> >( unary, ctx, flag );
+    KernelRegistry::set<SectionKernelTrait::UnaryOp<ValueType> >( UnaryOp, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
 void CUDASection::BinOpKernels<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
+    const common::ContextType ctx = common::ContextType::CUDA;
 
     SCAI_LOG_DEBUG( logger, "register SectionKernel CUDA-routines for GPUs at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )

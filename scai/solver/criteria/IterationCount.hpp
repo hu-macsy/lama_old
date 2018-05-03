@@ -46,7 +46,7 @@ namespace scai
 namespace solver
 {
 
-class IterativeSolver;
+template<typename ValueType> class IterativeSolver;
 
 /**
  * @brief IterationCount is a stopping criterion of a solver which checks the
@@ -57,7 +57,8 @@ class IterativeSolver;
  * of iterations is larger or smaller than a configured number of iterations.
  * Depending on the configured IterationCheckMode.
  */
-class COMMON_DLL_IMPORTEXPORT IterationCount: public Criterion
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT IterationCount: public Criterion<ValueType>
 {
 public:
     /**
@@ -84,12 +85,9 @@ public:
     virtual ~IterationCount();
 
     /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[in] solver   TODO[doxy] Complete Description.
-     * @return             TODO[doxy] Complete Description.
+     * @brief Apply this citerion for a given solver
      */
-    virtual bool isSatisfied( const IterativeSolver& solver );
+    virtual bool isSatisfied( const IterativeSolver<ValueType>& solver );
 
     /**
      * @brief Getter of the iteration extrema.

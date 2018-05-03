@@ -46,6 +46,8 @@
 using namespace scai;
 using namespace lama;
 
+typedef DefaultReal ValueType;
+
 int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
@@ -82,7 +84,7 @@ int main( int argc, const char* argv[] )
     //  ATTENTION:   specify height x width  ( conform with nrows x ncols )
     //
 
-    GridVector<float> image( common::Grid3D( height, width, 3 ) );
+    GridVector<ValueType> image( common::Grid3D( height, width, 3 ) );
 
     // Indexing of image is like indexing a matrix + entry for color
     //

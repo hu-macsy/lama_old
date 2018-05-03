@@ -34,7 +34,7 @@
 #include <scai/lama.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/expression/all.hpp>
+#include <scai/lama/storage/DIAStorage.hpp>
 #include <scai/lama/matrix/all.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
@@ -48,9 +48,9 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Walltime.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <iostream>
+#include <memory>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -87,12 +87,12 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
 {
     SCAI_REGION( "derivatives" )
 
-    // Matrix A,B are created in 2 steps:
+    // _Matrix A,B are created in 2 steps:
     //   1: create MatrixStorage in CSR format
-    //   2: duplicate MatrixStorage along Diagonal till full Matrix size is reached
+    //   2: duplicate MatrixStorage along Diagonal till full _Matrix size is reached
 
     // for creating CSR MatrixStorage
-    common::unique_ptr<lama::MatrixStorage<ValueType> > storageHelp( new lama::CSRStorage<ValueType>() );
+    std::unique_ptr<lama::MatrixStorage<ValueType> > storageHelp( new lama::CSRStorage<ValueType>() );
     IndexType numValues;
     std::vector<IndexType> csrIA;
     std::vector<IndexType> csrJA;
@@ -216,8 +216,17 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     diagonals.insert( diagonals.begin(), mySize,      1.0 ); // add secondary diagonal
     diagonals.insert( diagonals.begin(), size,       -1.0 ); // insert main diagonal before secondary diagonal
 
-    C.setRawDIAData( dist, dist, numDiagonals, &offsets[0], &diagonals[0] );
+    // Define a 'global' DIAStorage, does not copy the values 
+
+    lama::DIAStorage<ValueType> diaStorage( size, globalSize,
+                                            hmemo::HArrayRef<IndexType>( offsets ), 
+                                            hmemo::HArrayRef<ValueType>( diagonals ) );
+
+    C.assignLocal( diaStorage, dist );
+    C.redistribute( dist, dist );      // compute halos
+
     C.setContextPtr( ctx );
+
     HOST_PRINT( comm, "Matrix C finished\n" );
 }
 
@@ -227,7 +236,8 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
  */
 template<typename ValueType>
 void initializeMatrices( lama::SparseMatrix<ValueType>& A, lama::SparseMatrix<ValueType>& B, lama::SparseMatrix<ValueType>& C,
-                         lama::Matrix& D, lama::Matrix& E, lama::Matrix& F, dmemo::DistributionPtr dist, hmemo::ContextPtr ctx,
+                         lama::Matrix<ValueType>& D, lama::Matrix<ValueType>& E, lama::Matrix<ValueType>& F, 
+                         dmemo::DistributionPtr dist, hmemo::ContextPtr ctx,
                          IndexType NX, IndexType NY, IndexType NZ, dmemo::CommunicatorPtr comm )
 {
     SCAI_REGION( "initializeMatrices" )
@@ -241,15 +251,15 @@ void initializeMatrices( lama::SparseMatrix<ValueType>& A, lama::SparseMatrix<Va
     F.setContextPtr( ctx );
 
     D.assignTranspose( A );
-    D.scale( -1.0 );
+    D.scale( -1 );
     HOST_PRINT( comm, "Matrix D finished\n" );
 
     E.assignTranspose( B );
-    E.scale( -1.0 );
+    E *= -1;
     HOST_PRINT( comm, "Matrix E finished\n" );
 
     F.assignTranspose( C );
-    F.scale( -1.0 );
+    F *= -1;
     HOST_PRINT( comm, "Matrix F finished\n" );
 
     HOST_PRINT( comm, "Finished with initialization of the matrices!\n" );
@@ -272,17 +282,19 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
 
     // this is for tau[i] = pi * FC * ( source[i] - 1.5/FC );
 
-    lama::DenseVector<ValueType> help( source.size(), 1.5 / FC );
-    lama::DenseVector<ValueType> tau( source - help );
+    auto help = lama::fill<lama::DenseVector<ValueType>>( source.size(), 1.5 / FC );
+    auto tau  = lama::eval<lama::DenseVector<ValueType>>( source - help );
+
     tau *= M_PI * FC;
 
     // this is for source[i] = AMP * ( 1.0 - 2.0 * tau[i] * tau[i] * exp( -tau[i] * tau[i] ) );
-    lama::DenseVector<ValueType> one( source.size(), 1.0 );
+
+    auto one = lama::fill<lama::DenseVector<ValueType>>( source.size(), 1 );
     help = tau * tau;
-    tau = -1.0 * help;
-    tau.exp();
+    tau = -help;
+    tau = exp( tau );
     help = one - 2.0 * help;
-    source = lama::Scalar( AMP ) * help * tau;
+    source = ValueType( AMP ) * help * tau;
 }
 
 /*
@@ -292,10 +304,11 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
  */
 template <typename ValueType>
 void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<ValueType>& source, lama::DenseVector<ValueType>& p,
-                lama::Vector& vX, lama::Vector& vY, lama::Vector& vZ,
-                lama::Matrix& A, lama::Matrix& B, lama::Matrix& C, lama::Matrix& D, lama::Matrix& E, lama::Matrix& F,
-                lama::Scalar v_factor, lama::Scalar p_factor,
-                IndexType NT, lama::Scalar DH_INV, IndexType source_index, IndexType seismogram_index,
+                lama::Vector<ValueType>& vX, lama::Vector<ValueType>& vY, lama::Vector<ValueType>& vZ,
+                lama::Matrix<ValueType>& A, lama::Matrix<ValueType>& B, lama::Matrix<ValueType>& C, 
+                lama::Matrix<ValueType>& D, lama::Matrix<ValueType>& E, lama::Matrix<ValueType>& F,
+                ValueType v_factor, ValueType p_factor,
+                IndexType NT, ValueType DH_INV, IndexType source_index, IndexType seismogram_index,
                 dmemo::CommunicatorPtr comm, dmemo::DistributionPtr /*dist*/ )
 {
     SCAI_REGION( "timestep" )
@@ -315,23 +328,16 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         // velocity y: vY = vY + DT / ( DH * rho ) * C * p;
         vY += v_factor * C * p;
 
-        lama::Scalar znorm = vZ.l2Norm();
-        lama::Scalar xnorm = vX.l2Norm();
-        lama::Scalar ynorm = vY.l2Norm();
-
         // create new Vector(Pointer) with same configuration as vZ
-        common::unique_ptr<lama::Vector> helpPtr( vZ.newVector() );
+        std::unique_ptr<lama::Vector<ValueType> > helpPtr( vZ.newVector() );
         // get Reference of VectorPointer
-        lama::Vector& help = *helpPtr;
+        lama::Vector<ValueType>& help = *helpPtr;
 
         // pressure update
         help =  DH_INV * D * vZ;
         help += DH_INV * E * vX;
         help += DH_INV * F * vY;
         p += p_factor * help; // p_factor is 'DT * M'
-
-        lama::Scalar hnorm = help.l2Norm();
-        lama::Scalar pnorm = p.l2Norm();
 
         // update seismogram and pressure with source terms
         // CAUTION: elementwise access by setVal and getVal cause performace issues executed on CUDA
@@ -357,7 +363,7 @@ int main( int /*argc*/, char** /*argv[]*/ )
 {
     // we do all calculation in double precision
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     // read configuration parameter from file
     Configuration<ValueType> config( "Configuration.txt" );
@@ -366,6 +372,8 @@ int main( int /*argc*/, char** /*argv[]*/ )
 
     // execution context
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr(); // default context, set by environment variable SCAI_CONTEXT
+    hmemo::ContextPtr host = hmemo::Context::getHostPtr();   // explicit host context
+
     // inter node communicator
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr(); // default communicator, set by environment variable SCAI_COMMUNICATOR
     // inter node distribution
@@ -385,8 +393,8 @@ int main( int /*argc*/, char** /*argv[]*/ )
     start_t = common::Walltime::get();
     // get source signal
     // init vector with a sequence of values (MATLAB t=0:DT:(NT*DT-DT);)
-    lama::DenseVector<ValueType> source( ctx );
-    source.setRange( config.getNT(), ValueType( 0 ), config.getDT() );
+    lama::DenseVector<ValueType> source = lama::linearDenseVector<ValueType>( config.getNT(), 0, config.getDT() );
+    source.setContextPtr( ctx );
     sourceFunction( source, config.getFC(), config.getAMP(), comm );
     end_t = common::Walltime::get();
     HOST_PRINT( comm, "Finished calculating source in " << end_t - start_t << " sec.\n\n" );
@@ -404,13 +412,18 @@ int main( int /*argc*/, char** /*argv[]*/ )
     // initialize all needed vectors with zero
 
     // components of particle velocity
-    lama::DenseVector<ValueType> vX( dist, 0.0, ctx );
-    lama::DenseVector<ValueType> vY( dist, 0.0, ctx );
-    lama::DenseVector<ValueType> vZ( dist, 0.0, ctx );
+
+    auto vX = lama::fill<lama::DenseVector<ValueType>>( dist, 0.0, ctx );
+    auto vY = lama::fill<lama::DenseVector<ValueType>>( dist, 0.0, ctx );
+    auto vZ = lama::fill<lama::DenseVector<ValueType>>( dist, 0.0, ctx );
+
     // pressure
-    lama::DenseVector<ValueType> p ( dist, 0.0, ctx );
+
+    auto p = lama::fill<lama::DenseVector<ValueType>>( dist, 0.0, ctx );
+
     // seismogram data: to store at each time step
-    lama::DenseVector<ValueType> seismogram( config.getNT(), 0.0 ); // no ctx, use default: Host
+
+    auto seismogram = lama::fill<lama::DenseVector<ValueType>>( config.getNT(), 0.0, host );
 
     // TODO: load colormap for snapshots ???
 
@@ -418,7 +431,7 @@ int main( int /*argc*/, char** /*argv[]*/ )
 
     start_t = common::Walltime::get();
     timesteps( seismogram, source, p, vX, vY, vZ, A, B, C, D, E, F,
-               config.getVfactor(), config.getPfactor(), config.getNT(), lama::Scalar( 1.0 / config.getDH() ),
+               config.getVfactor(), config.getPfactor(), config.getNT(), ValueType( 1 ) / config.getDH(),
                config.getSourceIndex(), config.getSeismogramIndex(), comm, dist );
     end_t = common::Walltime::get();
     HOST_PRINT( comm, "Finished time stepping in " << end_t - start_t << " sec.\n\n" );

@@ -40,9 +40,8 @@
 #include <scai/lama/expression/MatrixExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
-#include <scai/lama/DenseVector.hpp>
-
-#include <scai/common/unique_ptr.hpp>
+#include <scai/lama/Vector.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -50,135 +49,173 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( Richardson::logger, "Solver.Richardson" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, Richardson<ValueType>::logger, "Solver.Richardson" )
 
-Richardson::Richardson( const std::string& id )
-    : OmegaSolver( id, ( lama::Scalar ) - 1.0 ) {}
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
 
-Richardson::Richardson( const std::string& id, const lama::Scalar omega )
-    : OmegaSolver( id, omega ) {}
+template<typename ValueType>
+_Solver* Richardson<ValueType>::create()
+{
+    return new Richardson<ValueType>( "_genByFactory" );
+}
 
-Richardson::Richardson( const std::string& id, LoggerPtr logger )
-    : OmegaSolver( id , ( lama::Scalar ) - 1.0, logger ) {}
+template<typename ValueType>
+SolverCreateKeyType Richardson<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "Richardson" );
+}
 
-Richardson::Richardson( const std::string& id, const lama::Scalar omega, LoggerPtr logger )
-    : OmegaSolver( id, omega, logger ) {}
+/* ========================================================================= */
+/*    Constructors / Destructors                                             */
+/* ========================================================================= */
 
-Richardson::Richardson( const Richardson& other )
-    : OmegaSolver( other ) {}
+template<typename ValueType>
+Richardson<ValueType>::Richardson( const std::string& id ) : 
 
+    OmegaSolver<ValueType>( id, ValueType( -1 ) ) 
+{
+}
 
+template<typename ValueType>
+Richardson<ValueType>::Richardson( const std::string& id, const ValueType omega ) : 
 
-Richardson::RichardsonRuntime::RichardsonRuntime()
-    : OmegaSolverRuntime() {}
+    OmegaSolver<ValueType>( id, omega )
+{
+}
 
-Richardson::~Richardson() {}
+template<typename ValueType>
+Richardson<ValueType>::Richardson( const std::string& id, LoggerPtr logger ) : 
 
-Richardson::RichardsonRuntime::~RichardsonRuntime() {}
+    OmegaSolver<ValueType>( id , ValueType( -1 ), logger )
+{
+}
 
+template<typename ValueType>
+Richardson<ValueType>::Richardson( const std::string& id, ValueType( omega ), LoggerPtr logger ) : 
 
+    OmegaSolver<ValueType>( id, omega, logger )
+{
+}
 
-void Richardson::initialize( const lama::Matrix& coefficients )
+template<typename ValueType>
+Richardson<ValueType>::Richardson( const Richardson& other ) : 
+
+    OmegaSolver<ValueType>( other )
+{
+}
+
+template<typename ValueType>
+Richardson<ValueType>::~Richardson()
+{
+}
+
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
+
+template<typename ValueType>
+void Richardson<ValueType>::initialize( const lama::Matrix<ValueType>& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-    IterativeSolver::initialize( coefficients );
 
-    if ( mOmega == -1.0 )
+    IterativeSolver<ValueType>::initialize( coefficients );
+
+    if ( OmegaSolver<ValueType>::getOmega() == ValueType( -1 )  )
     {
-        lama::L2Norm n;
-        lama::Scalar bound = 2.0 / n.apply( coefficients );
-        mOmega = ( 2.0 / 3.0 * bound );
+        ValueType bound = 2 / coefficients.l2Norm();
+        bound *= ValueType( 2 ) / ValueType( 3 );
+        OmegaSolver<ValueType>::setOmega( bound );
     }
+
+    hmemo::ContextPtr ctx = coefficients.getContextPtr();
+
+    RichardsonRuntime& runtime = getRuntime();
+
+    runtime.mOldSolution.reset( coefficients.newTargetVector() );
+    runtime.mX.reset( coefficients.newTargetVector() );
 }
 
-void Richardson::solveInit( lama::Vector& solution, const lama::Vector& rhs )
+/* ========================================================================= */
+/*    solve::init( solution, rhs )                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+void Richardson<ValueType>::solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs )
+{
+    if ( solution.getVectorKind() != lama::VectorKind::DENSE )
+    {
+        COMMON_THROWEXCEPTION( "Richardson solver, solution vector must be dense, but is : " << solution )
+    }
+
+    IterativeSolver<ValueType>::solveInit( solution, rhs );
+}
+
+/* ========================================================================= */
+/*    Solver Iteration                                                       */
+/* ========================================================================= */
+
+template<typename ValueType>
+void Richardson<ValueType>::iterate()
 {
     RichardsonRuntime& runtime = getRuntime();
 
-    //Check if oldSolution already exists, if not create copy of solution
-    if ( !runtime.mOldSolution.get() )
-    {
-        // Important: method newVector creates vector with same context as solution
+    const lama::Vector<ValueType>& rhs = *runtime.mRhs;
+    const lama::Matrix<ValueType>& A   = *runtime.mCoefficients;
 
-        runtime.mOldSolution.reset( solution.newVector() );
+    lama::Vector<ValueType>& oldSolution = *runtime.mOldSolution;
+    lama::Vector<ValueType>& solution    = runtime.mSolution.getReference(); // dirty
+
+    // swap old solution and solution, so solution is save for update
+
+    solution.swap( oldSolution );
+
+    lama::Vector<ValueType>& x = *runtime.mX;
+
+    x = A * oldSolution;
+    solution = rhs - x;
+
+    ValueType omega = OmegaSolver<ValueType>::getOmega();
+
+    if ( omega != ValueType( 1 ) )
+    {
+        solution *= omega;
     }
 
-    if ( !runtime.mX.get() )
-    {
-        // Important: method newVector creates vector with same context as solution
-
-        runtime.mX.reset( solution.newVector() );
-    }
-
-    runtime.mProxyOldSolution = runtime.mOldSolution.get();
-    IterativeSolver::solveInit( solution, rhs );
+    solution += oldSolution;
 }
 
-void Richardson::solveFinalize()
-{
-    RichardsonRuntime& runtime = getRuntime();
-
-    if ( runtime.mIterations % 2 )
-    {
-        SCAI_LOG_DEBUG( logger, "mProxyOldSolution = *mSolution" )
-        *runtime.mProxyOldSolution = *runtime.mSolution;
-    }
-
-    SCAI_LOG_DEBUG( logger, " end solve " )
-}
-
-void Richardson::iterate()
-{
-    RichardsonRuntime& runtime = getRuntime();
-    const lama::Vector& rhs = *runtime.mRhs;
-    const lama::Matrix& A = *runtime.mCoefficients;
-    //swap old solution and solution pointer begin
-    lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
-    lama::Vector* ptr_solution = &( *runtime.mSolution );
-    runtime.mProxyOldSolution = ptr_solution;
-    runtime.mSolution = ptr_OldSolution;
-    const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
-    lama::Vector& xRef = *runtime.mX;
-    xRef = A * oldSolution;
-    *runtime.mSolution = rhs - xRef;
-
-    if ( mOmega != 1.0 )
-    {
-        *runtime.mSolution = mOmega * ( *runtime.mSolution );
-    }
-
-    *runtime.mSolution = oldSolution + ( *runtime.mSolution );
-}
-
-Richardson::RichardsonRuntime& Richardson::getRuntime()
+template<typename ValueType>
+typename Richardson<ValueType>::RichardsonRuntime& Richardson<ValueType>::getRuntime()
 {
     return mRichardsonRuntime;
 }
 
-const Richardson::RichardsonRuntime& Richardson::getConstRuntime() const
+template<typename ValueType>
+const typename Richardson<ValueType>::RichardsonRuntime& Richardson<ValueType>::getRuntime() const
 {
     return mRichardsonRuntime;
 }
 
-SolverPtr Richardson::copy()
+template<typename ValueType>
+Richardson<ValueType>* Richardson<ValueType>::copy()
 {
-    return SolverPtr( new Richardson( *this ) );
+    return new Richardson<ValueType>( *this );
 }
 
-void Richardson::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void Richardson<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "Richardson ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    stream << "RichardSon<" << common::TypeTraits<ValueType>::id() << "> ( id = " << Solver<ValueType>::getId()
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
 
-std::string Richardson::createValue()
-{
-    return "Richardson";
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-Solver* Richardson::create( const std::string name )
-{
-    return new Richardson( name );
-}
+SCAI_COMMON_INST_CLASS( Richardson, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

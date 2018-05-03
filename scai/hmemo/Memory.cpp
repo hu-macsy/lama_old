@@ -54,7 +54,7 @@ SCAI_LOG_DEF_LOGGER( Memory::logger, "Memory" )
 
 /* ---------------------------------------------------------------------------------*/
 
-Memory::Memory( memtype::MemoryType type ) : mMemoryType( type )
+Memory::Memory( MemoryType type ) : mMemoryType( type )
 {
     SCAI_LOG_DEBUG( logger, "Memory( type = " << mMemoryType << " )" )
 }
@@ -146,30 +146,23 @@ tasking::SyncToken* Memory::memcpyToAsync( const Memory& dstMemory, void* dst, c
 
 /* ---------------------------------------------------------------------------------*/
 
-namespace memtype
-{
-
 std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
 {
     switch ( type )
     {
-        case HostMemory :
+        case MemoryType::HostMemory :
             stream << "HostMemory";
             break;
 
-        case CUDAMemory :
+        case MemoryType::CUDAMemory :
             stream << "CUDAMemory";
             break;
 
-        case CUDAHostMemory :
+        case MemoryType::CUDAHostMemory :
             stream << "CUDAHostMemory";
             break;
 
-        case GPIMemory :
-            stream << "GPIMemory";
-            break;
-
-        case UserMemory :
+        case MemoryType::UserMemory :
             stream << "UserMemory";
             break;
 
@@ -179,8 +172,6 @@ std::ostream& operator<<( std::ostream& stream, const MemoryType& type )
 
     return stream;
 }
-
-} /* end namespace memtype */
 
 /* ---------------------------------------------------------------------------------*/
 

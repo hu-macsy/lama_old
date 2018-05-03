@@ -69,7 +69,7 @@ void GridSection<ValueType>::setDim( IndexType k, const Range& r )
    sec.isLocalized = false;
    sec.isRange     = r.mStride != 0;
 
-   if ( r.mUB == nIndex )
+   if ( r.mUB == invalidIndex )
    {
        sec.globalRange[1] = mGlobalGrid.size( k );
    }
@@ -318,7 +318,7 @@ IndexType GridSection<ValueType>::getDopeVector( IndexType& offset, IndexType si
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void GridSection<ValueType>::binOp ( const GridSection<ValueType>& other, common::binary::BinaryOp op, bool swap )
+void GridSection<ValueType>::binOp ( const GridSection<ValueType>& other, common::BinaryOp op, bool swap )
 {
     IndexType offsetSource = 0;
     IndexType offsetTarget = 0;
@@ -361,7 +361,7 @@ void GridSection<ValueType>::binOp ( const GridSection<ValueType>& other, common
 
 template<typename ValueType>
 template<typename OtherValueType>
-void GridSection<ValueType>::unaryOp( const GridSection<OtherValueType>& other, common::unary::UnaryOp op )
+void GridSection<ValueType>::unaryOp( const GridSection<OtherValueType>& other, common::UnaryOp op )
 {
     IndexType offsetSource = 0;
     IndexType offsetTarget = 0;
@@ -417,7 +417,7 @@ ValueType GridSection<ValueType>::get() const
 
     SCAI_ASSERT_EQ_ERROR( 0, rank, "section must have rank 0 to get the value" )
 
-    const utilskernel::LArray<ValueType>& vals = mGridVector.getLocalValues();
+    const hmemo::HArray<ValueType>& vals = mGridVector.getLocalValues();
 
     return vals[ offset ];
 }
@@ -427,7 +427,7 @@ ValueType GridSection<ValueType>::get() const
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator= ( const GridSection<ValueType>& other )
 {
-    binOp( other, common::binary::COPY, false );
+    binOp( other, common::BinaryOp::COPY, false );
     return *this;
 }
 
@@ -436,7 +436,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator= ( const GridSection<Va
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator+= ( const GridSection<ValueType>& other )
 {
-    binOp( other, common::binary::ADD, false );
+    binOp( other, common::BinaryOp::ADD, false );
     return *this;
 }
 
@@ -445,7 +445,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator+= ( const GridSection<V
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator-= ( const GridSection<ValueType>& other )
 {
-    binOp( other, common::binary::SUB, false );
+    binOp( other, common::BinaryOp::SUB, false );
     return *this;
 }
 
@@ -454,7 +454,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator-= ( const GridSection<V
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator*= ( const GridSection<ValueType>& other )
 {
-    binOp( other, common::binary::MULT, false );
+    binOp( other, common::BinaryOp::MULT, false );
     return *this;
 }
 
@@ -463,14 +463,14 @@ GridSection<ValueType>& GridSection<ValueType>::operator*= ( const GridSection<V
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator/= ( const GridSection<ValueType>& other )
 {
-    binOp( other, common::binary::DIVIDE, false );
+    binOp( other, common::BinaryOp::DIVIDE, false );
     return *this;
 }
 
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void GridSection<ValueType>::binOpScalar ( const ValueType other, common::binary::BinaryOp op, bool swap )
+void GridSection<ValueType>::binOpScalar ( const ValueType other, common::BinaryOp op, bool swap )
 {
     IndexType sectionOffset = 0;
     IndexType sectionSizes[SCAI_GRID_MAX_DIMENSION];
@@ -504,7 +504,7 @@ void GridSection<ValueType>::binOpScalar ( const ValueType other, common::binary
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator= ( const ValueType other )
 {
-    binOpScalar( other, common::binary::COPY, false );
+    binOpScalar( other, common::BinaryOp::COPY, false );
     return *this;
 }
 
@@ -513,7 +513,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator= ( const ValueType othe
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator+= ( const ValueType other )
 {
-    binOpScalar( other, common::binary::ADD, false );
+    binOpScalar( other, common::BinaryOp::ADD, false );
     return *this;
 }
 
@@ -522,7 +522,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator+= ( const ValueType oth
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator-= ( const ValueType other )
 {
-    binOpScalar( other, common::binary::SUB, false );
+    binOpScalar( other, common::BinaryOp::SUB, false );
     return *this;
 }
 
@@ -531,7 +531,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator-= ( const ValueType oth
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator*= ( const ValueType other )
 {
-    binOpScalar( other, common::binary::MULT, false );
+    binOpScalar( other, common::BinaryOp::MULT, false );
     return *this;
 }
 
@@ -540,7 +540,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator*= ( const ValueType oth
 template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator/= ( const ValueType other )
 {
-    binOpScalar( other, common::binary::DIVIDE, false );
+    binOpScalar( other, common::BinaryOp::DIVIDE, false );
     return *this;
 }
 
@@ -549,7 +549,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator/= ( const ValueType oth
 template<typename ValueType>
 void GridSection<ValueType>::conj( const GridSection<ValueType>& other )
 {
-    unaryOp( other, common::unary::CONJ );
+    unaryOp( other, common::UnaryOp::CONJ );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -591,7 +591,7 @@ void GridSection<ValueType>::assignTranspose( const GridSection<ValueType>& othe
         const ValueType* sourcePtr = rSource.get() + offsetSource;
         ValueType* targetPtr = wTarget.get() + offsetTarget;
 
-        common::unary::UnaryOp op = conjFlag ? common::unary::CONJ : common::unary::COPY;
+        common::UnaryOp op = conjFlag ? common::UnaryOp::CONJ : common::UnaryOp::COPY;
 
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -605,7 +605,7 @@ void GridSection<ValueType>::assignTranspose( const GridSection<ValueType>& othe
 
 #define HARRAUTILS_SPECIFIER_LVL2( TargetType, SourceType )                          \
     template void GridSection<TargetType>::unaryOp(           \
-            const GridSection<SourceType>& other, common::unary::UnaryOp );           \
+            const GridSection<SourceType>& other, common::UnaryOp );           \
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                                      \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )

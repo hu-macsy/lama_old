@@ -35,6 +35,7 @@
 #include <scai/partitioning/Partitioning.hpp>
 
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -54,47 +55,62 @@ SCAI_LOG_DEF_LOGGER( Partitioning::logger, "Partitioning" )
 
 void Partitioning::gatherWeights( std::vector<float>& weights, const float weight, const Communicator& comm )
 {
-    const PartitionId MASTER = 0;
-
     PartitionId numPartitions = comm.getSize();
 
     weights.resize( numPartitions );
 
-    SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
-
-    comm.gather( &weights[0], 1, MASTER, &weight );
-    comm.bcast( &weights[0], numPartitions, MASTER );
+    gatherAll( &weights[0], weight, comm );
 }
 
 /* ---------------------------------------------------------------------- */
 
-void Partitioning::normWeights( std::vector<float>& weights )
+void Partitioning::gatherWeights( hmemo::HArray<float>& weights, const float weight, const Communicator& comm )
 {
-    const size_t numPartitions = weights.size();
+    PartitionId numPartitions = comm.getSize();
 
+    hmemo::WriteOnlyAccess<float> writeWeights( weights, numPartitions );
+
+    gatherAll( writeWeights.get(), weight, comm );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Partitioning::normWeights( float weights[], IndexType np )
+{
     // now each partition norms it
 
     float sum = 0;
 
-    for ( size_t i = 0; i < numPartitions; ++i )
+    for ( IndexType i = 0; i < np; ++i )
     {
         sum += weights[i];
     }
 
     float sumNorm = 0.0f;
 
-    for ( size_t i = 0; i < numPartitions - 1; ++i )
+    for ( IndexType i = 0; i < np - 1; ++i )
     {
         weights[i] /= sum;
         sumNorm += weights[i];
     }
 
-    weights[numPartitions - 1] = 1.0f - sumNorm;
+    weights[np - 1] = 1.0f - sumNorm;
+}
+
+void Partitioning::normWeights( std::vector<float>& weights )
+{
+    normWeights( &weights[0], IndexType( weights.size() ) );
+}
+
+void Partitioning::normWeights( hmemo::HArray<float>& weights )
+{
+    hmemo::WriteAccess<float> writeWeights( weights );
+    normWeights( writeWeights.get(), weights.size() );
 }
 
 /* ---------------------------------------------------------------------- */
 
-void Partitioning::rectangularRedistribute( lama::Matrix& matrix, const float weight ) const
+void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float weight ) const
 {
     SCAI_REGION( "partitioning.rect" )
 
@@ -130,6 +146,53 @@ void Partitioning::rectangularRedistribute( lama::Matrix& matrix, const float we
 
         matrix.redistribute( rowDist, colDist );
     }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Partitioning::squarePartitioning(
+    hmemo::HArray<PartitionId>& newLocalOwners,
+    const lama::_Matrix& matrix,
+    const float weight ) const
+{
+    const Communicator& comm = matrix.getRowDistribution().getCommunicator();
+
+    hmemo::HArray<float> processorWeights;
+
+    Partitioning::gatherWeights( processorWeights, weight, comm );
+
+    // check that all weights are greater 0 
+
+    SCAI_LOG_DEBUG( logger, "weights gathered = " << processorWeights );
+
+    normWeights( processorWeights );
+
+    SCAI_LOG_DEBUG( logger, "now call squarePartitioning with all processor weights = " << processorWeights );
+
+    squarePartitioning( newLocalOwners, matrix, processorWeights );
+}
+
+/* ---------------------------------------------------------------------- */
+
+dmemo::DistributionPtr Partitioning::partitionIt( 
+    const dmemo::CommunicatorPtr comm, 
+    const lama::_Matrix& matrix, 
+    float weight ) const
+{
+    hmemo::HArray<float> processorWeights;   // replicated array with all weights needed
+
+    gatherWeights( processorWeights, weight, *comm );
+    normWeights( processorWeights );
+
+    hmemo::HArray<IndexType> newLocalOwners;
+
+    squarePartitioning( newLocalOwners, matrix, processorWeights );
+
+    // build a new distribution by the new owners
+
+    dmemo::Redistributor redist( newLocalOwners, matrix.getRowDistributionPtr() );
+
+    return redist.getTargetDistributionPtr();
 }
 
 /* ------  Constructors  ------------------------------------------------ */

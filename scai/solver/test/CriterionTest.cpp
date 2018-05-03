@@ -45,30 +45,34 @@
 
 #include <scai/solver/test/TestMacros.hpp>
 
+using namespace scai;
 using namespace scai::solver;
 using namespace scai::hmemo;
+
+typedef SCAI_TEST_TYPE ValueType;
 
 /* --------------------------------------------------------------------- */
 
 struct CriterionTestConfig
 {
+    typedef SCAI_TEST_TYPE ValueType;
+
     CriterionTestConfig()
     {
-        mIterationCountCriterion1 = new IterationCount( 10 );
-        mIterationCountCriterion1Ptr = CriterionPtr( mIterationCountCriterion1 );
-        mIterationCountCriterion2 = new IterationCount( 8 );
-        mIterationCountCriterion2Ptr = CriterionPtr( mIterationCountCriterion2 );
+        mIterationCountCriterion1 = new IterationCount<ValueType>( 10 );
+        mIterationCountCriterion1Ptr.reset( mIterationCountCriterion1 );
+        mIterationCountCriterion2 = new IterationCount<ValueType>( 8 );
+        mIterationCountCriterion2Ptr.reset( mIterationCountCriterion2 );
     }
 
     ~CriterionTestConfig()
     {
     }
 
-    CriterionPtr mCriterionRoot;
-    IterationCount* mIterationCountCriterion1;
-    CriterionPtr mIterationCountCriterion1Ptr;
-    IterationCount* mIterationCountCriterion2;
-    CriterionPtr mIterationCountCriterion2Ptr;
+    IterationCount<ValueType>* mIterationCountCriterion1;
+    CriterionPtr<ValueType> mIterationCountCriterion1Ptr;
+    IterationCount<ValueType>* mIterationCountCriterion2;
+    CriterionPtr<ValueType> mIterationCountCriterion2Ptr;
 };
 
 BOOST_FIXTURE_TEST_SUITE( CriterionTest, CriterionTestConfig )
@@ -81,33 +85,34 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     BOOST_CHECK_EQUAL( mIterationCountCriterion1->getIterationExtrema(), IndexType( 10 ) );
     BOOST_CHECK_EQUAL( mIterationCountCriterion2->getIterationExtrema(), IndexType( 8 ) );
-    Criterion* boolcondition1 = new Criterion();
-    CriterionPtr testcriterion1 = CriterionPtr( boolcondition1 );
-    BOOST_CHECK_EQUAL( testcriterion1->getOperation(), Criterion::AND );
-    Criterion* boolcondition2 = new Criterion( true );
-    CriterionPtr testcriterion2 = CriterionPtr( boolcondition2 );
-    BOOST_CHECK_EQUAL( testcriterion2->getOperation(), Criterion::AND );
-    Criterion* boolcondition3 = new Criterion( boolcondition1 );
-    CriterionPtr testcriterion3 = CriterionPtr( boolcondition3 );
+    Criterion<ValueType>* boolcondition1 = new Criterion<ValueType>();
+    CriterionPtr<ValueType> testcriterion1( boolcondition1 );
+    BOOST_CHECK_EQUAL( testcriterion1->getOperation(), BooleanOp::AND );
+    Criterion<ValueType>* boolcondition2 = new Criterion<ValueType>( true );
+    CriterionPtr<ValueType> testcriterion2 = CriterionPtr<ValueType>( boolcondition2 );
+    BOOST_CHECK_EQUAL( testcriterion2->getOperation(), BooleanOp::AND );
+    Criterion<ValueType>* boolcondition3 = new Criterion<ValueType>( boolcondition1 );
+    CriterionPtr<ValueType> testcriterion3 = CriterionPtr<ValueType>( boolcondition3 );
     BOOST_CHECK_EQUAL( testcriterion3->getOperation(), testcriterion1->getOperation() );
     BOOST_CHECK_EQUAL( testcriterion3->getLeftChild(), testcriterion1->getLeftChild() );
     BOOST_CHECK_EQUAL( testcriterion3->getRightChild(), testcriterion1->getRightChild() );
-    Criterion* boolcondition4 = new Criterion( testcriterion1, true );
-    CriterionPtr testcriterion4 = CriterionPtr( boolcondition4 );
+    Criterion<ValueType>* boolcondition4 = new Criterion<ValueType>( testcriterion1, true );
+    CriterionPtr<ValueType> testcriterion4 = CriterionPtr<ValueType>( boolcondition4 );
     BOOST_CHECK_EQUAL( testcriterion4->getOperation(), testcriterion1->getOperation() );
     BOOST_CHECK_EQUAL( testcriterion4->getLeftChild(), testcriterion1->getLeftChild() );
     BOOST_CHECK_EQUAL( testcriterion4->getRightChild(), testcriterion1->getRightChild() );
-    Criterion* boolcondition5 = new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr,
-            Criterion::AND );
-    CriterionPtr testcriterion5 = CriterionPtr( boolcondition5 );
-    BOOST_CHECK_EQUAL( testcriterion5->getOperation(), Criterion::AND );
+    Criterion<ValueType>* boolcondition5 = new Criterion<ValueType>( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr,
+            BooleanOp::AND );
+    CriterionPtr<ValueType> testcriterion5( boolcondition5 );
+    BOOST_CHECK_EQUAL( testcriterion5->getOperation(), BooleanOp::AND );
     BOOST_CHECK_EQUAL( testcriterion5->getLeftChild(), mIterationCountCriterion1Ptr );
     BOOST_CHECK_EQUAL( testcriterion5->getRightChild(), mIterationCountCriterion2Ptr );
 }
 
 /* --------------------------------------------------------------------- */
 
-void testCheckCriterion( CriterionPtr bcp, Criterion::BooleanOperator boperator )
+template<typename ValueType>
+void testCheckCriterion( CriterionPtr<ValueType> bcp, BooleanOp boperator )
 {
     BOOST_CHECK_EQUAL( bcp->getOperation(), boperator );
     BOOST_CHECK( bcp->hasLeftChild() );
@@ -120,12 +125,11 @@ void testCheckCriterion( CriterionPtr bcp, Criterion::BooleanOperator boperator 
 
 BOOST_AUTO_TEST_CASE( ConditionTest )
 {
+    CriterionPtr<ValueType> mCriterionRoot;
     mCriterionRoot = mIterationCountCriterion1Ptr && mIterationCountCriterion2Ptr;
-    testCheckCriterion( mCriterionRoot, Criterion::AND );
+    testCheckCriterion( mCriterionRoot, BooleanOp::AND );
     mCriterionRoot = mIterationCountCriterion1Ptr || mIterationCountCriterion2Ptr;
-    testCheckCriterion( mCriterionRoot, Criterion::OR );
-    //TODO negation!!!
-    //mCriterionRoot = !(mIterationCountCriterion1Ptr || mIterationCountCriterion2Ptr) && ((mIterationCountCriterion2Ptr && !true) || false);
+    testCheckCriterion( mCriterionRoot, BooleanOp::OR );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -140,67 +144,69 @@ BOOST_AUTO_TEST_CASE( AssignmentTest )
 
 BOOST_AUTO_TEST_CASE( SetAndGetChildTest )
 {
-    Criterion* boolcondition = new Criterion();
-    CriterionPtr testcriterion = CriterionPtr( boolcondition );
+    Criterion<ValueType>* boolcondition = new Criterion<ValueType>();
+    CriterionPtr<ValueType> testcriterion = CriterionPtr<ValueType>( boolcondition );
     testcriterion->setLeftChild( mIterationCountCriterion1Ptr );
     testcriterion->setRightChild( mIterationCountCriterion2Ptr );
-    testcriterion->setOperation( Criterion::OR );
+    testcriterion->setOperation( BooleanOp::OR );
     BOOST_CHECK_EQUAL( testcriterion->getLeftChild(), mIterationCountCriterion1Ptr );
     BOOST_CHECK_EQUAL( testcriterion->getRightChild(), mIterationCountCriterion2Ptr );
-    BOOST_CHECK_EQUAL( testcriterion->getOperation(), Criterion::OR );
+    BOOST_CHECK_EQUAL( testcriterion->getOperation(), BooleanOp::OR );
 }
 
 /* ---------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    Criterion* boolcondition = new Criterion();
-    CriterionPtr testcriterion = CriterionPtr( boolcondition );
+    Criterion<ValueType>* boolcondition = new Criterion<ValueType>();
+    CriterionPtr<ValueType> testcriterion = CriterionPtr<ValueType>( boolcondition );
     SCAI_COMMON_WRITEAT_TEST( *testcriterion ); // no empty string for mModifier = true
-    Criterion* boolcondition2 = new Criterion( false );
-    CriterionPtr testcriterion2 = CriterionPtr( boolcondition2 );
-    SCAI_COMMON_WRITEAT_TEST( *testcriterion2 ); // no empty string for mModifier = false
+    Criterion<ValueType>* boolcondition2 = new Criterion<ValueType>( false );
+    CriterionPtr<ValueType> testcriterion2 = CriterionPtr<ValueType>( boolcondition2 );
+    // SCAI_COMMON_WRITEAT_TEST( *testcriterion2 ); // no empty string for mModifier = false
 }
 
 /* ---------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
 {
-    typedef SCAI_TEST_TYPE ValueType;
     const IndexType N = 40;
-    scai::lama::CSRSparseMatrix<ValueType> coefficients;
-    scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
-    scai::lama::DenseVector<ValueType> rhs( coefficients.getRowDistributionPtr(), 1.0 );
-    scai::lama::DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), 1.0 );
-    CG cgsolver( "CriterionTestSolver" );
+
+    lama::CSRSparseMatrix<ValueType> coefficients;
+    lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
+
+    auto rhs      = lama::fill<lama::DenseVector<ValueType>>( coefficients.getRowDistributionPtr(), ValueType( 1 ) );
+    auto solution = lama::fill<lama::DenseVector<ValueType>>( coefficients.getColDistributionPtr(), ValueType( 1 ) );
+
+    CG<ValueType> cgsolver( "CriterionTestSolver" );
     cgsolver.setStoppingCriterion( mIterationCountCriterion2Ptr );
     cgsolver.initialize( coefficients );
     cgsolver.solve( solution, rhs );
     bool test;
     // isSatisfied for BooleanCondition ( noChildren, returns mModifier )
-    Criterion* condition1 = new Criterion();
+    Criterion<ValueType>* condition1 = new Criterion<ValueType>();
     test = condition1->isSatisfied( cgsolver );
     BOOST_CHECK ( test );
     // isSatisfied for BooleanCondition ( noChildren, returns mModifier )
-    Criterion* condition2 = new Criterion( false );
+    Criterion<ValueType>* condition2 = new Criterion<ValueType>( false );
     test = condition2->isSatisfied( cgsolver );
     BOOST_CHECK ( !test );
     // isSatisfied for Criterion with left
-    Criterion* condition3 = new Criterion( false );
+    Criterion<ValueType>* condition3 = new Criterion<ValueType>( false );
     condition3->setLeftChild( mIterationCountCriterion1Ptr );
     test = condition3->isSatisfied( cgsolver );
     BOOST_CHECK ( !test );
     // isSatisfied for Criterion with left
-    Criterion* condition4 = new Criterion( false );
+    Criterion<ValueType>* condition4 = new Criterion<ValueType>( false );
     condition4->setRightChild( mIterationCountCriterion1Ptr );
     test = condition4->isSatisfied( cgsolver );
     BOOST_CHECK ( !test );
     // isSatisfied for Criterion with left AND right child
-    Criterion* condition5 = new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, Criterion::AND );
+    Criterion<ValueType>* condition5 = new Criterion<ValueType>( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, BooleanOp::AND );
     test = condition5->isSatisfied( cgsolver );
     BOOST_CHECK ( !test );
     // isSatisfied for Criterion with left OR right child
-    Criterion* condition6 = new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, Criterion::OR );
+    Criterion<ValueType>* condition6 = new Criterion<ValueType>( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, BooleanOp::OR );
     test = condition6->isSatisfied( cgsolver );
     BOOST_CHECK ( test );
 }

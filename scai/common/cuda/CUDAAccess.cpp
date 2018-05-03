@@ -36,7 +36,6 @@
 #include <scai/common/cuda/CUDACtx.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
-#include <scai/common/Thread.hpp>
 
 #include <iostream>
 
@@ -47,17 +46,14 @@ namespace common
 {
 
 // The current CUDA device can be accessed globally, but should be thread-private
-// we can rely on the fact that thread-private variable is initialized with NULL
 
-// static common::ThreadPrivatePtr<const CUDACtx> currentCUDACtx;
-
-static SCAI_THREAD_PRIVATE_PTR( const CUDACtx, currentCUDACtx )
+thread_local const CUDACtx* currentCUDACtx = NULL;
 
 const CUDACtx* CUDAAccess::enable( const CUDACtx& ctx )
 {
     SCAI_CUDA_DRV_CALL( cuCtxPushCurrent( ctx.getCUcontext() ), "could not push context" )
-    const CUDACtx* last = currentCUDACtx.get();
-    currentCUDACtx.set( &ctx );  // make it available globally in thread-private variable
+    const CUDACtx* last = currentCUDACtx;
+    currentCUDACtx = &ctx;  // make it available globally in thread-private variable
     return last;
 }
 
@@ -65,7 +61,7 @@ void CUDAAccess::disable( const CUDACtx* last )
 {
     CUcontext tmp; // result variable for current context, not needed here
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
-    currentCUDACtx.set( last );
+    currentCUDACtx = last;
     // last != NULL -> current context is last->getCUcontext()
     // last == NULL -> current context is 0
 }
@@ -82,9 +78,8 @@ CUDAAccess::~CUDAAccess()
 
 const CUDACtx& CUDAAccess::getCurrentCUDACtx()
 {
-    const CUDACtx* current = currentCUDACtx.get();
-    SCAI_ASSERT( current, "Currently, no context is set" )
-    return *current;
+    SCAI_ASSERT( currentCUDACtx, "Currently, no context is set" )
+    return *currentCUDACtx;
 }
 
 } /* end namespace common */

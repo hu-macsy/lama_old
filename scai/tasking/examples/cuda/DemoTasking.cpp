@@ -39,13 +39,16 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/bind.hpp>
 
 #include <iostream>
+#include <functional>
 
 using namespace scai;
 using namespace common;
 using namespace tasking;
+
+using std::bind;
+using std::cref;
 
 /* --------------------------------------------------------------------- */
 
@@ -104,12 +107,12 @@ int main( int argc, const char** argv )
     float* d_data = myAllocate( ctx, NSIZE );
     // Let other thread do the initialization
     {
-        TaskSyncToken( bind( &myInit, cref( ctx ), d_data, VAL, NSIZE ) );
+        TaskSyncToken( bind( &myInit, std::cref( ctx ), d_data, VAL, NSIZE ) );
     }
     float s = mySum( ctx, d_data, NSIZE );
     // Let other thread do the free
     {
-        TaskSyncToken( bind( &myFree, cref( ctx ), d_data ) );
+        TaskSyncToken( bind( &myFree, std::cref( ctx ), d_data ) );
     }
     std::cout << "Ready task " << nr << " on device " << nr;
     std::cout << ", result = " << s << ", should be " << NSIZE* VAL << std::endl;

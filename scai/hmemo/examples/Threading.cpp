@@ -38,7 +38,8 @@
 #include <scai/common/macros/throw.hpp>
 #include <scai/tasking/ThreadPool.hpp>
 #include <scai/tasking/Task.hpp>
-#include <scai/common/bind.hpp>
+
+#include <functional>
 
 using namespace scai::hmemo;
 using namespace scai::tasking;
@@ -47,7 +48,8 @@ using namespace scai::tasking;
 
 SCAI_LOG_DEF_LOGGER( logger, "Threading" )
 
-using namespace scai::hmemo;
+using namespace scai;
+using namespace hmemo;
 
 void readJob( HArray<double>& X )
 {
@@ -126,7 +128,7 @@ int main()
 
     for ( int k = 0; k < 100; ++k )
     {
-        pool.schedule( scai::common::bind( &job, &X )  );
+        pool.schedule( std::bind( &job, &X )  );
     }
 
     SCAI_LOG_INFO( logger, "synchronize" )

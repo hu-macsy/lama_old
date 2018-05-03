@@ -38,17 +38,17 @@
 
 /** Help routine to read a scalar value type --SCAI_TYPE=... */
 
-static scai::common::scalar::ScalarType getType()
+static scai::common::ScalarType getType()
 {
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
+    scai::common::ScalarType type = scai::common::TypeTraits<double>::stype;
 
     std::string val;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+        scai::common::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
 
-        if ( env_type == scai::common::scalar::UNKNOWN )
+        if ( env_type == scai::common::ScalarType::UNKNOWN )
         {
             std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
         }

@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of exception class that is thrown when an assertion fails.
+ * @brief Definition of exception class that is thrown when an IO problem occurs.
  * @author Thomas Brandes
- * @date 11.06.2015
+ * @date 15.01.2018
  */
 #pragma once
 
@@ -45,37 +45,35 @@ namespace scai
 namespace common
 {
 
-/** Derived exception class for an exception that is thrown if any assertion fails. */
+/** Derived exception class for an exception that is thrown if any IO problem occurs. */
 
 class COMMON_DLL_IMPORTEXPORT IOException : public Exception
 {
 public:
-    /**
-     * @brief The default constructor creates an IOException with no message.
-     */
-    IOException( );
 
     /**
      * @brief This constructor creates an IOException with the passed message.
      *
      * @param[in] message  the message to assign to this.
      */
-    IOException( const std::string& message );
+    inline IOException( const std::string& message );
 
     /**
      * @brief The destructor destroys this IOException.
      */
-    virtual ~IOException() throw ();
-
-    /**
-     * @brief Override virtual routine with class specific method.
-     */
-    virtual const char* what() const throw();
-
-protected:
-
-    std::string mMessage;
+    inline virtual ~IOException() throw ();
 };
+
+IOException::IOException( const std::string& message ) :
+
+    Exception( message )
+{
+    mMessage += "@IOException";
+}
+
+IOException::~IOException() throw ()
+{
+}
 
 } /* end namespace common */
 

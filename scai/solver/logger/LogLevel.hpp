@@ -44,17 +44,10 @@ namespace solver
 {
 
 /**
- * @brief Contains the logLevels for different loggers.
+ * @brief Enumeration of different log levels for solver loggers.
  */
-namespace LogLevel
+enum class LogLevel
 {
-
-/**
- * @brief The different logLevels for loggers.
- */
-typedef enum
-{
-
     /**
      * @brief At this log level no information will be logged, used
      *        NullLogger instead.
@@ -88,12 +81,9 @@ typedef enum
      */
     UNKNOWN = 5
 
-} LogLevel;
+};
 
-
-} /* end namespace LogLevel */
-
-inline const char* logLevel2str( const LogLevel::LogLevel level )
+inline const char* logLevel2str( const LogLevel level )
 {
     switch ( level )
     {
@@ -117,8 +107,6 @@ inline const char* logLevel2str( const LogLevel::LogLevel level )
     }
 }
 
-namespace LogLevel
-{
 /*
  * Output of ScalarType in stream by writing strings instead of numbers
  *
@@ -130,15 +118,13 @@ inline std::ostream& operator<<( std::ostream& stream, const LogLevel& object )
     return stream;
 }
 
-}
-
-inline LogLevel::LogLevel str2LogLevel( const char* str )
+inline LogLevel str2LogLevel( const char* str )
 {
-    for ( int level = LogLevel::noLogging; level < LogLevel::UNKNOWN; ++level )
+    for ( int level = 0; level < static_cast<int>( LogLevel::UNKNOWN ); ++level )
     {
-        if ( strcmp( logLevel2str( LogLevel::LogLevel( level ) ), str ) == 0 )
+        if ( strcmp( logLevel2str( LogLevel( level ) ), str ) == 0 )
         {
-            return LogLevel::LogLevel( level );
+            return LogLevel( level );
         }
     }
 

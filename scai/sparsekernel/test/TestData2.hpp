@@ -36,7 +36,8 @@
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 
-using scai::hmemo::HArray;
+namespace scai
+{
 
 namespace data2
 {
@@ -47,7 +48,7 @@ template<typename ValueType>
 static void getDenseTestData(
     IndexType& numRows,
     IndexType& numColumns,
-    HArray<ValueType>& denseValues )
+    hmemo::HArray<ValueType>& denseValues )
 {
     /*   Matrix:       6  1  0  4
                       -2  8  3  0
@@ -78,9 +79,9 @@ static void getCSRTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValues,
-    HArray<IndexType>& csrIA,
-    HArray<IndexType>& csrJA,
-    HArray<ValueType>& csrValues )
+    hmemo::HArray<IndexType>& csrIA,
+    hmemo::HArray<IndexType>& csrJA,
+    hmemo::HArray<ValueType>& csrValues )
 {
     /*   Matrix:       6  1  0  4        0  1  3    6  1  4
                       -2  8  3  0        1  0  2    8 -2  3
@@ -112,9 +113,9 @@ static void getELLTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValuesPerRow,
-    HArray<IndexType>& ellIA,
-    HArray<IndexType>& ellJA,
-    HArray<ValueType>& ellValues )
+    hmemo::HArray<IndexType>& ellIA,
+    hmemo::HArray<IndexType>& ellJA,
+    hmemo::HArray<ValueType>& ellValues )
 {
     /*   Matrix:       6  1  0  4        0  1  3    6  1  4
                       -2  8  3  0        1  0  2    8 -2  3
@@ -147,11 +148,11 @@ static void getJDSTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numDiagonals,
-    HArray<IndexType>& jdsPerm,
-    HArray<IndexType>& jdsILG,
-    HArray<IndexType>& jdsDLG,
-    HArray<IndexType>& jdsJA,
-    HArray<ValueType>& jdsValues )
+    hmemo::HArray<IndexType>& jdsPerm,
+    hmemo::HArray<IndexType>& jdsILG,
+    hmemo::HArray<IndexType>& jdsDLG,
+    hmemo::HArray<IndexType>& jdsJA,
+    hmemo::HArray<ValueType>& jdsValues )
 {
     /*   Matrix:       6  1  0  4        0  1  3    6  1  4
                       -2  8  3  0        1  0  2    8 -2  3
@@ -191,8 +192,8 @@ static void getDIATestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numDiagonals,
-    HArray<IndexType>& diaOffsets,
-    HArray<ValueType>& diaValues )
+    hmemo::HArray<IndexType>& diaOffsets,
+    hmemo::HArray<ValueType>& diaValues )
 {
     /*   Matrix:
                                             -3    -1  0  1     3
@@ -236,9 +237,9 @@ static void getCOOTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValues,
-    HArray<IndexType>& cooIA,
-    HArray<IndexType>& cooJA,
-    HArray<ValueType>& cooValues )
+    hmemo::HArray<IndexType>& cooIA,
+    hmemo::HArray<IndexType>& cooJA,
+    hmemo::HArray<ValueType>& cooValues )
 {
     /*   Matrix:       6  1  -  4
                       -2  8  3  -
@@ -264,15 +265,15 @@ static void getCOOTestData(
 /** This method computes the result of a jacobi step by hand */
 
 template<typename ValueType>
-static void getJacobiResult( HArray<ValueType>& solution,
-                             const HArray<ValueType>& oldSolution,
+static void getJacobiResult( hmemo::HArray<ValueType>& solution,
+                             const hmemo::HArray<ValueType>& oldSolution,
                              const ValueType omega,
-                             const HArray<ValueType>& rhs )
+                             const hmemo::HArray<ValueType>& rhs )
 {
     IndexType numRows;
     IndexType numColumns;
 
-    HArray<ValueType> denseValues;
+    hmemo::HArray<ValueType> denseValues;
 
     getDenseTestData( numRows, numColumns, denseValues );
 
@@ -280,13 +281,10 @@ static void getJacobiResult( HArray<ValueType>& solution,
     SCAI_ASSERT_EQ_ERROR( rhs.size(), numRows, "size mismatch for x" )
 
     {
-        using scai::hmemo::ReadAccess;
-        using scai::hmemo::WriteOnlyAccess;
-
-        ReadAccess<ValueType> rOld( oldSolution );
-        ReadAccess<ValueType> rRhs( rhs );
-        WriteOnlyAccess<ValueType> wSol( solution, numRows );
-        ReadAccess<ValueType> rDense( denseValues );
+        hmemo::ReadAccess<ValueType> rOld( oldSolution );
+        hmemo::ReadAccess<ValueType> rRhs( rhs );
+        hmemo::WriteOnlyAccess<ValueType> wSol( solution, numRows );
+        hmemo::ReadAccess<ValueType> rDense( denseValues );
 
         ValueType one = 1;
 
@@ -313,5 +311,7 @@ static void getJacobiResult( HArray<ValueType>& solution,
 }
 
 /* ------------------------------------------------------------------------------------- */
+
+}
 
 }

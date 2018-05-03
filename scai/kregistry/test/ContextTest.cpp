@@ -36,9 +36,8 @@
 #include <scai/kregistry/KernelContextFunction.hpp>
 
 using namespace scai;
-using namespace scai::kregistry;
-
-using scai::common::context;
+using namespace kregistry;
+using common::ContextType;
 
 static double add1( const double x )
 {
@@ -73,27 +72,20 @@ struct UnaryMinusTrait
 BOOST_AUTO_TEST_CASE( ContextTest )
 {
     KernelRegistry::KernelRegistryFlag flag = KernelRegistry::KERNEL_ADD;
-    // register context::Host
-    KernelRegistry::set<UnaryAddTrait>( add1, context::Host, flag );
-    KernelRegistry::set<UnaryMinusTrait>( minus1, context::Host, flag );
-    // register context::CUDA
-    KernelRegistry::set<UnaryAddTrait>( add1, context::CUDA, flag );
-    KernelRegistry::set<UnaryMinusTrait>( minus1, context::CUDA, flag );
-    // register context::MIC, only add1
-    KernelRegistry::set<UnaryAddTrait>( add1, context::MIC, flag );
-    // register context::UserContext, only minus1
-    KernelRegistry::set<UnaryMinusTrait>( minus1, context::UserContext, flag );
+    // register ContextType::Host
+    KernelRegistry::set<UnaryAddTrait>( add1, ContextType::Host, flag );
+    KernelRegistry::set<UnaryMinusTrait>( minus1, ContextType::Host, flag );
+    // register ContextType::CUDA
+    KernelRegistry::set<UnaryAddTrait>( add1, ContextType::CUDA, flag );
+    KernelRegistry::set<UnaryMinusTrait>( minus1, ContextType::CUDA, flag );
+    // register ContextType::UserContext, only minus1
+    KernelRegistry::set<UnaryMinusTrait>( minus1, ContextType::UserContext, flag );
     KernelRegistry::printAll();
     KernelTraitContextFunction<UnaryAddTrait> add;
     KernelTraitContextFunction<UnaryMinusTrait> minus;
-    // add can be alled at context::MIC
-    BOOST_CHECK_EQUAL( context::MIC, add.validContext( context::MIC ) );
-    // minus must be called at context::Host
-    BOOST_CHECK_EQUAL( context::Host, minus.validContext( context::MIC ) );
     // add, minus can be called together @ CUDA
-    BOOST_CHECK_EQUAL( context::CUDA, add.validContext( minus, context::CUDA ) );
-    BOOST_CHECK_EQUAL( context::Host, add.validContext( minus, context::MIC ) );
-    BOOST_CHECK_EQUAL( context::Host, add.validContext( minus, context::UserContext ) );
-    BOOST_CHECK_EQUAL( context::Host, add.validContext( minus, context::Host ) );
+    BOOST_CHECK_EQUAL( ContextType::CUDA, add.validContext( minus, ContextType::CUDA ) );
+    BOOST_CHECK_EQUAL( ContextType::Host, add.validContext( minus, ContextType::UserContext ) );
+    BOOST_CHECK_EQUAL( ContextType::Host, add.validContext( minus, ContextType::Host ) );
 }
 

@@ -34,8 +34,6 @@
 
 #pragma once
 
-#include <scai/common/unique_ptr.hpp>
-
 #include <scai/benchmark.hpp>
 
 #include <scai/logging.hpp>
@@ -45,7 +43,6 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/common/NonCopyable.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 /** Input set for LAMA is always distributed CSR sparse matrix with two vectors,
  *   all of type double.
@@ -86,10 +83,10 @@ protected:
     double mAlpha;
     double mBeta;
 
-    common::unique_ptr<DenseVector<double> > mX;
-    common::unique_ptr<DenseVector<double> > mY;
+    std::unique_ptr<DenseVector<double> > mX;
+    std::unique_ptr<DenseVector<double> > mY;
 
-    common::unique_ptr<CSRSparseMatrix<double> > mA;
+    std::unique_ptr<CSRSparseMatrix<double> > mA;
 };
 
 }

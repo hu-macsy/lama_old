@@ -471,7 +471,7 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
         }
         else if ( formatTokens[i] == "#THREAD" )
         {
-            output << common::Thread::getCurrentThreadName();
+            output << *common::thread::getCurrentThreadName();
         }
         else if ( formatTokens[i] == "#FILE" )
         {
@@ -516,14 +516,7 @@ void GenLogger::log( const char* level, SourceLocation& loc, const string& msg )
     }
 
     output << std::endl;
-    /* old code:
 
-       writeTime( output );
-       output << ": " << getFullName() << "@" << common::Thread::getCurrentThreadName();
-       output << " (" << loc.mFileName << "::" << loc.mLine << ",func=" << loc.mFuncName << ")";
-       output << " " << level << " " << msg << std::endl;
-
-    */
     myPrintf( "%s", output.str().c_str() );
 
     if ( sFlush )

@@ -36,7 +36,6 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/exception/IOException.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -44,6 +43,7 @@
 
 #include <string>
 #include <fstream>
+#include <memory>
 
 namespace scai
 {
@@ -55,8 +55,8 @@ FileIO::FileIO() :
 
     mFileMode( DEFAULT_MODE ),                       // no forace of anything
     mAppendMode( false ),                            // default is to write each output file new
-    mScalarTypeIndex( common::scalar::INDEX_TYPE ),  // default is as used in LAMA
-    mScalarTypeData( common::scalar::INTERNAL )      // default is same type as used in output data structure
+    mScalarTypeIndex( common::ScalarType::INDEX_TYPE ),  // default is as used in LAMA
+    mScalarTypeData( common::ScalarType::INTERNAL )      // default is same type as used in output data structure
 {
     bool binary;
 
@@ -82,7 +82,7 @@ FileIO::FileIO() :
     {
         mScalarTypeData = common::str2ScalarType( datatype.c_str() );
 
-        if ( common::scalar::UNKNOWN == mScalarTypeData )
+        if ( common::ScalarType::UNKNOWN == mScalarTypeData )
         {
             COMMON_THROWEXCEPTION( "Not a known value type: SCAI_IO_TYPE_DATA="  << datatype )
         }
@@ -92,7 +92,7 @@ FileIO::FileIO() :
     {
         mScalarTypeIndex = common::str2ScalarType( datatype.c_str() );
 
-        if ( common::scalar::UNKNOWN == mScalarTypeIndex )
+        if ( common::ScalarType::UNKNOWN == mScalarTypeIndex )
         {
             COMMON_THROWEXCEPTION( "Not a known value type: SCAI_IO_TYPE_INDEX="  << datatype )
         }
@@ -168,12 +168,12 @@ int FileIO::deleteFile( const std::string& fileName )
 
 /* --------------------------------------------------------------------------------- */
 
-void FileIO::setIndexType( common::scalar::ScalarType type )
+void FileIO::setIndexType( common::ScalarType type )
 {
     mScalarTypeIndex = type;
 }
 
-void FileIO::setDataType( common::scalar::ScalarType type )
+void FileIO::setDataType( common::ScalarType type )
 {
     mScalarTypeData = type;
 }
@@ -190,11 +190,11 @@ void FileIO::enableAppendMode( bool flag )
 
 /* --------------------------------------------------------------------------------- */
 
-int FileIO::getDataPrecision( common::scalar::ScalarType stype )
+int FileIO::getDataPrecision( common::ScalarType stype )
 {
     int prec = 0;
 
-    if ( mScalarTypeData == common::scalar::INTERNAL )
+    if ( mScalarTypeData == common::ScalarType::INTERNAL )
     {
         prec = common::precision( stype );
     }
@@ -255,7 +255,7 @@ int FileIO::removeFile( const std::string& fileName )
 
     if ( canCreate( suffix ) )
     {
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         SCAI_LOG_INFO( logger, "delete file via " << *fileIO )
 
@@ -274,7 +274,7 @@ int FileIO::removeFile( const std::string& fileName )
 void FileIO::write(
     const hmemo::_HArray& array,
     const std::string& outFileName,
-    const common::scalar::ScalarType dataType )
+    const common::ScalarType dataType )
 {
     // This static method creates a FileIO object by suffix (file type)  and calls its write method for dense array
 
@@ -285,7 +285,7 @@ void FileIO::write(
         SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->writeArray( array, outFileName );
@@ -298,7 +298,7 @@ void FileIO::write(
     const hmemo::HArray<IndexType>& indexes,
     const hmemo::_HArray& values,
     const std::string& outFileName,
-    const common::scalar::ScalarType dataType )
+    const common::ScalarType dataType )
 {
     // This static method creates a FileIO object by suffix (file type)  and calls its write method for sparse array
 
@@ -309,7 +309,7 @@ void FileIO::write(
         SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->writeSparse( size, indexes, values, outFileName );
@@ -320,7 +320,7 @@ void FileIO::write(
 void FileIO::read(
     hmemo::_HArray& array,
     const std::string& inFileName,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const IndexType first,
     const IndexType n )
 {
@@ -332,7 +332,7 @@ void FileIO::read(
                              ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->readArray( array, inFileName, first, n );
@@ -344,7 +344,7 @@ void FileIO::read(
     hmemo::_HArray& array,
     common::Grid& grid,
     const std::string& inFileName,
-    const common::scalar::ScalarType dataType )
+    const common::ScalarType dataType )
 {
     std::string suffix = getSuffix( inFileName );
 
@@ -354,7 +354,7 @@ void FileIO::read(
                              ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->readGridArray( array, grid, inFileName );
@@ -367,7 +367,7 @@ void FileIO::read(
     hmemo::HArray<IndexType>& indexes,
     hmemo::_HArray& values,
     const std::string& inFileName,
-    const common::scalar::ScalarType dataType )
+    const common::ScalarType dataType )
 {
     std::string suffix = getSuffix( inFileName );
 
@@ -377,7 +377,7 @@ void FileIO::read(
                              ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->readSparse( size, indexes, values, inFileName );
@@ -395,9 +395,9 @@ IndexType FileIO::getArraySize( const std::string& inFileName )
                              ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
-    IndexType size = nIndex;
+    IndexType size = invalidIndex;
 
     fileIO->readArrayInfo( size, inFileName );
 
@@ -415,9 +415,9 @@ IndexType FileIO::getStorageSize( const std::string& fileName )
         SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
-    IndexType size = nIndex;
+    IndexType size = invalidIndex;
 
     IndexType numColumns = 0;   // dummy
     IndexType numValues = 0;    // dummy

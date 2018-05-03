@@ -58,16 +58,15 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        _DenseVector
-        _SparseVector
-
         DenseVector
         GridVector
         GridSection
         SparseVector
 
+        VectorKind
+        _Vector
         Vector
-        VectorAssemblyAccess
+        VectorAssembly
 
         GridVector
         GridSection
@@ -77,6 +76,7 @@ scai_project (
         Scalar
         GridReadAccess
         GridWriteAccess
+        freeFunction
     )
 
 ### add subdirectories

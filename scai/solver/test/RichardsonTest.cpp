@@ -51,24 +51,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.RichardsonTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<Richardson>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    Richardson rSolver( "RichardsonTestSolver", slogger );
-    BOOST_CHECK_EQUAL( rSolver.getId(), "RichardsonTestSolver" );
-    Richardson rSolver2( "RichardsonTestSolver2" );
-    BOOST_CHECK_EQUAL( rSolver2.getId(), "RichardsonTestSolver2" );
-    Richardson rSolver3( rSolver2 );
-    BOOST_CHECK_EQUAL( rSolver3.getId(), "RichardsonTestSolver2" );
-    BOOST_CHECK( rSolver3.getPreconditioner() == 0 );
-    Richardson rSolver4( "RichardsonTestSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    rSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    rSolver4.setStoppingCriterion( criterion );
-    Richardson rSolver5( rSolver4 );
-    BOOST_CHECK_EQUAL( rSolver5.getId(), rSolver4.getId() );
-    BOOST_CHECK_EQUAL( rSolver5.getPreconditioner()->getId(), rSolver4.getPreconditioner()->getId() );
+    Richardson<ValueType> cgSolver( "RichardsonTestSolver", slogger );
+    BOOST_CHECK_EQUAL( cgSolver.getId(), "RichardsonTestSolver" );
+    Richardson<ValueType> cgSolver2( "RichardsonTestSolver2" );
+    BOOST_CHECK_EQUAL( cgSolver2.getId(), "RichardsonTestSolver2" );
+    Richardson<ValueType> cgSolver3( cgSolver2 );
+    BOOST_CHECK_EQUAL( cgSolver3.getId(), "RichardsonTestSolver2" );
+    BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
+    Richardson<ValueType> cgSolver4( "cgSolver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    cgSolver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    cgSolver4.setStoppingCriterion( criterion );
+    Richardson<ValueType> cgSolver5( cgSolver4 );
+    BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
+    BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

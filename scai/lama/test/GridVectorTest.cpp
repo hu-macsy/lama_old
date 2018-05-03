@@ -35,14 +35,20 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/lama/GridVector.hpp>
 #include <scai/lama/GridReadAccess.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
 
+#include <scai/testsupport/uniquePathComm.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
+
 using namespace scai;
 using namespace lama;
+
+using scai::testsupport::uniquePathSharedAmongNodes;
+using scai::testsupport::GlobalTempDir;
 
 /* --------------------------------------------------------------------- */
 
@@ -78,19 +84,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
 {
+    if ( !FileIO::canCreate( ".mat" ) )
+    {
+        // Matlab IO might be disabled if no zlib was available
+        return;
+    }
+
     const IndexType n1 = 5;
     const IndexType n2 = 3;
     const IndexType n3 = 2;
     const IndexType n4 = 4;
 
-    // Matalb binary format supports io of grids
+    // Matlab binary format supports io of grids
+    
+    const auto comm = scai::dmemo::Communicator::getCommunicatorPtr();
+    const auto fileName = uniquePathSharedAmongNodes(GlobalTempDir::getPath(), *comm, "tmpGrid") + ".mat";
 
-    const std::string fileName = "tmpGrid.mat";
-
-    GridVector<RealType> gv1( common::Grid4D( n1, n2, n3, n4 ) );
+    GridVector<DefaultReal> gv1( common::Grid4D( n1, n2, n3, n4 ) );
 
     {
-        GridWriteAccess<RealType> wGV1( gv1 );
+        GridWriteAccess<DefaultReal> wGV1( gv1 );
 
         for ( IndexType i1 = 0; i1 < n1; ++i1 )
         {
@@ -101,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
                     for ( IndexType i4 = 0; i4 < n4; ++i4 )
                     { 
                         wGV1( i1, i2, i3, i4 ) = 
-                            static_cast<RealType>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
+                            static_cast<DefaultReal>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
                     }
                 }
             }
@@ -110,13 +123,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
 
     gv1.writeToFile( fileName );
 
-    GridVector<RealType> gv2( fileName );
+    GridVector<DefaultReal> gv2( fileName );
 
     BOOST_CHECK_EQUAL( gv1.globalGrid(), gv2.globalGrid() );
 
     {
-        GridReadAccess<RealType> rGV1( gv1 );
-        GridReadAccess<RealType> rGV2( gv2 );
+        GridReadAccess<DefaultReal> rGV1( gv1 );
+        GridReadAccess<DefaultReal> rGV2( gv2 );
 
         for ( IndexType i = 0; i < gv1.size(); ++i )
         {

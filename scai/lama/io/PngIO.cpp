@@ -207,7 +207,7 @@ void PngIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& gr
     const IndexType ncolor = grid.size( 2 );
     SCAI_ASSERT_EQ_ERROR( 3, ncolor, "3 values per pixel expected" )
     // convert the array data to png data
-    png_bytep* row_pointers = new png_bytep[ height ];
+    png_bytep* row_pointers = new png_bytep[ static_cast<int>( height ) ];
     {
         ReadAccess<ValueType> rX( data );
 
@@ -294,7 +294,7 @@ void PngIO::readStorage(
     storage.clear();
 
     SCAI_ASSERT_EQ_ERROR( 0, offsetRow, "No chunk read for bitmap file" )
-    SCAI_ASSERT_EQ_ERROR( nIndex, nRows, "No chunk read for bitmap file" )
+    SCAI_ASSERT_EQ_ERROR( invalidIndex, nRows, "No chunk read for bitmap file" )
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
                          "Unsupported for bitmap file: read storage from " << inputFileName )
@@ -361,7 +361,7 @@ void PngIO::readArray( hmemo::_HArray& array, const std::string& inputFileName, 
     array.clear();
 
     SCAI_ASSERT_EQ_ERROR( 0, offset, "chunk read not supported" )
-    SCAI_ASSERT_EQ_ERROR( n, nIndex, "chunk read not supported" )
+    SCAI_ASSERT_EQ_ERROR( n, invalidIndex, "chunk read not supported" )
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
                          "Unsupported for bitmap file: read array ( offset = " << offset << ", n = " << " ) from file " << inputFileName )

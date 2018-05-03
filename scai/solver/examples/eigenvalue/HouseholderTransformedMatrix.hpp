@@ -27,14 +27,14 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Matrix class that builds HLH for a Householder matrix H = I - u * u' / alpha
+ * @brief _Matrix class that builds HLH for a Householder matrix H = I - u * u' / alpha
  * @author Thomas Brandes
  * @date 28.06.2017
  */
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/matrix/AbstractMatrix.hpp>
+#include <scai/lama/matrix/OperatorMatrix.hpp>
 
 namespace scai
 {
@@ -42,12 +42,13 @@ namespace scai
 namespace lama
 {
 
-/** Abstract matrix class that stands for H * L * H with H = I - u * u' / alpha 
+/** Matrix class that stands for H * L * H with H = I - u * u' / alpha 
  *
  *  The above matrix is not built explicitly and only some methods are implemented so
  *  this class can be used in solvers that exploit matrix-free methods.
  */
-class HouseholderTransformedMatrix : public AbstractMatrix
+template<typename ValueType>
+class HouseholderTransformedMatrix : public OperatorMatrix<ValueType>
 {
 
 public:
@@ -59,9 +60,9 @@ public:
      *  @param[in] alpha is the scaling factor.
      */
 
-    HouseholderTransformedMatrix( const Matrix& L, const Vector& u, const Scalar alpha ) : 
+    HouseholderTransformedMatrix( const Matrix<ValueType>& L, const Vector<ValueType>& u, const ValueType alpha ) : 
 
-        AbstractMatrix( L ),
+        OperatorMatrix<ValueType>( L ),
         mL( L )
 
     {
@@ -69,41 +70,49 @@ public:
 
         // build the help vectors mR and mS that are used within the matrix * vector operation
 
-        VectorPtr h( u.newVector() );
+        DenseVector<ValueType> h( L.getContextPtr() );
 
-        *h = L * u;
-        *h /= alpha;
+        h = L * u;
+        h /= alpha;
 
-        Scalar gamma = u.dotProduct( *h ) / alpha * 0.5;
+        ValueType gamma = u.dotProduct( h ) / alpha * 0.5;
         
-        mR.reset( u.copy() );
-        mS.reset( u.newVector() );
+        mR = u;
+        mS = h - gamma * u;
 
-        *mS = *h - gamma * u;
-
-        mS->setValue( 0, Scalar( 0 ) );
-        mR->setValue( 0, Scalar( 0 ) );
+        mS[0] = ValueType( 0 );
+        mR[0] = ValueType( 0 );
     }
 
     /** Reimplement the matrix * vector operation
      *
      *  H L H * x = L * x - s' * x * r - r' * x * s
      */
-    virtual void matrixTimesVector(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const
+    virtual void matrixTimesVectorDense(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>* y,
+        common::MatrixOp op ) const
     {
+        if ( op != common::MatrixOp::NORMAL )
+        {
+            COMMON_THROWEXCEPTION( op << " for matrixTimesVector not supported here" )
+        }
+
         SCAI_LOG_INFO( logger, "matrixTimesVector, mL = " << mL )
 
         result = mL * x;
-        result -= mS->dotProduct( x ) * *mR;
-        result -= mR->dotProduct( x ) * *mS;
-        result.setValue( 0, Scalar( 0 ) );
+        result -= mS.dotProduct( x ) * mR;
+        result -= mR.dotProduct( x ) * mS;
+        result[0] = ValueType( 0 );
         result *= alpha;
-        result += beta * y;
+ 
+        if ( y != nullptr )
+        {
+            result += beta * *y;
+        }
     }
 
     /** This method must be provided so that solvers can decide about context of operations. */
@@ -113,19 +122,14 @@ public:
         return mL.getContextPtr();
     }
 
-    /** This method must be provided so that solvers can decide about the type of additional runtime vectors. */
-
-    virtual common::scalar::ScalarType getValueType() const
-    {
-        return mL.getValueType();
-    }
+    using OperatorMatrix<ValueType>::logger;
 
 private:
 
-    VectorPtr mR;   // help vector to make matrix * vector more efficient
-    VectorPtr mS;   // help vector to make matrix * vector more efficient
+    DenseVector<ValueType> mR;   // help vector to make matrix * vector more efficient
+    DenseVector<ValueType> mS;   // help vector to make matrix * vector more efficient
 
-    const Matrix& mL;
+    const Matrix<ValueType>& mL;
 };
 
 }

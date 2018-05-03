@@ -40,10 +40,6 @@
 #include <scai/hmemo/Context.hpp>
 #include <scai/common/cuda/CUDACtx.hpp>
 
-// local library
-#include <scai/common/Thread.hpp>
-#include <scai/common/weak_ptr.hpp>
-
 // CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -53,6 +49,7 @@
 // std
 #include <string>
 #include <stack>
+#include <memory>
 
 namespace scai
 {
@@ -84,7 +81,7 @@ class COMMON_DLL_IMPORTEXPORT CUDAContext:
 
     public Context,
     public Context::Register<CUDAContext>,
-    public common::enable_shared_from_this<CUDAContext>,
+    public std::enable_shared_from_this<CUDAContext>,
     public common::CUDACtx
 {
 
@@ -138,9 +135,9 @@ public:
 
     /** This routine is required for Register in Context Factory. */
 
-    static common::context::ContextType createValue()
+    static common::ContextType createValue()
     {
-        return common::context::CUDA;
+        return common::ContextType::CUDA;
     }
 
     /** This routine is required for Register in Context Factory. */
@@ -166,8 +163,8 @@ protected:
 
 private:
 
-    mutable common::weak_ptr<class Memory> mMemory;     //!< memory management for this devie
-    mutable common::weak_ptr<class Memory> mHostMemory; //!< preferred host memory
+    mutable std::weak_ptr<class Memory> mMemory;     //!< memory management for this devie
+    mutable std::weak_ptr<class Memory> mHostMemory; //!< preferred host memory
 
     //    cublasHandle_t   mCublasHandle;   //!< handle to cublas library
     //    cusparseHandle_t mCusparseHandle; //!< handle to cusparse library

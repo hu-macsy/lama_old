@@ -34,69 +34,65 @@
 
 // hpp
 #include <scai/lama/norm/MaxNorm.hpp>
-
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
 
-template lama::Norm::Register<lama::MaxNorm>::RegisterGuard
-lama::Norm::Register<lama::MaxNorm>::registerGuard;
-
 namespace lama
 {
 
-MaxNorm::MaxNorm()
+template<typename ValueType>
+MaxNorm<ValueType>::MaxNorm()
 {
 }
 
-MaxNorm::~MaxNorm()
+template<typename ValueType>
+MaxNorm<ValueType>::~MaxNorm()
 {
 }
 
-std::string MaxNorm::createValue()
+template<typename ValueType>
+std::string MaxNorm<ValueType>::createValue()
 {
     return "Max";
 }
 
-Norm* MaxNorm::create()
+template<typename ValueType>
+Norm<ValueType>* MaxNorm<ValueType>::create()
 {
     return new MaxNorm();
 }
 
-void MaxNorm::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void MaxNorm<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "MaxNorm";
 }
 
-Scalar MaxNorm::apply( const Scalar& scalar ) const
+template<typename ValueType>
+RealType<ValueType> MaxNorm<ValueType>::apply( const ValueType& scalar ) const
 {
     return maxNorm( scalar );
 }
 
-Scalar MaxNorm::apply( const Vector& vector ) const
+template<typename ValueType>
+RealType<ValueType> MaxNorm<ValueType>::apply( const Vector<ValueType>& vector ) const
 {
     return maxNorm( vector );
 }
 
-Scalar MaxNorm::apply( const Matrix& matrix ) const
+template<typename ValueType>
+RealType<ValueType> MaxNorm<ValueType>::apply( const Matrix<ValueType>& matrix ) const
 {
     return maxNorm( matrix );
 }
 
-Scalar maxNorm( const Scalar& scalar )
-{
-    return abs( scalar );
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-Scalar maxNorm( const Vector& vector )
-{
-    return vector.maxNorm();
-}
-
-Scalar maxNorm( const Matrix& matrix )
-{
-    return matrix.maxNorm();
-}
+SCAI_COMMON_INST_CLASS( MaxNorm, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

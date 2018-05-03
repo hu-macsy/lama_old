@@ -40,7 +40,6 @@ scai_project(
 
         CUDABLAS2
         CUDABLAS3
-        CUDALAPACK
 
     CUDA_CLASSES  # .cu, .hpp
 

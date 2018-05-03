@@ -45,51 +45,27 @@ namespace scai
 namespace common
 {
 
-/** Own struct for the enumeration type ContextType and its values.
+/** Enumeration type for the supported contexts. The type is used to select
+ *  the appropriate code that will be used for the computations in the context.
  *
- *  Note: This enumeration type was originally defined in the class Context so
- *        it did not require an own struct. But this is no longer possible as
- *        Context is now a factory where ContextType is the input type to create
- *        a new Context.
+ *  The same context type does not imply that two different contexts can use
+ *  the same data. Two CUDA contexts might allocate their own data where data
+ *  must be transfered explicitly.
  */
-
-struct context
+enum class ContextType
 {
-    /** Enumeration type for the supported contexts. The type is used to select
-     *  the appropriate code that will be used for the computations in the context.
-     *
-     *  The same context type does not imply that two different contexts can use
-     *  the same data. Two CUDA contexts might allocate their own data where data
-     *  must be transfered explicitly.
-     */
-    typedef enum
-    {
-        Host,          //!< context for cpu + main memory
-        CUDA,          //!< CUDA GPU device
-        OpenCL,        //!< OpenCL GPU device, currently not supported
-        MIC,           //!< Intel MIC
-        UserContext,   //!< can be used for a new derived Context class
-        MaxContext     //!< used for dimension of ContextType arrays
-    } ContextType;
+    Host,          //!< context for cpu + main memory
+    CUDA,          //!< CUDA GPU device
+    OpenCL,        //!< OpenCL GPU device, currently not supported
+    UserContext,   //!< can be used for a new derived Context class
+    MaxContext     //!< used for dimension of ContextType arrays
+};
 
-    /** Enumeration type for access kind, may be read or write */
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ContextType& type );
 
-    typedef enum
-    {
-        Read, //!<  read access to the array, can be multiple
-        Write, //!<  write access to the array, only one at a time
-        MaxAccessKind //!<  internal use for dimension of arrays
-    } AccessKind;
+COMMON_DLL_IMPORTEXPORT const char* contextType2str( const ContextType type );
 
-}; /* end struct context */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const context::ContextType& type );
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const context::AccessKind& kind );
-
-COMMON_DLL_IMPORTEXPORT const char* contextType2str( const context::ContextType type );
-
-COMMON_DLL_IMPORTEXPORT context::ContextType str2ContextType( const char* str );
+COMMON_DLL_IMPORTEXPORT ContextType str2ContextType( const char* str );
 
 } /* end namespace common */
 

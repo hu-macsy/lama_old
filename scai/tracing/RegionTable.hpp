@@ -43,8 +43,6 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/common/Thread.hpp>
-
 // std
 #include <cstring>
 #include <cstdio>

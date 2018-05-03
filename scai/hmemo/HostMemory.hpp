@@ -43,8 +43,8 @@
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/Thread.hpp>
-#include <scai/common/shared_ptr.hpp>
+#include <memory>
+#include <mutex>
 
 namespace scai
 {
@@ -65,7 +65,7 @@ class COMMON_DLL_IMPORTEXPORT HostMemory: public Memory
 
 public:
 
-    HostMemory( common::shared_ptr<const class HostContext> hostContext );
+    HostMemory( std::shared_ptr<const class HostContext> hostContext );
 
     virtual ~HostMemory();
 
@@ -89,9 +89,13 @@ public:
 
     static MemoryPtr getIt();
 
+    /** Implementation of pure method Memory::maxAllocatedBytes() */
+
+    virtual size_t maxAllocatedBytes() const;
+
 private:
 
-    common::shared_ptr<const HostContext> mHostContextPtr;
+    std::shared_ptr<const HostContext> mHostContextPtr;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -99,7 +103,9 @@ private:
 
     mutable size_t mNumberOfAllocatedBytes;//!< variable counts allocated bytes
 
-    mutable common::Thread::RecursiveMutex allocate_mutex;// needed to make allocate/free thread-safe
+    mutable size_t mMaxAllocatedBytes;//!< variable counts max allocated bytes
+
+    mutable std::recursive_mutex allocate_mutex;// needed to make allocate/free thread-safe
 };
 
 } /* end namespace hmemo */

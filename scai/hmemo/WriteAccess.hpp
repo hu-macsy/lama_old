@@ -48,8 +48,8 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/macros/throw.hpp>
-#include <scai/common/function.hpp>
-#include <scai/common/bind.hpp>
+
+#include <functional>
 
 namespace scai
 {
@@ -111,6 +111,11 @@ public:
     WriteAccess( HArray<ValueType>& array, const bool keep = true );
 
     /**
+     * @brief Move constructor for WriteAccess.
+     */
+    WriteAccess( WriteAccess<ValueType>&& other ) noexcept;
+
+    /**
      * @brief Releases the WriteAccess on the associated HArray.
      */
     virtual ~WriteAccess();
@@ -118,9 +123,16 @@ public:
     /**
      * @brief Returns a pointer to the data of the wrapped HArray.
      *
-     * @return a pointer to the wrapped HArray.
+     * @return a pointer to the data of the wrapped HArray.
      */
     ValueType* get();
+
+    /**
+     * @brief Returns a pointer to the data of the wrapped HArray.
+     *
+     * @return a pointer to the data of the wrapped HArray.
+     */
+    const ValueType* get() const;
 
     /**
      * @brief Support implicit type conversion to pointer of the data.
@@ -195,7 +207,7 @@ public:
      * locked even if the ~WriteAccess has been called.
      */
 
-    common::function<void()> releaseDelayed();
+    std::function<void()> releaseDelayed();
 
     /**
      * @brief Override method of base class Printable
@@ -214,6 +226,30 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
+/**
+ * @brief Obtain a WriteAccess to the given array.
+ *
+ * Analogous to readAccess(const HArray & array). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteAccess<ValueType> writeAccess( HArray<ValueType>& array )
+{
+    return WriteAccess<ValueType>( array );
+}
+
+/**
+ * @brief Obtain a WriteAccess for the supplied context to the given array.
+ *
+ * Analogous to readAccess(const HArray & array, ContextPtr). See its documentation for
+ * motivation and intended usage of this function.
+ */
+template <typename ValueType>
+WriteAccess<ValueType> writeAccess( HArray<ValueType>& array, ContextPtr context )
+{
+    return WriteAccess<ValueType>( array, context );
+}
+
 /* --------------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, WriteAccess<ValueType>::logger, "WriteAccess" )
@@ -224,7 +260,7 @@ template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( HArray<ValueType>& array, ContextPtr contextPtr, const bool keep )
     : mArray( &array )
 {
-    SCAI_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
+    SCAI_ASSERT( !array.isConst(), "WriteAccess on const array not allowed: " << array )
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer
@@ -236,11 +272,21 @@ template<typename ValueType>
 WriteAccess<ValueType>::WriteAccess( HArray<ValueType>& array, const bool keep /* = true*/ )
     : mArray( &array )
 {
-    SCAI_ASSERT( !array.constFlag, "WriteAccess on const array not allowed: " << array )
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+    SCAI_ASSERT( !array.isConst(), "WriteAccess on const array not allowed: " << array )
+    ContextPtr contextPtr = Context::getContextPtr( common::ContextType::Host );
     SCAI_LOG_DEBUG( logger, "acquire write access for " << *mArray << " at " << *contextPtr << ", keep = " << keep )
     mContextDataIndex = mArray->acquireWriteAccess( contextPtr, keep );
     mData = mArray->get( mContextDataIndex );     // cache the data pointer
+}
+
+template <typename ValueType>
+WriteAccess<ValueType>::WriteAccess( WriteAccess<ValueType>&& other ) noexcept
+    :   mArray( other.mArray ),
+        mData( other.mData ),
+        mContextDataIndex( other.mContextDataIndex )
+{
+    other.mArray = nullptr;
+    other.mData = nullptr;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -294,6 +340,13 @@ ValueType* WriteAccess<ValueType>::get()
     return mData;    // mData might be NULL if size of array is 0
 }
 
+template<typename ValueType>
+const ValueType* WriteAccess<ValueType>::get() const
+{
+    SCAI_ASSERT( mArray, "illegal get(): access has already been released." )
+    return mData;    // mData might be NULL if size of array is 0
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -324,7 +377,7 @@ template<typename ValueType>
 void WriteAccess<ValueType>::clear()
 {
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
-    mArray->clear( mContextDataIndex );
+    mArray->clearWithIndex( mContextDataIndex );
     SCAI_LOG_DEBUG( logger, "cleared " << *mArray )
     mData = mArray->get( mContextDataIndex );     // not really needed
 }
@@ -337,7 +390,7 @@ void WriteAccess<ValueType>::resize( const IndexType newSize )
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     // do not log before check of mArray
     SCAI_LOG_DEBUG( logger, "resize " << *mArray << " to new size " << newSize )
-    mArray->resize( mContextDataIndex, newSize );
+    mArray->resizeWithIndex( mContextDataIndex, newSize );
     mData = mArray->get( mContextDataIndex );     // data might be reallocated
 }
 
@@ -348,7 +401,7 @@ void WriteAccess<ValueType>::reserve( const IndexType capacity )
 {
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
     SCAI_LOG_DEBUG( logger, "reserve " << *mArray << " to new capacity " << capacity )
-    mArray->reserve( mContextDataIndex, capacity ); // copy = true for old data
+    mArray->reserveWithIndex( mContextDataIndex, capacity ); // copy = true for old data
     mData = mArray->get( mContextDataIndex );     // data might be reallocated
 }
 
@@ -358,7 +411,7 @@ template<typename ValueType>
 IndexType WriteAccess<ValueType>::capacity() const
 {
     SCAI_ASSERT( mArray, "WriteAccess has already been released." )
-    return mArray->capacity( mContextDataIndex );
+    return mArray->capacityWithIndex( mContextDataIndex );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -383,7 +436,7 @@ void WriteAccess<ValueType>::release()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::function<void()> WriteAccess<ValueType>::releaseDelayed()
+std::function<void()> WriteAccess<ValueType>::releaseDelayed()
 {
     SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
     void ( _HArray::*releaseAccess ) ( ContextDataIndex ) = &_HArray::releaseWriteAccess;
@@ -391,7 +444,7 @@ common::function<void()> WriteAccess<ValueType>::releaseDelayed()
     // This access itself is treated as released
     mArray = 0;
     mData  = 0;
-    return common::bind( releaseAccess, ctxArray, mContextDataIndex );
+    return std::bind( releaseAccess, ctxArray, mContextDataIndex );
 }
 
 /* --------------------------------------------------------------------------- */

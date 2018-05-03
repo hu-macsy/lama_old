@@ -32,11 +32,17 @@
  # @date 25.04.2013
 ###
 
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
 ### MPI_FOUND            - if MPI is found
 ### USE_MPI              - if MPI is enabled
 ### SCAI_MPI_INCLUDE_DIR - MPI include directory
 ### SCAI_MPI_LIBRARIES   - all needed MPI libraries
 ### MPI_ENABLED          - if MPI_FOUND AND USE_MPI
+
+scai_pragma_once()
 
 # Look for MPI first to allow SCAI_BLAS to take the correct blacs implementation
 # based on the found mpi
@@ -88,15 +94,15 @@ scai_build_variable ( NAME      USE_MPI
 
 if ( MPI_FOUND AND USE_MPI )
 
-   set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} )
+    set ( SCAI_MPI_INCLUDE_DIR ${MPI_INCLUDE_PATH} CACHE PATH "MPI include directory" )
 
-   # some older versions of cmake have not set MPI_CXX_LIBRARIES
+    # some older versions of cmake have not set MPI_CXX_LIBRARIES
 
-   if ( DEFINED MPI_CXX_LIBRARIES )
-      set ( SCAI_MPI_LIBRARIES ${MPI_CXX_LIBRARIES} )
-   else ( DEFINED MPI_CXX_LIBRARIES )
-      set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} )
-   endif ( DEFINED MPI_CXX_LIBRARIES )
+    if ( DEFINED MPI_CXX_LIBRARIES )
+       set ( SCAI_MPI_LIBRARIES ${MPI_CXX_LIBRARIES} CACHE PATH "MPI libraries" )
+    else ()
+       set ( SCAI_MPI_LIBRARIES ${MPI_LIBRARIES} CACHE PATH "MPI libraries" )
+    endif ()
 
 endif ( MPI_FOUND AND USE_MPI )
 
@@ -105,6 +111,9 @@ include ( VersionCheck/MPI )
 if    ( USE_MPI AND NOT MPI_FOUND )
     message( FATAL_ERROR "MPI shoud be used but not found" )
 endif ( USE_MPI AND NOT MPI_FOUND )
+
+mark_as_advanced ( SCAI_MPI_LIBRARIES )
+mark_as_advanced ( SCAI_MPI_INCLUDE_DIR )
  
 scai_summary_external ( NAME      MPI 
                         FOUND     ${MPI_FOUND} 

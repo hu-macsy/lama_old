@@ -41,23 +41,37 @@
 
 int main(int argc, char *argv[])
 {
-    float version;
+    double version = 0.0;
 
-    switch( _OPENMP )
+    if ( _OPENMP >= 200505 )
     {
-        case 200505:
-            version = 2.5; break;
-        case 200805:
-            version = 3.0; break;
-        case 201107:
-            version = 3.1; break;
-        case 201307:
-            version = 4.0; break;
-        case 201511:
-            version = 4.5; break;
-        default:
-            fprintf( stderr, "Unknown OpenMP-Version\n" );
-            return -1;
+        version = 2.5;
+    }
+
+    if ( _OPENMP >= 200805 )
+    {
+        version = 3.0;
+    }
+
+    if ( _OPENMP >= 201107 )
+    {
+        version = 3.1;
+    }
+
+    if ( _OPENMP >= 201307 )
+    {
+        version = 4.0;
+    }
+
+    if ( _OPENMP >= 201511 )
+    {
+        version = 4.5;
+    }
+
+    if ( version == 0.0 )
+    {
+        fprintf( stderr, "Unknown OpenMP-Version, _OPENMP = %d\n", _OPENMP );
+        return -1;
     }
     
     printf("%3.1f", version );

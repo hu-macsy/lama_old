@@ -88,7 +88,8 @@ void MKLCSRUtils::normalGEMV(
     const IndexType /* nnz */,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[] )
+    const ValueType csrValues[],
+    const common::MatrixOp op )
 {
     SCAI_REGION( "MKL.scsrmv" )
     SCAI_LOG_INFO( logger,
@@ -109,13 +110,17 @@ void MKLCSRUtils::normalGEMV(
         // ToDo: workaround required as boost::bind supports only up to 9 arguments
     }
 
-    if ( y != result && beta != common::constants::ZERO )
+    if ( y != result && beta != common::Constants::ZERO )
     {
-        OpenMPUtils::set( result, y, numRows, common::binary::COPY );
+        IndexType n = common::isTranspose( op ) ? numColumns : numRows;
+
+        OpenMPUtils::set( result, y, n, common::BinaryOp::COPY );
     }
 
     // performs y = alpha * A * x + beta * y
-    BLASTrans transa = 'n';
+
+    BLASTrans transa = common::isTranspose( op ) ? 't' : 'n';
+
     // General, - triangular, Non-Unit, C for zero-indexing
     BLASMatrix matdescra;
     matdescra[0] = 'g';
@@ -250,13 +255,13 @@ void MKLCSRUtils::decomposition(
 
     // iparm has now default values but some changes are required
 
-    if ( ( common::TypeTraits<ValueType>::stype == common::scalar::FLOAT ) ||
-            ( common::TypeTraits<ValueType>::stype == common::scalar::COMPLEX ) )
+    if ( ( common::TypeTraits<ValueType>::stype == common::ScalarType::FLOAT ) ||
+         ( common::TypeTraits<ValueType>::stype == common::ScalarType::COMPLEX ) )
     {
         iparm[27] = 1;  /* float */
     }
-    else if ( ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE ) ||
-              ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE_COMPLEX ) )
+    else if ( ( common::TypeTraits<ValueType>::stype == common::ScalarType::DOUBLE ) ||
+              ( common::TypeTraits<ValueType>::stype == common::ScalarType::DOUBLE_COMPLEX ) )
     {
         iparm[27] = 2;  /* double */
     }
@@ -334,7 +339,7 @@ void MKLCSRUtils::decomposition(
 template<typename ValueType>
 void MKLCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     using kregistry::KernelRegistry;
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )

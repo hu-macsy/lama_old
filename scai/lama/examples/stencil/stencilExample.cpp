@@ -34,9 +34,8 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/GridVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
@@ -57,7 +56,7 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -112,7 +111,7 @@ int main( int argc, const char* argv[] )
     GridVector<ValueType> v1;
     v1 = m * v;
     GridVector<ValueType> v2;
-    v2 = v * m2;
+    v2 = transpose( m2 ) * v;
 
     std::cout << "max diff = " << v1.maxDiffNorm( v2 ) << std::endl;
 }

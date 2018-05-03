@@ -64,9 +64,8 @@ SCAI_LOG_DEF_LOGGER( BLAS_BLAS3::logger, "BLAS.BLAS3" )
 
 template<typename ValueType>
 void BLAS_BLAS3::gemm(
-    const CBLAS_ORDER order,
-    const CBLAS_TRANSPOSE transA,
-    const CBLAS_TRANSPOSE transB,
+    const common::MatrixOp opA,
+    const common::MatrixOp opB,
     const IndexType m,
     const IndexType n,
     const IndexType k,
@@ -90,46 +89,23 @@ void BLAS_BLAS3::gemm(
         SCAI_LOG_WARN( logger, "asynchronous execution not supported yet" )
     }
 
-    BLASTrait::BLASTrans ta = '-', tb = '-';
+    BLASTrait::BLASTrans b_opA = BLASTrait::castTrans( opA );
+    BLASTrait::BLASTrans b_opB = BLASTrait::castTrans( opB );
 
-    switch ( transA )
-    {
-        case CblasNoTrans:
-            ta = 'N';
-            break;
+    BLASTrait::BLASIndexType b_n = static_cast<BLASTrait::BLASIndexType>( n );
+    BLASTrait::BLASIndexType b_m = static_cast<BLASTrait::BLASIndexType>( m );
+    BLASTrait::BLASIndexType b_k = static_cast<BLASTrait::BLASIndexType>( k );
 
-        case CblasTrans:
-            ta = 'T';
-            break;
+    BLASTrait::BLASIndexType b_lda = static_cast<BLASTrait::BLASIndexType>( lda );
+    BLASTrait::BLASIndexType b_ldb = static_cast<BLASTrait::BLASIndexType>( ldb );
+    BLASTrait::BLASIndexType b_ldc = static_cast<BLASTrait::BLASIndexType>( ldc );
 
-        case CblasConjTrans:
-            ta = 'C';
-            break;
-    }
+    // BLAS only support column-major format, so we work on the transpose data, so
+    // we have to switch A and B and m and n.
 
-    switch ( transB )
-    {
-        case CblasNoTrans:
-            tb = 'N';
-            break;
-
-        case CblasTrans:
-            tb = 'T';
-            break;
-
-        case CblasConjTrans:
-            tb = 'C';
-            break;
-    }
-
-    if ( order == CblasColMajor )
-    {
-        BLASWrapper<ValueType>::gemm( ta, tb, static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, A, static_cast<BLASTrait::BLASIndexType>( lda ), B, static_cast<BLASTrait::BLASIndexType>( ldb ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ) );
-    }
-    else if ( order == CblasRowMajor )
-    {
-        BLASWrapper<ValueType>::gemm( tb, ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), static_cast<BLASTrait::BLASIndexType>( k ), alpha, B, static_cast<BLASTrait::BLASIndexType>( ldb ), A, static_cast<BLASTrait::BLASIndexType>( lda ), beta, C, static_cast<BLASTrait::BLASIndexType>( ldc ) );
-    }
+    BLASWrapper<ValueType>::gemm( b_opA, b_opB, b_n, b_m, b_k,
+                                  alpha, B, b_ldb, A, b_lda, 
+                                  beta, C, b_ldc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -140,7 +116,7 @@ template<typename ValueType>
 void BLAS_BLAS3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
+    const common::ContextType ctx = common::ContextType::Host;
     bool useBLAS = false;
     int level = 0;
     useBLAS = common::Settings::getEnvironment( level, "SCAI_USE_BLAS" );

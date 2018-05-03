@@ -55,8 +55,9 @@ namespace scai
 namespace dmemo
 {
 
-class Communicator;
 // forward declaration
+
+class Communicator;
 
 /**
  * A communication plan describes a schedule of data to send
@@ -89,6 +90,26 @@ public:
      */
     CommunicationPlan();
 
+    /** Default copy constructor can be used. */
+
+    CommunicationPlan( const CommunicationPlan& ) = default;
+
+    /** Default move constructor can be used. */
+
+    CommunicationPlan( CommunicationPlan&& ) = default;
+
+    /** Default copy assignment operator can be used. */
+
+    CommunicationPlan& operator=( const CommunicationPlan& ) = default;
+
+    /** Default move assignment operator can be used. */
+
+    CommunicationPlan& operator=( CommunicationPlan&& ) = default;
+
+    /** Destructor */
+
+    ~CommunicationPlan();
+
     /** Clear an existing object for communication plan. */
 
     void clear();
@@ -97,25 +118,11 @@ public:
 
     void purge();
 
-    /** Construct a communication plan by quantity for each partition
-     *
-     *  @param quantities array of non-negative values, size is noPartitions
-     *  @param noPartitions number of entries for quantities
-     *  @param compressFlag if true zero-entries are removed.
-     *
-     *  \code
-     *  IndexType quantities[] = { 0, 3, 4 };
-     *  PartitionId noPartitions = sizeof( quantities ) / sizeof ( IndexType );
-     *  CommunicationPlan plan( quantities, noPartitions );
-     *  \endcode
-     */
-    CommunicationPlan( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag = true );
-
     /** Construct a communication plan by array of owners; quantity
      *  is computed by counting values for each partition.
      *
-     *  @param[in] noPartitions  number of partitions that exist
-     *  @param[in] owners        array of owners, each owner must be a value from 0 to noPartitions - 1
+     *  @param[in] nPartitions  number of partitions that exist
+     *  @param[in] owners        array of owners, each owner must be a value from 0 to nPartitions - 1
      *  @param[in] nOwners       number of entries in owners
      *  @param[in] compressFlag  will compress the computed plan
      *
@@ -128,52 +135,51 @@ public:
      *  \endcode
      */
     CommunicationPlan(
-        const PartitionId noPartitions,
+        const PartitionId nPartitions,
         const PartitionId owners[],
         const IndexType nOwners,
         bool compressFlag = true );
 
-    /** Construct a communication plan by an existing one */
-
-    CommunicationPlan( const CommunicationPlan& other, const IndexType quantities[] );
-
-    /** @brief Construct a communication plan by an existing one where each entry is multiplied by same factor.
+    /** @brief Build a communication plan from this one where each entry is multiplied by same factor.
      *
-     * @param[in] other   is the original communication plan
      * @param[in] n       is the multiplicator (n >= 1)
      *
      * The new communication plan can be used to send / receive whole arrays of size n instead
      * of single values.
      */
-    CommunicationPlan( const CommunicationPlan& other, const IndexType n );
+    void multiplyConst( const IndexType n );
 
-    /** Destructor. */
+    /** Update this communication plan 
+     *
+     *  @param[in] quantities must have mQuantity entries 
+     *
+     *  ToDo: example
+     */
+    void multiplyRagged( const IndexType quantities[] );
 
-    virtual ~CommunicationPlan();
-
-    /** Allocate a communication plan by quantity for each partition
+    /** Allocate a communication plan by sizes for each partition
      *
      *  @param quantities array of non-negative values, size is number of partitions
-     *  @param noPartitions number of entries to take from quantities
+     *  @param nPartitions number of entries to take from quantities
      *  @param compressFlag if true zero-entries are removed.
      *
      *  \code
      *  CommunicationPlan plan;
      *  IndexType quantities[] = { 0, 3, 4 };
-     *  PartitionId noPartitions = sizeof( quantities ) / sizeof ( IndexType );
-     *  plan.allocate( quantities, noPartitions );
+     *  PartitionId nPartitions = sizeof( quantities ) / sizeof ( IndexType );
+     *  plan.allocateBySizes( quantities, nPartitions );
      *  \endcode
      */
-    void allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag = true );
+    void allocateBySizes( const IndexType quantities[], const PartitionId nPartitions, bool compressFlag = true );
 
     /** Allocate a communication plan by offsets instead of quantities for each partition.
      */
-    void allocateByOffsets( const IndexType offsets[], const PartitionId noPartitions, bool compressFlag = true );
+    void allocateByOffsets( const IndexType offsets[], const PartitionId nPartitions, bool compressFlag = true );
 
     /** @brief Allocate communication plan by an array of owners.
      *
-     *  @param[in] noPartitions  number of partitions that exist
-     *  @param[in] owners        array of owners, each owner must be a value from 0 to noPartitions - 1
+     *  @param[in] nPartitions  number of partitions that exist
+     *  @param[in] owners        array of owners, each owner must be a value from 0 to nPartitions - 1
      *  @param[in] nOwners       number of entries in owners
      *  @param[in] compressFlag  will compress the computed plan
      *
@@ -183,17 +189,16 @@ public:
      *  CommunicationPlan plan;
      *  PartitionId owners[] = { 2, 1, 2, 1, 2, 1, 2 };
      *  PartitionId nOwners = sizeof( owners ) / sizeof ( PartitionId );
-     *  plan.allocate( 3, owners, nOwner );
+     *  plan.allocateByOwners( 3, owners, nOwner );
      *  \endcode
      */
-    void allocate( const PartitionId noPartitions, const PartitionId owners[], IndexType nOwners, bool compressFlag =
-                       true );
+    void allocateByOwners( const PartitionId nPartitions, const PartitionId owners[], IndexType nOwners, bool compressFlag = true );
 
-    /** Allocate a communication plan as the transposed plan of another communication plan.
+    /** Build a new communication plan that is the inverse of this plan 
      *
      *  processor[p].plan->entry[q].quantity  = processor[q].entry[p].quantity
      */
-    void allocateTranspose( const CommunicationPlan& plan, const Communicator& comm );
+    CommunicationPlan transpose( const Communicator& comm ) const;
 
     /** @brief Query whether this communication plan has already been allocated */
 
@@ -258,6 +263,24 @@ public:
     /** @brief build a communication plan with a single entry only */
 
     void singleEntry( const PartitionId p, const IndexType quantity );
+
+    /** Build a communication plan by sizes for each partition
+     *
+     *  @param sizes array of non-negative values, size is nPartitions
+     *  @param nPartitions number of entries for quantities
+     *  @param compressFlag if true zero-entries are removed.
+     *
+     *  \code
+     *  IndexType quantities[] = { 0, 3, 4 };
+     *  PartitionId nPartitions = sizeof( quantities ) / sizeof ( IndexType );
+     *  auto plan = CommunicationPlan::buildBySizes( quantities, nPartitions );
+     *  \endcode
+     */
+    static CommunicationPlan buildBySizes( const IndexType sizes[], const PartitionId nPartitions, bool compressFlag = true );
+
+    /** Build a new communication plan by offset array. */
+ 
+    static CommunicationPlan buildByOffsets( const IndexType offsets[], const PartitionId nPartitions, bool compressFlag = true );
 
 private:
 

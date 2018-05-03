@@ -45,7 +45,7 @@ include ( scai_function/relative_install )
 scai_module(
 
     MODULE_NAME   common
-    EXTERNAL_DEPS OpenMP CUDA MIC dl Thread 
+    EXTERNAL_DEPS OpenMP CUDA dl
 )
 
 ## Common now configures some include files
@@ -61,43 +61,76 @@ include ( scai_function/listToString )
 
 # Possible choices for numeric types ( more than one can be selected )
 
-set ( NONE_COMPLEX_VALUES "float" "double" "long double" )
-set ( COMPLEX_VALUES      "ComplexFloat" "ComplexDouble" "ComplexLongDouble" )
-set ( TYPE_LIST_VALUES    ${NONE_COMPLEX_VALUES} ${COMPLEX_VALUES} )
-set ( LONG_DOUBLE_VALUES  "long double" "ComplexLongDouble" )
+set ( REAL_VALUE_TYPES    "float" "double" "long double" )
+set ( COMPLEX_VALUE_TYPES "scai::ComplexFloat" "scai::ComplexDouble" "scai::ComplexLongDouble" )
+set ( NUMERIC_VALUE_TYPES ${REAL_VALUE_TYPES} ${COMPLEX_VALUE_TYPES} )
+set ( LONG_DOUBLE_VALUES  "long double" "scai::ComplexLongDouble" )
+
+## define USE_COMPLEX ( might be configured )
 
 ## define SCAI_HOST_TYPES_LIST ( might be configured )
 
-set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
-checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
+set ( SCAI_HOST_TYPES_LIST ${NUMERIC_VALUE_TYPES} CACHE STRING "Instantiation Types" )
+checkValues( "${SCAI_HOST_TYPES_LIST}" "${NUMERIC_VALUE_TYPES}" )
 
 ## external host types = host types without 'long' types
 
 set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
 
-## CUDA and MIC do not support 'long' types
+## CUDA does not support 'long' types
 
 set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )
-set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) 
 
 ## USE_COMPLEX : set it true if at least one complex type is instantiated
 
 set ( USE_COMPLEX FALSE )
 
 foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
-    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
+    list ( FIND COMPLEX_VALUE_TYPES ${ITEM} BOOLVALUE )
     if ( ${BOOLVALUE} GREATER -1 )
         set ( USE_COMPLEX TRUE )
     endif ()
 endforeach ()
 
+message( STATUS "USE_COMPLEX=${USE_COMPLEX}" )
+
 # make strings out of list
 
-listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
-listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
-listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
-listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
+listToString ( ", " "${SCAI_HOST_TYPES_LIST}" CMAKE_NUMERIC_TYPES_HOST )
+listToString ( ", " "${EXT_HOST_TYPES_LIST}" CMAKE_NUMERIC_TYPES_EXT_HOST )
+listToString ( ", " "${CUDA_TYPES_LIST}" CMAKE_NUMERIC_TYPES_CUDA )
+
+# select real (non-complex) types of host types 
+
+set ( REAL_TYPES_HOST ${SCAI_HOST_TYPES_LIST} )
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND REAL_VALUE_TYPES ${ITEM} _index )
+    if ( _index LESS 0 )
+        list( REMOVE_ITEM REAL_TYPES_HOST ${ITEM} )
+    endif()
+endforeach()
+
+listToString ( ", " "${REAL_TYPES_HOST}" CMAKE_REAL_TYPES_HOST )
+
+# find types that might be used for FFT
+
+set( FFT_TYPES_HOST ${SCAI_HOST_TYPES_LIST} )
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND REAL_VALUE_TYPES ${ITEM} _index )
+    if ( _index GREATER -1 )
+       list( GET COMPLEX_VALUE_TYPES ${_index} _ComplexType )
+    else ()
+        set( _ComplexType ${ITEM} )
+    endif()
+    list ( FIND SCAI_HOST_TYPES_LIST ${_ComplexType} _index )
+    # message ( STATUS "check type ${ITEM}, complex = ${_ComplexType}, found = ${_index}" )
+    if ( _index LESS 0 )
+       list ( REMOVE_ITEM FFT_TYPES_HOST ${ITEM} )
+    endif()
+endforeach()
+
+listToString ( ", " "${FFT_TYPES_HOST}" CMAKE_FFT_TYPES_HOST )
 
 ###################################################################
 ## Define index type that is used for addressing 32 or 64 bit    ##
@@ -111,25 +144,24 @@ scai_build_variable ( NAME      SCAI_INDEX_TYPE
                       DOCSTRING "IndexType" )
 
 # add IndexType for the array types, be careful about empty string
-concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
-concatString ( "IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
-concatString ( "IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
-concatString ( "IndexType" ", " "${MIC_TYPES}"  ARRAY_MIC_TYPES )
+concatString ( "scai::IndexType" ", " "${CMAKE_NUMERIC_TYPES_HOST}"  CMAKE_ARRAY_TYPES_HOST )
+concatString ( "scai::IndexType" ", " "${CMAKE_NUMERIC_TYPES_EXT_HOST}"  CMAKE_ARRAY_TYPES_EXT_HOST )
+concatString ( "scai::IndexType" ", " "${CMAKE_NUMERIC_TYPES_CUDA}"  CMAKE_ARRAY_TYPES_CUDA )
 
-# SCAI_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
+# CMAKE_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
 
 set ( INDEX1 -1 )
 set ( INDEX2 -1 )
 
 foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
 
-    list ( FIND NONE_COMPLEX_VALUES ${ITEM} FOUND_INDEX1 )
+    list ( FIND REAL_VALUE_TYPES ${ITEM} FOUND_INDEX1 )
     if    ( FOUND_INDEX1 GREATER INDEX1 )
         set ( INDEX1 ${FOUND_INDEX1})
     endif ( FOUND_INDEX1 GREATER INDEX1 )
 
     if    ( ${USE_COMPLEX} )
-        list ( FIND COMPLEX_VALUES ${ITEM} FOUND_INDEX2 )
+        list ( FIND COMPLEX_VALUE_TYPES ${ITEM} FOUND_INDEX2 )
         if    ( FOUND_INDEX2 GREATER INDEX2 )
             set ( INDEX2 ${FOUND_INDEX2})
         endif ( FOUND_INDEX2 GREATER INDEX2 )
@@ -139,22 +171,22 @@ endforeach ()
 
 if ( ${USE_COMPLEX} )
     if    ( INDEX1 GREATER INDEX2 )
-        list ( LENGTH NONE_COMPLEX_VALUES INDEX )
+        list ( LENGTH REAL_VALUE_TYPES INDEX )
         math ( EXPR INDEX "${INDEX}+${INDEX1}")
-        list ( GET TYPE_LIST_VALUES ${INDEX} SCAI_SCALAR_REP_TYPE ) # take biggest combinatation as value type
+        list ( GET NUMERIC_VALUE_TYPES ${INDEX} CMAKE_SCALAR_REP_TYPE ) # take biggest combinatation as value type
     else  ( INDEX1 GREATER INDEX2 )
-        list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
+        list ( GET COMPLEX_VALUE_TYPES ${INDEX2} CMAKE_SCALAR_REP_TYPE ) # take biggest complex value type
     endif ( INDEX1 GREATER INDEX2 )
 else  ()
-    list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
+    list ( GET REAL_VALUE_TYPES ${INDEX1} CMAKE_SCALAR_REP_TYPE ) # take biggest none complex value type
 endif ()
 
 # SCAI_USE_COMPLEX ( 0 or 1 ) is required 
 
 if ( ${USE_COMPLEX} )
-    set ( SCAI_USE_COMPLEX 1 )
+    set ( SCAI_USE_COMPLEX 1 CACHE BOOL "use complex" )
 else ()
-    set ( SCAI_USE_COMPLEX 0 )
+    set ( SCAI_USE_COMPLEX 0 CACHE BOOL "use complex" )
 endif ()
 
 ###################################
@@ -180,6 +212,7 @@ set ( COMMON_SOURCES
 
 set ( COMMON_CLASSES
 
+        AccessKind
         Printable
         ScalarType
         ContextType
@@ -187,6 +220,7 @@ set ( COMMON_CLASSES
         Settings
         Walltime
         LibModule
+        thread
         TypeTraits
 )
 
@@ -195,62 +229,32 @@ set ( COMMON_CLASSES
 set ( COMMON_HEADERS 
         config
         BinaryOp
+        CompareOp
         Constants
         Factory
         Factory1
         Math
+        MatrixOp
         OpenMP
         NonCopyable
         Stencil
         UnaryOp
         Utils
+        safer_memcpy
 )
 
-if ( ${USE_COMPLEX} )
+if ( ${SCAI_USE_COMPLEX} )
     list ( APPEND COMMON_HEADERS Complex )
-endif ( ${USE_COMPLEX} )
+endif ( ${SCAI_USE_COMPLEX} )
 
 ## Boost used -> generate and add a boost check version file 
 
-if ( NOT CXX_SUPPORTS_C11 OR USE_BOOST_TEST )
+if ( USE_BOOST_TEST )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
     install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION "include/scai/${MODULE_NAME}" )
 endif ()
 
-## configure c++11/boost dependent sources
-
-if ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CONFIGURE_DIR}/bind.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CONFIGURE_DIR}/function.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CONFIGURE_DIR}/shared_ptr.hpp" )
-    if    ( ${Boost_VERSION} GREATER "105700" )
-        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost_157" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    else  ( ${Boost_VERSION} GREATER "105700" )
-        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    endif ( ${Boost_VERSION} GREATER "105700" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-else ()
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CONFIGURE_DIR}/bind.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CONFIGURE_DIR}/function.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CONFIGURE_DIR}/shared_ptr.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-endif ()
-
-## configure c++11/pthread dependent headers, add specific sources
-
-#if    ( CXX_SUPPORTS_C11 )
-#    list ( APPEND COMMON_SOURCES Thread )
-#    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in" "${CONFIGURE_DIR}/Thread.hpp" )
-#else  ( CXX_SUPPORTS_C11 )
-    list ( APPEND COMMON_SOURCES Thread_pthread )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in_pthread" "${CONFIGURE_DIR}/Thread.hpp" )
-#endif (  CXX_SUPPORTS_C11 )
-
-install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
-                ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
-                ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
-                ${CONFIGURE_DIR}/Thread.hpp 
+install ( FILES ${CONFIGURE_DIR}/SCAITypes.hpp
           DESTINATION "include/scai/${MODULE_NAME}" )
 
 scai_project( 
@@ -260,9 +264,9 @@ scai_project(
     HEADERS ${COMMON_HEADERS}
 )
 
-## add subdirectories, add cuda and mic even if CUDA or MIC disabled for include file
+## add subdirectories, add cuda even if CUDA is disabled for include file
 
-scai_subdirectories( cuda EXAMPLES exception macros mepr mic TEST )
+scai_subdirectories( cuda EXAMPLES exception macros mepr TEST )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
@@ -276,6 +280,10 @@ scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
                TYPE    ${SCAI_LIBRARY_TYPE}
                VERSION ${SCAI_VERSION}
                ${CXX_SOURCES} )
+
+## using std::Thread in C++ compiler with C++11 support requires linking pthread library
+
+target_link_libraries( ${MODULE_LIBRARY} pthread )
 
 ### install ###
 

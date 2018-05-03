@@ -37,8 +37,9 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
+
 #include <iostream>
+#include <memory>
 
 /* --------------------------------------------------------------------- */
 
@@ -183,9 +184,9 @@ int main( int argc, const char** argv )
                d_csr_ia, d_coo_ja, d_coo_values,
                numRows, numColumns, numValues );
     // free memory on device and get host data
-    common::scoped_array<int> csc_ia( new int[numValues] );
-    common::scoped_array<int> csc_ja( new int[numColumns + 1] );
-    common::scoped_array<float> csc_values( new float[numValues] );
+    std::unique_ptr<int[]> csc_ia( new int[numValues] );
+    std::unique_ptr<int[]> csc_ja( new int[numColumns + 1] );
+    std::unique_ptr<float[]> csc_values( new float[numValues] );
     myFree( d_coo_ia );
     myFree( d_csr_values );
     myFree( d_csr_ia );

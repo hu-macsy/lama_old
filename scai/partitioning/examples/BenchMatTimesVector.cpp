@@ -37,20 +37,20 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/common/Walltime.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/partitioning/Partitioning.hpp>
+
+#include <memory>
 
 using namespace scai;
 using namespace lama;
@@ -59,17 +59,17 @@ using namespace partitioning;
 using namespace std;
 using scai::common::Walltime;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 static void bench( CSRSparseMatrix<ValueType>& mat )
 {
-    DenseVector<ValueType> y( mat.getColDistributionPtr(), 1.0 );
-    DenseVector<ValueType> x( mat.getRowDistributionPtr(), 0.0 );
+    auto y = fill<DenseVector<ValueType>>( mat.getColDistributionPtr(), 1 );
+    auto x = fill<DenseVector<ValueType>>( mat.getRowDistributionPtr(), 0 );
 
     x = x + mat * y;  // warm up
     x = x + mat * y;  // warm up
 
-    mat.setCommunicationKind( Matrix::SYNCHRONOUS );
+    mat.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
     CommunicatorPtr comm = mat.getRowDistribution().getCommunicatorPtr();
 
@@ -114,14 +114,24 @@ int main( int argc, const char* argv[] )
 
     if ( argc < 3 )
     {
-        std::cout << "Please call: " << argv[0] << " matrixFileName [ BLOCK | METIS | .... ] " << std::endl;
+        std::cout << "Please call: " << argv[0] << " matrixFileName [ FILE <rowdist> <coldist> | BLOCK | CYCLIC | METIS | .... ] " << std::endl;
         return -1;
     }
 
     CSRSparseMatrix<ValueType> m;
+
     m.readFromFile( argv[1] );
 
-    if ( !Partitioning::canCreate( argv[2] ) )
+    if ( strcmp( argv[2], "FILE" ) == 0 )
+    {
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+        DistributionPtr rowDist = PartitionIO::readDistribution( argv[3], comm );
+        DistributionPtr colDist = PartitionIO::readDistribution( argv[4], comm );
+
+        m.redistribute( rowDist, colDist );
+    }
+    else if ( !Partitioning::canCreate( argv[2] ) )
     {
         std::cout << "ERROR: Partitioning kind = " << argv[2] << " not supported" << std::endl;
 
@@ -140,10 +150,12 @@ int main( int argc, const char* argv[] )
 
         return -1;
     }
+    else
+    {
+        PartitioningPtr thePartitioning( Partitioning::create( argv[2] ) );
 
-    PartitioningPtr thePartitioning( Partitioning::create( argv[2] ) );
-
-    thePartitioning->rectangularRedistribute( m, 1.0 );
+        thePartitioning->rectangularRedistribute( m, 1.0 );
+    }
 
     CommunicatorPtr comm = m.getRowDistribution().getCommunicatorPtr();
 

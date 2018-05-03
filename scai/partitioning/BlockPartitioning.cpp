@@ -68,22 +68,12 @@ void BlockPartitioning::writeAt( std::ostream& stream ) const
     stream << "BlockPartitioning";
 }
 
-DistributionPtr BlockPartitioning::partitionIt( const CommunicatorPtr comm, const Matrix& matrix, float weight ) const
-{
-    IndexType globalSize = matrix.getRowDistribution().getGlobalSize();
-
-    // Block partitioning : just create a 'general' block distribution
-    // Note: this does not take the connections into account 
-
-    return DistributionPtr( new GenBlockDistribution( globalSize, weight, comm ) );
-}
-
 /* ---------------------------------------------------------------------------------*/
 
 void BlockPartitioning::rectangularPartitioning( 
     HArray<PartitionId>& rowMapping,
     HArray<PartitionId>& colMapping,
-    const Matrix& matrix,
+    const _Matrix& matrix,
     const HArray<float>& processorWeights ) const
 {
     IndexType npart = processorWeights.size();
@@ -122,7 +112,41 @@ void BlockPartitioning::rectangularPartitioning(
 
 /* ---------------------------------------------------------------------------------*/
 
-void BlockPartitioning::rectangularRedistribute( Matrix& matrix, const float weight ) const
+void BlockPartitioning::squarePartitioning(
+    HArray<PartitionId>& newLocalOwners,
+    const _Matrix& matrix,
+    const HArray<float>& processorWeights ) const
+{
+    IndexType npart = processorWeights.size();
+
+    SCAI_ASSERT_EQ_ERROR( matrix.getNumRows(), matrix.getNumColumns(), "square partitioning only for square matrices" )
+
+    IndexType n = matrix.getNumRows();
+
+    IndexType nb = ( n + npart - 1 ) / npart;  // block size
+
+    // weights is not taken into account yet
+    // ToDo: make the mapping like it is done for a general block distribution with weights
+
+    const Distribution& dist = matrix.getRowDistribution();
+
+    IndexType nLocal = dist.getLocalSize();
+
+    HArray<IndexType> ownedIndexes;
+    dist.getOwnedIndexes( ownedIndexes );
+
+    WriteOnlyAccess<PartitionId> wMapping( newLocalOwners, nLocal );
+    ReadAccess<IndexType> rOwners( ownedIndexes );
+
+    for ( IndexType i = 0; i < nLocal; ++i )
+    {
+        wMapping[i] = rOwners[i] / nb;
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float weight ) const
 {
     CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 

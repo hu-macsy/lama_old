@@ -40,11 +40,8 @@ extern "C" inline const char* lama_get_version()
 }
 
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/Vector.hpp>
-
-// Expressions
-#include <scai/lama/expression/all.hpp>
 
 // Matrices
 #include <scai/lama/matrix/all.hpp>
@@ -66,5 +63,4 @@ extern "C" inline const char* lama_get_version()
 #include <scai/lama/storage/JDSStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
-#include <scai/lama/storage/SparseAssemblyStorage.hpp>
 #include <scai/lama/storage/StorageMethods.hpp>

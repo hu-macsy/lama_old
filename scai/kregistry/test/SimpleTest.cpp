@@ -46,13 +46,13 @@ static void dummyRoutine()
 BOOST_AUTO_TEST_CASE( SimpleTest )
 {
     // This simple test registers a function in the kernel registry and uses it later
-    KernelRegistry::set( dummyRoutine, "dummy", context::Host, KernelRegistry::KERNEL_ADD );
+    KernelRegistry::set( dummyRoutine, "dummy", ContextType::Host, KernelRegistry::KERNEL_ADD );
     KernelContextFunction<void(* )()> f( "dummy" );
-    f[ context::Host ]();  // just call it
+    f[ ContextType::Host ]();  // just call it
     // throw exception if called for CUDA, not registered
     BOOST_CHECK_THROW(
     {
-        f[ context::CUDA ]();
+        f[ ContextType::CUDA ]();
 
     }, KernelRegistryException );
     BOOST_CHECK_THROW(

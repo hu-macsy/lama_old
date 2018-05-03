@@ -36,7 +36,8 @@
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 
-using scai::hmemo::HArray;
+namespace scai
+{
 
 namespace data1
 {
@@ -47,7 +48,7 @@ template<typename ValueType>
 static void getDenseTestData(
     IndexType& numRows,
     IndexType& numColumns,
-    HArray<ValueType>& denseValues )
+    hmemo::HArray<ValueType>& denseValues )
 {
     /*   Matrix:       6  0  0  4         0  3  -    6  4  -
                        7  0  0  0         0  -  -    7  -  -
@@ -81,7 +82,7 @@ static void getDenseTestData(
 
 /** Return  a vector with indexes of all rows that are not empty */
 
-static inline void getRowIndexes( HArray<IndexType>& rowIndexes )
+static inline void getRowIndexes( hmemo::HArray<IndexType>& rowIndexes )
 {
     const IndexType nonzero_rows[]  = { 0, 1, 2, 3, 4, 6 };   // only row 5 is empty
 
@@ -97,9 +98,9 @@ static void getCSRTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValues,
-    HArray<IndexType>& csrIA,
-    HArray<IndexType>& csrJA,
-    HArray<ValueType>& csrValues )
+    hmemo::HArray<IndexType>& csrIA,
+    hmemo::HArray<IndexType>& csrJA,
+    hmemo::HArray<ValueType>& csrValues )
 {
     /*   Matrix:       6  0  0  4         0  3  -    6  4  -
                        7  0  0  0         0  -  -    7  -  -
@@ -132,9 +133,9 @@ static void getCSCTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValues,
-    HArray<IndexType>& cscIA,
-    HArray<IndexType>& cscJA,
-    HArray<ValueType>& cscValues )
+    hmemo::HArray<IndexType>& cscIA,
+    hmemo::HArray<IndexType>& cscJA,
+    hmemo::HArray<ValueType>& cscValues )
 {
     /*   Matrix:       6  0  0  4         0    3   2   0        6  5  9  4
                        7  0  0  0         1    6       2        7  1     4
@@ -167,9 +168,9 @@ static void getELLTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValuesPerRow,
-    HArray<IndexType>& ellIA,
-    HArray<IndexType>& ellJA,
-    HArray<ValueType>& ellValues )
+    hmemo::HArray<IndexType>& ellIA,
+    hmemo::HArray<IndexType>& ellJA,
+    hmemo::HArray<ValueType>& ellValues )
 {
     /*   Matrix:       6  0  0  4         0  3  -    6  4  -
                        7  0  0  0         0  -  -    7  -  -
@@ -212,11 +213,11 @@ static void getJDSTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numDiagonals,
-    HArray<IndexType>& jdsPerm,
-    HArray<IndexType>& jdsILG,
-    HArray<IndexType>& jdsDLG,
-    HArray<IndexType>& jdsJA,
-    HArray<ValueType>& jdsValues )
+    hmemo::HArray<IndexType>& jdsPerm,
+    hmemo::HArray<IndexType>& jdsILG,
+    hmemo::HArray<IndexType>& jdsDLG,
+    hmemo::HArray<IndexType>& jdsJA,
+    hmemo::HArray<ValueType>& jdsValues )
 {
     /*   Matrix:       6  0  0  4         0  3  -    6  4  -
                        7  0  0  0         0  -  -    7  -  -
@@ -267,8 +268,8 @@ static void getDIATestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numDiagonals,
-    HArray<IndexType>& diaOffsets,
-    HArray<ValueType>& diaValues )
+    hmemo::HArray<IndexType>& diaOffsets,
+    hmemo::HArray<ValueType>& diaValues )
 {
     /*                -5 -4 -3 -2 -1  0  1  2  3
 
@@ -320,9 +321,9 @@ static void getCOOTestData(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValues,
-    HArray<IndexType>& cooIA,
-    HArray<IndexType>& cooJA,
-    HArray<ValueType>& cooValues )
+    hmemo::HArray<IndexType>& cooIA,
+    hmemo::HArray<IndexType>& cooJA,
+    hmemo::HArray<ValueType>& cooValues )
 {
     /*   Matrix:       6  0  0  4
                        7  0  0  0
@@ -351,25 +352,27 @@ static void getCOOTestData(
 /** This method computes the result of a matrix-vector multiplication via dense data by hand */
 
 template<typename ValueType>
-static void getGEMVResult( HArray<ValueType>& res,
-                           const ValueType alpha,
-                           const HArray<ValueType>& x,
-                           const ValueType beta,
-                           const HArray<ValueType>& y )
+static hmemo::HArray<ValueType> getGEMVNormalResult(
+    const ValueType alpha,
+    const hmemo::HArray<ValueType>& x,
+    const ValueType beta,
+    const hmemo::HArray<ValueType>& y )
 {
     IndexType numRows;
     IndexType numColumns;
 
-    HArray<ValueType> denseValues;
+    hmemo::HArray<ValueType> denseValues;
 
     getDenseTestData( numRows, numColumns, denseValues );
 
     SCAI_ASSERT_EQ_ERROR( x.size(), numColumns, "size mismatch for x" )
     SCAI_ASSERT_EQ_ERROR( y.size(), numRows, "size mismatch for y" )
 
+    hmemo::HArray<ValueType> res;
+
     {
-        using scai::hmemo::ReadAccess;
-        using scai::hmemo::WriteOnlyAccess;
+        using hmemo::ReadAccess;
+        using hmemo::WriteOnlyAccess;
 
         ReadAccess<ValueType> rX( x );
         ReadAccess<ValueType> rY( y );
@@ -388,21 +391,23 @@ static void getGEMVResult( HArray<ValueType>& res,
             wRes[i] = alpha * v + beta * rY[i];
         }
     }
+
+    return res;
 }
 
 /* ------------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-static void getReduceResult( HArray<ValueType>& res,
+static void getReduceResult( hmemo::HArray<ValueType>& res,
                              IndexType dim )
 {
-    using scai::hmemo::ReadAccess;
-    using scai::hmemo::WriteOnlyAccess;
+    using hmemo::ReadAccess;
+    using hmemo::WriteOnlyAccess;
 
     IndexType numRows;
     IndexType numColumns;
 
-    HArray<ValueType> denseValues;
+    hmemo::HArray<ValueType> denseValues;
 
     getDenseTestData( numRows, numColumns, denseValues );
 
@@ -449,25 +454,27 @@ static void getReduceResult( HArray<ValueType>& res,
 /** This method computes the result of a vector-matrix multiplication via dense data by hand */
 
 template<typename ValueType>
-static void getGEVMResult( HArray<ValueType>& res,
-                           const ValueType alpha,
-                           const HArray<ValueType>& x,
-                           const ValueType beta,
-                           const HArray<ValueType>& y )
+static hmemo::HArray<ValueType> getGEMVTransposeResult( 
+    const ValueType alpha,
+    const hmemo::HArray<ValueType>& x,
+    const ValueType beta,
+    const hmemo::HArray<ValueType>& y )
 {
     IndexType numRows;
     IndexType numColumns;
 
-    HArray<ValueType> denseValues;
+    hmemo::HArray<ValueType> denseValues;
 
     getDenseTestData( numRows, numColumns, denseValues );
 
     SCAI_ASSERT_EQ_ERROR( x.size(), numRows, "size mismatch for x" )
     SCAI_ASSERT_EQ_ERROR( y.size(), numColumns, "size mismatch for y" )
 
+    hmemo::HArray<ValueType> res;
+
     {
-        using scai::hmemo::ReadAccess;
-        using scai::hmemo::WriteOnlyAccess;
+        using hmemo::ReadAccess;
+        using hmemo::WriteOnlyAccess;
 
         ReadAccess<ValueType> rX( x );
         ReadAccess<ValueType> rY( y );
@@ -486,6 +493,8 @@ static void getGEVMResult( HArray<ValueType>& res,
             wRes[j] = alpha * v + beta * rY[j];
         }
     }
+
+    return res;
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -493,15 +502,15 @@ static void getGEVMResult( HArray<ValueType>& res,
 /** This method computes the result of a jacobi step by hand */
 
 template<typename ValueType>
-static void getJacobiHaloResult( HArray<ValueType>& solution,
-                                 const HArray<ValueType>& oldSolution,
-                                 const HArray<ValueType>& diag,
+static void getJacobiHaloResult( hmemo::HArray<ValueType>& solution,
+                                 const hmemo::HArray<ValueType>& oldSolution,
+                                 const hmemo::HArray<ValueType>& diag,
                                  const ValueType omega )
 {
     IndexType numRows;
     IndexType numColumns;
 
-    HArray<ValueType> denseValues;
+    hmemo::HArray<ValueType> denseValues;
 
     getDenseTestData( numRows, numColumns, denseValues );
 
@@ -510,8 +519,8 @@ static void getJacobiHaloResult( HArray<ValueType>& solution,
     SCAI_ASSERT_EQ_ERROR( diag.size(), numRows, "size mismatch for diagonal" )
 
     {
-        using scai::hmemo::ReadAccess;
-        using scai::hmemo::WriteAccess;
+        using hmemo::ReadAccess;
+        using hmemo::WriteAccess;
 
         ReadAccess<ValueType> rOld( oldSolution );
         ReadAccess<ValueType> rDiag( diag );
@@ -541,5 +550,7 @@ static ValueType getMaxVal()
 }
 
 /* ------------------------------------------------------------------------------------- */
+
+}
 
 }

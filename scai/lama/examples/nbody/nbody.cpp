@@ -44,8 +44,8 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
+#include <scai/lama/DenseVector.hpp>
 
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
@@ -56,14 +56,16 @@
 
 #include <math.h>
 
-using namespace scai::lama;
-using scai::hmemo::ReadAccess;
-using scai::hmemo::WriteAccess;
-using scai::dmemo::Distributed;
-using scai::common::Math;
+using namespace scai;
+using namespace lama;
+using hmemo::ReadAccess;
+using hmemo::WriteAccess;
+using dmemo::Distributed;
+using common::Math;
+using common::UnaryOp;
 
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 
 #define DIMx 900                // dimension of displayed window
@@ -79,18 +81,17 @@ ValueType radius = 1e18;           // radius of the universe
 
 IndexType iter = 0;               // global iteration count
 
-DenseVector<ValueType> x( nBodies, 0.0 );
-DenseVector<ValueType> y( nBodies, 0.0 );
+auto x = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto y = fill<DenseVector<ValueType>>( nBodies, 0 );
 
-DenseVector<ValueType> vx( nBodies, 0.0 );
-DenseVector<ValueType> vy( nBodies, 0.0 );
+auto vx = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto vy = fill<DenseVector<ValueType>>( nBodies, 0 );
 
-DenseVector<ValueType> fx( nBodies, 0.0 );
-DenseVector<ValueType> fy( nBodies, 0.0 );
+auto fx = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto fy = fill<DenseVector<ValueType>>( nBodies, 0 );
 
-DenseVector<ValueType> mass( nBodies, 0.0 );
-DenseVector<ValueType> inversemass( nBodies, 0.0 );
-
+auto mass        = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto inversemass = fill<DenseVector<ValueType>>( nBodies, 0 );
 
 void randomBodies( )
 {
@@ -108,8 +109,8 @@ void randomBodies( )
     // circular velocities for each particle depenent on particle position
     for ( IndexType i = 0; i < nBodies; i++ )
     {
-        ValueType px = x.getValue( i ).getValue<ValueType>();
-        ValueType py = y.getValue( i ).getValue<ValueType>();
+        ValueType px = x.getValue( i );
+        ValueType py = y.getValue( i );
 
         ValueType denum = Math::sqrt( px * px + py * py );
         ValueType num = ( 6.67e-11 ) * 1e6 * maxMass;
@@ -133,24 +134,23 @@ void randomBodies( )
     vy.setValue( 0, 0.0 );
     mass.setValue( 0, maxMass );
 
-    inversemass = mass;
-    inversemass.invert( );
-
+    inversemass = 1 / mass;
 }
 
 void updateParticles( )
 {
-    DenseVector<ValueType> help( nBodies, 0.0 );
+    DenseVector<ValueType> help;
 
     // update velocities  v  = v + (dt * fx)/mass
+
     help = dt * fx;
-    help *= inversemass;
+    help *= inversemass;  // elementwise multiplication
     vx += help;
 
     help = 0.0;
 
     help = dt * fy;
-    help *= inversemass;
+    help *= inversemass;  
     vy += help;
 
     // update coordinates new-pos = old-pos + dt * velocity
@@ -166,19 +166,19 @@ void resetForce( )
 
 void computeForce( IndexType i, IndexType j )
 {
-    ValueType dx = x.getValue( j ).getValue<ValueType>() - x.getValue( i ).getValue<ValueType>();
-    ValueType dy = y.getValue( j ).getValue<ValueType>() - y.getValue( i ).getValue<ValueType>();
+    ValueType dx = x.getValue( j ) - x.getValue( i );
+    ValueType dy = y.getValue( j ) - y.getValue( i );
 
     // distance between the bodies
     ValueType dist = Math::sqrt( dx * dx + dy * dy );
 
     // force between the bodies = ( gravity * mass(a) * mass(b) ) / ( distance^2 + softening^2)         -> softening used to avoid infinities
-    ValueType force = ( G * mass.getValue( i ).getValue<ValueType>() * mass.getValue( j ).getValue<ValueType>() ) / ( dist * dist + softening * softening );
+    ValueType force = ( G * mass.getValue( i ) * mass.getValue( j ) ) / ( dist * dist + softening * softening );
 
     // force update for bodie a : force(a) = sum of the forces between a and all other bodies
     // force(a) += dx * force between a and b / distance between a and b
-    ValueType f1 = fx.getValue( i ).getValue<ValueType>() + dx * force / dist;
-    ValueType f2 = fy.getValue( i ).getValue<ValueType>() + dy * force / dist;
+    ValueType f1 = fx.getValue( i ) + dx * force / dist;
+    ValueType f2 = fy.getValue( i ) + dy * force / dist;
 
     // update global Force
     fx.setValue( i, f1 );
@@ -214,9 +214,9 @@ void onDisplay()
     for ( IndexType i = 0; i < nBodies; i++ )
     {
         // get position and mass of each body
-        ValueType xpos = x.getValue( i ).getValue<ValueType>() * ( DIMx - 5.0 ) / radius ;
-        ValueType ypos = y.getValue( i ).getValue<ValueType>() * ( DIMy - 5.0 ) / radius;
-        ValueType m = mass.getValue( i ).getValue<ValueType>();
+        ValueType xpos = x.getValue( i ) * ( DIMx - 5.0 ) / radius ;
+        ValueType ypos = y.getValue( i ) * ( DIMy - 5.0 ) / radius;
+        ValueType m = mass.getValue( i );
         m *= 1.0 / ( ( ValueType )maxMass );
 
         glColor3f( 0.90, 0.91, 0.98 );

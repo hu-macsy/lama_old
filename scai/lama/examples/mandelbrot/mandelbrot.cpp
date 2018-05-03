@@ -41,19 +41,19 @@
 #include <GL/glut.h>
 #endif
 
-#include <scai/lama.hpp>
-
+#include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/expression/VectorExpressions.hpp>
 
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
-using namespace scai::lama;
-using scai::hmemo::ReadAccess;
-using scai::hmemo::WriteAccess;
+using namespace scai;
+using namespace lama;
+using hmemo::ReadAccess;
+using hmemo::WriteAccess;
 
-typedef float ValueType;
+typedef DefaultReal ValueType;
 
 /*
 *defining a RGB struct to color the pixel
@@ -83,31 +83,32 @@ struct Type_rgb pixels[DIMy* DIMx];
 
 void Julia()
 {
-    DenseVector<ValueType> ind( DIMy * DIMx, 0.0 );
-    DenseVector<ValueType> cReal( DIMx * DIMy, 0.0 );
-    DenseVector<ValueType> cImag( DIMx * DIMy, 0.0 );
-    DenseVector<ValueType> mag( DIMy * DIMx, 0.0 );
-    DenseVector<ValueType> help( DIMy * DIMx, 0.0 );
-    DenseVector<ValueType> help2( DIMy * DIMx, 0.0 );
+    auto ind   = fill<DenseVector<ValueType>>( DIMy * DIMx, 0 );
+    auto cReal = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
+    auto cImag = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
+    auto mag   = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
+    auto help  = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
+    auto help2 = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
 
-    DenseVector<ValueType> aReal( DIMx * DIMy, -0.8 );
-    DenseVector<ValueType> aImag( DIMx * DIMy, 0.156 );
+    auto aReal = fill<DenseVector<ValueType>>( DIMx * DIMy, -0.8 );
+    auto aImag = fill<DenseVector<ValueType>>( DIMx * DIMy, 0.156 );
 
-    DenseVector<ValueType> yreal;
-    yreal.setRange( DIMy, 0.0, 1.0 );
-    DenseVector<ValueType> xreal;
-    xreal.setRange( DIMx, 0.0, 1.0 );
+    auto yreal = linearDenseVector<ValueType>( DIMy, 0, 1 );
+    auto xreal = linearDenseVector<ValueType>( DIMx, 0, 1 );
 
-    DenseVector<ValueType> eye1( DIMx, 1.0 );
-    DenseVector<ValueType> eye2( DIMy, 1.0 );
+    auto eye1 = fill<DenseVector<ValueType>>( DIMx, 1.0 );
+    auto eye2 = fill<DenseVector<ValueType>>( DIMy, 1.0 );
+
     ValueType w = 0.5 * DIMx;
     ValueType h = 0.5 * DIMy;
-    xreal = ( eye1 * w - xreal );
+
+    xreal = eye1 * w - xreal;
     xreal = xreal / w;
     xreal *= 1.5;
-    yreal = ( eye2 * h - yreal );
+    yreal = eye2 * h - yreal;
     yreal = yreal / h;
     yreal *= 1.5;
+
     {
         ReadAccess<ValueType> x1( xreal.getLocalValues() );
         ReadAccess<ValueType> y1( yreal.getLocalValues() );
@@ -129,7 +130,7 @@ void Julia()
     {
         help = cReal * cReal;
         help2 = cImag * cImag;
-        cImag = 2.0 * cReal * cImag;
+        cImag = ValueType( 2 ) * cReal * cImag;
         cReal = help - help2;
         cReal += aReal;
         cImag += aImag;

@@ -43,11 +43,11 @@
 
 #include <scai/tracing.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <locale>
 #include <string>
+#include <memory>
 
 using namespace std;
 using namespace scai::hmemo;
@@ -69,10 +69,6 @@ std::ostream& operator<<( std::ostream& stream, const _Communicator::Communicato
 
         case _Communicator::MPI :
             stream << "MPI";
-            break;
-
-        case _Communicator::GPI :
-            stream << "GPI";
             break;
 
         default:
@@ -99,13 +95,6 @@ CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
         return create( MPI );
     }
 
-    // no MPI, try GPI communicator for default
-
-    if ( canCreate( GPI ) )
-    {
-        return create( GPI );
-    }
-
     // if even NO is not availabe an exception is thrown
     return create( NO );
 }
@@ -126,11 +115,6 @@ CommunicatorPtr Communicator::getCommunicatorPtr()
         if ( comm == "MPI" )
         {
             return getCommunicatorPtr( MPI );
-        }
-
-        if ( comm == "GPI" )
-        {
-            return getCommunicatorPtr( GPI );
         }
 
         if ( comm == "NO" )
@@ -442,8 +426,8 @@ void Communicator::sumArray( HArray<ValueType>& array ) const
 {
     ContextPtr commContext = getCommunicationContext( array );
 
-    SCAI_LOG_INFO( logger, "sumArray<" << common::TypeTraits<ValueType>::id() 
-                           << " at this context " << *commContext << ", array = " << array )
+    SCAI_LOG_INFO( logger, "sumArray<" << common::TypeTraits<ValueType>::id()
+                   << " at this context " << *commContext << ", array = " << array )
 
     SCAI_CONTEXT_ACCESS( commContext );
 
@@ -475,7 +459,7 @@ void Communicator::shiftArray(
 
     ContextPtr commContext = getCommunicationContext( sendArray );
 
-    SCAI_LOG_INFO( logger, "shiftArray<" << common::TypeTraits<ValueType>::id() 
+    SCAI_LOG_INFO( logger, "shiftArray<" << common::TypeTraits<ValueType>::id()
                    << " at this context " << *commContext << ", sendArray = " << sendArray
                    << ", recvArray = " << recvArray )
 
@@ -516,7 +500,7 @@ void Communicator::joinArray(
         {
             // my turn for broadcast
 
-            utilskernel::HArrayUtils::assign( bufferArray, localArray );
+            utilskernel::HArrayUtils::_assign( bufferArray, localArray );
         }
 
         bcastArray( bufferArray, p );
@@ -527,6 +511,7 @@ void Communicator::joinArray(
             WriteAccess<ValueType> wGlobal( globalArray );
             ReadAccess<ValueType> rLocal( bufferArray );
             wGlobal.resize( currentSize + rLocal.size() );
+
             for ( IndexType i = 0; i < rLocal.size(); ++i )
             {
                 wGlobal[currentSize + i] = rLocal[i];
@@ -555,7 +540,7 @@ void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, cons
 
         ReadAccess<ValueType> rArray( array, commContext );   // WriteAccess might invalidate data
 
-        ValueType* arrayPtr = const_cast<ValueType*>( rArray.get() ); 
+        ValueType* arrayPtr = const_cast<ValueType*>( rArray.get() );
 
         bcast( arrayPtr, n, root ); // bcast the array
     }
@@ -579,12 +564,12 @@ void Communicator::bcastArray( HArray<ValueType>& array, const PartitionId root 
     IndexType n = 0;
 
     if ( root == getRank() )
-    {   
+    {
         n = array.size();
     }
 
     bcast( &n, 1, root );
-    
+
     bcastArray( array, n, root );
 }
 
@@ -611,7 +596,7 @@ SyncToken* Communicator::shiftAsync(
     recvData.resize( numElems ); // size should fit at least to keep own data
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
-    common::unique_ptr<SyncToken> syncToken( shiftAsync( recvData.get(), sendData.get(), numElems, direction ) );
+    std::unique_ptr<SyncToken> syncToken( shiftAsync( recvData.get(), sendData.get(), numElems, direction ) );
     SCAI_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
     // release of accesses are delayed, add routines  in the sync token so they are called at synchonization
     syncToken->pushRoutine( sendData.releaseDelayed() );
@@ -644,14 +629,14 @@ void Communicator::updateHalo(
     IndexType numSendValues = providesPlan.totalQuantity();
     HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
 
-    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), common::binary::COPY );
+    utilskernel::HArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
 
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
 }
 
 /* -------------------------------------------------------------------------- */
 
-static void releaseArray( common::shared_ptr<_HArray> array )
+static void releaseArray( std::shared_ptr<_HArray> array )
 {
     array->clear();
 }
@@ -680,17 +665,17 @@ SyncToken* Communicator::updateHaloAsync(
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    common::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
+    std::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
 
     // put together the (send) values to provide for other partitions
 
-    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), common::binary::COPY );
+    utilskernel::HArrayUtils::gather( *sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
 
     SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
 
     // Also push the sendValues array to the token so it will be freed after synchronization
     // Note: it is guaranteed that access to sendValues is freed before sendValues
-    token->pushRoutine( common::bind( releaseArray, sendValues ) );
+    token->pushRoutine( std::bind( releaseArray, sendValues ) );
     return token;
 }
 
@@ -705,26 +690,26 @@ void Communicator::computeOwners(
 {
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
-    IndexType nIndexes = requiredIndexes.size();
+    IndexType numIndexes = requiredIndexes.size();
 
-    hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, ctx, nIndexes );
+    hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, ctx, numIndexes );
     hmemo::ReadAccess<IndexType> rIndexes( requiredIndexes, ctx );
 
-    computeOwners( wOwners.get(), distribution, rIndexes.get(), nIndexes );
+    computeOwners( wOwners.get(), distribution, rIndexes.get(), numIndexes );
 }
 
 void Communicator::computeOwners(
     PartitionId owners[],
     const Distribution& distribution,
     const IndexType requiredIndexes[],
-    const IndexType nIndexes ) const
+    const IndexType numIndexes ) const
 {
     // Note: this routine is only supported on Host, may change in future releases
 
     PartitionId rank = getRank();
     PartitionId size = getSize();
 
-    SCAI_LOG_INFO( logger, "need owners for " << nIndexes << " global indexes" )
+    SCAI_LOG_INFO( logger, "need owners for " << numIndexes << " global indexes" )
 
     if ( distribution.getCommunicator() != *this )
     {
@@ -735,7 +720,7 @@ void Communicator::computeOwners(
 
     // Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
 
-    for ( IndexType i = 0; i < nIndexes; ++i )
+    for ( IndexType i = 0; i < numIndexes; ++i )
     {
         if ( distribution.isLocal( requiredIndexes[i] ) )
         {
@@ -744,11 +729,11 @@ void Communicator::computeOwners(
         else
         {
             nonLocal++;
-            owners[i] = nPartition;
+            owners[i] = invalidPartition;
         }
     }
 
-    SCAI_LOG_INFO( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
+    SCAI_LOG_INFO( logger, numIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
     IndexType receiveSize = max( nonLocal ); // --> pure method call
     SCAI_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
     // Allocate the maximal needed size for the communication buffers
@@ -764,9 +749,9 @@ void Communicator::computeOwners(
         WriteAccess<IndexType> ownersSend( ownersSendArray, contextPtr );
         nonLocal = 0; // reset, counted again
 
-        for ( IndexType i = 0; i < static_cast<IndexType>( nIndexes ); ++i )
+        for ( IndexType i = 0; i < static_cast<IndexType>( numIndexes ); ++i )
         {
-            if ( owners[i] == nPartition )
+            if ( owners[i] == invalidPartition )
             {
                 indexesSend[nonLocal++] = requiredIndexes[i];
             }
@@ -776,10 +761,10 @@ void Communicator::computeOwners(
 
         for ( IndexType i = 0; i < receiveSize; ++i )
         {
-            ownersSend[i] = nPartition;
+            ownersSend[i] = invalidPartition;
         }
     }
-    IndexType ownersSize = nIndex;
+    IndexType ownersSize = invalidIndex;
     IndexType currentSize = nonLocal;
     const int direction = 1; // send to right, recv from left
 
@@ -793,7 +778,7 @@ void Communicator::computeOwners(
                         *this << " shift: recv " << receiveSize << ", send " << currentSize << ", direction = " << direction )
         // --->   Pure method call
         currentSize = shift( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
-        SCAI_ASSERT_ERROR( ownersSize == nIndex || currentSize == ownersSize, "Communication corrupted." )
+        SCAI_ASSERT_ERROR( ownersSize == invalidIndex || currentSize == ownersSize, "Communication corrupted." )
         SCAI_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();
         IndexType* currentOwners = ownersSend.get();
@@ -805,7 +790,7 @@ void Communicator::computeOwners(
             SCAI_LOG_TRACE( logger,
                             "check global index " << indexes[i] << " with current owner " << currentOwners[i] << ", is local = " << distribution.isLocal( indexes[i] ) )
 
-            if ( currentOwners[i] == nIndex && distribution.isLocal( indexes[i] ) )
+            if ( currentOwners[i] == invalidIndex && distribution.isLocal( indexes[i] ) )
             {
                 SCAI_LOG_TRACE( logger, *this << ": me is owner of global index " << indexes[i] )
                 currentOwners[i] = rank;
@@ -850,9 +835,9 @@ void Communicator::computeOwners(
 
     IndexType nn = 0;
 
-    for ( IndexType i = 0; i < nIndexes; ++i )
+    for ( IndexType i = 0; i < numIndexes; ++i )
     {
-        if ( owners[i] == nPartition )
+        if ( owners[i] == invalidPartition )
         {
             owners[i] = ownersSend[nn++];
         }
@@ -895,7 +880,7 @@ ValueType Communicator::scan( const ValueType localValue ) const
     ValueType scanValue;
 
     scanImpl( &scanValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
- 
+
     // scanImpl does an inclusive scan
 
     return scanValue;
@@ -910,14 +895,14 @@ ValueType Communicator::scanDefault( ValueType localValue ) const
     PartitionId rank = getRank();
     PartitionId root = 0;
 
-    common::scoped_array<ValueType> allValues( new ValueType[ size ] );
+    std::unique_ptr<ValueType[]> allValues( new ValueType[ size ] );
 
     gather( allValues.get(), 1, root, &localValue );
     bcast ( allValues.get(), size, root );
 
     ValueType runningSum = 0;
 
-    for ( PartitionId p = 0; p < rank; ++p )
+    for ( PartitionId p = 0; p <= rank; ++p )
     {
         runningSum += allValues[p];
     }
@@ -959,11 +944,21 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Communicator::all2allv( ValueType* recvVal[], IndexType recvCount[],
-                             ValueType* sendVal[], IndexType sendCount[] ) const
+void Communicator::all2all( ValueType recvValues[], const ValueType sendValues[] ) const
 {
-    all2allvImpl( reinterpret_cast<void**>( recvVal ), recvCount,
-                  reinterpret_cast<void**>( sendVal ), sendCount,
+    all2allImpl( reinterpret_cast<void*>( recvValues ),
+                 reinterpret_cast<const void*>( sendValues ), 
+                 common::TypeTraits<ValueType>::stype );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::all2allv( ValueType* recvBuffer[], const IndexType recvCount[],
+                             const ValueType* sendBuffer[], const IndexType sendCount[] ) const
+{
+    all2allvImpl( reinterpret_cast<void**>( recvBuffer ), recvCount,
+                  reinterpret_cast<const void**>( sendBuffer ), sendCount,
                   common::TypeTraits<ValueType>::stype );
 }
 
@@ -976,14 +971,14 @@ void Communicator::maxlocDefault( ValueType& val, IndexType& location, const Par
 
     ValueType maxVal = max( val );
 
-    IndexType myMaxLocation = nIndex;
+    IndexType myMaxLocation = invalidIndex;
 
     if ( maxVal == val )
     {
         myMaxLocation = location;
     }
 
-    common::scoped_array<IndexType> allMaxLocations( new IndexType[ getSize() ] );
+    std::unique_ptr<IndexType[]> allMaxLocations( new IndexType[ getSize() ] );
 
     gather( allMaxLocations.get(), 1, root, &myMaxLocation );
 
@@ -993,7 +988,7 @@ void Communicator::maxlocDefault( ValueType& val, IndexType& location, const Par
 
         for ( PartitionId p = 0; p < getSize(); ++p )
         {
-            if ( allMaxLocations[p] != nIndex )
+            if ( allMaxLocations[p] != invalidIndex )
             {
                 location = allMaxLocations[p];
                 SCAI_LOG_DEBUG( logger, *this << ": maxlocDefault location = " << location << " @ " << p )
@@ -1014,14 +1009,14 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
 
     ValueType minVal = min( val );
 
-    IndexType myMinLocation = nIndex;   // undefined
+    IndexType myMinLocation = invalidIndex;   // undefined
 
     if ( minVal == val )
     {
         myMinLocation = location;
     }
 
-    common::scoped_array<IndexType> allMinLocations( new IndexType[ getSize() ] );
+    std::unique_ptr<IndexType[]> allMinLocations( new IndexType[ getSize() ] );
 
     gather( allMinLocations.get(), 1, root, &myMinLocation );
 
@@ -1031,7 +1026,7 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
 
         for ( PartitionId p = 0; p < getSize(); ++p )
         {
-            if ( allMinLocations[p] != nIndex )
+            if ( allMinLocations[p] != invalidIndex )
             {
                 location = allMinLocations[p];
                 SCAI_LOG_DEBUG( logger, *this << ": minlocDefault location = " << location << " @ " << p )
@@ -1048,8 +1043,8 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
 template<typename ValueType>
 void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    common::scalar::ScalarType vType = common::TypeTraits<ValueType>::stype;
-    common::scalar::ScalarType iType = common::TypeTraits<IndexType>::stype;
+    const common::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    const common::ScalarType iType = common::TypeTraits<IndexType>::stype;
 
     if ( supportsLocReduction( vType, iType ) )
     {
@@ -1086,8 +1081,8 @@ void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionI
 template<typename ValueType>
 void Communicator::minloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    common::scalar::ScalarType vType = common::TypeTraits<ValueType>::stype;
-    common::scalar::ScalarType iType = common::TypeTraits<IndexType>::stype;
+    const common::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    const common::ScalarType iType = common::TypeTraits<IndexType>::stype;
 
     if ( supportsLocReduction( vType, iType ) )
     {
@@ -1138,7 +1133,7 @@ void Communicator::exchangeByPlan(
 
     hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
 
-    SCAI_LOG_INFO( logger, *this << ": exchangeByPlan<" << common::TypeTraits<ValueType>::id() << ">" 
+    SCAI_LOG_INFO( logger, *this << ": exchangeByPlan<" << common::TypeTraits<ValueType>::id() << ">"
                    << ", send " << sendArray.size() << " values to " << sendPlan.size() << " processors"
                    << ", recv " << recvSize << " values from " << recvPlan.size() << " processors"
                    << ", data at this context " << *comCtx )
@@ -1169,7 +1164,7 @@ SyncToken* Communicator::exchangeByPlanAsync(
     hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
     SyncToken* token( exchangeByPlanAsync( recvData.get(), recvPlan, sendData.get(), sendPlan ) );
     // Add the read and write access to the sync token to get it freed after successful wait
-    // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
+    // conversion std::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> std::shared_ptr<BaseAccess> supported
     token->pushRoutine( recvData.releaseDelayed() );
     token->pushRoutine( sendData.releaseDelayed() );
     // return ownership of new created object
@@ -1187,9 +1182,9 @@ void Communicator::setNodeData()
 
     int maxNameLength = maxProcessorName();
 
-    common::scoped_array<char> myNodeName( new char[ maxNameLength ] );
+    std::unique_ptr<char[]> myNodeName( new char[ maxNameLength ] );
 
-    common::scoped_array<char> allNodeNames( new char[ maxNameLength * getSize() ] );
+    std::unique_ptr<char[]> allNodeNames( new char[ maxNameLength * getSize() ] );
 
     getProcessorName( myNodeName.get() );
 
@@ -1235,32 +1230,44 @@ void Communicator::setNodeData()
 /* -------------------------------------------------------------------------- */
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     IndexType Communicator::shift0(                                 \
             _type targetVals[],                                     \
             const IndexType maxTargetSize,                          \
             const _type sourceVals[],                               \
             const IndexType sourceSize ) const;                     \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::maxloc(                                      \
             _type& val,                                             \
             IndexType& location,                                    \
             const PartitionId root ) const;                         \
-    \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::maxlocDefault(                               \
+            _type& val,                                             \
+            IndexType& location,                                    \
+            const PartitionId root ) const;                         \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::minloc(                                      \
             _type& val,                                             \
             IndexType& location,                                    \
             const PartitionId root ) const;                         \
-    \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::minlocDefault(                               \
+            _type& val,                                             \
+            IndexType& location,                                    \
+            const PartitionId root ) const;                         \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     _type Communicator::scan( _type val ) const;                    \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     _type Communicator::scanDefault( _type val ) const;             \
-    \
+                                                                    \
     // instantiate methods for all communicator data types
 
 SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
@@ -1268,64 +1275,70 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::bcastArray(                                  \
             HArray<_type>& array,                                   \
             const PartitionId root ) const;                         \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::bcastArray(                                  \
             HArray<_type>& array,                                   \
             const IndexType n,                                      \
             const PartitionId root ) const;                         \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::joinArray(                                   \
             HArray<_type>& globalArray,                             \
             const HArray<_type>& localArray ) const;                \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::sumArray(                                    \
             HArray<_type>& array ) const;                           \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::updateHalo(                                  \
             HArray<_type>& haloValues,                              \
             const HArray<_type>& localValues,                       \
             const Halo& halo ) const;                               \
-    \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::all2all(                                     \
+            _type recvValues[],                                     \
+            const _type sendValues[] ) const;                       \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::all2allv(                                    \
-            _type* recvVal[], IndexType recvCount[],                \
-            _type* sendVal[], IndexType sendCount[] ) const;        \
-    \
+            _type* recvVal[], const IndexType recvCount[],          \
+            const _type* sendVal[],                                 \
+            const IndexType sendCount[] ) const;                    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::exchangeByPlan(                              \
             HArray<_type>& recvArray,                               \
             const CommunicationPlan& recvPlan,                      \
             const HArray<_type>& sendArray,                         \
             const CommunicationPlan& sendPlan ) const;              \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::exchangeByPlanAsync(                   \
             HArray<_type>& recvArray,                               \
             const CommunicationPlan& recvPlan,                      \
             const HArray<_type>& sendArray,                         \
             const CommunicationPlan& sendPlan ) const;              \
-    \
+                                                                    \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \
             HArray<_type>& haloValues,                              \

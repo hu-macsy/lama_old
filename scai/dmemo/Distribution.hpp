@@ -38,7 +38,6 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/common/NonCopyable.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/common/Factory1.hpp>
 
@@ -49,12 +48,12 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 // std
 #include <map>
 #include <utility>
+#include <memory>
 
 namespace scai
 {
@@ -62,7 +61,7 @@ namespace scai
 namespace dmemo
 {
 
-typedef common::shared_ptr<const class Distribution> DistributionPtr;
+typedef std::shared_ptr<const class Distribution> DistributionPtr;
 
 class Distributed;
 
@@ -97,8 +96,7 @@ struct DistributionArguments
 class COMMON_DLL_IMPORTEXPORT Distribution:
 
     public common::Factory1<std::string, DistributionArguments, Distribution*>,
-    public common::Printable,
-    private common::NonCopyable
+    public common::Printable
 {
 
 public:
@@ -165,9 +163,17 @@ public:
      */
     Distribution( const IndexType globalSize );
 
+    /** Distributions should never be copied. */
+
+    Distribution( const Distribution& other ) = delete;
+
     /** Destructor of distribution. */
 
     virtual ~Distribution();
+
+    /** Distributions should never be assigned */
+
+    Distribution& operator=( const Distribution& other ) = delete;
 
     /** Getter routine for the communicator of the distribution. */
 
@@ -181,7 +187,7 @@ public:
 
     PartitionId getNumPartitions() const;
 
-    /** Query whether the distribution is a replication, i.e. each processor is owner of all data 
+    /** Query whether the distribution is a replication, i.e. each processor is owner of all data
      *
      *  same as getNumPartitions() == 1, always true for NoDistribution, always true when running
      *  an application on a single processor.
@@ -196,7 +202,7 @@ public:
      *                          (e.g. process for an MPI Communicator)
      *
      * @param[in]    globalIndex the global index to query for locality to the calling rank
-     * @return       true if this processor/partition  is owner 
+     * @return       true if this processor/partition  is owner
      */
     virtual bool isLocal( const IndexType globalIndex ) const = 0;
 
@@ -232,7 +238,7 @@ public:
     /** This method translates a global index into a local index.
      *
      * @param[in] globalIndex with 0 <= globalIndex < getGlobalSize
-     * @return    localIndex with 0 <= localIndex < getLocalSize() if local, nIndex otherwise
+     * @return    localIndex with 0 <= localIndex < getLocalSize() if local, invalidIndex otherwise
      *
      * This method must be implemented by all base classes. It should throw
      * an exception if the argument is not in the valid range.
@@ -241,16 +247,19 @@ public:
 
     /** This method translates a whole array of global indexes to local indexes.
      *
-     *  @param[in,out] ia is the array with the indexes that are translated
+     *  @param[in]  globalIndexes is the array with the indexes that are translated
+     *  @param[out] localIndexes is the array with local indexes
      *
      *  \code
-     *  for ( IndexType i = 0; i < ia.size(); ++i )
+     *  for ( IndexType i = 0; i < globalIndexes.size(); ++i )
      *  {
-     *      ia[i] = global2local( ia[i] );
+     *      localIndexes[i] = global2local( globalIndexes[i] );
      *  }
      *  \endcode
+     *
+     *  Note: alias of localIndexes and globalIndexes is supported
      */
-    virtual void global2local( hmemo::HArray<IndexType>& ia ) const;
+    virtual void global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
 
     /** Get the owners for a set of (global) indexes
      *
@@ -288,23 +297,30 @@ public:
     /** The following function verifies if the distribution is nothing else than a block
      *  or general block distribution.
      *
-     *  @returns the local size of the block distribution if it is one, nIndex if it is not
+     *  @returns the local size of the block distribution if it is one, invalidIndex if it is not
      *
-     *  Note: The call of this function might involve communication. It returns nIndex on all processors if it is nIndex on one.
+     *  Note: The call of this function might involve communication. It returns invalidIndex on all processors if it is invalidIndex on one.
      *  Note: If it is a block distribution, the distribution of a distributed vector/matrix can be easily reconstructed without a mapping file.
      *
-     *  getBlockDistributionSize() != nIndex iff isSorted( owners( {0, ..., globalSize-1 }, ascending = true )
+     *  getBlockDistributionSize() != invalidIndex iff isSorted( owners( {0, ..., globalSize-1 }, ascending = true )
      */
     virtual IndexType getBlockDistributionSize() const = 0;
 
-    /** 
-     * @brief This method sets up local data structures in such a way that afterwards on each 
+    /**
+     * Determine whether the distribution has AnyAddressing.
+     *
+     * See the documentation for enableAnyAddressing for more information.
+     */
+    virtual bool hasAnyAddressing() const = 0;
+
+    /**
+     * @brief This method sets up local data structures in such a way that afterwards on each
      *        partition/processor it is possible to get any owner/local index for any global index
      *        without communication.
      *
      * Most distributions can do any addressing by closed formulas ( block, cyclic, grid distributions )
      * but general distributions have no information about the ownership of global indexes that are not
-     * local. If a general distribution is used in dense matrices for the column distribution it is essential 
+     * local. If a general distribution is used in dense matrices for the column distribution it is essential
      * to know for all indexes where the data is mapped to.
      */
     virtual void enableAnyAddressing() const = 0;
@@ -341,9 +357,9 @@ public:
      *     PartitionId p = ... // some partition
      *     // traverse all global indexes belonging to partition p
      *     for ( IndexType k = offsets[p]; k < offsets[p+1]; ++k )
-     *     {  
+     *     {
      *         IndexType localIndex = k - offsets[p];
-     *         IndexType globalIndex = local2global[k];  
+     *         IndexType globalIndex = local2global[k];
      *         ....
      *     }
      *  /endcode

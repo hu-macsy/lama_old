@@ -38,10 +38,13 @@
 #include <scai/partitioning/MetisPartitioning.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 using namespace scai;
+using namespace hmemo;
 using namespace dmemo;
 using namespace lama;
+using namespace utilskernel;
 using namespace partitioning;
 
 /* --------------------------------------------------------------------- */
@@ -58,11 +61,11 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MetisPartitioningTest" );
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    // CSR random Matrix
+    // CSR random matrix
 
     IndexType ia[]  = { 0,    2,    4,    6,    8,      11, 12 };
     IndexType ja[]  = { 1, 3, 0, 2, 1, 4, 0, 4, 3, 2, 5, 4 };
-    RealType vals[] = { 1, 3, 0, 2, 1, 4, 0, 4, 3, 2, 5, 4 };
+    DefaultReal vals[] = { 1, 3, 0, 2, 1, 4, 0, 4, 3, 2, 5, 4 };
 
     IndexType numRows = sizeof( ia ) / sizeof( IndexType ) - 1;
     IndexType numColumns = numRows;
@@ -76,9 +79,9 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
         return;
     }
 
-    CSRStorage<RealType> csrStorage;
+    CSRStorage<DefaultReal> csrStorage;
     csrStorage.setRawCSRData( numRows, numColumns, numValues, ia, ja, vals );
-    CSRSparseMatrix<RealType> csrMatrix( csrStorage );
+    CSRSparseMatrix<DefaultReal> csrMatrix( csrStorage );
 
     float weight = 1.0f;
 
@@ -86,7 +89,13 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
     DistributionPtr dist = partitioning.partitionIt( comm, csrMatrix, weight );
 
-    BOOST_CHECK( dist->getLocalSize() < dist->getGlobalSize() );
+    HArray<IndexType> newLocalOwners;
+
+    partitioning.squarePartitioning( newLocalOwners, csrMatrix, weight );
+
+    BOOST_CHECK_EQUAL( newLocalOwners.size(), csrMatrix.getRowDistribution().getLocalSize() );
+
+    BOOST_CHECK( HArrayUtils::validIndexes( newLocalOwners, comm->getSize() ) );
 }
 
 /* --------------------------------------------------------------------- */

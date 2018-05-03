@@ -59,29 +59,29 @@ namespace scai
 namespace lama
 {
 
+namespace intern
+{
+
 /**
- * @brief The class Scalar represents a multi precision scalar.
+ * @brief The class Scalar represents a container for all kind of ValueType used for Matrix and/or Vector.
  *
- * An object of the class Scalar is used in LAMA in all code parts
- * that are universal for all arithmetic types, especially for code
- * parts that use book syntax.
+ * An object of the class Scalar is needed in template expressions.
  *
  * For a Scalar the arithmetic operations +, -, *, / etc. are
- * also supported to allow a high flexibility. But for efficiency
- * these operations should be avoided in all critical code parts.
+ * also supported to allow a high flexibility. 
  *
  * ScalarRepType is used internally for the representation of
- * the value. For each supported arithmetic type SCAI_NUMERIC_TYPES_TYPE the following
+ * the value. For each supported arithmetic type SCAI_NUMERIC_TYPES the following
  * conversions must be supported:
  *
- *    - ScalarRepType( SCAI_NUMERIC_TYPES_TYPE v )
- *    - SCAI_NUMERIC_TYPES_TYPE( ScalarRepType v )
+ *    - ScalarRepType( SCAI_NUMERIC_TYPES v )
+ *    - SCAI_NUMERIC_TYPE( ScalarRepType v )
  *
  * Conversion into the representation type and back should be lossless, i. e. the
  * following relation must / should  hold:
  *
  * \code
- *    ARITHEMTIC_TYPE( ScalarRepType( x ) ) == x
+ *    SCAI_NUMERIC_TYPE( ScalarRepType( x ) ) == x
  * \endcode
  */
 class COMMON_DLL_IMPORTEXPORT Scalar: public common::Printable
@@ -96,9 +96,7 @@ public:
     /**
      * @brief Constructs a scalar representing 0.
      */
-    inline Scalar() : mValue( 0 )
-    {
-    }
+    inline Scalar();
 
     /**
      * @brief Constructs a scalar representing the passed real value.
@@ -110,24 +108,12 @@ public:
      * @param[in] value   the value this scalar should represent
      */
     template<typename ValueType>
-    explicit inline Scalar( const ValueType value ) : mValue( value )
-    {
-    }
-
-    inline Scalar( const Scalar& x ) : mValue( x.mValue )
-    {
-    }
+    inline Scalar( const ValueType value );
 
     /**
-     * @brief Constructor of scalar for each supported arithmetic type.
+     *  Copy constructor
      */
-#define SCAI_LAMA_SCALAR_CONSTRUCTORS( type )                \
-    inline Scalar( const type value ) : mValue( value ) \
-    { }
-
-    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ALL_TYPES )
-
-#undef SCAI_LAMA_SCALAR_CONSTRUCTORS
+    inline Scalar( const Scalar& x );
 
     /**
      * @brief Releases all allocated resources.
@@ -143,79 +129,7 @@ public:
     template<typename ValueType>
     inline ValueType getValue() const;
 
-    // Removed: template<typename ValueType> operator ValueType () const  for type conversions
-    // Might cause problems due to implicit conversions, should only be used explicitly
-    // Now should be done as: cast<ValueType>( scalar )
-
-    /**
-     * @brief Unary minus operator for Scalar.
-     */
-    inline Scalar operator-() const;
-
-    /**
-     * @brief Overload assignment operator +=
-     */
-    Scalar& operator+=( const Scalar& other )
-    {
-        mValue += other.mValue;
-        return *this;
-    }
-
-    /**
-     * @brief Overload assignment operator -=
-     */
-    Scalar& operator-=( const Scalar& other )
-    {
-        mValue -= other.mValue;
-        return *this;
-    }
-
-    /**
-     * @brief Overload assignment operator *=
-     */
-    Scalar& operator*=( const Scalar& other )
-    {
-        mValue *= other.mValue;
-        return *this;
-    }
-
-    /**
-     * @brief Overload assignment operator /=
-     */
-    Scalar& operator/=( const Scalar& other )
-    {
-        mValue /= other.mValue;
-        return *this;
-    }
-
-    /**
-     *  @brief Query that scalar values has no imaginary part.
-     */
-
     inline virtual void writeAt( std::ostream& stream ) const;
-
-    inline bool hasComplexValue() const
-    {
-        return common::Math::imag( mValue ) != common::constants::ZERO;
-    }
-
-    /** Return a Scalar with the corresponding eps0 value of a type.
-     *
-     *  @param[in] type is the enum value of the required type
-     *
-     *  @returns TypeTraits<ValueType>::eps0() for ValueType with TypeTraits<ValueType>::sid == type
-     */
-
-    static inline Scalar eps0( const common::scalar::ScalarType type );
-
-    /** Return a Scalar with the corresponding eps1 value of a type.
-     *
-     *  @param[in] type is the enum value of the required type
-     *
-     *  @returns TypeTraits<ValueType>::eps1() for ValueType with TypeTraits<ValueType>::sid == type
-     */
-
-    static inline Scalar eps1( const common::scalar::ScalarType type );
 
 protected:
 
@@ -224,12 +138,24 @@ protected:
 private:
 
     ScalarRepType mValue;  //!< use highest precision for representation
-
 };
 
 /* --------------------------------------------------------------------------- *
  *  Implementation of methods for Scalar                                       *
  * --------------------------------------------------------------------------- */
+
+inline Scalar::Scalar() : mValue( 0 )
+{
+}
+
+template<typename ValueType>
+inline Scalar::Scalar( const ValueType value ) : mValue( value )
+{
+}
+
+inline Scalar::Scalar( const Scalar& x ) : mValue( x.mValue )
+{
+}
 
 inline Scalar::~Scalar()
 {
@@ -239,11 +165,6 @@ template<typename ValueType>
 inline ValueType Scalar::getValue() const
 {
     return static_cast<ValueType>( mValue );
-}
-
-inline Scalar Scalar::operator-() const
-{
-    return Scalar( -mValue );
 }
 
 inline void Scalar::writeAt( std::ostream& stream ) const
@@ -286,6 +207,11 @@ inline Scalar operator-( const Scalar& a, const Scalar& b )
     return Scalar( a.getValue<ScalarRepType>() - b.getValue<ScalarRepType>() );
 }
 
+inline Scalar operator-( const Scalar& a )
+{
+    return Scalar( -a.getValue<ScalarRepType>() );
+}
+
 /**
  * @brief Multiply Scalar a with Scalar b
  *
@@ -310,198 +236,7 @@ inline Scalar operator/( const Scalar& a, const Scalar& b )
     return Scalar( a.getValue<ScalarRepType>() / b.getValue<ScalarRepType>() );
 }
 
-/* --------------------------------------------------------------------------- *
- *  Compare operators for Scalar: ==, !=, <, >, <=, >=                         *
- * --------------------------------------------------------------------------- */
-
-/**
- * @brief Check equality of a and b.
- *
- * @param[in] a     the 1st Scalar to compare this to.
- * @param[in] b     the 2nd Scalar to compare this to.
- * @return          if a is equal to b
- */
-
-inline bool operator==( const Scalar& a, const Scalar& b )
-{
-    return a.getValue<ScalarRepType>() == b.getValue<ScalarRepType>();
-}
-
-/**
- * @brief Check inequality of a and b.
- *
- * @param[in] a     the 1st Scalar to compare this to.
- * @param[in] b     the 2nd Scalar to compare this to.
- * @return          if a is unequal to b
- */
-inline bool operator!=( const Scalar& a, const Scalar& b )
-{
-    return a.getValue<ScalarRepType>() != b.getValue<ScalarRepType>();
-}
-
-inline bool operator<( const Scalar& a, const Scalar& b )
-{
-    // comparison only defined for real types, not for complex types
-
-    if ( common::isComplex( common::TypeTraits<ScalarRepType>::stype ) )
-    {
-        SCAI_ASSERT_EQ_ERROR( common::Math::imag( a.getValue<ScalarRepType>() ), 0, "complex value in a < b, a = " << a )
-        SCAI_ASSERT_EQ_ERROR( common::Math::imag( b.getValue<ScalarRepType>() ), 0, "complex value in a < b, b = " << a )
-    }
-
-    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
-
-    return a.getValue<RealType>() < b.getValue<RealType>();
-}
-
-inline bool operator<=( const Scalar& a, const Scalar& b )
-{
-    // comparison only defined for real types, not for complex types
-
-    if ( common::isComplex( common::TypeTraits<ScalarRepType>::stype ) )
-    {
-        SCAI_ASSERT_EQ_ERROR( common::Math::imag( a.getValue<ScalarRepType>() ), 0, "complex value in a < b, a = " << a )
-        SCAI_ASSERT_EQ_ERROR( common::Math::imag( b.getValue<ScalarRepType>() ), 0, "complex value in a < b, b = " << a )
-    }
-
-    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
-
-    return a.getValue<RealType>() <= b.getValue<RealType>();
-}
-
-inline bool operator>( const Scalar& a, const Scalar& b )
-{
-    // comparison only defined for real types, not for complex types
-
-    if ( common::isComplex( common::TypeTraits<ScalarRepType>::stype ) )
-    {
-        SCAI_ASSERT_EQ_ERROR( common::Math::imag( a.getValue<ScalarRepType>() ), 0, "complex value in a < b, a = " << a )
-        SCAI_ASSERT_EQ_ERROR( common::Math::imag( b.getValue<ScalarRepType>() ), 0, "complex value in a < b, b = " << a )
-    }
-
-    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
-
-    return a.getValue<RealType>() > b.getValue<RealType>();
-}
-
-inline bool operator>=( const Scalar& a, const Scalar& b )
-{
-    // comparison only defined for real types, not for complex types
-
-    if ( common::isComplex( common::TypeTraits<ScalarRepType>::stype ) )
-    {
-        SCAI_ASSERT_EQ_ERROR( common::Math::imag( a.getValue<ScalarRepType>() ), 0, "complex value in a < b, a = " << a )
-        SCAI_ASSERT_EQ_ERROR( common::Math::imag( b.getValue<ScalarRepType>() ), 0, "complex value in a < b, b = " << a )
-    }
-
-    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
-
-    return a.getValue<RealType>() >= b.getValue<RealType>();
-}
-
-inline Scalar sqrt( const Scalar scalar )
-{
-    // call sqrt for ScalarRepType
-    return Scalar( common::Math::sqrt( scalar.getValue<ScalarRepType>() ) );
-}
-
-/* --------------------------------------------------------------------------- *
- *  Unary functions for Scalar: abs, conj                                      *
- * --------------------------------------------------------------------------- */
-
-inline Scalar abs( const Scalar scalar )
-{
-    // call abs for ScalarRepType
-    return Scalar( common::Math::abs( scalar.getValue<ScalarRepType>() ) );
-}
-
-inline Scalar conj( const Scalar scalar )
-{
-    return Scalar( common::Math::conj( scalar.getValue<ScalarRepType>() ) );
-}
-
-/* --------------------------------------------------------------------------- *
- *  Binary functions for Scalar: min, max                                      *
- * --------------------------------------------------------------------------- */
-
-inline Scalar max( const Scalar a, const Scalar b )
-{
-    SCAI_ASSERT_ERROR( !a.hasComplexValue(), "complex value in max: " << a )
-    SCAI_ASSERT_ERROR( !b.hasComplexValue(), "complex value in max: " << b )
-
-    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
-
-    return Scalar( common::Math::max(
-                       common::Math::real( a.getValue<RealType>() ),
-                       common::Math::real( b.getValue<RealType>() ) ) );
-}
-
-inline Scalar min( const Scalar a, const Scalar b )
-{
-    SCAI_ASSERT_ERROR( !a.hasComplexValue(), "complex value in min: " << a )
-    SCAI_ASSERT_ERROR( !b.hasComplexValue(), "complex value in min: " << b )
-
-    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
-
-    return Scalar( common::Math::min(
-                       common::Math::real( a.getValue<RealType>() ),
-                       common::Math::real( b.getValue<RealType>() ) ) );
-}
-
-template<typename TList>
-struct TypeTraitAccess;
-
-template<>
-struct TypeTraitAccess<common::mepr::NullType>
-{
-    static Scalar eps1( const common::scalar::ScalarType& )
-    {
-        return Scalar( 0 );
-    }
-
-    static Scalar eps0( const common::scalar::ScalarType& )
-    {
-        return Scalar( 0 );
-    }
-};
-
-template<typename H, typename T>
-struct TypeTraitAccess<common::mepr::TypeList<H, T> >
-{
-    static Scalar eps1( const common::scalar::ScalarType& type )
-    {
-        if ( common::TypeTraits<H>::stype == type )
-        {
-            return Scalar( common::TypeTraits<H>::eps1() );
-        }
-        else
-        {
-            return TypeTraitAccess<T>::eps1( type );
-        }
-    }
-
-    static Scalar eps0( const common::scalar::ScalarType& type )
-    {
-        if ( common::TypeTraits<H>::stype == type )
-        {
-            return Scalar( common::TypeTraits<H>::eps0() );
-        }
-        else
-        {
-            return TypeTraitAccess<T>::eps0( type );
-        }
-    }
-};
-
-Scalar Scalar::eps0( const common::scalar::ScalarType type )
-{
-    return TypeTraitAccess<SCAI_NUMERIC_TYPES_HOST_LIST>::eps0( type );
-}
-
-Scalar Scalar::eps1( const common::scalar::ScalarType type )
-{
-    return TypeTraitAccess<SCAI_NUMERIC_TYPES_HOST_LIST>::eps1( type );
-}
+} /* end namespace intern */
 
 } /* end namespace lama */
 

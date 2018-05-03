@@ -39,7 +39,7 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 
 #include <scai/blaskernel/BLASKernelTrait.hpp>
@@ -48,7 +48,8 @@
 #include <scai/tracing.hpp>
 
 // common
-#include <scai/common/Walltime.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -58,148 +59,96 @@ namespace solver
 
 using utilskernel::LAMAKernel;
 
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, GMRES<ValueType>::logger, "Solver.IterativeSolver.GMRES" )
+
 using lama::Matrix;
 using lama::Vector;
-using lama::DenseVector;
-using lama::Scalar;
 
-using common::unique_ptr;
-using common::scoped_array;
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
 
-SCAI_LOG_DEF_LOGGER( GMRES::logger, "Solver.IterativeSolver.GMRES" )
+template<typename ValueType>
+_Solver* GMRES<ValueType>::create()
+{
+    return new GMRES<ValueType>( "_genByFactory" );
+}
 
-GMRES::GMRES( const std::string& id )
-    : IterativeSolver( id ), mKrylovDim( 10 ), totalIterationTime( 0.0 ), totalPreconditionerTime( 0.0 )
+template<typename ValueType>
+SolverCreateKeyType GMRES<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "GMRES" );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+GMRES<ValueType>::GMRES( const std::string& id ) : 
+
+    IterativeSolver<ValueType>( id ), 
+    mKrylovDim( 10 )
 {
 }
 
-GMRES::GMRES( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id, logger ), mKrylovDim( 10 )
+template<typename ValueType>
+GMRES<ValueType>::GMRES( const std::string& id, LoggerPtr logger ) : 
+
+    IterativeSolver<ValueType>( id, logger ), 
+    mKrylovDim( 10 )
 {
 }
 
-GMRES::GMRES( const GMRES& other )
-    : IterativeSolver( other ), mKrylovDim( other.mKrylovDim )
+template<typename ValueType>
+GMRES<ValueType>::GMRES( const GMRES<ValueType>& other ) : 
+
+    IterativeSolver<ValueType>( other ), 
+    mKrylovDim( other.mKrylovDim )
 {
 }
 
-GMRES::GMRESRuntime::GMRESRuntime()
-    : IterativeSolverRuntime(), mCC( new double[1] ), mSS( new double[1] ), mG( new double[1] ), mY( new double[1] ), mH( new double[1] ), mHd( new double[1] ), mV( 0 ), mW( 0 ),
-      mT( 0 ), mX0( 0 )
+template<typename ValueType>
+GMRES<ValueType>::~GMRES()
 {
 }
 
-GMRES::~GMRES()
-{
-}
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
-double GMRES::getAverageIterationTime() const
-{
-    return ( ( this->totalIterationTime - this->totalPreconditionerTime ) / this->getIterationCount() );
-}
-
-double GMRES::getAveragePreconditionerTime() const
-{
-    return ( this->totalPreconditionerTime / this->getIterationCount() );
-}
-GMRES::GMRESRuntime::~GMRESRuntime()
-{
-    if ( mV != 0 )
-    {
-        for ( unsigned int i = 0; i < mV->size(); ++i )
-        {
-            delete ( *mV )[i];
-        }
-
-        delete mV;
-    }
-
-    mV = 0;
-
-    if ( mW != 0 )
-    {
-        delete mW;
-    }
-
-    mW = 0;
-
-    if ( mT != 0 )
-    {
-        delete mT;
-    }
-
-    mT = 0;
-
-    if ( mX0 != 0 )
-    {
-        delete mX0;
-    }
-
-    mX0 = 0;
-}
-
-void GMRES::initialize( const Matrix& coefficients )
+template<typename ValueType>
+void GMRES<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.GMRES.initialize" )
-    IterativeSolver::initialize( coefficients );
+
+    IterativeSolver<ValueType>::initialize( coefficients );
+
     GMRESRuntime& runtime = getRuntime();
 
-    if ( runtime.mV != 0 )
-    {
-        for ( unsigned int i = 0; i < runtime.mV->size(); ++i )
-        {
-            delete ( *runtime.mV )[i];
-        }
+    runtime.mCC.resize( mKrylovDim + 1 );
+    runtime.mSS.resize( mKrylovDim + 1 );
+    runtime.mG.resize( mKrylovDim + 1 );
+    runtime.mY.resize( mKrylovDim + 1 );
+    runtime.mH.resize( mKrylovDim * ( mKrylovDim + 1 ) / 2 );
+    runtime.mHd.resize( mKrylovDim );
 
-        delete runtime.mV;
+    runtime.mV.resize( mKrylovDim + 1 );   // allocate with NULL pointerso
+ 
+    for ( IndexType i = 0; i <= mKrylovDim; ++i )
+    {
+        runtime.mV[i].reset( coefficients.newTargetVector() );
     }
 
-    runtime.mV = 0;
-
-    if ( runtime.mW != 0 )
-    {
-        delete runtime.mW;
-    }
-
-    runtime.mW = 0;
-
-    if ( runtime.mT != 0 )
-    {
-        delete runtime.mT;
-    }
-
-    runtime.mT = 0;
-
-    if ( runtime.mX0 != 0 )
-    {
-        delete runtime.mX0;
-    }
-
-    runtime.mX0 = 0;
-    scoped_array<double>& mCC = runtime.mCC;
-    scoped_array<double>& mSS = runtime.mSS;
-    scoped_array<double>& mG = runtime.mG;
-    scoped_array<double>& mY = runtime.mY;
-    scoped_array<double>& mH = runtime.mH;
-    scoped_array<double>& mHd = runtime.mHd;
-    mCC.reset( new double[mKrylovDim + 1] );
-    mSS.reset( new double[mKrylovDim + 1] );
-    mG.reset( new double[mKrylovDim + 1] );
-    mY.reset( new double[mKrylovDim + 1] );
-    mH.reset( new double[( mKrylovDim * ( mKrylovDim + 1 ) ) / 2] );
-    mHd.reset( new double[mKrylovDim] );
-    runtime.mV = new std::vector<Vector*>( mKrylovDim + 1, 0 );
     // 'force' vector operations to be computed at the same location where coefficients reside
-    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    ( *runtime.mV )[0] = coefficients.newVector( dist );
-    runtime.mW = coefficients.newVector( dist );
-    runtime.mT = coefficients.newVector( dist );
-    runtime.mX0 = coefficients.newVector( dist );
-    totalIterationTime = 0.0;
-    totalPreconditionerTime = 0.0;
+
+    runtime.mW.reset( coefficients.newTargetVector() );
+    runtime.mT.reset( coefficients.newTargetVector() );
+    runtime.mX0.reset( coefficients.newTargetVector() );
 }
 
-void GMRES::setKrylovDim( unsigned int krylovDim )
+template<typename ValueType>
+void GMRES<ValueType>::setKrylovDim( IndexType krylovDim )
 {
     SCAI_LOG_DEBUG( logger, " Krylov dimension set to " << krylovDim )
     mKrylovDim = krylovDim;
@@ -228,36 +177,43 @@ void GMRES::setKrylovDim( unsigned int krylovDim )
  * 10**. prec.solve(tmp, Vm*ym), xm=x0+tmp
  */
 
-void GMRES::iterate()
+template<typename ValueType>
+void GMRES<ValueType>::iterate()
 {
     SCAI_REGION( "Solver.GMRES.iterate" )
-    GMRESRuntime& runtime = getRuntime();
-    double iterationTimeStart = common::Walltime::get();
-    unsigned int krylovIndex = this->getIterationCount() % mKrylovDim;
-    unsigned int hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
-    unsigned int hIdxDiag = hIdxStart + krylovIndex;
-    SCAI_LOG_INFO( logger, "GMRES(" << mKrylovDim << "): Inner Step " << krylovIndex << "." )
-    Vector& vCurrent = *( ( *runtime.mV )[krylovIndex] );
-    const Matrix& A = ( *runtime.mCoefficients );
 
-    // lazy allocation structure mV
-    if ( !( *runtime.mV )[krylovIndex + 1] )
-    {
-        SCAI_REGION( "Solver.GMRES.setMV" )
-        ( *runtime.mV )[krylovIndex + 1] = A.newVector( A.getRowDistributionPtr() );
-    }
+    GMRESRuntime& runtime = getRuntime();
+
+    IndexType krylovIndex = this->getIterationCount() % mKrylovDim;
+    IndexType hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
+    IndexType hIdxDiag = hIdxStart + krylovIndex;
+
+    SCAI_LOG_INFO( logger, "GMRES( krylov dim = " << mKrylovDim << " ): iter = " << this->getIterationCount()
+                           << ", inner step = " << krylovIndex )
+
+    Vector<ValueType>& vCurrent = *runtime.mV[krylovIndex];
+
+    const Matrix<ValueType>& A = *runtime.mCoefficients;
 
     // initialize in case of GMRES start/restart
+
     if ( krylovIndex == 0 )
     {
         SCAI_REGION( "Solver.GMRES.restartInit" )
+
         // Compute r0=b-Ax0
+
         this->getResidual();
-        Vector& residual = ( *runtime.mResidual );
+
+        Vector<ValueType>& residual = *runtime.mResidual;
+
         // store old solution
+
         *runtime.mX0 = runtime.mSolution.getConstReference();
+
         // set first search direction vCurrent
-        SCAI_LOG_INFO( logger, "Doing initial preconditioning." )
+
+        SCAI_LOG_DEBUG( logger, "Doing initial preconditioning." )
 
         if ( !mPreconditioner )
         {
@@ -267,23 +223,27 @@ void GMRES::iterate()
         else
         {
             SCAI_REGION( "Solver.GMRES.start.solvePreconditioner" )
+
             vCurrent.setSameValue( residual.getDistributionPtr(), 0 );
-            double preconditionerTimeStart = common::Walltime::get();
+
             mPreconditioner->solve( vCurrent, residual );
-            totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
         }
 
         // normalize vCurrent
-        runtime.mG[0] = vCurrent.l2Norm().getValue<double>();
-        double scal = 1.0 / runtime.mG[0];
+
+        runtime.mG[0] = vCurrent.l2Norm();
+
+        ValueType scal = ValueType( 1 ) / runtime.mG[0];
+
         SCAI_LOG_DEBUG( logger, "Normalizing vCurrent with start residual " << runtime.mG[0] << "." )
+
         vCurrent = scal * vCurrent;
     }
 
     // precondition next search direction
-    Vector& w = ( *runtime.mW );
-    Vector& tmp = ( *runtime.mT );
-    SCAI_LOG_INFO( logger, "Doing preconditioning." )
+
+    Vector<ValueType>& w   = *runtime.mW;
+    Vector<ValueType>& tmp = *runtime.mT;
 
     if ( !mPreconditioner )
     {
@@ -292,59 +252,80 @@ void GMRES::iterate()
     else
     {
         SCAI_REGION( "Solver.GMRES.solvePreconditioner" )
+
+        SCAI_LOG_DEBUG( logger, "Apply preconditioner." )
+
         tmp = A * vCurrent;
-        w.setSameValue( A.getColDistributionPtr(), 0 );
-        double preconditionerTimeStart = common::Walltime::get();
+
+        w = 0;    // Note: w has been allocated with the right size
+
         mPreconditioner->solve( w, tmp );
-        totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
     }
 
     // orthogonalization loop
+
     SCAI_LOG_DEBUG( logger, "Orthogonalization of vCurrent." )
 
-    for ( unsigned int k = 0; k <= krylovIndex; ++k )
+    for ( IndexType k = 0; k <= krylovIndex; ++k )
     {
         SCAI_REGION( "Solver.GMRES.orthogonalization" )
-        const Vector& Vk = *( ( *runtime.mV )[k] );
-        runtime.mH[hIdxStart + k] = ( w.dotProduct( Vk ) ).getValue<double>();
+
+        const Vector<ValueType>& Vk = *runtime.mV[k];
+
+        runtime.mH[hIdxStart + k] = w.dotProduct( Vk );
         w = w - runtime.mH[hIdxStart + k] * Vk;
     }
 
-    runtime.mHd[krylovIndex] = w.l2Norm().getValue<double>();
+    runtime.mHd[krylovIndex] = w.l2Norm();
+
     // normalize/store w in vNext (not needed in last step? Storage?)
+
     SCAI_LOG_DEBUG( logger, "Normalizing vNext." )
-    Vector& vNext = *( *runtime.mV )[krylovIndex + 1];
-    double scal = 1.0 / runtime.mHd[krylovIndex];
+
+    Vector<ValueType>& vNext = *runtime.mV[krylovIndex + 1];
+
+    ValueType scal = ValueType( 1 ) / runtime.mHd[krylovIndex];
+
     vNext = scal * w;
+
     // apply Givens rotations to new column
+
     SCAI_LOG_DEBUG( logger, "Apply Givens rotations." )
 
-    for ( unsigned int k = 0; k < krylovIndex; ++k )
+    for ( IndexType k = 0; k < krylovIndex; ++k )
     {
         SCAI_REGION( "Solver.GMRES.applyRotations" )
-        double tmp1 = runtime.mH[hIdxStart + k];
-        double tmp2 = runtime.mH[hIdxStart + k + 1];
+
+        ValueType tmp1 = runtime.mH[hIdxStart + k];
+        ValueType tmp2 = runtime.mH[hIdxStart + k + 1];
+
         //for complex valuetype:
-        ScalarRepType tmpV = lama::conj( runtime.mCC[k] ).getValue<ScalarRepType>() * tmp1 + lama::conj( runtime.mSS[k] ).getValue<ScalarRepType>() * tmp2;
-        runtime.mH[hIdxStart + k] = static_cast<double>( tmpV );
+ 
+        ValueType tmpV =  common::Math::conj( runtime.mCC[k] ) * tmp1 + 
+                          common::Math::conj( runtime.mSS[k] ) * tmp2;
+
+        runtime.mH[hIdxStart + k] = tmpV;
         runtime.mH[hIdxStart + k + 1] = runtime.mCC[k] * tmp2 - runtime.mSS[k] * tmp1;
     }
 
     // compute new rotation
+
     {
         SCAI_REGION( "Solver.GMRES.computeNextRotation" )
         SCAI_LOG_DEBUG( logger, "Compute next plane rotation." )
-        double tmp = std::sqrt(
-                         runtime.mH[hIdxDiag] * runtime.mH[hIdxDiag]
-                         + runtime.mHd[krylovIndex] * runtime.mHd[krylovIndex] );
+
+        ValueType tmp = common::Math::sqrt(    runtime.mH[hIdxDiag] * runtime.mH[hIdxDiag]
+                                            + runtime.mHd[krylovIndex] * runtime.mHd[krylovIndex] );
+
         runtime.mCC[krylovIndex] = runtime.mH[hIdxDiag] / tmp;
         runtime.mSS[krylovIndex] = runtime.mHd[krylovIndex] / tmp;
     }
+
     // update Hessenberg-system
     {
         SCAI_REGION( "Solver.GMRES.updateHessenbergSystem" )
         SCAI_LOG_DEBUG( logger, "Update Hessenberg-System." )
-        runtime.mG[krylovIndex + 1] = -1.0 * runtime.mSS[krylovIndex] * runtime.mG[krylovIndex];
+        runtime.mG[krylovIndex + 1] = ValueType( -1 ) * runtime.mSS[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mG[krylovIndex] = runtime.mCC[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mH[hIdxDiag] = runtime.mCC[krylovIndex] * runtime.mH[hIdxDiag]
                                + runtime.mSS[krylovIndex] * runtime.mHd[krylovIndex];
@@ -355,35 +336,45 @@ void GMRES::iterate()
     // required or krylov-subspace completely filled
     //if (krylovIndex == mKrylovDim-1)
     updateX( krylovIndex );
-    totalIterationTime += common::Walltime::get() - iterationTimeStart;
 }
 
-void GMRES::updateX( unsigned int i )
+template<typename ValueType>
+void GMRES<ValueType>::updateX( IndexType i )
 {
     SCAI_REGION( "Solver.GMRES.updateX" )
-    // back-substitution Hessenberg system H*y=g
+
+    // back-substitution Hessenberg system H * y = g
     // H stored in column 'packed' order
-    SCAI_LOG_DEBUG( logger, "Updating X within krylov dimensions i+1 = " << i + 1 )
+
+    SCAI_LOG_INFO( logger, "updating solution within krylov dimensions i+1 = " << i + 1 )
+
     GMRESRuntime& runtime = getRuntime();
 
     // implementation using LAPACK
-    for ( unsigned int j = 0; j <= i; ++j )
+
+    for ( IndexType j = 0; j <= i; ++j )
     {
         runtime.mY[j] = runtime.mG[j];
     }
 
     // ContextPtr context = getCoefficients().getContextPtr();
-    hmemo::ContextPtr context = hmemo::Context::getHostPtr();
-    static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<double> > tptrs;
 
-    tptrs[context]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, i + 1, 1, runtime.mH.get(),
-                    runtime.mY.get(), i + 1 );
+
+    hmemo::ContextPtr context = hmemo::Context::getHostPtr();
+    static LAMAKernel<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
+
+    const IndexType n = i + 1;   // size of matrix 
+    const IndexType nrhs = 1;
+
+    tptrs[context]( CblasUpper, common::MatrixOp::NORMAL, CblasNonUnit, n, nrhs, &runtime.mH[0],
+                    &runtime.mY[0], n );
 
     // Update of solution vector
 
-    Vector& x = runtime.mSolution.getReference();
+    Vector<ValueType>& x = runtime.mSolution.getReference();  // -> dirty
 
     // reset x to x0
+
     if ( i != 0 )
     {
         x = *runtime.mX0;
@@ -391,43 +382,54 @@ void GMRES::updateX( unsigned int i )
 
     // update x
     // TODO: Add linar combination method
-    for ( unsigned int k = 0; k <= i; ++k )
+
+    for ( IndexType k = 0; k <= i; ++k )
     {
-        const Vector& Vk = *( ( *runtime.mV )[k] );
-        x = x + runtime.mY[k] * Vk;
+        x += runtime.mY[k] * ( *runtime.mV[k]);   // axpy calls
     }
 }
 
-GMRES::GMRESRuntime& GMRES::getRuntime()
+
+/* ========================================================================= */
+/*       Getter runtime                                                      */
+/* ========================================================================= */
+
+template<typename ValueType>
+typename GMRES<ValueType>::GMRESRuntime& GMRES<ValueType>::getRuntime()
 {
     return mGMRESRuntime;
 }
 
-const GMRES::GMRESRuntime& GMRES::getConstRuntime() const
+template<typename ValueType>
+const typename GMRES<ValueType>::GMRESRuntime& GMRES<ValueType>::getRuntime() const
 {
     return mGMRESRuntime;
 }
 
-SolverPtr GMRES::copy()
+/* ========================================================================= */
+/*       virtual methods                                                     */
+/* ========================================================================= */
+
+template<typename ValueType>
+GMRES<ValueType>* GMRES<ValueType>::copy()
 {
-    return SolverPtr( new GMRES( *this ) );
+    return new GMRES<ValueType>( *this );
 }
 
-void GMRES::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void GMRES<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "GMRES ( id = " << mId << ", krylov dim = " << mKrylovDim
-           << ", #iter = " << getConstRuntime().mIterations << " )";
+    const char* typeId = common::TypeTraits<ValueType>::id();
+
+    stream << "GMRES<" << typeId << "> ( id = " << this->getId() << ", krylov dim = " << mKrylovDim
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
 
-std::string GMRES::createValue()
-{
-    return "GMRES";
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-Solver* GMRES::create( const std::string name )
-{
-    return new GMRES( name );
-}
+SCAI_COMMON_INST_CLASS( GMRES, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

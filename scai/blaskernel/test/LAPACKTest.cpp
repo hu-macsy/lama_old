@@ -59,8 +59,6 @@ BOOST_AUTO_TEST_SUITE( LAPACKTest )
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<float, double> test_types;
-
 SCAI_LOG_DEF_LOGGER( logger, "Test.LAPACKTest" )
 
 /* ------------------------------------------------------------------------- */
@@ -83,16 +81,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
         getinv[loc->getType()]( n, wA.get(), n );
     }
     {
+        auto eps = common::TypeTraits<ValueType>::small();
+
         // comparison only possible on Host
         ContextPtr host = Context::getHostPtr();
         ReadAccess<ValueType> rA( a, host );
 
         for ( IndexType i = 0; i < n * n; ++i )
         {
-            typedef typename TypeTraits<ValueType>::AbsType CompareType;
-            CompareType x1 = common::Math::abs( rA[i] );
-            CompareType x2 = common::Math::abs( bvalues[i] );
-            BOOST_CHECK_CLOSE( x1, x2, 1 );
+            const auto x1 = common::Math::abs( rA[i] );
+            const auto x2 = common::Math::abs( bvalues[i] );
+            BOOST_CHECK( common::Math::abs( x1 - x2 ) < eps );
         }
     }
 }
@@ -101,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
 
 BOOST_AUTO_TEST_CASE( getrif2Test )
 {
-    typedef float ValueType;    // this routine checks correct pivoting and use of border
+    typedef DefaultReal ValueType;    // this routine checks correct pivoting and use of border
 
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
@@ -129,9 +128,9 @@ BOOST_AUTO_TEST_CASE( getrif2Test )
     const IndexType lda = n + 2 * border;
     const ValueType x   = 19;
 
-    for ( IndexType iorder = 0; iorder < 2; ++iorder )
+    for ( IndexType iorder = 1; iorder < 2; ++iorder )
     {
-        const CBLAS_ORDER order = iorder == 0 ? CblasRowMajor : CblasColMajor;
+        // const CBLAS_ORDER order = iorder == 0 ? CblasRowMajor : CblasColMajor;
 
         // matrices get a border to check for working lda
 
@@ -168,8 +167,8 @@ BOOST_AUTO_TEST_CASE( getrif2Test )
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
             ValueType* aData = wA.get() + border * lda + border;
-            getrf[loc->getType()]( order, n, n, aData, lda, wPermutation.get() );
-            getri[loc->getType()]( order, n, aData, lda, wPermutation.get() );
+            getrf[loc->getType()]( n, n, aData, lda, wPermutation.get() );
+            getri[loc->getType()]( n, aData, lda, wPermutation.get() );
         }
 
         // now check for correct results
@@ -188,7 +187,7 @@ BOOST_AUTO_TEST_CASE( getrif2Test )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
@@ -212,46 +211,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            getrf[loc->getType()]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
-            getri[loc->getType()]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
+            getrf[loc->getType()]( n, n, wA.get(), n, wPermutation.get() );
+            getri[loc->getType()]( n, wA.get(), n, wPermutation.get() );
         }
+
+        RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
         {
             ReadAccess<ValueType> rA( a );
 
             for ( IndexType i = 0; i < n * n; ++i )
             {
-                BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
-            }
-        }
-    }
-    {
-        // CblasColumnMajor
-
-        static ValueType avalues[] = { 2.0, -3.0, -2.0, 0.0, 0.0, -1.0, -1.0, 2.0, 0.0 };
-        static ValueType bvalues[] = { 2.0, -4.0, 3.0, 1.0, -2.0, 2.0, 0.0, -1.0, 0.0 };
-
-        static IndexType n_a = sizeof( avalues ) / sizeof( ValueType );
-        static IndexType n_b = sizeof( bvalues ) / sizeof( ValueType );
-
-        SCAI_ASSERT_EQ_ERROR( n_a, n_b, "avalues and bvalues must have same number of entries" )
-        SCAI_ASSERT_EQ_ERROR( n_a, n* n, "number of a_values does not match matrix size n = " << n )
-
-        HArray<ValueType> a( n * n, avalues, testContext );
-        HArray<IndexType> permutation( n );
-
-        ContextPtr loc = Context::getHostPtr();
-        {
-            WriteAccess<ValueType> wA( a, loc );
-            WriteAccess<IndexType> wPermutation( permutation, loc );
-            getrf[loc->getType()]( CblasColMajor, n, n, wA.get(), n, wPermutation.get() );
-            getri[loc->getType()]( CblasColMajor, n, wA.get(), n, wPermutation.get() );
-        }
-        {
-            ReadAccess<ValueType> rA( a );
-
-            for ( IndexType i = 0; i < n * n; ++i )
-            {
-                BOOST_CHECK_CLOSE( rA[i], bvalues[i], 1 );
+                BOOST_CHECK( common::Math::abs( rA[i] - bvalues[i] ) < eps );
             }
         }
     }
@@ -259,10 +230,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::tptrs<ValueType> > tptrs;
+
+    auto eps = common::TypeTraits<ValueType>::small();
     {
         const IndexType n = 3;
         const IndexType ntri = n * ( n + 1 ) / 2;
@@ -284,14 +257,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  1  0   0     1    1
             //  1  1   0     1    2
             //  1  1   1     1    3
-            tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+            tptrs[loc->getType()]( CblasLower, common::MatrixOp::NORMAL, CblasNonUnit,
                                    n, 1, rA.get(), wB1.get(), n );
 
             //  A            X    B
             //  1  1   1     1    3
             //  0  1   1     1    2
             //  0  0   1     1    1
-            tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+            tptrs[loc->getType()]( CblasUpper, common::MatrixOp::NORMAL, CblasNonUnit,
                                    n, 1, rA.get(), wB2.get(), n );
         }
         {
@@ -300,11 +273,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
 
             for ( IndexType i = 0; i < n; ++i )
             {
-//            printf("Lower:");
-                BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
-//            printf("\nUpper:");
-                BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
-//            printf("\n");
+                BOOST_CHECK( common::Math::abs( rX1[i] - xvalues[i] ) < eps );
+                BOOST_CHECK( common::Math::abs( rX2[i] - xvalues[i] ) < eps );
             }
         }
     }
@@ -344,14 +314,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  2  3  0  0   3    11
             //  4  5  6  0   5    49
             //  7  8  9  10  7    146
-            tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+            tptrs[loc->getType()]( CblasLower, common::MatrixOp::NORMAL, CblasNonUnit,
                                    n, nrhs, rA1.get(), wB1.get(), ldb );
             //  A            X    B
             //  1  2  3  4   1    50
             //  0  5  6  7   3    94
             //  0  0  8  9   5    103
             //  0  0  0  10  7    70
-            tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+            tptrs[loc->getType()]( CblasUpper, common::MatrixOp::NORMAL, CblasNonUnit,
                                    n, nrhs, rA2.get(), wB2.get(), ldb );
         }
         {
@@ -360,12 +330,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
 
             for ( IndexType i = 0; i < n; ++i )
             {
-                BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
-                BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
+                BOOST_CHECK( common::Math::abs( rX1[i] - xvalues[i] ) < eps );
+                BOOST_CHECK( common::Math::abs( rX2[i] - xvalues[i] ) < eps );
             }
         }
     }
 
+    bool isColMajor = true;
+
+    if ( !isColMajor )
     {
         // Test with decimal marked numbers and row-major
 
@@ -396,24 +369,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  1.2  0      0      2    2.4
             //  2.3  4.5    0      3    18.1
             //  6.7  8.11   10.13  5    88.38
-            tptrs[loc->getType()]( CblasRowMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+            tptrs[loc->getType()]( CblasLower, common::MatrixOp::NORMAL, CblasNonUnit,
                                    n, 1, rA.get(), wB1.get(), ldb );
 
             //  A                  X    B
             //  1.2  2.3   4.5     2    31.8
             //  0    6.7   8.11    3    60.65
             //  0    0     10.13   5    50.65
-            tptrs[loc->getType()]( CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+            tptrs[loc->getType()]( CblasUpper, common::MatrixOp::NORMAL, CblasNonUnit,
                                    n, 1, rA.get(), wB2.get(), ldb );
         }
         {
+
             ReadAccess<ValueType> rX1( b1 );
             ReadAccess<ValueType> rX2( b2 );
 
             for ( IndexType i = 0; i < n; ++i )
             {
-                BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
-                BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
+                BOOST_CHECK( common::Math::abs( rX1[i] - xvalues[i] ) < eps );
+                BOOST_CHECK( common::Math::abs( rX2[i] - xvalues[i] ) < eps );
             }
         }
     }

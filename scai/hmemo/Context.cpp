@@ -49,6 +49,8 @@
 namespace scai
 {
 
+using common::ContextType;
+
 namespace hmemo
 {
 
@@ -56,8 +58,13 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( Context::logger, "Context" )
 
-Context::Context( ContextType type )
-    : mContextType( type ), mUseZeroCopy( false ), mEnabled( false ), mFile( NULL ), mLine( 0 )
+Context::Context( ContextType type ) : 
+
+    mContextType( type ), 
+    mUseZeroCopy( false ), 
+    mEnabled( false ), 
+    mFile( NULL ), 
+    mLine( 0 )
 {
     SCAI_LOG_DEBUG( logger, "Context( type = " << mContextType << " )" )
 }
@@ -137,7 +144,7 @@ void Context::enableZeroCopy( bool flag ) const
 MemoryPtr Context::getHostMemoryPtr() const
 {
     // take the host memory of the memory factory
-    ContextPtr hostContextPtr = Context::getContextPtr( common::context::Host );
+    ContextPtr hostContextPtr = Context::getContextPtr( common::ContextType::Host );
     return hostContextPtr->getMemoryPtr();
 }
 
@@ -178,17 +185,12 @@ ContextPtr Context::getContextPtr()
 
         if ( ctx_string == "CUDA" )
         {
-            return getContextPtr( common::context::CUDA );
-        }
-
-        if ( ctx_string == "MIC" )
-        {
-            return getContextPtr( common::context::MIC );
+            return getContextPtr( common::ContextType::CUDA );
         }
 
         if ( ctx_string == "HOST" )
         {
-            return getContextPtr( common::context::Host );
+            return getContextPtr( common::ContextType::Host );
         }
 
         COMMON_THROWEXCEPTION( "SCAI_CONTEXT=" << ctx_string << ", unknown context type" )
@@ -203,36 +205,18 @@ ContextPtr Context::getContextPtr()
 
 void Context::setCurrent() const
 {
-    ContextStack* myStack = contextStack.get();
-
-    if ( myStack == NULL )
-    {
-        // first time use of stack, it must be allocated
-
-        myStack = new ContextStack;
-        contextStack.set( myStack );
-    }
-
-    myStack->push( this );
+    contextStack.push( this );
 }
 
 void Context::unsetCurrent() const
 {
-    ContextStack* myStack = contextStack.get();
-
-    if ( myStack == NULL )
-    {
-        SCAI_LOG_WARN( logger, "unset this context " << *this << " but NEVER set before" )
-        return;
-    }
-
-    if ( myStack->empty() )
+    if ( contextStack.empty() )
     {
         SCAI_LOG_WARN( logger, "unset this context " << *this << " but not set before" )
         return;
     }
 
-    const Context* current = myStack->top();
+    const Context* current = contextStack.top();
 
     if ( current != this )
     {
@@ -243,29 +227,22 @@ void Context::unsetCurrent() const
         SCAI_LOG_INFO( logger, "unset this context " << *this << " was current" )
     }
 
-    myStack->pop();
+    contextStack.pop();
 }
 
 const Context* Context::getCurrentContext()
 {
-    ContextStack* myStack = contextStack.get();
-
-    if ( myStack == NULL )
+    if ( contextStack.empty() )
     {
         return NULL;
     }
 
-    if ( myStack->empty() )
-    {
-        return NULL;
-    }
-
-    return myStack->top();
+    return contextStack.top();
 }
 
-// we can rely on the fact that thread-private variable is initialized with NULL
+/** Important: Each thread has its own context stack */
 
-SCAI_THREAD_PRIVATE_PTR( Context::ContextStack, Context::contextStack )
+thread_local Context::ContextStack Context::contextStack;
 
 /* ----------------------------------------------------------------------- */
 

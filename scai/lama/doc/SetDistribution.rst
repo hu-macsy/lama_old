@@ -13,13 +13,12 @@ You can choose between these types of distributions. For detailed informations a
 * GeneralDistribution: assigning each row a specific process
 * MetisDistribution: assigment by graph partitioning of a given matrix resulting in a GeneralDistribution
 
-For creating a ``Distribution`` you always also need a ``Communicator``, that later on will take care of the communication between the node. Available communicators beneath the ``NoCommunicator`` are **MPI** and **GPI**. You can get one from the factory by calling ``getCommunicatorPtr`` with the choosen ``Communicator``, or without a specification to get the default communicator (defined by environment variable or following a predifined order):
+For creating a ``Distribution`` you always also need a ``Communicator``, that later on will take care of the communication between the node. In addition to ``NoCommunicator``, a communicator for **MPI** is also available. You can get one from the factory by calling ``getCommunicatorPtr`` with the choosen ``Communicator``, or without a specification to get the default communicator (defined by environment variable or following a predifined order):
 
 .. code-block:: c++
 
 	dmemo::CommunicatorPtr noComm  = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::NO );
 	dmemo::CommunicatorPtr mpiComm = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::MPI );
-	dmemo::CommunicatorPtr gpiComm = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::GPI );
 
 	dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr(); // returning the default communicator
 

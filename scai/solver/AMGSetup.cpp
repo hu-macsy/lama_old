@@ -35,41 +35,110 @@
 // hpp
 #include <scai/solver/AMGSetup.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
+
 namespace scai
 {
 
 namespace solver
 {
 
-AMGSetup::AMGSetup()
-    : mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
-        std::numeric_limits<IndexType>::max() )
+SCAI_LOG_DEF_LOGGER( _AMGSetup::logger, "AMGSetup" )
+
+/* ========================================================================= */
+/*    static methods (for _AMGSetup - Factory, untyped )                     */
+/* ========================================================================= */
+
+_AMGSetup* _AMGSetup::getAMGSetup( const common::ScalarType scalarType, const std::string& setupType )
+{
+    return create( AMGSetupCreateKeyType( scalarType, setupType ) );
+}
+
+/* ========================================================================= */
+/*    static methods (for AMGSetup<ValueType> - Factory                      */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::getCreateValues( std::vector<std::string>& values )
+{
+    std::vector<AMGSetupCreateKeyType> createValues;
+
+    _AMGSetup::getCreateValues( createValues );  // all solvers ( valueType, solvertype )
+
+    values.clear();
+
+    for ( size_t i = 0; i < createValues.size(); ++i )
+    {
+        if ( createValues[i].first == common::TypeTraits<ValueType>::stype )
+        {
+            // AMGSetup for this value type
+            values.push_back( createValues[i].second );
+        }
+    }
+}
+
+template<typename ValueType>
+AMGSetup<ValueType>* AMGSetup<ValueType>::getAMGSetup( const std::string& setupType )
+{
+    _AMGSetup* setup = _AMGSetup::getAMGSetup( common::TypeTraits<ValueType>::stype, setupType );
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<AMGSetup<ValueType>*>( setup ), "Illegal setup" )
+
+    return reinterpret_cast<AMGSetup<ValueType>*>( setup );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+AMGSetup<ValueType>::AMGSetup() : 
+
+    mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
+    mHostOnlyVars( 0 ), 
+    mReplicatedLevel( std::numeric_limits<IndexType>::max() )
 {
 }
 
-AMGSetup::~AMGSetup()
+template<typename ValueType>
+AMGSetup<ValueType>::~AMGSetup()
 {
 }
 
-void AMGSetup::setHostOnlyLevel( IndexType hostOnlyLevel )
+/* ========================================================================= */
+/*    Methods                                                                */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::setHostOnlyLevel( IndexType hostOnlyLevel )
 {
     mHostOnlyLevel = hostOnlyLevel;
 }
 
-void AMGSetup::setHostOnlyVars( IndexType hostOnlyVars )
+template<typename ValueType>
+void AMGSetup<ValueType>::setHostOnlyVars( IndexType hostOnlyVars )
 {
     mHostOnlyLevel = hostOnlyVars;
 }
 
-void AMGSetup::setReplicatedLevel( IndexType replicatedLevel )
+template<typename ValueType>
+void AMGSetup<ValueType>::setReplicatedLevel( IndexType replicatedLevel )
 {
     mReplicatedLevel = replicatedLevel;
 }
 
-void AMGSetup::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void AMGSetup<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "AMGSetup( ... )";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( AMGSetup, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

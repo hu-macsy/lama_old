@@ -74,16 +74,9 @@ then
     count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA 
 fi
 
-if [ -d ../mic ]
-then
-    #Running sparsekernel MIC tests
-    echo "Running sparsekernel tests with MIC context"
-    count_error ./sparsekernelTest --SCAI_CONTEXT=MIC
-fi
-
 exit_on_failure ${error_count}
 
-do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@/@MODULE_NAME@"
 
 exit_on_failure $?
 

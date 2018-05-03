@@ -39,11 +39,12 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/tracing.hpp>
 
-using namespace scai::dmemo;
-using namespace scai::hmemo;
-using namespace scai::utilskernel;
+using namespace scai;
+using namespace dmemo;
+using namespace hmemo;
+using namespace utilskernel;
 
-using scai::common::binary;
+using scai::common::BinaryOp;
 
 int main()
 {
@@ -65,7 +66,7 @@ int main()
 
         HArrayUtils::setRandom( owners, np - 1 );   // random values from 0 to np - 1
 
-        // HArrayUtils::setScalar( owners, np, binary::MODULO );
+        // HArrayUtils::setScalar( owners, np, BinaryOp::MODULO );
 
         std::cout << "owners = " << owners << std::endl;
 

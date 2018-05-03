@@ -67,9 +67,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( absTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     ValueType x;
-    AbsType abs_val;
+    RealType abs_val;
     x = 9;
     abs_val = Math::abs( x );
     BOOST_CHECK( abs_val == x );
@@ -89,16 +89,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     ValueType x;
-    AbsType real_val;
+    RealType real_val;
     x = 9;
     real_val = Math::real( x );
     BOOST_CHECK( real_val == x );
     x = -9;
     real_val = Math::real( x );
     BOOST_CHECK( real_val == x );
-    x = static_cast<ValueType>( ComplexFloat( 3, 4 ) );
+    x = static_cast<ValueType>( scai::ComplexFloat( 3, 4 ) );
     real_val = Math::real( x );
     BOOST_CHECK( real_val == 3 );
 }
@@ -111,16 +111,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     ValueType x;
-    AbsType imag_val;
+    RealType imag_val;
     x = 9;
     imag_val = Math::imag( x );
     BOOST_CHECK( imag_val == 0 );
     x = -9;
     imag_val = Math::imag( x );
     BOOST_CHECK( imag_val == 0 );
-    x = static_cast<ValueType>( ComplexFloat( 3, 4 ) );
+    x = static_cast<ValueType>( scai::ComplexFloat( 3, 4 ) );
     imag_val = Math::imag( x );
 
     if ( scai::common::isComplex( TypeTraits<ValueType>::stype ) )
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType RealValueType;
+    typedef typename TypeTraits<ValueType>::RealType RealValueType;
 
     RealValueType x = 9;
     RealValueType y = 10;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( maxTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType RealValueType;
+    typedef typename TypeTraits<ValueType>::RealType RealValueType;
 
     RealValueType x = 9;
     RealValueType y = 10;
@@ -234,12 +234,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( atan2Test, ValueType, scai_math_scalar_test_types
 #ifdef SCAI_COMPLEX_SUPPORTED
 BOOST_AUTO_TEST_CASE_TEMPLATE( argTest, ValueType, scai_math_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     ValueType x = ValueType( 3, 4 );
 
-    AbsType y = Math::arg( x );
+    RealType y = Math::arg( x );
 
-    BOOST_CHECK_SMALL( y - AbsType( 0.927295218001612 ), TypeTraits<ValueType>::small() );
+    BOOST_CHECK_SMALL( y - RealType( 0.927295218001612 ), TypeTraits<ValueType>::small() );
 }
 #endif
 
@@ -257,6 +257,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
 /* --------------------------------------------------------------------- */
 
 typedef boost::mpl::list<short, unsigned short, int, unsigned int, long, unsigned long> IndexTypes;
+
+BOOST_AUTO_TEST_CASE( nextpow2Test )
+{
+    using scai::IndexType;
+
+    // Here we make the test with IndexType
+
+    BOOST_CHECK_EQUAL( Math::nextpow2( IndexType( 31 ) ), IndexType( 5 ) );
+    BOOST_CHECK_EQUAL( Math::nextpow2( IndexType( 32 ) ), IndexType( 5 ) );
+    BOOST_CHECK_EQUAL( Math::nextpow2( IndexType( 33 ) ), IndexType( 6 ) );
+}
+
+/* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( validIndexTest, IndexType, IndexTypes )
 {

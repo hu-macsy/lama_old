@@ -57,7 +57,7 @@ The Math Kernel Extension contains the subprojects:
 Distributed Extension
 ---------------------
 
-The Distributed Extension realises strategies for the distribution of data among processes and handles the communication between those. LAMA is compliant to MPI or GPI, giving the developer both options.
+The Distributed Extension realises strategies for the distribution of data among processes and handles the communication between those. LAMA currently supports the MPI standard for distributed communication.
 
 The Distributed Extension contains the subproject:
 
@@ -87,6 +87,10 @@ Partitioning provides routines to optimize the distribution of sparse matrices i
 is minimized.
 
 * :ref:`SCAI Partitioning - Partitioning to get optimized distributions  <scaipartitioning:main-page_partitioning>`
+
+Least Squares Solver with box constraints:
+
+* :ref:`SCAI Least Squares with Box Constraint  <scaipartitioning:main-page_ipbcls>`
 
 Tools
 -----

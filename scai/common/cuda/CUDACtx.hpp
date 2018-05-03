@@ -39,7 +39,6 @@
 
 
 #include <scai/common/NonCopyable.hpp>
-#include <scai/common/function.hpp>
 
 #include <cuda.h>
 #include <cublas_v2.h>
@@ -55,6 +54,7 @@
 #endif
 
 #include <vector>
+#include <functional>
 
 namespace scai
 {
@@ -131,7 +131,7 @@ public:
 
     /** Add a routine to be called with destructor */
 
-    void addShutdown( common::function<void()> routine );
+    void addShutdown( std::function<void()> routine );
 
 private:
 
@@ -150,7 +150,7 @@ private:
     cusolverSpHandle_t mcuSolverSpHandle;
 #endif
 
-    std::vector< common::function<void()> > mShutdownFunctions;
+    std::vector< std::function<void()> > mShutdownFunctions;
 };
 
 }  // namespace common

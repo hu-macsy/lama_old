@@ -104,7 +104,7 @@ public:
         hmemo::_HArray& array,
         const std::string& fileName,
         const IndexType offset = 0,
-        const IndexType n = nIndex );
+        const IndexType n = invalidIndex );
 
     /** Implementation of pure virtual method FileIO::readSparse */
 

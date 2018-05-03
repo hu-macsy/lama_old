@@ -38,7 +38,6 @@
 #include <scai/blaskernel/external/LAPACKeTrait.hpp>
 
 // internal scai libraries
-#include <scai/common/exception/NotSupportedValueTypeException.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/SCAITypes.hpp>
 

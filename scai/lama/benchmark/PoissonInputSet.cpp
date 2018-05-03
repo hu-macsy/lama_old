@@ -230,8 +230,10 @@ PoissonInputSet::PoissonInputSet( const std::string argument ) :
     dmemo::DistributionPtr rowDistribution = mA->getRowDistributionPtr();
     dmemo::DistributionPtr colDistribution = mA->getColDistributionPtr();
 
-    mX.reset( new lama::DenseVector<double>( colDistribution, 1.0 ) );
-    mY.reset( new lama::DenseVector<double>( *mA * *mX ) );
+    mX.reset( new lama::DenseVector<double>() );
+    mX->setSameValue( colDistribution, 1.0 );
+    mY.reset( new lama::DenseVector<double>() );
+    *mY = *mA * *mX;
 
     SCAI_LOG_INFO( logger, "created input set: A = " << *mA << ", X = " << *mX << ", Y = " << *mY );
 }

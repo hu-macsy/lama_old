@@ -64,13 +64,13 @@ using namespace solver;
 
 // return: lb < x < ub, elementwise
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 bool isInterior( const DenseVector<ValueType>& x,
                  const DenseVector<ValueType>& lb,
                  const DenseVector<ValueType>& ub )
 {
-    return x.all( common::binary::LT, ub ) && x.all( common::binary::GT, lb );
+    return x.all( common::CompareOp::LT, ub ) && x.all( common::CompareOp::GT, lb );
 }
 
 void dualityGap( ValueType& gap, ValueType& dualObj, 
@@ -92,7 +92,7 @@ void dualityGap( ValueType& gap, ValueType& dualObj,
     DenseVector<ValueType> kappa( 2 * res );
     DenseVector<ValueType> tmp( kappa * A * Scalar( -1 ) );
     DenseVector<ValueType> mu = tmp;
-    mu.setScalar( Scalar( 0 ), common::binary::MAX );
+    mu.setScalar( Scalar( 0 ), common::BinaryOp::MAX );
 
     Scalar sDualObj = - kappa.dotProduct( kappa ) * 0.25  - kappa.dotProduct( b_s ) - mu.dotProduct( u_s );
     Scalar sGap = res.dotProduct( res ) - sDualObj;
@@ -142,7 +142,7 @@ public:
     
     /** This method must be provided so that solvers can decide about the type of additional runtime vectors. */
 
-    virtual common::scalar::ScalarType getValueType() const
+    virtual common::ScalarType getValueType() const
     {
         return mA.getValueType();
     }   
@@ -317,7 +317,7 @@ void computeSearchDirection(
     diagonalMatrix.setIdentity( diagonal.getDistributionPtr() );
     diagonalMatrix.setDiagonal( diagonal );
 
-    common::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
+    std::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
     preconditioner->initialize( diagonalMatrix );
 
     // Do it with CG
@@ -384,7 +384,7 @@ void lsqBox(
 
     std::cout << "build diagATA" << std::endl;
 
-    A.reduce( diagATA, 1, common::binary::ADD, common::unary::SQR );
+    A.reduce( diagATA, 1, common::BinaryOp::ADD, common::UnaryOp::SQR );
 
     std::cout << "diagATA = " << diagATA << std::endl;
 

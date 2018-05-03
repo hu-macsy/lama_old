@@ -37,7 +37,7 @@
 
 #include <scai/dmemo.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 using namespace scai;
 using namespace dmemo;
@@ -93,8 +93,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 
 BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
-    utilskernel::LArray<IndexType> indexes;
-    utilskernel::LArray<PartitionId> owners;
+    hmemo::HArray<IndexType> indexes;
+    hmemo::HArray<PartitionId> owners;
 
     utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 

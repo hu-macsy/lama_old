@@ -32,47 +32,19 @@
  * @date 23.08.2017
  */
 
+
+
 #ifndef BOOST_TEST_DYN_LINK
 #define BOOST_TEST_DYN_LINK
 #endif
 
 #define BOOST_TEST_MODULE partitioningTest
-
-// indicate that default main of Boost is not used here
-
 #define BOOST_TEST_NO_MAIN
 
-#include <boost/test/unit_test.hpp>
-
-#include <scai/common/Settings.hpp>
-#include <scai/common/OpenMP.hpp>
+#include <scai/testsupport/dmemoTestMain.hpp>
 #include <scai/partitioning.hpp>
-
-#include <iostream>
-
-bool init_function()
-{
-    int nThreads;
-
-    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
-    {
-        omp_set_num_threads( nThreads );
-    }
-
-    try
-    {
-        scai::dmemo::CommunicatorPtr comm = scai::dmemo::Communicator::getCommunicatorPtr();
-        return true;
-    }
-    catch ( scai::common::Exception& ex )
-    {
-        std::cerr << "Could not get the default communicator: " << ex.what() << std::endl;
-        return false;
-    }
-}
 
 int main( int argc, char* argv[] )
 {
-    scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
-    return boost::unit_test::unit_test_main( &init_function, argc, argv );
+    return scai::testsupport::dmemoTestMain(argc, argv);
 }

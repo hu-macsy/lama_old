@@ -64,7 +64,9 @@ public:
 
     virtual ThreadSafetyLevel getThreadSafetyLevel() const;
 
-    virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
+    /** Implementation of pure method Communciator::all2allImpl */
+
+    virtual void all2allImpl( void* recvBuffer, const void* sendBuffer, const common::ScalarType stype ) const;
 
     virtual void synchronize() const;
 
@@ -79,7 +81,7 @@ public:
         const void* oldVals,
         const IndexType oldSize,
         const PartitionId dest,
-        common::scalar::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::shiftAsyncImpl */
 
@@ -89,30 +91,30 @@ public:
         const void* oldVals,
         const PartitionId dest,
         const IndexType size,
-        common::scalar::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::bcastImpl */
 
-    void bcastImpl( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;
+    void bcastImpl( void* val, const IndexType n, const PartitionId root, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communciator::all2allvImpl */
 
-    void all2allvImpl( void* recvBuffer[], IndexType recvCount[],
-                       void* sendBuffer[], IndexType sendCount[],
-                       common::scalar::ScalarType stype ) const;
+    void all2allvImpl( void* recvBuffer[], const IndexType recvCount[],
+                       const void* sendBuffer[], const IndexType sendCount[],
+                       const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::scatterImpl */
 
-    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, common::scalar::ScalarType stype ) const;
+    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::scatterVImpl */
 
     void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
-                       const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const;
+                       const void* allVals, const IndexType sizes[], const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::gatherImpl */
 
-    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const;
+    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::gatherVImpl */
 
@@ -122,17 +124,17 @@ public:
         const PartitionId root,
         const void* myvals,
         const IndexType sizes[],
-        const common::scalar::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
-    void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
+    void maxlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const;
 
-    void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
+    void minlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const;
 
     /** Implementation of Communicator::supportsLocReduction */
 
-    virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const;
+    virtual bool supportsLocReduction( common::ScalarType vType, common::ScalarType iType ) const;
 
-    void swapImpl( void* val, const IndexType n, const PartitionId partner, common::scalar::ScalarType stype ) const;
+    void swapImpl( void* val, const IndexType n, const PartitionId partner, common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::exchangeByPlanImpl */
 
@@ -141,7 +143,7 @@ public:
         const CommunicationPlan& recvPlan,
         const void* sendData,
         const CommunicationPlan& sendPlan,
-        const common::scalar::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::exchangeByPlanAsyncImpl */
 
@@ -150,25 +152,25 @@ public:
         const CommunicationPlan& recvPlan,
         const void* sendData,
         const CommunicationPlan& sendPlan,
-        const common::scalar::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
     /** Implementation of Communicator::sumImpl */
 
-    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::minImpl */
 
-    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::maxImpl */
 
-    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::scanImpl */
 
-    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::getProcessorName */
 

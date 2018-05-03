@@ -63,11 +63,11 @@ GridVector<ValueType>::GridVector( const std::string& filename ) : DenseVector<V
     // currently each processor reads the file, no distributed IO
     // Problem: GridDistribution onto a single processor not supported yet
 
-    GridVector::readLocalFromFile( filename, 0, nIndex );
+    GridVector::readLocalFromFile( filename, 0, invalidIndex );
 }
 
 template<typename ValueType>
-void GridVector<ValueType>::reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp )
+void GridVector<ValueType>::reduce( const GridVector<ValueType>& other, IndexType dim, const common::BinaryOp redOp )
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( dim, other.nDims(), "illegeal reduction dim on this grid " << other.globalGrid() )
 
@@ -99,6 +99,8 @@ void GridVector<ValueType>::gemm( const ValueType alpha, const GridVector<ValueT
     int ldb = grid2.size( 1 );
     int ldc = resGrid.size( 1 );
 
+    using common::MatrixOp;
+
     if ( lda != 0 && n != 0 && m != 0 )
     {
         static utilskernel::LAMAKernel<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
@@ -115,7 +117,8 @@ void GridVector<ValueType>::gemm( const ValueType alpha, const GridVector<ValueT
 
         ValueType beta = 1;
 
-        gemm[loc]( CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, rA.get(), lda, rB.get(), ldb, beta,
+        gemm[loc]( MatrixOp::NORMAL, MatrixOp::NORMAL, 
+                   m, n, k, alpha, rA.get(), lda, rB.get(), ldb, beta,
                    wRes.get(), ldc );
     }
 }
@@ -182,7 +185,7 @@ void GridVector<ValueType>::setDiagonal( const GridSection<ValueType>& diagonal,
         const ValueType* sourcePtr = rSource.get() + offsetSource;
         ValueType* targetPtr = wTarget.get() + offsetTarget;
     
-        common::binary::BinaryOp op = common::binary::COPY;
+        common::BinaryOp op = common::BinaryOp::COPY;
 
         bool swap = false;
 
@@ -196,7 +199,7 @@ template<typename ValueType>
 void GridVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode
 ) const
 {
@@ -211,9 +214,9 @@ void GridVector<ValueType>::writeLocalToFile(
     {
         // okay, we can use FileIO class from factory
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        if ( dataType != common::scalar::UNKNOWN )
+        if ( dataType != common::ScalarType::UNKNOWN )
         {
             // overwrite the default settings
 
@@ -263,7 +266,7 @@ IndexType GridVector<ValueType>::readLocalFromFile( const std::string& fileName,
     swap( data, grid );
 
     SCAI_ASSERT_EQ_ERROR( 0, first, "block read not supported for sparse data" )
-    SCAI_ASSERT_EQ_ERROR( nIndex, n, "block read not supported for sparse data" )
+    SCAI_ASSERT_EQ_ERROR( invalidIndex, n, "block read not supported for sparse data" )
 
     return localN;
 }

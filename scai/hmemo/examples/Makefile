@@ -2,8 +2,7 @@ all: makeAll EXECUTABLE
 
 clean: makeAllClean
 
-DIRS = cuda \
-	   mic
+DIRS = cuda
 
 makeAll:
 	for dir in $(DIRS); do \

@@ -45,17 +45,17 @@ using namespace scai;
 using namespace lama;
 using namespace hmemo;
 
-static common::scalar::ScalarType getType()
+static common::ScalarType getType()
 {
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
+    common::ScalarType type = common::TypeTraits<double>::stype;
 
     std::string val;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+        scai::common::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
 
-        if ( env_type == scai::common::scalar::UNKNOWN )
+        if ( env_type == scai::common::ScalarType::UNKNOWN )
         {
             std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
         }
@@ -79,7 +79,7 @@ int main( int argc, const char* argv[] )
         cout << "   --SCAI_IO_TYPE_DATA=<data_type> is data type used for file output" << endl;
         cout << "   " << endl;
         cout << "   Supported types: ";
-        vector<common::scalar::ScalarType> dataTypes;
+        vector<common::ScalarType> dataTypes;
         hmemo::_HArray::getCreateValues( dataTypes );
 
         for ( size_t i = 0; i < dataTypes.size(); ++i )
@@ -91,13 +91,12 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    // take double as default
+    // the code here works fine for any type, so it can be chosen by command  line argument
 
-    common::scalar::ScalarType type = getType();
+    common::ScalarType type = getType();
 
-    common::unique_ptr<Vector> vectorPtr( Vector::getVector( Vector::DENSE, type ) );
-
-    Vector& vector = *vectorPtr;
+    _VectorPtr vectorPtr( _Vector::getVector( VectorKind::DENSE, type ) );
+    _Vector&   vector = *vectorPtr;
 
     std::string inFileName = argv[1];
 

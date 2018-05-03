@@ -36,7 +36,7 @@ include ( scai_macro/scai_add_example )
 include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 
-set ( EXAMPLES imageProcessing classProcessing greyScaling scaledImages imageGen )
+set ( EXAMPLES imageProcessing classProcessing greyScaling scaledImages imageGen fft2D )
 
 foreach ( executable ${EXAMPLES} )
 
@@ -50,9 +50,6 @@ scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
 # generate build file in example directory
 scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
-
-# copy the script to run all examples
-scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
 

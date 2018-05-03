@@ -60,8 +60,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_numeric_test_t
 {
     IndexType n = 4;
     ValueType val = 5.0;
-    DenseVector<ValueType> vec( n, val );
-    L2Norm l2norm;
+    auto vec = fill<DenseVector<ValueType>>( n, val );
+    L2Norm<ValueType> l2norm;
     ValueType expected = common::Math::sqrt( ValueType( n ) * val * val );
     BOOST_CHECK_EQUAL( expected, l2norm( vec ) );
     BOOST_CHECK_EQUAL( vec.l2Norm(), l2norm( vec ) );
@@ -72,18 +72,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_numeric_test_t
     hwa[3] = -4.0;
     hwa.release();
     expected = static_cast<ValueType>( 5.47722 );
-    Scalar s = l2norm( vec );
-    SCAI_CHECK_CLOSE( expected, s.getValue<ValueType>(), 1 );
+    ValueType s = l2norm( vec );
+    RealType<ValueType> eps = 0.001; // 
+    BOOST_CHECK( common::Math::abs( expected - s ) < eps );
     BOOST_CHECK_EQUAL( vec.l2Norm(), l2norm( vec ) );
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( L2NormScalarTests )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormScalarTests, ValueType, scai_numeric_test_types )
 {
-    Scalar scalar( -4.0 );
-    L2Norm l2norm;
-    BOOST_CHECK_EQUAL( Scalar( 4.0 ), l2norm( scalar ) );
+    ValueType scalar( -4 );
+    L2Norm<ValueType> l2norm;
+    BOOST_CHECK_EQUAL( ValueType( 4 ), l2norm( scalar ) );
 }
 
 /* --------------------------------------------------------------------- */

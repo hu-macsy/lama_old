@@ -37,7 +37,6 @@
 #include <scai/benchmark.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/Context.hpp>
@@ -55,8 +54,8 @@ namespace hmemo
  *
  *  \code
  *     HArrayInputSet inputData( "Host, 100000 );
- *     common::unique_ptr<HArrayInputSet> inputData1( InputSet::create( "HArrayInputSet", "CUDA, 2000" ) );
- *     common::unique_ptr<HArrayInputSet> inputData2( InputSet::createWithArg( "HArrayInputSet( CUDA, 20000 )" ) );
+ *     std::unique_ptr<HArrayInputSet> inputData1( InputSet::create( "HArrayInputSet", "CUDA, 2000" ) );
+ *     std::unique_ptr<HArrayInputSet> inputData2( InputSet::createWithArg( "HArrayInputSet( CUDA, 20000 )" ) );
  *  \endcode
  */
 class COMMON_DLL_IMPORTEXPORT HArrayInputSet: 
@@ -122,7 +121,7 @@ private:
 
     IndexType mSize;
 
-    common::unique_ptr<HArray<double> > mArray;
+    std::unique_ptr<HArray<double> > mArray;
 };
 
 }

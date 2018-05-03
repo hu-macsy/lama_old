@@ -45,7 +45,7 @@ using namespace scai::hmemo;
 using namespace scai::dmemo;
 using namespace scai::solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, char** argv )
 {
@@ -100,8 +100,8 @@ int main( int argc, char** argv )
     std::string loggerName = "<AMG>";
     LoggerPtr amgLogger( new CommonLogger ( loggerName, LogLevel::completeInformation,
                                             LoggerWriteBehaviour::toConsoleOnly,
-                                            scai::common::shared_ptr<Timer>( new Timer() ) ) );
-    scai::common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
+                                            std::shared_ptr<Timer>( new Timer() ) ) );
+    std::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
     amgSolver->setHostOnlyLevel( 4 );
     amgSolver->setReplicatedLevel( 5 );
     amgSolver->setMaxLevels( 25 );
@@ -111,7 +111,7 @@ int main( int argc, char** argv )
 
     for ( int level = 0; level < ( int )amgSolver->getNumLevels(); ++level )
     {
-        const Matrix& mat = amgSolver->getGalerkin( level );
+        const _Matrix& mat = amgSolver->getGalerkin( level );
         std::cout << "Galerkin matrix on level " << level << ": " << mat << std::endl;
         HArray<IndexType> ia;
         HArray<IndexType> ja;
@@ -157,7 +157,7 @@ int main( int argc, char** argv )
 
     for ( int level = 0; level < ( int )amgSolver->getNumLevels() - 1; ++level )
     {
-        const Matrix& mat = amgSolver->getInterpolation( level );
+        const _Matrix& mat = amgSolver->getInterpolation( level );
         std::cout << "Interpolation matrix on level " << level << ": " << mat << std::endl;
         HArray<IndexType> ia;
         HArray<IndexType> ja;

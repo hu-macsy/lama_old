@@ -44,6 +44,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 #include <utility>
 
@@ -61,20 +63,20 @@ public:
 
     /** Implementation for JDSKernelTrait::scaleRows */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static void scaleRows(
         ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        const OtherValueType rowValues[] );
+        const ValueType rowValues[] );
 
     /** Implementation for JDSKernelTrait::getRow */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static void getRow(
-        OtherValueType row[],
+        ValueType row[],
         const IndexType i,
         const IndexType numColumns,
         const IndexType numRows,
@@ -86,7 +88,7 @@ public:
 
     /** Implementation for JDSKernelTrait::setRow */
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     static void setRow(
         ValueType values[],
         const IndexType i,
@@ -96,8 +98,8 @@ public:
         const IndexType ilg[],
         const IndexType dlg[],
         const IndexType ja[],
-        const OtherValueType row[],
-        const common::binary::BinaryOp op );
+        const ValueType row[],
+        const common::BinaryOp op );
 
     /** Implementation for JDSKernelTrait::getValuePos */
 
@@ -189,29 +191,14 @@ public:
         const ValueType beta,
         const ValueType y[],
         const IndexType numRows,
-        const IndexType perm[],
-        const IndexType jdsILG[],
-        const IndexType ndlg,
-        const IndexType jdsDLG[],
-        const IndexType jdsJA[],
-        const ValueType jdsValues[] );
-
-    /** OpenMP implementation for JDSUtilKernelTrait::normalGEVM  */
-
-    template<typename ValueType>
-    static void normalGEVM(
-        ValueType result[],
-        const ValueType alpha,
-        const ValueType x[],
-        const ValueType beta,
-        const ValueType y[],
         const IndexType numColumns,
         const IndexType perm[],
         const IndexType jdsILG[],
         const IndexType ndlg,
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const ValueType jdsValues[] );
+        const ValueType jdsValues[],
+        const common::MatrixOp op );
 
     /** OpenMP implementation for JDSUtilKernelTrait::jacobi  */
 
@@ -246,32 +233,6 @@ public:
         const ValueType omega );
 
 private:
-
-    // We need for asynchronous execution versions with max 9 args
-
-    template<typename ValueType>
-    static void normalGEMV_a(
-        ValueType result[],
-        const std::pair<ValueType, const ValueType*> ax,     // alpha, x
-        const std::pair<ValueType, const ValueType*> by,     // beta, y
-        const std::pair<IndexType, const IndexType*> rows,   // nrows, jdsILG,
-        const IndexType perm[],
-        const std::pair<IndexType, const IndexType*> dlg,    // ndlg, jdsDLG
-        const IndexType jdsJA[],
-        const ValueType jdsValues[] );
-
-    template<typename ValueType>
-    static void normalGEVM_a(
-        ValueType result[],
-        const std::pair<ValueType, const ValueType*> ax,     // alpha, x
-        const std::pair<ValueType, const ValueType*> by,     // beta, y
-        const std::pair<IndexType, const IndexType*> rows,   // nrows, jdsILG,
-        const IndexType perm[],
-        const std::pair<IndexType, const IndexType*> dlg,    // ndlg, jdsDLG
-        const IndexType jdsJA[],
-        const ValueType jdsValues[] );
-
-    /** Routine that registers all methods at the kernel registry. */
 
     /** Struct for registration of methods without template arguments */
 

@@ -54,10 +54,10 @@ namespace common
  * @tparam T The type of any arithmetic value type used
  *
  * /code
- *  typedef ResultType AbsType;   // return type of function Math::abs( ValueType )
- *  AbsType eps0();               // closest value to 0
- *  AbsType eps1();               // closest value to 1
- *  AbsType small();              // accepted tolerance for comparisons of results
+ *  typedef ResultType RealType;   // return type of function Math::abs( ValueType )
+ *  RealType eps0();               // closest value to 0
+ *  RealType eps1();               // closest value to 1
+ *  RealType small();              // accepted tolerance for comparisons of results
  *  ValueType min();              // used as neutral element for max reduction
  *  ValueType max();              // used as neutral element for min reduction
  *  int precision();              // number of relevant digits if printed
@@ -80,7 +80,7 @@ public:
     /**
      * @brief Corresponding type value of enum ScalarType.
     */
-    static const scalar::ScalarType stype = scalar::UNKNOWN;
+    static const ScalarType stype = ScalarType::UNKNOWN;
 };
 
 /** Type specific traits for int */
@@ -90,7 +90,7 @@ class TypeTraits<int>
 {
 public:
 
-    typedef int AbsType;
+    typedef int RealType;
 
     static inline int eps1()
     {
@@ -122,11 +122,16 @@ public:
         return - std::numeric_limits<int>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::INT;
+    static inline int imaginaryUnit()
+    {
+        return 0;
+    }
+
+    static const ScalarType stype = ScalarType::INT;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::INT );
+        return scalarType2str( ScalarType::INT );
     }
 };
 
@@ -137,7 +142,7 @@ class TypeTraits<char>
 {
 public:
 
-    typedef char AbsType;
+    typedef char RealType;
 
     static inline char eps1()
     {
@@ -169,11 +174,16 @@ public:
         return static_cast<char> ( - std::numeric_limits<char>::max() );
     }
 
-    static const scalar::ScalarType stype = scalar::CHAR;
+    static inline char imaginaryUnit()
+    {
+        return 0;
+    }
+
+    static const ScalarType stype = ScalarType::CHAR;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::CHAR );
+        return scalarType2str( ScalarType::CHAR );
     }
 };
 
@@ -183,7 +193,7 @@ template<>
 class TypeTraits<long>
 {
 public:
-    typedef long AbsType;
+    typedef long RealType;
 
     static inline long eps1()
     {
@@ -215,11 +225,16 @@ public:
         return - std::numeric_limits<long>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::LONG;
+    static inline long imaginaryUnit()
+    {
+        return 0;
+    }
+
+    static const ScalarType stype = ScalarType::LONG;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::LONG );
+        return scalarType2str( ScalarType::LONG );
     }
 };
 
@@ -229,7 +244,7 @@ template<>
 class TypeTraits<unsigned int>
 {
 public:
-    typedef unsigned int AbsType;
+    typedef unsigned int RealType;
 
     static inline unsigned int eps1()
     {
@@ -261,11 +276,16 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::UNSIGNED_INT;
+    static inline unsigned int imaginaryUnit()
+    {
+        return 0;
+    }
+
+    static const ScalarType stype = ScalarType::UNSIGNED_INT;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::UNSIGNED_INT );
+        return scalarType2str( ScalarType::UNSIGNED_INT );
     }
 };
 
@@ -275,7 +295,7 @@ template<>
 class TypeTraits<unsigned long>
 {
 public:
-    typedef unsigned long AbsType;
+    typedef unsigned long RealType;
 
     static inline unsigned long eps1()
     {
@@ -307,11 +327,16 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::UNSIGNED_LONG;
+    static inline unsigned long imaginaryUnit()
+    {
+        return 0;
+    }
+
+    static const ScalarType stype = ScalarType::UNSIGNED_LONG;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::UNSIGNED_LONG );
+        return scalarType2str( ScalarType::UNSIGNED_LONG );
     }
 };
 
@@ -321,7 +346,7 @@ template<>
 class TypeTraits<long double>
 {
 public:
-    typedef long double AbsType;
+    typedef long double RealType;
 
     static inline long double eps1()
     {
@@ -353,11 +378,16 @@ public:
         return - std::numeric_limits<long double>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::LONG_DOUBLE;
+    static inline long double imaginaryUnit()
+    {
+        return 0;
+    }
+
+    static const ScalarType stype = ScalarType::LONG_DOUBLE;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::LONG_DOUBLE );
+        return scalarType2str( ScalarType::LONG_DOUBLE );
     }
 };
 
@@ -367,7 +397,7 @@ template<>
 class TypeTraits<double>
 {
 public:
-    typedef double AbsType;
+    typedef double RealType;
 
     static inline double eps1()
     {
@@ -399,11 +429,16 @@ public:
         return - std::numeric_limits<double>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::DOUBLE;
+    static inline double imaginaryUnit()
+    {
+        return 0;
+    }
+
+    static const ScalarType stype = ScalarType::DOUBLE;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::DOUBLE );
+        return scalarType2str( ScalarType::DOUBLE );
     }
 };
 
@@ -413,7 +448,7 @@ template<>
 class TypeTraits<float>
 {
 public:
-    typedef float AbsType;
+    typedef float RealType;
 
     static inline float eps1()
     {
@@ -444,7 +479,12 @@ public:
         return - std::numeric_limits<float>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::FLOAT;
+    static inline float imaginaryUnit()
+    {
+        return 0;
+    }
+
+    static const ScalarType stype = ScalarType::FLOAT;
 
     static inline const char* id()
     {
@@ -460,7 +500,7 @@ template<>
 class TypeTraits<ComplexFloat>
 {
 public:
-    typedef float AbsType;
+    typedef float RealType;
 
     static inline float eps1()
     {
@@ -492,7 +532,12 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::COMPLEX;
+    static inline ComplexFloat imaginaryUnit()
+    {
+        return ComplexFloat( 0, 1 );
+    }
+
+    static const ScalarType stype = ScalarType::COMPLEX;
 
     static inline const char* id()
     {
@@ -506,7 +551,7 @@ template<>
 class TypeTraits<ComplexDouble>
 {
 public:
-    typedef double AbsType;
+    typedef double RealType;
 
     static inline double eps1()
     {
@@ -538,11 +583,16 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::DOUBLE_COMPLEX;
+    static inline ComplexDouble imaginaryUnit()
+    {
+        return ComplexDouble( 0, 1 );
+    }
+
+    static const ScalarType stype = ScalarType::DOUBLE_COMPLEX;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::DOUBLE_COMPLEX );
+        return scalarType2str( ScalarType::DOUBLE_COMPLEX );
     }
 };
 
@@ -552,7 +602,7 @@ template<>
 class TypeTraits<ComplexLongDouble>
 {
 public:
-    typedef long double AbsType;
+    typedef long double RealType;
 
     static inline LongDouble eps1()
     {
@@ -584,7 +634,12 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::LONG_DOUBLE_COMPLEX;
+    static inline ComplexLongDouble imaginaryUnit()
+    {
+        return ComplexLongDouble( 0, 1 );
+    }
+
+    static const ScalarType stype = ScalarType::LONG_DOUBLE_COMPLEX;
 
     static inline const char* id()
     {
@@ -596,12 +651,17 @@ public:
 
 /** For convenience and for compatibility make own routine of getScalarType */
 
-template<typename ValueType> inline scalar::ScalarType getScalarType()
+template<typename ValueType> inline ScalarType getScalarType()
 {
     return TypeTraits<ValueType>::stype;
 }
 
 }  // namespace common
+
+/** Make type alias to have RealType<ValueType> as type used in norm computations. */
+
+template<typename ValueType>
+using RealType = typename scai::common::TypeTraits<ValueType>::RealType;
 
 }  // namespace scai
 

@@ -45,15 +45,14 @@
 #include <scai/lama/norm/Norm.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
 
-#include <scai/solver/GMRES.hpp>
-#include <scai/solver/SimpleAMG.hpp>
+#include <scai/solver/IterativeSolver.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace std;
 using namespace scai;
@@ -61,7 +60,7 @@ using namespace dmemo;
 using namespace lama;
 using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 #define HOST_PRINT( rank, msg )             \
     {                                           \
@@ -71,7 +70,7 @@ typedef RealType ValueType;
         }                                       \
     }                                           \
      
-static bool isNumeric( RealType& val, const string& str )
+static bool isNumeric( DefaultReal& val, const string& str )
 {
     bool is = true;
 
@@ -108,13 +107,14 @@ static bool isNumeric( RealType& val, const string& str )
 
 /** Help routine to combine criterions. */
 
-static void orCriterion( CriterionPtr& crit, const CriterionPtr& add )
+template<typename ValueType>
+static void orCriterion( CriterionPtr<ValueType>& crit, const CriterionPtr<ValueType>& add )
 {
     if ( crit )
     {
         // combine current one with the new one by an OR
 
-        crit.reset( new Criterion ( crit, add, Criterion::OR ) );
+        crit.reset( new Criterion<ValueType> ( crit, add, BooleanOp::OR ) );
     }
     else
     {
@@ -169,61 +169,60 @@ int main( int argc, const char* argv[] )
 
         stencilSpecification >> nDims >> nPoints >> n1;
 
-        scai::common::unique_ptr<Matrix> matrixPtr;
+        MatrixPtr<ValueType> matrixPtr;
 
         switch ( nDims )
         {
             case 1:  
             {
-                common::Stencil1D<RealType> stencil( nPoints );
+                common::Stencil1D<DefaultReal> stencil( nPoints );
                 common::Grid1D grid( n1 );
-                matrixPtr.reset( new StencilMatrix<RealType>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
                 break;
             }
          
             case 2:  
             {
-                common::Stencil2D<RealType> stencil( nPoints );
+                common::Stencil2D<DefaultReal> stencil( nPoints );
                 IndexType n2 = n1;
                 stencilSpecification >> n2;
                 common::Grid2D grid( n1, n2 );
-                matrixPtr.reset( new StencilMatrix<RealType>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
                 break;
             }
          
             case 3:  
             {
-                common::Stencil3D<RealType> stencil( nPoints );
+                common::Stencil3D<DefaultReal> stencil( nPoints );
                 IndexType n2 = n1;
                 stencilSpecification >> n2;
                 IndexType n3 = n2;
                 stencilSpecification >> n3;
                 common::Grid3D grid( n1, n2, n3 );
-                matrixPtr.reset( new StencilMatrix<RealType>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
                 break;
             }
         }
 
         std::cout << "Stencil matrix = " << *matrixPtr << std::endl;
 
-        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newVector() );
-        scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
+        Matrix<ValueType>& matrix   = *matrixPtr;
 
-        Matrix& matrix   = *matrixPtr;
-        Vector& rhs      = *rhsPtr;
-        Vector& solution = *solutionPtr;
+        hmemo::ContextPtr ctx = matrix.getContextPtr();
+
+        DenseVector<ValueType> rhs( ctx );
+        DenseVector<ValueType> solution( ctx );
 
         HOST_PRINT( 0, "Setup matrix, rhs, initial solution" )
 
         {
             SCAI_REGION( "Main.loadData" )
 
-            RealType val;
+            DefaultReal val;
 
             if ( isNumeric( val, rhsFilename ) )
             {
-                rhs.allocate( matrix.getRowDistributionPtr() );
-                rhs = Scalar( val );
+                rhs.setSameValue( matrix.getRowDistributionPtr(), val );
 
                 HOST_PRINT( myRank, "Set rhs = " << val )
             }
@@ -237,19 +236,18 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
-                Vector& x = *xPtr;
-                x.allocate( matrix.getColDistributionPtr() );
-                x = Scalar( 1 );
+                DenseVector<ValueType> x( matrix.getContextPtr() );
+
+                x.setSameValue( matrix.getColDistributionPtr(), ValueType( 1 ) );
+
                 rhs = matrix * x;
 
-                HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
+                HOST_PRINT( myRank, "Set rhs = sum( _Matrix, 2) : " << rhs )
             }
 
             if ( isNumeric( val, startSolutionFilename ) )
             {
-                solution.allocate( matrix.getRowDistributionPtr() );
-                solution = Scalar( val );
+                solution.setSameValue( matrix.getRowDistributionPtr(), ValueType( val ) );
                 HOST_PRINT( myRank, "Set initial solution = " << val )
             }
             else if ( startSolutionFilename.size() )
@@ -259,8 +257,7 @@ int main( int argc, const char* argv[] )
             }
             else
             {
-                solution.allocate( matrix.getRowDistributionPtr() );
-                solution = Scalar( 0 );   // initialize of a vector
+                solution.setSameValue( matrix.getRowDistributionPtr(), ValueType( 0 ) );
                 HOST_PRINT( myRank, "Set initial solution = 0" )
             }
 
@@ -291,7 +288,7 @@ int main( int argc, const char* argv[] )
 
         // Now convert to th desired matrix format
 
-        RealType matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
+        DefaultReal matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
 
         HOST_PRINT( myRank,  "Matrix Size = " << matrixSize << " MB" )
 
@@ -311,7 +308,7 @@ int main( int argc, const char* argv[] )
 
         string solverName = "<" + lamaconf.getSolverName() + ">";
 
-        scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
+        std::unique_ptr<Solver<ValueType> > mySolver( Solver<ValueType>::getSolver( lamaconf.getSolverName() ) );
 
         // setting up a common logger, prints also rank of communicator
 
@@ -327,22 +324,22 @@ int main( int argc, const char* argv[] )
 
         // Set up stopping criterion, take thresholds and max iterations if specified
 
-        CriterionPtr crit;
+        CriterionPtr<ValueType> crit;
 
-        NormPtr norm( Norm::create( lamaconf.getNorm() ) );   // Norm from factory
+        NormPtr<ValueType> norm( Norm<ValueType>::create( lamaconf.getNorm() ) );   // Norm from factory
 
-        RealType eps = lamaconf.getAbsoluteTolerance();
+        DefaultReal eps = lamaconf.getAbsoluteTolerance();
 
         if ( eps > 0.0 )
         {
-            crit.reset( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
         eps = lamaconf.getRelativeTolerance();
 
         if ( eps > 0.0 )
         {
-            CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Relative ) );
+            CriterionPtr<ValueType> rt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Relative ) );
 
             orCriterion( crit, rt );
         }
@@ -351,14 +348,14 @@ int main( int argc, const char* argv[] )
 
         if ( eps > 0.0 )
         {
-            CriterionPtr dt( new ResidualThreshold( norm, eps, ResidualThreshold::Divergence ) );
+            CriterionPtr<ValueType> dt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Divergence ) );
 
             orCriterion( crit, dt );
         }
 
         if ( lamaconf.hasMaxIter() )
         {
-            CriterionPtr it( new IterationCount( lamaconf.getMaxIter() ) );
+            CriterionPtr<ValueType> it( new IterationCount<ValueType>( lamaconf.getMaxIter() ) );
 
             orCriterion( crit, it );
         }
@@ -369,12 +366,14 @@ int main( int argc, const char* argv[] )
 
             eps = 0.001;
 
-            crit.reset( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
         // Stopping criterion can ony be set for an iterative solver
 
-        IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
+        Solver<ValueType>* s = mySolver.get();
+
+        IterativeSolver<ValueType>* itSolver = dynamic_cast<IterativeSolver<ValueType> *>( s );
 
         if ( itSolver != NULL )
         {
@@ -386,6 +385,8 @@ int main( int argc, const char* argv[] )
         }
 
         // Allow individual settings for GMRES solver
+
+        /*
 
         GMRES* gmresSolver = dynamic_cast<GMRES*>( mySolver.get() );
 
@@ -413,6 +414,8 @@ int main( int argc, const char* argv[] )
             amgSolver->setMaxLevels( 25 );
             amgSolver->setMinVarsCoarseLevel( 200 );
         }
+
+        */
 
         // Initialization with timing
 
@@ -447,12 +450,12 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                scai::common::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
-                Vector& compSolution = *compSolutionPtr;
+                std::unique_ptr<Vector<ValueType> > compSolutionPtr( rhs.newVector() );
+                Vector<ValueType>& compSolution = *compSolutionPtr;
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
-                Scalar maxDiff = compSolution.maxNorm();
+                ValueType maxDiff = compSolution.maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else

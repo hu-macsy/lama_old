@@ -42,12 +42,13 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
 
+#include <memory>
+
 namespace scai
 {
 
-using common::Thread;
-using common::shared_ptr;
-using common::function;
+using std::shared_ptr;
+using std::function;
 
 namespace tasking
 {
@@ -93,7 +94,7 @@ ThreadPool::ThreadPool( int size )
 {
     SCAI_LOG_INFO( logger, "Construct thread pool with " << size << " threads" )
     mMaxSize = size;
-    mThreads.reset( new common::Thread[ mMaxSize ] );
+    mThreads.reset( new std::thread[ mMaxSize ] );
     mThreadArgs.reset( new ThreadData[ mMaxSize ] );
     mTaskId = 0; // Initialize counter for task ids
 
@@ -103,21 +104,21 @@ ThreadPool::ThreadPool( int size )
     {
         mThreadArgs[i].pool = this;
         mThreadArgs[i].i    = i;
-        mThreads[i].run( &threadRoutine, mThreadArgs[i] );
+        mThreads[i] = std::thread( threadRoutine, std::ref( mThreadArgs[i] ) );
     }
 }
 
 /* ------------------------------------------------------------------------- */
 
-shared_ptr<ThreadPoolTask> ThreadPool::schedule( function<void()> work, int numOmpThreads /* = 0 */ )
+shared_ptr<ThreadPoolTask> ThreadPool::schedule( std::function<void()> work, int numOmpThreads /* = 0 */ )
 {
     SCAI_REGION( "ThreadPool::schedule" )
-    Thread::Id thisThread = Thread::getSelf();
+    std::thread::id thisThread = std::this_thread::get_id();
     bool isRecursiveTask = false;
 
     for ( int i = 0; i < mMaxSize; ++i )
     {
-        if ( mThreads[i].getId() == thisThread )
+        if ( mThreads[i].get_id() == thisThread )
         {
             isRecursiveTask = true;
             break;
@@ -134,12 +135,12 @@ shared_ptr<ThreadPoolTask> ThreadPool::schedule( function<void()> work, int numO
         return task;
     }
 
-    Thread::ScopedLock lock( mTaskQueueMutex );
+    std::unique_lock<std::mutex> lock( mTaskQueueMutex );
     mTaskQueue.push( task );
     SCAI_LOG_DEBUG( logger, "Added task " << task->mTaskId << " to task queue" )
     task->mState = ThreadPoolTask::QUEUED;
     //  notifiy one waiting worker
-    mNotifyTask.notifyOne();
+    mNotifyTask.notify_one();
     return task;
 }
 
@@ -156,7 +157,7 @@ void ThreadPool::wait( shared_ptr<ThreadPoolTask> task )
 
     while ( task->mState != ThreadPoolTask::FINISHED )
     {
-        Thread::ScopedLock lock( mNotifyFinishMutex );
+        std::unique_lock<std::mutex> lock( mNotifyFinishMutex );
 
         if ( task->mState != ThreadPoolTask::FINISHED )
         {
@@ -186,7 +187,7 @@ void ThreadPool::worker( int id )
         shared_ptr<ThreadPoolTask> task;
         // pick up a new task if available
         {
-            Thread::ScopedLock lock( mTaskQueueMutex );
+            std::unique_lock<std::mutex> lock( mTaskQueueMutex );
 
             if ( mTaskQueue.empty() )
             {
@@ -238,11 +239,11 @@ void ThreadPool::worker( int id )
                 task->mException = true;
             }
 
-            Thread::ScopedLock lock( mNotifyFinishMutex );
+            std::unique_lock<std::mutex> lock( mNotifyFinishMutex );
             task->mState = ThreadPoolTask::FINISHED;
             SCAI_LOG_DEBUG( logger, "worker thread " << id << " finished task " << task->mTaskId )
             // notify threads waiting on a finished task
-            mNotifyFinished.notifyAll();
+            mNotifyFinished.notify_all();
         }
     }
 
@@ -259,7 +260,7 @@ void ThreadPool::shutdown()
     shared_ptr<ThreadPoolTask> shutdownTask; // NULL pointer
     {
         // lock access to the task queue before adding shutdown tasks
-        Thread::ScopedLock lock( mTaskQueueMutex );
+        std::unique_lock<std::mutex> lock( mTaskQueueMutex );
 
         for ( int i = 0; i < mMaxSize; i++ )
         {
@@ -267,7 +268,7 @@ void ThreadPool::shutdown()
         }
 
         // notifiy all waiting worker threads about new task
-        mNotifyTask.notifyAll();
+        mNotifyTask.notify_all();
     }
     SCAI_LOG_DEBUG( logger, "added " << mMaxSize << " shutdown tasks" )
 

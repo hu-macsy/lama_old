@@ -8,15 +8,16 @@ SCAI Common
 Description
 ***********
 
-The common library contains different functionality needed in nearly all SCAI projects.
+The common library contains different functionality needed in nearly all SCAI modules.
 These are some utitily classes (e.g. for exceptions, factories, timing, ...), some
-classes to abstract from platform-specific features (e.g. threads, loading library modules, ...),
-and some kind of coding conventions (e.g. for using smart pointers, function types, ...).
+classes to abstract from platform-specific features (loading library modules, ...)
 Beside these more general concepts that might also be used for other libraries, the common
 library provides some LAMA specific enumeration types (supported value types, different context
 types, ...).
 
-All classes and type defintions are done in the namespace ``scai/common``.
+Nearly all classes and type defintions are set in the namespace ``scai/common``, only
+the most important type definitions used for indexes and values in matrices are set
+in the namespace ``scai``.
 
 ************************
 Common Library Reference
@@ -32,7 +33,7 @@ SCAI projects.
 Class                        Description
 ====================         ==========================================
 :ref:`Factory`               Template class for Factory
-:ref:`Thread`                Abstraction of a portable thread class
+:ref:`Thread`                Giving threads a unique name for identification
 :ref:`Walltime`              Simple and efficient walltime measuring
 :ref:`Grid`                  Definition of a rectangular grid
 :ref:`Stencil`               Definition of a stencil
@@ -63,8 +64,6 @@ Name                         Description
 ====================         ==========================================
 :ref:`Exception`             Error handling, call stack
 :ref:`Assertion`             Assertion checking, which can be compiled out of code
-:ref:`SmartPointers`         Smart pointers free objects with destructor: unique_ptr or shared_ptr
-:ref:`Function`              Function objects that might also be created with bound arguments
 :ref:`Settings`              Access to environment variables
 :ref:`OpenMP`                Dummy routines if OpenMP is disabled
 :ref:`TypeList`              Meta programming schemes to deal with list of types
@@ -76,7 +75,6 @@ Name                         Description
    Exception
    Assertion
    SmartPointers
-   Function
    Settings
    OpenMP
    TypeList
@@ -104,7 +102,8 @@ The following enum types are defined in common as they are use within multiple p
 ====================    ==========================================
 Class                   Description
 ====================    ==========================================
-:ref:`ContextType`      Enumeration types ContextType and AccessKind
+:ref:`ContextType`      Enumeration type ContextType for supported devices
+:ref:`AccessKind`       Enumeration type AccessKind for read/write accesses
 :ref:`ScalarType`       Enumeration type for supported value types (allows registration for different types in factories, interfaces, ...)
 ====================    ==========================================
 
@@ -112,6 +111,7 @@ Class                   Description
    :hidden:
 
    ContextType
+   AccessKind
    ScalarType
 
 Arithmetic Types
@@ -129,9 +129,11 @@ Class                   Description
 :ref:`SCAITypes`        Supported arithmetic types for template instantiations
 :ref:`TypeTrait`        Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
 :ref:`Math`             Wrapper for mathematical operations (like those in cmath) to use them in templated code
-:ref:`Complex`          Complex numbers which cannot only be used on host, but also on CUDA and MIC devices.
+:ref:`Complex`          Complex numbers which cannot only be used on host, but also on CUDA.
 :ref:`Constants`        Operations to compare value to a machine specific eps
 :ref:`BinaryOp`         Enumeration type for binary operations
+:ref:`UnaryOp`          Enumeration type for unary operations
+:ref:`CompareOp`        Enumeration type for comparison operations
 ====================    ==========================================
 
 .. toctree::

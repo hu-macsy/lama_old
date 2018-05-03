@@ -15,7 +15,6 @@ These are the derived classes currently supported:
 * HostMemory: Derived memory class for CPU memory management
 * CUDAMemory: Derived memory class for CUDA memory management
 * CUDAHostMemory: Derived memory class for pinned host memory
-* MICMemory: Derived memory class for memory on the Intel Xeon Phi.
 
 In the first LAMA release, context and memory were used synonymously as one context class.
 Due to the pinned memory that might be used for faster memory transfer between Host and CUDA devices and
@@ -39,7 +38,6 @@ Context           ContextMemory       HostMemory
 ===============   =================   =================
 HostContext       HostMemory          HostMemory
 CUDAContext       CUDAMemory          CUDAHostMemory
-MICContext        MICMemory           HostMemory
 ===============   =================   =================
 
 The central operations for a memory object are the operations allocate, free, memcpy and memset.

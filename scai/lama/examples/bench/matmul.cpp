@@ -37,8 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
-#include <scai/lama/expression/all.hpp>
+// _Matrix & vector related includes
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
@@ -47,19 +46,24 @@
 using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace std;
+using scai::IndexType;
 using scai::common::Walltime;
+using scai::common::ContextType;
 
 static bool verboseFlag = false;
 
 template<typename ValueType>
-static void bench( IndexType size, double fillRate )
+static void bench( IndexType size, float fillRate )
 {
     ContextPtr host = Context::getHostPtr();
-    CSRSparseMatrix<ValueType> a( size, size );
-    CSRSparseMatrix<ValueType> b( size, size );
-    CSRSparseMatrix<ValueType> c( size, size );
+
+    auto a = zero<CSRSparseMatrix<ValueType>>( size, size );
+    auto b = zero<CSRSparseMatrix<ValueType>>( size, size );
+    auto c = zero<CSRSparseMatrix<ValueType>>( size, size );
+
     MatrixCreator::fillRandom( a, fillRate );
     MatrixCreator::fillRandom( b, fillRate );
+
     a.setContextPtr( host );
     b.setContextPtr( host );
     c.setContextPtr( host );
@@ -70,10 +74,12 @@ static void bench( IndexType size, double fillRate )
     double timeHost = Walltime::get();
     c = a * b;
     timeHost = Walltime::get() - timeHost;
-    ContextPtr gpu = Context::getContextPtr( Context::CUDA );
+    ContextPtr gpu = Context::getContextPtr( ContextType::CUDA );
     a.setContextPtr( gpu );
     b.setContextPtr( gpu );
-    CSRSparseMatrix<ValueType> c1( size, size );
+
+    auto c1 = zero<CSRSparseMatrix<ValueType>>( size, size );
+
     a.prefetch();
     b.prefetch();
     a.wait();
@@ -82,8 +88,8 @@ static void bench( IndexType size, double fillRate )
     c1 = a * b;
     timeGPU = Walltime::get() - timeGPU;
     // check maxDiff
-    Scalar maxDiff = c.maxDiffNorm( c1 );
-    cout << "max diff Host/GPU matrix = " << maxDiff.getValue<ValueType>() << endl;
+    auto maxDiff = c.maxDiffNorm( c1 );
+    cout << "max diff Host/GPU matrix = " << maxDiff << endl;
 
     if ( verboseFlag )
     {
@@ -118,16 +124,16 @@ static void bench( IndexType size, double fillRate )
 
 int main()
 {
-    if ( !Context::hasContext( Context::CUDA ) )
+    if ( !Context::hasContext( ContextType::CUDA ) )
     {
         cout << "This examples compares the Host and CUDA implementation. You build without CUDA, so it's skipped." << endl;
         return 0;
     }
 
     IndexType sizes[] = { 100, 350, 1000, 2500 };
-    double fillrates[] = { 0.005, 0.01, 0.02, 0.05 };
+    float fillrates[] = { 0.005, 0.01, 0.02, 0.05 };
     int nsizes = sizeof( sizes ) / sizeof( IndexType );
-    int nrates = sizeof( fillrates ) / sizeof( double );
+    int nrates = sizeof( fillrates ) / sizeof( float );
 
     for ( int i = 0; i < nsizes; ++i )
     {

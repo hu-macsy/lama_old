@@ -38,7 +38,6 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/macros/throw.hpp>
 
 // std
@@ -50,76 +49,77 @@ namespace scai
 namespace common
 {
 
-/** Own namespace for the enumeration type ScalarType and its values. */
-
-struct scalar
+/** Enumeration type for supported value types in LAMA.
+ *
+ *  This enumeration type is result of many query operations for LAMA classes
+ *  and avoids expensive calls of the typeid operator.
+ *
+ *  \code
+ *    CSRSparseMatrix<double> a;
+ *    a.getValueType()  // returns ScalarType::DOUBLE
+ *    getScalarType<double>()  // return ScalarType DOUBLE
+ *  \endcode
+ *
+ *  It is especially useful when casting variables of base classes to derived classes.
+ */
+enum class ScalarType
 {
-    /** Enumeration type for supported value types in LAMA.
-     *
-     *  This enumeration type is result of many query operations for LAMA classes
-     *  and avoids expensive calls of the typeid operator.
-     *
-     *  \code
-     *    CSRSparseMatrix<double> a;
-     *    a.getValueType()  // returns ScalarType::DOUBLE
-     *    getScalarType<double>()  // return ScalarType DOUBLE
-     *  \endcode
-     *
-     *  It is especially useful when casting variables of base classes to derived classes.
-     */
+    INT,                 //!<  synonymous for int (signed 32 bit)
+    LONG,                //!<  synonymous for long (signed 64 bit)
+    FLOAT,               //!<  synonymous for float
+    DOUBLE,              //!<  synonymous for double
+    LONG_DOUBLE,         //!<  synonymous for long double
+    COMPLEX,             //!<  synonymous for complex
+    DOUBLE_COMPLEX,      //!<  synonymous for double complex
+    LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
+    CHAR,                //!<  synonymous for char(signed 8 bit)
+    UNSIGNED_INT,        //!<  synonymous for uint(unsigned 32 bit)
+    UNSIGNED_LONG,       //!<  synonymous for size_t(unsigned 64 bit)
 
-    typedef enum
-    {
-        INT,                 //!<  synonymous for int (signed 32 bit)
-        LONG,                //!<  synonymous for long (signed 64 bit)
-        FLOAT,               //!<  synonymous for float
-        DOUBLE,              //!<  synonymous for double
-        LONG_DOUBLE,         //!<  synonymous for long double
-        COMPLEX,             //!<  synonymous for complex
-        DOUBLE_COMPLEX,      //!<  synonymous for double complex
-        LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
-        CHAR,                //!<  synonymous for char(signed 8 bit)
-        UNSIGNED_INT,        //!<  synonymous for uint(unsigned 32 bit)
-        UNSIGNED_LONG,       //!<  synonymous for size_t(unsigned 64 bit)
+    INDEX_TYPE,          //!<  take the type as defined for IndexType, getScalarType<IndexType>()
+    PATTERN,             //!<  dummy type of size 0
+    INTERNAL,            //!<  take the type currently in use, getScalarType<ValueType>()
+    UNKNOWN
+}; 
 
-        INDEX_TYPE,          //!<  take the type as defined for IndexType, getScalarType<IndexType>()
-        PATTERN,             //!<  dummy type of size 0
-        INTERNAL,            //!<  take the type currently in use, getScalarType<ValueType>()
-        UNKNOWN
-    } ScalarType;
+/** Simple enun class for the two parts of a complex value */
 
-}; /* end struct scalar */
+enum class ComplexPart
+{
+    REAL,   // real part of a complex number
+    IMAG    // imaginary part of a complex number
+};
 
 /** Query an enum value whether it is complex or not. */
 
-COMMON_DLL_IMPORTEXPORT bool isComplex( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT bool isComplex( const ScalarType stype );
 
 /** Query an enum value whether it is supported and numeric. */
 
-COMMON_DLL_IMPORTEXPORT bool isNumeric( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT bool isNumeric( const ScalarType stype );
 
 /** Query an enum value about the precision used in output */
 
-COMMON_DLL_IMPORTEXPORT int precision( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT int precision( const ScalarType stype );
 
 /** Query sizeof( ScalarType stype ) same as sizeof( type ) for which stype stands for */
 
-COMMON_DLL_IMPORTEXPORT size_t typeSize( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT size_t typeSize( const ScalarType stype );
 
 /*
  * Output of ScalarType in stream by writing strings instead of numbers
  */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const ScalarType& object );
 
 /**
  * @brief Conversion of a ScalarType to string
  *
  */
 
-COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER const char* scalarType2str( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT const char* scalarType2str( const ScalarType stype );
 
-COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER scalar::ScalarType str2ScalarType( const char* str );
+COMMON_DLL_IMPORTEXPORT ScalarType str2ScalarType( const char* str );
 
 } /* end namespace common */
 

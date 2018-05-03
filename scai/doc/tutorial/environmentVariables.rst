@@ -25,6 +25,19 @@ as follows:
     Matrix = DEBUG
     Matrix.DenseMatrix = INFO
 
+SCAI_TRACE
+^^^^^^^^^^
+
+The variable ``SCAI_TRACE`` can be used to enable the collection of runtime data.
+
+.. code-block:: bash
+
+    export SCAI_TRACE=OFF                   ( is default )
+    export SCAI_TRACE=time                  ( collects timing of all instrumented regions )
+    export SCAI_TRACE=time:PREFIX=myTiming  ( give trace files a specific prefix )
+
+More detailed information about tracing can be found in the :ref:`SCAI Tracing<scaitracing:main-page_tracing>` module.
+
 SCAI_UNSUPPORTED
 ^^^^^^^^^^^^^^^^
 
@@ -55,18 +68,7 @@ Example
 
     export SCAI_DEVICE=1
 
-LAMA_TEST_DEVICE
-^^^^^^^^^^^^^^^^
-
-This variable is only used for the LAMA unit test to restrict execution of the test on a 
-specific device. If not set, tests will run on all devices.
-
-.. code-block:: bash
-
-    export LAMA_TEST_DEVICE=Host
-    export LAMA_TEST_DEVICE=CUDA
-
-LAMA_NP
+SCAI_NP
 ^^^^^^^
 
 This variable specifies the configuration of a processor array. It is used for Poisson input setgenerators
@@ -76,9 +78,9 @@ Examples
 
 .. code-block:: bash
 
-    export LAMA_NP="2 4 2"
-    export LAMA_NP=2x2
-    export LAMA_NP=2_2_4
+    export SCAI_NP="2 4 2"
+    export SCAI_NP=2x2
+    export SCAI_NP=2_2_4
 
 The product of the number of processors in each dimension must be the same as the number of processors
 on which the application will run.

@@ -65,15 +65,15 @@ HArrayBenchmark::HArrayBenchmark( const string& argument ) :
 
     SCAI_ASSERT_EQ_ERROR( argTokens.size(), 2, "HArrayBenchmark( context1, context2 ), two args expected" )
 
-    common::context::ContextType ctx1 = common::str2ContextType( argTokens[0].c_str() );
-    common::context::ContextType ctx2 = common::str2ContextType( argTokens[1].c_str() );
+    common::ContextType ctx1 = common::str2ContextType( argTokens[0].c_str() );
+    common::ContextType ctx2 = common::str2ContextType( argTokens[1].c_str() );
 
-    if ( ctx1 == common::context::MaxContext )
+    if ( ctx1 == common::ContextType::MaxContext )
     {
         COMMON_THROWEXCEPTION( argTokens[0] << " does not specify a context" )
     }
 
-    if ( ctx2 == common::context::MaxContext )
+    if ( ctx2 == common::ContextType::MaxContext )
     {
         COMMON_THROWEXCEPTION( argTokens[1] << " does not specify a context" )
     }

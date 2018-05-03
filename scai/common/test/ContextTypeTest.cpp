@@ -1,5 +1,6 @@
 /**
  * @file ContextTypeTest.cpp
+ * Copyright (c) 2009-2017
  *
  * @license
  * Copyright (c) 2009-2017
@@ -35,21 +36,21 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/ContextType.hpp>
+#include <scai/common/AccessKind.hpp>
 #include <sstream>
 
 using namespace scai;
-
 using namespace common;
 
 BOOST_AUTO_TEST_CASE( ContextTypeTest )
 {
-    for ( int type = context::Host; type <= context::MaxContext; ++type )
+    for ( int type = 0; type <= static_cast<int>( ContextType::MaxContext ); ++type )
     {
         std::ostringstream s;
-        s << context::ContextType( type );
+        s << ContextType( type );
         BOOST_CHECK( s.str().length() > 0 );
 
-        if ( type == context::Host )
+        if ( ContextType( type ) == ContextType::Host )
         {
             BOOST_CHECK_EQUAL( s.str(), "Host" );
         }
@@ -58,13 +59,13 @@ BOOST_AUTO_TEST_CASE( ContextTypeTest )
 
 BOOST_AUTO_TEST_CASE( AccessKindTest )
 {
-    for ( int type = context::Read; type <= context::MaxAccessKind; ++type )
+    for ( int kind = 0; kind <= static_cast<int>( AccessKind::MaxAccessKind ); ++kind )
     {
         std::ostringstream s;
-        s << context::AccessKind( type );
+        s << AccessKind( kind );
         BOOST_CHECK( s.str().length() > 0 );
 
-        if ( type == context::Read )
+        if ( AccessKind( kind ) == AccessKind::Read )
         {
             // output should contain at least an R for read and no W at all
             BOOST_CHECK( s.str().find( "R" ) != std::string::npos );

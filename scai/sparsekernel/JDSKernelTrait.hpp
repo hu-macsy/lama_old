@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -210,22 +211,27 @@ struct JDSKernelTrait
          *  @param beta is scaling factor for additional vector
          *  @param y is additional input vector to add
          *  @param numRows is number of elements for all vectors and rows of matrix
+         *  @param numColumns is number of columns for the matrix
          *  @param numDiagonals are number of diagonals, is size of jdsDLG
          *  @param jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues are arrays of JDS storage
+         *  @param op specifies an operation implicitly applied to the matrix storage
          */
 
-        typedef void ( *FuncType ) ( ValueType result[],
-                                     const ValueType alpha,
-                                     const ValueType x[],
-                                     const ValueType beta,
-                                     const ValueType y[],
-                                     const IndexType numRows,
-                                     const IndexType jdsPerm[],
-                                     const IndexType jdsILG[],
-                                     const IndexType ndlg,
-                                     const IndexType jdsDLG[],
-                                     const IndexType jdsJA[],
-                                     const ValueType jdsValues[] );
+        typedef void ( *FuncType ) ( 
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType jdsPerm[],
+            const IndexType jdsILG[],
+            const IndexType ndlg,
+            const IndexType jdsDLG[],
+            const IndexType jdsJA[],
+            const ValueType jdsValues[],
+            const common::MatrixOp op );
 
         static const char* getId()
         {
@@ -234,31 +240,9 @@ struct JDSKernelTrait
     };
 
     template<typename ValueType>
-    struct normalGEVM
-    {
-        typedef void ( *FuncType ) ( ValueType result[],
-                                     const ValueType alpha,
-                                     const ValueType x[],
-                                     const ValueType beta,
-                                     const ValueType y[],
-                                     const IndexType numColumns,
-                                     const IndexType jdsPerm[],
-                                     const IndexType jdsILG[],
-                                     const IndexType ndlg,
-                                     const IndexType jdsDLG[],
-                                     const IndexType jdsJA[],
-                                     const ValueType jdsValues[] );
-
-        static const char* getId()
-        {
-            return "JDS.normalGEVM";
-        }
-    };
-
-    template<typename ValueType, typename OtherValueType>
     struct getRow
     {
-        typedef void ( *FuncType ) ( OtherValueType row[],
+        typedef void ( *FuncType ) ( ValueType row[],
                                      const IndexType i,
                                      const IndexType numColumns,
                                      const IndexType numRows,
@@ -274,7 +258,7 @@ struct JDSKernelTrait
         }
     };
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     struct setRow
     {
         typedef void ( *FuncType ) ( ValueType values[],
@@ -285,8 +269,8 @@ struct JDSKernelTrait
                                      const IndexType ilg[],
                                      const IndexType dlg[],
                                      const IndexType ja[],
-                                     const OtherValueType row[],
-                                     const common::binary::BinaryOp op );
+                                     const ValueType row[],
+                                     const common::BinaryOp op );
 
         static const char* getId()
         {
@@ -369,7 +353,7 @@ struct JDSKernelTrait
         }
     };
 
-    template<typename ValueType, typename OtherValueType>
+    template<typename ValueType>
     struct scaleRows
     {
         /** This method scales each row of the matrix with a certain value
@@ -386,7 +370,7 @@ struct JDSKernelTrait
                                      const IndexType perm[],
                                      const IndexType ilg[],
                                      const IndexType dlg[],
-                                     const OtherValueType rowValues[] );
+                                     const ValueType rowValues[] );
 
         static const char* getId()
         {

@@ -51,7 +51,7 @@ void bucketSort( const IndexType N )
     HArrayUtils::setRandom( values, nBuckets - 1 );
 
     // use setScalar on IndexType, binaryOp is only for numeric types
-    // HArrayUtils::setScalar( values, nBuckets, common::binary::MODULO );
+    // HArrayUtils::setScalar( values, nBuckets, common::BinaryOp::MODULO );
 
     HArray<IndexType> offsets;
     HArray<IndexType> perm;
@@ -61,13 +61,13 @@ void bucketSort( const IndexType N )
     HArrayUtils::bucketSort( offsets, perm, values, nBuckets );
 
     HArray<IndexType> sortedValues;
-    HArrayUtils::gatherImpl( sortedValues, values, perm, common::binary::COPY );
+    HArrayUtils::gather( sortedValues, values, perm, common::BinaryOp::COPY );
 
     double time1 = common::Walltime::get() - start;
 
     cout << "Bucket sort of " << N << " values took " << time1 << " seconds." << endl;
 
-    bool isSorted = HArrayUtils::isSorted( sortedValues, common::binary::LE );
+    bool isSorted = HArrayUtils::isSorted( sortedValues, common::CompareOp::LE );
 
     if ( isSorted )
     {

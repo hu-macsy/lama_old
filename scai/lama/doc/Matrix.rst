@@ -228,7 +228,7 @@ The following items should be kept in mind when using these routines:
  * Getting a single element of a distributed matrix implies always a broadcast of the element
  * Setting a single element in a sparse matrix is only possible when the matrix has had an
    entry at the corresponding position before. Otherwise an exception is thrown.
-   For filling a sparse matrix elementwise the SparseAssemblyStorge class should be used.
+   For filling a sparse matrix elementwise the MatrixAssembly class should be used.
 
 Instead of using the ``getValue`` method it is possible to use to operator ``()`` 
 where both need the global row index ``i`` and column index ``j``. 
@@ -272,39 +272,30 @@ Except from a constructor with a passed string, you can use ``readFromFile`` and
 Matrix Assembly
 ---------------
 
-The template class MatrixAssemblyAccess allows to assemble matrix entries by different processors
-independently. 
+The template class MatrixAssembly allows to assemble matrix entries by different processors
+independently. It is the counterpart to the VectorAssembly class and has exactly the
+same functionality.
 
 .. code-block:: c++
 
-    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( numRows, comm ) );
-    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( numColumns ) );
+    MatrixAssemblyAccess<ValueType> assembly( matrix, common::binary::ADD );
+
+    // each processor might push arbitrary matrix elements
+
+    assembly.push( i1, j1, val1 );
+    ...
+    assembly.push( i2, j2, val2 );
 
     CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+    matrix.fillAssembly( assembly, common::BinaryOp::COPY );
 
-    {
-        MatrixAssemblyAccess<ValueType> assembly( matrix, common::binary::ADD );
-
-        // each processor might push arbitrary matrix elements
-
-        assembly.push( i1, j1, val1 );
-        ...
-        assembly.push( i2, j2, val2 );
-
-        // destructor of access, implies release, that inserts the elements
-    }
-
-- During an assembly access the matrix must not be changed or accessed otherwise.
-- All processors must access the 'distributed' matrix by the corresponding constructor.
-- The end of assembling is indicated by either calling the destructor of the access or by an explicit release call.
+- The distribution of a matrix must be set before filling the matrix with the assembled data.
+- Filling the matrix with assembled data is a global method, i.e. all processors must call this method together.
 - Zero elements might be filled explicitly to reserve memory in the sparse matrix.
 - Different modes are supported if entries are assembled twice, either by same or by different processors or for existing entries.
   In the REPLACE mode (default, common::binary::COPY) values will be replaced; different assembled values for the same entry
   might be undefined. In the SUM mode (common::binary::ADD) assembled values for the same coordinates are added.
-- The row distribution must be set before the assembling.
-- The column distribution should be NoDistribution before the assembling and might be changed afterwards. Otherwise 
   the Halo schedule might be built multiple times.
-- Future versions might support an asynchronous version of the release of the access.
 
 Math Functions
 --------------

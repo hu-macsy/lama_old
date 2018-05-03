@@ -3,37 +3,43 @@
 Solution Task 2
 ---------------
 
-Here is the solution of task 2. The code demonstrate a self-provided CG-Solver. 
+Here is a solution of task 2. The code demonstrate a self-provided CG-Solver. 
 
 .. literalinclude:: ../../../solver/examples/lecture/task2.cpp 
    :language: c++
-   :lines: 37-109
-   :emphasize-lines: 52-53,54-55,57-70
+   :lines: 35-104
+   :emphasize-lines: 53-61
 
-(1) Creation of Vectors, that are needed by your implementation.
-(2) Creation of Scalars and epsilon.
-(3) Here is the self-provided algorithm of a CG-Solver.
+The emphasized code shows the self-provided algorithm of a CG-Solver.
 
 :download:`Download complete solution Task 2 <../../../solver/examples/lecture/task2.cpp>`
 
-An alternative solution for task 2 is the CG-class of LAMA, which contains the same calculation.
+**Remarks**
 
-.. literalinclude:: ../../../solver/examples/lecture/task2a.cpp 
-   :language: c++
-   :lines: 82-95
-   
-:download:`Download complete alternative solution Task 2 <../../../solver/examples/lecture/task2a.cpp>`
+In the example the dense vector ``rhs`` has been initialized with a linear sequence of
+values. 
 
-**Excursion:**
+.. code-block:: c++
 
-To see results, it is possible to print out the values of vectors. By the way, an explicit function to print out results does not exist.
-But it is possible to use a ReadAccess to get reading access to the values.
+   auto rhs = linearDenseVector<ValueType>( size, 1, 1 );
 
-.. literalinclude:: ../../../solver/examples/lecture/task2a.cpp 
-   :language: c++
-   :lines: 87-92
+If ``ValueType`` is a complex type, the corresponding real type is used for the
+representation of the residual norm. This is necessary as the comparison of complex
+number is not defined.
+
+.. code-block:: c++
+
+    // RealType<ValueType> rnorm = norm( r );
+    // RealType<ValueType> eps = 0.00001;
+
+    auto rnorm = nomr( r );
+    decltype( rnorm ) eps = 0.00001;
+    ...
+    for ( ... ; rnorm > eps ... )
+    ....
 
 .. csv-table::
+
    :header: "back to this Task", "Index", "next Task"
    :widths: 330, 340, 330
 

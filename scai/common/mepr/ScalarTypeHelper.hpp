@@ -61,29 +61,29 @@ struct ScalarTypeHelper;
 template<>
 struct ScalarTypeHelper<NullType>
 {
-    static size_t sizeOf( const scalar::ScalarType stype )
+    static size_t sizeOf( const ScalarType stype )
     {
         COMMON_THROWEXCEPTION( "sizeof: unsupported for " << stype )
         return 0;
     }
 
-    static int precision( const scalar::ScalarType )
+    static int precision( const ScalarType )
     {
         // no type T available with TypeTraits<T>::stype
         return 0;
     }
 
-    static bool isComplex( const scalar::ScalarType )
+    static bool isComplex( const ScalarType )
     {
         return false;
     }
 
-    static bool isNumeric( const scalar::ScalarType )
+    static bool isNumeric( const ScalarType )
     {
         return false;
     }
 
-    static bool contains( const scalar::ScalarType )
+    static bool contains( const ScalarType )
     {
         return false;
     }
@@ -95,7 +95,7 @@ struct ScalarTypeHelper<NullType>
 template<typename H, typename T>
 struct ScalarTypeHelper< TypeList<H, T> >
 {
-    static size_t sizeOf( const scalar::ScalarType s )
+    static size_t sizeOf( const ScalarType s )
     {
         if ( s == common::getScalarType<H>() )
         {
@@ -107,7 +107,7 @@ struct ScalarTypeHelper< TypeList<H, T> >
         }
     }
 
-    static int precision( const scalar::ScalarType stype )
+    static int precision( const ScalarType stype )
     {
         if ( stype == TypeTraits<H>::stype )
         {
@@ -119,15 +119,15 @@ struct ScalarTypeHelper< TypeList<H, T> >
         }
     }
 
-    static bool isComplex( const scalar::ScalarType stype )
+    static bool isComplex( const ScalarType stype )
     {
         if ( stype == TypeTraits<H>::stype )
         {
-            // a type is complex if its AbsType is not the same
+            // a type is complex if its RealType is not the same
 
-            typedef typename TypeTraits<H>::AbsType AbsType;
+            typedef typename TypeTraits<H>::RealType RealType;
 
-            return typeid( H ) != typeid( AbsType );
+            return typeid( H ) != typeid( RealType );
         }
         else
         {
@@ -135,7 +135,7 @@ struct ScalarTypeHelper< TypeList<H, T> >
         }
     }
 
-    static bool isNumeric( const scalar::ScalarType stype )
+    static bool isNumeric( const ScalarType stype )
     {
         if ( stype == TypeTraits<H>::stype )
         {
@@ -149,7 +149,7 @@ struct ScalarTypeHelper< TypeList<H, T> >
         }
     }
 
-    static bool contains( const scalar::ScalarType stype )
+    static bool contains( const ScalarType stype )
     {
         if ( stype == TypeTraits<H>::stype )
         {

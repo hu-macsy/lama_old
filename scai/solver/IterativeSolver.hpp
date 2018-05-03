@@ -52,14 +52,14 @@ namespace scai
 namespace solver
 {
 
-class IterativeSolver;
-typedef common::shared_ptr<IterativeSolver> IterativeSolverPtr;
-
 /**
  * @brief Uses iterative methods to solve the equation system.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT IterativeSolver:
-    public Solver
+
+    public Solver<ValueType>
+
 {
 public:
     /**
@@ -101,7 +101,7 @@ public:
      *
      * @param coefficients The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Solves the equation system. Rhs and starting solution have to
@@ -123,7 +123,7 @@ public:
      *
      * @param[in] criterion the new criterion.
      */
-    void setStoppingCriterion( const CriterionPtr criterion );
+    void setStoppingCriterion( const CriterionPtr<ValueType> criterion );
 
     /**
      * @brief Sets the preconditioner of this solver.
@@ -133,14 +133,14 @@ public:
      *
      * @param conditioner The preconditioner
      */
-    void setPreconditioner( SolverPtr const conditioner );
+    void setPreconditioner( SolverPtr<ValueType> const conditioner );
 
     /**
      * @brief returns the preconditioner of this solver
      *
      * @return the preconditioner
      */
-    const SolverPtr getPreconditioner() const;
+    const SolverPtr<ValueType> getPreconditioner() const;
 
     /**
      * @brief returns the number of iterations, this solver has done so far.
@@ -154,9 +154,9 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy() = 0;
+    virtual IterativeSolver<ValueType>* copy() = 0;
 
-    struct IterativeSolverRuntime: SolverRuntime
+    struct IterativeSolverRuntime: Solver<ValueType>::SolverRuntime
     {
         IterativeSolverRuntime();
         virtual ~IterativeSolverRuntime();
@@ -171,18 +171,26 @@ public:
     };
 
     /**
-     * @brief Returns the complete configuration of the derived class
+     * @brief Redefine pure method of base class with covariant return type
      */
     virtual IterativeSolverRuntime& getRuntime() = 0;
 
     /**
-     * @brief Returns the complete const configuration of the derived class
+     * @brief Redefine pure method of base class with covariant return type
      */
-    virtual const IterativeSolverRuntime& getConstRuntime() const = 0;
+    virtual const IterativeSolverRuntime& getRuntime() const = 0;
 
-    static IterativeSolver* create( const std::string type, const std::string name );
+    /**
+     * @brief get a new 'iterative' solver of a certain solver type, e.g. "CG", "MINRES", ...
+     *
+     * This method throws an exception if the solver type is unknown or if the solver is not 
+     * an iterative solver.
+     */
+    static IterativeSolver<ValueType>* getSolver( const std::string& solverType );
 
 protected:
+
+    using Solver<ValueType>::mLogger;
 
     /**
      * @brief Checks if all of the stopping criteria are satisfied.
@@ -206,13 +214,13 @@ protected:
     /**
      * @brief The preconditioner of this solver.
      */
-    SolverPtr mPreconditioner;
+    SolverPtr<ValueType> mPreconditioner;
 
     /**
      * @brief The root stopping criterion
      * evaluated every iteration in the solve method
      */
-    CriterionPtr mCriterionRootComponent;
+    CriterionPtr<ValueType> mCriterionRootComponent;
 
     /**
      *  @brief own implementation of Printable::writeAt

@@ -38,7 +38,9 @@ include ( scai_macro/scai_run_script )
 
 set ( HEADER Bitmap.hpp )
 
-foreach ( executable spy amg_spy )
+# ToDo: enable amg_spy 
+
+foreach ( executable spy )
 
     scai_add_example( EXECUTABLE ${executable}.exe
                       FILES      ${executable}.cpp )

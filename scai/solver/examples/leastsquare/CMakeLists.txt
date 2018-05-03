@@ -34,7 +34,7 @@ include ( scai_macro/scai_add_example )
 include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 
-foreach ( executable lstest lsbc )
+foreach ( executable lstest )
 
     scai_add_example( EXECUTABLE ${executable}.exe
                       FILES      ${executable}.cpp )

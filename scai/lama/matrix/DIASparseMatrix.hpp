@@ -63,14 +63,24 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DIASparseMatrix:
 
     public SparseMatrix<ValueType>,
-    public Matrix::Register<DIASparseMatrix<ValueType> >    // register at factory
+    public _Matrix::Register<DIASparseMatrix<ValueType> >    // register at factory
 {
 
 public:
 
-    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
-
-    /** Type definition of the storage type for this sparse matrix. */
+    /** @brief Type definition of the storage type for this sparse matrix. 
+     * 
+     *  \code
+     *     template<typename MatrixClass>
+     *     void setup( MatrixClass& matrix )
+     *     {
+     *         typename MatrixClass::StorageType storage;
+     *         storage.allocate( .. )
+     *         ...
+     *         matrix = MatrixClass( std::move( storage ) );
+     *     }
+     *  \endcode
+     */
 
     typedef DIAStorage<ValueType> StorageType;
 
@@ -80,126 +90,48 @@ public:
 
     /** Default constructor, creates a replicated matrix of size 0 x 0 */
 
-    DIASparseMatrix();
-
-    /** Constructor, creates a replicated zero-matrix of size numRows x numColums */
-
-    DIASparseMatrix( const IndexType numRows, const IndexType numColumns );
-
-    /** Constructor, creates a distributed zero-matrix by given row and column distribution */
-
-    DIASparseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    DIASparseMatrix( hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /** Override default constructor, make sure that deep copies are created. */
 
-    DIASparseMatrix( const DIASparseMatrix& other );
+    DIASparseMatrix( const DIASparseMatrix<ValueType>& other );
+
+    /** Rewriting move constructor, leaves the other matrix as zero matrix */
+
+    DIASparseMatrix( DIASparseMatrix<ValueType>&& other ) noexcept;
 
     /** Most general copy constrcuctor with possibility of transpose. */
 
-    DIASparseMatrix( const Matrix& other, bool transposeFlag = false );
-
-    /** Constructor of a sparse matrix by another input matrix with redistribution.
-     *
-     * @param[in] other     is the input matrix.
-     * @param[in] rowDist   row distribution of the new matrix
-     * @param[in] colDist   column distribution of the new matrix
-     */
-    DIASparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    explicit DIASparseMatrix( const Matrix<ValueType>& other);
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
-     *  @param[in] globalData  contains local rows of the distributed matrix
+     *  @param[in] globalStorage  contains the full storage, must be of same format and type
      */
-    explicit DIASparseMatrix( const _MatrixStorage& globalData );
+    explicit DIASparseMatrix( DIAStorage<ValueType> globalStorage );
 
-    /** Constructor of a sparse matrix by local storage.
+    /** Constructor of a sparse matrix by local storage
      *
-     *  @param[in] localData   contains local rows of the distributed matrix
-     *  @param[in] rowDist     is distribution of localData
-     *  @param[in] colDist     specifies how to split local rows for halo
+     *  @param[in] localStorage  contains local rows of the distributed matrix
+     *  @param[in] rowDist       is distribution of localData
      *
-     *  This constructor works also fine if localData is the full global matrix;
-     *  in this case only local rows will be taken on this processor.
+     *  The number of rows for the local storage must be rowDist->getLocalSize(), and the 
+     *  number of columns must be the same on all processors.
      */
-    DIASparseMatrix( const _MatrixStorage& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
-    /** Constructor of a replicated sparse matrix by reading the matrix
-     *  data from a file.
-     *
-     *  @param[in] filename   name of the file where the matrix is read from
-     *
-     *  Next releases will also support distributed/parallel I/O. In the
-     *  meantime this constructor should be used with a following call of
-     *  the redistribute method.
-     */
-    explicit DIASparseMatrix( const std::string& filename );
-
-    // Expression constructors
-
-    explicit DIASparseMatrix( const Expression_SM& expression );
-
-    explicit DIASparseMatrix( const Expression_SMM& expression );
-
-    explicit DIASparseMatrix( const Expression_SM_SM& expression );
-
-    /** @brief Constructor of a DIA sparse matrix with distributed DIA storage data.
-     *
-     * @param[in] numLocalRows       the number of rows of the matrix
-     * @param[in] numLocalNonZeros   the number of local none zeros of the matrix
-     * @param[in] numHaloNonZeros    the number of halo none zeros of the matrix
-     * @param[in] localIA            row pointer of the input csr sparse matrix (local)
-     * @param[in] localJA            column indexes of the input csr sparse matrix (local)
-     * @param[in] localValues        the none zero values of the input csr sparse matrix (local)
-     * @param[in] haloIA             row pointer of the input csr sparse matrix (halo)
-     * @param[in] haloJA             column indexes of the input csr sparse matrix (halo)
-     * @param[in] haloValues         the none zero values of the input csr sparse matrix (halo)
-     * @param[in] ownedIndexes       the global Indexes of the local rows
-     * @param[in] communicator       communicator of the distribution
-     */
-    template<typename LocalValueType, typename HaloValueType>
-    DIASparseMatrix(
-        const IndexType numLocalRows,
-        const IndexType numLocalNonZeros,
-        const IndexType numHaloNonZeros,
-        const IndexType localIA[],
-        const IndexType localJA[],
-        const LocalValueType localValues[],
-        const IndexType haloIA[],
-        const IndexType haloJA[],
-        const HaloValueType haloValues[],
-        const std::vector<IndexType>& ownedIndexes,
-        const dmemo::CommunicatorPtr communicator );
+    DIASparseMatrix( dmemo::DistributionPtr rowDist, DIAStorage<ValueType> localStorage );
 
     /**
      * @brief Destructor. Releases all allocated resources.
      */
     ~DIASparseMatrix();
 
-    // Make all assignment operators of base class visible before overwriting one
-
-    using SparseMatrix<ValueType>::operator=;
-
     /** Override the default assignment operator that would not make deep copies. */
 
     DIASparseMatrix& operator=( const DIASparseMatrix& matrix );
 
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
+    /** Override the default move assignment operator */
 
-    /*
-     DIASparseMatrix& operator=( const Matrix& matrix );
-
-     DIASparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
-
-     DIASparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
-
-     DIASparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
-
-     DIASparseMatrix& operator=(
-     const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-     DIASparseMatrix& operator=(
-     const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-     */
+    DIASparseMatrix& operator=( DIASparseMatrix&& matrix );
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
@@ -213,30 +145,39 @@ public:
 
     virtual const StorageType& getHaloStorage() const;
 
-    /** Swap local storage data, allows consistent write access to local storage. */
-
-    virtual void swapLocalStorage( StorageType& localStorage );
-
-    /* Implementation of pure method Matrix::newMatrix with covariant return type */
+    /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 
     virtual DIASparseMatrix<ValueType>* newMatrix() const;
 
-    /* Implementation of pure method Matrix::copy with covariant return type */
+    /* Implementation of pure method _Matrix::copy with covariant return type */
 
     virtual DIASparseMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormat */
+    /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormat() const
-    {
-        return Format::DIA;
-    }
+    virtual Format getFormat() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual const char* getTypeName() const;
 
+    using _Matrix::getNumRows;
+    using _Matrix::getNumColumns;
+    using _Matrix::setIdentity;
+
+    using _Matrix::getRowDistribution;
+    using _Matrix::getRowDistributionPtr;
+    using _Matrix::getColDistribution;
+    using _Matrix::getColDistributionPtr;
+
+
+    using Matrix<ValueType>::getValueType;
+    using SparseMatrix<ValueType>::operator=;
+    using SparseMatrix<ValueType>::operator-=;
+    using SparseMatrix<ValueType>::operator+=;
+
     using SparseMatrix<ValueType>::setContextPtr;
+    using SparseMatrix<ValueType>::redistribute;
 
 protected:
 
@@ -248,9 +189,11 @@ private:
 
     /** This private routine provides empty DIA storage for a DIASparseMatrix. */
 
-    common::shared_ptr<MatrixStorage<ValueType> > createStorage();
+    std::shared_ptr<DIAStorage<ValueType> > createStorage( hmemo::ContextPtr ctx );
 
-    common::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
+    /** This private routine provides empty DIA storage for a DIASparseMatrix. */
+
+    std::shared_ptr<DIAStorage<ValueType> > createStorage( DIAStorage<ValueType>&&  );
 
     static std::string initTypeName();
 
@@ -258,44 +201,23 @@ private:
 
 public:
 
-    // static create method that will be used to register at Matrix factory
+    // static create method that will be used to register at _Matrix factory
 
-    static Matrix* create();
+    static _Matrix* create();
 
     // key for factory
 
     static MatrixCreateKeyType createValue();
 };
 
+/* ================================================================================ */
+/*   Implementation of inline methods                                               */
+/* ================================================================================ */
+
 template<typename ValueType>
-template<typename LocalValueType, typename HaloValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix(
-    const IndexType numLocalRows,
-    const IndexType numLocalNonZeros,
-    const IndexType numHaloNonZeros,
-    const IndexType localIA[],
-    const IndexType localJA[],
-    const LocalValueType localValues[],
-    const IndexType haloIA[],
-    const IndexType haloJA[],
-    const HaloValueType haloValues[],
-    const std::vector<IndexType>& ownedIndexes,
-    const dmemo::CommunicatorPtr communicator )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
+Format DIASparseMatrix<ValueType>::getFormat() const
 {
-    SCAI_LOG_INFO( logger,
-                   communicator << ": construct distributed matrix " << numLocalRows << " by local and halo data + owned indexes" );
-    // For the distribution we need the global number of rows, not available as arg, so compute it
-    IndexType numGlobalRows = communicator->sum( numLocalRows );
-    mLocalData->setRawCSRData( numLocalRows, numLocalRows, numLocalNonZeros, localIA, localJA, localValues );
-    mHaloData->setRawCSRData( numLocalRows, numGlobalRows, numHaloNonZeros, haloIA, haloJA, haloValues );
-    hmemo::HArrayRef<IndexType> myIndexes( static_cast<IndexType>( ownedIndexes.size() ), &ownedIndexes[0] );
-    dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, myIndexes, communicator ) );
-    // Halo is already splitted, but still contains the global indexes
-    mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
-    Matrix::setDistributedMatrix( dist, dist );
+    return Format::DIA;
 }
 
 } /* end namespace lama */

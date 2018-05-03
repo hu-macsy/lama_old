@@ -46,10 +46,12 @@ namespace scai
 namespace lama
 {
 
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT L1Norm:
 
-    public Norm,
-    public Norm::Register<L1Norm>
+    public Norm<ValueType>,
+    public Norm<ValueType>::template Register<L1Norm<ValueType> >
+
 {
 public:
 
@@ -57,26 +59,39 @@ public:
 
     virtual ~L1Norm();
 
-    virtual Scalar apply( const Scalar& scalar ) const;
+    virtual RealType<ValueType> apply( const ValueType& scalar ) const;
 
-    virtual Scalar apply( const Vector& vector ) const;
+    virtual RealType<ValueType> apply( const Vector<ValueType>& vector ) const;
 
-    virtual Scalar apply( const Matrix& matrix ) const;
+    virtual RealType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
 
     static std::string createValue();
 
-    static Norm* create();
+    static Norm<ValueType>* create();
 
     /** Override Printable::writeAt with version for this class. */
 
     virtual void writeAt( std::ostream& stream ) const;
 };
 
-Scalar l1Norm( const Scalar& scalar );
+template<typename ValueType>
+inline RealType<ValueType> l1Norm( const ValueType& scalar )
+{
+    return common::Math::abs( scalar );
+}
 
-Scalar l1Norm( const Vector& vector );
+template<typename ValueType>
+inline RealType<ValueType> l1Norm( const Vector<ValueType>& vector )
+{
+    return vector.l1Norm();
+}
 
-Scalar l1Norm( const Matrix& matrix );
+template<typename ValueType>
+inline RealType<ValueType> l1Norm( const Matrix<ValueType>& matrix )
+{
+    return matrix.l1Norm();
+}
+
 
 } /* end namespace lama */
 

@@ -208,38 +208,33 @@ an element-wise addition in-place in the exisiting vector v1.
 Vector Assembly
 ---------------
 
-The template class VectorAssemblyAccess allows to assemble vector entries by different processors
-independently.
+The template class VectorAssembly allows to assemble vector entries by different processors
+independently. An element is added by its global index and the value at this position.
 
 .. code-block:: c++
 
+    VectorAssembly<ValueType> assembly;
+
+    // each processor might push arbitrary matrix elements
+
+    assembly.push( i1, val1 );
+    ...
+    assembly.push( i2, val2 );
+
     const IndexType n = ... ; // size of the vector
 
-    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+    auto dist = std::make_shared<BlockDistribution>( n );
 
-    DenseVector<ValueType> vector( dist );
+    auto sparseV = fill<SparseVector<ValueType>>( dist, 1 );
+    sparseV.fillAssembly( assembly, common::BinaryOp::ADD );
+    auto denseV  = fill<DenseVector<ValueType>>( dist, 0 );
+    denseV.fillAssembly( assembly, common::BianaryOp::COPY );
 
-    {
-        VectorAssemblyAccess<ValueType> assembly( vector, common::binary::ADD );
-
-        // each processor might push arbitrary matrix elements
-
-        assembly.push( i1, val1 );
-        ...
-        assembly.push( i2, val2 );
-
-        // destructor of access, implies release, that inserts the elements
-    }
-
-- During an assembly access the vector must not be changed or accessed otherwise.
-- All processors must access the vector by the corresponding constructor.
-- The end of assembling is indicated by either calling the destructor of the access or by an explicit release call.
 - Zero elements might be filled explicitly to reserve memory in a sparse vector.
 - Different modes are supported if entries are assembled twice, either by same or by different processors or for existing entries.
   In the REPLACE mode (default, common::binary::COPY) values will be replaced; different assembled values for the same entry
   might be undefined. In the SUM mode (common::binary::ADD) assembled values for the same position are added.
-- The distribution must be set before the assembling.
-- Future versions might support an asynchronous version of the release of the access.
+- An assembly can be used several times.
 
 Even if the implementation of the assembling is highly optimized, it might involve a large amount of 
 communication as the assembled data must be communicated to their owners. Therefore it is always recommended
@@ -247,11 +242,11 @@ to due the assembling as locally as possible, i.e. elements should be inserted p
 
 The assembling might also be done replicated, i.e. each processor runs the whole assembling code. In this case elements
 should only be pushed by the owner. If elements are pushed by all processors, this would not be wrong in the replace mode
-but causes significant overhead.
+but would cause significant overhead.
 
 .. code-block:: c++
 
-    for ( all enries )
+    for ( all entries )
     {
         ....
         if ( dist->isLocal( i ) ) 
@@ -260,20 +255,6 @@ but causes significant overhead.
         }
         ....
     }
-
-In replicated code it is a better approach to call the method pushReplicated. This call guarantees that the method is
-called by all processors with the same values (not necessarily at the same time). Furthermore it clearly
-indicates that it is used in a replicated control flow. The implementation of the method can use this assertion for 
-optimizations. The element is only inserted once.
-
-.. code-block:: c++
-
-    assembly.pushReplicated( i, val );  // guarantees that this is called by each processor
-
-Usually assembling is done for a distributed vector. For consistency reasons, assembling works also
-for replicated vectors. In this case all elements from all processors will be inserted in all instances.
-Replicated assembling for a replicated vector also works fine, here the benefits of the pushReplicated
-method are also very high.
 
 Methods
 -------

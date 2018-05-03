@@ -55,22 +55,3 @@ then
     	mpirun -np $i --output-filename ${dirname}/dist_tests_mpi_${i}.xml ./dmemoTest --SCAI_COMMUNICATOR=MPI ${BOOST_TEST_ARGS} --SCAI_NUM_THREADS=1
     done
 fi
-
-if [ -d ../gpi ];
-then
-    echo "Running dmemo tests distributed with GPI"
-    for i in 2 4 7;
-    do
-        echo "Running GPI tests with $i processes"
-        hostname > machines
-        for (( k=2; k<=$i; k++ ))
-        do
-            hostname >> machines
-        done
-        cat machines
-        # For GPI-2: only root processor output is available
-        gaspi_run -m machines ${PWD}/dmemoTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1 1> ${dirname}/dist_tests_gpi_${i}.xml
-        # wait a little bit to get resources freed
-        sleep 1
-    done
-fi

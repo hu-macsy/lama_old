@@ -47,10 +47,11 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/bind.hpp>
+#include <scai/common/Constants.hpp>
 
 // std
 #include <cmath>
+#include <functional>
 
 namespace scai
 {
@@ -76,7 +77,7 @@ IndexType OpenMPDIAUtils::getValuePos( const IndexType i,
                                        const IndexType diaOffsets[],
                                        const IndexType numDiagonals )
 {
-    IndexType pos = nIndex;
+    IndexType pos = invalidIndex;
 
     for ( IndexType d = 0; d < numDiagonals; ++d )
     {
@@ -100,13 +101,13 @@ ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<ValueType>::RealType RealType;
 
-    AbsType maxValue = 0;
+    RealType maxValue = 0;
 
     #pragma omp parallel
     {
-        AbsType threadVal = 0;
+        RealType threadVal = 0;
 
         #pragma omp for 
 
@@ -121,7 +122,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
                     continue;
                 }
 
-                const AbsType val = common::Math::abs( diaValues[i + d * numRows] );
+                const RealType val = common::Math::abs( diaValues[i + d * numRows] );
 
                 if ( val > threadVal )
                 {
@@ -158,9 +159,9 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
-    typedef typename common::TypeTraits<DIAValueType>::AbsType AbsType;
+    typedef typename common::TypeTraits<DIAValueType>::RealType RealType;
 
-    AbsType absEps = eps;
+    RealType absEps = eps;
 
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id()
@@ -265,8 +266,8 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
-    typedef typename common::TypeTraits<DIAValueType>::AbsType AbsType;
-    AbsType absEps = eps;
+    typedef typename common::TypeTraits<DIAValueType>::RealType RealType;
+    RealType absEps = eps;
 
     SCAI_LOG_INFO( logger,
                    "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " << numRows << " x " << numColumns
@@ -312,23 +313,6 @@ void OpenMPDIAUtils::getCSRSizes(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPDIAUtils::normalGEMV_a(
-    ValueType result[],
-    const std::pair<ValueType, const ValueType*> ax,
-    const std::pair<ValueType, const ValueType*> by,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numDiagonals,
-    const IndexType diaOffsets[],
-    const ValueType diaValues[] )
-{
-    normalGEMV( result, ax.first, ax.second, by.first, by.second,
-                numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void OpenMPDIAUtils::normalGEMV(
     ValueType result[],
     const ValueType alpha,
@@ -339,134 +323,108 @@ void OpenMPDIAUtils::normalGEMV(
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const ValueType diaValues[] )
+    const ValueType diaValues[],
+    const common::MatrixOp op )
 {
-    // Note: launching thread gets token here, asynchronous thread will get NULL
-    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
-
-    if ( syncToken )
-    {
-        // bind has limited number of arguments, so take help routine for call
-        SCAI_LOG_INFO( logger,
-                       "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
-        syncToken->run( common::bind( normalGEMV_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
-        return;
-    }
+    IndexType nResult = common::isTranspose( op ) ? numColumns : numRows;
 
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+                   << ", op = " << op 
+                   << ">, result[" << nResult << "] = " 
+                   << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y ( " << y << " )" )
 
-    // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
+    // Note: launching thread gets token here, asynchronous thread will get NULL
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
-
-    #pragma omp parallel
-    {
-        SCAI_REGION( "OpenMP.DIA.normalGEMV" )
-
-        #pragma omp for 
-
-        for ( IndexType i = 0; i < numRows; i++ )
-        {
-            ValueType accu = 0;
-
-            for ( IndexType ii = 0; ii < numDiagonals; ++ii )
-            {
-                const IndexType j = i + diaOffsets[ii];
-
-                if ( common::Utils::validIndex( j, numColumns ) )
-                {
-                    accu += diaValues[ii * numRows + i] * x[j];
-                }
-            }
-
-            result[i] += alpha * accu;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPDIAUtils::normalGEVM_a(
-    ValueType result[],
-    const std::pair<ValueType, const ValueType*> ax,
-    const std::pair<ValueType, const ValueType*> by,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numDiagonals,
-    const IndexType diaOffsets[],
-    const ValueType diaValues[] )
-{
-    normalGEVM( result, ax.first, ax.second, by.first, by.second,
-                numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPDIAUtils::normalGEVM(
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const ValueType beta,
-    const ValueType y[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numDiagonals,
-    const IndexType diaOffsets[],
-    const ValueType diaValues[] )
-{
-    SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
-    SCAI_LOG_INFO( logger,
-                   "normalGEVM<" << TypeTraits<ValueType>::id() << ">, n = " << numRows << ", d = " << numDiagonals )
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( beta != common::Constants::ZERO && nResult > 0 )
+    {
+        SCAI_ASSERT_ERROR( y != NULL, "y = " << y << " is NULL, not allowed for beta = " << beta )
+    }
 
     if ( syncToken )
     {
-        // bind has limited number of arguments, so take help routine for call
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
-        syncToken->run( common::bind( normalGEVM_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
+
+        syncToken->run( std::bind( normalGEMV<ValueType>, result,
+                                   alpha, x, beta, y,
+                                   numRows, numColumns, numDiagonals, diaOffsets, diaValues, op ) );
         return;
     }
 
-    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
+    // result := alpha * A * x + beta * y 
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
-
-    #pragma omp parallel
+    if ( op == common::MatrixOp::TRANSPOSE )
     {
-        SCAI_REGION( "OpenMP.DIA.normalGEVM" )
-
-        #pragma omp for
-
-        for ( IndexType j = 0; j < numColumns; j++ )
+        #pragma omp parallel
         {
-            ValueType accu = 0;
+            SCAI_REGION( "OpenMP.DIA.normalGEMV_t" )
 
-            for ( IndexType ii = 0; ii < numDiagonals; ++ii )
+            #pragma omp for
+
+            for ( IndexType j = 0; j < numColumns; j++ )
             {
-                const IndexType i = j - diaOffsets[ii];
+                ValueType accu = 0;
 
-                if ( common::Utils::validIndex( i, numRows ) )
+                for ( IndexType ii = 0; ii < numDiagonals; ++ii )
                 {
-                    accu += diaValues[ii * numRows + i] * x[i];
+                    const IndexType i = j - diaOffsets[ii];
+
+                    if ( common::Utils::validIndex( i, numRows ) )
+                    {
+                        accu += diaValues[ii * numRows + i] * x[i];
+                    }
+                }
+     
+                if ( beta == 0 )
+                {
+                    result[j] = alpha *accu;
+                }
+                else
+                {
+                    result[j] = alpha * accu + beta * y[j];
                 }
             }
-
-            result[j] += alpha * accu;
         }
+    }
+    else if ( op == common::MatrixOp::NORMAL )
+    {
+        #pragma omp parallel
+        {
+            SCAI_REGION( "OpenMP.DIA.normalGEMV_n" )
+    
+            #pragma omp for 
+
+            for ( IndexType i = 0; i < numRows; i++ )
+            {
+                ValueType accu = 0;
+    
+                for ( IndexType ii = 0; ii < numDiagonals; ++ii )
+                {
+                    const IndexType j = i + diaOffsets[ii];
+    
+                    if ( common::Utils::validIndex( j, numColumns ) )
+                    {
+                        accu += diaValues[ii * numRows + i] * x[j];
+                    }
+                }
+
+                if ( beta == 0 )
+                {
+                    result[i] = alpha *accu;
+                }
+                else
+                {
+                    result[i] = alpha * accu + beta * y[i];
+                }
+            }
+        }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unsupported matrix op: " << op )
     }
 }
 
@@ -532,7 +490,7 @@ void OpenMPDIAUtils::jacobi(
 void OpenMPDIAUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<DIAKernelTrait::getValuePos>( getValuePos, ctx, flag );
 }
@@ -543,13 +501,12 @@ template<typename ValueType>
 void OpenMPDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<DIAKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
-    KernelRegistry::set<DIAKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
 
@@ -559,7 +516,7 @@ template<typename ValueType, typename OtherValueType>
 void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
-    common::context::ContextType ctx = common::context::Host;
+    common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );

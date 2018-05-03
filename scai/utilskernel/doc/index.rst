@@ -8,15 +8,8 @@ SCAI UtilsKernel
 Description
 ***********
 
-The UtilsKernel library provides various kernel implementations for array operations. 
-These implementations are registered in the KernelRegistry. 
-
-Additionally it contains a class LArray that is derived from the 
-class HArray provided by the HMemo library. This derived class provides the above array operations
-as operators or methods of this class and makes so the use of heterogeneous arrays more convenient.
-
-Besides this, the UtilsKernel library extends the class KernelTraitContextFunction from the KRegistry library.
-This extension uses directly a context (ContextPtr) insted of the context type. 
+The UtilsKernel library provides various kernel implementations for operations on heterogeneous arrays.
+The implementations are registered in the KernelRegistry. 
 
 ********
 Contents
@@ -27,40 +20,40 @@ Contents
    :maxdepth: 1
    
    HArrayUtils
-   LArray
+   Functions
    LAMAKernel
 
 *******
 Example
 *******
 
-LArray
+HArray
 ------
 
-The following example shows how you can operate on local arrays:
+The following example shows how you can operate on heterogeneous arrays:
 
 .. code-block:: c++
 
   const int N = 10;
 
-  LArray<float> x( N );
-  LArray<float> y( N );
+  HArray<float> x( N );
+  HArray<float> y( N );
   
   for ( IndexType i = 0; i < N; ++i )
   {
       x[i] = i;
   }
 
-  y = x;
-  y *= y;
-  y *= 2.0f;
+  HArrayUtils::assign( y, x );                           // y = x;
+  HArrayUtils::setArray( y, y, common::BinaryOp::MULT ); // y *= y;;
+  HArrayUtils::setScalar( y, 2, common::BinaryOp::MULT ); // y *= 2;;
    
-  float l1 = x.l1Norm(); // not possible on _HArray / HArray
-  float l2 = x.l2Norm();
+  float l1 = HArrayUtils::l1Norm( x ); 
+  float l2 = HArrayUtils::l2Norm( x ); 
 
-  float sum = x.sum();   // build the sum of all elements
-  float min = y.min();   // minimal value of y
-  float max = x.max();   // maximal value of x
+  float sum = HArrayUtils::sum( x );   // build the sum of all elements
+  float min = HArrayUtils::min( y );   // minimal value of y
+  float max = HArrayUtils::max( x );   // maximal value of x
 
 Using the [] operator for reading and writing single values of a local array is very convenient
 but not recommended for a large number of values as it includes the overhead of getting the access

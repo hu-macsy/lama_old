@@ -46,10 +46,11 @@ namespace scai
 namespace lama
 {
 
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT MaxNorm:
 
-    public Norm,
-    public Norm::Register<MaxNorm>
+    public Norm<ValueType>,
+    public Norm<ValueType>::template Register<MaxNorm<ValueType> >
 
 {
 public:
@@ -58,11 +59,11 @@ public:
 
     virtual ~MaxNorm();
 
-    virtual Scalar apply( const Scalar& scalar ) const;
+    virtual RealType<ValueType> apply( const ValueType& scalar ) const;
 
-    virtual Scalar apply( const Vector& vector ) const;
+    virtual RealType<ValueType> apply( const Vector<ValueType>& vector ) const;
 
-    virtual Scalar apply( const Matrix& matrix ) const;
+    virtual RealType<ValueType> apply( const Matrix<ValueType>& matrix ) const;
 
     /**
      *  Getter routine for key of this derived class used in Norm factory
@@ -72,18 +73,31 @@ public:
     /**
      *  Create method is just function version of constructor.
      */
-    static Norm* create();
+    static Norm<ValueType>* create();
 
     /** Override Printable::writeAt with version for this class. */
 
     virtual void writeAt( std::ostream& stream ) const;
 };
 
-COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Scalar& scalar );
+template<typename ValueType>
+inline RealType<ValueType> maxNorm( const ValueType& scalar )
+{
+    return common::Math::abs( scalar );
+}
 
-COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Vector& vector );
 
-COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Matrix& matrix );
+template<typename ValueType>
+inline RealType<ValueType> maxNorm( const Vector<ValueType>& vector )
+{
+    return vector.maxNorm();
+}
+
+template<typename ValueType>
+inline RealType<ValueType> maxNorm( const Matrix<ValueType>& matrix )
+{
+    return matrix.maxNorm();
+}
 
 } /* end namespace lama */
 

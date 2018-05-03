@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE( local2GlobalTest )
             }
             else
             {
-                BOOST_CHECK_EQUAL( nIndex, dist->global2local( i ) );
+                BOOST_CHECK_EQUAL( invalidIndex, dist->global2local( i ) );
             }
         }
     }
@@ -148,6 +148,42 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( global2LocalVTest )
+{
+    TestDistributions allDist( 17 );
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        DistributionPtr dist = allDist[i];
+
+        const Communicator& comm = dist->getCommunicator();
+
+        SCAI_LOG_INFO( logger, comm << ": global2LocalTest, dist = " << *dist )
+
+        hmemo::HArray<IndexType> globalIndexes;
+        utilskernel::HArrayUtils::setOrder( globalIndexes, dist->getGlobalSize() );
+
+        hmemo::HArray<IndexType> localIndexes;
+        dist->global2localV( localIndexes, globalIndexes );
+
+        auto rLocal = hostReadAccess( localIndexes );
+
+        IndexType countLocal = 0;
+
+        for ( IndexType i = 0; i < dist->getGlobalSize(); ++i )
+        {
+            if ( rLocal[i] != invalidIndex )
+            {
+                countLocal++;
+            }
+        }
+ 
+        BOOST_CHECK_EQUAL( countLocal, dist->getLocalSize() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 {
     TestDistributions allDist( 17 );
@@ -156,8 +192,8 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
     {
         DistributionPtr dist = allDist[i];
 
-        utilskernel::LArray<IndexType> myIndexes1;
-        utilskernel::LArray<IndexType> myIndexes2;
+        hmemo::HArray<IndexType> myIndexes1;
+        hmemo::HArray<IndexType> myIndexes2;
 
         dist->getOwnedIndexes( myIndexes1 );                 // call it for block distribution
         dist->Distribution::getOwnedIndexes( myIndexes2 );   // call if from base class
@@ -167,13 +203,8 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
         BOOST_REQUIRE_EQUAL( nLocal, myIndexes1.size() );
         BOOST_REQUIRE_EQUAL( nLocal, myIndexes2.size() );
 
-        hmemo::ReadAccess<IndexType> rIndexes1( myIndexes1 );
-        hmemo::ReadAccess<IndexType> rIndexes2( myIndexes2 );
-
-        for ( IndexType i = 0; i < nLocal; ++i )
-        {
-            BOOST_CHECK_EQUAL( rIndexes1[i], rIndexes2[i] );
-        }
+        BOOST_TEST( hmemo::hostReadAccess( myIndexes1 ) == hmemo::hostReadAccess( myIndexes2 ),
+                    boost::test_tools::per_element() );
     }
 }
 
@@ -194,8 +225,8 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
 
         // own counter array to check for good local indexes on each partition
 
-        common::scoped_array<IndexType> counts( new IndexType[nP] );
- 
+        std::unique_ptr<IndexType[]> counts( new IndexType[nP] );
+
         for ( IndexType iP = 0; iP < nP; ++iP )
         {
             counts[iP] = 0;
@@ -219,8 +250,8 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
 
         // now check for correct permutations
 
-        utilskernel::LArray<IndexType> offsets;
-        utilskernel::LArray<IndexType> perm;
+        hmemo::HArray<IndexType> offsets;
+        hmemo::HArray<IndexType> perm;
 
         dist->getAnyGlobal2Local( offsets, perm );
 
@@ -237,8 +268,8 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
             PartitionId owner = dist->getAnyOwner( globalIndex );
             IndexType localIndex1 = dist->getAnyLocalIndex( globalIndex, owner );
             IndexType localIndex2 = perm[ globalIndex ] - offsets[owner];
-            SCAI_LOG_TRACE( logger, "Global index = " << globalIndex << ", owner = " << owner 
-                               << ", local1 = " << localIndex1 << ", local2 = " << localIndex2 )
+            SCAI_LOG_TRACE( logger, "Global index = " << globalIndex << ", owner = " << owner
+                            << ", local1 = " << localIndex1 << ", local2 = " << localIndex2 )
             BOOST_CHECK_EQUAL( localIndex1, localIndex2 );
         }
 
@@ -262,7 +293,7 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
                 IndexType globalIndex1 = dist->getAnyGlobalIndex( localIndex, iP );
                 IndexType globalIndex2 = perm[localIndex + offset];
                 SCAI_LOG_TRACE( logger, "iP = " << iP << ", local index = " << localIndex
-                                    << ", global1 = " << globalIndex1 << ", global2 = " << globalIndex2 )
+                                << ", global1 = " << globalIndex1 << ", global2 = " << globalIndex2 )
                 BOOST_CHECK_EQUAL( globalIndex1, globalIndex2 );
             }
         }
@@ -284,12 +315,12 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
         IndexType nGlobal = dist->getGlobalSize();
 
-        utilskernel::LArray<IndexType> indexes;
+        hmemo::HArray<IndexType> indexes;
         utilskernel::HArrayUtils::setOrder( indexes, nGlobal );
 
-        utilskernel::LArray<PartitionId> owners1;
-        utilskernel::LArray<PartitionId> owners2;
-        utilskernel::LArray<PartitionId> owners3;
+        hmemo::HArray<PartitionId> owners1;
+        hmemo::HArray<PartitionId> owners2;
+        hmemo::HArray<PartitionId> owners3;
 
         dist->computeOwners( owners1, indexes );                 // call the efficient derived class method
         dist->Distribution::computeOwners( owners2, indexes );   // call the straight forw from base class
@@ -309,18 +340,11 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
             BOOST_REQUIRE_EQUAL( IndexType( 0 ), owners3.size() );
         }
 
-        hmemo::ReadAccess<PartitionId> rOwners1( owners1 );
-        hmemo::ReadAccess<PartitionId> rOwners2( owners2 );
-        hmemo::ReadAccess<PartitionId> rOwners3( owners3 );
+        BOOST_TEST( hostReadAccess( owners1 ) == hostReadAccess( owners2 ), boost::test_tools::per_element() );
 
-        for ( IndexType i = 0; i < nGlobal; ++i )
+        if ( rank == root )
         {
-            BOOST_CHECK_EQUAL( rOwners1[i], rOwners2[i] );
-
-            if ( rank == root )
-            {
-                BOOST_CHECK_EQUAL( rOwners1[i], rOwners3[i] );
-            }
+            BOOST_TEST( hostReadAccess( owners1 ) == hostReadAccess( owners3 ), boost::test_tools::per_element() );
         }
     }
 }
@@ -330,7 +354,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 {
     // Test of getBlockDistributionSize() can be done by computeOwners on all processor
-    // getBlockDistributionSize() != nIndex iff isAscending( owners( {0, ..., globalSize-1} ) )
+    // getBlockDistributionSize() != invalidIndex iff isAscending( owners( {0, ..., globalSize-1} ) )
 
     IndexType globalSizes[] = { 0, 1, 2, 3, 7, 16 };
 
@@ -346,16 +370,16 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
             IndexType nGlobal = dist->getGlobalSize();
 
-            utilskernel::LArray<IndexType> indexes;
+            hmemo::HArray<IndexType> indexes;
             utilskernel::HArrayUtils::setOrder( indexes, nGlobal );
 
-            utilskernel::LArray<PartitionId> owners;
+            hmemo::HArray<PartitionId> owners;
 
             dist->computeOwners( owners, indexes );
 
             // check for sorted owners, e.g. 0 0 0 1 1 1 1 2 2 2 2 3 3 3 indicates block dist
 
-            bool isSorted = utilskernel::HArrayUtils::isSorted( owners, common::binary::LE );
+            bool isSorted = utilskernel::HArrayUtils::isSorted( owners, common::CompareOp::LE );
 
             IndexType bs = dist->getBlockDistributionSize();
 
@@ -363,7 +387,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
             if ( isSorted )
             {
-                if ( bs == nIndex )
+                if ( bs == invalidIndex )
                 {
                     // might happen for grid distributions
                     SCAI_LOG_WARN( logger, "Owners sorted, but not block distribution: " << *dist )
@@ -375,7 +399,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
             }
             else
             {
-                BOOST_CHECK_EQUAL( bs, nIndex );
+                BOOST_CHECK_EQUAL( bs, invalidIndex );
             }
         }
     }
@@ -459,7 +483,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
             }
         }
 
-        hmemo::HArray<IndexType> allValues( repN * globalN, nIndex );
+        hmemo::HArray<IndexType> allValues( repN * globalN, invalidIndex );
 
         // Now replicate the local values
 

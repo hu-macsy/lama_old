@@ -37,10 +37,11 @@
 #include <scai/common/config.hpp>
 #include <scai/common/Utils.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -319,7 +320,7 @@ void Stencil<ValueType>::getWidth( IndexType width[] ) const
 template<typename ValueType>
 IndexType Stencil<ValueType>::getMatrixSize() const
 {
-    common::scoped_array<IndexType> width( new IndexType[ 2 * mNDims ] );
+    std::unique_ptr<IndexType[]> width( new IndexType[ 2 * mNDims ] );
   
     getWidth( width.get() );
  
@@ -338,7 +339,7 @@ IndexType Stencil<ValueType>::getMatrixSize() const
 template<typename ValueType>
 void Stencil<ValueType>::getMatrix( ValueType matrix[] ) const
 {
-    common::scoped_array<IndexType> width( new IndexType[ 2 * mNDims ] );
+    std::unique_ptr<IndexType[]> width( new IndexType[ 2 * mNDims ] );
   
     getWidth( width.get() );
  
@@ -403,7 +404,7 @@ bool Stencil<ValueType>::operator==( const Stencil<ValueType>& other ) const
 
     // now check for equal width in all directions
 
-    common::scoped_array<IndexType> width( new IndexType[ 4 * mNDims ] );
+    std::unique_ptr<IndexType[]> width( new IndexType[ 4 * mNDims ] );
 
     IndexType* width1 = &width[0];
     IndexType* width2 = &width[2 * mNDims];
@@ -421,7 +422,7 @@ bool Stencil<ValueType>::operator==( const Stencil<ValueType>& other ) const
         size *= width1[2 * i] + width1[2 * i + 1] + 1;
     }
 
-    common::scoped_array<ValueType> matrix( new ValueType[ 2 * size ] );
+    std::unique_ptr<ValueType[]> matrix( new ValueType[ 2 * size ] );
 
     ValueType* matrix1 = &matrix[0];
     ValueType* matrix2 = &matrix[size];
@@ -487,9 +488,7 @@ IndexType Stencil<ValueType>::getValidPoints( bool valid[], const IndexType grid
     return cnt;
 }
 
-/* ==================================================================================== */
-/*   Stencil1D  one-dimensional stencil                                                 */
-/* ==================================================================================== */
+/* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 void Stencil<ValueType>::scale( const ValueType scaling )
@@ -515,7 +514,9 @@ void Stencil<ValueType>::transpose( const Stencil<ValueType>& other )
     }
 }
 
-/* ------------------------------------------------------------------------------------ */
+/* ==================================================================================== */
+/*   Stencil1D  one-dimensional stencil                                                 */
+/* ==================================================================================== */
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Stencil1D : public Stencil<ValueType>
@@ -576,25 +577,20 @@ Stencil1D<ValueType>::Stencil1D( const IndexType nPoints ) : Stencil<ValueType>(
     switch( nPoints ) 
     {
         case 7 : 
-        {
             addPoint( -3, minusOne );
             addPoint( 3, minusOne );
-        }
+            // fall through
         case 5 : 
-        {
             addPoint( -2, minusOne );
             addPoint( 2, minusOne );
-        }
+            // fall through
         case 3 : 
-        {
             addPoint( -1, minusOne );
             addPoint( 1, minusOne );
-        }
+            // fall through
         case 1 :
-        {
             addPoint( ( int ) 0, ValueType( nPoints - 1 ) );
             break;
-        }
         default:
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil1D, #points = " << nPoints )
     }
@@ -713,24 +709,20 @@ Stencil2D<ValueType>::Stencil2D( const IndexType nPoints ) : Stencil<ValueType>(
     switch( nPoints ) 
     {
         case 9 : 
-        {
             addPoint( -1, -1, minusOne );
             addPoint( -1,  1, minusOne );
             addPoint(  1, -1, minusOne );
             addPoint(  1,  1, minusOne );
-        }
+            // fall through
         case 5 : 
-        {
             addPoint(  0, -1, minusOne );
             addPoint(  0,  1, minusOne );
             addPoint( -1,  0, minusOne );
             addPoint(  1,  0, minusOne );
-        }
+            // fall through
         case 1 :
-        {
             addPoint( 0, 0, ValueType( nPoints - 1 ) );
             break;
-        }
         default:
 
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil2D, #points = " << nPoints )
@@ -906,7 +898,7 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
     switch( nPoints ) 
     {
         case 27 : 
-        {
+
             addPoint( -1, -1, -1, minusOne );
             addPoint( -1, -1,  1,  minusOne );
             addPoint( -1,  1, -1, minusOne );
@@ -916,10 +908,10 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  1,  1, -1, minusOne );
             addPoint(  1,  1,  1,  minusOne );
 
-            // no break here, continue with points for Stencil3D( 19 )
-        }
+            // fall through
+
         case 19 : 
-        {
+
             addPoint( -1,  0, -1, minusOne );
             addPoint( -1,  0,  1, minusOne );
             addPoint( -1, -1,  0, minusOne );
@@ -933,10 +925,10 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  1, -1,  0, minusOne );
             addPoint(  1,  1,  0, minusOne );
 
-            // no break here, continue with points for Stencil3D( 7 )
-        }
+            // fall through
+
         case 7 :
-        {
+
             addPoint( -1,  0,  0, minusOne );
             addPoint(  1,  0,  0, minusOne );
             addPoint(  0, -1,  0, minusOne );
@@ -944,19 +936,19 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  0,  0, -1, minusOne );
             addPoint(  0,  0,  1, minusOne );
 
-            // no break here, continue with points for Stencil3D( 1 )
-        }
+            // fall through
+
         case 1 :
-        {
+
             addPoint( 0, 0, 0, ValueType( nPoints - 1 ) );
             break;
-        }
+
         default:
 
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil3D, #points = " << nPoints )
-
-        SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
     }
+
+    SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -1141,7 +1133,7 @@ Stencil4D<ValueType>::Stencil4D( const IndexType nPoints ) : Stencil<ValueType>(
     switch( nPoints ) 
     {
         case 9 :
-        {
+
             addPoint( -1,  0,  0,  0, minusOne );
             addPoint(  1,  0,  0,  0, minusOne );
             addPoint(  0, -1,  0,  0, minusOne );
@@ -1151,19 +1143,19 @@ Stencil4D<ValueType>::Stencil4D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  0,  0,  0, -1, minusOne );
             addPoint(  0,  0,  0,  1, minusOne );
 
-            // no break here, continue with points for Stencil4D( 1 )
-        }
+            // fall through
+
         case 1 :
-        {
+
             addPoint( 0, 0, 0, 0, ValueType( nPoints - 1 ) );
             break;
-        }
+
         default:
 
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil4D, #points = " << nPoints )
-
-        SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
     }
+
+    SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
 }
 
 /* ------------------------------------------------------------------------------------ */

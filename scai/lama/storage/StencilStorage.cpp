@@ -66,6 +66,8 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
 namespace scai
 {
 
@@ -74,10 +76,10 @@ using namespace dmemo;
 using namespace utilskernel;
 using namespace tasking;
 
-using common::unique_ptr;
-using common::shared_ptr;
+using std::unique_ptr;
+using std::shared_ptr;
 using common::TypeTraits;
-using common::binary;
+using common::BinaryOp;
 using common::Grid;
 
 namespace lama
@@ -86,7 +88,7 @@ namespace lama
 template<typename ValueType>
 StencilStorage<ValueType>::StencilStorage() :
 
-    MatrixStorage<ValueType>( 0, 0 ),
+    MatrixStorage<ValueType>( 0, 0, Context::getContextPtr() ),
     mGrid( common::Grid1D( 0 ) ),
     mStencil( common::Stencil1D<ValueType>() )
 {
@@ -95,7 +97,7 @@ StencilStorage<ValueType>::StencilStorage() :
 template<typename ValueType>
 StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const common::Stencil<ValueType>&  stencil ) :
 
-    MatrixStorage<ValueType>( grid.size(), grid.size() ),
+    MatrixStorage<ValueType>( grid.size(), grid.size(), Context::getContextPtr() ),
     mGrid( grid ),
     mStencil( stencil )
 {
@@ -114,14 +116,6 @@ StencilStorage<ValueType>::~StencilStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixStorageCreateKeyType StencilStorage<ValueType>::getCreateValue() const
-{
-    return MatrixStorageCreateKeyType( Format::STENCIL, common::getScalarType<ValueType>() );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void StencilStorage<ValueType>::conj()
 {
     COMMON_THROWEXCEPTION( "conj unsupported" )
@@ -130,7 +124,7 @@ void StencilStorage<ValueType>::conj()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType StencilStorage<ValueType>::l1Norm() const
+RealType<ValueType> StencilStorage<ValueType>::l1Norm() const
 {
     COMMON_THROWEXCEPTION( "l1Norm unsupported" )
     return 0;
@@ -139,7 +133,7 @@ ValueType StencilStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType StencilStorage<ValueType>::l2Norm() const
+RealType<ValueType> StencilStorage<ValueType>::l2Norm() const
 {
     COMMON_THROWEXCEPTION( "l2Norm unsupported" )
     return 0;
@@ -148,7 +142,7 @@ ValueType StencilStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename StencilStorage<ValueType>::StorageAbsType StencilStorage<ValueType>::maxNorm() const
+RealType<ValueType> StencilStorage<ValueType>::maxNorm() const
 {
     COMMON_THROWEXCEPTION( "maxNorm unsupported" )
     return 0;
@@ -240,7 +234,7 @@ static const ValueType* getDiagonalPtr( const common::Stencil<ValueType>& stenci
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void StencilStorage<ValueType>::getDiagonal( _HArray& array ) const
+void StencilStorage<ValueType>::getDiagonal( HArray<ValueType>& array ) const
 {
     ValueType diagonalValue = 0;   // stencil matrix has one single diagonal value
 
@@ -253,9 +247,7 @@ void StencilStorage<ValueType>::getDiagonal( _HArray& array ) const
 
     SCAI_LOG_ERROR( logger, "diagonal value is = " << diagonalValue );
 
-    HArrayUtils::assignScalar( array, diagonalValue, common::binary::COPY );
-
-    // Attention: reflecting boundaries can imply changes on the diagonal values
+    HArrayUtils::setScalar( array, diagonalValue, common::BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -275,7 +267,7 @@ void StencilStorage<ValueType>::buildCSRSizes( HArray<IndexType>& sizeIA ) const
 
     IndexType n = this->getNumRows();
 
-    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
+    std::unique_ptr<int[]> stencilOffsets( new int[ mStencil.nPoints() ] );
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
@@ -301,7 +293,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 
     IndexType n = this->getNumRows();
 
-    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
+    std::unique_ptr<int[]> stencilOffsets( new int[ mStencil.nPoints() ] );
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
@@ -359,18 +351,18 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 
     if ( typedValues.getValueType() == csrValues.getValueType() )
     {
-        typedValues.swap( csrValues );
+        typedValues.swap( static_cast<HArray<ValueType>&>( csrValues ) );
     }
     else
     {
-        HArrayUtils::assign( csrValues, typedValues );
+        HArrayUtils::_assign( csrValues, typedValues );  // conversion required
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void StencilStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+void StencilStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::HArray<ValueType>& values, const IndexType i ) const
 {
     IndexType curPos[SCAI_GRID_MAX_DIMENSION];   // grid position that corresponds to this row i
     IndexType newPos[SCAI_GRID_MAX_DIMENSION];   // for neighbored stencil points
@@ -379,8 +371,6 @@ void StencilStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmem
 
     const IndexType nPoints = mStencil.nPoints();
     const IndexType nDims = mGrid.nDims();
-
-    HArray<ValueType> typedValues;
 
     IndexType countValidPoints = 0;
 
@@ -391,7 +381,7 @@ void StencilStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmem
         // we allocate the arrays with sufficient size but resize later
 
         WriteOnlyAccess<IndexType> wJA( jA, nPoints );
-        WriteOnlyAccess<ValueType> wValues( typedValues, nPoints );
+        WriteOnlyAccess<ValueType> wValues( values, nPoints );
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
@@ -437,31 +427,18 @@ void StencilStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmem
         wJA.resize( countValidPoints );
         wValues.resize( countValidPoints );
     }
-
-    // sorting is not required here.
-
-    if ( values.getValueType() == typedValues.getValueType () )
-    {
-        values.swap( typedValues );
-    }
-    else
-    {
-        // conversion required
-
-        utilskernel::HArrayUtils::assign( values, typedValues );
-    }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType i ) const
+void StencilStorage<ValueType>::getRow( hmemo::HArray<ValueType>& values, const IndexType i ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
 
-    values.resize( mNumColumns );
+    values.resize( getNumColumns() );
 
-    HArrayUtils::assignScalar( values, ValueType( 0 ), common::binary::COPY );
+    HArrayUtils::setScalar<ValueType>( values, 0, BinaryOp::COPY );
 
     HArray<IndexType> sparseIA;
     HArray<ValueType> sparseValues;
@@ -470,7 +447,7 @@ void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType 
 
     bool unique = true;  // sparseIA has only unique values
 
-    HArrayUtils::scatter( values, sparseIA, unique, sparseValues, common::binary::COPY );
+    HArrayUtils::scatter( values, sparseIA, unique, sparseValues, BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -478,11 +455,11 @@ void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType 
 template<typename ValueType>
 ValueType StencilStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
 
     HArray<IndexType> sparseIA;
-    utilskernel::LArray<ValueType> sparseValues;
+    HArray<ValueType> sparseValues;
 
     getSparseRow( sparseIA, sparseValues, i );
 
@@ -540,7 +517,7 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     mStencil.getWidth( width );
 
-    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
+    std::unique_ptr<int[]> stencilOffsets( new int[ mStencil.nPoints() ] );
 
     mStencil.getLinearOffsets( stencilOffsets.get(), gridDistances );
 
@@ -576,9 +553,9 @@ void StencilStorage<ValueType>::jacobiIterate(
 
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local stencil data, omega = " << omega )
 
-    SCAI_ASSERT_EQ_DEBUG( mNumRows, oldSolution.size(), "illegal size for old solution" )
-    SCAI_ASSERT_EQ_DEBUG( mNumRows, rhs.size(), "illegal size for rhs" )
-    SCAI_ASSERT_EQ_DEBUG( mNumRows, mNumColumns, "jacobiIterate only on square matrices" )
+    SCAI_ASSERT_EQ_DEBUG( getNumRows(), oldSolution.size(), "illegal size for old solution" )
+    SCAI_ASSERT_EQ_DEBUG( getNumRows(), rhs.size(), "illegal size for rhs" )
+    SCAI_ASSERT_EQ_DEBUG( getNumRows(), getNumColumns(), "jacobiIterate only on square matrices" )
 
     // solution = omega * ( rhs - B * oldSolution ) * dinv  + ( 1 - omega ) * oldSolution
     // solution = omega * rhs * dinv + ( 1 - omega ) * oldSolution;
@@ -613,9 +590,14 @@ void StencilStorage<ValueType>::matrixTimesVector(
     const ValueType alpha,
     const HArray<ValueType>& x,
     const ValueType beta,
-    const HArray<ValueType>& y ) const
-
+    const HArray<ValueType>& y,
+    const common::MatrixOp op ) const
 {
+    if ( common::isTranspose( op ) )
+    {
+        COMMON_THROWEXCEPTION( "transpose( A ) * x unsupported for stencil storage" )
+    }
+
     if ( mGrid.size() == 0 )
     {
         return;
@@ -627,10 +609,10 @@ void StencilStorage<ValueType>::matrixTimesVector(
 
     SCAI_REGION( "Storage.Stencil.matrixTimesVector" )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
         return;
     }
 
@@ -640,16 +622,16 @@ void StencilStorage<ValueType>::matrixTimesVector(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
-        result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        result.resize( getNumRows() );
+        HArrayUtils::setScalar( result, ValueType( 0 ), BinaryOp::COPY, loc );
     }
     else
     {
-        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        SCAI_ASSERT_EQUAL( y.size(), getNumRows(), "size mismatch y, beta = " << beta )
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
     }
 
     bool async = false;
@@ -668,9 +650,14 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
     const ValueType alpha,
     const HArray<ValueType>& x,
     const ValueType beta,
-    const HArray<ValueType>& y ) const
-
+    const HArray<ValueType>& y,
+    const common::MatrixOp op ) const
 {
+    if ( common::isTranspose( op ) )
+    {
+        COMMON_THROWEXCEPTION( "transpose( A ) * x unsupported for stencil storage" )
+    }
+
     if ( mGrid.size() == 0 )
     {
         return NULL;
@@ -682,10 +669,10 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
 
     SCAI_REGION( "Storage.Stencil.matrixTimesVectorAsync" )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
         return NULL;
     }
 
@@ -695,16 +682,16 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
-        result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        result.resize( getNumRows() );
+        HArrayUtils::setScalar( result, ValueType( 0 ), BinaryOp::COPY, loc );
     }
     else
     {
-        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        SCAI_ASSERT_EQUAL( y.size(), getNumRows(), "size mismatch y, beta = " << beta )
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
     }
 
     bool async = true;
@@ -727,9 +714,7 @@ void StencilStorage<ValueType>::assign( const _MatrixStorage& other )
 
     _MatrixStorage::setDimension( other.getNumRows(), other.getNumColumns() );
 
-    const StencilStorage<ValueType> otherStencilStorage = reinterpret_cast<const StencilStorage<ValueType>&>( other );
-
-    // Important: swap the border types in each, border type must not be BORDER_REFLECTING
+    const StencilStorage<ValueType> otherStencilStorage = static_cast<const StencilStorage<ValueType>&>( other );
 
     mGrid = otherStencilStorage.mGrid;
 
@@ -748,9 +733,7 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
     SCAI_ASSERT_EQ_ERROR( Format::STENCIL, other.getFormat(),
                           "stencil matrix/storage: transposed argument must also be stencil matrix" );
 
-    const StencilStorage<ValueType> otherStencilStorage = reinterpret_cast<const StencilStorage<ValueType>&>( other );
-
-    // Important: swap the border types in each, border type must not be BORDER_REFLECTING
+    const StencilStorage<ValueType> otherStencilStorage = static_cast<const StencilStorage<ValueType>&>( other );
 
     mGrid = otherStencilStorage.mGrid;
 
@@ -758,12 +741,6 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
 
     for ( IndexType i = 0; i < mGrid.nDims(); ++i )
     {
-        SCAI_ASSERT_NE_ERROR( common::Grid::BORDER_REFLECTING, borders[2 * i],
-                              "no transpose possible with reflecting boundary" )
-
-        SCAI_ASSERT_NE_ERROR( common::Grid::BORDER_REFLECTING, borders[2 * i + 1],
-                              "no transpose possible with reflecting boundary" )
-
         mGrid.setBorderType( i, borders[ 2 * i + 1 ], borders[ 2 * i ] );
     }
 
@@ -775,9 +752,57 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void StencilStorage<ValueType>::clear()
+{
+    mGrid = common::Grid1D( 0 );
+    mStencil = common::Stencil1D<ValueType>( 1 );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::purge() 
+{
+    clear();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 StencilStorage<ValueType>* StencilStorage<ValueType>::copy() const
 {
     return new StencilStorage<ValueType>( *this );
+}
+
+/* ========================================================================= */
+/*  Static fatory methods and related virtual methods                        */
+/* ========================================================================= */
+
+template<typename ValueType>
+std::string StencilStorage<ValueType>::initTypeName()
+{
+    std::stringstream s;
+    s << std::string( "StencilStorage<" ) << common::getScalarType<ValueType>() << std::string( ">" );
+    return s.str();
+}
+
+template<typename ValueType>
+const char* StencilStorage<ValueType>::typeName()
+{
+    static const std::string s = initTypeName();
+    return  s.c_str();
+}
+
+template<typename ValueType>
+const char* StencilStorage<ValueType>::getTypeName() const
+{
+    return typeName();
+}
+
+template<typename ValueType>
+MatrixStorageCreateKeyType StencilStorage<ValueType>::getCreateValue() const
+{
+    return MatrixStorageCreateKeyType( Format::STENCIL, common::getScalarType<ValueType>() );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -35,8 +35,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -47,8 +47,22 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
+#include <scai/lama/fft.hpp>
+
+#include <scai/utilskernel.hpp>
+
+#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
+
 using namespace scai;
 using namespace lama;
+
+using hmemo::HArray;
+
+using scai::testsupport::uniquePath;
+using scai::testsupport::GlobalTempDir;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -64,14 +78,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 {
     // replicated dense vector
 
-    IndexType n = 4;
-    DenseVector<ValueType> v( n, ValueType( 1 ) );
+    IndexType n   = 4;
+    ValueType val = 1;
+   
+    auto v = fill<DenseVector<ValueType>>( n, val );
 
     BOOST_CHECK_EQUAL( n, v.size() );
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        BOOST_CHECK_EQUAL( v.getValue( i ), 1.0 );
+        BOOST_CHECK_EQUAL( v.getValue( i ), val );
     }
 }
 
@@ -79,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( consistencyTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 10;
 
@@ -88,7 +104,7 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     // create distributed dense vector
 
-    DenseVector<ValueType> v( dist, ValueType( 1 ) );
+    auto v = fill<DenseVector<ValueType>>( dist, 1 );
 
     BOOST_CHECK( v.isConsistent() );
 
@@ -114,21 +130,19 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 5;   // let it really small, this test is very inefficient
 
-    utilskernel::LArray<ValueType> data( n );
-
     common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
-    data.setRandom( 1 );
+    auto data = utilskernel::randomHArray<ValueType>( n, 1 );
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < dists.size(); ++i )
     {
-        utilskernel::LArray<ValueType> data1( n );
+        HArray<ValueType> data1( n );
 
         dmemo::DistributionPtr dist = dists[i];
 
@@ -145,10 +159,10 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = distV.getValue( k ).getValue<ValueType>();
+            data1[k] = distV.getValue( k );
         }
 
-        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+        BOOST_TEST( hostReadAccess( data ) == hostReadAccess( data1 ), per_element() );
     }
 }
 
@@ -158,7 +172,7 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
@@ -184,9 +198,11 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 
         // distV = repV, but distributed
 
-        DenseVector<ValueType> distV( repV, dist );
+        DenseVector<ValueType> distV( repV );
+        distV.redistribute( dist );
 
-        DenseVector<ValueType> newV( dist );
+        DenseVector<ValueType> newV;
+        newV.allocate( dist );
 
         hmemo::HArray<ValueType> tmp;
 
@@ -199,7 +215,7 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 
         BOOST_CHECK_EQUAL( n, newV.getLocalValues().size() );
 
-        BOOST_CHECK_EQUAL( 0, newV.getLocalValues().maxDiffNorm( repV.getLocalValues() ) );
+        BOOST_TEST( hostReadAccess( newV.getLocalValues() ) == hostReadAccess( repV.getLocalValues() ), per_element() );
     }
 }
 
@@ -209,15 +225,13 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
     IndexType n = 16;
 
-    DenseVector<ValueType> repV( ctx );  // just a sequence: 0, 1, ...
-
-    repV.setRange( n, 0, 1 ); 
+    DenseVector<ValueType> repV = linearDenseVector<ValueType>( n, 0, 1, ctx );  // just a sequence: 0, 1, ...
 
     BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
 
@@ -229,7 +243,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
         // distV = repV, but distributed
 
-        DenseVector<ValueType> distV( repV, dist );
+        auto distV = distribute<DenseVector<ValueType>>( repV, dist );
 
         BOOST_CHECK_EQUAL( distV.min() , 0 );
         BOOST_CHECK_EQUAL( distV.max() , n - 1 );
@@ -238,36 +252,9 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
         // distV1 = [ 0, ..., n-1] distributed, must be same
 
-        DenseVector<ValueType> distV1( ctx );
+        DenseVector<ValueType> distV1 = linearDenseVector<ValueType>( dist, 0, 1, ctx );
 
-        distV1.setRange( dist, 0, 1 );
-
-        BOOST_CHECK_EQUAL( 0, distV1.getLocalValues().maxDiffNorm( distV.getLocalValues() ) );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
-{
-    typedef RealType ValueType;
-
-    IndexType n = 4;
-
-    dmemo::TestDistributions dists( n );
-
-    for ( size_t i = 0; i < dists.size(); ++i )
-    {
-        dmemo::DistributionPtr dist = dists[i];
-
-        DenseVector<ValueType> b( dist , 3 );
-        DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( a + b );
-        DenseVector<ValueType> r( dist , 6 );
-
-        // prove same distribution, same values of r and c
-
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
+        BOOST_TEST( hostReadAccess( distV1.getLocalValues() ) == hostReadAccess( distV.getLocalValues() ), per_element() );
     }
 }
 
@@ -277,7 +264,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
 {
     // Note: it is sufficient to consider one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
@@ -289,9 +276,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        DenseVector<ValueType> distV( ctx );
-
-        distV.setRange( dist, 1, 1 );  // set vector elements as sequence 1, 2, ... 
+        DenseVector<ValueType> distV = linearDenseVector<ValueType>( dist, 1, 1, ctx );
 
         try
         {
@@ -308,15 +293,15 @@ BOOST_AUTO_TEST_CASE( ScanTest )
                 for ( IndexType i = 0; i < n; ++i )
                 {
                     ValueType expected = static_cast<ValueType>( ( i + 1 ) * ( i + 2 ) / 2  );
-                    Scalar computed = rVector[i];
-                    BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
+                    ValueType computed = rVector[i];
+                    BOOST_CHECK_EQUAL( expected, computed );
                 }
             }
         }
         catch ( common::Exception& e )
         {
             SCAI_LOG_INFO( logger, "scan unsupported for this distribution: " << *dist << ", no block distribution" )
-            BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), nIndex );
+            BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), invalidIndex );
         }
     }
 }
@@ -333,7 +318,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
     const IndexType n = 10;
 
-    std::string fileName = "myVector.psc";   // binary type, so no loss of precision
+    const auto fileName = uniquePath(GlobalTempDir::getPath(), "myVector") + ".psc";
 
     float fillRate = 0.2;
 
@@ -350,11 +335,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
     comm->synchronize();
 
-    DenseVector<ValueType> vector1( fileName );
+    auto vector1 = read<DenseVector<ValueType>>( fileName );
 
     BOOST_CHECK_EQUAL( n, vector1.size() );
 
-    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+    auto dist = std::make_shared<dmemo::BlockDistribution>( n, comm );
 
     vector1.redistribute( dist );
     vector1.prefetch( ctx );
@@ -366,10 +351,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
     // vector1 and vector2 must be equal
 
-    const utilskernel::LArray<ValueType> localValues1 = vector1.getLocalValues();
-    const utilskernel::LArray<ValueType> localValues2 = vector2.getLocalValues();
+    const HArray<ValueType>& localValues1 = vector1.getLocalValues();
+    const HArray<ValueType>& localValues2 = vector2.getLocalValues();
 
-    BOOST_CHECK_EQUAL( ValueType( 0 ), localValues1.maxDiffNorm( localValues2 ) );
+    BOOST_TEST( hostReadAccess( localValues1 ) == hostReadAccess( localValues2 ), per_element() );
 
     if ( comm->getRank() == 0 )
     {
@@ -380,36 +365,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( vecMultExpConstructorTest )
-{
-    typedef RealType ValueType;
-
-    IndexType n = 4;
-
-    dmemo::TestDistributions dists( n );
-
-    for ( size_t i = 0; i < dists.size(); ++i )
-    {
-        dmemo::DistributionPtr dist = dists[i];
-
-        DenseVector<ValueType> b( dist , 3 );
-        DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( a * b );
-        DenseVector<ValueType> r( dist , 9 );
-
-        // prove same distribution, same values of r and c
-
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 {
     // Note: it is sufficient to consider one matrix type and one value type
 
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType nCols = 4;
     IndexType nRows = 5;
@@ -419,17 +379,19 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
-        dmemo::DistributionPtr rowDist = rowDists[i];
+        auto rowDist = rowDists[i];
 
         for ( size_t j = 0; j < colDists.size(); ++j )
         {
-            dmemo::DistributionPtr colDist = colDists[i];
+            auto colDist = colDists[i];
 
-            CSRSparseMatrix<RealType> mat( rowDist, colDist );
+            auto mat = zero<CSRSparseMatrix<DefaultReal>>( rowDist, colDist );
 
-            DenseVector<ValueType> x( colDist, 3 );
+            auto x   = fill<DenseVector<ValueType>>( colDist, 3 );
+
             SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
-            DenseVector<ValueType> y( 2 * mat * x );
+
+            auto y = eval<DenseVector<ValueType>>( 2 * mat * x );
 
             BOOST_CHECK_EQUAL( y.getDistribution(), *rowDist );
         }
@@ -440,7 +402,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
 BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     IndexType n = 5;
 
@@ -450,16 +412,16 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        DenseVector<ValueType> x( dist, 3 );
+        auto x = fill<DenseVector<ValueType>>( dist, 3 );
         SCAI_LOG_INFO( logger, "linear algebra expression: alpha + Vector" );
-        DenseVector<ValueType> y( 2 + x );
-        DenseVector<ValueType> z( x + 2 );
-        DenseVector<ValueType> r( dist, 5 );
+        auto y = eval<DenseVector<ValueType>>( 2 + x );
+        auto z = eval<DenseVector<ValueType>>( x + 2 );
+        auto r = fill<DenseVector<ValueType>>( dist, 5 );
 
         // prove same distribution, same values of r and y/z
 
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( y.getLocalValues() ) == 0 );
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( z.getLocalValues() ) == 0 );
+        BOOST_TEST( hostReadAccess( r.getLocalValues() ) == hostReadAccess( y.getLocalValues() ), per_element() );
+        BOOST_TEST( hostReadAccess( r.getLocalValues() ) == hostReadAccess( z.getLocalValues() ), per_element() );
     }
 }
 
@@ -467,17 +429,17 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
 
 BOOST_AUTO_TEST_CASE( swapTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType n = 10;
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
-    dmemo::DistributionPtr dist1( new dmemo::BlockDistribution( n, comm ) );
-    dmemo::DistributionPtr dist2( new dmemo::CyclicDistribution( n, 1, comm ) );
+    auto dist1 = std::make_shared<dmemo::BlockDistribution>( n, comm );
+    auto dist2 = std::make_shared<dmemo::CyclicDistribution>( n, 1, comm );
 
-    DenseVector<ValueType> x1( dist1, 1 );
-    DenseVector<ValueType> x2( dist2, 2 );
+    auto x1 = fill<DenseVector<ValueType>>( dist1, 1 );
+    auto x2 = fill<DenseVector<ValueType>>( dist2, 2 );
 
     x1.swap( x2 );
 
@@ -492,15 +454,15 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
 BOOST_AUTO_TEST_CASE( assignTest )
 {
-    typedef RealType ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType n = 10;
 
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    auto comm = dmemo::Communicator::getCommunicatorPtr();
+    auto dist = std::make_shared<dmemo::BlockDistribution>( n, comm );
 
-    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
-
-    DenseVector<ValueType> x( dist );
+    DenseVector<ValueType> x;
+    x.allocate( dist );          // be careful, x contains undefined values
 
     x = 5;  // calls DenseVector::operator= ( Scalar )
 
@@ -522,22 +484,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
     common::Math::srandom( 51413 );
 
-    DenseMatrix<ValueType> A;
-    A.setContextPtr( ctx );
-    A.allocate( nRows, nCols );
+    auto A = zero<DenseMatrix<ValueType>>( nRows, nCols, ctx );
+
     MatrixCreator::fillRandom( A, 0.1 );
+
     DenseVector<ValueType> x( ctx );
     DenseVector<ValueType> y( ctx );
+
     x.setRandom( A.getColDistributionPtr(), 1 );
     y.setRandom( A.getRowDistributionPtr(), 1 );
-    DenseVector<ValueType> res( 2 * A * x - y );
+
+    auto res = eval<DenseVector<ValueType>>( 2 * A * x - y );
 
     // Now we do the same with all other matrices and all kind of distributions
 
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -547,27 +511,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            Matrices<ValueType> matrices( ctx );   // operations only with same ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                Matrix& A1 = *matrices[k];
+                Matrix<ValueType>& A1 = *matrices[k];
 
-                A1.assign( A );
-                A1.redistribute( rowDist, colDist );
+                A1.assignDistribute( A, rowDist, colDist );
+                 
+                auto x1 = distribute<DenseVector<ValueType>>( x, colDist );
+                auto y1 = distribute<DenseVector<ValueType>>( y, rowDist );
 
-                DenseVector<ValueType> x1( x, colDist );
-                DenseVector<ValueType> y1( y, rowDist );
-                DenseVector<ValueType> res1;
+                SCAI_LOG_DEBUG( logger, "matrixTimesVector with this matrix: " << A1 )
 
-                SCAI_LOG_INFO( logger, "matrixTimesVector with this matrix: " << A1 )
+                auto res1 = eval<DenseVector<ValueType>>( 2 * A1 * x1 - y1 );
 
-                res1 = 2 * A1 * x1 - y1;
+                // redistribute res1 with same dist as res for comparison
 
                 res1.redistribute( res.getDistributionPtr() );
-                res1 -= res;
 
-                BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+                BOOST_CHECK( res.maxDiffNorm( res1 ) < eps );
             }
         }
     }
@@ -577,7 +540,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
 BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // test of: vector = scalar * vector * matrix + scalar * vector with all distributions, formats
 
@@ -600,13 +563,13 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
     // Before call of setRandom, x and y must be allocated, but not initialized
 
-    DenseVector<ValueType> x( A.getRowDistributionPtr(), ctx );
-    DenseVector<ValueType> y( A.getColDistributionPtr(), ctx );
+    DenseVector<ValueType> x( ctx );
+    DenseVector<ValueType> y( ctx );
 
     x.setRandom( A.getRowDistributionPtr(), bound );
     y.setRandom( A.getColDistributionPtr(), bound );
 
-    DenseVector<ValueType> res( 2 * x * A - y );
+    auto res = eval<DenseVector<ValueType>>( transpose( A ) * 2 * x - y );
 
     // Now we do the same with all distributed matrices/vectors and all kind of distributions
 
@@ -623,36 +586,34 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         SCAI_LOG_DEBUG( logger, "Col distribution [ " << j << " ] = " << *colDists[j] )
     }
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
-        dmemo::DistributionPtr rowDist = rowDists[i];
+        auto rowDist = rowDists[i];
 
         for ( size_t j = 0; j < colDists.size(); ++j )
         {
-            dmemo::DistributionPtr colDist = colDists[j];
+            auto colDist = colDists[j];
 
-            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            Matrices<ValueType> matrices( ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                Matrix& A1 = *matrices[k];
+                Matrix<ValueType>& A1 = *matrices[k];
 
-                A1.setCommunicationKind( Matrix::SYNCHRONOUS );
+                A1.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
-                A1.assign( A );
-                A1.redistribute( rowDist, colDist );
+                A1.assignDistribute( A, rowDist, colDist );
 
-                DenseVector<ValueType> x1( x, rowDist );
-                DenseVector<ValueType> y1( y, colDist );
-                DenseVector<ValueType> res1;
+                auto x1 = distribute<DenseVector<ValueType>>( x, rowDist );
+                auto y1 = distribute<DenseVector<ValueType>>( y, colDist );
 
                 SCAI_LOG_INFO( logger, "vectorTimesMatrix[" << i << "," << j << "," << k << "] with this matrix: " << A1 << ", y1 = " << y1 )
 
-                res1 = 2 * x1 * A1 - y1;
+                auto res1 =  eval<DenseVector<ValueType>>( 2 * transpose( A1 ) * x1 - y1 );
 
-                SCAI_LOG_INFO( logger, "res1 = 2 * x1 * A1 - y1: " << res1 )
+                SCAI_LOG_INFO( logger, "res1 = 2 * transpose( A1 ) * x1 - y1: " << res1 )
 
                 BOOST_CHECK_EQUAL( res1.size(), A1.getNumColumns() );
 
@@ -661,7 +622,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
 
-                BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+                BOOST_CHECK( res1.maxNorm() < eps );
             }
         }
     }
@@ -673,7 +634,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 {
     // only serial
 
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
 
@@ -697,22 +658,23 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
     x.setRandom( A.getRowDistributionPtr(), 1 );
     y.setRandom( A.getColDistributionPtr(), 1 );
 
-    DenseMatrix<ValueType> At( A, true );
+    DenseMatrix<ValueType> At;
+    At.assignTranspose( A );
 
-    DenseVector<ValueType> res1( 2 * x * A - y );
-    DenseVector<ValueType> res2( 2 * At * x - y );
+    auto res1 = eval<DenseVector<ValueType>>( 2 * transpose( A ) * x - y );
+    auto res2 = eval<DenseVector<ValueType>>( 2 * At * x - y );
 
-    const utilskernel::LArray<ValueType>& v1 = res1.getLocalValues();
-    const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues();
+    const HArray<ValueType>& v1 = res1.getLocalValues();
+    const HArray<ValueType>& v2 = res2.getLocalValues();
 
-    BOOST_CHECK_EQUAL( 0, v1.maxDiffNorm( v2 ) );
+    BOOST_TEST( hostReadAccess( v1 ) == hostReadAccess( v2 ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     const IndexType n = 4;
     ValueType sourceVals[] = { 3, 1, 4, 2 };
@@ -728,16 +690,16 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
     DenseVector<ValueType> res1;
     res1 = alpha * x + beta;
     // test constructor with expression
-    DenseVector<ValueType> res2( alpha * x + beta );
+    auto res2 = eval<DenseVector<ValueType>>( alpha * x + beta );
     // test alias
     x = alpha * x + beta;
 
     for ( IndexType i = 0; i < n; ++i )
     {
         ValueType erg = alpha * sourceVals[i] + beta;
-        BOOST_CHECK_EQUAL( erg, res1.getValue( i ).getValue<ValueType>() );
-        BOOST_CHECK_EQUAL( erg, res2.getValue( i ).getValue<ValueType>() );
-        BOOST_CHECK_EQUAL( erg,    x.getValue( i ).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg, res1.getValue( i ) );
+        BOOST_CHECK_EQUAL( erg, res2.getValue( i ) );
+        BOOST_CHECK_EQUAL( erg,    x.getValue( i ) );
     }
 }
 
@@ -787,7 +749,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
     sortVector.redistribute( repDist );
     perm.redistribute( repDist );
 
-    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), common::binary::LE ) );
+    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), common::CompareOp::LE ) );
 
     hmemo::ReadAccess<ValueType> rSorted( sortVector.getLocalValues() );
     hmemo::ReadAccess<IndexType> rPerm( perm.getLocalValues() );
@@ -808,7 +770,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
 BOOST_AUTO_TEST_CASE( gatherTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2, 3 };
     ValueType indexValues[]  = { 3, 4, 1, 0, 6, 2 };
@@ -843,12 +805,11 @@ BOOST_AUTO_TEST_CASE( gatherTest )
             source.redistribute( sourceDist );
             index.redistribute( indexDist );
 
-            DenseVector<ValueType> target( indexDist );
-            target = 0;
+            DenseVector<ValueType> target( indexDist, 0 );
 
             SCAI_LOG_INFO( logger, "gather source[index] with source = " << source << ", index = " << index )
 
-            target.gather( source, index, common::binary::ADD );
+            target.gather( source, index, common::BinaryOp::ADD );
 
             BOOST_CHECK_EQUAL( target.size(), index.size() );
             BOOST_CHECK_EQUAL( target.getDistribution(), index.getDistribution() );
@@ -860,7 +821,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
             {
                 IndexType localIndex = target.getDistribution().global2local( i );
 
-                if ( localIndex != nIndex )
+                if ( localIndex != invalidIndex )
                 {
                     BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
                                          *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
@@ -875,7 +836,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
 BOOST_AUTO_TEST_CASE( scatterTest )
 {
-    typedef float ValueType;
+    typedef DefaultReal ValueType;
 
     ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2 };
     ValueType indexValues[]  = { 3, 4, 1, 0, 5, 2 };
@@ -913,8 +874,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
             source.redistribute( indexDist );
             index.redistribute( indexDist );
 
-            DenseVector<ValueType> target( targetDist );
-            target = 0;
+            auto target = fill<DenseVector<ValueType>>( targetDist, 0 );
 
             if ( targetDist->isReplicated() != indexDist->isReplicated() )
             {
@@ -922,13 +882,13 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
                 BOOST_CHECK_THROW(
                 {
-                    target.scatter( index, source, common::binary::ADD );
+                    target.scatter( index, source, common::BinaryOp::ADD );
                 }, common::Exception );
 
                 continue;
             }
 
-            target.scatter( index, source, common::binary::ADD );
+            target.scatter( index, source, common::BinaryOp::ADD );
 
             hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
 
@@ -936,7 +896,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
             {
                 IndexType localIndex = target.getDistribution().global2local( i );
 
-                if ( localIndex != nIndex )
+                if ( localIndex != invalidIndex )
                 {
                     BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
                                          *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
@@ -949,4 +909,117 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( moveTest )
+{
+    // Test of different reduction operations on sparse vector
+    // Note: it is sufficient to consider one value type
+
+    typedef DefaultReal ValueType;
+
+    IndexType n = 10;
+    ValueType rawValues[] = { 1, 5, 4, 3, 2, 0, 1, 5, 3, 4, 2 };
+
+    hmemo::HArray<ValueType> values( n, rawValues );
+
+    const ValueType* ptr0 = hmemo::ReadAccess<ValueType>( values ).get();
+
+    DenseVector<ValueType> xD( std::move( values ) );
+
+    const ValueType* ptr1 = hmemo::ReadAccess<ValueType>( xD.getLocalValues() ).get();
+
+    BOOST_CHECK_EQUAL( ptr0, ptr1 );  // that is great, all the same data used
+
+    ValueType s = xD.sum();
+
+    DenseVector<ValueType> xD1( std::move( xD ) );
+    
+    BOOST_CHECK_EQUAL( 0, xD.sum() );
+    BOOST_CHECK_EQUAL( s, xD1.sum() );
+
+    DenseVector<ValueType> xD2;
+    xD2 = std::move( xD1 );
+
+    BOOST_CHECK_EQUAL( 0, xD1.sum() );
+    BOOST_CHECK_EQUAL( s, xD2.sum() );
+
+    const ValueType* ptr2 = hmemo::ReadAccess<ValueType>( xD2.getLocalValues() ).get();
+
+    BOOST_CHECK_EQUAL( ptr1, ptr2 );  // that is great, all the same data used
+}
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.2, 0.16 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 8;
+
+    fft( y, x, n );
+
+    BOOST_CHECK_EQUAL( y.size(), n );
+
+    FFTType yS1 = y[0];
+    FFTType yS2 = y[n - 2];
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( common::Math::abs( yS1 - FFTType( 0.2 + 0.16 ) ) < eps );
+    BOOST_CHECK( common::Math::abs( yS2 - FFTType( 0.2, 0.16 ) ) < eps );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_fft_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.2, 0.16 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 8;
+
+    ifft( y, x, n );
+
+    BOOST_CHECK_EQUAL( y.size(), n );
+
+    FFTType yS1 = y[0];
+    FFTType yS2 = y[n - 2];
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( common::Math::abs( yS1 - FFTType( 0.2 + 0.16 ) ) < eps );
+    BOOST_CHECK( common::Math::abs( yS2 - FFTType( 0.2, -0.16 ) ) < eps );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest2, ValueType, scai_fft_test_types )
+{
+    typedef common::Complex<RealType<ValueType>> FFTType;
+
+    DenseVector<ValueType> x( HArray<ValueType>( { 0.5, 1.0 } ) );
+    DenseVector<FFTType> y;
+
+    const IndexType n = 4;
+
+    ifft( y, x, n );
+
+    HArray<FFTType> result( { 1.5, FFTType( 0.5, 1.0 ), -0.5, FFTType( 0.5, -1.0 ) } );
+
+    RealType<ValueType> eps = 0.00001;
+
+    BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( y.getLocalValues(), result ) < eps );
+}
+
+#endif
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
+

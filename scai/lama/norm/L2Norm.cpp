@@ -35,8 +35,7 @@
 // hpp
 #include <scai/lama/norm/L2Norm.hpp>
 
-template scai::lama::Norm::Register<scai::lama::L2Norm>::RegisterGuard
-scai::lama::Norm::Register<scai::lama::L2Norm>::registerGuard;
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -44,58 +43,57 @@ namespace scai
 namespace lama
 {
 
-L2Norm::L2Norm()
+template<typename ValueType>
+L2Norm<ValueType>::L2Norm()
 {
 }
 
-L2Norm::~L2Norm()
+template<typename ValueType>
+L2Norm<ValueType>::~L2Norm()
 {
 }
 
-std::string L2Norm::createValue()
+template<typename ValueType>
+std::string L2Norm<ValueType>::createValue()
 {
     return "L2";
 }
 
-Norm* L2Norm::create()
+template<typename ValueType>
+Norm<ValueType>* L2Norm<ValueType>::create()
 {
     return new L2Norm();
 }
 
-void L2Norm::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void L2Norm<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "L2Norm";
 }
 
-Scalar L2Norm::apply( const Scalar& scalar ) const
+template<typename ValueType>
+RealType<ValueType> L2Norm<ValueType>::apply( const ValueType& scalar ) const
 {
     return l2Norm( scalar );
 }
 
-Scalar L2Norm::apply( const Vector& vector ) const
+template<typename ValueType>
+RealType<ValueType> L2Norm<ValueType>::apply( const Vector<ValueType>& vector ) const
 {
     return l2Norm( vector );
 }
 
-Scalar L2Norm::apply( const Matrix& matrix ) const
+template<typename ValueType>
+RealType<ValueType> L2Norm<ValueType>::apply( const Matrix<ValueType>& matrix ) const
 {
     return l2Norm( matrix );
 }
 
-Scalar l2Norm( const Scalar& scalar )
-{
-    return abs( scalar );
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-Scalar l2Norm( const Vector& vector )
-{
-    return vector.l2Norm();
-}
-
-Scalar l2Norm( const Matrix& matrix )
-{
-    return matrix.l2Norm();
-}
+SCAI_COMMON_INST_CLASS( L2Norm, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

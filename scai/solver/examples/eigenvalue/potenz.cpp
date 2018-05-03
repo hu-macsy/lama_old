@@ -39,10 +39,9 @@
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/CG.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -59,7 +58,7 @@ using namespace scai;
 using namespace lama;
 using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -71,16 +70,16 @@ int main( int argc, const char* argv[] )
 
     std::string filename = argv[1];
 
-    CSRSparseMatrix<ValueType> A( filename );
+    auto A = read<CSRSparseMatrix<ValueType>>( filename );
+    auto r = fill<DenseVector<ValueType>>( A.getRowDistributionPtr(), 1 );
 
-    DenseVector<ValueType> r( A.getRowDistributionPtr(), 1 );
-    DenseVector<ValueType> y;
+    auto y = DenseVector<ValueType>();
 
     for ( int k = 0; k < 100; ++k )
     {
         y = A * r;
-        Scalar norm = y.l2Norm();
-        Scalar lambda = r.dotProduct ( y ) / r.dotProduct( r );
+        auto norm = y.l2Norm();
+        auto lambda = r.dotProduct ( y ) / r.dotProduct( r );
         r = y / norm;
         std::cout << "lambda = " << lambda << std::endl;
     }

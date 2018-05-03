@@ -63,14 +63,24 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT JDSSparseMatrix:
 
     public SparseMatrix<ValueType>,
-    public Matrix::Register<JDSSparseMatrix<ValueType> >    // register at factory
+    public _Matrix::Register<JDSSparseMatrix<ValueType> >    // register at factory
 {
 
 public:
 
-    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
-
-    /** Type definition of the storage type for this sparse matrix. */
+    /** @brief Type definition of the storage type for this sparse matrix. 
+     * 
+     *  \code
+     *     template<typename MatrixClass>
+     *     void setup( MatrixClass& matrix )
+     *     {
+     *         typename MatrixClass::StorageType storage;
+     *         storage.allocate( .. )
+     *         ...
+     *         matrix = MatrixClass( std::move( storage ) );
+     *     }
+     *  \endcode
+     */
 
     typedef JDSStorage<ValueType> StorageType;
 
@@ -80,126 +90,48 @@ public:
 
     /** Default constructor, creates a replicated matrix of size 0 x 0 */
 
-    JDSSparseMatrix();
-
-    /** Constructor, creates a replicated zero-matrix of size numRows x numColums */
-
-    JDSSparseMatrix( const IndexType numRows, const IndexType numColumns );
-
-    /** Constructor, creates a distributed zero-matrix by given row and column distribution */
-
-    JDSSparseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    JDSSparseMatrix( hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /** Override default constructor, make sure that deep copies are created. */
 
-    JDSSparseMatrix( const JDSSparseMatrix& other );
+    JDSSparseMatrix( const JDSSparseMatrix<ValueType>& other );
+
+    /** Rewriting move constructor, leaves the other matrix as zero matrix */
+
+    JDSSparseMatrix( JDSSparseMatrix<ValueType>&& other ) noexcept;
 
     /** Most general copy constrcuctor with possibility of transpose. */
 
-    JDSSparseMatrix( const Matrix& other, bool transposeFlag = false );
-
-    /** Constructor of a sparse matrix by another input matrix with redistribution.
-     *
-     * @param[in] other     is the input matrix.
-     * @param[in] rowDist   row distribution of the new matrix
-     * @param[in] colDist   column distribution of the new matrix
-     */
-    JDSSparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    explicit JDSSparseMatrix( const Matrix<ValueType>& other);
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
-     *  @param[in] globalData  contains local rows of the distributed matrix
+     *  @param[in] globalStorage  contains the full storage, must be of same format and type
      */
-    explicit JDSSparseMatrix( const _MatrixStorage& globalData );
+    explicit JDSSparseMatrix( JDSStorage<ValueType> globalStorage );
 
-    /** Constructor of a sparse matrix by local storage.
+    /** Constructor of a sparse matrix by local storage
      *
-     *  @param[in] localData   contains local rows of the distributed matrix
-     *  @param[in] rowDist     is distribution of localData
-     *  @param[in] colDist     specifies how to split local rows for halo
+     *  @param[in] localStorage  contains local rows of the distributed matrix
+     *  @param[in] rowDist       is distribution of localData
      *
-     *  This constructor works also fine if localData is the full global matrix;
-     *  in this case only local rows will be taken on this processor.
+     *  The number of rows for the local storage must be rowDist->getLocalSize(), and the 
+     *  number of columns must be the same on all processors.
      */
-    JDSSparseMatrix( const _MatrixStorage& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
-    /** Constructor of a replicated sparse matrix by reading the matrix
-     *  data from a file.
-     *
-     *  @param[in] filename   name of the file where the matrix is read from
-     *
-     *  Next releases will also support distributed/parallel I/O. In the
-     *  meantime this constructor should be used with a following call of
-     *  the redistribute method.
-     */
-    explicit JDSSparseMatrix( const std::string& filename );
-
-    // Expression constructors
-
-    explicit JDSSparseMatrix( const Expression_SM& expression );
-
-    explicit JDSSparseMatrix( const Expression_SMM& expression );
-
-    explicit JDSSparseMatrix( const Expression_SM_SM& expression );
-
-    /** @brief Constructor of a JDS sparse matrix with distributed JDS storage data.
-     *
-     * @param[in] numLocalRows       the number of rows of the matrix
-     * @param[in] numLocalNonZeros   the number of local none zeros of the matrix
-     * @param[in] numHaloNonZeros    the number of halo none zeros of the matrix
-     * @param[in] localIA            row pointer of the input csr sparse matrix (local)
-     * @param[in] localJA            column indexes of the input csr sparse matrix (local)
-     * @param[in] localValues        the none zero values of the input csr sparse matrix (local)
-     * @param[in] haloIA             row pointer of the input csr sparse matrix (halo)
-     * @param[in] haloJA             column indexes of the input csr sparse matrix (halo)
-     * @param[in] haloValues         the none zero values of the input csr sparse matrix (halo)
-     * @param[in] ownedIndexes       the global Indexes of the local rows
-     * @param[in] communicator       communicator of the distribution
-     */
-    template<typename LocalValueType, typename HaloValueType>
-    JDSSparseMatrix(
-        const IndexType numLocalRows,
-        const IndexType numLocalNonZeros,
-        const IndexType numHaloNonZeros,
-        const IndexType localIA[],
-        const IndexType localJA[],
-        const LocalValueType localValues[],
-        const IndexType haloIA[],
-        const IndexType haloJA[],
-        const HaloValueType haloValues[],
-        const std::vector<IndexType>& ownedIndexes,
-        const dmemo::CommunicatorPtr communicator );
+    JDSSparseMatrix( dmemo::DistributionPtr rowDist, JDSStorage<ValueType> localStorage );
 
     /**
      * @brief Destructor. Releases all allocated resources.
      */
     ~JDSSparseMatrix();
 
-    // Make all assignment operators of base class visible before overwriting one
-
-    using SparseMatrix<ValueType>::operator=;
-
     /** Override the default assignment operator that would not make deep copies. */
 
     JDSSparseMatrix& operator=( const JDSSparseMatrix& matrix );
 
-    /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
+    /** Override the default move assignment operator */
 
-    /*
-     JDSSparseMatrix& operator=( const Matrix& matrix );
-
-     JDSSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
-
-     JDSSparseMatrix& operator=( const Expression<Scalar,Matrix,Times>& expression );
-
-     JDSSparseMatrix& operator=( const Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>& expression );
-
-     JDSSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Expression<Matrix,Matrix,Times>,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-
-     JDSSparseMatrix& operator=(
-     const Expression<Expression<Scalar,Matrix,Times>,Expression<Scalar,Matrix,Times>,Plus> exp );
-     */
+    JDSSparseMatrix& operator=( JDSSparseMatrix&& matrix );
 
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
@@ -213,30 +145,39 @@ public:
 
     virtual const StorageType& getHaloStorage() const;
 
-    /** Swap local storage data, allows consistent write access to local storage. */
-
-    virtual void swapLocalStorage( StorageType& localStorage );
-
-    /* Implementation of pure method Matrix::newMatrix with covariant return type */
+    /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 
     virtual JDSSparseMatrix<ValueType>* newMatrix() const;
 
-    /* Implementation of pure method Matrix::copy with covariant return type */
+    /* Implementation of pure method _Matrix::copy with covariant return type */
 
     virtual JDSSparseMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormat */
+    /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormat() const
-    {
-        return Format::JDS;
-    }
+    virtual Format getFormat() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual const char* getTypeName() const;
 
+    using _Matrix::getNumRows;
+    using _Matrix::getNumColumns;
+    using _Matrix::setIdentity;
+
+    using _Matrix::getRowDistribution;
+    using _Matrix::getRowDistributionPtr;
+    using _Matrix::getColDistribution;
+    using _Matrix::getColDistributionPtr;
+
+
+    using Matrix<ValueType>::getValueType;
+    using SparseMatrix<ValueType>::operator=;
+    using SparseMatrix<ValueType>::operator-=;
+    using SparseMatrix<ValueType>::operator+=;
+
     using SparseMatrix<ValueType>::setContextPtr;
+    using SparseMatrix<ValueType>::redistribute;
 
 protected:
 
@@ -248,9 +189,11 @@ private:
 
     /** This private routine provides empty JDS storage for a JDSSparseMatrix. */
 
-    common::shared_ptr<MatrixStorage<ValueType> > createStorage();
+    std::shared_ptr<JDSStorage<ValueType> > createStorage( hmemo::ContextPtr ctx );
 
-    common::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
+    /** This private routine provides empty JDS storage for a JDSSparseMatrix. */
+
+    std::shared_ptr<JDSStorage<ValueType> > createStorage( JDSStorage<ValueType>&&  );
 
     static std::string initTypeName();
 
@@ -258,44 +201,23 @@ private:
 
 public:
 
-    // static create method that will be used to register at Matrix factory
+    // static create method that will be used to register at _Matrix factory
 
-    static Matrix* create();
+    static _Matrix* create();
 
     // key for factory
 
     static MatrixCreateKeyType createValue();
 };
 
+/* ================================================================================ */
+/*   Implementation of inline methods                                               */
+/* ================================================================================ */
+
 template<typename ValueType>
-template<typename LocalValueType, typename HaloValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix(
-    const IndexType numLocalRows,
-    const IndexType numLocalNonZeros,
-    const IndexType numHaloNonZeros,
-    const IndexType localIA[],
-    const IndexType localJA[],
-    const LocalValueType localValues[],
-    const IndexType haloIA[],
-    const IndexType haloJA[],
-    const HaloValueType haloValues[],
-    const std::vector<IndexType>& ownedIndexes,
-    const dmemo::CommunicatorPtr communicator )
-
-    : SparseMatrix<ValueType>( createStorage() )
-
+Format JDSSparseMatrix<ValueType>::getFormat() const
 {
-    SCAI_LOG_INFO( logger,
-                   communicator << ": construct distributed matrix " << numLocalRows << " by local and halo data + owned indexes" );
-    // For the distribution we need the global number of rows, not available as arg, so compute it
-    IndexType numGlobalRows = communicator->sum( numLocalRows );
-    mLocalData->setRawCSRData( numLocalRows, numLocalRows, numLocalNonZeros, localIA, localJA, localValues );
-    mHaloData->setRawCSRData( numLocalRows, numGlobalRows, numHaloNonZeros, haloIA, haloJA, haloValues );
-    hmemo::HArrayRef<IndexType> myIndexes( static_cast<IndexType>( ownedIndexes.size() ), &ownedIndexes[0] );
-    dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, myIndexes, communicator ) );
-    // Halo is already splitted, but still contains the global indexes
-    mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
-    Matrix::setDistributedMatrix( dist, dist );
+    return Format::JDS;
 }
 
 } /* end namespace lama */

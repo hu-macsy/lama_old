@@ -42,7 +42,11 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
+
+// common
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <limits>
@@ -53,106 +57,168 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( CGS::logger, "Solver.CGS" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CGS<ValueType>::logger, "Solver.IterativeSolver.CGS" )
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
-CGS::CGS( const std::string& id )
-    : IterativeSolver( id ) {}
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
 
-
-CGS::CGS( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id , logger ) {}
-
-CGS::CGS( const CGS& other )
-    : IterativeSolver( other ) {}
-
-
-
-CGS::CGSRuntime::CGSRuntime()
-    : IterativeSolverRuntime() {}
-
-CGS::~CGS() {}
-
-CGS::CGSRuntime::~CGSRuntime() {}
-
-void CGS::initialize( const Matrix& coefficients )
+template<typename ValueType>
+_Solver* CGS<ValueType>::create()
 {
-    SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-    IterativeSolver::initialize( coefficients );
-    CGSRuntime& runtime = getRuntime();
-    runtime.mNormRes = 1.0;
-    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
-    dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
-    runtime.mRes0.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecQ.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecU.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecPT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecUT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecTemp.reset( coefficients.newVector( rowDist ) );
+    return new CGS<ValueType>( "_genByFactory" );
 }
 
-
-void CGS::solveInit( Vector& solution, const Vector& rhs )
+template<typename ValueType>
+SolverCreateKeyType CGS<ValueType>::createValue()
 {
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "CGS" );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+CGS<ValueType>::CGS( const std::string& id ) :
+
+    IterativeSolver<ValueType>( id )
+{
+}
+
+template<typename ValueType>
+CGS<ValueType>::CGS( const std::string& id, LoggerPtr logger ) :
+
+    IterativeSolver<ValueType>( id, logger )
+{
+}
+
+template<typename ValueType>
+CGS<ValueType>::CGS( const CGS& other ) :
+
+    IterativeSolver<ValueType>( other )
+{
+}
+
+template<typename ValueType>
+CGS<ValueType>::~CGS()
+{
+}
+
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
+
+template<typename ValueType>
+void CGS<ValueType>::initialize( const Matrix<ValueType>& coefficients )
+{
+    SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
+
+    IterativeSolver<ValueType>::initialize( coefficients );
+
     CGSRuntime& runtime = getRuntime();
-    runtime.mRhs = &rhs;
-    runtime.mSolution = &solution;
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
-    // Initialize
+
+    runtime.mNormRes = 1.0;
+    runtime.mEps = common::TypeTraits<ValueType>::eps1() * ValueType( 3 );
+
+    // temporary vectors are distributed corresponding the dist of target(rows) space
+
+    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
+    hmemo::ContextPtr ctx = coefficients.getContextPtr();
+
+    runtime.mRes0.reset( coefficients.newSourceVector() );
+    runtime.mVecT.reset( coefficients.newTargetVector() );
+    runtime.mVecP.reset( coefficients.newTargetVector() );
+    runtime.mVecQ.reset( coefficients.newTargetVector() );
+    runtime.mVecU.reset( coefficients.newTargetVector() );
+    runtime.mVecPT.reset( coefficients.newTargetVector() );
+    runtime.mVecUT.reset( coefficients.newTargetVector() );
+    runtime.mVecTemp.reset( coefficients.newTargetVector() );
+}
+
+/* ========================================================================= */
+/*    solve: init                                                            */
+/* ========================================================================= */
+
+template<typename ValueType>
+void CGS<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+{
+    IterativeSolver<ValueType>::solveInit( solution, rhs );
+
+    CGSRuntime& runtime = getRuntime();
+
     this->getResidual();
-    *runtime.mRes0 = *runtime.mResidual;
-    *runtime.mVecP = *runtime.mResidual;
-    *runtime.mVecU = *runtime.mResidual;
+
+    const Vector<ValueType>& residual = *runtime.mResidual;
+
+    Vector<ValueType>& res0 = *runtime.mRes0;
+    Vector<ValueType>& vecP = *runtime.mVecP;
+    Vector<ValueType>& vecU = *runtime.mVecU;
+    Vector<ValueType>& vecPT = *runtime.mVecPT;
+
+    // (deep) copy of the residual to res0, vecP, vecU
+
+    res0 = residual;
+    vecP = residual;
+    vecU = residual;
 
     // PRECONDITIONING
+
     if ( mPreconditioner != NULL )
     {
-        runtime.mVecPT->setSameValue( runtime.mVecP->getDistributionPtr(), 0 );
-        mPreconditioner->solve( *runtime.mVecPT, *runtime.mVecP );
+        vecPT = 0;
+        mPreconditioner->solve( vecPT, vecP );
     }
     else
     {
-        *runtime.mVecPT = *runtime.mVecP;
+        vecPT = vecP;
     }
 
     //initial <res,res> inner product;
-    runtime.mInnerProdRes = ( *runtime.mRes0 ).dotProduct( *runtime.mRes0 );
+
+    runtime.mInnerProdRes = res0.dotProduct( res0 );
     SCAI_LOG_INFO( logger, "solveInit, mInnerProdRes = " << runtime.mInnerProdRes )
     runtime.mSolveInit = true;
 }
 
-void CGS::iterate()
+/* ========================================================================= */
+/*    solve: iterate                                                         */
+/* ========================================================================= */
+
+template<typename ValueType>
+void CGS<ValueType>::iterate()
 {
     CGSRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Vector& res0 = *runtime.mRes0;
-    Vector& res = *runtime.mResidual;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecQ = *runtime.mVecQ;
-    Vector& vecU = *runtime.mVecU;
-    Vector& vecT = *runtime.mVecT;
-    Vector& vecPT = *runtime.mVecPT;
-    Vector& vecUT = *runtime.mVecUT;
-    Vector& vecTemp = *runtime.mVecTemp;
-    Vector& solution = *runtime.mSolution;
-    Scalar& innerProdRes = runtime.mInnerProdRes;
-    Scalar alpha;
-    Scalar beta;
-    const Scalar& eps = runtime.mEps;
-    Scalar& normRes = runtime.mNormRes;
-    lama::L2Norm norm;
-    vecT = A * vecPT;
-    Scalar innerProduct = res0.dotProduct( vecT );
 
-    if ( normRes < eps || innerProduct < eps ) //innerProduct is small
+    const Matrix<ValueType>& A = *runtime.mCoefficients;
+
+    const Vector<ValueType>& res0 = *runtime.mRes0;
+    Vector<ValueType>& res = *runtime.mResidual;
+    Vector<ValueType>& vecP = *runtime.mVecP;
+    Vector<ValueType>& vecQ = *runtime.mVecQ;
+    Vector<ValueType>& vecU = *runtime.mVecU;
+    Vector<ValueType>& vecT = *runtime.mVecT;
+    Vector<ValueType>& vecPT = *runtime.mVecPT;
+    Vector<ValueType>& vecUT = *runtime.mVecUT;
+    Vector<ValueType>& vecTemp = *runtime.mVecTemp;
+    Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
+
+    ValueType& innerProdRes = runtime.mInnerProdRes;
+    ValueType alpha;
+    ValueType beta;
+
+    const RealType<ValueType>& eps = runtime.mEps;
+
+    RealType<ValueType>& normRes = runtime.mNormRes;
+
+    vecT = A * vecPT;
+
+    ValueType innerProduct = res0.dotProduct( vecT );
+
+    if ( normRes < eps || common::Math::abs( innerProduct ) < eps )  // innerProduct is small
     {
         alpha = 0.0;
     }
@@ -180,12 +246,12 @@ void CGS::iterate()
     }
 
     solution = solution + alpha * vecUT;
-    Scalar innerProdResOld = innerProdRes;
+    ValueType innerProdResOld = innerProdRes;
     res = res - alpha * A * vecUT;
     innerProdRes = res0.dotProduct( res );
-    normRes = norm.apply( res );
+    normRes = l2Norm( res );
 
-    if ( normRes < eps || innerProdResOld < eps )            // innerProdResOld is small
+    if ( normRes < eps || common::Math::abs( innerProdResOld ) < eps )            // innerProdResOld is small
     {
         beta = 0.0;
     }
@@ -211,40 +277,51 @@ void CGS::iterate()
         vecPT = vecP ;
     }
 
-    //End Implementation
+    // End Implementation
+
     mCGSRuntime.mSolution.setDirty( false );
 }
 
+/* ========================================================================= */
+/*       Getter runtime                                                      */
+/* ========================================================================= */
 
-SolverPtr CGS::copy()
-{
-    return SolverPtr( new CGS( *this ) );
-}
-
-CGS::CGSRuntime& CGS::getRuntime()
-{
-    return mCGSRuntime;
-}
-
-const CGS::CGSRuntime& CGS::getConstRuntime() const
+template<typename ValueType>
+typename CGS<ValueType>::CGSRuntime& CGS<ValueType>::getRuntime()
 {
     return mCGSRuntime;
 }
 
-std::string CGS::createValue()
+template<typename ValueType>
+const typename CGS<ValueType>::CGSRuntime& CGS<ValueType>::getRuntime() const
 {
-    return "CGS";
+    return mCGSRuntime;
 }
 
-Solver* CGS::create( const std::string name )
+/* ========================================================================= */
+/*       virtual methods                                                     */
+/* ========================================================================= */
+
+template<typename ValueType>
+CGS<ValueType>* CGS<ValueType>::copy()
 {
-    return new CGS( name );
+    return new CGS<ValueType>( *this );
 }
 
-void CGS::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void CGS<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "CGS ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    const char* typeId = common::TypeTraits<ValueType>::id();
+
+    stream << "CGS<" << typeId << "> ( id = " << this->getId() 
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( CGS, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

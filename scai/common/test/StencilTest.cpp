@@ -35,8 +35,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/Stencil.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/test/TestMacros.hpp>
+
+#include <memory>
 
 using namespace scai;
 
@@ -120,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest2, ValueType, scai_array_test_types 
 
     BOOST_CHECK_EQUAL( 3, stencil.nPoints() );
 
-    IndexType width[4] = { nIndex, nIndex, nIndex, nIndex };
+    IndexType width[4] = { invalidIndex, invalidIndex, invalidIndex, invalidIndex };
 
     stencil.getWidth( width );
 
@@ -231,7 +232,7 @@ BOOST_AUTO_TEST_CASE( validPointTest )
 
     IndexType pos[3];
 
-    common::scoped_array<bool> valid( new bool[nPoints] );
+    std::unique_ptr<bool[]> valid( new bool[nPoints] );
 
     for ( IndexType i0 = 0; i0 < gridSizes[0]; ++i0 )
     {

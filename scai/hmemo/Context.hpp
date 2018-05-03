@@ -47,10 +47,8 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/shared_ptr.hpp>
-#include <scai/common/function.hpp>
-
 #include <stack>
+#include <memory>
 
 namespace scai
 {
@@ -67,13 +65,13 @@ namespace hmemo
 
 class Memory;  // forward declaration
 
-typedef common::shared_ptr<Memory> MemoryPtr;
+typedef std::shared_ptr<Memory> MemoryPtr;
 
 class Context;   // forward declaration
 
 /** Context pointers will be always const, so context can never be modified. */
 
-typedef common::shared_ptr<const Context> ContextPtr;
+typedef std::shared_ptr<const Context> ContextPtr;
 
 /** @brief This class is a common base class for all possible contexts.
  *
@@ -89,9 +87,8 @@ typedef common::shared_ptr<const Context> ContextPtr;
  */
 class COMMON_DLL_IMPORTEXPORT Context:
 
-    public  common::Factory1<common::context::ContextType, int, ContextPtr>,
+    public  common::Factory1<common::ContextType, int, ContextPtr>,
     public  common::Printable,
-    public  common::context,
     private common::NonCopyable
 {
 public:
@@ -100,7 +97,7 @@ public:
 
     /** Method to get the type of the context. */
 
-    inline ContextType getType() const;
+    inline common::ContextType getType() const;
 
     /** @brief  Predicate to check in a context whether a certain memory class can be used.
      *
@@ -183,7 +180,7 @@ public:
      *
      *  @throws Exception if the context of the requested type is not available
      */
-    static ContextPtr getContextPtr( const ContextType type, int deviceNr = -1 );
+    static ContextPtr getContextPtr( const common::ContextType type, int deviceNr = -1 );
 
     /** @brief get context as set by SCAI_CONTEXT and SCAI_DEVICE
      *
@@ -193,7 +190,7 @@ public:
 
     static ContextPtr getContextPtr();
 
-    /** @brief getHostPtr() as abbreviation of getContextPtr( context::Host ) */
+    /** @brief getHostPtr() as abbreviation of getContextPtr( common::ContextType::Host ) */
 
     static inline ContextPtr getHostPtr();
 
@@ -202,7 +199,7 @@ public:
      * @param[in] type  is the type of context that is wanted
      * @return          if a context of the passed type is available
      */
-    static inline bool hasContext( const ContextType type );
+    static inline bool hasContext( const common::ContextType type );
 
     /** Get the currently accessed context of this thread */
 
@@ -212,11 +209,11 @@ protected:
 
     /** Default constructor, can only be called by base classes. */
 
-    Context( ContextType type );
+    Context( common::ContextType type );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    ContextType mContextType;
+    common::ContextType mContextType;
 
     mutable bool mUseZeroCopy;   //!< if true getMemoryPtr() returns HostMemory
 
@@ -248,26 +245,26 @@ private:
 
     typedef std::stack<const Context*> ContextStack;
 
-    static SCAI_THREAD_PRIVATE_PTR( ContextStack, contextStack )
+    static thread_local ContextStack contextStack;
 };
 
 /* ======================================================================== */
 /*             Inline methods                                               */
 /* ======================================================================== */
 
-Context::ContextType Context::getType() const
+common::ContextType Context::getType() const
 {
     return mContextType;
 }
 
-bool Context::hasContext( const ContextType type )
+bool Context::hasContext( const common::ContextType type )
 {
     return canCreate( type );
 }
 
 ContextPtr Context::getHostPtr()
 {
-    return getContextPtr( common::context::Host );
+    return getContextPtr( common::ContextType::Host );
 }
 
 } /* end namespace hmemo */

@@ -41,8 +41,6 @@
 #include <scai/hmemo/Context.hpp>
 #include <scai/hmemo/HArray.hpp>
 
-#include <scai/common/unique_ptr.hpp>
-
 namespace scai
 {
 
@@ -58,8 +56,8 @@ namespace hmemo
  *
  *  \code
  *     HArrayBenchmark inputData( "Host, CUDA" );
- *     common::unique_ptr<HArrayBenchmark> inputData1( Benchmark::create( "HArrayBenchmark", "CUDA, Host" ) );
- *     common::unique_ptr<HArrayBenchmark> inputData2( Benchmark::createWithArg( "HArrayBenchmark( Host, CUDA )" ) );
+ *     std::unique_ptr<HArrayBenchmark> inputData1( Benchmark::create( "HArrayBenchmark", "CUDA, Host" ) );
+ *     std::unique_ptr<HArrayBenchmark> inputData2( Benchmark::createWithArg( "HArrayBenchmark( Host, CUDA )" ) );
  *  \endcode
  */
 class HArrayBenchmark: 
@@ -103,9 +101,9 @@ public:
         return new HArrayBenchmark( argument );
     }
 
-    virtual common::scalar::ScalarType getValueType() const
+    virtual common::ScalarType getValueType() const
     {
-        return common::scalar::DOUBLE;
+        return common::ScalarType::DOUBLE;
     }
 
     /** Override implementation Benchmark::writeAt */
@@ -134,7 +132,7 @@ private:
 
     std::string mArgument;  // argument used for creating this benchmark
 
-    common::unique_ptr<benchmark::InputSet> mInputSet;
+    std::unique_ptr<benchmark::InputSet> mInputSet;
 
     HArrayInputSet* mHArrayInputSet;
 

@@ -42,9 +42,8 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
-
-#include <scai/lama/Vector.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <limits>
@@ -56,113 +55,153 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( QMR::logger, "Solver.QMR" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, QMR<ValueType>::logger, "Solver.IterativeSolver.QMR" )
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
-QMR::QMR( const std::string& id )
-    : IterativeSolver( id )
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_Solver* QMR<ValueType>::create()
+{
+    return new QMR<ValueType>( "_genByFactory" );
+}
+
+template<typename ValueType>
+SolverCreateKeyType QMR<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "QMR" );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+QMR<ValueType>::QMR( const std::string& id ) : 
+
+    IterativeSolver<ValueType>( id )
 {
 }
 
 
-QMR::QMR( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id , logger )
+template<typename ValueType>
+QMR<ValueType>::QMR( const std::string& id, LoggerPtr logger ) : 
+
+    IterativeSolver<ValueType>( id , logger )
 {
 }
 
-QMR::QMR( const QMR& other )
-    : IterativeSolver( other )
+template<typename ValueType>
+QMR<ValueType>::QMR( const QMR<ValueType>& other ) : 
+
+    IterativeSolver<ValueType>( other )
+{
+    // does not copy runtime data
+}
+
+template<typename ValueType>
+QMR<ValueType>::~QMR()
 {
 }
 
-QMR::~QMR()
-{
-}
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
-QMR::QMRRuntime::QMRRuntime()
-    : IterativeSolverRuntime()
-{
-}
-
-QMR::QMRRuntime::~QMRRuntime()
-{
-}
-
-void QMR::initialize( const Matrix& coefficients )
+template<typename ValueType>
+void QMR<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
-    IterativeSolver::initialize( coefficients );
+
+    IterativeSolver<ValueType>::initialize( coefficients );
+
     QMRRuntime& runtime = getRuntime();
-    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
-    runtime.mTransposeA.reset( coefficients.newMatrix() );
-    runtime.mTransposeA->assignTranspose( coefficients );
-    runtime.mTransposeA->conj();
+
+    runtime.mEps = common::TypeTraits<ValueType>::eps1() * ValueType( 3 );
+
     dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
-    runtime.mVecD.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecQ.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecS.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecV.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecW.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecY.reset( coefficients.newVector( rowDist ) );  // preconditioning 1
-    runtime.mVecZ.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecPT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecVT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecWT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecYT.reset( coefficients.newVector( rowDist ) );
-    runtime.mVecZT.reset( coefficients.newVector( rowDist ) );
+    hmemo::ContextPtr ctx = coefficients.getContextPtr();
+
+    runtime.mConjTransposeA.reset( coefficients.newMatrix() );
+    runtime.mConjTransposeA->assignTranspose( coefficients );
+    runtime.mConjTransposeA->conj();
+
+    runtime.mVecD.reset( coefficients.newTargetVector() );
+    runtime.mVecP.reset( coefficients.newTargetVector() );
+    runtime.mVecQ.reset( coefficients.newTargetVector() );
+    runtime.mVecS.reset( coefficients.newTargetVector() );
+    runtime.mVecV.reset( coefficients.newTargetVector() );
+    runtime.mVecW.reset( coefficients.newTargetVector() );
+    runtime.mVecY.reset( coefficients.newTargetVector() );
+    runtime.mVecZ.reset( coefficients.newTargetVector() );
+    runtime.mVecPT.reset( coefficients.newTargetVector() );
+    runtime.mVecVT.reset( coefficients.newTargetVector() );
+    runtime.mVecWT.reset( coefficients.newTargetVector() );
+    runtime.mVecYT.reset( coefficients.newTargetVector() );
+    runtime.mVecZT.reset( coefficients.newTargetVector() );
 }
 
-void QMR::solveInit( Vector& solution, const Vector& rhs )
+/* ========================================================================= */
+/*    solve : init ( solution, rhs )                                         */
+/* ========================================================================= */
+
+template<typename ValueType>
+void QMR<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
-    QMRRuntime& runtime = getRuntime();
-    runtime.mRhs = &rhs;
-    runtime.mSolution = &solution;
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
-    // Initialize
+    IterativeSolver<ValueType>::solveInit( solution, rhs );
+
     this->getResidual();
+
+    QMRRuntime& runtime = getRuntime();
+
     *runtime.mVecVT = *runtime.mResidual;
     *runtime.mVecWT = *runtime.mResidual;
-    runtime.mSolveInit = true;
 }
 
-void QMR::iterate()
+/* ========================================================================= */
+/*    solve : iterate ( computations for one iteration step )                */
+/* ========================================================================= */
+
+template<typename ValueType>
+void QMR<ValueType>::iterate()
 {
     QMRRuntime& runtime    = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Matrix& transposedA = *runtime.mTransposeA;
-    Vector& solution = *runtime.mSolution;
-    Vector& residual = *runtime.mResidual;
-    Vector& vecV = *runtime.mVecV;
-    Vector& vecW = *runtime.mVecW;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecQ = *runtime.mVecQ;
-    Vector& vecS = *runtime.mVecS;
-    Vector& vecD = *runtime.mVecD;
-    Vector& vecY = *runtime.mVecY;      /*preconditioning*/
-    Vector& vecZ = *runtime.mVecZ;
-    Vector& vecVT = *runtime.mVecVT;
-    Vector& vecYT = *runtime.mVecYT;
-    Vector& vecZT = *runtime.mVecZT;
-    Vector& vecWT = *runtime.mVecWT;
-    Vector& vecPT = *runtime.mVecPT;
-    Scalar& gamma = runtime.mGamma;
-    Scalar& theta = runtime.mTheta;
-    Scalar& psi = runtime.mPsi;
-    Scalar& rho = runtime.mRho;
-    Scalar& epsilon = runtime.mEpsilon;
-    Scalar& eta = runtime.mEta;
-    Scalar gamma1;
-    Scalar theta1;
-    Scalar rho1;
-    const Scalar& eps = runtime.mEps;
-    lama::L2Norm norm;
+
+    const Matrix<ValueType>& A = *runtime.mCoefficients;
+    const Matrix<ValueType>& Act = *runtime.mConjTransposeA;
+
+    Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
+    Vector<ValueType>& residual = *runtime.mResidual;
+
+    Vector<ValueType>& vecV = *runtime.mVecV;
+    Vector<ValueType>& vecW = *runtime.mVecW;
+    Vector<ValueType>& vecP = *runtime.mVecP;
+    Vector<ValueType>& vecQ = *runtime.mVecQ;
+    Vector<ValueType>& vecS = *runtime.mVecS;
+    Vector<ValueType>& vecD = *runtime.mVecD;
+    Vector<ValueType>& vecY = *runtime.mVecY;      /*preconditioning*/
+    Vector<ValueType>& vecZ = *runtime.mVecZ;
+    Vector<ValueType>& vecVT = *runtime.mVecVT;
+    Vector<ValueType>& vecYT = *runtime.mVecYT;
+    Vector<ValueType>& vecZT = *runtime.mVecZT;
+    Vector<ValueType>& vecWT = *runtime.mVecWT;
+    Vector<ValueType>& vecPT = *runtime.mVecPT;
+
+    ValueType& gamma = runtime.mGamma;
+    ValueType& theta = runtime.mTheta;
+    ValueType& psi = runtime.mPsi;
+    ValueType& rho = runtime.mRho;
+    ValueType& epsilon = runtime.mEpsilon;
+    ValueType& eta = runtime.mEta;
+    ValueType gamma1;
+    ValueType theta1 = 0;  // not used in first iteration
+    ValueType rho1;
+
+    const RealType<ValueType>& eps = runtime.mEps;
 
     if ( this->getIterationCount() == 0 )
     {
@@ -178,13 +217,16 @@ void QMR::iterate()
         }
 
         vecZ = vecWT;
-        rho = norm( vecY );
-        psi = norm( vecZ );
+        rho = l2Norm( vecY );
+        psi = l2Norm( vecZ );
         gamma = 1.0;
         eta = -1.0;
     }
 
-    if ( abs( rho ) < eps || abs( 1.0 / rho ) < eps || abs( psi ) < eps || abs( 1.0 / psi ) < eps )
+    if ( common::Math::abs( rho ) < eps || 
+         common::Math::abs( 1.0 / rho ) < eps || 
+         common::Math::abs( psi ) < eps || 
+         common::Math::abs( 1.0 / psi ) < eps )
     {
         return;
     }
@@ -193,9 +235,9 @@ void QMR::iterate()
     vecY = vecY / rho;
     vecW = vecWT / psi;
     vecZ = vecZ / psi;
-    Scalar delta = vecZ.dotProduct( vecY );
+    ValueType delta = vecZ.dotProduct( vecY );
 
-    if ( abs( delta ) < eps )
+    if ( common::Math::abs( delta ) < eps )
     {
         return;
     }
@@ -221,16 +263,16 @@ void QMR::iterate()
     }
     else
     {
-        Scalar pde = psi * delta / epsilon;
+        ValueType pde = psi * delta / epsilon;
 
-        if ( abs( pde ) < eps || abs( 1.0 / pde ) < eps )
+        if ( common::Math::abs( pde ) < eps || common::Math::abs( 1.0 / pde ) < eps )
         {
             return;
         }
 
-        Scalar rde = rho * conj( delta / epsilon );
+        ValueType rde = rho * common::Math::conj( delta / epsilon );
 
-        if ( abs( rde ) < eps || abs( 1.0 / rde ) < eps )
+        if ( common::Math::abs( rde ) < eps || common::Math::abs( 1.0 / rde ) < eps )
         {
             return;
         }
@@ -242,14 +284,14 @@ void QMR::iterate()
     vecPT = A * vecP;
     epsilon = vecQ.dotProduct( vecPT );
 
-    if ( abs( epsilon ) < eps || abs( 1.0 / eps ) < eps )
+    if ( common::Math::abs( epsilon ) < eps || common::Math::abs( 1.0 / eps ) < eps )
     {
         return;
     }
 
-    Scalar beta = epsilon / delta;
+    ValueType beta = epsilon / delta;
 
-    if ( abs( beta ) < eps || abs( 1.0 / beta ) < eps )
+    if ( common::Math::abs( beta ) < eps || common::Math::abs( 1.0 / beta ) < eps )
     {
         return;
     }
@@ -268,29 +310,29 @@ void QMR::iterate()
     }
 
     rho1 = rho;
-    rho = norm( vecY );
-    vecWT = transposedA * vecQ;
-    vecWT = vecWT - conj( beta ) * vecW;
+    rho = l2Norm( vecY );
+    vecWT = Act * vecQ;  // conjTranspose( A ) * vecQ
+    vecWT = vecWT - common::Math::conj( beta ) * vecW;
     vecZ = vecWT;
-    psi = norm( vecZ );
+    psi = l2Norm( vecZ );
 
     if ( this->getIterationCount() > 0 )
     {
         theta1 = theta;
     }
 
-    theta = rho / ( gamma * abs( beta ) );
+    theta = rho / ( gamma * common::Math::abs( beta ) );
     gamma1 = gamma;
-    gamma = 1.0 / sqrt( 1.0 + theta * theta );
+    gamma = ValueType( 1 ) / common::Math::sqrt( ValueType( 1 ) + theta * theta );
 
-    if ( abs( gamma ) < eps )
+    if ( common::Math::abs( gamma ) < eps )
     {
         return;
     }
 
     eta = -eta * rho1 * gamma * gamma / ( beta * gamma1 * gamma1 );
 
-    if ( abs( 1.0 / eta ) < eps )
+    if ( common::Math::abs( 1.0 / eta ) < eps )
     {
         return;
     }
@@ -302,44 +344,55 @@ void QMR::iterate()
     }
     else
     {
+        // Note: theta1 is the value from previous iteration
         vecD = eta * vecP + ( theta1 * gamma ) * ( theta1 * gamma ) * vecD;
         vecS = eta * vecPT + ( theta1 * gamma ) * ( theta1 * gamma ) * vecS;
     }
 
     solution = solution + vecD;
     residual = residual - vecS;
-    mQMRRuntime.mSolution.setDirty( false );
+
+    mQMRRuntime.mSolution.setDirty( false );  // update of residual already done here
 }
 
-SolverPtr QMR::copy()
-{
-    return SolverPtr( new QMR( *this ) );
-}
+/* ========================================================================= */
+/*       Getter runtime                                                      */
+/* ========================================================================= */
 
-QMR::QMRRuntime& QMR::getRuntime()
-{
-    return mQMRRuntime;
-}
-
-const QMR::QMRRuntime& QMR::getConstRuntime() const
+template<typename ValueType>
+typename QMR<ValueType>::QMRRuntime& QMR<ValueType>::getRuntime()
 {
     return mQMRRuntime;
 }
 
-std::string QMR::createValue()
+template<typename ValueType>
+const typename QMR<ValueType>::QMRRuntime& QMR<ValueType>::getRuntime() const
 {
-    return "QMR";
+    return mQMRRuntime;
 }
 
-Solver* QMR::create( const std::string name )
+/* ========================================================================= */
+/*       virtual methods                                                     */
+/* ========================================================================= */
+
+template<typename ValueType>
+QMR<ValueType>* QMR<ValueType>::copy()
 {
-    return new QMR( name );
+    return new QMR( *this );
 }
 
-void QMR::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void QMR<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "QMR ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    stream << "QMR<" << this->getValueType() << "> ( id = " << this->getId()
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( QMR, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

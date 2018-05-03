@@ -37,7 +37,7 @@
 namespace scai
 {
 
-using common::context;
+using common::ContextType;
 
 namespace kregistry
 {
@@ -54,7 +54,7 @@ KernelRegistry* KernelRegistry::mInstance = NULL;
 
 /* -----------------------------------------------------------------------------*/
 
-void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, context::ContextType ctx, VoidFunction fn, bool replace )
+void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, ContextType ctx, VoidFunction fn, bool replace )
 {
     SCAI_LOG_INFO( logger, "register ctx = " << ctx << " with " << key )
     KernelRegistry& kreg = getInstance();
@@ -99,7 +99,7 @@ void KernelRegistry::registerContextFunction( const KernelRegistryKey& key, cont
 
 /* -----------------------------------------------------------------------------*/
 
-void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, context::ContextType ctx, VoidFunction fn )
+void KernelRegistry::unregisterContextFunction( const KernelRegistryKey& key, ContextType ctx, VoidFunction fn )
 {
     // this is safe at program exit as registry is still alive
     SCAI_LOG_INFO( logger, "unregister ctx = " << ctx << " with " << key )

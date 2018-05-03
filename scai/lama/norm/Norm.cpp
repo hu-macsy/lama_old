@@ -35,34 +35,47 @@
 // hpp
 #include <scai/lama/norm/Norm.hpp>
 
+#include <scai/common/macros/instantiate.hpp>
+
 namespace scai
 {
 
 namespace lama
 {
 
-Norm::Norm()
+template<typename ValueType>
+Norm<ValueType>::Norm()
 {
 }
 
-Norm::~Norm()
+template<typename ValueType>
+Norm<ValueType>::~Norm()
 {
 }
 
-Scalar Norm::operator()( const Scalar& scalar ) const
+template<typename ValueType>
+RealType<ValueType> Norm<ValueType>::operator()( const ValueType& scalar ) const
 {
     return apply( scalar );
 }
 
-Scalar Norm::operator()( const Vector& vector ) const
+template<typename ValueType>
+RealType<ValueType> Norm<ValueType>::operator()( const Vector<ValueType>& vector ) const
 {
     return apply( vector );
 }
 
-Scalar Norm::operator()( const Matrix& matrix ) const
+template<typename ValueType>
+RealType<ValueType> Norm<ValueType>::operator()( const Matrix<ValueType>& matrix ) const
 {
     return apply( matrix );
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( Norm, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

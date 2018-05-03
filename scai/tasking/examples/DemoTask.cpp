@@ -34,12 +34,15 @@
 
 #include <scai/tasking/Task.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 
-using namespace scai::common;
+#include <functional>
+
 using namespace scai::tasking;
+using scai::common::Walltime;
+using scai::common::Settings;
+using std::bind;
 
 /** For demo purpose we take a work routine that sleeps for a certain time. */
 

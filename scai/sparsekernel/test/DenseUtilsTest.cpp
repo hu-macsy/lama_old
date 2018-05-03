@@ -52,8 +52,8 @@ using namespace sparsekernel;
 using namespace utilskernel;
 
 using common::TypeTraits;
-using common::binary;
-using common::unary;
+using common::BinaryOp;
+using common::UnaryOp;
 
 /* --------------------------------------------------------------------- */
 
@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<DenseKernelTrait::set<ValueType, RealType> > set;
+    static LAMAKernel<DenseKernelTrait::set<ValueType, DefaultReal> > set;
 
     ContextPtr loc = testContext;
 
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
                                        6, 9, 1
                                      };
 
-    const RealType dense_values1[] = { 1, 1, 2,
+    const DefaultReal dense_values1[] = { 1, 1, 2,
                                        2, 1, 1,
                                        1, 1, 1,
                                        2, 2, 2
@@ -416,18 +416,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
 
     BOOST_REQUIRE_EQUAL( dense_n, numRows * numColumns );
 
-    for ( int op = binary::COPY; op < binary::MAX_BINARY_OP; ++op )
+    for ( int op = 0; op < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++op )
     {
-        binary::BinaryOp binOp = binary::BinaryOp( op );
+        BinaryOp binOp = BinaryOp( op );
 
         HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
-        HArray<RealType> dense1( numRows * numColumns, dense_values1, testContext );
+        HArray<DefaultReal> dense1( numRows * numColumns, dense_values1, testContext );
 
         {
             SCAI_CONTEXT_ACCESS( loc );
 
             WriteAccess<ValueType> wDense( dense, loc );
-            ReadAccess<RealType> rDense1( dense1, loc );
+            ReadAccess<DefaultReal> rDense1( dense1, loc );
 
             set[loc]( wDense.get(), numRows, numColumns, rDense1.get(), binOp );
         }
@@ -477,9 +477,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
 
     ValueType val = 2;
 
-    for ( int op = binary::COPY; op < binary::MAX_BINARY_OP; ++op )
+    for ( int op = 0; op < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++op )
     {
-        binary::BinaryOp binOp = binary::BinaryOp( op );
+        BinaryOp binOp = BinaryOp( op );
 
         HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
 
@@ -568,7 +568,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<DenseKernelTrait::scaleRows<ValueType, ValueType> > scaleRows;
+    static LAMAKernel<DenseKernelTrait::scaleRows<ValueType> > scaleRows;
 
     ContextPtr loc = testContext;
 

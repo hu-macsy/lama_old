@@ -204,7 +204,7 @@ IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
     }
     else
     {
-        return nIndex;
+        return invalidIndex;
     }
 }
 
@@ -271,26 +271,31 @@ void CyclicDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
 
 IndexType CyclicDistribution::getBlockDistributionSize() const
 {
-    const PartitionId nPartitions = getCommunicator().getSize();
+    const PartitionId numPartitions = getCommunicator().getSize();
 
-    if ( nPartitions == 1 )
+    if ( numPartitions == 1 )
     {
         return mGlobalSize;
     }
 
     // the following bool expression is evaluated by all processor with the same result
 
-    if ( mGlobalSize <= mChunkSize * nPartitions )
+    if ( mGlobalSize <= mChunkSize * numPartitions )
     {
         return getLocalSize();
     }
     else
     {
-        return nIndex;
+        return invalidIndex;
     }
 }
 
 /* ---------------------------------------------------------------------- */
+
+bool CyclicDistribution::hasAnyAddressing() const
+{
+    return true;
+}
 
 void CyclicDistribution::enableAnyAddressing() const
 {

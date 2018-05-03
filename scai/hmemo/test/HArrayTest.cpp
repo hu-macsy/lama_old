@@ -43,6 +43,7 @@
 #include <scai/hmemo/ReadAccess.hpp>
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace boost;
 using namespace scai;
@@ -93,7 +94,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     BOOST_CHECK_EQUAL( array.isValid( contextPtr ), true );
     BOOST_CHECK_EQUAL( array.capacity( contextPtr ), N );
 
-    if ( contextPtr->getType() == common::context::Host )
+    if ( contextPtr->getType() == common::ContextType::Host )
     {
         SCAI_LOG_INFO( logger, "constructorTest +++ on " << *contextPtr );
         // test the other constructors just on the Host
@@ -115,6 +116,251 @@ BOOST_AUTO_TEST_CASE( constructorTest )
             readTest<float>( read.get(), N, N * 5 );
         }
     }
+}
+
+BOOST_AUTO_TEST_CASE( initializerListConstructorTest )
+{
+    const auto context = Context::getContextPtr();
+    const auto array = HArray<int> ( { 5, 6, 2, 3, -5 }, context );
+
+    BOOST_CHECK_EQUAL( array.size(), 5 );
+    BOOST_CHECK_EQUAL( array.capacity( context ), 5 );
+
+    ReadAccess<int> rArray( array );
+    BOOST_CHECK_EQUAL( rArray[0], 5 );
+    BOOST_CHECK_EQUAL( rArray[1], 6 );
+    BOOST_CHECK_EQUAL( rArray[2], 2 );
+    BOOST_CHECK_EQUAL( rArray[3], 3 );
+    BOOST_CHECK_EQUAL( rArray[4], -5 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( emptyInitializerListConstructorTest )
+{
+    const auto context = Context::getContextPtr();
+    const auto array = HArray<IndexType> ( {  }, context );
+
+    BOOST_CHECK_EQUAL( array.size(), 0 );
+    BOOST_CHECK_EQUAL( array.capacity( context ), 0 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( getTest )
+{
+    const auto context = Context::getContextPtr(); 
+
+    const IndexType pos = 3;
+
+    const auto array = HArray<int> ( { 5, 6, 2, 3, -5 }, context );
+
+    int val = array[pos];
+
+    ReadAccess<int> rArray( array );
+    BOOST_CHECK_EQUAL( rArray[pos], val );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( setTest )
+{
+    const auto context = Context::getContextPtr();
+
+    const IndexType pos = 3;
+
+    auto array = HArray<int> ( 5, 0, context );
+
+    int val = 2;
+
+    array[pos] = val;
+
+    ReadAccess<int> rArray( array );
+    BOOST_CHECK_EQUAL( rArray[pos], val );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( moveConstructorTest )
+{
+    ContextPtr contextPtr = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "moveConstructorTest on " << *contextPtr );
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 10;
+    ValueType val = 1;
+    HArray<ValueType> array( N, val, contextPtr );
+
+    // save the pointer to the allocated data @ context
+
+    const ValueType* ptr = NULL;
+    {
+        ReadAccess<ValueType> ra( array, contextPtr );
+        ptr = ra.get();
+    }
+
+    HArray<ValueType> marray( std::move( array ) );
+
+    BOOST_CHECK_EQUAL( marray.size(), N );
+
+    BOOST_CHECK( !array.isValid( contextPtr ) );
+    BOOST_CHECK( marray.isValid( contextPtr ) );
+
+    // verify that the moved array uses still the same pointer
+
+    {
+        ReadAccess<ValueType> ra( marray, contextPtr );
+        BOOST_CHECK_EQUAL( ra.get(), ptr );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+
+BOOST_AUTO_TEST_CASE( moveAssignmentTest )
+{
+    ContextPtr contextPtr = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "moveConstructorTest on " << *contextPtr );
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 10;
+    ValueType val = 1;
+    HArray<ValueType> array( N, val, contextPtr );
+
+    // save the pointer to the allocated dat @ context
+
+    const ValueType* ptr = NULL;
+    {
+        ReadAccess<ValueType> ra( array, contextPtr );
+        ptr = ra.get();
+    }
+
+    HArray<ValueType> marray( N + 2, val, contextPtr );
+
+    // in contrary to the move constructor the data of marray must be freed
+
+    marray = std::move( array );
+
+    BOOST_CHECK_EQUAL( marray.size(), N );
+    BOOST_CHECK_EQUAL( array.size(), 0 );
+
+    BOOST_CHECK( !array.isValid( contextPtr ) );
+    BOOST_CHECK( marray.isValid( contextPtr ) );
+
+    // verify that the moved array uses still the same pointer
+
+    {
+        ReadAccess<ValueType> ra( marray, contextPtr );
+        BOOST_CHECK_EQUAL( ra.get(), ptr );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( copyConstructorTest )
+{
+    ContextPtr contextPtr = Context::getContextPtr();
+    ContextPtr hostPtr = Context::getHostPtr();
+
+    SCAI_LOG_INFO( logger, "copy test on " << *contextPtr );
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 10;
+    ValueType val = 1;
+    HArray<ValueType> array( N, val, contextPtr );
+
+    HArray<ValueType> marray( array );
+
+    BOOST_CHECK_EQUAL( marray.size(), N );
+    BOOST_CHECK( array.isValid( contextPtr ) );
+    BOOST_CHECK( marray.isValid( contextPtr ) );
+
+    BOOST_CHECK_EQUAL( marray.isValid( hostPtr ), array.isValid( hostPtr) );
+
+    // verify correct data after validation checks as WriteAccess changes validity
+
+    {
+        WriteAccess<ValueType> wA( marray, contextPtr );
+        ValueType singleVal;
+        wA.getValue( singleVal, 0 );
+        BOOST_CHECK_EQUAL( singleVal, val );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+
+BOOST_AUTO_TEST_CASE( assignmentTest )
+{
+    ContextPtr contextPtr = Context::getContextPtr();
+    ContextPtr hostPtr = Context::getHostPtr();
+
+    SCAI_LOG_INFO( logger, "assignment test on " << *contextPtr );
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 10;
+    ValueType val = 1;
+    HArray<ValueType> array( N, val, contextPtr );
+
+    HArray<ValueType> marray( N + 2, val + 1, contextPtr );
+
+    {
+        WriteAccess<ValueType> wA( marray, contextPtr );
+        ValueType singleVal;
+        wA.getValue( singleVal, 0 );
+        BOOST_CHECK_EQUAL( singleVal, val + 1 );
+    }
+
+    marray = array;
+ 
+    BOOST_CHECK_EQUAL( marray.size(), N );
+    BOOST_CHECK( array.isValid( contextPtr ) );
+    BOOST_CHECK( marray.isValid( contextPtr ) );
+
+    BOOST_CHECK_EQUAL( marray.isValid( hostPtr ), array.isValid( hostPtr) );
+
+    {
+        WriteAccess<ValueType> wA( marray, contextPtr );
+        ValueType singleVal;
+        wA.getValue( singleVal, 0 );
+        BOOST_CHECK_EQUAL( singleVal, val );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( assignTest )
+{
+    ContextPtr contextPtr = Context::getContextPtr();
+    ContextPtr hostPtr = Context::getHostPtr();
+
+    SCAI_LOG_INFO( logger, "assign test on " << *contextPtr );
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 10;
+    ValueType val = 1;
+    HArray<ValueType> array( N, val, contextPtr );
+
+    HArray<ValueType> marray( N + 2, val + 1, contextPtr );
+
+    marray.assign( array, hostPtr );
+
+    BOOST_CHECK_EQUAL( marray.size(), N );
+    BOOST_CHECK( array.isValid( contextPtr ) );
+    BOOST_CHECK( marray.isValid( hostPtr ) );
+
+    // self assignment also makes sure that data is valid at specified context
+
+    array.assign( array, hostPtr );
+    BOOST_CHECK( array.isValid( hostPtr ) );
+
 }
 
 /* --------------------------------------------------------------------- */
@@ -218,7 +464,7 @@ BOOST_AUTO_TEST_CASE( resize1Test )
     {
         WriteOnlyAccess<IndexType> writeAccess( hArray, contextPtr, N );
 
-        if ( contextPtr->getType() == Context::Host )
+        if ( contextPtr->getType() == common::ContextType::Host )
         {
             for ( IndexType i = 0; i < N; ++i )
             {
@@ -307,7 +553,7 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
     BOOST_CHECK_THROW(
     {
-        arr1.swap( arr3 );
+        arr1._HArray::swap( arr3 );
     }, common::Exception );
 }
 
@@ -319,14 +565,14 @@ BOOST_AUTO_TEST_CASE( createTest )
     HArray<float> A( 10, 1.0f );
     HArray<double> B( 10, 3.1415 );
     HArray<IndexType> C( 10, 5 );
-    std::vector<scai::common::scalar::ScalarType> values;
+    std::vector<scai::common::ScalarType> values;
     _HArray::getCreateValues( values );
 
-    BOOST_CHECK( _HArray::canCreate( scalar::FLOAT ) );
-    BOOST_CHECK( _HArray::canCreate( scalar::DOUBLE ) );
+    BOOST_CHECK( _HArray::canCreate( ScalarType::FLOAT ) );
+    BOOST_CHECK( _HArray::canCreate( ScalarType::DOUBLE ) );
     BOOST_CHECK( _HArray::canCreate( TypeTraits<IndexType>::stype ) );
-    BOOST_CHECK( !_HArray::canCreate( scalar::INTERNAL ) );
-    _HArray* ca1 = _HArray::create( scalar::FLOAT );
+    BOOST_CHECK( !_HArray::canCreate( ScalarType::INTERNAL ) );
+    _HArray* ca1 = _HArray::create( ScalarType::FLOAT );
     BOOST_REQUIRE( ca1 );
     HArray<double>* da1 = dynamic_cast<HArray<double>*>( ca1 );
     HArray<float>* fa1 = dynamic_cast<HArray<float>*>( ca1 );
@@ -334,7 +580,7 @@ BOOST_AUTO_TEST_CASE( createTest )
     BOOST_CHECK( fa1 != NULL );
     BOOST_CHECK_THROW(
     {
-        _HArray* ca1 = _HArray::create( scalar::INTERNAL );
+        _HArray* ca1 = _HArray::create( ScalarType::INTERNAL );
         ca1->clear();
     }, Exception );
 }
@@ -346,7 +592,7 @@ BOOST_AUTO_TEST_CASE( newArrayTest )
     using namespace common;
     HArray<float> A( 10, 1.0f );
   
-    common::unique_ptr<_HArray> tmpA( A.newArray() );
+    std::unique_ptr<_HArray> tmpA( A.newArray() );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), tmpA->size() );
     BOOST_CHECK_EQUAL( tmpA->getValueType(), A.getValueType() );
@@ -354,14 +600,14 @@ BOOST_AUTO_TEST_CASE( newArrayTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( copyTest )
+BOOST_AUTO_TEST_CASE( dynCopyTest )
 {
     const IndexType N = 10;
 
     using namespace common;
     HArray<float> A( N, 1.0f );
   
-    common::unique_ptr<_HArray> tmpA( A.copy() );
+    std::unique_ptr<_HArray> tmpA( A.copy() );
 
     BOOST_CHECK_EQUAL( N, tmpA->size() );
     BOOST_CHECK_EQUAL( tmpA->getValueType(), A.getValueType() );
@@ -396,6 +642,54 @@ BOOST_AUTO_TEST_CASE( validTest )
     {
         // read access on undefined array, might give warning
         ReadAccess<float> read( C, hostContext );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( moveTest )
+{
+    // comparison operator used to sort array by their sizes
+
+    struct less_than_key
+    {
+        inline bool operator() ( const _HArray& array1, const _HArray& array2 )
+        {   
+            return array1.size() < array2.size();
+        }
+    };
+
+    typedef scai::DefaultReal ValueType;
+
+    const IndexType N = 20;   // number of arrays
+
+    const IndexType N_VALUES = 10000;
+
+    const ValueType initVal = 17;
+
+    const ValueType* ptrArray[N];  //  saves pointer data to arrays to check for correct moves
+
+    std::vector<HArray<ValueType> > myData;
+
+    // construct a certain number of different HArrays to store in a vector
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        myData.push_back( HArray<ValueType>( IndexType( N_VALUES - i ), initVal + i ) );
+        // save the pointer to the host data 
+        ReadAccess<ValueType> rA( myData[i] );
+        ptrArray[i] = rA.get();
+    }
+
+    // sort the array by sizes, here it gives exactly the reverse vector
+
+    std::sort( myData.begin(), myData.end(), less_than_key() );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ReadAccess<ValueType> rA( myData[i] );
+
+        BOOST_CHECK_EQUAL( rA.get(), ptrArray[ N - 1 - i ] );
     }
 }
 

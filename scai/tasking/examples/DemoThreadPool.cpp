@@ -34,9 +34,14 @@
 
 #include <scai/tasking/ThreadPool.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
+
+#include <memory>
+#include <functional>
+
+using std::shared_ptr;
+using std::bind;
 
 using namespace scai::common;
 using namespace scai::tasking;
@@ -57,9 +62,9 @@ int main( int argc, const char** argv )
     std::cout << "ThreadPool, size = " << pool.size() << " created" << std::endl;
     double t0 = Walltime::get();
     // schedule 3 tasks, task3 must wait for completion of task1 or task2
-    shared_ptr<ThreadPoolTask> task1 = pool.schedule( bind( &work, 1 ) );
-    shared_ptr<ThreadPoolTask> task2 = pool.schedule( bind( &work, 2 ) );
-    shared_ptr<ThreadPoolTask> task3 = pool.schedule( bind( &work, 3 ) );
+    shared_ptr<ThreadPoolTask> task1 = pool.schedule( std::bind( &work, 1 ) );
+    shared_ptr<ThreadPoolTask> task2 = pool.schedule( std::bind( &work, 2 ) );
+    shared_ptr<ThreadPoolTask> task3 = pool.schedule( std::bind( &work, 3 ) );
     std::cout << "Bundle1: all tasks scheduled" << std::endl;
     // wait for completion
     pool.wait( task1 );

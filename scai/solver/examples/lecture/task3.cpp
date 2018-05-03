@@ -27,12 +27,10 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/examples/lecture/task3.cpp
+ * @brief Example of a CG solver with logger
  * @author Thomas Brandes
  * @date 15.05.2013
  */
-
-//Solution of task 3:
 
 #include <scai/lama.hpp>
 
@@ -54,46 +52,48 @@ using namespace dmemo;
 using namespace lama;
 using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
-int main( int argc, char* argv[] )
+int main ( int argc, char* argv[] )
 {
     if ( argc < 2 )
     {
         std::cerr << "No input file specified" << std::endl;
-        exit( -1 );
+        return EXIT_FAILURE;
     }
 
-    //Read a sparse matrix from the passed input file
-    CSRSparseMatrix<ValueType> m( argv[1] );
-    std::cout << "Read matrix m : " << m << std::endl;
-    IndexType size = m.getNumRows();
-    //Create rhs vector
-    DenseVector<ValueType> rhs( size , 0.0 );
-    std::cout << "Vector rhs : " << rhs << std::endl;
-    //Create solution vector
-    DenseVector<ValueType> solution( size , 1.0 );
-    std::cout << "Vector solution : " << solution << std::endl;
-    //Compute the rhs that fits our solution to be able to calculate the error later
-    rhs = m * solution;
-    //Reset solution to zero so that there is something to solve
-    solution = 0.0;
-    common::shared_ptr<Timer> timer( new Timer() );
-    LoggerPtr logger( new CommonLogger( "CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer ) );
-    //Create a CG solver using the Constructor with logger as an argument
-    CG cgSolver( "CGTestSolver", logger );
-    //Create a stopping criterion for the iterative solver cgSolver
-    NormPtr norm = NormPtr( new L2Norm() );
-    CriterionPtr criterion( new ResidualThreshold( norm, 1E-8, ResidualThreshold::Absolute ) );
-    cgSolver.setStoppingCriterion( criterion );
-    //Initialize the solver
-    cgSolver.initialize( m );
-    //Solve m * solution = rhs
-    cgSolver.solve( solution, rhs );
-    //calculate the error and its L2-Norm
-    DenseVector<ValueType> error( size, 1.0 );
-    error = error - solution;
-    std::cout << "L2-Norm of error is " << l2Norm( error ) << std::endl;
-    return 0;
-}
+    // Read a sparse matrix from the file that has been specified by command line argument
+    auto matrix = read<CSRSparseMatrix<ValueType>>( argv[1] );
+    std::cout << "Read matrix: " << matrix << std::endl;
 
+    IndexType size = matrix.getNumRows ( );
+    // Create solution vector
+    auto solution =  fill<DenseVector<ValueType>>( size, 1 );
+    std::cout << "Vector solution : " << solution << std::endl;
+    // Compute the rhs that fits our solution to be able to calculate the error later
+    auto rhs = eval<DenseVector<ValueType>>( matrix * solution );
+    std::cout << "Vector rhs : " << rhs << std::endl;
+    // Forget the solution, i.e. reset solution to zero so that there is something to solve
+    solution = ValueType( 0 );
+
+    // Allocate a common logger that prints convergenceHistory
+    auto logger = std::make_shared<CommonLogger>( "CGLogger: ", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly );
+    // Create a CG solver with logger
+    CG<ValueType> cgSolver ( "CGTestSolver", logger );
+    // Create a stopping criterion for the iterative solver cgSolver
+    NormPtr<ValueType> norm( new L2Norm<ValueType>( ) );
+    CriterionPtr<ValueType> criterion ( new ResidualThreshold<ValueType> ( norm, 1E-8, ResidualCheck::Absolute ) );
+    cgSolver.setStoppingCriterion ( criterion );
+
+    // Initialize the solver with the matrix
+    cgSolver.initialize ( matrix );
+    // Solve, i.e. find solution for given rhs
+    cgSolver.solve ( solution, rhs );
+
+    // calculate the error and its L2-Norm
+    auto error = fill<DenseVector<ValueType>>( size, 1 );
+    error = error - solution;
+    std::cout << "L2-Norm of error is " << l2Norm ( error ) << std::endl;
+
+    return EXIT_SUCCESS;
+}

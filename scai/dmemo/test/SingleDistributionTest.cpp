@@ -35,7 +35,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/dmemo/SingleDistribution.hpp>
-#include <scai/utilskernel/LArray.hpp>
 
 using namespace scai;
 using namespace dmemo;
@@ -154,10 +153,10 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 {
     SCAI_LOG_INFO( logger, "ownedIndexesTest for dist = " << *dist )
 
-    using namespace utilskernel;
+    using namespace hmemo;
 
-    LArray<IndexType> myIndexes1;
-    LArray<IndexType> myIndexes2;
+    HArray<IndexType> myIndexes1;
+    HArray<IndexType> myIndexes2;
 
     dist->getOwnedIndexes( myIndexes1 );                 // call it for single distribution
     dist->Distribution::getOwnedIndexes( myIndexes2 );   // call if from base class
@@ -167,13 +166,7 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
     BOOST_REQUIRE_EQUAL( nLocal, myIndexes1.size() );
     BOOST_REQUIRE_EQUAL( nLocal, myIndexes2.size() );
 
-    hmemo::ReadAccess<IndexType> rIndexes1( myIndexes1 );
-    hmemo::ReadAccess<IndexType> rIndexes2( myIndexes2 );
-
-    for ( IndexType i = 0; i < nLocal; ++i )
-    {
-        BOOST_CHECK_EQUAL( rIndexes1[i], rIndexes2[i] );
-    }
+    BOOST_TEST( hostReadAccess( myIndexes1 ) == hostReadAccess( myIndexes2 ), boost::test_tools::per_element() );
 }
 
 /* --------------------------------------------------------------------- */

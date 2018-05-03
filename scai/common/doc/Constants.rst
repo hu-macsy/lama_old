@@ -28,15 +28,11 @@ lhs vector to 0, if it is 1, no scaling is required at all.
       }
   }
  
-The static class ``Constants`` provides an enum type for specific values:
-
-.. literalinclude:: ../Constants.hpp 
-   :language: c++
-   :lines: 56-60
+The enum class ``Constants`` provides an enum type for specific values:
 
 .. code-block:: c++
 	
-	    enum ConstantType
+	    enum class Constants
 	    {
 	        ONE,
 	        ZERO
@@ -58,11 +54,11 @@ of the TypeTrait is used.
   template <ValueType>
   void mult( ValueType lhs[], const ValueType rhs[], const ValueType scale, int n )
   {
-      if ( scale == constants::ZERO )
+      if ( scale == Constants::ZERO )
       {
           // lhs = 0
       }
-      else if ( scale == constants::ONE )
+      else if ( scale == Constants::ONE )
       {
           // lhs = rhs 
       }

@@ -32,9 +32,9 @@
  # @date 14.05.2017
 ###
 
-if ( SCAI_PNG_CHECK_DONE )
-    return ()
-endif ()
+include ( scai_macro/scai_pragma_once )
+
+scai_pragma_once()
 
 #  CMake provides already a module to find the PNG reference library, use it
 

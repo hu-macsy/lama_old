@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/common/config.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>
@@ -110,6 +109,8 @@ public:
     /** @brief Method to get all registered values. */
 
     static void getCreateValues( std::vector<InputType>& values );
+
+    static std::vector<InputType> getCreateValues();
 
 protected:
 
@@ -260,6 +261,15 @@ void Factory1<InputType, ValueType, OutputType>::getCreateValues( std::vector<In
     {
         values.push_back( it->first );
     }
+}
+
+
+template<typename InputType, typename ValueType, typename OutputType>
+std::vector<InputType> Factory1<InputType, ValueType, OutputType>::getCreateValues()
+{
+    std::vector<InputType> values;
+    getCreateValues( values );
+    return values;
 }
 
 } /* end namespace common */

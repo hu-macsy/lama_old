@@ -38,10 +38,14 @@
 #include <scai/tasking/ThreadPool.hpp>
 
 #include <memory>
-#include <scai/common/bind.hpp>
+#include <functional>
 
 using namespace scai::common;
 using namespace scai::tasking;
+
+using std::shared_ptr;
+using std::bind;
+using std::ref;
 
 /** Maximal number of threads in the pool. */
 

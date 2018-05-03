@@ -61,11 +61,4 @@ then
     count_error ./blaskernelTest --SCAI_CONTEXT=CUDA
 fi
 
-if [ -d ../mic ]
-then
-    #Running common MIC tests
-    echo "Running blaskernel tests with MIC context"
-    count_error ./blaskernelTest --SCAI_CONTEXT=MIC
-fi
-
 exit $error_count

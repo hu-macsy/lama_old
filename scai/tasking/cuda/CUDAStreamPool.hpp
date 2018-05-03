@@ -45,14 +45,10 @@ namespace scai
 namespace tasking
 {
 
-struct streamtype
+enum class StreamType
 {
-    typedef enum
-    {
-        ComputeStream,
-        TransferStream
-
-    } StreamType;
+    ComputeStream,
+    TransferStream
 };
 
 /** For each CUDA device/context there will be some streams available
@@ -61,7 +57,7 @@ struct streamtype
  *  The advantage of the pool is that create/destroy of the stream is only called once.
  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAStreamPool : public streamtype
+class COMMON_DLL_IMPORTEXPORT CUDAStreamPool 
 
 {
 public:
@@ -87,6 +83,11 @@ public:
      */
 
     static void freePool( const common::CUDACtx& cuda );
+
+    /** 
+     *  Query if all streams are released 
+     */
+    bool isEmpty();
 
 private:
 

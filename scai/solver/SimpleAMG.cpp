@@ -46,6 +46,7 @@
 #include <scai/common/Walltime.hpp>
 
 #include <scai/tracing.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <cstdlib>
@@ -59,47 +60,88 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( SimpleAMG::logger, "Solver.IterativeSolver.SimpleAMG" )
-SCAI_LOG_DEF_LOGGER( SimpleAMG::SimpleAMGRuntime::logger, "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SimpleAMG<ValueType>::logger, 
+                              "Solver.IterativeSolver.SimpleAMG" )
+
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SimpleAMG<ValueType>::SimpleAMGRuntime::logger, 
+                              "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
 
 using lama::Matrix;
 using lama::Vector;
-using lama::Scalar;
 
-SimpleAMG::SimpleAMG( const std::string& id )
-    : IterativeSolver( id ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 )
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_Solver* SimpleAMG<ValueType>::create()
+{
+    return new SimpleAMG<ValueType>( "_genByFactory" );
+}
+
+template<typename ValueType>
+SolverCreateKeyType SimpleAMG<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "SimpleAMG" );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+SimpleAMG<ValueType>::SimpleAMG( const std::string& id ) : 
+
+    IterativeSolver<ValueType>( id ), 
+    mMaxLevels( 25 ), 
+    mMinVarsCoarseLevel( 100 )
 {
     SCAI_LOG_INFO( logger, "SimpleAMG, id = " << id << " created, no logger" )
 }
 
-SimpleAMG::SimpleAMG( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id, logger ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 )
+template<typename ValueType>
+SimpleAMG<ValueType>::SimpleAMG( const std::string& id, LoggerPtr logger ) : 
+
+    IterativeSolver<ValueType>( id, logger ), 
+    mMaxLevels( 25 ), 
+    mMinVarsCoarseLevel( 100 )
 {
-    SCAI_LOG_INFO( SimpleAMG::logger, "SimpleAMG, id = " << id << " created, with logger" )
+    SCAI_LOG_INFO( SimpleAMG<ValueType>::logger, "SimpleAMG, id = " << id << " created, with logger" )
 }
 
-SimpleAMG::SimpleAMG( const SimpleAMG& other )
-    : IterativeSolver( other ), mMaxLevels( other.mMaxLevels ), mMinVarsCoarseLevel(
-        other.mMinVarsCoarseLevel )
-{
-}
+template<typename ValueType>
+SimpleAMG<ValueType>::SimpleAMG( const SimpleAMG& other ) : 
 
-SimpleAMG::SimpleAMGRuntime::SimpleAMGRuntime()
-    : IterativeSolverRuntime(), mSetup(), mCurrentLevel( 0 ), mLibHandle( 0 ), mHostOnlyLevel(
-        std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
-            std::numeric_limits<IndexType>::max() )
-{
-}
-
-SimpleAMG::~SimpleAMG()
+    IterativeSolver<ValueType>( other ), 
+    mMaxLevels( other.mMaxLevels ), 
+    mMinVarsCoarseLevel( other.mMinVarsCoarseLevel )
 {
 }
 
-SimpleAMG::SimpleAMGRuntime::~SimpleAMGRuntime()
+template<typename ValueType>
+SimpleAMG<ValueType>::SimpleAMGRuntime::SimpleAMGRuntime() : 
+
+    IterativeSolver<ValueType>::IterativeSolverRuntime(), 
+    mSetup(), 
+    mCurrentLevel( 0 ), 
+    mLibHandle( 0 ), 
+    mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
+    mHostOnlyVars( 0 ), 
+    mReplicatedLevel( std::numeric_limits<IndexType>::max() )
 {
 }
 
-void SimpleAMG::loadSetupLibs()
+template<typename ValueType>
+SimpleAMG<ValueType>::~SimpleAMG()
+{
+}
+
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
+
+template<typename ValueType>
+void SimpleAMG<ValueType>::loadSetupLibs()
 {
     std::string amgSetupLibrary;
 
@@ -114,10 +156,12 @@ void SimpleAMG::loadSetupLibs()
     }
 }
 
-void SimpleAMG::initialize( const Matrix& coefficients )
+template<typename ValueType>
+void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.SimpleAMG.initialize" )
     SCAI_LOG_DEBUG( logger, "initialize AMG, coefficients matrix = " << coefficients )
+
     SimpleAMGRuntime& runtime = getRuntime();
 
     if ( runtime.mSetup.get() == NULL )
@@ -125,33 +169,35 @@ void SimpleAMG::initialize( const Matrix& coefficients )
         loadSetupLibs();
     }
 
-    // Info about available AMGSetup
-    std::vector<std::string> values;  // string is create type for the factory
-    AMGSetup::getCreateValues( values );
+    // Info about available AMGSetup f
+
+    std::vector<AMGSetupCreateKeyType> values;  // string is create type for the factory
+
+    _AMGSetup::getCreateValues( values );
 
     SCAI_LOG_INFO( logger, "Factory of AMGSetup: " << values.size() << " entries" )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        SCAI_LOG_DEBUG( logger, "   Registered values[" << i << "] = " << values[i] )
+        // SCAI_LOG_DEBUG( logger, "   Registered values[" << i << "] = " << values[i] )
     }
 
     if ( runtime.mSetup.get() == NULL )
     {
         // no setup defined yet, so we take on from the factory
-        if ( AMGSetup::canCreate( "SAMGPSetup" ) )
+        if ( AMGSetup<ValueType>::canCreate( "SAMGPSetup" ) )
         {
-            runtime.mSetup.reset( AMGSetup::create( "SAMGPSetup" ) );
+            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SAMGPSetup" ) );
             SCAI_LOG_INFO( logger, "SimpleAMG: take SAMGPSetup as AMGSetup" )
         }
-        else if ( AMGSetup::canCreate( "SimpleAMGSetup" ) )
+        else if ( AMGSetup<ValueType>::canCreate( "SimpleAMGSetup" ) )
         {
-            runtime.mSetup.reset( AMGSetup::create( "SimpleAMGSetup" ) );
+            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SimpleAMGSetup" ) );
             SCAI_LOG_INFO( logger, "SimpleAMG: take SimpleAMGSetup as AMGSetup" )
         }
-        else if ( AMGSetup::canCreate( "SingleGridSetup" ) )
+        else if ( AMGSetup<ValueType>::canCreate( "SingleGridSetup" ) ) 
         {
-            runtime.mSetup.reset( AMGSetup::create( "SingleGridSetup" ) );
+            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SingleGridSetup" ) );
             SCAI_LOG_INFO( logger, "SimpleAMG: take SingleGridSetup as AMGSetup" )
         }
     }
@@ -161,7 +207,7 @@ void SimpleAMG::initialize( const Matrix& coefficients )
         COMMON_THROWEXCEPTION( "No AMGSetup found" )
     }
 
-    AMGSetup& amgSetup = *runtime.mSetup;
+    AMGSetup<ValueType>& amgSetup = *runtime.mSetup;
     amgSetup.setMaxLevels( mMaxLevels );
     amgSetup.setMinVarsCoarseLevel( mMinVarsCoarseLevel );
     amgSetup.setHostOnlyLevel( runtime.mHostOnlyLevel );
@@ -175,121 +221,141 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     logSolverInfo();
     logSetupDetails();
 
-    IterativeSolver::initialize( coefficients );
+    IterativeSolver<ValueType>::initialize( coefficients );
     totalSmootherTime = 0.0;
     totalTransferTime = 0.0;
     totalResidualTime = 0.0;
     totalIterations = 0;
 }
 
-void SimpleAMG::iterate()
+template<typename ValueType>
+void SimpleAMG<ValueType>::iterate()
 {
     SCAI_REGION( "Solver.SimpleAMG.iterate" )
     cycle();
     totalIterations++;
 }
 
-double SimpleAMG::getAverageSmootherTime() const
+template<typename ValueType>
+double SimpleAMG<ValueType>::getAverageSmootherTime() const
 {
     return ( totalSmootherTime / totalIterations );
 }
 
-double SimpleAMG::getAverageTransferTime() const
+template<typename ValueType>
+double SimpleAMG<ValueType>::getAverageTransferTime() const
 {
     return ( totalTransferTime / totalIterations );
 }
 
-double SimpleAMG::getAverageResidualTime() const
+template<typename ValueType>
+double SimpleAMG<ValueType>::getAverageResidualTime() const
 {
     return ( totalResidualTime / totalIterations );
 }
 
-void SimpleAMG::setMaxLevels( unsigned int levels )
+template<typename ValueType>
+void SimpleAMG<ValueType>::setMaxLevels( IndexType levels )
 {
     mMaxLevels = levels;
 }
 
-void SimpleAMG::setMinVarsCoarseLevel( unsigned int vars )
+template<typename ValueType>
+void SimpleAMG<ValueType>::setMinVarsCoarseLevel( IndexType vars )
 {
     mMinVarsCoarseLevel = vars;
 }
 
-const Matrix& SimpleAMG::getGalerkin( unsigned int level )
+template<typename ValueType>
+const Matrix<ValueType>& SimpleAMG<ValueType>::getGalerkin( IndexType level )
 {
     return getRuntime().mSetup->getGalerkin( level );
 }
 
-const Matrix& SimpleAMG::getRestriction( unsigned int level )
+template<typename ValueType>
+const Matrix<ValueType>& SimpleAMG<ValueType>::getRestriction( IndexType level )
 {
     return getRuntime().mSetup->getRestriction( level );
 }
 
-const Matrix& SimpleAMG::getInterpolation( unsigned int level )
+template<typename ValueType>
+const Matrix<ValueType>& SimpleAMG<ValueType>::getInterpolation( IndexType level )
 {
     return getRuntime().mSetup->getInterpolation( level );
 }
 
-Vector& SimpleAMG::getSolutionVector( unsigned int level )
+template<typename ValueType>
+Vector<ValueType>& SimpleAMG<ValueType>::getSolutionVector( IndexType level )
 {
     return getRuntime().mSetup->getSolutionVector( level );
 }
 
-Vector& SimpleAMG::getRhsVector( unsigned int level )
+template<typename ValueType>
+Vector<ValueType>& SimpleAMG<ValueType>::getRhsVector( IndexType level )
 {
     return getRuntime().mSetup->getRhsVector( level );
 }
 
-Solver& SimpleAMG::getSmoother( unsigned int level )
+template<typename ValueType>
+Solver<ValueType>& SimpleAMG<ValueType>::getSmoother( IndexType level )
 {
     return getRuntime().mSetup->getSmoother( level );
 }
 
-Solver& SimpleAMG::getCoarseLevelSolver()
+template<typename ValueType>
+Solver<ValueType>& SimpleAMG<ValueType>::getCoarseLevelSolver()
 {
     return getRuntime().mSetup->getCoarseLevelSolver();
 }
 
-void SimpleAMG::setHostOnlyLevel( IndexType hostOnlyLevel )
+template<typename ValueType>
+void SimpleAMG<ValueType>::setHostOnlyLevel( IndexType hostOnlyLevel )
 {
     getRuntime().mHostOnlyLevel = hostOnlyLevel;
 }
 
-void SimpleAMG::setHostOnlyVars( IndexType hostOnlyVars )
+template<typename ValueType>
+void SimpleAMG<ValueType>::setHostOnlyVars( IndexType hostOnlyVars )
 {
     getRuntime().mHostOnlyVars = hostOnlyVars;
 }
 
-void SimpleAMG::setReplicatedLevel( IndexType replicatedLevel )
+template<typename ValueType>
+void SimpleAMG<ValueType>::setReplicatedLevel( IndexType replicatedLevel )
 {
     getRuntime().mReplicatedLevel = replicatedLevel;
 }
 
-void SimpleAMG::setCoarseLevelSolver( SolverPtr solver )
+template<typename ValueType>
+void SimpleAMG<ValueType>::setCoarseLevelSolver( SolverPtr<ValueType> solver )
 {
     SCAI_LOG_DEBUG ( logger, "Set Coarse Level Solver to" << *solver )
     mCoarseLevelSolver = solver;
 }
 
-void SimpleAMG::setSmoother( SolverPtr solver )
+template<typename ValueType>
+void SimpleAMG<ValueType>::setSmoother( SolverPtr<ValueType> solver )
 {
     SCAI_LOG_DEBUG( logger, "Defined smoother for all level " << *solver )
     mSmoother = solver;
 }
 
-unsigned int SimpleAMG::getNumLevels()
+template<typename ValueType>
+IndexType SimpleAMG<ValueType>::getNumLevels()
 {
     return getRuntime().mSetup->getNumLevels();
 }
 
-void SimpleAMG::cycle()
+template<typename ValueType>
+void SimpleAMG<ValueType>::cycle()
 {
     // go via pointers because of const rhs on finest grid
     SimpleAMGRuntime& runtime = getRuntime();
     SCAI_REGION_N( "Solver.SimpleAMG.cycle", runtime.mCurrentLevel )
     // dereferences to current level solution + rhs
-    common::shared_ptr<AMGSetup>& amgSetup = runtime.mSetup;
-    const Vector* curRhsPtr = runtime.mRhs;
-    Vector* curSolutionPtr = 0;
+    AMGSetup<ValueType>& amgSetup = *runtime.mSetup;
+    const Vector<ValueType>* curRhsPtr = runtime.mRhs;
+    Vector<ValueType>* curSolutionPtr = 0;
 
     if ( runtime.mCurrentLevel == 0 )
     {
@@ -297,27 +363,27 @@ void SimpleAMG::cycle()
     }
     else
     {
-        curSolutionPtr = &( amgSetup->getSolutionVector( runtime.mCurrentLevel ) );
-        curRhsPtr = &( amgSetup->getRhsVector( runtime.mCurrentLevel ) );
+        curSolutionPtr = &( amgSetup.getSolutionVector( runtime.mCurrentLevel ) );
+        curRhsPtr = &( amgSetup.getRhsVector( runtime.mCurrentLevel ) );
     }
 
-    Vector& curSolution = ( *curSolutionPtr );
-    const Vector& curRhs = ( *curRhsPtr );
+    Vector<ValueType>& curSolution = ( *curSolutionPtr );
+    const Vector<ValueType>& curRhs = ( *curRhsPtr );
 
     //no more Smoothers we are on the coareste level
-    if ( runtime.mCurrentLevel >= amgSetup->getNumLevels() - 1 )
+    if ( runtime.mCurrentLevel >= amgSetup.getNumLevels() - 1 )
     {
-        amgSetup->getCoarseLevelSolver().solve( curSolution, curRhs );
+        amgSetup.getCoarseLevelSolver().solve( curSolution, curRhs );
     }
     else
     {
-        const Matrix& curGalerkin = amgSetup->getGalerkin( runtime.mCurrentLevel );
-        const Matrix& curRestriction = amgSetup->getRestriction( runtime.mCurrentLevel );
-        const Matrix& curInterpolation = amgSetup->getInterpolation( runtime.mCurrentLevel );
-        Vector& curTmpRhs = amgSetup->getTmpResVector( runtime.mCurrentLevel );
-        Vector& curCoarseSolution = amgSetup->getSolutionVector( runtime.mCurrentLevel + 1 );
-        Vector& curCoarseRhs = amgSetup->getRhsVector( runtime.mCurrentLevel + 1 );
-        Solver& curSmoother = amgSetup->getSmoother( runtime.mCurrentLevel );
+        const Matrix<ValueType>& curGalerkin = amgSetup.getGalerkin( runtime.mCurrentLevel );
+        const Matrix<ValueType>& curRestriction = amgSetup.getRestriction( runtime.mCurrentLevel );
+        const Matrix<ValueType>& curInterpolation = amgSetup.getInterpolation( runtime.mCurrentLevel );
+        Vector<ValueType>& curTmpRhs = amgSetup.getTmpResVector( runtime.mCurrentLevel );
+        Vector<ValueType>& curCoarseSolution = amgSetup.getSolutionVector( runtime.mCurrentLevel + 1 );
+        Vector<ValueType>& curCoarseRhs = amgSetup.getRhsVector( runtime.mCurrentLevel + 1 );
+        Solver<ValueType>& curSmoother = amgSetup.getSmoother( runtime.mCurrentLevel );
         // PreSmoothing
         SCAI_LOG_DEBUG( logger, "Pre smoothing on level " << runtime.mCurrentLevel )
         double smootherStartTime = common::Walltime::get();
@@ -349,7 +415,8 @@ void SimpleAMG::cycle()
     }
 }
 
-void SimpleAMG::logSetupSettings()
+template<typename ValueType>
+void SimpleAMG<ValueType>::logSetupSettings()
 {
     if ( mLogger->getLogLevel() < LogLevel::solverInformation )
     {
@@ -383,7 +450,8 @@ void SimpleAMG::logSetupSettings()
     }
 }
 
-void SimpleAMG::logSetupInfo()
+template<typename ValueType>
+void SimpleAMG<ValueType>::logSetupInfo()
 {
     if ( mLogger->getLogLevel() < LogLevel::solverInformation )
     {
@@ -399,7 +467,7 @@ void SimpleAMG::logSetupInfo()
         return;
     }
 
-    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
+    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
     {
         if ( i == 0 )
         {
@@ -423,7 +491,7 @@ void SimpleAMG::logSetupInfo()
 
     mLogger->logNewLine( LogLevel::advancedInformation );
 
-    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels() - 1; ++i )
+    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels() - 1; ++i )
     {
         if ( i == 0 )
         {
@@ -448,7 +516,8 @@ void SimpleAMG::logSetupInfo()
     mLogger->logNewLine( LogLevel::advancedInformation );
 }
 
-void SimpleAMG::logSolverInfo()
+template<typename ValueType>
+void SimpleAMG<ValueType>::logSolverInfo()
 {
     if ( mLogger->getLogLevel() < LogLevel::solverInformation )
     {
@@ -471,7 +540,8 @@ void SimpleAMG::logSolverInfo()
     }
 }
 
-void SimpleAMG::logSetupDetails()
+template<typename ValueType>
+void SimpleAMG<ValueType>::logSetupDetails()
 {
     if ( mLogger->getLogLevel() < LogLevel::advancedInformation )
     {
@@ -486,7 +556,7 @@ void SimpleAMG::logSetupDetails()
     double sizeRestrictionCSR = 0.0;
     double sizeGalerkinCSR = 0.0;
 
-    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
+    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
     {
         // Vector
         if ( i == 0 )
@@ -591,35 +661,36 @@ void SimpleAMG::logSetupDetails()
     mLogger->logNewLine( LogLevel::advancedInformation );
 }
 
-SimpleAMG::SimpleAMGRuntime& SimpleAMG::getRuntime()
+template<typename ValueType>
+typename SimpleAMG<ValueType>::SimpleAMGRuntime& SimpleAMG<ValueType>::getRuntime()
 {
     return mSimpleAMGRuntime;
 }
 
-const SimpleAMG::SimpleAMGRuntime& SimpleAMG::getConstRuntime() const
+template<typename ValueType>
+const typename SimpleAMG<ValueType>::SimpleAMGRuntime& SimpleAMG<ValueType>::getRuntime() const
 {
     return mSimpleAMGRuntime;
 }
 
-SolverPtr SimpleAMG::copy()
+template<typename ValueType>
+SimpleAMG<ValueType>* SimpleAMG<ValueType>::copy()
 {
-    return SolverPtr( new SimpleAMG( *this ) );
+    return new SimpleAMG( *this );
 }
 
-void SimpleAMG::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void SimpleAMG<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "SimpleAMG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    stream << "SimpleAMG<" << common::TypeTraits<ValueType>::id() << "> ( id = " << Solver<ValueType>::getId()
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
 
-std::string SimpleAMG::createValue()
-{
-    return "SimpleAMG";
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-Solver* SimpleAMG::create( const std::string name )
-{
-    return new SimpleAMG( name );
-}
+SCAI_COMMON_INST_CLASS( SimpleAMG, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

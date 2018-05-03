@@ -39,10 +39,9 @@
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/CG.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -59,7 +58,7 @@ using namespace scai;
 using namespace lama;
 using namespace solver;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -71,42 +70,43 @@ int main( int argc, const char* argv[] )
 
     std::string filename = argv[1];
 
-    CSRSparseMatrix<ValueType> A( filename );
-
+    auto A = read<CSRSparseMatrix<ValueType>>( filename );
+  
     DenseVector<ValueType> diag;
 
-    Scalar theta = 0.0;
+    ValueType theta = 0.0;
 
     A.getDiagonal( diag );
     diag -= theta;
     A.setDiagonal( diag );
 
-    DenseVector<ValueType> x( A.getRowDistributionPtr(), 1 );
-    DenseVector<ValueType> q;
-    DenseVector<ValueType> y;
+    auto x = fill<DenseVector<ValueType>>( A.getRowDistributionPtr(), 1 );
+
+    DenseVector<ValueType> q;   // tmp vector, allocated data will be reused in loop
+    DenseVector<ValueType> y;   // tmp vector, allocated data will be reused in loop
 
     LoggerPtr slogger( new CommonLogger( "CGLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly ) );
-    CG solver( "CG", slogger );
+    CG<ValueType> solver( "CG", slogger );
     solver.initialize( A );
 
-    NormPtr norm = NormPtr( new L1Norm() );
+    NormPtr<ValueType> norm( new L1Norm<ValueType>() );
     ValueType eps = 1e-6;
 
-    CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
-    CriterionPtr it( new IterationCount( 100 ) );
+    CriterionPtr<ValueType> rt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
+    CriterionPtr<ValueType> it( new IterationCount<ValueType>( 100 ) );
 
     // stop if iteration count reached OR residual threshold is reached
 
-    CriterionPtr criterion( new Criterion ( it, rt, Criterion::OR ) );
+    CriterionPtr<ValueType> criterion( new Criterion<ValueType>( it, rt, BooleanOp::OR ) );
     solver.setStoppingCriterion( criterion );
 
     for ( int k = 0; k < 10; ++k )
     {
-        Scalar norm = x.l2Norm();
+        ValueType norm = x.l2Norm();
         q = x / norm;
         solver.solve( x, q );
         y = A * x;
-        Scalar lambda = x.dotProduct ( y ) / x.dotProduct( x );
+        ValueType lambda = x.dotProduct ( y ) / x.dotProduct( x );
         std::cout << "lambda = " << lambda << std::endl;
     }
 

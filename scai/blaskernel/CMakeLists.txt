@@ -46,7 +46,7 @@ scai_module(
 
     MODULE_NAME   blaskernel
     INTERNAL_DEPS common logging tracing tasking hmemo kregistry
-    EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS
+    EXTERNAL_DEPS OpenMP CUDA SCAI_BLAS
 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -63,7 +63,7 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( external openmp EXAMPLES CUDA MIC TEST )
+scai_subdirectories( external openmp EXAMPLES CUDA TEST )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
@@ -77,12 +77,6 @@ scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
                TYPE    ${SCAI_LIBRARY_TYPE}
                VERSION ${SCAI_VERSION}
                ${CXX_SOURCES} )
-
-if ( USE_MIC )
-    set ( MKLROOT $ENV{MKLROOT} )
-    set ( CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
-    #ToDo: set_target_properties not working, any better way?
-endif ( USE_MIC )
 
 ### install ###
 

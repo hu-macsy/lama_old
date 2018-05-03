@@ -46,7 +46,7 @@ scai_module (
 
     MODULE_NAME   tasking
     INTERNAL_DEPS common logging tracing
-    EXTERNAL_DEPS CUDA MIC
+    EXTERNAL_DEPS CUDA
 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -67,7 +67,7 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( CUDA MIC EXAMPLES TEST )
+scai_subdirectories( CUDA EXAMPLES TEST )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )

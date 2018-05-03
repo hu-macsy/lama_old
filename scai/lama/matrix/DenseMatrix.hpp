@@ -38,15 +38,14 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/matrix/CRTPMatrix.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 
 // local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 
-// internal scai libraries
-#include <scai/common/shared_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -71,18 +70,37 @@ template<typename ValueType> class DenseVector;
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseMatrix:
 
-    public CRTPMatrix<DenseMatrix<ValueType>, ValueType>,
-    public Matrix,
-    public Matrix::Register<DenseMatrix<ValueType> >    // register at factory
+    public Matrix<ValueType>,
+    public _Matrix::Register<DenseMatrix<ValueType> >    // register at factory
 {
 
 public:
+
+    /* Using clauses for convenience, avoids using this->... */
+
+    using _Matrix::operator=;
+    using _Matrix::setContextPtr; 
+    using _Matrix::getNumRows;
+    using _Matrix::getNumColumns;
+    using _Matrix::setIdentity;   
+
+    using _Matrix::getRowDistribution;
+    using _Matrix::getRowDistributionPtr;
+    using _Matrix::getColDistribution;
+    using _Matrix::getColDistributionPtr;
+
+    using _Matrix::redistribute;
+
+    using Matrix<ValueType>::operator=;
+    using Matrix<ValueType>::operator+=;
+    using Matrix<ValueType>::operator-=;
+    using Matrix<ValueType>::getValueType;
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
     typedef DenseStorage<ValueType> StorageType;
 
-    typedef common::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
+    typedef std::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
 
     /** Getter for the type name of the class. */
 
@@ -90,25 +108,27 @@ public:
 
     /** Default constructor. */
 
-    DenseMatrix();
+    DenseMatrix( hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /** Constructor of a replicated dense matrix.
      *
      * @param[in] numRows      number of rows, must be non-negative.
      * @param[in] numColumns   number of columns, must be non-negative.
+     * @param[in] ctx          context for the new matrix.
      */
-    DenseMatrix( const IndexType numRows, const IndexType numColumns );
+    DenseMatrix( const IndexType numRows, const IndexType numColumns, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /**
      * Constructor of a distributed dense matrix.
      *
      * @param[in] rowDist   size and distribution of rows
      * @param[in] colDist   size and distribution of columns
+     * @param[in] ctx       context for memory/operations of this matrix
      *
      * For consistency with the constructors of sparse matrices the values
      * of the dense matrix are initialized with 0 here.
      */
-    DenseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    DenseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /** Overwrites default copy constructor so it uses other copy constructor.
      *
@@ -117,119 +137,27 @@ public:
      */
     DenseMatrix( const DenseMatrix<ValueType>& other );
 
-    /** Constructs a dense matrix from any other matrix that can be of a different type.
-     *
-     *  @param[in] other   input matrix.
-     *  @param[in] transposeFlag if true the input matrix will be transposed
-     */
-    DenseMatrix( const Matrix& other, bool transposeFlag = false );
+    /** Override default move constructor */
 
-    /** Constructor of a (replicated) dense matrix by global storage.
-     *
-     *  @param[in] globalData  contains the matrix storage
-     */
-    explicit DenseMatrix( const _MatrixStorage& globalData );
+    DenseMatrix( DenseMatrix<ValueType>&& other ) noexcept;
 
-    /** Constructs a dense matrix from any other matrix with new distributions.
+    /** Constructor of a (replicated) sparse matrix by global storage.
      *
-     *  @param[in] other             input matrix.
-     *  @param[in] rowDistribution   new distribution of rows among processors
-     *  @param[in] colDistribution   new distribution of columns for blocking
-     *
-     *  The following codes are equivalent:
-     *
-     *  \code
-     *      DenseMatrix dense( other, rowDist, colDist );
-     *      // same as
-     *      DenseMatrix dense( other );
-     *      dense->redistribute( rowDist, colDist );
-     *  \endcode
-     *
-     *  The constructor with distributions is more convenient and might be more efficient
-     *  due to less memory allocations as less temporary data is needed.
+     *  @param[in] globalStorage  contains the full storage, must be of same format and type as matrix
      */
-    DenseMatrix( const Matrix& other, dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+    explicit DenseMatrix( DenseStorage<ValueType> globalStorage );
 
-    /** Constructs a dense matrix from another dense matrix with new distributions.
+    /** Constructor of a distributed dense matrix by local storage
      *
-     *  @param[in] other             input matrix.
-     *  @param[in] rowDistribution   new distribution of rows among processors
-     *  @param[in] colDistribution   new distribution of columns for blocking
+     *  @param[in] rowDist       is distribution of localData
+     *  @param[in] localStorage  contains local rows of the distributed matrix
      *
+     *  The number of rows for the local storage must be rowDist->getLocalSize(), and the 
+     *  number of columns must be the same on all processors.
+     *
+     *  The context of the matrix is the same as the context of localStorage.
      */
-    DenseMatrix(
-        const DenseMatrix<ValueType>& other,
-        dmemo::DistributionPtr rowDistribution,
-        dmemo::DistributionPtr colDistribution );
-
-    /** Constructor of a dense matrix by local storage.
-     *
-     *  @param[in] localData   contains local rows of the distributed matrix
-     *  @param[in] rowDist     is distribution of localData
-     *  @param[in] colDist     specifies how to split columns of local rows
-     *
-     *  This constructor works also fine if localData is the full global matrix;
-     *  in this case only local rows will be taken on this processor.
-     */
-    DenseMatrix( const _MatrixStorage& localData, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
-    /**
-     * Constructor of a replicated dense matrix from the passed csr sparse matrix.
-     *
-     * @param[in] numRows       the number of rows of the matrix
-     * @param[in] numColumns    the number of columns of the matrix
-     * @param[in] numNoneZeros  the number of none zeros of the matrix
-     * @param[in] ia            row pointer of the input csr sparse matrix
-     * @param[in] ja            column indexes of the input csr sparse matrix
-     * @param[in] values        the none zero values of the input csr sparse matrix
-     */
-    template<typename OtherValueType>
-    DenseMatrix(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numNoneZeros,
-        const IndexType* const ia,
-        const IndexType* const ja,
-        const OtherValueType* const values );
-
-    /**
-     * Contructor of a dense matrix by matrix expression alpha * A * B + beta * C
-     *
-     * @param[in] expression  matrix expression alpha * A * B + beta * C
-     */
-    DenseMatrix( const Expression_SMM_SM& expression );
-
-    /**
-     * Constructor of a dense matrix by matrix expression alpha * A * B
-     *
-     * @param[in] expression   matrix espression alpha * A * B
-     */
-    DenseMatrix( const Expression_SMM& expression );
-
-    /**
-     * Constructor of a dense matrix by matrix expression alpha * A + beta * b
-     *
-     * @param[in] expression   matrix espression scalar * matrix + scalar * matrix
-     */
-    DenseMatrix( const Expression_SM_SM& expression );
-
-    /**
-     * Constructor of a dense matrix by matrix expression alpha * A
-     *
-     * @param[in] expression   matrix expression alpha * A where alpha is a Scalar and A a matrix
-     */
-    DenseMatrix( const Expression_SM& expression );
-
-    /** Constructor of a replicated dense matrix by reading the matrix
-     *  data from a file.
-     *
-     *  @param[in] filename   Name of the file with matrix data.
-
-     *  Next releases will also support distributed/parallel I/O. In the
-     *  meantime this constructor should be used with a following call of
-     *  the redistribute method.
-     */
-    DenseMatrix( const std::string& filename );
+    DenseMatrix( dmemo::DistributionPtr rowDist, DenseStorage<ValueType> localStorage );
 
     /**
      * Destructor, releases all allocated resources.
@@ -240,89 +168,53 @@ public:
 
     virtual bool isConsistent() const;
 
-    /** Make overloaded operator= available before overriding the default one. */
-
-    using Matrix::operator=;
-
     /** Overrides the default assignment operator to guarantee deep copy. */
 
-    DenseMatrix& operator=( const DenseMatrix& matrix );
+    DenseMatrix& operator=( const DenseMatrix<ValueType>& matrix );
 
-    /** Implementation for Matrix::getTypeName() */
+    /** Override implicitly declared move assignment operator */
+
+    DenseMatrix& operator=( DenseMatrix<ValueType>&& matrix );
+
+    /** Implementation for _Matrix::getTypeName() */
 
     const char* getTypeName() const;
 
     /**
      * Gives info about the matrix kind (DENSE).
      */
-    virtual Matrix::MatrixKind getMatrixKind() const
+    virtual MatrixKind getMatrixKind() const
     {
-        return Matrix::DENSE;
+        return MatrixKind::DENSE;
     }
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void setContextPtr( const hmemo::ContextPtr context );
 
-    using Matrix::setContextPtr; // setContextPtr( localContext, haloContext )
-
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual hmemo::ContextPtr getContextPtr() const
     {
-        return mData[0]->getContextPtr();
+        if ( mData.size() >  0 )
+        {
+            return mData[0]->getContextPtr();
+        }
+        else
+        {
+            return hmemo::Context::getHostPtr();
+        }
     }
 
-    using Matrix::setIdentity; // setIdentity( const IndexType n )
-
-    /** Implementation of pure method Matrix::setIdentity. */
+    /** Implementation of pure method _Matrix::setIdentity. */
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
-    virtual void matrixTimesVector(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const
-    {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
-    }
+    /** Implementation of pure method Matrix<ValueType>::assignDiagonal */
 
-    virtual void vectorTimesMatrix(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const
-    {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
-    }
+    virtual void assignDiagonal( const Vector<ValueType>& diagonal );
 
-    virtual void setRow( const Vector& row,
-                         const IndexType globalRowIndex,
-                         const common::binary::BinaryOp op )
-    {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
-    }
-
-    virtual void setColumn(
-        const Vector& column,
-        const IndexType globalColIndex,
-        const common::binary::BinaryOp op )
-    {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
-    }
-
-    /** Implementation of pure Matrix::setDenseData */
-
-    virtual void setDenseData(
-        dmemo::DistributionPtr rowDistribution,
-        dmemo::DistributionPtr colDistribution,
-        const hmemo::_HArray& values,
-        const Scalar eps );
-
-    /** Implementation for pure method Matrix::setCSRData. */
+    /** Implementation for pure method _Matrix::setCSRData. */
 
     virtual void setCSRData(
         dmemo::DistributionPtr rowDist,
@@ -330,15 +222,6 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values );
-
-    /** Implementation for pure method Matrix::setDIAData. */
-
-    virtual void setDIAData(
-        dmemo::DistributionPtr rowDist,
-        dmemo::DistributionPtr colDist,
-        const IndexType numDiagonals,
-        const hmemo::HArray<IndexType>& offset,
         const hmemo::_HArray& values );
 
     /** Implementation of pure method for the dense storage format. */
@@ -361,29 +244,29 @@ public:
         const hmemo::HArray<IndexType>& rowJA,
         const hmemo::_HArray& rowValues ) const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void clear();
 
-    /* Implementation of pure method Matrix::purge. */
+    /* Implementation of pure method _Matrix::purge. */
 
     virtual void purge();
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void allocate( const IndexType numRows, const IndexType numColumns );
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
-    virtual void assign( const Matrix& other );
+    virtual void assign( const _Matrix& other );
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
-    virtual void assignTranspose( const Matrix& other );
+    virtual void assignTranspose( const _Matrix& other );
 
     void assignTransposeImpl( const DenseMatrix<ValueType>& Mat );
 
@@ -397,17 +280,25 @@ public:
      */
     void swap( DenseMatrix<ValueType>& other );
 
-    /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
+    /** Method that assigns a sparse matrix, specialization of assign( const _Matrix& ) */
 
-    void assignSparse( const Matrix& other );
+    template<typename OtherValueType>
+    void assignSparse( const SparseMatrix<OtherValueType>& other );
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void assign( const _MatrixStorage& storage );
 
-    /* Implementation of pure method of class Matrix. */
+    template<typename OtherValueType>
+    void assignImpl( const Matrix<OtherValueType>& other );
 
-    virtual void assign( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    /* Implementation of pure method of class _Matrix. */
+
+    virtual void assignDistribute( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+
+    virtual void assignLocal( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist );
+
+    virtual void assignDistribute( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** @brief TODO[doxy] Complete Description.
      *
@@ -415,76 +306,106 @@ public:
      */
     void assignLocal( const _MatrixStorage& other );
 
-    /** Implementation of Matrix::buildLocalStorage. */
+    /** Implementation of _Matrix::buildLocalStorage. */
 
     virtual void buildLocalStorage( _MatrixStorage& storage ) const;
 
-    /* Implementation of pure method of class Matrix. */
+    /** Implemenation of Matrix<ValueType>::disassemble */
+
+    virtual void disassemble(
+        MatrixAssembly<ValueType>& assembly,
+        const IndexType rowOffset = 0,
+        const IndexType colOffset = 0 ) const;
+
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void redistribute( dmemo::DistributionPtr rowDistributionPtr, dmemo::DistributionPtr colDistributionPtr );
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr );
 
-    /* Implementation of pure method of class Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::getDiagonal */
 
-    virtual void getDiagonal( Vector& diagonal ) const;
+    virtual void getDiagonal( Vector<ValueType>& diagonal ) const;
 
-    /* Implementation of pure method of class Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const Vector& diagonal );
+    virtual void setDiagonal( const Vector<ValueType>& diagonal );
 
-    /* Implementation of pure method of class Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const Scalar diagonalValue );
+    virtual void setDiagonal( const ValueType& scalar );
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method Matrix<ValueType>::reduce */
 
     virtual void reduce( 
-        Vector& v, 
+        Vector<ValueType>& v, 
         const IndexType dim, 
-        const common::binary::BinaryOp reduceOp, 
-        const common::unary::UnaryOp elemOp ) const;
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp ) const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of reduce for dense vector. */
 
-    virtual void scale( const Vector& values );
+    void reduceImpl( 
+        DenseVector<ValueType>& v, 
+        const IndexType dim, 
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp ) const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* ======================================================================= */
+    /*     scaling of matrix entries                                           */
+    /* ======================================================================= */
 
-    virtual void scale( const Scalar value );
+    /* Implementation of pure method Matrix<ValueType>::scale */
 
-    /* Implementation of pure method of class Matrix. */
+    virtual void scale( const ValueType& alpha );
+
+    /* Implementation of pure method Matrix<ValueType>::scale */
+
+    virtual void scaleRows( const DenseVector<ValueType>& scaleY );
+
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void conj();
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
-    virtual Scalar getValue( IndexType i, IndexType j ) const;
+    virtual ValueType getValue( IndexType i, IndexType j ) const;
 
-    /** Implementation of pure method Matrix::setValue */
+    /** Implementation of pure method _Matrix::setValue */
 
     virtual void setValue(
         const IndexType i,
         const IndexType j,
-        const Scalar val,
-        const common::binary::BinaryOp op = common::binary::COPY );
+        const ValueType val,
+        const common::BinaryOp op = common::BinaryOp::COPY );
 
-    /* Implemenation of pure method of class Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesScalar */
 
-    virtual void matrixTimesScalar( const Matrix& other, const Scalar alpha );
+    virtual void matrixTimesScalar( const Matrix<ValueType>& other, const ValueType alpha );
 
     /**
-     *  @brief Matrix times vector with same value types and correct distributions.
+     * @brief Implementation of pure method Matrix<ValueType>::matrixTimesVectorDense
+     */
+    void matrixTimesVectorDense(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>* y,
+        const common::MatrixOp op ) const;
+
+    /**
+     *  @brief Provide method matrixTimesVector where all vectors are now dense
      *
-     * @param[out] denseResult   TODO[doxy] Complete Description.
-     * @param[in]  alphaValue    TODO[doxy] Complete Description.
-     * @param[in]  denseX        TODO[doxy] Complete Description.
-     * @param[in]  betaValue     TODO[doxy] Complete Description.
-     * @param[in]  denseY        TODO[doxy] Complete Description.
+     * @param[out] denseResult   result vector 
+     * @param[in]  alphaValue    scaling factor for matrix * vector
+     * @param[in]  denseX        vector that is used for multiplication
+     * @param[in]  betaValue     scaling factor for additional summand
+     * @param[in]  denseY        additional summand ( beta = 0 if not available )
      *
-     *  Note: Matrix::matrixTimesMatrix is implemented in the CRTPMatrix class.
+     *  Note: _Matrix::matrixTimesMatrix is implemented in the CRTPMatrix class.
      *        that requires this method.
      *
      *  Note: all vectors must have the right distribution.
@@ -494,18 +415,18 @@ public:
         const ValueType alphaValue,
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
-        const DenseVector<ValueType>& denseY ) const;
+        const DenseVector<ValueType>* denseY ) const;
 
     void vectorTimesMatrixImpl(
         DenseVector<ValueType>& denseResult,
         const ValueType alphaValue,
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
-        const DenseVector<ValueType>& denseY ) const;
+        const DenseVector<ValueType>* denseY ) const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
-    virtual void invert( const Matrix& other );
+    virtual void invert( const _Matrix& other );
 
     /** Invert in place */
 
@@ -514,38 +435,38 @@ public:
         this->invert( *this );
     }
 
-    /* Implementation of pure method of class Matrix. */
-    virtual Scalar l1Norm() const;
+    /* Implementation of pure method of class _Matrix. */
+    virtual RealType<ValueType> l1Norm() const;
 
-    /* Implementation of pure method of class Matrix. */
-    virtual Scalar l2Norm() const;
+    /* Implementation of pure method of class _Matrix. */
+    virtual RealType<ValueType> l2Norm() const;
 
-    /** Implementation of Matrix::maxNorm for dense matrices. */
+    /** Implementation of _Matrix::maxNorm for dense matrices. */
 
-    virtual Scalar maxNorm() const;
+    virtual RealType<ValueType> maxNorm() const;
 
-    /** Implementation of Matrix::maxDiffNorm for dense matrices. */
+    /** Implementation of _Matrix::maxDiffNorm for dense matrices. */
 
-    virtual Scalar maxDiffNorm( const Matrix& other ) const;
+    virtual RealType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const;
 
     /** Get the maximal difference between two elements for dense matrices of same type. */
 
     ValueType maxDiffNormImpl( const DenseMatrix<ValueType>& other ) const;
 
-    /* Implemenation of pure method of class Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
-    virtual void matrixPlusMatrix( const Scalar alpha, const Matrix& A, const Scalar beta, const Matrix& B );
+    virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
 
-    /** Implementation of pure method Matrix::matrixTimesMatrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesMatrix */
 
-    void matrixTimesMatrix(
-        Matrix& result,
-        const Scalar alpha,
-        const Matrix& x,
-        const Scalar beta,
-        const Matrix& y ) const;
+    virtual void matrixTimesMatrix(
+        Matrix<ValueType>& result,
+        const ValueType alpha,
+        const Matrix<ValueType>& B,
+        const ValueType beta,
+        const Matrix<ValueType>& C ) const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void prefetch() const;
 
@@ -555,7 +476,7 @@ public:
      */
     void prefetch( hmemo::ContextPtr loc ) const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     void wait() const;
 
@@ -565,27 +486,27 @@ public:
 
     DenseStorage<ValueType>& getLocalStorage();
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual IndexType getLocalNumValues() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual IndexType getLocalNumRows() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual IndexType getLocalNumColumns() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual IndexType getNumValues() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual bool hasDiagonalProperty() const;
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual void resetDiagonalProperty();
 
@@ -593,75 +514,59 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /* Implementation of pure method of class Matrix. */
-
-    virtual common::scalar::ScalarType getValueType() const;
-
-    virtual size_t getValueTypeSize() const;
-
     /**
-     * @brief Implementation of pure function Matrix::copy with covariant return type.
+     * @brief Implementation of pure function _Matrix::copy with covariant return type.
      */
     virtual DenseMatrix<ValueType>* newMatrix() const;
 
     /**
-     * @brief Implementation of pure function Matrix::copy with covariant return type.
+     * @brief Implementation of pure function _Matrix::copy with covariant return type.
      */
     virtual DenseMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormat */
+    /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormat() const
+    virtual Format getFormat() const
     {
         return Format::DENSE;
     }
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual size_t getMemoryUsage() const;
 
     /** local data is allocated in chunks according to column distribution */
 
-    std::vector<common::shared_ptr<DenseStorage<ValueType> > > mData;
+    std::vector<std::shared_ptr<DenseStorage<ValueType> > > mData;
 
-    using Matrix::getNumRows;
-    using Matrix::getNumColumns;
+    /** Implementation of pure methode Matrix<ValueType>::getRow */
 
-    using Matrix::getRowDistribution;
-    using Matrix::getRowDistributionPtr;
-    using Matrix::getColDistribution;
-    using Matrix::getColDistributionPtr;
+    virtual void getRow( Vector<ValueType>& row, const IndexType globalRowIndex ) const;
 
-    using Matrix::redistribute;
+    /** Implementation of pure methode Matrix<ValueType>::getRowLocal */
 
-    /** Implementation of pure methode Matrix::getRow */
+    virtual void getRowLocal( Vector<ValueType>& row, const IndexType globalRowIndex ) const;
 
-    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
+    /** Implementation of pure method Matrix<ValueType>::getColumn */
 
-    /** Implementation of pure methode Matrix::getRowLocal */
+    virtual void getColumn( Vector<ValueType>& col, const IndexType globalColIndex ) const;
 
-    virtual void getRowLocal( Vector& row, const IndexType globalRowIndex ) const;
-
-    /** Implementation of pure methode Matrix::getColumn */
-
-    virtual void getColumn( Vector& col, const IndexType globalColIndex ) const;
-
-    /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
+    /** Get a complete row of the local storage */
 
     void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType iLocal ) const;
 
     void setLocalRow( const hmemo::HArray<ValueType>& row,
                       const IndexType localRowIndex,
-                      const common::binary::BinaryOp op  );
+                      const common::BinaryOp op  );
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,
-                         const common::binary::BinaryOp op  );
+                         const common::BinaryOp op  );
 
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 
     template<typename otherT>
-    void copyDenseMatrix( const DenseMatrix<otherT>& other );
+    void assignDense( const DenseMatrix<otherT>& other );
 
     /** Optimized implementation for dense vectors as diagonal. */
 
@@ -671,24 +576,27 @@ public:
 protected:
 
     /**
-     * @brief Set this matrix = alpha * A + beta * B
-     *
-     * @param[in]  alpha    TODO[doxy] Complete Description.
-     * @param[in]  A        TODO[doxy] Complete Description.
-     * @param[in]  beta     TODO[doxy] Complete Description.
-     * @param[in]  B        TODO[doxy] Complete Description.
+     * @brief Same as matrixPlusMatrix but now input matrices A and B are really dense
      */
-    void matrixPlusMatrixImpl(
+    void matrixPlusMatrixDense(
         const ValueType alpha,
         const DenseMatrix<ValueType>& A,
         const ValueType beta,
         const DenseMatrix<ValueType>& B );
 
+    /** Implementation of pure method Matrix<ValueType>::selectComplexPart */
+
+    virtual void selectComplexPart( Matrix<RealType<ValueType> >& x, common::ComplexPart kind ) const;
+
+    /** Implementation of pure method Matrix<ValueType>::buildComplex */
+
+    virtual void buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y );
+
 private:
 
     /** Allocate of storage for the column blocks. */
 
-    void allocateData();
+    void allocateData( hmemo::ContextPtr ctx );
 
     /** Join column data of column distributed dense data
      *
@@ -696,7 +604,7 @@ private:
      *  @param[in]   firstRow   first local row
      *  @param[in]   nRows      number of rows to join
      */
-    void joinColumnData( scai::hmemo::HArray<ValueType>& result, const IndexType firstRow, const IndexType nRows ) const;
+    void joinColumnData( hmemo::HArray<ValueType>& result, const IndexType firstRow, const IndexType nRows ) const;
 
     /***************************************************************************
      *  Static Methods for dense storage                                        *
@@ -712,7 +620,7 @@ private:
      *  After: chunks.size() == columnDist.getNumPartitions()
      */
     static void splitColumnData(
-        std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
+        std::vector<std::shared_ptr<DenseStorage<ValueType> > >& chunks,
         const DenseStorage<ValueType>& columnData,
         const dmemo::Distribution& columnDist );
 
@@ -737,10 +645,7 @@ private:
     mutable hmemo::HArray<ValueType> mSendValues;
     mutable hmemo::HArray<ValueType> mReceiveValues;
 
-    //TODO: no implementation: implement or delete
-    //void initChunks();  // common initialization for constructors
-
-    void    computeOwners();
+    void computeOwners();
 
     /** Special implementation of invert in place for a cyclic distributed matrix. */
 
@@ -752,9 +657,9 @@ public:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    // static methods, variables to register create routine in Matrix factory of base class.
+    // static methods, variables to register create routine in _Matrix factory of base class.
 
-    static Matrix* create();
+    static _Matrix* create();
 
     // key for factory
 
@@ -762,45 +667,6 @@ public:
 
     MatrixCreateKeyType getCreateValue() const;
 };
-
-/*  template methods implementations */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>& other )
-{
-    // check for valid pointer, might be dynamic cast went wrong somewhere else
-    //SCAI_ASSERT_ERROR( &other, "NULL matrix in assignment operator" )
-    SCAI_LOG_INFO( logger, "copy dense, this = " << this << ", other = " << &other )
-    // inherit size and distributions
-    Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
-    mData.resize( other.mData.size() );
-    IndexType n = static_cast<IndexType>( other.mData.size() );
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        SCAI_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
-        mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
-    }
-}
-
-template<typename ValueType>
-template<typename OtherValueType>
-DenseMatrix<ValueType>::DenseMatrix(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType numNoneZeros,
-    const IndexType* const ia,
-    const IndexType* const ja,
-    const OtherValueType* const values )
-
-    : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
-{
-    mData.resize( 1 );
-    mData[0].reset( new DenseStorage<ValueType>( numRows, numColumns ) );
-    mData[0]->setCSRData( numNoneZeros, ia, ja, values );
-    computeOwners();
-}
 
 } /* end namespace lama */
 

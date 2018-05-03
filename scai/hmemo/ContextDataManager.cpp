@@ -40,9 +40,12 @@
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/macros/terminate.hpp>
 
 namespace scai
 {
+
+using common::AccessKind;
 
 namespace hmemo
 {
@@ -61,11 +64,82 @@ ContextDataManager::ContextDataManager() :
     mSyncToken()
 
 {
-    mLock[Context::Read] = 0;
-    mLock[Context::Write] = 0;
+    mLock[static_cast<int>( AccessKind::Read  )] = 0;
+    mLock[static_cast<int>( AccessKind::Write )] = 0;
     multiContext = false;
     multiThreaded = false;
     SCAI_LOG_DEBUG( logger, "ContextDataManager()" )
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextDataManager::ContextDataManager( ContextDataManager&& other ) noexcept :
+
+    mContextData( std::move( other.mContextData ) )
+
+{
+    SCAI_LOG_INFO( logger, "move constructor: " 
+                          << ", this context data has now " << mContextData.size() << " entries"
+                          << ", other context data has now " << other.mContextData.size() << " entries" )
+
+    const int pWrite = static_cast<int>( AccessKind::Write );
+    const int pRead = static_cast<int>( AccessKind::Read );
+
+    // check for current accesses, if yes terminate as there is no way to recover
+
+    if ( ( other.mLock[pWrite] != 0 ) )
+    {
+        SCAI_TERMINATE( "SERIOUS: move operation on write locked array, causes termination" )
+    }
+
+    if ( ( other.mLock[pRead] != 0 ) )
+    {
+        SCAI_TERMINATE( "SERIOUS: move operation on read locked array, causes termination" )
+    }
+
+    mLock[pRead] = 0;
+    mLock[pWrite] = 0;
+    multiContext = false;
+    multiThreaded = false;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+ContextDataManager& ContextDataManager::operator=( ContextDataManager&& other ) 
+{
+    SCAI_LOG_INFO( logger, "move asignment called for context data manager: " 
+                          << ", this context data has " << mContextData.size() << " entries"
+                          << ", other context data has " << other.mContextData.size() << " entries" )
+
+    const int pWrite = static_cast<int>( AccessKind::Write );
+    const int pRead = static_cast<int>( AccessKind::Read );
+
+    // check for current accesses, if yes terminate as there is no way to recover
+
+    if ( ( other.mLock[pWrite] != 0 ) )
+    {
+        SCAI_TERMINATE( "SERIOUS: move operation on write locked array, causes termination" )
+    }
+
+    if ( ( other.mLock[pRead] != 0 ) )
+    {
+        SCAI_TERMINATE( "SERIOUS: move operation on read locked array, causes termination" )
+    }
+
+    mLock[pRead] = 0;
+    mLock[pWrite] = 0;
+    multiContext = false;
+    multiThreaded = false;
+
+    // Note: existing entries in mContextData will be freed
+
+    mContextData = std::move( other.mContextData );
+
+    SCAI_LOG_INFO( logger, "move asignment done for context data manager: " 
+                          << ", this context data has " << mContextData.size() << " entries"
+                          << ", other context data has " << other.mContextData.size() << " entries" )
+
+    return *this;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -83,27 +157,27 @@ void ContextDataManager::wait()
 
 int ContextDataManager::locked() const
 {
-    return mLock[Context::Write] + mLock[Context::Read];
+    return mLock[static_cast<int>( AccessKind::Write )] + mLock[static_cast<int>( AccessKind::Read )];
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-int ContextDataManager::locked( Context::AccessKind kind ) const
+int ContextDataManager::locked( AccessKind kind ) const
 {
-    return mLock[kind];
+    return mLock[static_cast<int>( kind )];
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool ContextDataManager::hasAccessConflict( Context::AccessKind kind ) const
+bool ContextDataManager::hasAccessConflict( AccessKind kind ) const
 {
     bool conflict = false;
 
-    if ( kind == Context::Read )
+    if ( kind == AccessKind::Read )
     {
-        conflict = locked( Context::Write );
+        conflict = locked( AccessKind::Write );
     }
-    else if ( kind == Context::Write )
+    else if ( kind == AccessKind::Write )
     {
         conflict = locked();
     }
@@ -113,12 +187,16 @@ bool ContextDataManager::hasAccessConflict( Context::AccessKind kind ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr context )
+void ContextDataManager::lockAccess( AccessKind kind, ContextPtr context )
 {
-    common::Thread::ScopedLock lock( mAccessMutex );
-    common::Thread::Id id = common::Thread::getSelf();
+    const int pKind  = static_cast<int>( kind );
+    const int pRead  = static_cast<int>( AccessKind::Read );
+    const int pWrite = static_cast<int>( AccessKind::Write );
+
+    std::unique_lock<std::mutex> lock( mAccessMutex );
+    std::thread::id id = std::this_thread::get_id();
     SCAI_LOG_DEBUG( logger, "lockAccess, kind = " << kind << ", #reads = "
-                    << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
+                    << mLock[pRead] << ", #writes = " << mLock[pWrite] )
 
     if ( !locked() )
     {
@@ -129,7 +207,7 @@ void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr contex
         multiThreaded  = false;
         SCAI_LOG_DEBUG( logger, "first access, set context = " << *context << ", set thread = " << id )
     }
-    else if ( locked( Context::Write ) > 0 )
+    else if ( locked( AccessKind::Write ) > 0 )
     {
         COMMON_THROWEXCEPTION( "Access conflict, no further access after a write access, data might have been reallocated" )
     }
@@ -152,7 +230,7 @@ void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr contex
     {
         // access at different context
         COMMON_THROWEXCEPTION( "Access conflict, kind = " << kind << ", #reads = "
-                               << mLock[Context::Read] << ", #writes = " << mLock[Context::Write]
+                               << mLock[pRead] << ", #writes = " << mLock[pWrite]
                                << ", more than one context" )
     }
     else if ( multiThreaded || id != accessThread )
@@ -176,33 +254,37 @@ void ContextDataManager::lockAccess( Context::AccessKind kind, ContextPtr contex
         // same thread, same context, that is okay for now
     }
 
-    mLock[kind]++;
+    mLock[pKind]++;
     SCAI_LOG_DEBUG( logger, "lockAccess done, kind = " << kind << ", #reads = "
-                    << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
+                    << mLock[pRead] << ", #writes = " << mLock[pWrite] )
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::unlockAccess( Context::AccessKind kind )
+void ContextDataManager::unlockAccess( AccessKind kind )
 {
-    common::Thread::ScopedLock lock( mAccessMutex );
-    SCAI_ASSERT_LE( 1, mLock[kind], "release access " << kind << ", never acquired" )
-    mLock[kind]--;
-    SCAI_LOG_DEBUG( logger, kind << "Access released, #reads = "
-                    << mLock[Context::Read] << ", #writes = " << mLock[Context::Write] )
+    const int pKind  = static_cast<int>( kind );
+    const int pRead  = static_cast<int>( AccessKind::Read );
+    const int pWrite = static_cast<int>( AccessKind::Write );
 
-    if ( ( mLock[Context::Write] == 0 ) && ( mLock[Context::Read] == 0 ) )
+    std::unique_lock<std::mutex> lock( mAccessMutex );
+    SCAI_ASSERT_LE( 1, mLock[pKind], "release access " << kind << ", never acquired" )
+    mLock[pKind]--;
+    SCAI_LOG_DEBUG( logger, kind << "Access released, #reads = "
+                    << mLock[pRead] << ", #writes = " << mLock[pWrite] )
+
+    if ( ( mLock[pWrite] == 0 ) && ( mLock[pRead] == 0 ) )
     {
         multiContext = false;
         multiThreaded = false;
-        SCAI_LOG_DEBUG( logger, common::Thread::getSelf() << ": notify threads waiting for access" )
-        mAccessCondition.notifyOne();  // Notify waiting thread
+        SCAI_LOG_DEBUG( logger, std::this_thread::get_id() << ": notify threads waiting for access" )
+        mAccessCondition.notify_one();  // Notify waiting thread
     }
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void ContextDataManager::releaseAccess( ContextDataIndex index, Context::AccessKind kind )
+void ContextDataManager::releaseAccess( ContextDataIndex index, AccessKind kind )
 {
     // we should check that this is really the context data for which access was reserved
     SCAI_ASSERT_LT( index, mContextData.size(), "Illegal context data index = " << index )
@@ -356,7 +438,7 @@ ContextDataIndex ContextDataManager::getContextData( ContextPtr context )
 
         MemoryPtr memoryPtr = context->getMemoryPtr();
 
-        if ( context->getType() == Context::Host )
+        if ( context->getType() == common::ContextType::Host )
         {
             // For host context we might find more convenient memory by first touch
             if ( contextIndex > 0 )
@@ -499,7 +581,7 @@ ContextPtr ContextDataManager::getFirstTouchContextPtr() const
 
 /* ---------------------------------------------------------------------------------*/
 
-ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, Context::AccessKind kind,
+ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, AccessKind kind,
         size_t allocSize, size_t validSize )
 {
     SCAI_ASSERT( context, "NULL pointer for context" )
@@ -533,14 +615,14 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, Context:
                 SCAI_LOG_INFO( logger, "valid data here: " << validEntry )
                 fetch( data, validEntry, validSize );
             }
-            else if ( kind == Context::Read )
+            else if ( kind == AccessKind::Read )
             {
                 SCAI_LOG_WARN( logger, "acquired read access for uninitialized array" )
             }
         }
     }
 
-    if ( kind == Context::Write )
+    if ( kind == AccessKind::Write )
     {
         invalidateAll();        // invalidate all entries
     }
@@ -564,12 +646,12 @@ void ContextDataManager::fetch( ContextData& target, const ContextData& source, 
 
         // try it via host
 
-        if ( target.getMemory().getType() == memtype::HostMemory )
+        if ( target.getMemory().getType() == MemoryType::HostMemory )
         {
             COMMON_THROWEXCEPTION( "Unsupported: copy to host from: " << source.getMemory() )
         }
 
-        if ( source.getMemory().getType() == memtype::HostMemory )
+        if ( source.getMemory().getType() == MemoryType::HostMemory )
         {
             COMMON_THROWEXCEPTION( "Unsupported: copy from host to: " << target.getMemory() )
         }
@@ -604,8 +686,8 @@ SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextDat
 
         ContextPtr hostContextPtr = Context::getHostPtr();
 
-        if (     target.getMemory().getType() == memtype::HostMemory
-                 ||  source.getMemory().getType() == memtype::HostMemory )
+        if (     target.getMemory().getType() == MemoryType::HostMemory
+                 ||  source.getMemory().getType() == MemoryType::HostMemory )
         {
             COMMON_THROWEXCEPTION( "copyAsync from " << source << " to " << target
                                    << " must be supported with HostMemory, exception = " << ex.what() )
@@ -753,7 +835,7 @@ void ContextDataManager::reserve( ContextPtr context, const size_t size, const s
     ContextData& data = ( *this )[context];
     bool inUse = false;
 
-    // ToDo: must have a write access here SCAI_ASSERT( !data.locked( Context::Write ), "no reserve on write locked data." )
+    // ToDo: must have a write access here SCAI_ASSERT( !data.locked( AccessKind::Write ), "no reserve on write locked data." )
 
     if ( data.isValid() )
     {
@@ -811,14 +893,60 @@ void ContextDataManager::init( const void* data, const size_t size )
     // choose as context for valid entries the first touch context
     ContextPtr ctx = getFirstTouchContextPtr();
     // acquire write only access on this context, validSize = 0;
-    ContextDataIndex index = acquireAccess( ctx, Context::Write, size, 0 );
+    ContextDataIndex index = acquireAccess( ctx, AccessKind::Write, size, 0 );
     // make a fictive ContextData entry for host data
     ContextData hostEntry( Context::getHostPtr()->getMemoryPtr() );
     hostEntry.setRef( const_cast<void*>( data ), size );
     mContextData[index].reserve( size, 0, false );
     // copy the host data to the destination
     mContextData[index].copyFrom( hostEntry, size );
-    releaseAccess( index, Context::Write );
+    releaseAccess( index, AccessKind::Write );
+}
+
+void ContextDataManager::getData( void* data, const size_t offset, const size_t size )
+{
+    // get a valid context, preferred host
+
+    ContextPtr ctx     = Context::getHostPtr();
+    const Memory& hostMem = *ctx->getMemoryPtr();
+
+    ctx = getValidContext( ctx );
+
+    ContextDataIndex index = acquireAccess( ctx, AccessKind::Read, offset + size, offset + size );
+
+    const Memory& mem = mContextData[index].getMemory();
+
+    const char* ptr = static_cast<const char*>( mContextData[index].get() );
+
+    SCAI_LOG_INFO( logger, "getData( offset = " << offset << ", size = " << size << " ), index = " << index << ", mem = " << mem << " copies to " << hostMem )
+
+    mem.memcpyTo( hostMem, data, ptr + offset, size );
+
+    releaseAccess( index, common::AccessKind::Read );
+}
+
+void ContextDataManager::setData( const void* data, const size_t offset, const size_t dataSize, const size_t allocSize )
+{
+    // get a valid context, preferred host
+
+    ContextPtr ctx     = Context::getHostPtr();
+    const Memory& hostMem = *ctx->getMemoryPtr();
+
+    ctx = getValidContext( ctx );
+
+    ContextDataIndex index = acquireAccess( ctx, AccessKind::Write, allocSize, allocSize );
+
+    SCAI_LOG_INFO( logger, "setData( offset = " << offset << ", size = " << dataSize << " ), index = " << index << ", data: " << mContextData[index] )
+
+    const Memory& mem = mContextData[index].getMemory();
+
+    char* ptr = static_cast<char*>( mContextData[index].get() );
+
+    SCAI_LOG_DEBUG( logger, "setData( offset = " << offset << ", size = " << dataSize << " ), index = " << index << ", mem = " << mem << " copies from " << hostMem )
+
+    mem.memcpyFrom( ptr + offset, hostMem, data, dataSize );
+
+    releaseAccess( index, common::AccessKind::Write );
 }
 
 /* ---------------------------------------------------------------------------------*/

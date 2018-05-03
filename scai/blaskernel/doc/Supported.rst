@@ -18,6 +18,3 @@ The BLASKernel library provides the following implementations:
 * A CUDA wrapper library provides the supported BLAS and LAPACK routines on a CUDA
   device by wrapping the corresponding routines from the cuBLAS library.
 
-* A MIC wrapper library provides the supported BLAS and LAPACK routines on a Intel MIC
-  device by wrapping the corresponding routines from the MKL library (Intel MIC version).
-

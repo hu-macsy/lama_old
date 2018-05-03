@@ -27,84 +27,78 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/examples/lecture/task2.cpp
+ * @brief Implementation of a CG solver using LAMA textbook syntax
  * @author Thomas Brandes
  * @date 15.05.2013
  */
 
-//Solution of task 2:
-
 #include <scai/lama.hpp>
 
-#include <scai/lama/storage/SparseAssemblyStorage.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 
 #include <scai/tracing.hpp>
 
 #include <iostream>
+#include <cstdlib>
 
+using namespace scai;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 int main( int argc, char* argv[] )
 {
     if ( argc < 2 )
     {
         std::cerr << "No input file specified" << std::endl;
-        exit( -1 );
+        return EXIT_FAILURE;
     }
 
     int maxIter = 10;   // maximal number of iterations
 
     if ( argc > 2 )
     {
-        sscanf( argv[2], "%d", &maxIter );
+        maxIter = std::stoi( argv[2], nullptr, 0 );
     }
 
-    CSRSparseMatrix<ValueType> A( argv[1] );
-    std::cout << "Read matrix A : " << A << std::endl;
-    IndexType size = A.getNumRows();
-    DenseVector<ValueType> b( size, 0 );
-    {
-        WriteAccess<ValueType> writeB( b.getLocalValues() );
+    auto matrix = read<CSRSparseMatrix<ValueType>>( argv[1] );
+    std::cout << "Read matrix : " << matrix << std::endl;
+    IndexType size = matrix.getNumRows();
+    auto rhs = linearDenseVector<ValueType>( size, 1, 1 );
+    std::cout << "Vector rhs : " << rhs << std::endl;
+    auto solution = fill<DenseVector<ValueType>>( size, 0 );
 
-        for ( IndexType i = 0; i < size; ++i )
-        {
-            // writeB[i] = 1;
-            writeB[i] = ValueType( i + 1 );
-        }
-    }
-    std::cout << "Vector b : " << b << std::endl;
-    DenseVector<ValueType> x( size , 0.0 );
-    std::cout << "Vector x : " << x << std::endl;
-    // d = r = b - A * x
-    // help = A * x;
-    DenseVector<ValueType> r ( b - A * x );
-    DenseVector<ValueType> d ( r );
-    Scalar rOld = r.dotProduct( r );
-    Scalar eps = 0.00001;
-    L2Norm norm;
+    auto r = eval<DenseVector<ValueType>>( rhs - matrix * solution );
+    DenseVector<ValueType> d( r );
 
-    for ( int k = 0 ; k < maxIter and norm( r ) > eps; k++ )
+    ValueType rOld = r.dotProduct( r );
+
+    L2Norm<ValueType> norm;
+    RealType<ValueType> eps = 0.00001;
+    auto rnorm = norm( r );
+
+    DenseVector<ValueType> z;  // temporary vector
+
+    for ( int k = 0 ; k < maxIter and rnorm > eps; k++ )
     {
-        DenseVector<ValueType> z( A * d );
-        Scalar alpha = rOld / d.dotProduct( z );
-        x = x + alpha * d;
-        r = r - alpha * z;
-        Scalar rNew = r.dotProduct( r );
-        Scalar beta = rNew / rOld;
+        z = matrix * d;
+        ValueType alpha = rOld / d.dotProduct( z );
+        solution += alpha * d;
+        r -= alpha * z;
+        ValueType rNew = r.dotProduct( r );
+        ValueType beta = rNew / rOld;
         d = r + beta * d;
         rOld = rNew;
-        Scalar rnorm = norm( r );
-        std::cout << "Iter k = " << k << " : norm( r ) = " << rnorm.getValue<ValueType>() << std::endl;
+        rnorm = norm( r );  // alternatively: common::Math::sqrt( rNew )
+        std::cout << "Iter k = " << k << " : norm( r ) = " << rnorm << ", " << std::endl;
     }
 
-    return 0;
+    solution.writeToFile( "solution.txt" );
+
+    return EXIT_SUCCESS;
 }
 

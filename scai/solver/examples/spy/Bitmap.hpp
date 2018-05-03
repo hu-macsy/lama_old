@@ -45,6 +45,8 @@
 
 using namespace scai;
 
+typedef DefaultReal ValueType;
+
 class Bitmap
 {
 public:
@@ -57,12 +59,12 @@ public:
 
     Bitmap( const IndexType width, const IndexType height ) :
 
-        mPixelData( lama::GridVector<float>( common::Grid2D( width, height ), static_cast<float>( 0 ) ) )
+        mPixelData( lama::GridVector<ValueType>( common::Grid2D( width, height ), static_cast<ValueType>( 0 ) ) )
     {
         // set min and max with the zero element
 
-        mMinVal = common::TypeTraits<float>::getMax();   // neutral element for min operation
-        mMaxVal = static_cast<float>( 0 );
+        mMinVal = common::TypeTraits<ValueType>::getMax();   // neutral element for min operation
+        mMaxVal = static_cast<ValueType>( 0 );
     }
 
     ~Bitmap()
@@ -74,12 +76,12 @@ public:
     template<typename ValueType>
     void drawCSR( const IndexType nRows, const IndexType nCols, const IndexType ia[], const IndexType ja[], const ValueType[] )
     {
-        lama::GridWriteAccess<float> wPixel( mPixelData );
+        lama::GridWriteAccess<ValueType> wPixel( mPixelData );
 
         double multRow = double( wPixel.size( 0 ) ) / double( nRows );
         double multCol = double( wPixel.size( 1 ) ) / double( nCols );
 
-        float one = 1;
+        ValueType one = 1;
 
         mMinVal = 1 / ( one + one ); // must be > 0 and < 1 
 
@@ -99,7 +101,7 @@ public:
     template<typename ValueType>
     void drawCSRValues( const IndexType nRows, const IndexType nCols, const IndexType ia[], const IndexType ja[], const ValueType values[] )
     {
-        lama::GridWriteAccess<float> wPixel( mPixelData );
+        lama::GridWriteAccess<ValueType> wPixel( mPixelData );
 
         double multRow = double( wPixel.size( 0 ) ) / double( nRows );
         double multCol = double( wPixel.size( 1 ) ) / double( nCols );
@@ -108,14 +110,14 @@ public:
         {
             for ( IndexType j = ia[i]; j < ia[i + 1]; ++j )
             {
-                float matrixValue = static_cast<float>( values[j] );
+                ValueType matrixValue = static_cast<ValueType>( values[j] );
                 matrixValue = common::Math::abs( matrixValue );
 
                 const IndexType iRow = static_cast<IndexType>( i * multRow );
                 const IndexType iCol = static_cast<IndexType>( ja[j] * multCol );
                 wPixel( iRow, iCol ) = matrixValue;
 
-                if ( matrixValue > common::TypeTraits<float>::eps0() )
+                if ( matrixValue > common::TypeTraits<ValueType>::eps0() )
                 {
                     mMinVal = common::Math::min( mMinVal, matrixValue );
                 }
@@ -131,7 +133,7 @@ public:
             {
                 if ( ja[j] == i )
                 {
-                    float matrixValue = static_cast<float>( values[j] );
+                    ValueType matrixValue = static_cast<ValueType>( values[j] );
                     matrixValue = common::Math::abs( matrixValue );
                     const IndexType iRow = static_cast<IndexType>( i * multRow );
                     const IndexType iCol = static_cast<IndexType>( i * multCol );
@@ -143,7 +145,7 @@ public:
 
     void write( const std::string outFileName )
     {
-        SCAI_ASSERT_GT_ERROR( mMinVal, static_cast<float>( 0 ), 
+        SCAI_ASSERT_GT_ERROR( mMinVal, static_cast<ValueType>( 0 ), 
                               "min value must be positive to guarantee background color for zero entries" )
 
         lama::ImageIO::writeSC( mPixelData, mMinVal, mMaxVal, outFileName );
@@ -151,8 +153,8 @@ public:
 
 private:
 
-    lama::GridVector<float> mPixelData;
+    lama::GridVector<ValueType> mPixelData;
 
-    float mMinVal;
-    float mMaxVal;
+    ValueType mMinVal;
+    ValueType mMaxVal;
 };

@@ -66,9 +66,12 @@ FileInputSet::FileInputSet( const std::string filename ) : LAMAInputSet()
 
     if ( FileIO::fileExists( mFileName ) )
     {
-        mA.reset( new CSRSparseMatrix<double>( mFileName ) );
-        mX.reset( new DenseVector<double>( mA->getNumColumns(), 1.0 ) );
-        mY.reset( new DenseVector<double>( *mA * *mX  ) );
+        mA.reset( new CSRSparseMatrix<double>() );
+        mA->readFromFile( mFileName );
+        mX.reset( new DenseVector<double>() );
+        mX->setSameValue( mA->getNumColumns(), 1.0 );
+        mY.reset( new DenseVector<double>() );
+        *mY = *mA * *mX;    
     }
     else
     {

@@ -36,10 +36,8 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -55,7 +53,8 @@ using namespace lama;
 
 /** Class for vector of all registered Norm objects in factory */
 
-class Norms : public std::vector<lama::NormPtr>
+template<typename ValueType>
+class Norms : public std::vector<lama::NormPtr<ValueType> >
 {
 
 public:
@@ -68,12 +67,12 @@ public:
 
         std::vector<std::string> values;  //  all create values
 
-        Norm::getCreateValues( values );
+        Norm<ValueType>::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            NormPtr normPtr( scai::lama::Norm::create( values[i] ) );
-            push_back( normPtr );
+            NormPtr<ValueType> normPtr( Norm<ValueType>::create( values[i] ) );
+            this->push_back( normPtr );
         }
     }
 
@@ -92,16 +91,16 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NormTest" )
 
 BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
 {
-    scai::lama::DenseVector<ValueType> x( 4, 1.0 );
-    scai::lama::Scalar s = 3.0;
+    auto x = fill<DenseVector<ValueType>>( 4, 1.0 );
 
-    scai::lama::DenseVector<ValueType> tmp( s * x );
+    ValueType s = 3;
+    auto tmp = eval<DenseVector<ValueType>>( s * x );
 
-    Norms allNorms;
+    Norms<ValueType> allNorms;
 
     for ( size_t i = 0; i < allNorms.size(); ++i )
     {
-        Norm& norm = *allNorms[i];
+        Norm<ValueType>& norm = *allNorms[i];
 
         // Homogeneity test
 
@@ -113,22 +112,22 @@ BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
 
 BOOST_AUTO_TEST_CASE( triangleInequalityTest )
 {
-    scai::lama::DenseVector<ValueType> x( 2, 2.0 );
-    scai::lama::DenseVector<ValueType> y( 2, 2.0 );
-    scai::lama::DenseVector<ValueType> z( x + y );
+    auto x = fill<DenseVector<ValueType>>( 2, 2.0 );
+    auto y = fill<DenseVector<ValueType>>( 2, 2.0 );
+    auto z = eval<DenseVector<ValueType>>( x + y );
 
-    Norms allNorms;
+    Norms<ValueType> allNorms;
 
     for ( size_t i = 0; i < allNorms.size(); ++i )
     {
-        Norm& norm = *allNorms[i];
+        Norm<ValueType>& norm = *allNorms[i];
 
         // Inequality test
 
-        Scalar nz = norm.apply( z );
-        Scalar nxy = norm.apply( x ) + norm.apply( y );
+        auto nz  = norm.apply( z );
+        auto nxy = norm.apply( x ) + norm.apply( y );
 
-        BOOST_CHECK( nz.getValue<ValueType>() <= nxy.getValue<ValueType>() );
+        BOOST_CHECK( nz <= nxy );
     }
 }
 
@@ -136,17 +135,17 @@ BOOST_AUTO_TEST_CASE( triangleInequalityTest )
 
 BOOST_AUTO_TEST_CASE( zeroVectorTest )
 {
-    scai::lama::DenseVector<ValueType> x( 4, 0.0 );
+    auto x = fill<DenseVector<ValueType>>( 4, 0.0 );
 
-    Norms allNorms;
+    Norms<ValueType> allNorms;
 
     for ( size_t i = 0; i < allNorms.size(); ++i )
     {
-        Norm& norm = *allNorms[i];
+        Norm<ValueType>& norm = *allNorms[i];
 
         // zero test
 
-        BOOST_CHECK_EQUAL( norm.apply( x ), Scalar( 0 ) );
+        BOOST_CHECK_EQUAL( norm.apply( x ), 0 );
     }
 }
 
@@ -154,19 +153,17 @@ BOOST_AUTO_TEST_CASE( zeroVectorTest )
 
 BOOST_AUTO_TEST_CASE( zeroMatrixTest )
 {
-    scai::lama::DenseMatrix<ValueType> m( 3, 4 );
+    auto m = zero<DenseMatrix<ValueType>>( 3, 4 );
 
-    m.getLocalStorage().setZero();
-
-    Norms allNorms;
+    Norms<ValueType> allNorms;
 
     for ( size_t i = 0; i < allNorms.size(); ++i )
     {
-        Norm& norm = *allNorms[i];
+        Norm<ValueType>& norm = *allNorms[i];
 
         // zero test
 
-        BOOST_CHECK_EQUAL( norm.apply( m ), Scalar( 0 ) );
+        BOOST_CHECK_EQUAL( norm.apply( m ), 0 );
     }
 }
 
@@ -174,18 +171,18 @@ BOOST_AUTO_TEST_CASE( zeroMatrixTest )
 
 BOOST_AUTO_TEST_CASE( writeTest )
 {
-    Norms allNorms;
+    Norms<ValueType> allNorms;
 
     for ( size_t i = 0; i < allNorms.size(); ++i )
     {
-        Norm& norm = *allNorms[i];
+        Norm<ValueType>& norm = *allNorms[i];
 
         std::ostringstream out;
         std::ostringstream outB;
         std::ostringstream outD;
 
         out << norm;
-        norm.Norm::writeAt( outB );
+        norm.Norm<ValueType>::writeAt( outB );
         norm.writeAt( outD );
 
         BOOST_CHECK( out.str().length() > 0 );

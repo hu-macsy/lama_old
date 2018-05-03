@@ -27,10 +27,7 @@ should be set via the environment variable **SCAI_ROOT**.
 
    export SCAI_ROOT=<path/to/lama/installation/directory>
 
-The installation directory should contain online documentation
-that is also available `here`__.
-
-__ http://libama.sourceforge.net/doc/index.html
+The installation directory should contain online documentation:
 
 .. code-block:: bash
 
@@ -41,7 +38,7 @@ follows:
 
 .. code-block:: bash
 
-   g++ -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama -o simple simple.cpp
+   g++ -std=c++11 -I${SCAI_ROOT}/include -o simple simple.cpp -L${SCAI_ROOT}/lib -lscai_lama
 
 For running the executable, it is necessary to include the lib directory of LAMA
 into your library path.
@@ -53,26 +50,14 @@ into your library path.
 The following example program can be used to verify that compilation, linking 
 and running works fine.
 
-:download:`Solver <solver.cpp>`
+:download:`solver <solver.cpp>`
 
-An example **Makefile** can be found together with the **simple.cpp** example
-and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_source/tutorial/**.
+An example ``Makefile`` can be found together with the ``simple.cpp`` example
+and the solutions for the lecture tasks at ``${SCAI_ROOT}/doc/user_guide/cpp_source/tutorial/``.
 
-.. H4H Tutorial Remarks
-.. ====================
+.. code-block:: bash
 
-.. To run the tutorial on nova you need to log in to the head node of nova and submit an
-.. interactive job to the gpus queue. Please allocate 2 cpus so that all tutorial
-.. participants can get free resources and we are able to run MPI parallel jobs
-.. later in this tutorial. The tutorial will also need the two modules mentioned
-.. below.
-
-.. code-block:bash
-
-..   qsub -Iq gpus -lnodes=1:ppn=2
-..   module load bullxmpi/bullxmpi-1.0.2
-..   module load intel_compiler/12.0.2.137
-..   export SCAI_ROOT=/home_nfs/h4h/LAMA/lama
+    ls ${SCAI_ROOT}/share/examples/scai-lama-*/tutorial
 
 .. csv-table:: 
    :header: "Tasks", "Solutions"

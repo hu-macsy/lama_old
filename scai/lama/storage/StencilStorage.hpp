@@ -38,7 +38,8 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/storage/CRTPMatrixStorage.hpp>
+#include <scai/lama/storage/MatrixStorage.hpp>
+
 #include <scai/common/Grid.hpp>
 #include <scai/common/Stencil.hpp>
 
@@ -73,12 +74,25 @@ class COMMON_DLL_IMPORTEXPORT StencilStorage: public MatrixStorage<ValueType>
 {
 public:
 
-    typedef ValueType StorageValueType;
-    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
+    /* ==================================================================== */
+    /*  static getter methods and corresponding pure methods                */
+    /* ==================================================================== */
 
-    /** get typename of the matrix storage format. */
+    /** Static method that returns a unique name for this storage class */
 
     static const char* typeName();
+
+    /** Implementation of pure method _MatrixStorage:getTypeName    */
+
+    virtual const char* getTypeName() const;
+
+    /** Implementation of pure method _MatrixStorage:getCreateValue    */
+
+    virtual MatrixStorageCreateKeyType getCreateValue() const;
+
+    /* ==================================================================== */
+    /*  Constructor / Destructor                                            */
+    /* ==================================================================== */
 
     StencilStorage();
 
@@ -89,37 +103,31 @@ public:
 
     /** Override default copy constructor to guarantee same behavior */
 
-    StencilStorage( const StencilStorage<ValueType>& other )
+    StencilStorage( const StencilStorage<ValueType>& other ) : 
 
-        : MatrixStorage<ValueType>( other.getNumRows(), other.getNumColumns() ),
-          mGrid( other.mGrid ),
-          mStencil( other.mStencil )
+        MatrixStorage<ValueType>( other ),
+        mGrid( other.mGrid ),
+        mStencil( other.mStencil )
+
     {
-        _MatrixStorage::setContextPtr( other.getContextPtr() );
     }
 
     /** 
      * @brief Implementation of pure method _MatrixStorage::allocate
      */
-    void allocate( const IndexType /* numRows */, const IndexType /* numColumns */ )
+    void allocate( const IndexType numRows, const IndexType numColumns )
     {
-        COMMON_THROWEXCEPTION( "unsupported" )
+        COMMON_THROWEXCEPTION( "unsupported: StencilStorage cannot be allocated by " << numRows << " x " << numColumns )
     }
 
     /**
      * @brief Implementation of pure method for _MatrixStorage.
      */
-    virtual void clear()
-    {
-        COMMON_THROWEXCEPTION( "unsupported" )
-    }
+    virtual void clear();
 
     /** Implementation of pure method of class MatrixStorage. */
 
-    virtual void purge()
-    {
-        COMMON_THROWEXCEPTION( "unsupported" )
-    }
+    virtual void purge();
 
     /** Implementation of MatrixStorage::copy for derived class. */
 
@@ -127,7 +135,7 @@ public:
 
     /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
 
-    virtual StencilStorage* newMatrixStorage() const
+    virtual StencilStorage* newMatrixStorage( const IndexType, const IndexType ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
@@ -148,7 +156,7 @@ public:
 
     /** Getter routine for the enum value that stands for this format. */
 
-    virtual Format::MatrixStorageFormat getFormat() const
+    virtual Format getFormat() const
     {
         return Format::STENCIL;
     }
@@ -166,10 +174,6 @@ public:
     {
         return mGrid;
     }
-
-    /** Implementiation of virtual method MatrixStorage::getCreateValue */
-
-    virtual scai::lama::MatrixStorageCreateKeyType getCreateValue() const;
 
     /** Set identity uses trivial stencil for the given grid. */
 
@@ -189,52 +193,34 @@ public:
         COMMON_THROWEXCEPTION( "checkDiagonalProperty unsuported" )
     }
 
-    /** Implementation of pure method _MatrixStorage::swap */
+    /******************************************************************/
+    /*  set / get diagonal                                            */
+    /******************************************************************/
 
-    virtual void swap( _MatrixStorage& )
+    /** 
+     * Implementation of pure method MatrixStorage<ValueType>::getDiagonal
+     */
+    virtual void getDiagonal( hmemo::HArray<ValueType>& diagonal ) const;
+
+    /** 
+     * Implementation of pure method MatrixStorage<ValueType>::setDiagonalV
+     */
+    virtual void setDiagonalV( const hmemo::HArray<ValueType>& )
     {
-        COMMON_THROWEXCEPTION( "swap unsuported" )
+        COMMON_THROWEXCEPTION( "setDiagonal unsuported for stencil storage" )
     }
 
-    /** Implementation of pure method _MatrixStorage::getTypeName */
-
-    virtual const char* getTypeName() const
+    /** 
+     * Implementation of pure method MatrixStorage<ValueType>::setDiagonal
+     */
+    virtual void setDiagonal( const ValueType )
     {
-        COMMON_THROWEXCEPTION( "getTypeName unsuported" )
-    }
-
-    /** _MatrixStorage */
-
-    virtual void getRow(scai::hmemo::_HArray&, IndexType) const;
-
-    /** _MatrixStorage */
-
-    virtual void setRow(const scai::hmemo::_HArray&, IndexType, scai::common::binary::BinaryOp)
-    {
-        COMMON_THROWEXCEPTION( "setRow unsuported" )
-    }
-
-    /** _MatrixStorage */
-
- 	virtual void setColumn(const scai::hmemo::_HArray&, IndexType, scai::common::binary::BinaryOp)
-    {
-        COMMON_THROWEXCEPTION( "setColumn unsuported" )
+        COMMON_THROWEXCEPTION( "setDiagonal unsuported for stencil storage" )
     }
 
     /** _MatrixStorage */
 
- 	virtual void getDiagonal( scai::hmemo::_HArray& ) const;
-
-    /** _MatrixStorage */
-
- 	virtual void setDiagonalV(const scai::hmemo::_HArray&)
-    {
-        COMMON_THROWEXCEPTION( "setDiagonal unsuported" )
-    }
-
-    /** _MatrixStorage */
-
- 	virtual void scaleRows(const scai::hmemo::_HArray&)
+ 	virtual void scaleRows(const scai::hmemo::HArray<ValueType>&)
     {
         COMMON_THROWEXCEPTION( "scaleRows cannot be applied for stencil storage" )
     }
@@ -250,9 +236,16 @@ public:
        scai::hmemo::HArray<IndexType>& csrJA, 
        scai::hmemo::_HArray& csrValues ) const;
 
-    /** _MatrixStorage */
-
- 	virtual void setCSRData(IndexType, IndexType, IndexType, const scai::hmemo::HArray<IndexType>&, const scai::hmemo::HArray<IndexType>&, const scai::hmemo::_HArray&)
+    /** Implementation of _MatrixStorage::setCSRData i
+     *
+     *  This method throws an exception as arbitrary CSR data cannot be converted to a stencil storage
+     */
+ 	virtual void setCSRData( 
+        IndexType, 
+        IndexType, 
+        const scai::hmemo::HArray<IndexType>&, 
+        const scai::hmemo::HArray<IndexType>&, 
+        const scai::hmemo::_HArray&)
     {
         COMMON_THROWEXCEPTION( "setcSRData unsuported" )
     }
@@ -270,13 +263,6 @@ public:
      */
  	void scale( const ValueType factor );
 
-    /** Implementation of MatrixStorage<ValueType>::setDiagonal */
-
- 	void setDiagonal( ValueType )
-    {
-        COMMON_THROWEXCEPTION( "setDiagonal unsuported" )
-    }
-
     /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const
@@ -292,23 +278,33 @@ public:
         return 1;
     }
 
-    /** Implementation of pure method MatrixStorage::getSparseRow */
+    /******************************************************************/
+    /*  set - get  row - column                                       */
+    /******************************************************************/
 
-    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const;
+    /** Implementation of pure method MatrixStorage<ValueType>::getRow */
 
-    /** Implementation of pure method MatrixStorage::getColumn */
+    virtual void getRow( hmemo::HArray<ValueType>& row, const IndexType i ) const;
 
-    void getColumn( hmemo::_HArray& /* column */, const IndexType /* j */ ) const
-    {
-        COMMON_THROWEXCEPTION( "unsupported, try getRow on transposed storage" )
-    }
+    /** Implementation of pure method MatrixStorage<ValueType>::getColumn */
+
+    virtual void getColumn( hmemo::HArray<ValueType>& column, const IndexType j ) const;
+
+    /** Implementation of pure method MatrixStorage<ValueType>::getSparseRow */
+
+    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::HArray<ValueType>& values, const IndexType i ) const;
 
     /** Implementation of pure method MatrixStorage::getSparseColumn */
 
-    virtual void getSparseColumn( hmemo::HArray<IndexType>&, hmemo::_HArray&, const IndexType ) const
-    {
-        COMMON_THROWEXCEPTION( "unsupported for stencil storage, try it on transposed storage" )
-    }
+    virtual void getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::HArray<ValueType>& values, const IndexType j ) const;
+
+    /** Implementation of pure method MatrixStorage<ValueType>::setRow */
+
+    virtual void setRow( const hmemo::HArray<ValueType>& row, const IndexType i, const common::BinaryOp op );
+
+    /** Implementation of pure method MatrixStorage<ValueType>::setColumn */
+
+    virtual void setColumn( const hmemo::HArray<ValueType>& column, const IndexType j, const common::BinaryOp op );
 
     /** Implementation of pure method.  */
 
@@ -321,7 +317,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for Stencil storage */
 
     void setValue( const IndexType, const IndexType, const ValueType,
-                   const common::binary::BinaryOp = common::binary::COPY )
+                   const common::BinaryOp = common::BinaryOp::COPY )
     {
         COMMON_THROWEXCEPTION( "setValue cannot be applied for stencil storage" )
     }
@@ -378,15 +374,15 @@ public:
 
     /** Implementation for MatrixStorage::l1Norm */
 
-    virtual ValueType l1Norm() const;
+    virtual RealType<ValueType> l1Norm() const;
 
     /** Implementation for MatrixStorage::l2Norm */
 
-    virtual ValueType l2Norm() const;
+    virtual RealType<ValueType> l2Norm() const;
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual StorageAbsType maxNorm() const;
+    virtual RealType<ValueType> maxNorm() const;
 
     /** Implemenation of pure method of class MatrixStorage. */
 
@@ -402,6 +398,13 @@ public:
      */
     virtual void assign( const _MatrixStorage& other );
 
+    /** Implementation of pure method MatrixStorage<ValueType>::assignDiagonal */
+
+    virtual void assignDiagonal( const hmemo::HArray<ValueType>& )
+    {
+        COMMON_THROWEXCEPTION( "assignDiagonal unsupported" )
+    }
+
     /** Override the default implementation MatrixStorage<ValueType>::assignTranspose 
      *
      *  Assign transpose is only supported if other matrix is also a stencil storage.
@@ -416,7 +419,8 @@ public:
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::HArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y,
+        const common::MatrixOp op ) const;
 
     /** Implementation of MatrixStorage::jacobiIterate for stencil storage */
 
@@ -433,21 +437,24 @@ public:
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,
         const ValueType beta,
-        const hmemo::HArray<ValueType>& y ) const;
+        const hmemo::HArray<ValueType>& y,
+        const common::MatrixOp op ) const;
 
-    using MatrixStorage<ValueType>::prefetch;
-    using MatrixStorage<ValueType>::getContextPtr;
+    using _MatrixStorage::getNumRows;
+    using _MatrixStorage::getNumColumns;
+    using _MatrixStorage::prefetch;
+    using _MatrixStorage::getContextPtr;
 
 protected:
 
-    using MatrixStorage<ValueType>::mNumRows;
-    using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::mDiagonalProperty;
 
     common::Grid mGrid;                    //! grid for which this matrix storage stands
     common::Stencil<ValueType> mStencil;   //! stencil that specifies the linear mapping  with involved neighbors
 
 private:
+
+    static std::string initTypeName();
 
     tasking::SyncToken* incGEMV( hmemo::HArray<ValueType>& result, const ValueType alpha, const hmemo::HArray<ValueType>& x, bool async ) const;
 
@@ -457,6 +464,30 @@ private:
 };
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::setRow( const scai::hmemo::HArray<ValueType>&, IndexType, scai::common::BinaryOp )
+{
+    COMMON_THROWEXCEPTION( "setRow unsuported" )
+}
+
+template<typename ValueType>
+void StencilStorage<ValueType>::setColumn( const scai::hmemo::HArray<ValueType>&, IndexType, scai::common::BinaryOp )
+{
+    COMMON_THROWEXCEPTION( "setColumn unsuported" )
+}
+
+template<typename ValueType>
+void StencilStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>&, hmemo::HArray<ValueType>&, const IndexType ) const
+{
+    COMMON_THROWEXCEPTION( "get(Sparse)Column unsupported for stencil storage" )
+}
+
+template<typename ValueType>
+void StencilStorage<ValueType>::getColumn( hmemo::HArray<ValueType>&, const IndexType ) const
+{
+    COMMON_THROWEXCEPTION( "get(Sparse)Column unsupported for stencil storage" )
+}
 
 } /* end namespace lama */
 

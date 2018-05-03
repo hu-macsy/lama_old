@@ -45,7 +45,6 @@
 namespace scai
 {
 
-using namespace utilskernel;
 using namespace hmemo;
 
 namespace lama
@@ -191,7 +190,7 @@ void ImageIO::writeSC(
 
     common::Grid3D imageGrid( arrayGrid.size(0), arrayGrid.size(1), 3 );
 
-    GridVector<float> imageData( imageGrid, 0 );
+    GridVector<DefaultReal> imageData( imageGrid, 0 );
 
     ValueType scale = maxVal - minVal;
 
@@ -201,7 +200,7 @@ void ImageIO::writeSC(
 
     {
         GridReadAccess<ValueType> rArray( arrayData );
-        GridWriteAccess<float> wImage( imageData );
+        GridWriteAccess<DefaultReal> wImage( imageData );
 
         for ( IndexType i = 0; i < arrayGrid.size( 0 ); ++i )
         {
@@ -226,9 +225,9 @@ void ImageIO::writeSC(
                     computeColor( color, scaledVal ); 
                 }
 
-                wImage( i, j, 0 ) = static_cast<float>( color[ 0 ] * 255.0 + 0.5 );
-                wImage( i, j, 1 ) = static_cast<float>( color[ 1 ] * 255.0 + 0.5 );
-                wImage( i, j, 2 ) = static_cast<float>( color[ 2 ] * 255.0 + 0.5 );
+                wImage( i, j, 0 ) = static_cast<DefaultReal>( color[ 0 ] * 255.0 + 0.5 );
+                wImage( i, j, 1 ) = static_cast<DefaultReal>( color[ 1 ] * 255.0 + 0.5 );
+                wImage( i, j, 2 ) = static_cast<DefaultReal>( color[ 2 ] * 255.0 + 0.5 );
             }
         }
     }
@@ -243,11 +242,8 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
 {
     // do the scaling via minimal and maximal value of the array data
 
-    Scalar min = arrayData.min();
-    Scalar max = arrayData.max();
-
-    ValueType minVal = min.getValue<ValueType>();
-    ValueType maxVal = max.getValue<ValueType>();
+    ValueType minVal = arrayData.min();
+    ValueType maxVal = arrayData.max();
 
     SCAI_LOG_INFO( logger, "arrayData = " << arrayData << " has min = " << minVal << ", max = " << maxVal )
 

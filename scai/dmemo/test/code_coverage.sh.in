@@ -60,28 +60,9 @@ then
     done
 fi
 
-if [ -d ../gpi ];
-then
-    # Running parallel tests
-    for i in 1 2 3 4;
-    do
-        echo "Running distributed tests with $i GPI processes"
-        hostname > machines
-        for (( k=2; k<=$i; k++ ))
-        do
-            hostname >> machines
-        done
-        cat machines
-        # For GPI-2: only root processor output is available
-        count_error gaspi_run -m machines ${PWD}/dmemoTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1 1> ${dirname}/dist_tests_gpi_${i}.xml
-        # wait a little bit to get resources freed
-        sleep 1
-    done
-fi
-
 exit_on_failure ${error_count}
     
-do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@/@MODULE_NAME@"
 
 exit_on_failure $?
 

@@ -44,7 +44,8 @@
 #include <string>
 #include <sstream>
 
-using namespace scai::common;
+using namespace scai;
+using namespace common;
 
 /* -------------------------------------------------------------------------------- */
 /*  complex test types                                                              */
@@ -95,34 +96,34 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, ValueType, scai_complex_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( changeSign, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     ValueType x( 2, -3 );
     ValueType y = -x;
-    BOOST_CHECK_CLOSE( y.real(), -2, TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( y.imag(), 3, TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( y.real(), -2, TypeTraits<RealType>::eps1() );
+    BOOST_CHECK_CLOSE( y.imag(), 3, TypeTraits<RealType>::eps1() );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( mult, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     // Complex numbers
     ValueType r, x, y;
     // real parts
-    AbsType a = 2;
-    AbsType b = -3;
-    AbsType c = 3;
-    AbsType d = 1;
-    AbsType re = ( a * c ) - ( b * d );
-    AbsType im = ( a * d ) + ( b * c );
+    RealType a = 2;
+    RealType b = -3;
+    RealType c = 3;
+    RealType d = 1;
+    RealType re = ( a * c ) - ( b * d );
+    RealType im = ( a * d ) + ( b * c );
     // x = a + bi, y = c + di
     x = ValueType( a, b );
     y = ValueType( c, d );
     // operator *
     r = x * y;
-    BOOST_CHECK_CLOSE( r.real(), re, TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( r.imag(), im, TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( r.real(), re, TypeTraits<RealType>::eps1() );
+    BOOST_CHECK_CLOSE( r.imag(), im, TypeTraits<RealType>::eps1() );
     // operator *=
     x *= y;
     BOOST_CHECK( r == x );
@@ -132,24 +133,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( mult, ValueType, scai_complex_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( add, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     // Complex numbers
     ValueType r, x, y;
     // real parts
-    AbsType a = 2;
-    AbsType b = -3;
-    AbsType c = 3;
-    AbsType d = 1;
+    RealType a = 2;
+    RealType b = -3;
+    RealType c = 3;
+    RealType d = 1;
     // result
-    AbsType re = a + c;
-    AbsType im = b + d;
+    RealType re = a + c;
+    RealType im = b + d;
     // x = a + bi, y = c + di
     x = ValueType( a, b );
     y = ValueType( c, d );
     // operator +
     r = x + y;
-    BOOST_CHECK_CLOSE( r.real(), re, TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( r.imag(), im, TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( r.real(), re, TypeTraits<RealType>::eps1() );
+    BOOST_CHECK_CLOSE( r.imag(), im, TypeTraits<RealType>::eps1() );
     // operator +=
     x += y;
     BOOST_CHECK( r == x );
@@ -159,24 +160,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( add, ValueType, scai_complex_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sub, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     // Complex numbers
     ValueType r, x, y;
     // real parts
-    AbsType a = 2;
-    AbsType b = -3;
-    AbsType c = 3;
-    AbsType d = 1;
+    RealType a = 2;
+    RealType b = -3;
+    RealType c = 3;
+    RealType d = 1;
     // result
-    AbsType re = a - c;
-    AbsType im = b - d;
+    RealType re = a - c;
+    RealType im = b - d;
     // x = a + bi, y = c + di
     x = ValueType( a, b );
     y = ValueType( c, d );
     // operator -
     r = x - y;
-    BOOST_CHECK_CLOSE( r.real(), re, TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( r.imag(), im, TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( r.real(), re, TypeTraits<RealType>::eps1() );
+    BOOST_CHECK_CLOSE( r.imag(), im, TypeTraits<RealType>::eps1() );
     // operator -=
     x -= y;
     BOOST_CHECK( r == x );
@@ -186,16 +187,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sub, ValueType, scai_complex_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( div, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     // Complex numbers
     ValueType r, x, y;
     // real parts
-    AbsType a = 2;
-    AbsType b = -3;
-    AbsType c = 3;
-    AbsType d = 1;
-    AbsType re = ( a * c + b * d ) / ( c * c + d * d );
-    AbsType im = ( b * c - a * d ) / ( c * c + d * d );
+    RealType a = 2;
+    RealType b = -3;
+    RealType c = 3;
+    RealType d = 1;
+    RealType re = ( a * c + b * d ) / ( c * c + d * d );
+    RealType im = ( b * c - a * d ) / ( c * c + d * d );
     // x = a + bi, y = c + di
     x = ValueType( a, b );
     y = ValueType( c, d );
@@ -223,7 +224,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( output, ValueType, scai_complex_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( input, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     ValueType x;
     // real and imaginary part set
     std::stringstream s1( "14 -893" );
@@ -234,7 +235,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( input, ValueType, scai_complex_test_types )
     std::stringstream s2( "23" );
     s2 >> x;
     BOOST_CHECK_CLOSE( x.real(), 23, 0.00001 );
-    BOOST_CHECK_EQUAL( x.imag(), AbsType( 0 ) );
+    BOOST_CHECK_EQUAL( x.imag(), RealType( 0 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -264,12 +265,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conj, ValueType, scai_complex_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( abs, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     ValueType x( 3, -4 );
-    AbsType abs_val = Math::abs( x );
-    AbsType xa = 3;
-    AbsType xb = -4;
-    AbsType r = Math::sqrt( xa * xa + xb * xb );
+    RealType abs_val = Math::abs( x );
+    RealType xa = 3;
+    RealType xb = -4;
+    RealType r = Math::sqrt( xa * xa + xb * xb );
     BOOST_CHECK_CLOSE( abs_val, r, 0.00001 );
 }
 
@@ -277,20 +278,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( abs, ValueType, scai_complex_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sqrt, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     ValueType x, sqrt_val, r;
     // sqrt from -1 --> i
     x = ValueType( -1, 0 );
     sqrt_val = Math::sqrt( x );
     r = ValueType( 0, 1 );
-    BOOST_CHECK_SMALL( sqrt_val.real(), TypeTraits<AbsType>::small() );
+    BOOST_CHECK_SMALL( sqrt_val.real(), TypeTraits<RealType>::small() );
     BOOST_CHECK_CLOSE( sqrt_val.imag(), r.imag(), 0.00001 );
     // sqrt from 1 --> 1
     x = ValueType( 1, 0 );
     sqrt_val = Math::sqrt( x );
     r = ValueType( 1, 0 );
     BOOST_CHECK_CLOSE( sqrt_val.real(), r.real(), 0.00001 );
-    BOOST_CHECK_SMALL( sqrt_val.imag(), TypeTraits<AbsType>::small() );
+    BOOST_CHECK_SMALL( sqrt_val.imag(), TypeTraits<RealType>::small() );
     // sqrt from 3 + 4i --> 1
     x = ValueType( 3, 4 );
     sqrt_val = Math::sqrt( x );

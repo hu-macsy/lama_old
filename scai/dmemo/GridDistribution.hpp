@@ -83,17 +83,20 @@ public:
      *  @param[in] communicator used for the partitions onto which grid is distributed
      *
      *  Note: Here the processor grid is determined by a good factorization of the available processors in the communicator.
-     *  The size of the grid can be set by the environment variable SCAI_NP, e.g. SCAI_NP=3x3x3
+     *  The size of the grid can be set by the environment variable SCAI_NP, e.g. SCAI_NP=3x3x3, but the product has to
+     *  be the same as the total number of processors in the communicator.
      */
-    GridDistribution( const common::Grid& globalGrid, const CommunicatorPtr communicator );
+    GridDistribution( const common::Grid& globalGrid, const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     virtual ~GridDistribution();
 
-    virtual bool isLocal( const IndexType index ) const;
+    /** Implementation of pure method Distribution::isLocal */
 
-    /** Overrides the default implementation of Distribution::findOwner 
+    virtual bool isLocal( const IndexType globalIndex ) const;
+
+    /** Overrides the default implementation of Distribution::findOwner
      *
-     *  Note: In contrary to the default implemantion here no communication is needed. 
+     *  Note: In contrary to the default implemantion here no communication is needed.
      */
     virtual PartitionId findOwner( const IndexType globalIndex ) const;
 
@@ -125,7 +128,7 @@ public:
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
-    /** This method does the global to local calculation with the grid positions. 
+    /** This method does the global to local calculation with the grid positions.
      *
      *  @param[in] globalGridPos global position in the grid
      *  @param[out] localGridPos  local position in the grid (undefined if not local)
@@ -152,6 +155,10 @@ public:
     /** Override Distribution::getOwnedIndexes with more efficient version. */
 
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
+
+    /** Implementation of pure method Distribution::hasAnyAddressing */
+
+    virtual bool hasAnyAddressing() const;
 
     /** Implementation of pure method Distribution::enableAnyAddressing */
 
@@ -191,7 +198,7 @@ public:
 
     /** Return pointer to array with lower bound pos of the local grid in global grid */
 
-    const IndexType* localLB() const 
+    const IndexType* localLB() const
     {
         return mLB;
     }

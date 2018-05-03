@@ -36,11 +36,11 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/lama/storage/COOStorage.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-#include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/lama/test/storage/StorageTemplateTests.hpp>
 
@@ -59,79 +59,119 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.COOStorageTest" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_types )
-{
-    ContextPtr loc = Context::getContextPtr();
-    const IndexType numRows = 10;
-    const IndexType numColumns = 15;
-    // constructor doesn't exist with other location
-    COOStorage<ValueType> cooStorage( numRows, numColumns );
-    cooStorage.prefetch( loc );
-    BOOST_REQUIRE_EQUAL( numRows, cooStorage.getNumRows() );
-    BOOST_REQUIRE_EQUAL( numColumns, cooStorage.getNumColumns() );
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        for ( IndexType j = 0; j < numColumns; ++j )
-        {
-            float v = static_cast<float> ( cooStorage.getValue( i, j ) );
-            BOOST_CHECK_SMALL( v, 1.0e-5f );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
-    const IndexType ia[] =
-    {   0, 1, 2, 1};
-    const IndexType ja[] =
-    {   0, 1, 2, 2};
-    const ValueType values[] =
-    {   0.5f, 0.5f, 0.3f, 0.2f};
-    const IndexType numValues = sizeof( values ) / sizeof( ValueType );
-    LArray<IndexType> cooIA( numValues, ia );
-    LArray<IndexType> cooJA( numValues, ja );
-    LArray<ValueType> cooValues( numValues, values );
-    COOStorage<ValueType> cooStorage( numRows, numColumns, cooIA, cooJA, cooValues );
+
+    HArray<IndexType> cooIA( {  0, 1, 2, 1 } );
+    HArray<IndexType> cooJA( {  0, 1, 2, 2 } );
+    HArray<ValueType> cooValues( { 0.5, 0.5, 0.3, 0.2 } );
+
+    COOStorage<ValueType> cooStorage( numRows, numColumns, cooIA, cooJA, cooValues, loc );
+
+    // COO keeps values in same order
+
+    BOOST_TEST( hostReadAccess( cooIA ), cooStorage.getIA() );
+    BOOST_TEST( hostReadAccess( cooJA ), cooStorage.getJA() );
+    BOOST_TEST( hostReadAccess( cooValues ), cooStorage.getValues() );
+
+    // copy constructor 
+
+    COOStorage<ValueType> cooStorageCopy( cooStorage );
+
+    BOOST_TEST( hostReadAccess( cooIA ), cooStorageCopy.getIA() );
+    BOOST_TEST( hostReadAccess( cooJA ), cooStorageCopy.getJA() );
+    BOOST_TEST( hostReadAccess( cooValues ), cooStorageCopy.getValues() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+static inline const ValueType* getPointer( const HArray<ValueType>& a, ContextPtr ctx )
+{
+    ReadAccess<ValueType> rA( a, ctx );
+    return rA.get();
+}
+
+BOOST_AUTO_TEST_CASE( moveConstructorTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+    const IndexType numValues = 4;
+
+    HArray<IndexType> cooIA( { 0, 1, 2, 2 } );
+    HArray<IndexType> cooJA( { 0, 1, 2, 1 } );
+    HArray<ValueType> cooValues( { 5, 5, 3, 3 } );
+
+    const IndexType* ptrIA = getPointer( cooIA, context );
+    const IndexType* ptrJA = getPointer( cooJA, context );
+    const ValueType* ptrValues = getPointer( cooValues, context );
+
+    SCAI_LOG_INFO( logger, "call moveConstructor with coo arrays" )
+
+    COOStorage<ValueType> cooStorage( numRows, numColumns, std::move( cooIA ), cooJA, std::move( cooValues ) );
+
     BOOST_REQUIRE_EQUAL( numRows, cooStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, cooStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, cooStorage.getNumValues() );
-    {
-        ReadAccess<IndexType> cooIA( cooStorage.getIA() );
-        ReadAccess<IndexType> cooJA( cooStorage.getJA() );
-        ReadAccess<ValueType> cooValues( cooStorage.getValues() );
 
-        // COO keeps values in same order
-        for ( IndexType i = 0; i < numValues; ++i )
-        {
-            BOOST_CHECK_EQUAL( ia[i], cooIA[i] );
-            BOOST_CHECK_EQUAL( ja[i], cooJA[i] );
-            BOOST_CHECK_EQUAL( values[i], cooValues[i] );
-        }
-    }
-    // copy constructor doesn't exist with other location
-    COOStorage<ValueType> cooStorageCopy( cooStorage, loc );
-    BOOST_REQUIRE_EQUAL( numRows, cooStorageCopy.getNumRows() );
-    BOOST_REQUIRE_EQUAL( numColumns, cooStorageCopy.getNumColumns() );
-    BOOST_REQUIRE_EQUAL( numValues, cooStorageCopy.getNumValues() );
-    {
-        ReadAccess<IndexType> cooIA( cooStorageCopy.getIA() );
-        ReadAccess<IndexType> cooJA( cooStorageCopy.getJA() );
-        ReadAccess<ValueType> cooValues( cooStorageCopy.getValues() );
+    // verify that move was okay
 
-        // COO keeps values in same order
-        for ( IndexType i = 0; i < numValues; ++i )
-        {
-            BOOST_CHECK_EQUAL( ia[i], cooIA[i] );
-            BOOST_CHECK_EQUAL( ja[i], cooJA[i] );
-            BOOST_CHECK_EQUAL( values[i], cooValues[i] );
-        }
-    }
+    BOOST_CHECK_EQUAL( ptrIA, getPointer( cooStorage.getIA(), context ) );
+    BOOST_CHECK( ptrJA != getPointer( cooStorage.getJA(), context ) );
+    ptrJA = getPointer( cooStorage.getJA(), context );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( cooStorage.getValues(), context ) );
+
+    BOOST_CHECK_EQUAL( cooIA.size(), 0 );
+    BOOST_CHECK_EQUAL( cooJA.size(), numValues );
+    BOOST_CHECK_EQUAL( cooValues.size(), 0 );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( splitUpTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows   = 3;
+    const IndexType numColumns = 3;
+
+    HArray<IndexType> cooIA( { 0, 1, 2, 2 } );
+    HArray<IndexType> cooJA( { 0, 1, 2, 1 } );
+    HArray<ValueType> cooValues( { 5, 5, 3, 3 } );
+
+    const IndexType* ptrIA = getPointer( cooIA, context );
+    const IndexType* ptrJA = getPointer( cooJA, context );
+    const ValueType* ptrValues = getPointer( cooValues, context );
+
+    COOStorage<ValueType> cooStorage( numRows, numColumns, std::move( cooIA ), std::move( cooJA ), std::move( cooValues ) );
+
+    IndexType outNumRows;
+    IndexType outNumColumns;
+    HArray<IndexType> outIA;
+    HArray<IndexType> outJA;
+    HArray<ValueType> outValues;
+
+    cooStorage.splitUp( outNumRows, outNumColumns, outIA, outJA, outValues );
+
+    BOOST_CHECK_EQUAL( outNumRows, numRows );
+    BOOST_CHECK_EQUAL( outNumColumns, numColumns );
+
+    BOOST_CHECK_EQUAL( ptrIA, getPointer( outIA, context ) );
+    BOOST_CHECK_EQUAL( ptrJA, getPointer( outJA, context ) );
+    BOOST_CHECK_EQUAL( ptrValues, getPointer( outValues, context ) );
+
+    BOOST_CHECK_EQUAL( cooStorage.getIA().size(), 0 );
+    BOOST_CHECK_EQUAL( cooStorage.getJA().size(), 0 );
+    BOOST_CHECK_EQUAL( cooStorage.getValues().size(), 0 );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -184,10 +224,51 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixPlusMatrixTest, ValueType, scai_numeric_test_types )
 {
-    // use template storage test
-    storageSwapTest<COOStorage<ValueType> >();
+    // Input data       COO1         COO2        2 * COO1 + 3 * COO2 
+    //
+    //                 1  2  -      -  11  -      2  37  -
+    //                 -  3  4      -   -  12     -  6   44 
+    //                 -  -  5      -  13  -      - 39   10
+
+    HArray<IndexType> ia1( { 0, 0, 1, 1, 2 } );
+    HArray<IndexType> ja1( { 0, 1, 1, 2, 2 } );
+    HArray<ValueType> values1( { 1, 2, 3, 4, 5 } );
+
+    HArray<IndexType> ia2( { 0, 1, 2 } );
+    HArray<IndexType> ja2( { 1, 2, 1 } );
+    HArray<ValueType> values2( { 11, 12, 13 } );
+
+    // Expected result, will be sorted due to building unique values
+
+    HArray<IndexType> ia( { 0, 0, 1, 1, 2, 2 } );
+    HArray<IndexType> ja( { 0, 1, 1, 2, 1, 2 } );
+    HArray<ValueType> values( { 2, 37, 6, 44, 39, 10 } );
+
+    IndexType numRows = 3;
+    IndexType numColumns = 4;
+
+    COOStorage<ValueType> coo1( numRows, numColumns, ia1, ja1, values1 );
+    COOStorage<ValueType> coo2( numRows, numColumns, ia2, ja2, values2 );
+
+    COOStorage<ValueType> coo;
+    coo.matrixPlusMatrix( 2, coo1, 3, coo2 );
+
+    BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( coo.getIA() ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( coo.getJA() ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( values ) == hostReadAccess( coo.getValues() ), boost::test_tools::per_element() );
+
+    // now a bit more tricky, but with same result
+
+    coo = COOStorage<ValueType>( numRows, numColumns, ia1, ja1, values1 );   
+    auto csr2 = convert<CSRStorage<ValueType>>( coo2 );
+
+    coo.matrixPlusMatrix( 3, csr2, 2, coo );
+
+    BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( coo.getIA() ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( coo.getJA() ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( values ) == hostReadAccess( coo.getValues() ), boost::test_tools::per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

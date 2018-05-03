@@ -38,9 +38,13 @@
 #include<iostream>
 #include<iomanip>
 
-using scai::common::TypeTraits;
+using namespace scai;
+using common::TypeTraits;
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::string;
+using std::setprecision;
 
 template<typename ValueType>
 void testRoutine()
@@ -51,7 +55,7 @@ void testRoutine()
     typeTemplate = "<" + typeTemplate + ">";
 
     cout << "TypeTraits" << typeTemplate << " = " << TypeTraits<ValueType>::id() << endl;
-    scai::common::scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    common::ScalarType stype = TypeTraits<ValueType>::stype;
     cout << "TypeTraits" << typeTemplate << "::stype = " << stype << endl;
     cout << "isComplex = " << isComplex( stype ) << endl;
 

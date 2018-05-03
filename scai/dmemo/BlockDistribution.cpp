@@ -133,7 +133,7 @@ IndexType BlockDistribution::local2global( const IndexType localIndex ) const
 
 IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
 {
-    IndexType localIndex = nIndex;
+    IndexType localIndex = invalidIndex;
 
     if ( globalIndex >= mLB && globalIndex < mUB )
     {
@@ -212,6 +212,11 @@ void BlockDistribution::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------- */
 
+bool BlockDistribution::hasAnyAddressing() const
+{
+    return true;
+}
+
 void BlockDistribution::enableAnyAddressing() const
 {
     // done, here we have closed formulas
@@ -231,7 +236,7 @@ IndexType BlockDistribution::getAnyLocalSize( const PartitionId rank ) const
     // Attention:  lb = 14 > ub = 12 might be possible
 
     if ( lb < ub )
-    { 
+    {
         return ub - lb;
     }
     else
@@ -249,8 +254,8 @@ PartitionId BlockDistribution::getAnyOwner( const IndexType globalIndex ) const
 IndexType BlockDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, mGlobalSize, "global index out of range" )
- 
-    if ( owner == nIndex )
+
+    if ( owner == invalidIndex )
     {
         return globalIndex % mBlockSize;
     }

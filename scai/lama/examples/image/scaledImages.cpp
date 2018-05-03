@@ -39,11 +39,12 @@
 
 #include <scai/common/Settings.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 
 using namespace scai;
 using namespace lama;
 
+typedef DefaultReal ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -58,16 +59,16 @@ int main( int argc, const char* argv[] )
     const IndexType M = 1024;
     const IndexType N = 1920;
 
-    GridVector<float> arrayData( common::Grid2D( M, N ), 0 );
+    GridVector<ValueType> arrayData( common::Grid2D( M, N ), 0 );
 
     {
-        GridWriteAccess<float> wArray( arrayData );
+        GridWriteAccess<ValueType> wArray( arrayData );
 
         for ( IndexType i = 0; i < M; ++i ) 
         {
             for ( IndexType j = 0; j < N; ++j )
             {
-                wArray( i, j ) = static_cast<float>( i + j );
+                wArray( i, j ) = static_cast<ValueType>( i + j );
             }
         }
     }
@@ -82,11 +83,11 @@ int main( int argc, const char* argv[] )
     }
     else
     {
-        float minVal = arrayData.min().getValue<float>();
-        float maxVal = arrayData.max().getValue<float>();
+        ValueType minVal = arrayData.min();
+        ValueType maxVal = arrayData.max();
 
-        float scaleMin = minVal;
-        float scaleMax = maxVal;
+        ValueType scaleMin = minVal;
+        ValueType scaleMax = maxVal;
         
         if ( argc > 2 )
         {

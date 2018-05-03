@@ -39,6 +39,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
 #include <scai/common/UnaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -60,7 +61,7 @@ struct CSRKernelTrait
          *  @param[in] j is the column of the element
          *  @param[in] csrIA is the CSR offset array
          *  @param[in] csrJA is the CSR ja array
-         *  @returns  offset of element in values array, nIndex if not found
+         *  @returns  offset of element in values array, invalidIndex if not found
          */
 
         typedef IndexType ( *FuncType ) (
@@ -490,10 +491,9 @@ struct CSRKernelTrait
 
     /** Define structure for multiplication routines.  */
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename ValueType>
     struct scaleRows
     {
-
         /** This operation multiplies each row with an own value.
          *
          *  @param[in,out] csrValues matrix data that is scaled
@@ -503,14 +503,12 @@ struct CSRKernelTrait
          *
          *  csr[i,j] *= values[i], for i = 0, ..., numRows-1
          *
-         *  This routine supports different precision for matrix values and scale values.
          */
-
         typedef void ( *FuncType ) (
-            ValueType1 csrValues[],
+            ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
-            const ValueType2 values[] );
+            const ValueType values[] );
 
         static const char* getId()
         {
@@ -570,8 +568,8 @@ struct CSRKernelTrait
             const ValueType csrValues[],
             const IndexType numRows,
             const IndexType dim,
-            const common::binary::BinaryOp reduceOp,
-            const common::unary::UnaryOp elemOp );
+            const common::BinaryOp reduceOp,
+            const common::UnaryOp elemOp );
 
         static const char* getId()
         {
@@ -598,9 +596,10 @@ struct CSRKernelTrait
          *  @param numColums is the number of columns of matrix
          *  @param nnz number of nonZeros, same as csrIA[ numRows ]
          *  @param csrIA, csrJA, csrValues are arrays of CSR storage
+         *  @param op implicit operation applied to the matrix storage
          *
-         *  The number of columns is not really needed to implement the operation but
-         *  might be helpful to choose between different implementations.
+         *  Note: result, y have size numRows / numCols for normal / transpose
+         *        x has size numColumns / numrows for normal / transpose
          */
 
         typedef void ( *FuncType ) ( ValueType result[],
@@ -613,33 +612,12 @@ struct CSRKernelTrait
                                      const IndexType nnz,
                                      const IndexType csrIA[],
                                      const IndexType csrJA[],
-                                     const ValueType csrValues[] );
+                                     const ValueType csrValues[],
+                                     const common::MatrixOp op );
 
         static const char* getId()
         {
             return "CSR.normalGEMV";
-        }
-    };
-
-    template<typename ValueType>
-    struct normalGEVM
-    {
-        typedef void ( *FuncType ) (
-            ValueType result[],
-            const ValueType alpha,
-            const ValueType x[],
-            const ValueType beta,
-            const ValueType y[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const IndexType numValues,
-            const IndexType csrIA[],
-            const IndexType csrJA[],
-            const ValueType csrValues[] );
-
-        static const char* getId()
-        {
-            return "CSR.normalGEVM";
         }
     };
 
@@ -654,6 +632,7 @@ struct CSRKernelTrait
          *  @param numNonZeroRows is size of rowIndexes
          *  @param rowIndexes are indexes of non-empty rows in matrix
          *  @param csrIA, csrJA, csrValues are arrays of CSR storage
+         *  @param op specifies an implicit operation applied to the matrix 
          *
          *  Note: this routine does not provide the term 'beta * y' as it would require
          *        to run over the full result vector
@@ -667,31 +646,12 @@ struct CSRKernelTrait
             const IndexType rowIndexes[],
             const IndexType csrIA[],
             const IndexType csrJA[],
-            const ValueType csrValues[] );
+            const ValueType csrValues[],
+            const common::MatrixOp op );
 
         static const char* getId()
         {
             return "CSR.sparseGEMV";
-        }
-    };
-
-    template<typename ValueType>
-    struct sparseGEVM
-    {
-        typedef void ( *FuncType ) (
-            ValueType result[],
-            const ValueType alpha,
-            const ValueType x[],
-            const IndexType numColumns,
-            const IndexType numNonZeroRows,
-            const IndexType rowIndexes[],
-            const IndexType csrIA[],
-            const IndexType csrJA[],
-            const ValueType csrValues[] );
-
-        static const char* getId()
-        {
-            return "CSR.sparseGEVM";
         }
     };
 
@@ -760,7 +720,7 @@ struct CSRKernelTrait
             const IndexType bIA[],
             const IndexType bJA[],
             const ValueType bValues[],
-            const common::binary::BinaryOp op );
+            const common::BinaryOp op );
 
         static const char* getId()
         {

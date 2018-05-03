@@ -36,7 +36,6 @@
 #include <scai/lama/io/PETScIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 #include <scai/lama/io/IOStream.hpp>
@@ -145,10 +144,7 @@ void PETScIO::writeArrayImpl(
 
     SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
 
-    utilskernel::LArray<IndexType> headValues( 2 );
-
-    headValues[0] = VEC_FILE_CLASSID;
-    headValues[1] = nrows;
+    HArray<IndexType> headValues( { VEC_FILE_CLASSID, nrows } );
 
     outFile.writeBinary( headValues, mScalarTypeIndex );
     outFile.writeBinary( array, mScalarTypeData );
@@ -166,7 +162,8 @@ void PETScIO::writeSparseImpl(
     // sparse unsupported for this file format, write it dense
 
     HArray<ValueType> denseArray;
-    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    ValueType zero = 0;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
     writeArrayImpl( denseArray, fileName );
 }
 
@@ -186,9 +183,9 @@ void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<IndexType> headerVals;
+    HArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
+    inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
 
     IndexType classid = headerVals[0];
 
@@ -219,9 +216,9 @@ void PETScIO::readArrayImpl(
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<IndexType> headerVals;
+    HArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
+    inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
 
     IndexType classid = headerVals[0];
     IndexType size    = headerVals[1];
@@ -238,7 +235,7 @@ void PETScIO::readArrayImpl(
 
     IndexType nEntries = n;
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         nEntries = size - first;
     }
@@ -260,7 +257,7 @@ void PETScIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::binary::COPY, ctx );
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
 
         array.swap( block );
     }
@@ -281,9 +278,10 @@ void PETScIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
+    ValueType zero = 0;
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -336,7 +334,7 @@ void PETScIO::writeStorageImpl(
 
     // Note: PETSc starts indexing with 0
 
-    utilskernel::LArray<IndexType> headValues( 4 );
+    HArray<IndexType> headValues( 4 );
 
     headValues[0] = MAT_FILE_CLASSID;
     headValues[1] = nrows;
@@ -351,7 +349,7 @@ void PETScIO::writeStorageImpl(
 
     // output of values is skipped for PATTERN
 
-    if ( mScalarTypeData != common::scalar::PATTERN )
+    if ( mScalarTypeData != common::ScalarType::PATTERN )
     {
         outFile.writeBinary( csrValues, mScalarTypeData );
     }
@@ -369,7 +367,7 @@ void PETScIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexT
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<IndexType> headerVals;
+    HArray<IndexType> headerVals;
 
     inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
 
@@ -406,7 +404,7 @@ void PETScIO::readStorageImpl(
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
-    utilskernel::LArray<IndexType> headerVals;
+    HArray<IndexType> headerVals;
 
     inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
 
@@ -427,7 +425,7 @@ void PETScIO::readStorageImpl(
     inFile.readBinary( csrSizes, numRows, mScalarTypeIndex );
     inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
 
-    if ( mScalarTypeData != common::scalar::PATTERN )
+    if ( mScalarTypeData != common::ScalarType::PATTERN )
     {
         inFile.readBinary( csrValues, nnz, mScalarTypeData );
     }
@@ -436,9 +434,9 @@ void PETScIO::readStorageImpl(
         csrValues.setSameValue( nnz, ValueType( 1 ) );
     }
 
-    if ( firstRow == 0 && nRows == nIndex )
+    if ( firstRow == 0 && nRows == invalidIndex )
     {
-        storage.setCSRData( numRows, numCols, nnz, csrSizes, csrJA, csrValues );
+        storage.setCSRData( numRows, numCols, csrSizes, csrJA, csrValues );
     }
     else
     {

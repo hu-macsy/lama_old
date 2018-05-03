@@ -38,7 +38,6 @@
 #include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
 
@@ -176,7 +175,8 @@ void TextIO::writeSparseImpl(
     if ( true )
     {
         HArray<ValueType> denseArray;
-        utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+        ValueType zero = 0;
+        HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
         writeArrayImpl( denseArray, fileName );
     }
     else
@@ -231,7 +231,7 @@ void TextIO::readArrayImpl(
 
     IndexType nEntries = n;
 
-    if ( n == nIndex )
+    if ( n == invalidIndex )
     {
         nEntries = size - first;
     }
@@ -256,7 +256,7 @@ void TextIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySectionImpl( block, 0, inc, array, first, inc, nEntries, common::binary::COPY, ctx );
+        HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
 
         array.swap( block );
     }
@@ -294,9 +294,10 @@ void TextIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, nIndex );
+    readArray( denseArray, fileName, 0, invalidIndex );
     size = denseArray.size();
-    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
+    ValueType zeroValue = 0;
+    HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -308,18 +309,23 @@ void TextIO::writeStorageImpl(
 {
     SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
 
-    COOStorage<ValueType> coo( storage );
+    auto coo = convert<COOStorage<ValueType>>( storage );
 
-    HArray<IndexType> cooIA = coo.getIA();
-    HArray<IndexType> cooJA = coo.getJA();
-    HArray<ValueType> cooValues = coo.getValues();
+    IndexType numRows;
+    IndexType numCols;
+
+    HArray<IndexType> cooIA;
+    HArray<IndexType> cooJA;
+    HArray<ValueType> cooValues;
+
+    coo.splitUp( numRows, numCols, cooIA, cooJA, cooValues );
 
     IOStream outFile( fileName, std::ios::out );
 
     int precIndex = 0;
     int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
-    if ( mScalarTypeData == common::scalar::PATTERN )
+    if ( mScalarTypeData == common::ScalarType::PATTERN )
     {
         outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex );
     }
@@ -339,8 +345,8 @@ void TextIO::readData(
     const IndexType nnz,
     const std::string& fileName )
 {
-    LArray<RealType> dIA;
-    LArray<RealType> dJA;
+    HArray<DefaultReal> dIA;
+    HArray<DefaultReal> dJA;
 
     IOStream inFile( fileName, std::ios::in );
 
@@ -355,10 +361,10 @@ void TextIO::readData(
 
     ContextPtr ctx = Context::getHostPtr();
 
-    HArrayUtils::setArrayImpl( ia, dIA );  // conversion from RealType to IndexType
-    HArrayUtils::setArrayImpl( ja, dJA );  // conversion from RealType to IndexType
+    HArrayUtils::assign( ia, dIA );  // conversion from DefaultReal to IndexType
+    HArrayUtils::assign( ja, dJA );  // conversion from DefaultReal to IndexType
 
-    IndexType minRowIndex = HArrayUtils::reduce( ia, common::binary::MIN );
+    IndexType minRowIndex = HArrayUtils::reduce( ia, common::BinaryOp::MIN );
 
     if ( minRowIndex == 0 )
     {
@@ -368,8 +374,8 @@ void TextIO::readData(
     {
         // offset base = 1, convert it to 0
 
-        HArrayUtils::setScalar( ia, IndexType( 1 ), common::binary::SUB );
-        HArrayUtils::setScalar( ja, IndexType( 1 ), common::binary::SUB );
+        HArrayUtils::setScalar( ia, IndexType( 1 ), common::BinaryOp::SUB );
+        HArrayUtils::setScalar( ja, IndexType( 1 ), common::BinaryOp::SUB );
     }
     else
     {
@@ -387,13 +393,13 @@ void TextIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexTy
 
     // As there is no header, we have to read the full file, at least the index values
 
-    LArray<IndexType> ia;
-    LArray<IndexType> ja;
+    HArray<IndexType> ia;
+    HArray<IndexType> ja;
 
-    readData<RealType>( ia, ja, NULL, numValues, fileName );
+    readData<DefaultReal>( ia, ja, NULL, numValues, fileName );
 
-    numRows    = ia.max() + 1;
-    numColumns = ja.max() + 1;
+    numRows    = HArrayUtils::max( ia ) + 1;
+    numColumns = HArrayUtils::max( ja ) + 1;
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -407,7 +413,7 @@ void TextIO::readStorageImpl(
 {
     // binary mode does not matter as we have always formatted output
 
-    // read coo entries lines by line, similiar to MatrixMarket
+    // read coo entries lines by line, similiar to _MatrixMarket
     // i , j, val
 
     IndexType nnz;
@@ -423,7 +429,7 @@ void TextIO::readStorageImpl(
         return;
     }
 
-    bool readPattern = mScalarTypeData == common::scalar::PATTERN;
+    bool readPattern = mScalarTypeData == common::ScalarType::PATTERN;
 
     IndexType nEntries = 2;
 
@@ -436,9 +442,9 @@ void TextIO::readStorageImpl(
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
-    LArray<IndexType> ia;
-    LArray<IndexType> ja;
-    LArray<ValueType> val;
+    HArray<IndexType> ia;
+    HArray<IndexType> ja;
+    HArray<ValueType> val;
 
     if ( readPattern )
     {
@@ -452,12 +458,12 @@ void TextIO::readStorageImpl(
 
     // we shape the matrix by maximal appearing indexes
 
-    int nrows = ia.max() + 1;
-    int ncols = ja.max() + 1;
+    int nrows = HArrayUtils::max( ia ) + 1;
+    int ncols = HArrayUtils::max( ja ) + 1;
 
     COOStorage<ValueType> coo( nrows, ncols, ia, ja, val );
 
-    if ( firstRow == 0 && nRows == nIndex )
+    if ( firstRow == 0 && nRows == invalidIndex )
     {
         storage = coo;
     }

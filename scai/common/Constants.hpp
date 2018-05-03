@@ -37,6 +37,7 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/exception/InvalidArgumentException.hpp>
 
 #include <cmath>
 #include <limits>
@@ -48,35 +49,32 @@ namespace scai
 namespace common
 {
 
-/** Own struct for the enum type ConstantType and its values. */
+/** Own struct for the enum type Constants and its values. */
 
-struct constants
+enum class Constants
 {
 
     /** Enumeration type for constants for which type-specific values are provided */
 
-    typedef enum
-    {
-        ZERO,  //!< stands for value 0
-        ONE    //!< stands for value 1
-    } ConstantType;
+    ZERO,  //!< stands for value 0
+    ONE    //!< stands for value 1
 
-}; /* struct constants */
+};
 
 /** This method returns the type specific value for each constant */
 
 template<typename ValueType>
-inline ValueType getConstant( const constants::ConstantType& c )
+inline ValueType getConstant( const Constants& c )
 {
     ValueType val( 0 );
 
     switch ( c )
     {
-        case constants::ONE:
+        case Constants::ONE:
             val = ValueType( 1 );
             break;
 
-        case constants::ZERO:
+        case Constants::ZERO:
             val = ValueType( 0 );
             break;
     }
@@ -84,63 +82,31 @@ inline ValueType getConstant( const constants::ConstantType& c )
     return val;
 }
 
-/** Comparison against constant ZERO or ONE uses machine-specific EPS */
+/** Comparison against constant ZERO or ONE checks for exact equality */
 
 template<typename ValueType>
-inline bool operator==( const ValueType& x, const constants::ConstantType& c )
+inline bool operator==( const ValueType& x, const Constants& c )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-
-    if ( constants::ZERO == c )
+    if ( Constants::ZERO == c )
     {
-        AbsType r = Math::real( x );
-
-        bool isRealZero = Math::abs( r ) <= TypeTraits<ValueType>::eps0();
-
-        if ( typeid( AbsType ) == typeid( ValueType ) )
-        {
-            return isRealZero;
-        }
-        else
-        {
-            // complex data, do not use operator <
-
-            AbsType i = Math::imag( x );
-
-            bool isImagZero = Math::abs( i ) <= TypeTraits<ValueType>::eps0();
-
-            return isRealZero && isImagZero;
-        }
+        return x == ValueType( 0 );
+    }
+    else if ( Constants::ONE == c )
+    {
+        return x == ValueType( 1 );
     }
     else
     {
-        AbsType r = Math::real( x );
-
-        bool isRealOne = Math::abs( r - AbsType( 1 ) ) <= TypeTraits<ValueType>::eps1();
-
-        if ( typeid( AbsType ) == typeid( ValueType ) )
-        {
-            return isRealOne;
-        }
-        else
-        {
-            // for complex type we have to assure that imaginary part is close to 0
-
-            AbsType i = Math::imag( x );
-
-            bool isImagZero = Math::abs( i ) <= TypeTraits<ValueType>::eps0();
-
-            return isRealOne && isImagZero;
-        }
+        SCAI_THROWEXCEPTION( InvalidArgumentException, "Unsupported constant" )
     }
 }
 
 // Use template specialization for IndexType as real/imag might not be available
 
 template<>
-inline bool operator==( const IndexType& x, const constants::ConstantType& c )
+inline bool operator==( const IndexType& x, const Constants& c )
 {
-    if ( constants::ZERO == c )
+    if ( Constants::ZERO == c )
     {
         return x == 0;
     }
@@ -151,7 +117,7 @@ inline bool operator==( const IndexType& x, const constants::ConstantType& c )
 }
 
 template<typename ValueType>
-bool operator==( const constants::ConstantType& c, const ValueType& x )
+bool operator==( const Constants& c, const ValueType& x )
 {
     return operator==( x, c );
 }
@@ -159,13 +125,13 @@ bool operator==( const constants::ConstantType& c, const ValueType& x )
 /** Operator not equal also provided for convenience */
 
 template<typename ValueType>
-bool operator!=( const ValueType& x, const constants::ConstantType& c )
+bool operator!=( const ValueType& x, const Constants& c )
 {
     return !operator==( x, c );
 }
 
 template<typename ValueType>
-bool operator!=( const constants::ConstantType& c, const ValueType& x )
+bool operator!=( const Constants& c, const ValueType& x )
 {
     return !operator==( x, c );
 }

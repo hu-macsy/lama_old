@@ -37,7 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
@@ -118,8 +118,8 @@ static void bench( const IndexType N )
 
     if ( debug )
     {
-        const utilskernel::LArray<ValueType>& localValues = X.getLocalValues();
-        const utilskernel::LArray<IndexType>& permValues = perm.getLocalValues();
+        const hmemo::HArray<ValueType>& localValues = X.getLocalValues();
+        const hmemo::HArray<IndexType>& permValues = perm.getLocalValues();
 
         for ( IndexType i = 0; i < X.getDistribution().getLocalSize(); ++i )
         {
@@ -146,7 +146,7 @@ static void bench( const IndexType N )
 
     Xcomp.gather( Xsave, perm );
     Xcomp -= X;
-    Scalar maxDiff = Xcomp.maxNorm();
+    RealType<ValueType> maxDiff = Xcomp.maxNorm();
 
     tmpTime = Walltime::get() - tmpTime;
 
@@ -165,8 +165,8 @@ static void bench( const IndexType N )
 
     if ( debug )
     {
-        const utilskernel::LArray<ValueType>& localValues1 = Xcomp.getLocalValues();
-        const utilskernel::LArray<ValueType>& localValues2 = Xsave.getLocalValues();
+        const hmemo::HArray<ValueType>& localValues1 = Xcomp.getLocalValues();
+        const hmemo::HArray<ValueType>& localValues2 = Xsave.getLocalValues();
 
         SCAI_ASSERT_EQUAL( localValues1.size(), localValues2.size(), "serious mismatch" )
 
@@ -197,7 +197,7 @@ template<typename TList> struct Calling;
 
 template<> struct Calling<common::mepr::NullType>
 {
-    static bool callBench( const common::scalar::ScalarType, const IndexType )
+    static bool callBench( const common::ScalarType, const IndexType )
     {
         return false;
     }
@@ -208,7 +208,7 @@ template<> struct Calling<common::mepr::NullType>
 template<typename HeadType, typename TailTypes>
 struct Calling<common::mepr::TypeList<HeadType, TailTypes> >
 {
-    static bool callBench( const common::scalar::ScalarType stype, const IndexType n )
+    static bool callBench( const common::ScalarType stype, const IndexType n )
     {
         if ( common::TypeTraits<HeadType>::stype == stype )
         {
@@ -246,13 +246,13 @@ int main( int argc, const char* argv[] )
 
     string typeString;
 
-    common::scalar::ScalarType dataType = common::scalar::DOUBLE;
+    common::ScalarType dataType = common::ScalarType::DOUBLE;
 
     if ( common::Settings::getEnvironment( typeString, "SCAI_TYPE" ) )
     {
         dataType = common::str2ScalarType( typeString.c_str() );
 
-        if ( dataType == common::scalar::UNKNOWN )
+        if ( dataType == common::ScalarType::UNKNOWN )
         {
             HOST_PRINT( rank, "SCAI_TYPE=" << typeString << ": is not a known data type" )
             return -1;

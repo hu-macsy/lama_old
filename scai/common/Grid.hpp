@@ -74,7 +74,6 @@ public:
     {
         BORDER_ABSORBING,    //!   factor 0 if neighbored pos is not available
         BORDER_PERIODIC,     //!   take it from other side
-        BORDER_REFLECTING    //!   take the side as reflecting
     } BorderType;
 
     /** Default constructor provides an empty grid with zero dimensions.

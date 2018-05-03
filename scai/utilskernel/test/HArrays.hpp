@@ -36,7 +36,7 @@
 
 #include <vector>
 
-typedef scai::common::shared_ptr<scai::hmemo::_HArray> ArrayPtr;
+typedef std::shared_ptr<scai::hmemo::_HArray> ArrayPtr;
 
 /** Class for a list of arrays, one for each supported array type.
  */
@@ -52,7 +52,7 @@ public:
     {
         using namespace scai::common;
         using namespace scai::hmemo;
-        std::vector<scalar::ScalarType> values;  //  all create values
+        std::vector<ScalarType> values;  //  all create values
         _HArray::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )

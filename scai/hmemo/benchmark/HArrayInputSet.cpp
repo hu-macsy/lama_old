@@ -62,9 +62,9 @@ HArrayInputSet::HArrayInputSet( const std::string& argument ) :
 
     SCAI_ASSERT_EQ_ERROR( argTokens.size(), 2, "HArrayInputSet( memory, size ), two args expected" )
 
-    common::context::ContextType ctx = common::str2ContextType( argTokens[0].c_str() );
+    common::ContextType ctx = common::str2ContextType( argTokens[0].c_str() );
 
-    if ( ctx == common::context::MaxContext )
+    if ( ctx == common::ContextType::MaxContext )
     {
         COMMON_THROWEXCEPTION( argTokens[0] << " does not specify a context" )
     }

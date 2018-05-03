@@ -59,7 +59,7 @@ public:
         KernelRegistry::get( *this, mName );
     }
 
-    FunctionType operator[] ( common::context::ContextType ctx )
+    FunctionType operator[] ( common::ContextType ctx )
     {
         FunctionType fn = ContextFunction<FunctionType>::get( ctx );
 

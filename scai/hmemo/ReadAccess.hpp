@@ -44,8 +44,8 @@
 #include <scai/common/config.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/function.hpp>
-#include <scai/common/bind.hpp>
+
+#include <functional>
 
 namespace scai
 {
@@ -96,6 +96,11 @@ public:
     ReadAccess( const HArray<ValueType>& array );
 
     /**
+     * @brief Move constructor for ReadAccess.
+     */
+    ReadAccess( ReadAccess<ValueType>&& other ) noexcept;
+
+    /**
      * @brief Releases the ReadAccess on the associated HArray.
      */
     virtual ~ReadAccess();
@@ -141,7 +146,7 @@ public:
      *  release done with the destructor.
      */
 
-    common::function<void()> releaseDelayed();
+    std::function<void()> releaseDelayed();
 
     /**
      * @brief Output of this object in a stream.
@@ -159,6 +164,40 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
+
+/**
+ * @brief Return a ReadAccess for the provided array.
+ *
+ * This method is just a convenience function which allows acquiring a ReadAccess without
+ * redundantly specifying the valuetype. See the example below for an idea of intended usage.
+ *
+ * @code{.cpp}
+ * const auto array = HArray<double>({ 2.0, 3.0 });
+ *
+ * // Call ReadAccess constructor, must redundantly specify type
+ * const ReadAccess<double> read1(array);
+ *
+ * // Call readAccess, type is deduced by compiler.
+ * const auto read2 = readAccess(array);
+ * @endcode
+ */
+template <typename ValueType>
+inline ReadAccess<ValueType> readAccess( const HArray<ValueType>& array )
+{
+    return ReadAccess<ValueType>( array );
+}
+
+/**
+ * @brief Return a ReadAccess on the given context for the provided array.
+ *
+ * Same as readAccess(const HArray<ValueType> &), but data is copied directly
+ * into memory provided by the given context.
+ */
+template <typename ValueType>
+inline ReadAccess<ValueType> readAccess( const HArray<ValueType>& array, ContextPtr context )
+{
+    return ReadAccess<ValueType>( array, context );
+}
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -179,12 +218,23 @@ ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array, ContextPtr co
 template<typename ValueType>
 ReadAccess<ValueType>::ReadAccess( const HArray<ValueType>& array ) : mArray( &array )
 {
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+    ContextPtr contextPtr = Context::getContextPtr( common::ContextType::Host );
     SCAI_LOG_DEBUG( logger, "ReadAccess<" << common::TypeTraits<ValueType>::id()
                     << "> : create for " << array << " @ " << *contextPtr )
     mContextDataIndex = mArray->acquireReadAccess( contextPtr );
     mData = mArray->get( mContextDataIndex );
 }
+
+template <typename ValueType>
+ReadAccess<ValueType>::ReadAccess( ReadAccess&& other ) noexcept
+    : mArray( other.mArray ),
+      mData( other.mData ),
+      mContextDataIndex( other.mContextDataIndex )
+{
+    other.mArray = nullptr;
+    other.mData = nullptr;
+}
+
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -233,14 +283,14 @@ void ReadAccess<ValueType>::getValue( ValueType& val, const IndexType pos ) cons
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-common::function<void()> ReadAccess<ValueType>::releaseDelayed()
+std::function<void()> ReadAccess<ValueType>::releaseDelayed()
 {
     SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
     void ( _HArray::*releaseAccess ) ( ContextDataIndex ) const = &_HArray::releaseReadAccess;
     const _HArray* ctxArray = mArray;
     // This access itself is treated as released
     mArray = NULL;
-    return common::bind( releaseAccess, ctxArray, mContextDataIndex );
+    return std::bind( releaseAccess, ctxArray, mContextDataIndex );
 }
 
 /* ---------------------------------------------------------------------------------*/

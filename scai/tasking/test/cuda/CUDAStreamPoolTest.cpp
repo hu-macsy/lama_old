@@ -61,8 +61,8 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     common::Settings::getEnvironment( deviceNr, "SCAI_DEVICE" );
     common::CUDACtx myCuda( deviceNr );
     CUDAStreamPool& pool = CUDAStreamPool::getPool( myCuda );
-    CUstream stream1 = pool.reserveStream( CUDAStreamPool::ComputeStream );
-    CUstream stream2 = pool.reserveStream( CUDAStreamPool::TransferStream );
+    CUstream stream1 = pool.reserveStream( StreamType::ComputeStream );
+    CUstream stream2 = pool.reserveStream( StreamType::TransferStream );
     pool.releaseStream( stream1 );
     BOOST_CHECK_THROW(
     {

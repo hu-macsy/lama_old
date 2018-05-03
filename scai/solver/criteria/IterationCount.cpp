@@ -38,56 +38,77 @@
 // local library
 #include <scai/solver/IterativeSolver.hpp>
 
+#include <scai/common/macros/instantiate.hpp>
+
 namespace scai
 {
 
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( IterationCount::logger, "Criterion.IterationCount" );
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, IterationCount<ValueType>::logger, "Criterion.IterationCount" );
 
-IterationCount::IterationCount()
-    : Criterion(), mIterationExtrema( 1 )
+template<typename ValueType>
+IterationCount<ValueType>::IterationCount() : 
+
+    Criterion<ValueType>(), 
+    mIterationExtrema( 1 )
 {
 }
 
-IterationCount::IterationCount( const IndexType iterationExtrema )
-    : Criterion(), mIterationExtrema( iterationExtrema )
+template<typename ValueType>
+IterationCount<ValueType>::IterationCount( const IndexType iterationExtrema ) : 
+
+    Criterion<ValueType>(), 
+    mIterationExtrema( iterationExtrema )
 {
     SCAI_LOG_DEBUG( logger, "Creating IterationCount with " << iterationExtrema );
 }
 
-IterationCount::IterationCount( const IterationCount& other )
-    : Criterion( other ), mIterationExtrema( other.mIterationExtrema )
+template<typename ValueType>
+IterationCount<ValueType>::IterationCount( const IterationCount<ValueType>& other ) : 
 
+    Criterion<ValueType>( other ), 
+    mIterationExtrema( other.mIterationExtrema )
 {
 }
 
-IterationCount::~IterationCount()
+template<typename ValueType>
+IterationCount<ValueType>::~IterationCount()
 {
 }
 
-bool IterationCount::isSatisfied( const IterativeSolver& solver )
+template<typename ValueType>
+bool IterationCount<ValueType>::isSatisfied( const IterativeSolver<ValueType>& solver )
 {
     SCAI_LOG_INFO( logger,
                    "Iteration Extrema = " << mIterationExtrema << ", Iteration Count = " << solver.getIterationCount() );
     return solver.getIterationCount() >= mIterationExtrema;
 }
 
-IndexType IterationCount::getIterationExtrema() const
+template<typename ValueType>
+IndexType IterationCount<ValueType>::getIterationExtrema() const
 {
     return mIterationExtrema;
 }
 
-void IterationCount::setIterationExtrema( IndexType iterationExtrema )
+template<typename ValueType>
+void IterationCount<ValueType>::setIterationExtrema( IndexType iterationExtrema )
 {
     mIterationExtrema = iterationExtrema;
 }
 
-void IterationCount::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void IterationCount<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "ItCount<" << getIterationExtrema() << ">";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( IterationCount, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

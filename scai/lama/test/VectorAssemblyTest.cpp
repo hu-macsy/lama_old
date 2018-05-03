@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/VectorAssemblyAccess.hpp>
+#include <scai/lama/VectorAssembly.hpp>
 #include <scai/lama/SparseVector.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/test/TestDistributions.hpp>
@@ -55,11 +55,11 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.VectorAssemblyTest" );
 
 /** For the matrix tests here it is sufficient to take only one of the possible value types. */
 
-typedef RealType ValueType;
+typedef DefaultReal ValueType;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( vectorAssemblyTest )
+BOOST_AUTO_TEST_CASE( buildLocalTest )
 {
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
@@ -75,70 +75,39 @@ BOOST_AUTO_TEST_CASE( vectorAssemblyTest )
 
     SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_val ) / sizeof( ValueType ), "" )
 
+    VectorAssembly<ValueType> assembly;
+
+    for ( IndexType i = 0; i < nnz; ++i )
+    {
+        // choose one 'arbitrary' processor that pushes the element
+
+        PartitionId p1 = i % commSize;
+
+        if ( p1 == commRank )
+        {
+            assembly.push( raw_ia[i], raw_val[i] );
+        }
+    }
+
     dmemo::TestDistributions dists( n );
 
     for ( size_t j = 0; j < dists.size(); ++j )
     {
-
         dmemo::DistributionPtr dist = dists[j];
 
-        SparseVector<ValueType> vector1;
-
-        vector1.setSameValue( dist, 0 );
-
-        // Assemble vector data by arbitrary processors, entries at same location are ignored
-
+        if ( dist->getCommunicator() != assembly.getCommunicator() )
         {
-            VectorAssemblyAccess<ValueType> assembly( vector1 );
-
-            for ( IndexType i = 0; i < nnz; ++i )
-            {
-                // choose one 'arbitrary' processor that pushes the element
-
-                PartitionId p1 = i % commSize;
-                PartitionId p2 = ( i * 5 - 2 ) % commSize;
-
-                if ( p1 == commRank )
-                {
-                    assembly.push( raw_ia[i], raw_val[i] );
-                }
-
-                if ( p2 == commRank )
-                {
-                    assembly.push( raw_ia[i], raw_val[i] );
-                }
-            }
+            continue;
         }
 
-        SCAI_LOG_INFO( logger, *comm << ": assembled this vector with REPLACE: " << vector1 )
+        hmemo::HArray<IndexType> nonZeroIndexes;
+        hmemo::HArray<ValueType> nonZeroValues;
 
-        // Assemble vector data by arbitrary processors, entries at same location are summed up
+        assembly.buildLocalData( nonZeroIndexes, nonZeroValues, *dist );
 
-        {
-            VectorAssemblyAccess<ValueType> assembly( vector1, common::binary::ADD );
+        // no double values, so we can use it directly
 
-            for ( IndexType i = 0; i < nnz; ++i )
-            {
-                PartitionId p1 = ( i + 2 ) % commSize;
-                PartitionId p2 = ( i * 3 + 7 ) % commSize;
-
-                if ( p1 == commRank )
-                {
-                    assembly.push( raw_ia[i], raw_val[i] );
-                }
-
-                if ( p2 == commRank )
-                {
-                    assembly.push( raw_ia[i], raw_val[i] );
-                }
-
-                // assembly called by each processor, but only inserted once by owner
-
-                assembly.pushReplicated( raw_ia[i], raw_val[i] );
-            }
-        }
-
-        SCAI_LOG_INFO( logger, *comm << ": assembled this vector with SUM: " << vector1 )
+        SparseVector<ValueType> vector1( dist, std::move( nonZeroIndexes ), std::move( nonZeroValues ), 0 );
 
         SparseVector<ValueType> vector2;
 
@@ -146,12 +115,62 @@ BOOST_AUTO_TEST_CASE( vectorAssemblyTest )
 
         vector2.redistribute( dist );
 
-        vector2 *= 4;
-
         // both vectors must be exaclty the same
 
         BOOST_CHECK_EQUAL( vector1.maxDiffNorm( vector2 ), 0 );
     }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( buildGlobalTest )
+{
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    PartitionId commSize = comm->getSize();
+    PartitionId commRank = comm->getRank();
+
+    IndexType n  = 100;
+
+    IndexType raw_ia[] =  { 0, 11, 12, 13, 34, 51, 60, 17, 18, 29, 31, 54, 73 };
+    ValueType raw_val[] = { 1, -5,  1, -1,  2,  1,  3,  4,  5,  8, -3, -2, -4 };
+
+    IndexType nnz = sizeof( raw_ia ) / sizeof( IndexType );
+
+    SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_val ) / sizeof( ValueType ), "#indexes and #values must match" )
+
+    VectorAssembly<ValueType> assembly;
+
+    for ( IndexType i = 0; i < nnz; ++i )
+    {
+        // choose one 'arbitrary' processor that pushes the element
+
+        PartitionId p1 = i % commSize;
+
+        if ( p1 == commRank )
+        {
+            assembly.push( raw_ia[i], raw_val[i] );
+        }
+    }
+
+    BOOST_CHECK_EQUAL( assembly.getNumValues(), nnz );
+
+    hmemo::HArray<IndexType> nonZeroIndexes;
+    hmemo::HArray<ValueType> nonZeroValues;
+
+    assembly.buildGlobalData( nonZeroIndexes, nonZeroValues, n );
+
+    // no double values, so we can use it directly
+
+    SparseVector<ValueType> vector1( n, std::move( nonZeroIndexes ), std::move( nonZeroValues ), 0 );
+
+    SparseVector<ValueType> vector2;
+
+    vector2.setSparseRawData( n, nnz, raw_ia, raw_val, 0 );
+
+    // both vector have values on all processors and must be exaclty the same
+
+    BOOST_CHECK_EQUAL( vector1.maxDiffNorm( vector2 ), 0 );
 }
 
 /* ------------------------------------------------------------------------- */
