@@ -40,7 +40,6 @@
 
 // _Matrix & vector related includes
 
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
 
 #include <scai/lama/matutils/MatrixCreator.hpp>

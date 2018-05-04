@@ -861,6 +861,138 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( all2allTest, ValueType, scai_array_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    struct
+    {
+        inline ValueType operator() ( const PartitionId source, const PartitionId target )
+        {
+            return ValueType( source * 10 + target + 3 );
+        }
+    } f;
+
+    PartitionId rank = comm->getRank();   // used to compute my value
+    PartitionId size = comm->getSize();   // used for size of buffers
+
+    SCAI_LOG_INFO( logger, "all2allTest<" << common::TypeTraits<ValueType>::id() << ">" )
+
+    std::vector<ValueType> sendBuffer( size );
+    std::vector<ValueType> recvBuffer( size );
+    std::vector<ValueType> expRecvBuffer( size );
+
+    // fill the send buffer and expected recv buffer
+ 
+    for ( PartitionId i = 0; i < size; ++i )
+    {
+        sendBuffer[i] = f( rank, i );
+        expRecvBuffer[i] = f( i, rank );
+    }
+
+    comm->all2all( recvBuffer.data(), sendBuffer.data() );
+
+    BOOST_TEST( recvBuffer == expRecvBuffer, boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( all2allvTest, ValueType, scai_array_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    // functional computes for ( source, target ) the number of values to send
+
+    struct
+    {
+        inline IndexType operator() ( const PartitionId source, const PartitionId target )
+        {
+            return 1 + ( source % 2 ) + ( target % 3 );
+        }
+    } n;
+
+    // functional computes for ( source, target, k ) the k-th value sent from source to target
+
+    struct
+    {
+        inline ValueType operator() ( const PartitionId source, const PartitionId target, const IndexType k )
+        {
+            return ValueType( source * 100 + target + 12 - k );
+        }
+    } f;
+
+    PartitionId rank = comm->getRank();   // used to compute my value
+    PartitionId size = comm->getSize();   // used for size of buffers
+
+    std::vector<ValueType> sendValues;
+
+    std::vector<IndexType> sendSizes( size );
+    std::vector<IndexType> recvSizes( size );
+
+    // compute the send values
+
+    for ( IndexType i = 0; i < size; ++i )
+    {
+        sendSizes[i] = n( rank, i );
+
+        for ( IndexType k = 0; k < sendSizes[i]; ++k )
+        {
+            sendValues.push_back( f( rank, i, k ) );
+        }
+    }
+
+    comm->all2all( recvSizes.data(), sendSizes.data() );
+
+    IndexType recvSizeSum = 0;
+
+    for ( IndexType i = 0; i < size; ++i )
+    { 
+        auto nv = recvSizes[i];
+        BOOST_CHECK_EQUAL( nv, n( i, rank ) );
+        recvSizeSum += nv;
+    }
+
+    std::vector<ValueType> recvValues( recvSizeSum, ValueType( 0 ) );
+
+    // set up pointers for send and receive buffers
+
+    std::vector<ValueType*> recvBuffer( size );
+    std::vector<const ValueType*> sendBuffer( size );
+
+    IndexType offsetSend = 0;
+    IndexType offsetRecv= 0;
+
+    for ( IndexType i = 0; i < size; ++i )
+    {
+        sendBuffer[i] = &sendValues[ offsetSend ];
+        recvBuffer[i] = &recvValues[ offsetRecv];
+        offsetSend += sendSizes[i];
+        offsetRecv += recvSizes[i];
+    }
+
+    BOOST_REQUIRE_EQUAL( offsetRecv, recvSizeSum );
+    BOOST_REQUIRE_EQUAL( offsetSend, static_cast<IndexType>( sendValues.size() ) );
+
+    SCAI_LOG_INFO( logger, "all2allvTest<" << common::TypeTraits<ValueType>::id() << ">"
+                           << ", total send = " << sendValues.size() << ", total recv = " << recvValues.size() )
+
+    comm->all2allv( recvBuffer.data(), recvSizes.data(), sendBuffer.data(), sendSizes.data() );
+
+    std::vector<ValueType> expRecvValues;
+
+    for ( IndexType i = 0; i < size; ++i )
+    {
+        for ( IndexType k = 0; k < recvSizes[i]; ++k )
+        {
+            expRecvValues.push_back( f( i, rank, k ) );
+        }
+    }
+
+    BOOST_TEST( recvValues == expRecvValues, boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();

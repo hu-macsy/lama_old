@@ -523,14 +523,15 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
             Mat.mData[i]->transposeImpl();
         }
 
-        //preparation for mpi all2allv
-        IndexType* receiveSizes = new IndexType[size];
-        ValueType** recvBuffer = new ValueType*[size];
+        // preparation for all2allv
+
+        std::vector<IndexType> receiveSizes( size );
+        std::vector<ValueType*> recvBuffer( size );
 
         for ( IndexType i = 0; i < size; ++i )
         {
             IndexType localSize = targetMat.mData[i]->getValues().size();
-            recvBuffer[i] = new ValueType[localSize];
+
             WriteAccess<ValueType> wData( targetMat.mData[i]->getData() );
             //local data
             recvBuffer[i] = wData.get();
@@ -538,13 +539,12 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
             receiveSizes[i] = localSize;
         }
 
-        IndexType* sendSizes = new IndexType[size];
-        ValueType** sendBuffer = new ValueType*[size];
+        std::vector<IndexType> sendSizes( size );
+        std::vector<const ValueType*> sendBuffer( size );
 
         for ( IndexType i = 0; i < size; ++i )
         {
             IndexType localSize =  Mat.mData[i]->getValues().size();
-            sendBuffer[i] = new ValueType[ localSize];
             WriteAccess<ValueType> wDatas( Mat.mData[i]->getData() );
             //local datal
             sendBuffer[i] = wDatas.get();
@@ -553,7 +553,7 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
         }
 
         //MPI call
-        comm.all2allv( recvBuffer, receiveSizes, sendBuffer, sendSizes );
+        comm.all2allv( recvBuffer.data(), receiveSizes.data(), sendBuffer.data(), sendSizes.data() );
 
         //transpose back of Mat (A^t)^t = A
         if ( this != &Mat ) // no need if we override Mat anyways
@@ -565,8 +565,6 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
         }
 
         *this = targetMat;
-        delete [] sendSizes;
-        delete [] receiveSizes;
     }
 }
 

@@ -46,7 +46,6 @@
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/lama/fft.hpp>
 
 #include <scai/lama/matutils/MatrixCreator.hpp>

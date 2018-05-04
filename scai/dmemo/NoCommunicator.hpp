@@ -64,7 +64,9 @@ public:
 
     virtual ThreadSafetyLevel getThreadSafetyLevel() const;
 
-    virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
+    /** Implementation of pure method Communciator::all2allImpl */
+
+    virtual void all2allImpl( void* recvBuffer, const void* sendBuffer, const common::ScalarType stype ) const;
 
     virtual void synchronize() const;
 
@@ -79,7 +81,7 @@ public:
         const void* oldVals,
         const IndexType oldSize,
         const PartitionId dest,
-        common::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::shiftAsyncImpl */
 
@@ -89,30 +91,30 @@ public:
         const void* oldVals,
         const PartitionId dest,
         const IndexType size,
-        common::ScalarType stype ) const;
+        const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::bcastImpl */
 
-    void bcastImpl( void* val, const IndexType n, const PartitionId root, common::ScalarType stype ) const;
+    void bcastImpl( void* val, const IndexType n, const PartitionId root, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communciator::all2allvImpl */
 
-    void all2allvImpl( void* recvBuffer[], IndexType recvCount[],
-                       void* sendBuffer[], IndexType sendCount[],
-                       common::ScalarType stype ) const;
+    void all2allvImpl( void* recvBuffer[], const IndexType recvCount[],
+                       const void* sendBuffer[], const IndexType sendCount[],
+                       const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::scatterImpl */
 
-    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, common::ScalarType stype ) const;
+    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::scatterVImpl */
 
     void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
-                       const void* allVals, const IndexType sizes[], common::ScalarType stype ) const;
+                       const void* allVals, const IndexType sizes[], const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::gatherImpl */
 
-    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::ScalarType stype ) const;
+    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, const common::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::gatherVImpl */
 
@@ -156,19 +158,19 @@ public:
 
     /** Implementation of Communicator::sumImpl */
 
-    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const;
+    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::minImpl */
 
-    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const;
+    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::maxImpl */
 
-    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const;
+    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::scanImpl */
 
-    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const;
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
 
     /** Implementation of Communicator::getProcessorName */
 

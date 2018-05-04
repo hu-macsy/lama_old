@@ -41,6 +41,7 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/expression/CastMatrixExpression.hpp>
 #include <scai/lama/expression/ComplexMatrixExpression.hpp>
+#include <scai/lama/expression/MatrixExpressions.hpp>
 
 namespace scai
 {

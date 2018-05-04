@@ -1,6 +1,5 @@
 #include "NewtonStepCG.hpp"
 
-#include <scai/lama/expression/all.hpp>
 #include <scai/tracing.hpp>
 #include <scai/solver/TrivialPreconditioner.hpp>
 #include <scai/dmemo/Distribution.hpp>

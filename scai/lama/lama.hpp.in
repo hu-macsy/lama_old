@@ -43,9 +43,6 @@ extern "C" inline const char* lama_get_version()
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/Scalar.hpp>
 
-// Expressions
-#include <scai/lama/expression/all.hpp>
-
 // Matrices
 #include <scai/lama/matrix/all.hpp>
 

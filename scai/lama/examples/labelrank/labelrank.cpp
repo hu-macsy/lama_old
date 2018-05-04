@@ -36,7 +36,6 @@
 #include <scai/lama/matrix/all.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
-#include <scai/lama/expression/all.hpp>
 #include <scai/common/Walltime.hpp>
 
 #include <cstdio>
