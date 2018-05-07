@@ -2211,6 +2211,8 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
     SCAI_REGION( "Storage.CSR.timesMatrixCSR" )
     allocate( a.getNumRows(), b.getNumColumns() );
     mDiagonalProperty = ( getNumRows() == getNumColumns() );
+
+    if ( getNumRows() >  0 )
     {
         ReadAccess<IndexType> aIA( a.getIA(), loc );
         ReadAccess<IndexType> aJA( a.getJA(), loc );
@@ -2228,11 +2230,8 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
         matrixMultiply[loc]( cIA.get(), cJa.get(), cValues.get(), getNumRows(), getNumColumns(), k, alpha, mDiagonalProperty,
                              aIA.get(), aJA.get(), aValues.get(), bIA.get(), bJA.get(), bValues.get() );
     }
-    // TODO: check this!
-//    compress();
+
     buildRowIndexes();
-//    check( "result of matrix x matrix" ); // just verify for a correct matrix
-//    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

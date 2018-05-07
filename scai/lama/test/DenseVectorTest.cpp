@@ -630,15 +630,9 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
+BOOST_AUTO_TEST_CASE_TEMPLATE( VectorMatrixMultTransposeTest, ValueType, scai_numeric_test_types )
 {
-    // only serial
-
-    typedef DefaultReal ValueType;
-
-    // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
-
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+    // test transpose( A ) * x, once with implicitliy tranposed matrix and one with explicitly transposed
 
     const IndexType nRows = 7;
     const IndexType nCols = 4;
@@ -648,18 +642,17 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
     common::Math::srandom( 1413 );
 
     DenseMatrix<ValueType> A;
-    A.setContextPtr( ctx );
     A.allocate( nRows, nCols );
     MatrixCreator::fillRandom( A, 0.1 );
 
-    DenseVector<ValueType> x( ctx );
-    DenseVector<ValueType> y( ctx );
+    DenseVector<ValueType> x;
+    DenseVector<ValueType> y;
 
     x.setRandom( A.getRowDistributionPtr(), 1 );
     y.setRandom( A.getColDistributionPtr(), 1 );
 
     DenseMatrix<ValueType> At;
-    At.assignTranspose( A );
+    At.assignTranspose( A );   // builds explicitly transposed matrix
 
     auto res1 = eval<DenseVector<ValueType>>( 2 * transpose( A ) * x - y );
     auto res2 = eval<DenseVector<ValueType>>( 2 * At * x - y );
@@ -667,7 +660,10 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
     const HArray<ValueType>& v1 = res1.getLocalValues();
     const HArray<ValueType>& v2 = res2.getLocalValues();
 
-    ValueType eps = 0.0001;
+    // results might be slightly different due to rounding errors
+    // BOOST_TEST( hostReadAccess( v1 ) == hostReadAccess( v2 ), per_element() );
+
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( v1, v2 ) < eps );
 }
