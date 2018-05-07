@@ -254,7 +254,7 @@ def MultiBench( cmd, xlist, ylist, singleRunChoice, title = None, selection = No
 
     print "Plot grid = %d x %d, plots = %d"%( plotRows, plotColumns, plotN )
 
-    lamaImage = mpimg.imread( "lama.png" )
+    lamaImage = mpimg.imread( "LamaLogo.png" )
 
     results = []
     rects   = []
