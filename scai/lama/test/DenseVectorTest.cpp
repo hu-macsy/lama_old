@@ -667,7 +667,9 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
     const HArray<ValueType>& v1 = res1.getLocalValues();
     const HArray<ValueType>& v2 = res2.getLocalValues();
 
-    BOOST_TEST( hostReadAccess( v1 ) == hostReadAccess( v2 ), per_element() );
+    ValueType eps = 0.0001;
+
+    BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( v1, v2 ) < eps );
 }
 
 /* --------------------------------------------------------------------- */
