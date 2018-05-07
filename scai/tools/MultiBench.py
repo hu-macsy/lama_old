@@ -123,8 +123,7 @@ def evalOutput( output ):
 
     if "Residual" in output:
        items = output.split( " "  )
-       residual =  items[-1]   # e.g. Scalar(8.8408e-06)
-       residual =  residual[7:len( residual ) - 2]
+       residual =  items[-1]   # e.g. 2.221\n
        residual =  float( residual )
        if doResidualPlot:
           x.append( rtime )
@@ -146,7 +145,7 @@ def evalOutput( output ):
 
        if len( x ) > 0:
            plt.scatter( x[-1], y[-1], color = plotColor )
-       plt.draw()
+       plt.pause(0.0001)
        stime = 0.0
 
 def benchmark( cmd ):
@@ -179,7 +178,7 @@ def benchmark( cmd ):
     # show final point
     if doSinglePlot:
        plt.plot( x, y, color = plotColor, linewidth = 1.0 )
-       plt.draw()
+       plt.pause(0.0001)
 
        # just in case that drawing has missed the full time
 
@@ -255,7 +254,7 @@ def MultiBench( cmd, xlist, ylist, singleRunChoice, title = None, selection = No
 
     print "Plot grid = %d x %d, plots = %d"%( plotRows, plotColumns, plotN )
 
-    lamaImage = mpimg.imread( "lama.png" )
+    lamaImage = mpimg.imread( "LamaLogo.png" )
 
     results = []
     rects   = []
