@@ -237,10 +237,6 @@ void CUDAELLUtils::check(
         bool integrity = thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
         SCAI_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
     }
-    else
-    {
-        SCAI_ASSERT_EQ_ERROR( 0, numValuesPerRow, "as numRows == 0" )
-    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

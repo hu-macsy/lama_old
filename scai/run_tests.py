@@ -202,6 +202,12 @@ def main():
     print("Temporary files directory: {}\n".format(args.temp_dir if args.temp_dir else "Not specified. Determined by test binary."))
     print()
 
+    #  For running tests on GPU we set the environment variable for context to CUDA
+    #  Do not use cusparse library as entries in CSR data are not always sorted yet
+    if args.gpu:
+        os.environ[ "SCAI_CONTEXT" ] = "CUDA"
+        os.environ[ "SCAI_CUDA_USE_CUSPARSE" ] = "0"
+
     if args.tests:
         for name in args.tests:
             if not test_exists(name):
