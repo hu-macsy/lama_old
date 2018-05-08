@@ -51,30 +51,32 @@ Test = collections.namedtuple('Test', ['name', 'args', 'is_boost_test'])
 
 
 NORMAL_TESTS = [
-    Test('commonTest', [ 'common/test/commonTest' ], is_boost_test=True),
-    Test('loggingTest', [ 'logging/test/test.sh' ], is_boost_test=False),
-    Test('tracingTest', [ 'tracing/test/test.sh' ], is_boost_test=False),
-    Test('taskingTest', [ 'tasking/test/taskingTest' ], is_boost_test=True),
-    Test('kregistryTest', [ 'kregistry/test/kregistryTest' ], is_boost_test=True),
-    Test('hmemoTest', [ 'hmemo/test/hmemoTest' ], is_boost_test=True),
-    Test('blaskernelTest', [ 'blaskernel/test/blaskernelTest' ], is_boost_test=True),
-    Test('utilskernelTest', [ 'utilskernel/test/utilskernelTest' ], is_boost_test=True),
-    Test('sparsekernelTest', [ 'sparsekernel/test/sparsekernelTest' ], is_boost_test=True),
-    Test('lamaStorageTest', [ 'lama/test/storage/lamaStorageTest' ], is_boost_test=True)
+    Test( 'commonTest', [ 'common/test/commonTest' ], is_boost_test=True ),
+    Test( 'loggingTest', [ 'logging/test/test.sh' ], is_boost_test=False ),
+    Test( 'tracingTest', [ 'tracing/test/test.sh' ], is_boost_test=False ),
+    Test( 'taskingTest', [ 'tasking/test/taskingTest' ], is_boost_test=True ),
+    Test( 'kregistryTest', [ 'kregistry/test/kregistryTest' ], is_boost_test=True ),
+    Test( 'hmemoTest', [ 'hmemo/test/hmemoTest' ], is_boost_test=True ),
+    Test( 'blaskernelTest', [ 'blaskernel/test/blaskernelTest' ], is_boost_test=True ),
+    Test( 'utilskernelTest', [ 'utilskernel/test/utilskernelTest' ], is_boost_test=True ),
+    Test( 'sparsekernelTest', [ 'sparsekernel/test/sparsekernelTest' ], is_boost_test=True ),
+    Test( 'lamaStorageTest', [ 'lama/test/storage/lamaStorageTest' ], is_boost_test=True )
 ]
 
+# ToDo: Test( 'ipbclsTest', [ 'ipbcls/test/lsbctest' ], is_boost_test=False )
+
 GPU_ONLY_TESTS = [
-    Test('commonCUDATest', [ 'common/test/cuda/commonCUDATest' ], is_boost_test=True),
-    Test('taskingCUDATest', [ 'tasking/test/cuda/taskingCUDATest' ], is_boost_test=True),
-    Test('hmemoCUDATest', [ 'hmemo/test/cuda/hmemoCUDATest' ], is_boost_test=True)
+    Test( 'commonCUDATest', [ 'common/test/cuda/commonCUDATest' ], is_boost_test=True ),
+    Test( 'taskingCUDATest', [ 'tasking/test/cuda/taskingCUDATest' ], is_boost_test=True ),
+    Test( 'hmemoCUDATest', [ 'hmemo/test/cuda/hmemoCUDATest' ], is_boost_test=True )
 ]
 
 MPI_TESTS = [
-    Test('dmemoTest', [ 'dmemo/test/dmemoTest' ], is_boost_test=True),
-    Test('lamaTest', [ 'lama/test/lamaTest' ], is_boost_test=True),
-    Test('lamaMatrixTest', [ 'lama/test/matrix/lamaMatrixTest' ], is_boost_test=True),
-    Test('partitioningTest', [ 'partitioning/test/partitioningTest' ], is_boost_test=True),
-    Test('solverTest', [ 'solver/test/solverTest' ], is_boost_test=True)
+    Test( 'dmemoTest', [ 'dmemo/test/dmemoTest' ], is_boost_test=True ),
+    Test( 'lamaTest', [ 'lama/test/lamaTest' ], is_boost_test=True ),
+    Test( 'lamaMatrixTest', [ 'lama/test/matrix/lamaMatrixTest' ], is_boost_test=True ),
+    Test( 'partitioningTest', [ 'partitioning/test/partitioningTest' ], is_boost_test=True ),
+    Test( 'solverTest', [ 'solver/test/solverTest' ], is_boost_test=True )
 ]
 
 PASSED = " " + colors.PASS + "[ PASSED ]" + colors.NOCOLOR + " "
