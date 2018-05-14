@@ -985,6 +985,63 @@ BOOST_AUTO_TEST_CASE( matrixAddTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( binaryOpTest )
+{
+    // only one ValueType as we here just test correct handling of sparse formats
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    //   Example data
+    //
+    //    1  0  1   2       2  1  0   2        -1  -1  1 0
+    //    2  1  3   0   -   3  0  -1  2    =   -1   1  4  -2
+    //    1  0  2   0       1  1  0   0         0   -1  2  0
+
+    const IndexType m = 3;
+    const IndexType n = 4;
+
+    HArray<ValueType> data1     ( {  1,  0, 1, 2,  2, 1,  3,  0, 1,  0, 2, 0 } );
+    HArray<ValueType> data2     ( {  2,  1, 0, 2,  3, 0, -1,  2, 1,  1, 0, 0 } );
+    HArray<ValueType> resultSub ( { -1, -1, 1, 0, -1, 1,  4, -2, 0, -1, 2, 0 } );
+    HArray<ValueType> resultAdd ( {  3,  1, 1, 4,  5, 1,  2,  2, 2,  1, 2, 0 } );
+
+    DenseStorage<ValueType> storage1( m, n, data1 );
+    DenseStorage<ValueType> storage2( m, n, data2 );
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
+
+    for ( size_t i = 0; i < allMatrixStorages.size(); ++i )
+    {
+        auto& mStorage2 = *allMatrixStorages[i];
+
+        // Case 1: with dense storage
+
+        mStorage2.assign( storage2 );
+
+        mStorage2.binaryOp( storage1, common::BinaryOp::SUB, mStorage2 );
+
+        auto mStorageR = convert<DenseStorage<ValueType>>( mStorage2 );
+
+        BOOST_TEST( hostReadAccess( resultSub ) == hostReadAccess( mStorageR.getValues() ), per_element() );
+
+        // Case 2: with sprse storage
+
+        mStorage2.assign( storage2 );
+
+        auto sparseStorage1 = convert<CSRStorage<ValueType>>( storage1 );
+
+        mStorage2.binaryOp( sparseStorage1, common::BinaryOp::ADD, mStorage2 );
+
+        mStorageR.assign( mStorage2 );
+
+        BOOST_TEST( hostReadAccess( resultAdd ) == hostReadAccess( mStorageR.getValues() ), per_element() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( matrixMultTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
