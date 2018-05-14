@@ -128,12 +128,11 @@ class COMMON_DLL_IMPORTEXPORT BuildSparseVector : public BuildSparseIndexes
 {
 public:
 
-    BuildSparseVector( const IndexType n, const common::BinaryOp op ) :
+    BuildSparseVector( const IndexType n, const ValueType zero = 0 ) :
 
         BuildSparseIndexes( n ),
         mValueList( new ValueType[n] ),
-        mZero( common::zeroBinary<ValueType>( op ) ),
-        mOp( op )
+        mZero( zero )
 
     {
         for ( IndexType j = 0; j < n; j++ )
@@ -142,10 +141,10 @@ public:
         }
     }
 
-    void push( const IndexType i, const ValueType v )
+    void push( const IndexType i, const ValueType v, const common::BinaryOp op )
     {
         pushIndex( i );
-        mValueList[i] = common::applyBinary( mValueList[i], mOp, v );
+        mValueList[i] = common::applyBinary( mValueList[i], op, v );
     }
 
     void pop( IndexType& i, ValueType& v )
@@ -162,8 +161,6 @@ private:
     std::unique_ptr<ValueType[]> mValueList;
 
     ValueType mZero;
-
-    common::BinaryOp mOp;
 };
 
 

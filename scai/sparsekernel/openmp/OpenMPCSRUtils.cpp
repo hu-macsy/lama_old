@@ -1220,7 +1220,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
                 indexList.pushIndex( j );
             }
 
-            if ( diagonalProperty )
+            if ( diagonalProperty && i < numColumns )
             {
                 indexList.pushIndex( i );
             }
@@ -1238,7 +1238,9 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
         } // end loop over all rows of input matrices
     }
 
-    return sizes2offsets( cSizes, numRows );
+    IndexType numValues = sizes2offsets( cSizes, numRows );
+
+    return numValues;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1297,7 +1299,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
                 }
             }
 
-            if ( diagonalProperty )
+            if ( diagonalProperty && i < n )
             {
                 indexList.pushIndex( i );
             }
@@ -1335,15 +1337,18 @@ void OpenMPCSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
+    // very close to binaryOp wito op = BinaryOp::ADD, but here also scalar mutliplication with alpha, beta
+
     SCAI_REGION( "OpenMP.CSR.matrixAdd" )
+
     SCAI_LOG_INFO( logger,
-                   "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+                   "matrixAdd for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
     // determine the number of entries in output matrix
 
     #pragma omp parallel
     {
-        BuildSparseVector<ValueType> sparseRow( numColumns, common::BinaryOp::ADD );
+        BuildSparseVector<ValueType> sparseRow( numColumns );
 
         #pragma omp for
 
@@ -1357,7 +1362,7 @@ void OpenMPCSRUtils::matrixAdd(
                 IndexType j = aJA[jj];
                 ValueType v = alpha * aValues[jj];
 
-                sparseRow.push( j, v );
+                sparseRow.push( j, v, common::BinaryOp::ADD );
 
                 SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a, val = " << v )
             }
@@ -1369,14 +1374,14 @@ void OpenMPCSRUtils::matrixAdd(
                 IndexType j = bJA[jj];
                 ValueType v = beta * bValues[jj];
 
-                sparseRow.push( j, v );
+                sparseRow.push( j, v, common::BinaryOp::ADD );
 
                 SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b, val = " << v  )
             }
 
             IndexType offset = cIA[i];
 
-            if ( diagonalProperty )
+            if ( diagonalProperty && i < numColumns )
             {
                 // first element is reserved for diagonal element
 
@@ -1442,31 +1447,33 @@ void OpenMPCSRUtils::binaryOp(
     SCAI_LOG_INFO( logger,
                    "binaryOp for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
 
-    // determine the number of entries in output matrix
+    // Note: as long as rows are not sorted this solution works only for ops with 0 as zero element
 
     ValueType zero = common::zeroBinary<ValueType>( op );
 
-    #pragma omp parallel
-    {
-        BuildSparseVector<ValueType> sparseRow( numColumns, op );
+    SCAI_ASSERT_EQ_ERROR( zero, ValueType( 0 ), "binary op = " << op << " for element-wise operation not supported for sparse matrices." )
 
-        #pragma omp for
+    // #pragma omp parallel
+    {
+        BuildSparseVector<ValueType> sparseRow( numColumns, zero );
+
+        // #pragma omp for
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
             for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
             {
-                sparseRow.push( aJA[jj], aValues[jj] );
+                sparseRow.push( aJA[jj], aValues[jj], common::BinaryOp::COPY );
             }
 
             for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
             {
-                sparseRow.push( bJA[jj], bValues[jj] );
+                sparseRow.push( bJA[jj], bValues[jj], op );
             }
 
             IndexType offset = cIA[i];
 
-            if ( diagonalProperty )
+            if ( diagonalProperty && i < numColumns )
             {
                 // first element is reserved for diagonal element
 
@@ -1476,7 +1483,7 @@ void OpenMPCSRUtils::binaryOp(
                 ++offset;
             }
 
-            SCAI_LOG_DEBUG( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
+            SCAI_LOG_TRACE( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
 
             // fill in csrJA, csrValues and reset indexList, valueList for next use
 
@@ -1532,7 +1539,7 @@ void OpenMPCSRUtils::matrixMultiply(
     {
         SCAI_REGION( "OpenMP.CSR.matrixMultiply" )
 
-        BuildSparseVector<ValueType> sparseRow( n, common::BinaryOp::ADD ); // one for each thread
+        BuildSparseVector<ValueType> sparseRow( n, ValueType( 0 ) ); // one for each thread
 
         #pragma omp for
 
@@ -1550,7 +1557,7 @@ void OpenMPCSRUtils::matrixMultiply(
 
                     // element a(i,j) an b(j,k) will be added to  c(i,k)
 
-                    sparseRow.push( k, aValues[jj] * bValues[kk] );
+                    sparseRow.push( k, aValues[jj] * bValues[kk], common::BinaryOp::ADD );
                 }
             }
 
