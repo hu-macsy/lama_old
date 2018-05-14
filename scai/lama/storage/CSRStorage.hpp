@@ -576,6 +576,13 @@ public:
         const hmemo::HArray<ValueType>& y, 
         const common::MatrixOp op ) const;
 
+    /** Implementation of element-wise binary operation for CSR */
+
+    virtual void binaryOp(
+        const MatrixStorage<ValueType>& a,
+        const common::BinaryOp op,
+        const MatrixStorage<ValueType>& b );
+
     /** Implementation of MatrixStorage::matrixPlusMatrix for CSR */
 
     virtual void matrixPlusMatrix(
@@ -602,7 +609,7 @@ public:
      *        op == common::BinaryOp::COPY for replacing
      *        op == common::BinaryOp::MIN  for minimal values
      */
-    void binaryOpCSR( const CSRStorage<ValueType>& a, const CSRStorage<ValueType>& b, common::BinaryOp op );
+    void binaryOpCSR( const CSRStorage<ValueType>& a, common::BinaryOp op, const CSRStorage<ValueType>& b );
 
     /** solution = xxx */
 

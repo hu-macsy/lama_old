@@ -1194,4 +1194,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types )
+{
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    const IndexType n = 100;
+
+    Matrices<ValueType> allMatrices( context );    // is created by factory
+
+    auto dist = std::make_shared<dmemo::BlockDistribution>( n );
+
+    auto diagonalV = fill<DenseVector<ValueType>>( dist, 1 );
+
+    for ( size_t i = 0; i < allMatrices.size(); ++i )
+    {
+        Matrix<ValueType>& matrix1 = *allMatrices[i];
+        matrix1.assignDiagonal( diagonalV );
+
+        auto matrix2 = diagonal<CSRSparseMatrix<ValueType>>( diagonalV );
+        // auto matrix3 = diagonal<DenseMatrix<ValueType>>( diagonalV );
+
+        matrix1.binaryOp( matrix1, common::BinaryOp::SUB, matrix2 );
+        // matrix1.binaryOp( matrix1, common::BinaryOp::SUB, matrix2 );
+        // matrix1.binaryOp( matrix2, common::BinaryOp::SUB, matrix1 );
+
+        auto diff = matrix1.maxNorm();
+
+        BOOST_CHECK_EQUAL( diff, 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_SUITE_END();

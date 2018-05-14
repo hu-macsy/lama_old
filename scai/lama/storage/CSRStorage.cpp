@@ -2068,10 +2068,35 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::binaryOp(
+    const MatrixStorage<ValueType>& a,
+    common::BinaryOp op,
+    const MatrixStorage<ValueType>& b )
+{
+    if ( a.getFormat() != Format::CSR )
+    {
+        auto csrA = convert<CSRStorage<ValueType>>( a );
+        binaryOp( csrA, op, b );
+    }
+    else if ( b.getFormat() != Format::CSR )
+    {
+        auto csrB = convert<CSRStorage<ValueType>>( b );
+        binaryOp( a, op, csrB );
+    }
+    else
+    {
+        binaryOpCSR( static_cast<const CSRStorage<ValueType>&>( a ), op,
+                     static_cast<const CSRStorage<ValueType>&>( b ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void CSRStorage<ValueType>::binaryOpCSR(
     const CSRStorage<ValueType>& a,
-    const CSRStorage<ValueType>& b,
-    common::BinaryOp op )
+    common::BinaryOp op,
+    const CSRStorage<ValueType>& b )
 {
     SCAI_LOG_INFO( logger, "this = a " << op << " b " )
 
@@ -2081,7 +2106,7 @@ void CSRStorage<ValueType>::binaryOpCSR(
 
         CSRStorage<ValueType> tmp;
         tmp.setContextPtr( getContextPtr() ); 
-        tmp.binaryOpCSR( a, b, op );
+        tmp.binaryOpCSR( a, op, b );
         swap( tmp ); // safe as tmp will be destroyed afterwards
 
         return;
@@ -2382,7 +2407,7 @@ void CSRStorage<ValueType>::fillCOO(
     CSRStorage<ValueType> csr1;
     csr1.assign( coo );
 
-    binaryOpCSR( *this, csr1, op );
+    binaryOpCSR( *this, op, csr1 );
 }
 
 /* ========================================================================= */

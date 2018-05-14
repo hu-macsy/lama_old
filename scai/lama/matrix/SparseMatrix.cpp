@@ -38,6 +38,7 @@
 // local library
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/MatrixAssembly.hpp>
 #include <scai/lama/SparseVector.hpp>
 
@@ -1531,6 +1532,103 @@ void SparseMatrix<ValueType>::matrixPlusMatrix(
     // Now we can add sparse matrices
 
     matrixPlusMatrixSparse( alpha, sparseA, beta, sparseB );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::binaryOp( 
+    const Matrix<ValueType>& matrixA, 
+    const common::BinaryOp op, 
+    const Matrix<ValueType>& matrixB )
+{
+    if ( matrixA.getMatrixKind() != MatrixKind::SPARSE )
+    {
+        if ( &matrixB == this )
+        {
+            auto sparseA = convert<CSRSparseMatrix<ValueType>>( matrixA );
+            binaryOp( sparseA, op, matrixB );
+        }
+        else
+        {
+            // reuse this storage for conversion of a
+            assign( matrixA );
+            binaryOp( *this, op, matrixB );
+        }
+    }
+    else if ( matrixB.getMatrixKind() != MatrixKind::SPARSE )
+    {
+        if ( &matrixA == this )
+        {
+            auto denseB = convert<CSRSparseMatrix<ValueType>>( matrixB );
+            binaryOp( matrixA, op, denseB );
+        }
+        else
+        {
+            // reuse this matrix for conversion of a
+            assign( matrixB );
+            binaryOp( matrixA, op, *this );
+        }
+    }
+    else
+    {
+        // Here we can call binary op for sparse matrices
+
+        binaryOpSparse( static_cast<const SparseMatrix<ValueType>&>( matrixA ), op,
+                        static_cast<const SparseMatrix<ValueType>&>( matrixB ) );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::binaryOpSparse( 
+    const SparseMatrix<ValueType>& matrixA, 
+    const common::BinaryOp op, 
+    const SparseMatrix<ValueType>& matrixB )
+{
+    SCAI_ASSERT_EQ_DEBUG( matrixA.getRowDistribution(), matrixB.getRowDistribution(), 
+                          "sparseMatrix = matrixA " << op << " matrixB, matrices must have same row/target distribution" )
+    SCAI_ASSERT_EQ_DEBUG( matrixA.getColDistribution(), matrixB.getColDistribution(), 
+                          "sparseMatrix = matrixA " << op << " matrixB, matrices must have same col/source distribution" )
+
+    // Now we can do it completly locally
+
+    _Matrix::setDistributedMatrix( matrixA.getRowDistributionPtr(), matrixA.getColDistributionPtr() );
+
+    mLocalData->binaryOp( *matrixA.mLocalData, op, *matrixB.mLocalData );
+
+    if ( getColDistribution().isReplicated() )
+    {
+         // there is no halo and no halo storage 
+         mHaloData->allocate( getNumRows(), 0 );
+         mHalo.clear();
+    }
+    else
+    {
+         IndexType numRows = matrixA.mHaloData->getNumRows();
+         IndexType numCols = getColDistribution().getGlobalSize();
+
+         // build halo storage for A and B with global column indexes
+
+         HArray<IndexType> csrIA;
+         HArray<IndexType> csrJA;
+         HArray<ValueType> csrValues;
+
+         matrixA.mHaloData->buildCSRData( csrIA, csrJA, csrValues );
+         matrixA.mHalo.halo2Global( csrJA );
+         CSRStorage<ValueType> haloA( numRows, numCols, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
+
+         matrixB.mHaloData->buildCSRData( csrIA, csrJA, csrValues );
+         matrixB.mHalo.halo2Global( csrJA );
+         CSRStorage<ValueType> haloB( numRows, numCols, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
+
+         mHaloData->binaryOp( haloA, op, haloB );
+ 
+         // now build Halo from this result storage
+
+         mHaloData->buildHalo( mHalo, getColDistribution() );
+    }
 }
 
 /* -------------------------------------------------------------------------- */

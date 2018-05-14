@@ -329,6 +329,15 @@ public:
      */
     virtual void matrixTimesScalar( const Matrix<ValueType>& A, const ValueType alpha ) = 0;
 
+    /** Elementwise binary operation of matrix elements
+     *
+     *  @param[in] matrixA, matrixB are the input matrices, must have the same distribution
+     *  @param[in] op               specifies the binary operation to be applied
+     *
+     *  This matrix becomes the result of the operation, alias with one of the input matrices is supported.
+     */
+    virtual void binaryOp( const Matrix<ValueType>& matrixA, const common::BinaryOp op, const Matrix<ValueType>& matrixB ) = 0;
+
     /**
      * @brief Computes this = alpha * A + beta * B.
      *

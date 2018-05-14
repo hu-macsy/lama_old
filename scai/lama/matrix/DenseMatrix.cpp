@@ -2114,6 +2114,53 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::binaryOp(
+    const Matrix<ValueType>& matrixA,
+    const common::BinaryOp op,
+    const Matrix<ValueType>& matrixB )
+{
+    SCAI_LOG_INFO( logger, "this = " << "A " << op << " B, A = " << matrixA << ", B = " << matrixB )
+
+    if ( matrixA.getMatrixKind() != MatrixKind::DENSE )
+    {
+        if ( &matrixB == this )
+        {   
+            auto denseA = convert<DenseMatrix<ValueType>>( matrixA );
+            binaryOp( denseA, op, matrixB );
+        }
+        else
+        {
+            // reuse this storage for conversion of a
+            assign( matrixA );
+            binaryOp( *this, op, matrixB );
+        }
+    }
+    else if ( matrixB.getMatrixKind() != MatrixKind::DENSE )
+    {
+        if ( &matrixA == this )
+        {
+            auto denseB = convert<DenseMatrix<ValueType>>( matrixB );
+            binaryOp( matrixA, op, denseB );
+        }
+        else
+        {
+            // reuse this matrix for conversion of a
+            assign( matrixB ); 
+            binaryOp( matrixA, op, *this );
+        }
+    }
+    else
+    {
+        // Here we can call binary op for dense matrices
+
+        binaryOpDense( static_cast<const DenseMatrix<ValueType>&>( matrixA ), op,
+                       static_cast<const DenseMatrix<ValueType>&>( matrixB ) );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::matrixPlusMatrix(
     const ValueType alpha,
     const Matrix<ValueType>& matA,
@@ -2171,6 +2218,36 @@ void DenseMatrix<ValueType>::matrixPlusMatrixDense(
     for ( size_t i = 0; i < mData.size(); ++i )
     {
         mData[i]->matrixPlusMatrix( alpha, *A.mData[i], beta, *B.mData[i] );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::binaryOpDense(
+    const DenseMatrix<ValueType>& matrixA,
+    const common::BinaryOp op,
+    const DenseMatrix<ValueType>& matrixB )
+{
+    SCAI_REGION( "Mat.Dense.binaryOp" )
+
+    SCAI_ASSERT_EQ_ERROR( matrixA.getRowDistribution(), matrixB.getRowDistribution(), "size/dist mismatch of matrices in binaryOp" )
+    SCAI_ASSERT_EQ_ERROR( matrixB.getColDistribution(), matrixB.getColDistribution(), "size/dist mismatch of matrices in binaryOp" )
+
+    // Now we can do it completely local
+
+    if ( this != &matrixA && this != &matrixB )
+    {
+        allocate( matrixA.getRowDistributionPtr(), matrixA.getColDistributionPtr() );
+    }
+
+    // Add matrices of each chunk
+
+    SCAI_LOG_DEBUG( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
+
+    for ( size_t i = 0; i < mData.size(); ++i )
+    {
+        mData[i]->binaryOp( *matrixA.mData[i], op, *matrixB.mData[i] );
     }
 }
 

@@ -583,6 +583,65 @@ void DenseStorage<ValueType>::invertDense( const DenseStorage<ValueType>& other 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseStorage<ValueType>::binaryOp(
+    const MatrixStorage<ValueType>& a,
+    const common::BinaryOp op,
+    const MatrixStorage<ValueType>& b )
+{
+    if ( a.getFormat() != Format::DENSE )
+    {
+        if ( &b == this )
+        {
+            auto aDense = convert<DenseStorage<ValueType>>( a );
+            binaryOp( aDense, op, b );
+        }
+        else
+        {
+            // reuse this storage for conversion of a
+            assign( a );
+            binaryOp( *this, op, b );
+        }
+    }
+    else if ( b.getFormat() != Format::DENSE )
+    {
+        if ( &a == this )
+        {
+            auto bDense = convert<DenseStorage<ValueType>>( b );
+            binaryOp( a, op, bDense );
+        }
+        else
+        {
+            // reuse this storage for conversion of a
+            assign( b );
+            binaryOp( a, op, *this );
+        }
+    }
+    else
+    {
+        binaryOpDense( static_cast<const DenseStorage<ValueType>&>( a ), op,
+                       static_cast<const DenseStorage<ValueType>&>( b ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::binaryOpDense(
+    const DenseStorage<ValueType>& a,
+    const common::BinaryOp op, 
+    const DenseStorage<ValueType>& b )
+{
+    SCAI_ASSERT_EQ_ERROR( a.getNumRows(), b.getNumRows(), "serious size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumColumns(), "serious size mismatch" )
+
+    _MatrixStorage::setDimension( a.getNumRows(), a.getNumColumns() );
+
+    utilskernel::HArrayUtils::binaryOp( mData, a.getValues(), b.getValues(), op, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseStorage<ValueType>::matrixTimesVector(
     HArray<ValueType>& result,
     const ValueType alpha,
