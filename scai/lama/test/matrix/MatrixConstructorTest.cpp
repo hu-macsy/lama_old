@@ -602,8 +602,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
+
+BOOST_AUTO_TEST_CASE( ExpMMConstructorTest )
 {
+    typedef CSRSparseMatrix<ValueType> MatrixType;
+
     typedef typename MatrixType::StorageType StorageType;
 
     const IndexType n = 13;
@@ -635,6 +639,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
         unity.setIdentity( n );
 
         matrix1.redistribute( dist, repColDist );     // only row distribution
+
+        SCAI_LOG_INFO( logger, "build new matrix from " << matrix1 << " * " << unity )
 
         auto matrix2 = eval<MatrixType>( matrix1 * unity );
 
@@ -727,6 +733,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagConstructorTest, MatrixType, MatrixTypes )
         dmemo::DistributionPtr dist = dists[k];
 
         auto diagonalVector = distribute<DenseVector<ValueType>>( diagonalArray, dist );
+
+        SCAI_LOG_DEBUG( logger, "diagonal vector = " << diagonalVector )
 
         auto matrix = lama::diagonal<MatrixType>( diagonalVector );
 

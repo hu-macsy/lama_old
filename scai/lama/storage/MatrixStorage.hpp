@@ -567,7 +567,14 @@ public:
         const MatrixStorage<ValueType>& b,
         const ValueType beta,
         const MatrixStorage<ValueType>& c );
+ 
+    /** Apply binary operation elementwise for matrix storage elements. */
 
+    virtual void binaryOp(
+        const MatrixStorage<ValueType>& a,
+        const common::BinaryOp op,
+        const MatrixStorage<ValueType>& b );
+       
     /** @brief Assign this matrix with alpha * a + beta * b
      *
      *  @param[in] alpha scalar factor for first matrix (storage)

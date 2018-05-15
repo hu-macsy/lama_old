@@ -453,6 +453,10 @@ public:
 
     ValueType maxDiffNormImpl( const DenseMatrix<ValueType>& other ) const;
 
+    /* Implemenation of pure method Matrix<ValueType>::binaryOp */
+
+    virtual void binaryOp( const Matrix<ValueType>& matrixA, const common::BinaryOp op, const Matrix<ValueType>& matrixB );
+
     /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
     virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
@@ -605,6 +609,10 @@ private:
      *  @param[in]   nRows      number of rows to join
      */
     void joinColumnData( hmemo::HArray<ValueType>& result, const IndexType firstRow, const IndexType nRows ) const;
+
+    /** binaryOp but with dense matrices */
+
+    void binaryOpDense( const DenseMatrix<ValueType>& matrixA, const common::BinaryOp op, const DenseMatrix<ValueType>& matrixB );
 
     /***************************************************************************
      *  Static Methods for dense storage                                        *

@@ -8,14 +8,14 @@ A description on how to build LAMA is given afterwards or refer to our homepage 
 
 Required:
  * CMake >= 2.8.8
- * C/C++ compiler (optionally: OpenMP 3.0, recommended: capable of C++11)
- * Boost-Library (header, optional for tests: unit-test-framework )
+ * C/C++ compiler (OpenMP 3.0, support of C++11 mandatory)
 
 Recommended:
  * BLAS- and LAPACK-Library (Intel MKL, BLAS)
  * Nvidia GPU: CUDA >= 7.0 (with cuBLAS, cuSPARSE)
  * Intel Xeon Phi: Intel MKL
  * MPI
+ * Boost-Library tests (unit-test-framework)
 
 Optional:
  * Metis/ParMetis
@@ -37,14 +37,33 @@ create a build directory and change to it
 configure cmake by giving the install prefix and pointing to the LAMA-src dir:
  $ cmake -DCMAKE_INSTALL_PREFIX=<path/to/install/dir> [optional options] ../scai
 
-For a Release build be sure to define -DCMAKE_BUILD_TYPE=Release.
+You can give cmake some hints where to find recommended/optional software either
+by setting environment variables or by passing variables to cmake.
+
+  $ export METIS=ROOT=<metis_installation_directory>
+  $ export PARMETIS_ROOT=<parmetis_installation_directory>
+  $ export BOOST_ROOT=<...>
+  $ export MKL_ROOT=<...>
+  $ export MPI_HOME=<...>
+  $ cmake [ -DMETIS_ROOT=<metis_installation_director>  -DPARMETIS_ROOT=<..> ...] ....
 
 start the build and installation process by running make (optionally in parallel):
 
  $ make [-j <num_processes>]
 
-you optionally can build the system doc (beneath the already installed userdoc) by:
+If the Boost unit-test framework is available you can run the tests as follows:
 
- $ make doxygendoc
+ $ make check
 
-make install is not(!) needed (and not possible).
+you can build the system doc (doxygen documentation) and the user doc (sphinx) as follows:
+
+ $ make doc
+
+You can view the documentation by calling the browser with the start file LAMA.html.
+
+ $ <browser> doc/LAMA.html
+
+If the build was successful, you can install the LAMA software. You have to 
+make sure that you have access rights for the installation directory.
+
+ $ [sudo] make install

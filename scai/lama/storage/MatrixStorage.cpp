@@ -930,8 +930,25 @@ void MatrixStorage<ValueType>::matrixPlusMatrix(
 
     SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, "default implementation has not been overridden by CSR" )
 
-    auto csr  = convert<CSRStorage<ValueType>>( *this );
+    CSRStorage<ValueType> csr;
     csr.matrixPlusMatrix( alpha, a, beta, b );
+    assign( csr );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::binaryOp(
+    const MatrixStorage<ValueType>& a,
+    const common::BinaryOp op,
+    const MatrixStorage<ValueType>& b )
+{
+    // Make sure that CSRStorage really has overridden it, otherwise endless recursion here
+
+    SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, "default implementation has not been overridden by CSR" )
+
+    CSRStorage<ValueType> csr;
+    csr.binaryOp( a, op, b );
     assign( csr );
 }
 

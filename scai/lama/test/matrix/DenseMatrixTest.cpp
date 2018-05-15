@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow1, ValueType, scai_fft_test_types )
 
     fft( res, x, dim, 4 );    // fft for each row
 
-    SCAI_LOG_ERROR( logger, "Result of fft : " << res )
+    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
 
     BOOST_CHECK_EQUAL( res.getNumRows(), 1 );
     BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow2, ValueType, scai_fft_test_types )
 
     fft( res, x, dim, 4 );    // fft for each row
 
-    SCAI_LOG_ERROR( logger, "Result of fft : " << res )
+    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
 
     BOOST_CHECK_EQUAL( res.getNumRows(), 1 );
     BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowArray, ValueType, scai_fft_test_types )
 
     utilskernel::FFTUtils::fft_many( res, input, 2, 4, 1 );
 
-    SCAI_LOG_ERROR( logger, "Result of fft : " << res )
+    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
 
     BOOST_TEST( hostReadAccess( res ) == hostReadAccess( result ), boost::test_tools::per_element() );
 }
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowMatrix, ValueType, scai_fft_test_types 
 
     fft( res, x, dim, 4 );    // fft for each row
 
-    SCAI_LOG_ERROR( logger, "Result of fft : " << res )
+    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
 
     BOOST_CHECK_EQUAL( res.getNumRows(), 2 );
     BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );
@@ -392,7 +392,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestCol, ValueType, scai_fft_test_types )
 
     fft( res, x, dim, 4 );    // fft for each column
 
-    SCAI_LOG_ERROR( logger, "Result of fft : " << res )
+    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
 
     BOOST_CHECK_EQUAL( res.getNumRows(), 4 );
     BOOST_CHECK_EQUAL( res.getNumColumns(), 2 );
@@ -424,7 +424,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestRow, ValueType, scai_fft_test_types )
 
     ifft( res, x, dim, 4 );    // ifft for each row
 
-    SCAI_LOG_ERROR( logger, "Result of fft : " << res )
+    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
 
     BOOST_CHECK_EQUAL( res.getNumRows(), 2 );
     BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );
@@ -458,7 +458,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestCol, ValueType, scai_fft_test_types )
 
     ifft( res, x, dim, 4 );    // ifft for each column
 
-    SCAI_LOG_ERROR( logger, "Result of fft : " << res )
+    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
 
     BOOST_CHECK_EQUAL( res.getNumRows(), 4 );
     BOOST_CHECK_EQUAL( res.getNumColumns(), 2 );

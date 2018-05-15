@@ -52,6 +52,6 @@ scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
 
-install ( FILES       ${EXAMPLE_FILES} ${HEADER} MultiBench.py README.txt
+install ( FILES       ${EXAMPLE_FILES} ${HEADER} README.txt
           DESTINATION ${INSTALL_EXAMPLE_DIR} )
 

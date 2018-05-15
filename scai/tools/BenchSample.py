@@ -4,10 +4,10 @@ import MultiBench
 
 # Important: log_complete must be switched on for Logger fo Solver
 
-cmd     = "solver.exe data/3D27P_100.frm --SCAI_FORMAT=%x --SCAI_CONTEXT=%y --SCAI_SOLVER_LOG=completeInformation"
+cmd     = "./lamaSolver data/3D27P_100.frm --SCAI_FORMAT=%x --SCAI_NUM_THREADS=%y --SCAI_SOLVER_LOG=completeInformation"
 
 xlabels = ( "CSR", "ELL", "JDS", "DIA" )
-ylabels = ( "Host", "CUDA" )
+ylabels = ( "1", "2" )
 
 # Just final results
 

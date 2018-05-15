@@ -260,6 +260,11 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
 
+    virtual void binaryOp( const Matrix<ValueType>&, const common::BinaryOp, const Matrix<ValueType>& )
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
+
     virtual void matrixPlusMatrix( const ValueType, const Matrix<ValueType>&, const ValueType, const Matrix<ValueType>&)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )

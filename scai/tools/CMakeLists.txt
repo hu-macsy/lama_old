@@ -74,7 +74,13 @@ endforeach ( executable )
 # lamaGenMatrices.py: copy only to build and install directory
 
 configure_file( lamaGenMatrices.py lamaGenMatrices.py COPYONLY )
+configure_file( BenchSample.py BenchSample.py COPYONLY )
+configure_file( MultiBench.py MultiBench.py COPYONLY )
+configure_file( LamaLogo.png LamaLogo.png COPYONLY )
 install ( PROGRAMS  lamaGenMatrices.py DESTINATION bin )
+install ( PROGRAMS  BenchSample.py DESTINATION bin )
+install ( PROGRAMS  MultiBench.py DESTINATION bin )
+install ( FILES  LamaLogo.png DESTINATION bin )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 

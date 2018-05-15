@@ -416,6 +416,13 @@ public:
         const ValueType beta,
         const MatrixStorage<ValueType>& c );
 
+    /** Implementation of element-wise binary operation for dense storage */
+
+    virtual void binaryOp(
+        const MatrixStorage<ValueType>& a,
+        const common::BinaryOp op,
+        const MatrixStorage<ValueType>& b );
+
     /** Implementation for MatrixStorage::l1Norm */
 
     virtual RealType<ValueType> l1Norm() const;
@@ -542,6 +549,13 @@ private:
                                  const DenseStorage<ValueType>& b,
                                  const ValueType beta,
                                  const DenseStorage<ValueType>& c );
+
+    /** Implementation of elementwise binary operation for dense matrices. */
+
+    void binaryOpDense(
+        const DenseStorage<ValueType>& a,
+        const common::BinaryOp op,
+        const DenseStorage<ValueType>& b );
 
     /** @brief invert only for DenseStorage. */
 

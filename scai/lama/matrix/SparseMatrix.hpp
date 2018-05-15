@@ -475,6 +475,10 @@ public:
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
+    /* Implementation of pure method Matrix<ValueType>::binaryOp */
+
+    virtual void binaryOp( const Matrix<ValueType>& matrixA, const common::BinaryOp op, const Matrix<ValueType>& matrixB );
+
     /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
     virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
@@ -680,6 +684,14 @@ protected:
         const SparseMatrix<ValueType>& B,
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
+
+    /**
+     *  @brief element-wise binary operation for two sparse matrices.
+     */
+    virtual void binaryOpSparse( 
+        const SparseMatrix<ValueType>& matrixA, 
+        const common::BinaryOp op, 
+        const SparseMatrix<ValueType>& matrixB );
 
     /** Implementation of pure method Matrix<ValueType>::selectComplexPart */
 

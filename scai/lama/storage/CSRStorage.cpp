@@ -2068,12 +2068,38 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::binaryOp(
+    const MatrixStorage<ValueType>& a,
+    common::BinaryOp op,
+    const MatrixStorage<ValueType>& b )
+{
+    if ( a.getFormat() != Format::CSR )
+    {
+        auto csrA = convert<CSRStorage<ValueType>>( a );
+        binaryOp( csrA, op, b );
+    }
+    else if ( b.getFormat() != Format::CSR )
+    {
+        auto csrB = convert<CSRStorage<ValueType>>( b );
+        binaryOp( a, op, csrB );
+    }
+    else
+    {
+        binaryOpCSR( static_cast<const CSRStorage<ValueType>&>( a ), op,
+                     static_cast<const CSRStorage<ValueType>&>( b ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void CSRStorage<ValueType>::binaryOpCSR(
     const CSRStorage<ValueType>& a,
-    const CSRStorage<ValueType>& b,
-    common::BinaryOp op )
+    common::BinaryOp op,
+    const CSRStorage<ValueType>& b )
 {
-    SCAI_LOG_INFO( logger, "this = a " << op << " b " )
+    SCAI_LOG_ERROR( logger, "this = a ( " << a.getNumRows() << " x " << a.getNumColumns() << ", nnz = " << a.getNumValues() << " ) " 
+                      << op << " b ( " << b.getNumRows() << " x " << b.getNumColumns() << ", nnz = " << b.getNumValues() << " )" )
 
     if ( &a == this || &b == this )
     {
@@ -2081,16 +2107,23 @@ void CSRStorage<ValueType>::binaryOpCSR(
 
         CSRStorage<ValueType> tmp;
         tmp.setContextPtr( getContextPtr() ); 
-        tmp.binaryOpCSR( a, b, op );
+        tmp.binaryOpCSR( a, op, b );
         swap( tmp ); // safe as tmp will be destroyed afterwards
 
         return;
     }
 
+    SCAI_ASSERT_EQ_ERROR( a.getNumRows(), b.getNumRows(), "#rows must be equal for storages in binary op" )
+    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumColumns(), "#cols must be equal for storages in binary op" )
+
     allocate( a.getNumRows(), a.getNumColumns() );
 
-    SCAI_ASSERT_EQ_ERROR( getNumRows(), b.getNumRows(), "#rows must be equal for storages in binary op" )
-    SCAI_ASSERT_EQ_ERROR( getNumColumns(), b.getNumColumns(), "#cols must be equal for storages in binary op" )
+    if ( getNumRows() < 0 || getNumColumns() < 0 )
+    {
+        mDiagonalProperty = checkDiagonalProperty();
+        mSortedRows = false;
+        return;
+    }
 
     mDiagonalProperty = a.hasDiagonalProperty();   // inherit diagonal property from first storage
  
@@ -2104,7 +2137,7 @@ void CSRStorage<ValueType>::binaryOpCSR(
 
         // Step 1: compute new row sizes of C, build offsets
 
-        SCAI_LOG_DEBUG( logger, "Determing sizes of result matrix C" )
+        SCAI_LOG_ERROR( logger, "Determing sizes of result matrix C" )
 
         WriteOnlyAccess<IndexType> cIa( mIA, getNumRows() + 1 );
 
@@ -2112,15 +2145,18 @@ void CSRStorage<ValueType>::binaryOpCSR(
                                                          aIa.get(), aJa.get(), bIa.get(), bJa.get() );
         // Step 2: fill in ja, values
 
-        SCAI_LOG_DEBUG( logger, "Compute the sparse values, # = " << nnz )
+        SCAI_LOG_ERROR( logger, "Compute the sparse values, # = " << nnz )
 
         WriteOnlyAccess<IndexType> cJa( mJA, nnz );
         WriteOnlyAccess<ValueType> cValues( mValues, nnz );
+
         OpenMPCSRUtils::binaryOp( cJa.get(), cValues.get(), cIa.get(), 
                                   getNumRows(), getNumColumns(), mDiagonalProperty, 
                                   aIa.get(), aJa.get(), aValues.get(), 
                                   bIa.get(), bJa.get(), bValues.get(), op );
     }
+
+    mSortedRows = false;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2211,6 +2247,8 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
     SCAI_REGION( "Storage.CSR.timesMatrixCSR" )
     allocate( a.getNumRows(), b.getNumColumns() );
     mDiagonalProperty = ( getNumRows() == getNumColumns() );
+
+    if ( getNumRows() >  0 )
     {
         ReadAccess<IndexType> aIA( a.getIA(), loc );
         ReadAccess<IndexType> aJA( a.getJA(), loc );
@@ -2228,11 +2266,8 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
         matrixMultiply[loc]( cIA.get(), cJa.get(), cValues.get(), getNumRows(), getNumColumns(), k, alpha, mDiagonalProperty,
                              aIA.get(), aJA.get(), aValues.get(), bIA.get(), bJA.get(), bValues.get() );
     }
-    // TODO: check this!
-//    compress();
+
     buildRowIndexes();
-//    check( "result of matrix x matrix" ); // just verify for a correct matrix
-//    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2383,7 +2418,7 @@ void CSRStorage<ValueType>::fillCOO(
     CSRStorage<ValueType> csr1;
     csr1.assign( coo );
 
-    binaryOpCSR( *this, csr1, op );
+    binaryOpCSR( *this, op, csr1 );
 }
 
 /* ========================================================================= */
