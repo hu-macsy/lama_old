@@ -42,6 +42,7 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
@@ -297,6 +298,40 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( setDiagonalFirstTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    // CSR data of square matrix 6 x 6, diagonal elements in row 0, 2, 4, 5
+    //
+    //     0   1   2  -  -  -
+    //     -   -   -  -  -  -
+    //     0   1   2  -  -  -
+    //     0   1   2  -  -  -
+    //     -   -   -  -  4  -
+    //     -   -   -  -  4  5
+
+    HArray<IndexType> csrIA(     { 0,       3, 3,       6,       9, 10,  12 }, testContext );
+    HArray<IndexType> csrJA(     { 0, 1, 2,    0, 1, 2, 0, 1, 2, 4, 4, 5 }, testContext );
+    HArray<ValueType> csrValues( { 0, 1, 2,    0, 1, 2, 0, 1, 2, 4, 4, 5 }, testContext );
+
+    const IndexType numColumns = 6;
+
+    IndexType numDiags = CSRUtils::setDiagonalFirst( csrJA, csrValues, csrIA, numColumns, testContext );
+
+    BOOST_CHECK_EQUAL( numDiags, 4 );
+
+    HArray<IndexType> expJA(     { 0, 1, 2, 2, 0, 1, 0, 1, 2, 4, 5, 4 }, testContext );
+    HArray<ValueType> expValues( { 0, 1, 2, 2, 0, 1, 0, 1, 2, 4, 5, 4 }, testContext );
+
+    BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( expJA ), per_element() );
+    BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( expValues ), per_element() );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -439,14 +474,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
     { 0, 2, 4, 5 };
     const IndexType ja1[] =
     { 0, 2, 0, 1, 2 };
-    const IndexType ia2[] =
-    { 0, 2, 3, 5 };
-    const IndexType ja2[] =
-    { 0, 1, 1, 0, 2 };
+    const HArray<IndexType> ia2( { 0, 2, 3, 5 } );
+    const HArray<IndexType> ja2( { 0, 1, 1, 0, 2 } );
     const ValueType values1[] =
     { 1.0, 2.0, 0.5, 0.3, 3.0 };
-    const ValueType values2[] =
-    { 1.0, 0.5, 0.3, 2.0, 3.0 };
+    const HArray<ValueType> values2( { 1.0, 0.5, 0.3, 2.0, 3.0 } );
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
     const IndexType numValues = 5;
@@ -467,30 +499,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
         convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                              numColumns, numValues );
     }
-    {
-        ReadAccess<IndexType> rCSCIA( cscIA );
-        WriteAccess<IndexType> wCSCJA( cscJA );
-        WriteAccess<ValueType> wCSCValues( cscValues );
 
-        for ( IndexType j = 0; j <= numColumns; ++j )
-        {
-            BOOST_CHECK_EQUAL( rCSCIA[j], ia2[j] );
-        }
+    BOOST_TEST( hostReadAccess( cscIA ) == hostReadAccess( ia2 ), per_element() );
 
-        // For comparison of cscJA and cscValue we need to sort it
-        bool diagonalFlag = false;
-        OpenMPCSRUtils::sortRowElements( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
+    // for comparison we sort the values, no diagonal elements
 
-        for ( IndexType j = 0; j < numValues; ++j )
-        {
-            BOOST_CHECK_EQUAL( wCSCJA[j], ja2[j] );
-        }
+    CSRUtils::sort( cscJA, cscValues, cscIA, numRows, false, testContext );
 
-        for ( IndexType j = 0; j < numValues; ++j )
-        {
-            BOOST_CHECK_EQUAL( wCSCValues[j], values2[j] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( cscJA ) == hostReadAccess( ja2 ), per_element() );
+    BOOST_TEST( hostReadAccess( cscValues ) == hostReadAccess( values2 ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -513,72 +530,34 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     //     -    -   3.0   -
     //     -    -   4.0   1.5
 
-    const IndexType ia[] = { 0, 3, 5, 6, 8 };
+    HArray<IndexType> csrIA( { 0, 3, 5, 6, 8 }, testContext );
+    HArray<IndexType> csrJA( { 3, 2, 0, 0, 1, 2, 3, 2 }, testContext );
+    HArray<ValueType> csrValues( { 1.1, 2.0, 1.0, 0.5, 0.3 , 3.0, 1.5, 4.0 }, testContext );
 
-    const IndexType ja_unsorted[] = { 3, 2, 0, 0, 1, 2, 3, 2 };
-    const ValueType values_unsorted[] = { 1.1, 2.0, 1.0, 0.5, 0.3 , 3.0, 1.5, 4.0 };
+    HArray<IndexType> sortedJA( { 0, 2, 3, 0, 1, 2, 2, 3 } );
+    HArray<ValueType> sortedValues( { 1.0, 2.0, 1.1, 0.5, 0.3, 3.0, 4.0, 1.5 } );
 
-    const IndexType ja_sorted[] = { 0, 2, 3, 0, 1, 2, 2, 3 };
-    const ValueType values_sorted[] = { 1.0, 2.0, 1.1, 0.5, 0.3, 3.0, 4.0, 1.5 };
+    const IndexType numColumns = 4;
+    
+    bool diagonalFlag = false;
 
-    const IndexType ja_dia_sorted[] = { 0, 2, 3, 1, 0, 2, 3, 2 };
-    const ValueType values_dia_sorted[] = { 1.0, 2.0, 1.1, 0.3, 0.5, 3.0, 1.5, 4.0 };
+    CSRUtils::sort( csrJA, csrValues, csrIA, numColumns, diagonalFlag, testContext );
 
-    const IndexType numRows = 4;
-    const IndexType numValues = 8;
+    BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( sortedJA ), per_element() );
+    BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( sortedValues ), per_element() );
 
-    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
-    HArray<IndexType> csrJA( numValues, ja_unsorted, testContext );
-    HArray<ValueType> csrValues( numValues, values_unsorted, testContext );
+    csrJA = HArray<IndexType>( { 0, 3, 2, 1, 0, 2, 3, 2 }, testContext );
+    csrValues = HArray<ValueType>( { 1.0, 1.1, 2.0, 0.3, 0.5 , 3.0, 1.5, 4.0 }, testContext );
 
-    {
-        SCAI_CONTEXT_ACCESS( loc );
+    sortedJA = HArray<IndexType>( { 0, 2, 3, 1, 0, 2, 3, 2 } );
+    sortedValues = HArray<ValueType>( { 1.0, 2.0, 1.1, 0.3, 0.5, 3.0, 1.5, 4.0 } );
 
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        WriteAccess<IndexType> wJA( csrJA, loc );
-        WriteAccess<ValueType> wValues( csrValues, loc );
+    diagonalFlag = true;
 
-        bool diagonalFlag = false;
+    CSRUtils::sort( csrJA, csrValues, csrIA, numColumns, diagonalFlag, testContext );
 
-        sortRowElements[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, diagonalFlag );
-    }
-
-    // now check that values are sorted
-    {
-        ReadAccess<IndexType> rJA( csrJA );
-        ReadAccess<ValueType> rValues( csrValues );
-
-        for ( IndexType k = 0; k < numValues; ++k )
-        {
-            BOOST_CHECK_EQUAL( rJA[k], ja_sorted[k] );
-            BOOST_CHECK_EQUAL( rValues[k], values_sorted[k] );
-        }
-    }
-
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        WriteAccess<IndexType> wJA( csrJA, loc );
-        WriteAccess<ValueType> wValues( csrValues, loc );
-
-        bool diagonalFlag = true;
-
-        sortRowElements[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, diagonalFlag );
-    }
-
-    // now check that values are sorted
-    {
-        ReadAccess<IndexType> rJA( csrJA );
-        ReadAccess<ValueType> rValues( csrValues );
-
-        for ( IndexType k = 0; k < numValues; ++k )
-        {
-            BOOST_CHECK_EQUAL( rJA[k], ja_dia_sorted[k] );
-            BOOST_CHECK_EQUAL( rValues[k], values_dia_sorted[k] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( sortedJA ), per_element() );
+    BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( sortedValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -913,28 +892,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
     //  For comparison later we sort cscJA and cscValue
 
-    LAMAKernel<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
-
-    loc = testContext;
-    sortRowElements.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-
     SCAI_LOG_INFO( logger, "sortRowElements< " << TypeTraits<ValueType>::id() << "> for " << *testContext << " on " << *loc )
 
-    {
-        ReadAccess<IndexType> rCSCIA( cscIA, loc );
-        WriteAccess<IndexType> wCSCJA( cscJA, loc );
-        WriteAccess<ValueType> wCSCValues( cscValues, loc );
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        bool diagonalFlag = false;
-
-        // For comparison of cscJA and cscValue we need to sort it
-
-        sortRowElements[loc]( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
-    }
+    CSRUtils::sort( cscJA, cscValues, cscIA, numRows,false, testContext );
 
     //  compare with the CSC test data
 
@@ -1066,7 +1026,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
     //     4.0  2.45  0.0  18.25
 
     const IndexType ia3[] = { 0, 4, 8, 10, 14 };
-    const IndexType ja3[] = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 2, 0, 1, 2, 3 };
+    const HArray<IndexType> ja3( { 0, 1, 2, 3, 0, 1, 2, 3, 0, 2, 0, 1, 2, 3 } );
     const ValueType values3[] = { 5.0, 0.5, 6.0, 4.0, 0.5, 0.34, 0.0, 2.45, 6.0, 9.0, 4.0, 2.45, 0.0, 18.25 };
 
     const IndexType n1 = 4;
@@ -1158,25 +1118,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
     // sort the columns, otherwise comparison might fail
 
-    {
-        ReadAccess<IndexType> rCIA( cSizes );
-        WriteAccess<IndexType> wCJA( cJa );
-        WriteAccess<ValueType> wCValues( cValues );
+    CSRUtils::sort( cJa, cValues, cSizes, n3, false, testContext );
 
-        OpenMPCSRUtils::sortRowElements( wCJA.get(), wCValues.get(), rCIA.get(), n1, false );
-    }
-
-    // check ja
-    {
-        ContextPtr host = Context::getHostPtr();
-
-        ReadAccess<IndexType> rJA( cJa, host );
-
-        for ( IndexType j = 0; j < nnz3; ++j )
-        {
-            BOOST_CHECK_EQUAL( rJA[j], ja3[j] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( cJa ) == hostReadAccess( ja3 ), per_element() );
 
     // check values
     {
@@ -1229,8 +1173,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
     //     2.0   -   4.0  0.5
 
     const IndexType ia3[]     = { 0,             3,             6,            9 };
-    const IndexType ja3[]     = { 0,   1,   2,   0,   1,   3,   0,   2,   3 };
-    const ValueType values3[] = { 2.0, 0.5, 2.0, 0.5, 0.3, 1.0, 2.0, 4.0, 0.5 };
+    const HArray<IndexType> ja3( { 0,   1,   2,   0,   1,   3,   0,   2,   3 } );
+    const HArray<ValueType> values3( { 2.0, 0.5, 2.0, 0.5, 0.3, 1.0, 2.0, 4.0, 0.5 } );
 
     const IndexType n1 = 3;
     const IndexType n2 = 4;
@@ -1315,32 +1259,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
     }
 
-    // sort the columns, otherwise comparison might fail
+    // sort the columns, otherwise comparison might fail, no diagonals
 
-    {
-        ReadAccess<IndexType> rCIA( cSizes );
-        WriteAccess<IndexType> wCJA( cJA );
-        WriteAccess<ValueType> wCValues( cValues );
+    CSRUtils::sort( cJA, cValues, cSizes, n2, false, testContext );
 
-        for ( IndexType k = 0; k < nnz3; ++k )
-        {
-            SCAI_LOG_TRACE( logger, "matrixAdd, ja[" << k << "] = " << wCJA[k] )
-            SCAI_LOG_TRACE( logger, "matrixAdd, values[" << k << "] = " << wCValues[k] )
-        }
-
-        OpenMPCSRUtils::sortRowElements( wCJA.get(), wCValues.get(), rCIA.get(), n1, false );
-    }
-
-    {
-        ReadAccess<IndexType> rCJA( cJA );
-        ReadAccess<ValueType> rCValues( cValues );
-
-        for ( IndexType k = 0; k < nnz3; ++k )
-        {
-            BOOST_CHECK_EQUAL( rCJA[k], ja3[k] );
-            BOOST_CHECK_EQUAL( rCValues[k], values3[k] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( cJA ) == hostReadAccess( ja3 ), per_element() );
+    BOOST_TEST( hostReadAccess( cValues ) == hostReadAccess( values3 ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */

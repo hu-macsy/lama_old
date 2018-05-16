@@ -39,6 +39,7 @@
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/sparsekernel/DIAKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
@@ -457,17 +458,30 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 void CSRStorage<ValueType>::sortRows( bool diagonalProperty )
 {
+    if ( diagonalProperty && !mDiagonalProperty )
     {
-        ReadAccess<IndexType> csrIA( mIA );
-        WriteAccess<IndexType> csrJA( mJA );
-        WriteAccess<ValueType> csrValues( mValues );
-        OpenMPCSRUtils::sortRowElements( csrJA.get(), csrValues.get(), csrIA.get(), getNumRows(), diagonalProperty );
+        COMMON_THROWEXCEPTION( "not all diagonal elements available" )
     }
 
-    // diagonal property must not be given if diagonal elements are missing
+    // sort in place 
 
-    mDiagonalProperty = checkDiagonalProperty();
+    sparsekernel::CSRUtils::sort( mJA, mValues, mIA, getNumColumns(), diagonalProperty, getContextPtr() );
+
+    // sort would have thrown an exception if diagonalProperty is set but not given
+
+    mDiagonalProperty = diagonalProperty;
     mSortedRows       = true;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::setDiagonalFirst()
+{
+    IndexType numDiagonals = std::min( getNumRows(), getNumColumns() );
+    IndexType numFirstDiagonals = sparsekernel::CSRUtils::setDiagonalFirst( mJA, mValues, mIA, getNumColumns(), getContextPtr() );
+
+    mDiagonalProperty = numDiagonals == numFirstDiagonals;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -475,7 +489,8 @@ void CSRStorage<ValueType>::sortRows( bool diagonalProperty )
 template<typename ValueType>
 void CSRStorage<ValueType>::setDiagonalProperty()
 {
-    sortRows( true );
+    setDiagonalFirst();
+
     SCAI_ASSERT( mDiagonalProperty, "Missing diagonal element, cannot set diagonal property" )
 }
 
@@ -2098,8 +2113,8 @@ void CSRStorage<ValueType>::binaryOpCSR(
     common::BinaryOp op,
     const CSRStorage<ValueType>& b )
 {
-    SCAI_LOG_ERROR( logger, "this = a ( " << a.getNumRows() << " x " << a.getNumColumns() << ", nnz = " << a.getNumValues() << " ) " 
-                      << op << " b ( " << b.getNumRows() << " x " << b.getNumColumns() << ", nnz = " << b.getNumValues() << " )" )
+    SCAI_LOG_INFO( logger, "this = a ( " << a.getNumRows() << " x " << a.getNumColumns() << ", nnz = " << a.getNumValues() << " ) " 
+                    << op << " b ( " << b.getNumRows() << " x " << b.getNumColumns() << ", nnz = " << b.getNumValues() << " )" )
 
     if ( &a == this || &b == this )
     {
@@ -2137,7 +2152,7 @@ void CSRStorage<ValueType>::binaryOpCSR(
 
         // Step 1: compute new row sizes of C, build offsets
 
-        SCAI_LOG_ERROR( logger, "Determing sizes of result matrix C" )
+        SCAI_LOG_DEBUG( logger, "Determing sizes of result matrix C" )
 
         WriteOnlyAccess<IndexType> cIa( mIA, getNumRows() + 1 );
 
@@ -2145,7 +2160,7 @@ void CSRStorage<ValueType>::binaryOpCSR(
                                                          aIa.get(), aJa.get(), bIa.get(), bJa.get() );
         // Step 2: fill in ja, values
 
-        SCAI_LOG_ERROR( logger, "Compute the sparse values, # = " << nnz )
+        SCAI_LOG_DEBUG( logger, "Compute the sparse values, # = " << nnz )
 
         WriteOnlyAccess<IndexType> cJa( mJA, nnz );
         WriteOnlyAccess<ValueType> cValues( mValues, nnz );

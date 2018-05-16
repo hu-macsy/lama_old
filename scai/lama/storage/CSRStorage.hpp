@@ -344,6 +344,10 @@ public:
      */
     void sortRows( bool diagonalProperty );
 
+    /** Set the diagonal elements as first entries. */
+
+    void setDiagonalFirst();
+
     /** This method overrides _MatrixStorage::setDiagonalProperty
      *
      *  This routine only moves the diagonal elements at the beginning of each rows.

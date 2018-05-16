@@ -144,7 +144,25 @@ public:
         ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const bool diagonalFlag );
+        const IndexType numColumns,
+        const IndexType nnz,
+        const bool keepDiagonalFirst );
+
+    static IndexType getPosDiagonal(
+        IndexType pos[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const bool isSorted );
+
+    /** Implementation for CSRKernelTrait::setDiagonalFirst  */
+
+    template<typename ValueType>
+    static IndexType setDiagonalFirst(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[] );
 
     /** Implementation for CSRKernelTrait::convertCSR2CSC  */
 

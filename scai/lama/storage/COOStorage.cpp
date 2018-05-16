@@ -35,7 +35,7 @@
 // hpp
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
-#include <scai/lama/storage/COOUtils.hpp>
+#include <scai/sparsekernel/COOUtils.hpp>
 
 // internal scai libraries
 #include <scai/sparsekernel/COOKernelTrait.hpp>
@@ -1379,8 +1379,8 @@ void COOStorage<ValueType>::matrixPlusMatrixImpl(
 
     // sort it and make it unique
 
-    COOUtils::sort( mIA, mJA, mValues );
-    COOUtils::unique( mIA, mJA, mValues, BinaryOp::ADD );
+    sparsekernel::COOUtils::sort( mIA, mJA, mValues );
+    sparsekernel::COOUtils::unique( mIA, mJA, mValues, BinaryOp::ADD );
 
     SCAI_LOG_INFO( logger, "COO matrix add: nnz = " << getNumValues() << " from " << nnz1 << " + " << nnz2 )
 }

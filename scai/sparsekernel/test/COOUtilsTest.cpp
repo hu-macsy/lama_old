@@ -41,6 +41,7 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
+#include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
 #include <scai/sparsekernel/test/TestData1.hpp>
@@ -772,6 +773,77 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
         // BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
     }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, scai_numeric_test_types )
+{
+    // Note: we sort coordinates and not values, so this test works also for complex numbers
+
+    // Here is the unsorted COO data
+
+    HArray<IndexType> ia(     { 2, 1, 0, 2, 1, 1, 0, 0, 0 } );
+    HArray<IndexType> ja(     { 2, 1, 0, 1, 1, 1, 0, 2, 1 } );
+    HArray<ValueType> values( { 1, 2, 3, 4, 5, 6, 7, 8, 9 } );
+
+    // This is the expected COO data
+
+    HArray<IndexType> ia1(     { 0, 0, 0, 0, 1, 1, 1, 2, 2 } );
+    HArray<IndexType> ja1(     { 0, 0, 1, 2, 1, 1, 1, 1, 2 } );
+    HArray<ValueType> values1( { 3, 7, 9, 8, 2, 5, 6, 4, 1 } );
+
+    COOUtils::sort( ia, ja, values );
+
+    BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( ia1 ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( ja1 ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( values ) == hostReadAccess( values1 ), boost::test_tools::per_element() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( uniqueTest, ValueType, scai_numeric_test_types )
+{
+    // Here is the sorted COO data with double entries
+
+    HArray<IndexType> ia(     { 0, 0, 0, 0, 1, 1, 1, 2, 2 } );
+    HArray<IndexType> ja(     { 0, 0, 1, 2, 1, 1, 1, 1, 2 } );
+    HArray<ValueType> values( { 3, 7, 9, 8, 2, 5, 6, 4, 1 } );
+
+    // This is the unique COO data
+
+    HArray<IndexType> ia1(     { 0, 0, 0, 1, 2, 2 } );
+    HArray<IndexType> ja1(     { 0, 1, 2, 1, 1, 2 } );
+    HArray<ValueType> values1( { 7, 9, 8, 6, 4, 1 } );
+
+    COOUtils::unique( ia, ja, values );
+
+    BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( ia1 ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( ja1 ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( values ) == hostReadAccess( values1 ), boost::test_tools::per_element() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( uniqueOpTest, ValueType, scai_numeric_test_types )
+{
+    // Here is the sorted COO data with double entries
+
+    HArray<IndexType> ia(     { 0, 0, 0, 0, 1, 1, 1, 2, 2 } );
+    HArray<IndexType> ja(     { 0, 0, 1, 2, 1, 1, 1, 1, 2 } );
+    HArray<ValueType> values( { 3, 7, 9, 8, 2, 5, 6, 4, 1 } );
+
+    // This is the unique COO data
+
+    HArray<IndexType> ia1(     {  0, 0, 0,  1, 2, 2 } );
+    HArray<IndexType> ja1(     {  0, 1, 2,  1, 1, 2 } );
+    HArray<ValueType> values1( { 10, 9, 8, 13, 4, 1 } );
+
+    COOUtils::unique( ia, ja, values, common::BinaryOp::ADD );
+
+    BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( ia1 ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( ja1 ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( values ) == hostReadAccess( values1 ), boost::test_tools::per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */

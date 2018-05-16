@@ -2617,7 +2617,7 @@ void sortRowKernel(
     ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const bool diagonalFlag )
+    const bool keepDiagonalFirst )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -2626,8 +2626,18 @@ void sortRowKernel(
     {
         // use serial bubble sort as sort algorithm for one row
 
-        const IndexType start = csrIA[i];
-        IndexType end = csrIA[i + 1] - 1;
+        IndexType start = csrIA[i];
+        IndexType end   = csrIA[i + 1] - 1;
+
+        // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
+
+        if ( keepDiagonalFirst && start <= end )
+        {
+            if ( csrJA[start] == i )
+            {
+                start++;    // so sorting will start at next position
+            }
+        }
 
         bool sorted = false;
 
@@ -2637,22 +2647,7 @@ void sortRowKernel(
 
             for ( IndexType jj = start; jj < end; ++jj )
             {
-                bool swapIt = false;
-
-                // if diagonalFlag is set, column i is the smallest one
-
-                if ( diagonalFlag && ( csrJA[jj + 1] == i ) && ( csrJA[jj] != i ) )
-                {
-                    swapIt = true;
-                }
-                else if ( diagonalFlag && ( csrJA[jj] == i ) )
-                {
-                    swapIt = false;
-                }
-                else
-                {
-                    swapIt = csrJA[jj] > csrJA[jj + 1];
-                }
+                bool swapIt = csrJA[jj] > csrJA[jj + 1];
 
                 if ( swapIt )
                 {
@@ -2673,11 +2668,13 @@ void CUDACSRUtils::sortRowElements(
     ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const bool diagonalFlag )
+    const IndexType,
+    const IndexType,
+    const bool keepDiagonalFirst )
 {
     SCAI_REGION( "CUDA.CSR.sortRow" )
 
-    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, keep diagonals first = " << keepDiagonalFirst )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -2685,9 +2682,110 @@ void CUDACSRUtils::sortRowElements(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    sortRowKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows, diagonalFlag );
+    sortRowKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows, keepDiagonalFirst );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sortRowElements" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void setDiaFirstKernel(
+    IndexType count[],
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType numDiagonals )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i >= numDiagonals )
+    {
+        return;
+    }
+
+    IndexType start = csrIA[i];
+    IndexType end   = csrIA[i+1] - 1;
+
+    if ( end < start )
+    {
+        count[i] = 0;  // empty row, no diagonal element
+        return;
+    }
+
+    if ( csrJA[start] == i )
+    {
+        count[i] = 1;  // diagonal element is already first
+        return;
+    }
+
+    bool found = false;
+    count[i]   = 0;      // count this row only if diagonal element found
+
+    ValueType diagonalValue;  // will be set when found
+
+    // traverse reverse
+
+    while ( end > start )
+    {
+        // check if it is the diagonal element, save the diagonal value
+
+        if ( not found && csrJA[end] == i )
+        {
+            found = true;
+            diagonalValue = csrValues[end];
+        }
+
+        // move up elements to fill the gap of diagonal element
+        if ( found )
+        {
+            csrJA[end] = csrJA[end - 1];
+            csrValues[end] = csrValues[end - 1];
+        }
+
+        end--;
+    }
+
+    if ( found )
+    {
+        // now set the first row element as the diagonal element
+        csrValues[start] = diagonalValue;
+        csrJA[start] = i;
+        count[i] = 1;
+    }
+}
+
+template<typename ValueType>
+IndexType CUDACSRUtils::setDiagonalFirst(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType numDiagonals,
+    const IndexType csrIA[] )
+{
+    SCAI_REGION( "CUDA.CSR.setDiaFirst" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<IndexType> countPtr = thrust::device_malloc<IndexType>( numDiagonals );
+
+    IndexType* d_count = thrust::raw_pointer_cast( countPtr );
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numDiagonals, dimBlock.x );
+
+    setDiaFirstKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, numDiagonals );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setDiagonalFirst" )
+
+    IndexType numFirstDiagonals = thrust::reduce( countPtr, countPtr + numDiagonals, 0, thrust::plus<IndexType>() );
+
+    thrust::device_free( countPtr );
+
+    SCAI_LOG_INFO( logger, "setDiagonalFirst for CSR data, " << numFirstDiagonals << " of " << numDiagonals << " are now first entry" )
+
+    return numFirstDiagonals;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2837,6 +2935,7 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setDiagonalFirst<ValueType> >( setDiagonalFirst, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );

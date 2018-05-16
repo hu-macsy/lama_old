@@ -32,7 +32,7 @@
  * @date 14.02.2018
  */
 
-#include <scai/lama/storage/COOUtils.hpp>
+#include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/hmemo/HostWriteAccess.hpp>
@@ -46,7 +46,7 @@ namespace scai
 
 using namespace hmemo;
 
-namespace lama
+namespace sparsekernel
 {
 
 /* -------------------------------------------------------------------------- */
@@ -183,6 +183,6 @@ SCAI_COMMON_LOOP( COOUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 
 #undef COOUTILS_SPECIFIER
 
-} /* end namespace lama */
+} /* end namespace sparsekernel */
 
 } /* end namespace scai */

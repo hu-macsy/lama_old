@@ -55,7 +55,7 @@
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
-#include <scai/lama/storage/COOUtils.hpp>
+#include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/logging.hpp>
 
@@ -1075,7 +1075,7 @@ BOOST_AUTO_TEST_CASE( disassembleTest )
                 BOOST_CHECK_EQUAL( cooIA.size(), cooJA.size() );
                 BOOST_CHECK_EQUAL( cooIA.size(), cooValues.size() );
 
-                COOUtils::sort( cooIA, cooJA, cooValues );
+                sparsekernel::COOUtils::sort( cooIA, cooJA, cooValues );
 
                 BOOST_TEST( hostReadAccess( cooIA ) == hostReadAccess( ia ), per_element() );
                 BOOST_TEST( hostReadAccess( cooJA ) == hostReadAccess( ja ), per_element() );

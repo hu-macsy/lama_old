@@ -272,20 +272,40 @@ void OpenMPCSRUtils::sortRowElements(
     ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const bool diagonalFlag )
+    const IndexType numColumns,
+    const IndexType nnz,
+    const bool keepDiagonalFirst )
 {
+    if ( nnz != csrIA[numRows] )
+    {
+        COMMON_THROWEXCEPTION( "serious error for arguments, nnz = " << nnz << ", csrIA[" << numRows << " ] = " << csrIA[ numRows ] )
+    }
+
     SCAI_REGION( "OpenMP.CSR.sortRow" )
 
-    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, keep diagonals = " << keepDiagonalFirst )
 
     #pragma omp parallel for
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        // use bubble sort as sort algorithm
-        const IndexType start = csrIA[i];
+        IndexType start = csrIA[i];
         IndexType end = csrIA[i + 1] - 1;
+
+        // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
+
+        if ( keepDiagonalFirst && i < numColumns && start <= end )
+        {
+            if ( csrJA[start] == i )
+            {
+                start++;    // so sorting will start at next position
+            }
+        }
+
+        // use bubble sort as sort algorithm
+
         SCAI_LOG_DEBUG( logger, "row " << i << ": sort " << start << " - " << end )
+
         bool sorted = false;
 
         while ( !sorted )
@@ -295,22 +315,7 @@ void OpenMPCSRUtils::sortRowElements(
 
             for ( IndexType jj = start; jj < end; ++jj )
             {
-                bool swapIt = false;
-
-                // if diagonalFlag is set, column i is the smallest one
-
-                if ( diagonalFlag && ( csrJA[jj + 1] == i ) && ( csrJA[jj] != i ) )
-                {
-                    swapIt = true;
-                }
-                else if ( diagonalFlag && ( csrJA[jj] == i ) )
-                {
-                    swapIt = false;
-                }
-                else
-                {
-                    swapIt = csrJA[jj] > csrJA[jj + 1];
-                }
+                bool swapIt = csrJA[jj] > csrJA[jj + 1];
 
                 if ( swapIt )
                 {
@@ -322,21 +327,6 @@ void OpenMPCSRUtils::sortRowElements(
             }
 
             --end;
-        }
-   
-        // make a final traverse to detect/combine entries for same column
-
-        end = csrIA[i + 1] - 1;   // reset end, start is still okay
-
-        for ( IndexType jj = end; jj > start; jj-- )
-        {
-            if ( csrJA[jj] != csrJA[jj-1] )
-            {
-                continue;
-            }
-
-            csrValues[jj-1] += csrValues[jj];
-            csrValues[jj] = 0;
         }
     }
 }
@@ -538,6 +528,118 @@ IndexType OpenMPCSRUtils::getValuePos( const IndexType i, const IndexType j, con
     }
 
     return pos;
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPCSRUtils::getPosDiagonal(
+    IndexType pos[],
+    const IndexType numDiagonals,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const bool )
+{
+    IndexType numFoundDiagonals = 0;
+
+    #pragma omp parallel
+    {
+        IndexType threadNumDiagonals = 0;
+    
+        #pragma omp for
+
+        for ( IndexType i = 0; i < numDiagonals; ++i )
+        {
+            pos[i] = invalidIndex;
+
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+            {
+                if ( csrJA[jj] == i )
+                {
+                    pos[i] = jj; 
+                    threadNumDiagonals++;
+                    break;
+                }
+            }
+        }
+
+        atomicAdd( numFoundDiagonals, threadNumDiagonals );
+    }
+ 
+    return numFoundDiagonals;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType OpenMPCSRUtils::setDiagonalFirst(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType numDiagonals,
+    const IndexType csrIA[] )
+{
+    IndexType numFoundDiagonals = 0;
+
+    #pragma omp parallel
+    {
+        IndexType threadNumDiagonals = 0;
+    
+        #pragma omp for
+
+        for ( IndexType i = 0; i < numDiagonals; ++i )
+        {
+            bool found = false;
+
+            IndexType start = csrIA[i];
+            IndexType end   = csrIA[i+1] - 1;
+
+            if ( end < start )
+            {
+                continue;    // not found
+            }
+
+            if ( csrJA[start] == i )
+            {
+                threadNumDiagonals++;   // diagonal element is already first
+                continue;
+            }
+
+            ValueType diagonalValue;
+
+            // traverse reverse
+
+            while ( end > start )
+            {
+                // check if it is the diagonal element, save the diagonal value
+
+                if ( not found && csrJA[end] == i ) 
+                {
+                    found = true;
+                    diagonalValue = csrValues[end];
+                }
+
+                // move up elements to fill the gap of diagonal element
+                if ( found )
+                {
+                    csrJA[end] = csrJA[end - 1];
+                    csrValues[end] = csrValues[end - 1];
+                }
+
+                end--;
+            }
+
+            if ( found )
+            {
+                // now set the first row element as the diagonal element
+                csrValues[start] = diagonalValue;
+                csrJA[start] = i;
+                threadNumDiagonals++;
+            }
+        }
+
+        atomicAdd( numFoundDiagonals, threadNumDiagonals );
+    }
+
+    return numFoundDiagonals;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1860,6 +1962,7 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<CSRKernelTrait::countNonEmptyRowsByOffsets>( countNonEmptyRowsByOffsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::setNonEmptyRowsByOffsets>( setNonEmptyRowsByOffsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::getPosDiagonal>( getPosDiagonal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
 }
@@ -1873,6 +1976,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setDiagonalFirst<ValueType> >( setDiagonalFirst, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );

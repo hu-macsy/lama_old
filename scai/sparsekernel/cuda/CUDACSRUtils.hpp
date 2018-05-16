@@ -245,6 +245,15 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
+    /** CUDA Implementation for CSRKernelTrait::setDiagonalFirst  */
+
+    template<typename ValueType>
+    static IndexType setDiagonalFirst(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[] );
+
     /** CUDA implementation for CSRKernelTrait::sortRowElements */
 
     template<typename ValueType>
@@ -253,7 +262,9 @@ public:
         ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const bool diagonalFlag );
+        const IndexType numColumns,
+        const IndexType numValues,
+        const bool keepDiagonalFirst );
 
     /** CUDA Implementation for CSRKernelTrait::countNonZeros */
 

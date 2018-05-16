@@ -335,20 +335,6 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
             mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilOffsets.get() );
     }
 
-    bool diagonalProperty = true;  // usually each stencil has diagonal entry
-
-    // a stencil with reflecting boundaries might contain multiple column entries
-    // therefore we sort the row entries and remove zero elements
-
-    {
-        ReadAccess<IndexType> ia( csrIA );
-        WriteAccess<IndexType> ja( csrJA );
-        WriteAccess<ValueType> values( typedValues );
-        sparsekernel::OpenMPCSRUtils::sortRowElements( ja.get(), values.get(), ia.get(), n, diagonalProperty );
-    }
-
-    CSRStorage<ValueType>::compress( csrIA, csrJA, typedValues, diagonalProperty, ValueType( 0 ), ctx );
-
     if ( typedValues.getValueType() == csrValues.getValueType() )
     {
         typedValues.swap( static_cast<HArray<ValueType>&>( csrValues ) );

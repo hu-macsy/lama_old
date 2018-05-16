@@ -45,7 +45,7 @@
 namespace scai
 {
 
-namespace lama
+namespace sparsekernel
 {
 
 class COMMON_DLL_IMPORTEXPORT COOUtils
@@ -82,6 +82,6 @@ public:
 
 /* -------------------------------------------------------------------------- */
 
-} /* end namespace lama */
+} /* end namespace sparsekernel */
 
 } /* end namespace scai */

@@ -119,7 +119,7 @@ struct CSRKernelTrait
          *  @param[in,out] csrJA, csrValues  the CSR matrix data and their column indexes
          *  @param[in]     csrIA             row offsets
          *  @param[in]     numRows           number of rows
-         *  @param[in]     diagonalFlag      if true first entry of each row will be the diagonal element if available
+         *  @param[in]     keepDiagonalFirst if true first entry is diagonal element and remains it
          *
          *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
          */
@@ -128,7 +128,9 @@ struct CSRKernelTrait
             ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
-            const bool diagonalFlag );
+            const IndexType numColumns,
+            const IndexType numValues,
+            const bool keepDiagonalFirst );
 
         static const char* getId()
         {
@@ -452,6 +454,50 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.hasDiagonalProperty";
+        }
+    };
+
+    struct getPosDiagonal
+    {
+        /** This method determines the positions of the diagonal elements in csr arrays
+         *
+         *  @param[out] pos  will contain the positions in csrJA/csrValues of the i-th diagonal element
+         *  @param[in] numDiagonals  number of diagonals 
+         *  @param[in] csrIA         offset array for the rows
+         *  @param[in] csrJA         column indexes
+         *  @param[in] isSorted      if true the column indexes are sorted
+         *  @return                  number of available diagonal elements
+         *
+         *  If a diagonal element is not available, the corresponding entry is invalidIndex.
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType pos[],
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const bool isSorted );
+
+        static const char* getId()
+        {
+            return "CSR.getPosDiagonal";
+        }
+    };
+
+    template<typename ValueType>
+    struct setDiagonalFirst
+    {
+        /** This method sets the diagonal entries of a row as first entry wherever possible.
+         *
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType csrJA[], 
+            ValueType csrValues[],
+            const IndexType numDiagonals,
+            const IndexType csrIA[] );
+
+        static const char* getId()
+        {
+            return "CSR.setDiagonalFirst";
         }
     };
 
