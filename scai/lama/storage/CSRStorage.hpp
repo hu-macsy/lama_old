@@ -211,7 +211,7 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::StorageWrapper<CSRStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, getContextPtr() );
     }
 
     /**
@@ -452,14 +452,6 @@ public:
      *  @brief Override default implementation MatrixStorage<ValueType>::compress 
      */
     virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
-
-    static void compress( 
-        hmemo::HArray<IndexType>& ia, 
-        hmemo::HArray<IndexType>& ja, 
-        hmemo::HArray<ValueType>& values,
-        const bool diagonalFlag, 
-        const RealType<ValueType> eps, 
-        hmemo::ContextPtr prefContext );
 
     /** Swap this CSR storage data with another CSR storage.
      *

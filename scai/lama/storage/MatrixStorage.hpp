@@ -440,17 +440,6 @@ public:
         const MatrixStorage<ValueType>& matrix,
         const dmemo::Communicator& comm );
 
-    /** Conversion routine of Compressed Sparse Row data to Compressed Sparse Column.  */
-
-    static void convertCSR2CSC(
-        hmemo::HArray<IndexType>& colIA,
-        hmemo::HArray<IndexType>& colJA,
-        hmemo::HArray<ValueType>& colValues,
-        const IndexType numColumns,
-        const hmemo::HArray<IndexType>& rowIA,
-        const hmemo::HArray<IndexType>& rowJA,
-        const hmemo::HArray<ValueType>& rowValues,
-        const hmemo::ContextPtr loc );
     /**
      *  Method that joins rows of another matrix storage
      *

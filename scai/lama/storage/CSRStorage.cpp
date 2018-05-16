@@ -512,27 +512,9 @@ void CSRStorage<ValueType>::buildRowIndexes()
         return;
     }
 
-    if ( getContextPtr()->getType() != common::ContextType::Host )
-    {
-        SCAI_LOG_INFO( logger, "CSRStorage: build row indices is currently only implemented on host" )
-    }
+    // Build the row indexes if the ratio of non-zero rows is below the threshold
 
-    // This routine is only available on the Host
-    ContextPtr loc = Context::getHostPtr();
-    ReadAccess<IndexType> csrIA( mIA, loc );
-    IndexType nonZeroRows = OpenMPCSRUtils::countNonEmptyRowsByOffsets( csrIA.get(), getNumRows() );
-    float usage = float( nonZeroRows ) / float( getNumRows() );
-
-    if ( usage >= mCompressThreshold )
-    {
-        SCAI_LOG_INFO( logger, "CSRStorage: do not build row indexes, usage = " << usage
-                       << ", threshold = " << mCompressThreshold )
-        return;
-    }
-
-    SCAI_LOG_INFO( logger, "CSRStorage: build row indexes, #entries = " << nonZeroRows )
-    WriteOnlyAccess<IndexType> rowIndexes( mRowIndexes, loc, nonZeroRows );
-    OpenMPCSRUtils::setNonEmptyRowsByOffsets( rowIndexes.get(), nonZeroRows, csrIA.get(), getNumRows() );
+    sparsekernel::CSRUtils::nonEmptyRows( mRowIndexes, mIA, mCompressThreshold, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -650,78 +632,24 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::compress( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values, 
-                                      const bool diagonalFlag, const RealType<ValueType> eps, ContextPtr prefContext )
-{
-    static LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
-
-    const IndexType numRows = ia.size() - 1;
-    const IndexType numValues = ja.size();
-
-    HArray<IndexType> newIA;
-    {
-        ContextPtr loc = prefContext;
-        countNonZeros.getSupportedContext( loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        ReadAccess<IndexType> rIA( ia, loc );
-        ReadAccess<IndexType> rJA( ja, loc );
-        ReadAccess<ValueType> rValues( values, loc );
-        WriteOnlyAccess<IndexType> wNewIA( newIA, loc, numRows + 1 );  // allocate already for offsets
-        countNonZeros[loc]( wNewIA.get(), rIA.get(), rJA.get(), rValues.get(), numRows, eps, diagonalFlag );
-    }
-
-    newIA.resize( numRows );  //  reset size for scan1 operation
-
-    // now compute the new offsets from the sizes, gives also new numValues
-
-    IndexType newNumValues = HArrayUtils::scan1( newIA, prefContext );
-
-    SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements, was " << numValues << " before" )
-
-    // ready if there are no new non-zero values
-
-    if ( newNumValues == numValues )
-    {
-        return;
-    }
-
-    // All information is available how to fill the compressed data
-
-    HArray<ValueType> newValues;
-    HArray<IndexType> newJA;
-
-    {
-        static LAMAKernel<CSRKernelTrait::compress<ValueType> > compressData;
-        ContextPtr loc = prefContext;
-        compressData.getSupportedContext( loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        ReadAccess<IndexType> rNewIA( newIA, loc );
-        ReadAccess<IndexType> rIA( ia, loc );
-        ReadAccess<IndexType> rJA( ja, loc );
-        ReadAccess<ValueType> rValues( values, loc );
-        WriteOnlyAccess<IndexType> wNewJA( newJA, loc, newNumValues );
-        WriteOnlyAccess<ValueType> wNewValues( newValues, loc, newNumValues );
-
-        compressData[loc]( wNewJA.get(), wNewValues.get(), rNewIA.get(),
-                           rIA.get(), rJA.get(), rValues.get(), numRows,
-                           eps, diagonalFlag );
-    }
-
-    // now switch in place to the new data
-
-    ia.swap( newIA );
-    ja.swap( newJA );
-    values.swap( newValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void CSRStorage<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
 {
-    compress( mIA, mJA, mValues, keepDiagonal, eps, this->getContextPtr() );
+    IndexType numValues = mJA.size();
 
-    // Note: temporary data is freed implicitly
+    sparsekernel::CSRUtils::compress( mIA, mJA, mValues, keepDiagonal, eps, this->getContextPtr() );
+
+    if ( mJA.size() == numValues )
+    {
+        SCAI_LOG_INFO( logger, "compress, nothing removed" )
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "compress, now " << mJA.size() << " entries left from " << numValues )
+
+        // sorting has not changed
+
+        mDiagonalProperty = checkDiagonalProperty();
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1447,7 +1375,7 @@ void CSRStorage<ValueType>::buildCSCData(
 {
     SCAI_LOG_INFO( logger, *this << ": buildCSCData by call of CSR2CSC" )
     // build the CSC data directly on the device where this matrix is located.
-    this->convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), mIA, mJA, mValues, this->getContextPtr() );
+    sparsekernel::CSRUtils::convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), mIA, mJA, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -52,6 +52,38 @@ class COMMON_DLL_IMPORTEXPORT CSRUtils
 {
 public:
 
+    /** @brief get the indexes of non-empty rows 
+     *
+     *  @param[out] rowIndexes contains the indexes of non-zero rows
+     *  @param[in]  the CSR row offset array
+     *  @param[in]  threshold builds rowIndexes only if #nonZeroRows/#numRows < threshhold
+     *  @param[in]  loc is the context where operation is executed
+     *  @returns the number of non-zero rows, will also be the size of rowIndexes if built
+     *
+     *  If threshhold is 0, the row indexes are never built.
+     */
+    static IndexType nonEmptyRows( 
+        hmemo::HArray<IndexType>& rowIndexes, 
+        const hmemo::HArray<IndexType>& csrIA, 
+        float threshhold,
+        hmemo::ContextPtr loc );
+
+    /** @brief This method generates new CSR data where all zero elemens are removed.
+     *
+     *  @param[in,out] csrIA, csrJA, csrValues is the CSR data that is compressed
+     *  @param[in] keepDiagonalValues if true each existing diagonal element remains
+     *  @param[in] eps a value is considered to be zero if abs( value ) <= eps
+     *  @param[in] loc specficies the context where compression should be done
+     */  
+    template<typename ValueType>
+    static void compress( 
+        hmemo::HArray<IndexType>& csrIA, 
+        hmemo::HArray<IndexType>& csrJA, 
+        hmemo::HArray<ValueType>& csrValues,
+        const bool keepDiagonalValues,
+        const RealType<ValueType> eps, 
+        hmemo::ContextPtr loc );
+
     /** 
      *  @brief sort column entries in each row of CSR data
      *
@@ -94,6 +126,22 @@ public:
         const hmemo::HArray<IndexType>& ia,
         const IndexType numColumns,
         hmemo::ContextPtr loc );
+
+    /** Conversion routine of compressed sparse row data to compressed sparse column.
+     *
+     *  This method does not keep diagonalProperty.
+     *  But the data might be sorted in the columns.
+     */
+    template<typename ValueType>
+    static void convertCSR2CSC(
+        hmemo::HArray<IndexType>& colIA,
+        hmemo::HArray<IndexType>& colJA,
+        hmemo::HArray<ValueType>& colValues,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& rowIA,
+        const hmemo::HArray<IndexType>& rowJA,
+        const hmemo::HArray<ValueType>& rowValues,
+        const hmemo::ContextPtr loc );
 
 private:
 

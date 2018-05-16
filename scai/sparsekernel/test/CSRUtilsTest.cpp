@@ -562,68 +562,6 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( countNonZeroTest )
-{
-    typedef SCAI_TEST_TYPE ValueType;
-
-    ContextPtr testContext = ContextFix::testContext;
-
-    LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
-
-    ContextPtr loc = testContext;
-    countNonZeros.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-
-    //    1.0   -   2.0  1.1
-    //    0.5  0.0   -    -
-    //     -    -   3.0   -
-    //     -    -   4.0  0.0
-
-    const IndexType ia_raw[]     = {   0,             3,        5,   6,       8 };
-    const IndexType ja_raw[]     = {   3,   2,   0,   0,   1,   2,   3,   2 };
-    const ValueType values_raw[] = { 1.1, 2.0, 1.0, 0.5, 0.0, 3.0, 0.0, 4.0 };
-
-    const IndexType compress_sizes[]  = {  3, 1, 1, 1 };
-
-    const IndexType numRows = 4;
-    const IndexType numValues = 8;
-
-    HArray<IndexType> ia( numRows + 1, ia_raw, testContext );
-    HArray<IndexType> ja( numValues, ja_raw, testContext );
-    HArray<ValueType> values( numValues, values_raw, testContext );
-
-    HArray<IndexType> sizes;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rIA( ia, loc );
-        ReadAccess<IndexType> rJA( ja, loc );
-        ReadAccess<ValueType> rValues( values, loc );
-
-        WriteOnlyAccess<IndexType> wSizes( sizes, loc, numRows );
-
-        bool diagonalFlag = false;
-        ValueType eps = 0.000001;
-
-        countNonZeros[loc]( wSizes.get(), rIA.get(), rJA.get(), rValues.get(),
-                            numRows, eps, diagonalFlag );
-    }
-
-    // now check the values of sizes
-    {
-        ReadAccess<IndexType> rSizes( sizes );
-
-        for ( IndexType k = 0; k < numRows; ++k )
-        {
-            BOOST_CHECK_EQUAL( rSizes[k], compress_sizes[k] );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( compressTest )
 {
     typedef DefaultReal ValueType;
@@ -640,60 +578,37 @@ BOOST_AUTO_TEST_CASE( compressTest )
     //    1.0   -   2.0  1.1
     //    0.5  0.0   -    -
     //     -    -   3.0   -
-    //     -    -   4.0  0.0
+    //     -   0.0  4.0  0.0
 
-    const IndexType ia_original[]     = {   0,             3,        5,   6,       8 };
-    const IndexType ja_original[]     = {   3,   2,   0,   0,   1,   2,   3,   2 };
-    const ValueType values_original[] = { 1.1, 2.0, 1.0, 0.5, 0.0, 3.0, 0.0, 4.0 };
+    // uncompressed data
 
-    const IndexType ia_compress[]     = {   0,             3,   4,   5,   6 };
-    const IndexType ja_compress[]     = {   3,   2,   0,   0,   2,   2 };
-    const ValueType values_compress[] = { 1.1, 2.0, 1.0, 0.5, 3.0, 4.0 };
+    HArray<IndexType> ia(     {   0,             3,        5,   6,          9 }, testContext );
+    HArray<IndexType> ja(     {   3,   2,   0,   0,   1,   2,   3,  2,  1     },  testContext );
+    HArray<ValueType> values( { 1.1, 2.0, 1.0, 0.5, 0.0, 3.0, 0.0, 4.0, 0.0   },  testContext );
 
-    const IndexType numRows = 4;
-    const IndexType oldNumValues = 8;
-    const IndexType newNumValues = 6;
+    // expected compressed ia, diagonals remain
 
-    HArray<IndexType> oldIA( numRows + 1, ia_original, testContext );
-    HArray<IndexType> oldJA( oldNumValues, ja_original, testContext );
-    HArray<ValueType> oldValues( oldNumValues, values_original, testContext );
+    HArray<IndexType> expIADiag(     {   0,              3,     5,   6,   8 } );
 
-    HArray<IndexType> newIA( numRows + 1, ia_compress, testContext );
-    HArray<IndexType> newJA;
-    HArray<ValueType> newValues;
+    // expected compress data, row   0              1     2    3   
 
-    {
-        SCAI_CONTEXT_ACCESS( loc );
+    HArray<IndexType> expIA(     {   0,              3,     4,   5,   6 } );
+    HArray<IndexType> expJA(     {   3,    2,   0,   0,     2,   2 } );
+    HArray<ValueType> expValues( {  1.1, 2.0, 1.0, 0.5,   3.0, 4.0 } );
 
-        ReadAccess<IndexType> rIA( newIA, loc );
+    ValueType eps = common::TypeTraits<ValueType>::small();
 
-        WriteOnlyAccess<IndexType> wJA( newJA, loc, newNumValues );
-        WriteOnlyAccess<ValueType> wValues( newValues, loc, newNumValues );
+    // keepDiagonals = true;
 
-        ReadAccess<IndexType> roIA( oldIA, loc );
-        ReadAccess<IndexType> roJA( oldJA, loc );
-        ReadAccess<ValueType> roValues( oldValues, loc );
+    CSRUtils::compress( ia, ja, values, true, eps, testContext );
 
-        bool diagonalFlag = false;
-        ValueType eps = common::TypeTraits<ValueType>::small();
+    BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( expIADiag ), per_element() );
 
-        compress[loc]( wJA.get(), wValues.get(), rIA.get(), roIA.get(), roJA.get(), roValues.get(), numRows, eps, diagonalFlag );
-    }
+    CSRUtils::compress( ia, ja, values, false, eps, testContext );
 
-    // now check that non-zero values are at the right place
-    {
-        ReadAccess<IndexType> rJA( newJA );
-        ReadAccess<ValueType> rValues( newValues );
-
-        for ( IndexType k = 0; k < newNumValues; ++k )
-        {
-            SCAI_LOG_TRACE( logger, "value " << k << ": " << rJA[k] << ":" << rValues[k]
-                            << ", expected " << ja_compress[k] << ":" << values_compress[k] )
-
-            BOOST_CHECK_EQUAL( rJA[k], ja_compress[k] );
-            BOOST_CHECK_EQUAL( rValues[k], values_compress[k] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( expIA ), per_element() );
+    BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( expJA ), per_element() );
+    BOOST_TEST( hostReadAccess( values ) == hostReadAccess( expValues), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

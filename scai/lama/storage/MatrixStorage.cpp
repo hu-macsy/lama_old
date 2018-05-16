@@ -47,7 +47,7 @@
 #include <scai/lama/io/FileIO.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -79,7 +79,6 @@ using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
 using utilskernel::OpenMPUtils;
 
-using sparsekernel::CSRKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
 
 using common::BinaryOp;
@@ -135,39 +134,6 @@ common::ScalarType MatrixStorage<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::convertCSR2CSC(
-    HArray<IndexType>& colIA,
-    HArray<IndexType>& colJA,
-    HArray<ValueType>& colValues,
-    const IndexType numColumns,
-    const HArray<IndexType>& rowIA,
-    const HArray<IndexType>& rowJA,
-    const HArray<ValueType>& rowValues,
-    const ContextPtr preferredLoc )
-{
-    const IndexType numRows = rowIA.size() - 1;
-    const IndexType numValues = rowJA.size();
-    SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
-    static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-    ContextPtr loc = preferredLoc;
-    convertCSR2CSC.getSupportedContext( loc );
-    SCAI_LOG_INFO( logger,
-                   "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
-    SCAI_REGION( "Storage.CSR2CSC" )
-    WriteOnlyAccess<IndexType> cIA( colIA, loc, numColumns + 1 );
-    WriteOnlyAccess<IndexType> cJA( colJA, loc, numValues );
-    WriteOnlyAccess<ValueType> cValues( colValues, loc, numValues );
-    ReadAccess<IndexType> rIA( rowIA, loc );
-    ReadAccess<IndexType> rJA( rowJA, loc );
-    ReadAccess<ValueType> rValues( rowValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    convertCSR2CSC[loc]( cIA.get(), cJA.get(), cValues.get(),  // output args
-                         rIA.get(), rJA.get(), rValues.get(), numRows, numColumns, numValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MatrixStorage<ValueType>::buildCSCData(
     HArray<IndexType>& colIA,
     HArray<IndexType>& colJA,
@@ -178,7 +144,7 @@ void MatrixStorage<ValueType>::buildCSCData(
     HArray<ValueType> rowValues;
     buildCSRData( rowIA, rowJA, rowValues );
     ContextPtr loc = Context::getHostPtr();
-    convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), rowIA, rowJA, rowValues, loc );
+    sparsekernel::CSRUtils::convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), rowIA, rowJA, rowValues, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -681,9 +647,14 @@ void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps, bool kee
 
     buildCSRData( csrIA, csrJA, csrValues );
 
-    CSRStorage<ValueType>::compress( csrIA, csrJA, csrValues, keepDiagonal, eps, getContextPtr() );
+    const IndexType numValues = csrJA.size();
 
-    setCSRData( getNumRows(), getNumColumns(), csrIA, csrJA, csrValues );
+    sparsekernel::CSRUtils::compress( csrIA, csrJA, csrValues, keepDiagonal, eps, getContextPtr() );
+
+    if ( csrJA.size() != numValues )
+    {
+        setCSRData( getNumRows(), getNumColumns(), csrIA, csrJA, csrValues );
+    }
 }
 
 /* ------------------------------------------------------------------------- */

@@ -35,13 +35,16 @@
 #include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/hmemo/HostWriteAccess.hpp>
 #include <scai/hmemo/HostReadAccess.hpp>
 
+#include <scai/tracing.hpp>
 #include <scai/common/macros/loop.hpp>
+
 #include <algorithm>
 
 namespace scai
@@ -49,6 +52,7 @@ namespace scai
 
 using namespace hmemo;
 using utilskernel::LAMAKernel;
+using utilskernel::HArrayUtils;
 
 namespace sparsekernel
 {
@@ -57,15 +61,131 @@ SCAI_LOG_DEF_LOGGER( CSRUtils::logger, "CSRUtils" )
 
 /* -------------------------------------------------------------------------- */
 
+IndexType CSRUtils::nonEmptyRows(        
+    HArray<IndexType>& rowIndexes, 
+    const HArray<IndexType>& csrIA,
+    float threshold,
+    ContextPtr )
+{
+    // currently only available on host
+
+    ContextPtr loc = Context::getHostPtr();
+
+    const IndexType numRows = csrIA.size() - 1;
+
+    ReadAccess<IndexType> rIA( csrIA, loc );
+
+    IndexType nonEmptyRows = OpenMPCSRUtils::countNonEmptyRowsByOffsets( rIA.get(), numRows );
+
+    float usage = float( nonEmptyRows ) / float( numRows );
+
+    if ( usage >= threshold )
+    {
+        SCAI_LOG_INFO( logger, "CSRStorage: do not build row indexes, usage = " << usage
+                       << ", threshold = " << threshold )
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "CSRStorage: build row indexes, #entries = " << nonEmptyRows )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, nonEmptyRows );
+        OpenMPCSRUtils::setNonEmptyRowsByOffsets( wRowIndexes.get(), nonEmptyRows, rIA.get(), numRows );
+    }
+
+    return nonEmptyRows;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRUtils::compress( 
+    HArray<IndexType>& csrIA,
+    HArray<IndexType>& csrJA,
+    HArray<ValueType>& csrValues,
+    const bool keepDiagonalValues,
+    const RealType<ValueType> eps,
+    ContextPtr prefContext )
+{
+    SCAI_REGION( "Sparse.CSR.compress" )
+
+    static LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
+
+    const IndexType numRows = csrIA.size() - 1;
+    const IndexType numValues = csrJA.size();
+
+    HArray<IndexType> newIA;  // starts with sizes before it becomes offset array
+
+    // compute the new sizes array
+
+    {
+        ContextPtr loc = prefContext;
+        countNonZeros.getSupportedContext( loc );
+        SCAI_CONTEXT_ACCESS( loc )
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<IndexType> rJA( csrJA, loc );
+        ReadAccess<ValueType> rValues( csrValues, loc );
+        WriteOnlyAccess<IndexType> wNewIA( newIA, loc, numRows + 1 );  // allocate already for offsets
+        countNonZeros[loc]( wNewIA.get(), rIA.get(), rJA.get(), rValues.get(), numRows, eps, keepDiagonalValues );
+    }
+
+    newIA.resize( numRows );  //  reset size for scan1 operation
+
+    // now compute the new offsets from the sizes, gives also new numValues
+
+    IndexType newNumValues = HArrayUtils::scan1( newIA, prefContext );
+
+    SCAI_LOG_ERROR( logger, "compress( keepDiagonals = " << keepDiagonalValues << ", eps = " << eps 
+                     << " ) : "  << newNumValues << " non-diagonal zero elements, was " << numValues << " before" )
+
+    // ready if there are no new non-zero values
+
+    if ( newNumValues == numValues )
+    {
+        return;
+    }
+
+    // All information is available how to fill the compressed data
+
+    HArray<ValueType> newValues;
+    HArray<IndexType> newJA;
+
+    {
+        static LAMAKernel<CSRKernelTrait::compress<ValueType> > compressData;
+        ContextPtr loc = prefContext;
+        compressData.getSupportedContext( loc );
+        SCAI_CONTEXT_ACCESS( loc )
+        ReadAccess<IndexType> rNewIA( newIA, loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<IndexType> rJA( csrJA, loc );
+        ReadAccess<ValueType> rValues( csrValues, loc );
+        WriteOnlyAccess<IndexType> wNewJA( newJA, loc, newNumValues );
+        WriteOnlyAccess<ValueType> wNewValues( newValues, loc, newNumValues );
+
+        compressData[loc]( wNewJA.get(), wNewValues.get(), rNewIA.get(),
+                           rIA.get(), rJA.get(), rValues.get(), numRows,
+                           eps, keepDiagonalValues );
+    }
+
+    // now switch in place to the new data
+
+    csrIA.swap( newIA );
+    csrJA.swap( newJA );
+    csrValues.swap( newValues );
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void CSRUtils::sort(
-    hmemo::HArray<IndexType>& ja,
-    hmemo::HArray<ValueType>& values,
-    const hmemo::HArray<IndexType>& ia,
+    HArray<IndexType>& ja,
+    HArray<ValueType>& values,
+    const HArray<IndexType>& ia,
     const IndexType numColumns,
     const bool diagonalFlag,
     const ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.CSR.sort" )
+
     SCAI_ASSERT_EQ_ERROR( values.size(), ja.size(), "serious size mismatch" )
 
     const IndexType numValues = values.size();   // #non-zero entries
@@ -89,12 +209,14 @@ void CSRUtils::sort(
 
 template<typename ValueType>
 IndexType CSRUtils::setDiagonalFirst(
-    hmemo::HArray<IndexType>& ja,
-    hmemo::HArray<ValueType>& values,
-    const hmemo::HArray<IndexType>& ia,
+    HArray<IndexType>& ja,
+    HArray<ValueType>& values,
+    const HArray<IndexType>& ia,
     const IndexType numColumns,
-    hmemo::ContextPtr prefLoc )
+    ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.CSR.setDiagFirst" )
+
     const IndexType numRows = ia.size() - 1;
 
     static LAMAKernel<CSRKernelTrait::setDiagonalFirst<ValueType> > setDiagonal;
@@ -116,21 +238,71 @@ IndexType CSRUtils::setDiagonalFirst(
     return setDiagonal[loc]( wJA.get(), wValues.get(), numDiagonals, rIA.get() );
 }
 
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRUtils::convertCSR2CSC(
+    HArray<IndexType>& colIA,
+    HArray<IndexType>& colJA,
+    HArray<ValueType>& colValues,
+    const IndexType numColumns,
+    const HArray<IndexType>& rowIA,
+    const HArray<IndexType>& rowJA,
+    const HArray<ValueType>& rowValues,
+    const ContextPtr preferredLoc )
+{
+    const IndexType numRows = rowIA.size() - 1;
+    const IndexType numValues = rowJA.size();
+    SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
+    static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    ContextPtr loc = preferredLoc;
+    convertCSR2CSC.getSupportedContext( loc );
+    SCAI_LOG_INFO( logger,
+                   "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
+    SCAI_REGION( "Sparse.CSR.2CSC" )
+    WriteOnlyAccess<IndexType> cIA( colIA, loc, numColumns + 1 );
+    WriteOnlyAccess<IndexType> cJA( colJA, loc, numValues );
+    WriteOnlyAccess<ValueType> cValues( colValues, loc, numValues );
+    ReadAccess<IndexType> rIA( rowIA, loc );
+    ReadAccess<IndexType> rJA( rowJA, loc );
+    ReadAccess<ValueType> rValues( rowValues, loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    convertCSR2CSC[loc]( cIA.get(), cJA.get(), cValues.get(),  // output args
+                         rIA.get(), rJA.get(), rValues.get(), numRows, numColumns, numValues );
+}
+
 /* -------------------------------------------------------------------------- */
 
 #define CSRUTILS_SPECIFIER( ValueType )              \
     template void CSRUtils::sort(                    \
-            hmemo::HArray<IndexType>&,               \
-            hmemo::HArray<ValueType>&,               \
-            const hmemo::HArray<IndexType>&,         \
+            HArray<IndexType>&,                      \
+            HArray<ValueType>&,                      \
+            const HArray<IndexType>&,                \
             const IndexType,                         \
             const bool,                              \
             ContextPtr );                            \
     template IndexType CSRUtils::setDiagonalFirst(   \
-            hmemo::HArray<IndexType>&,               \
-            hmemo::HArray<ValueType>&,               \
-            const hmemo::HArray<IndexType>&,         \
+            HArray<IndexType>&,                      \
+            HArray<ValueType>&,                      \
+            const HArray<IndexType>&,                \
             const IndexType,                         \
+            ContextPtr );                            \
+    template void CSRUtils::compress(                \
+            HArray<IndexType>&,                      \
+            HArray<IndexType>&,                      \
+            HArray<ValueType>&,                      \
+            const bool,                              \
+            const RealType<ValueType>,               \
+            ContextPtr );                            \
+    template void CSRUtils::convertCSR2CSC(          \
+            HArray<IndexType>&,                      \
+            HArray<IndexType>&,                      \
+            HArray<ValueType>&,                      \
+            const IndexType,                         \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<ValueType>&,                \
             ContextPtr );                            \
 
 SCAI_COMMON_LOOP( CSRUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
