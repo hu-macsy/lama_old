@@ -266,8 +266,51 @@ bool OpenMPCSRUtils::hasDiagonalProperty(
 
 /* --------------------------------------------------------------------------- */
 
+bool OpenMPCSRUtils::hasSortedRows(
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const IndexType numRows,
+    const IndexType,
+    const IndexType,
+    const bool allowDiagonalFirst )
+{
+    bool isSorted = true;
+
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        if ( !isSorted )
+        {
+            continue;   // might be break, but not allowed for parallel for
+        }
+
+        IndexType start = csrIA[i];
+
+        const IndexType end = csrIA[i + 1];
+
+        // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
+
+        if ( allowDiagonalFirst && start < end )
+        {
+            if ( csrJA[start] == i )
+            {
+                start++;    // so check sorting will start at next position
+            }
+        }
+
+        if ( ! utilskernel::OpenMPUtils::isSorted( &csrJA[start], end - start, common::CompareOp::LE ) )
+        {
+            isSorted = false;
+        }
+    }
+
+    return isSorted;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
-void OpenMPCSRUtils::sortRowElements(
+void OpenMPCSRUtils::sortRows(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
@@ -281,7 +324,7 @@ void OpenMPCSRUtils::sortRowElements(
         COMMON_THROWEXCEPTION( "serious error for arguments, nnz = " << nnz << ", csrIA[" << numRows << " ] = " << csrIA[ numRows ] )
     }
 
-    SCAI_REGION( "OpenMP.CSR.sortRow" )
+    SCAI_REGION( "OpenMP.CSR.sortRows" )
 
     SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, keep diagonals = " << keepDiagonalFirst )
 
@@ -290,11 +333,12 @@ void OpenMPCSRUtils::sortRowElements(
     for ( IndexType i = 0; i < numRows; ++i )
     {
         IndexType start = csrIA[i];
-        IndexType end = csrIA[i + 1] - 1;
+
+        const IndexType end = csrIA[i + 1];
 
         // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
 
-        if ( keepDiagonalFirst && i < numColumns && start <= end )
+        if ( keepDiagonalFirst && i < numColumns && start < end )
         {
             if ( csrJA[start] == i )
             {
@@ -302,32 +346,9 @@ void OpenMPCSRUtils::sortRowElements(
             }
         }
 
-        // use bubble sort as sort algorithm
+        // call quicksort implementation of utilskernel
 
-        SCAI_LOG_DEBUG( logger, "row " << i << ": sort " << start << " - " << end )
-
-        bool sorted = false;
-
-        while ( !sorted )
-        {
-            sorted = true; // will be reset if any wrong order appears
-            SCAI_LOG_TRACE( logger, "sort from " << start << " - " << end )
-
-            for ( IndexType jj = start; jj < end; ++jj )
-            {
-                bool swapIt = csrJA[jj] > csrJA[jj + 1];
-
-                if ( swapIt )
-                {
-                    SCAI_LOG_TRACE( logger, "swap at pos " << jj << " : " << csrJA[jj] << " - " << csrJA[ jj + 1 ] )
-                    sorted = false;
-                    std::swap( csrJA[jj], csrJA[jj + 1] );
-                    std::swap( csrValues[jj], csrValues[jj + 1] );
-                }
-            }
-
-            --end;
-        }
+        utilskernel::OpenMPUtils::sortInPlace( &csrJA[start], &csrValues[start], end - start, true );
     }
 }
 
@@ -1277,14 +1298,13 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
     IndexType cSizes[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const IndexType bIA[],
     const IndexType bJA[] )
 {
     SCAI_LOG_INFO( logger,
-                   "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+                   "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" )
 
     SCAI_REGION( "OpenMP.CSR.matrixAddSizes" )
 
@@ -1320,11 +1340,6 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
                 // element a(i,j) will generate an output element c(i,j)
 
                 indexList.pushIndex( j );
-            }
-
-            if ( diagonalProperty && i < numColumns )
-            {
-                indexList.pushIndex( i );
             }
 
             // so we have now the correct length
@@ -1429,7 +1444,6 @@ void OpenMPCSRUtils::matrixAdd(
     const IndexType cIA[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const ValueType alpha,
     const IndexType aIA[],
     const IndexType aJA[],
@@ -1444,7 +1458,7 @@ void OpenMPCSRUtils::matrixAdd(
     SCAI_REGION( "OpenMP.CSR.matrixAdd" )
 
     SCAI_LOG_INFO( logger,
-                   "matrixAdd for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+                   "matrixAdd for " << numRows << " x " << numColumns << " matrix" )
 
     // determine the number of entries in output matrix
 
@@ -1483,16 +1497,6 @@ void OpenMPCSRUtils::matrixAdd(
 
             IndexType offset = cIA[i];
 
-            if ( diagonalProperty && i < numColumns )
-            {
-                // first element is reserved for diagonal element
-
-                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
-                cJA[offset] = i;
-                cValues[offset] = static_cast<ValueType>( 0.0 );
-                ++offset;
-            }
-
             SCAI_LOG_DEBUG( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
 
             // fill in csrJA, csrValues and reset indexList, valueList for next use
@@ -1506,16 +1510,9 @@ void OpenMPCSRUtils::matrixAdd(
 
                 SCAI_LOG_TRACE( logger, "row " << i << " has entry at col " << col << ", val = " << val << ", offset = " << offset )
 
-                if ( diagonalProperty && col == i )
-                {
-                    cValues[cIA[i]] = val;
-                }
-                else
-                {
-                    cJA[offset] = col;
-                    cValues[offset] = val;
-                    ++offset;
-                }
+                cJA[offset] = col;
+                cValues[offset] = val;
+                ++offset;
             }
 
             // make sure that we have still the right offsets
@@ -1535,7 +1532,6 @@ void OpenMPCSRUtils::binaryOp(
     const IndexType cIA[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const ValueType aValues[],
@@ -1547,7 +1543,7 @@ void OpenMPCSRUtils::binaryOp(
     SCAI_REGION( "OpenMP.CSR.binaryOp" )
 
     SCAI_LOG_INFO( logger,
-                   "binaryOp for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+                   "binaryOp for " << numRows << " x " << numColumns << " matrix" )
 
     // Note: as long as rows are not sorted this solution works only for ops with 0 as zero element
 
@@ -1575,16 +1571,6 @@ void OpenMPCSRUtils::binaryOp(
 
             IndexType offset = cIA[i];
 
-            if ( diagonalProperty && i < numColumns )
-            {
-                // first element is reserved for diagonal element
-
-                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
-                cJA[offset] = i;
-                cValues[offset] = zero;
-                ++offset;
-            }
-
             SCAI_LOG_TRACE( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
 
             // fill in csrJA, csrValues and reset indexList, valueList for next use
@@ -1598,16 +1584,9 @@ void OpenMPCSRUtils::binaryOp(
 
                 SCAI_LOG_TRACE( logger, "row " << i << " has entry at col " << col << ", val = " << val << ", offset = " << offset )
 
-                if ( diagonalProperty && col == i )
-                {
-                    cValues[cIA[i]] = val;
-                }
-                else
-                {
-                    cJA[offset] = col;
-                    cValues[offset] = val;
-                    ++offset;
-                }
+                cJA[offset] = col;
+                cValues[offset] = val;
+                ++offset;
             }
 
             // make sure that we have still the right offsets
@@ -1962,6 +1941,7 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<CSRKernelTrait::countNonEmptyRowsByOffsets>( countNonEmptyRowsByOffsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::setNonEmptyRowsByOffsets>( setNonEmptyRowsByOffsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::hasSortedRows>( hasSortedRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::getPosDiagonal>( getPosDiagonal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
@@ -1975,7 +1955,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sortRows<ValueType> >( sortRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::setDiagonalFirst<ValueType> >( setDiagonalFirst, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );

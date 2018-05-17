@@ -548,8 +548,11 @@ public:
 
     virtual void matrixTimesScalar( const ValueType alpha, const MatrixStorage<ValueType>& a );
 
-    /** assign alpha * a * b + beta * c */
-
+    /** this = alpha * a * b + beta * c 
+     *
+     *  This class provides a default implementation where it calls the routine for CSR storage
+     *  and converts the result afterwards.
+     */
     virtual void matrixTimesMatrix(
         const ValueType alpha,
         const MatrixStorage<ValueType>& a,

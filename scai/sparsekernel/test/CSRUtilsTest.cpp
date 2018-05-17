@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 
     // for comparison we sort the values, no diagonal elements
 
-    CSRUtils::sort( cscJA, cscValues, cscIA, numRows, false, testContext );
+    CSRUtils::sortRows( cscJA, cscValues, cscIA, numColumns, numRows, false, testContext );
 
     BOOST_TEST( hostReadAccess( cscJA ) == hostReadAccess( ja2 ), per_element() );
     BOOST_TEST( hostReadAccess( cscValues ) == hostReadAccess( values2 ), per_element() );
@@ -512,18 +512,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( sortRowTest )
+BOOST_AUTO_TEST_CASE( sortRowsTest )
 {
-    typedef DefaultReal ValueType;
+    typedef SCAI_TEST_TYPE ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
-
-    LAMAKernel<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
-
-    ContextPtr loc = testContext;
-    sortRowElements.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
     //    1.0   -   2.0  1.1
     //    0.5  0.3   -    -
@@ -537,11 +530,12 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     HArray<IndexType> sortedJA( { 0, 2, 3, 0, 1, 2, 2, 3 } );
     HArray<ValueType> sortedValues( { 1.0, 2.0, 1.1, 0.5, 0.3, 3.0, 4.0, 1.5 } );
 
+    const IndexType numRows = 4;
     const IndexType numColumns = 4;
     
     bool diagonalFlag = false;
 
-    CSRUtils::sort( csrJA, csrValues, csrIA, numColumns, diagonalFlag, testContext );
+    CSRUtils::sortRows( csrJA, csrValues, csrIA, numRows, numColumns, diagonalFlag, testContext );
 
     BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( sortedJA ), per_element() );
     BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( sortedValues ), per_element() );
@@ -549,15 +543,51 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     csrJA = HArray<IndexType>( { 0, 3, 2, 1, 0, 2, 3, 2 }, testContext );
     csrValues = HArray<ValueType>( { 1.0, 1.1, 2.0, 0.3, 0.5 , 3.0, 1.5, 4.0 }, testContext );
 
-    sortedJA = HArray<IndexType>( { 0, 2, 3, 1, 0, 2, 3, 2 } );
+    sortedJA = HArray<IndexType>(     { 0,   2,   3,   1,   0,   2,   3,   2 } );
     sortedValues = HArray<ValueType>( { 1.0, 2.0, 1.1, 0.3, 0.5, 3.0, 1.5, 4.0 } );
 
     diagonalFlag = true;
 
-    CSRUtils::sort( csrJA, csrValues, csrIA, numColumns, diagonalFlag, testContext );
+    CSRUtils::sortRows( csrJA, csrValues, csrIA, numRows, numColumns, diagonalFlag, testContext );
 
     BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( sortedJA ), per_element() );
     BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( sortedValues ), per_element() );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( hasSortedRowsTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    const IndexType numRows = 4;
+    const IndexType numColumns = 4;
+
+    HArray<IndexType> csrIA( { 0,       3,    5, 6,    8 }, testContext );
+    HArray<IndexType> csrJA( { 3, 2, 0, 1, 0, 2, 3, 2 }, testContext );
+
+    HArray<ValueType> csrValues( csrJA.size(), 1 );
+
+    // csrJA is not sorted as all
+
+    BOOST_CHECK( !CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, false, testContext ) );
+    BOOST_CHECK( !CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, true, testContext ) );
+
+    CSRUtils::sortRows( csrJA, csrValues, csrIA, numRows, numColumns, true, testContext );
+
+    // csrJA is sorted but the diagonal element might conflict with the full sort
+
+    BOOST_CHECK( CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, true, testContext ) );
+    BOOST_CHECK( !CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, false, testContext ) );
+
+    CSRUtils::sortRows( csrJA, csrValues, csrIA, numRows, numColumns, false, testContext );
+
+    // csrJA is sorted in any case
+
+    BOOST_CHECK( CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, true, testContext ) );
+    BOOST_CHECK( CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, false, testContext ) );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -807,9 +837,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
     //  For comparison later we sort cscJA and cscValue
 
-    SCAI_LOG_INFO( logger, "sortRowElements< " << TypeTraits<ValueType>::id() << "> for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "sortRows< " << TypeTraits<ValueType>::id() << "> for " << *testContext << " on " << *loc )
 
-    CSRUtils::sort( cscJA, cscValues, cscIA, numRows,false, testContext );
+    CSRUtils::sortRows( cscJA, cscValues, cscIA, numColumns, numRows,false, testContext );
 
     //  compare with the CSC test data
 
@@ -908,13 +938,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
-
-    ContextPtr loc = testContext;
-    matrixMultiplySizes.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-
     SCAI_LOG_INFO( logger, "matmul< " << TypeTraits<ValueType>::id() << "> non-square test" )
 
     // REMARK: test with explicit zeros because cusparse often has problem with it
@@ -924,13 +947,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
     //     -    -   3.0       2.0   -   3.0   -
     //    4.0  1.5   -
 
-    const IndexType ia1[] = { 0, 2, 4, 5, 7 };
-    const IndexType ja1[] = { 0, 2, 0, 1, 2, 0, 1 };
-    const ValueType values1[] = { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 };
+    const IndexType m  = 4;
+    const IndexType k  = 3;
+    const IndexType n  = 4;
 
-    const IndexType ia2[] = { 0, 4, 7, 9 };
-    const IndexType ja2[] = { 0, 1, 2, 3, 1, 2, 3, 0, 2 };
-    const ValueType values2[] = { 1.0, 0.5, 0.0, 4.0, 0.3, 0.0, 1.5, 2.0, 3.0 };
+    // csr arrays for matrix a
+
+    HArray<IndexType> aIA(     { 0,        2,        4,   5,       7 }, testContext );
+    HArray<IndexType> aJA(     { 0,   2,   0,   1,   2,   0,   1 }, testContext );
+    HArray<ValueType> aValues( { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 }, testContext );
+
+    // csr arrays for matrix b
+
+    HArray<IndexType> bIA(     { 0,                  4,             7,       9 }, testContext );
+    HArray<IndexType> bJA(     { 0,   1,   2,   3,   1,   2,   3,   0,   2 }, testContext );
+    HArray<ValueType> bValues( { 1.0, 0.5, 0.0, 4.0, 0.3, 0.0, 1.5, 2.0, 3.0 }, testContext );
+
+    bool diagonalProperty = false;
 
     // REMARK: explicit zeros are also in result, when no compress is called
     //       array3 ( 4 x 4 )
@@ -940,116 +973,59 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
     //     6.0   -    9.0   -
     //     4.0  2.45  0.0  18.25
 
-    const IndexType ia3[] = { 0, 4, 8, 10, 14 };
-    const HArray<IndexType> ja3( { 0, 1, 2, 3, 0, 1, 2, 3, 0, 2, 0, 1, 2, 3 } );
-    const ValueType values3[] = { 5.0, 0.5, 6.0, 4.0, 0.5, 0.34, 0.0, 2.45, 6.0, 9.0, 4.0, 2.45, 0.0, 18.25 };
+    HArray<IndexType> expCIA(    { 0, 4, 8, 10, 14 } ) ;
+    HArray<IndexType> expCJA(     { 0,   1,   2,   3,   0,   1,    2,   3,    0,   2,   0,   1,    2,   3 } );
+    HArray<ValueType> expCValues( { 5.0, 0.5, 6.0, 4.0, 0.5, 0.34, 0.0, 2.45, 6.0, 9.0, 4.0, 2.45, 0.0, 18.25 } );
 
-    const IndexType n1 = 4;
-    const IndexType n2 = 3;
-    const IndexType n3 = 4;
+    SCAI_LOG_INFO( logger, "matrixMultiplySizes< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext )
 
-    const IndexType nnz1 = sizeof( ja1 ) / sizeof( IndexType );
-    const IndexType nnz2 = sizeof( ja2 ) / sizeof( IndexType );
-
-    // csr arrays for matrix a
-
-    HArray<IndexType> aIA( n1 + 1, ia1, testContext );
-    HArray<IndexType> aJA( nnz1, ja1, testContext );
-    HArray<ValueType> aValues( nnz1, values1, testContext );
-
-    // csr arrays for matrix b
-
-    HArray<IndexType> bIA( n2 + 1, ia2, testContext );
-    HArray<IndexType> bJA( nnz2, ja2, testContext );
-    HArray<ValueType> bValues( nnz2, values2, testContext );
-
-    bool diagonalProperty = false;
-
-    SCAI_LOG_INFO( logger, "matrixMultiplySizes< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
-
-    IndexType nnz3;
-    HArray<IndexType> cSizes;
-
-    {
-        ReadAccess<IndexType> rAIA( aIA, loc );
-        ReadAccess<IndexType> rAJA( aJA, loc );
-        ReadAccess<IndexType> rBIA( bIA, loc );
-        ReadAccess<IndexType> rBJA( bJA, loc );
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
-
-        nnz3 = matrixMultiplySizes[loc]( wSizes.get(), n1, n3, n2, diagonalProperty,
-                                         rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
-    }
-
-    BOOST_CHECK_EQUAL( ia3[ n1 ], nnz3 );
-
-    // check sizes
-    {
-        ContextPtr host = Context::getHostPtr();
-
-        ReadAccess<IndexType> rSizes( cSizes, host );
-
-        for ( IndexType j = 0; j <= n1; ++j )
-        {
-            BOOST_CHECK_EQUAL( rSizes[j], ia3[j] );
-        }
-    }
-
-    SCAI_LOG_INFO( logger, "matrixMultiply< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
-
-    LAMAKernel<CSRKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
-
-    loc = testContext;
-    matrixMultiply.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-
-    ValueType alpha = 1.0;
-
-    HArray<IndexType> cJa;
+    HArray<IndexType> cIA;
+    HArray<IndexType> cJA;
     HArray<ValueType> cValues;
-    {
-        ReadAccess<IndexType> rAIA( aIA, loc );
-        ReadAccess<IndexType> rAJA( aJA, loc );
-        ReadAccess<ValueType> rAValues( aValues, loc );
+  
+    ValueType alpha = 1;
 
-        ReadAccess<IndexType> rBIA( bIA, loc );
-        ReadAccess<IndexType> rBJA( bJA, loc );
-        ReadAccess<ValueType> rBValues( bValues, loc );
-
-        ReadAccess<IndexType> rIa( cSizes, loc );
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteOnlyAccess<IndexType> wJa( cJa, loc, nnz3 );
-        WriteOnlyAccess<ValueType> wValues( cValues, loc, nnz3 );
-
-        matrixMultiply[loc]( rIa.get(), wJa.get(), wValues.get(), n1, n3, n2, alpha, diagonalProperty,
-                             rAIA.get(), rAJA.get(), rAValues.get(), rBIA.get(), rBJA.get(), rBValues.get() );
-    }
+    CSRUtils::matrixMultiply( cIA, cJA, cValues, alpha, aIA, aJA, aValues, bIA, bJA, bValues, m, n, k, diagonalProperty, testContext );
+  
+    BOOST_TEST( hostReadAccess( cIA ) == hostReadAccess( expCIA ), per_element() );
 
     // sort the columns, otherwise comparison might fail
 
-    CSRUtils::sort( cJa, cValues, cSizes, n3, false, testContext );
+    CSRUtils::sortRows( cJA, cValues, cIA, m, n, false, testContext );
 
-    BOOST_TEST( hostReadAccess( cJa ) == hostReadAccess( ja3 ), per_element() );
+    BOOST_TEST( hostReadAccess( cJA ) == hostReadAccess( expCJA ), per_element() );
 
-    // check values
-    {
-        ContextPtr host = Context::getHostPtr();
+    // check values, might not be exact
 
-        ReadAccess<ValueType> rValues( cValues, host );
+    auto eps = common::TypeTraits<ValueType>::small();
 
-        for ( IndexType j = 0; j < nnz3; ++j )
-        {
-            ValueType x = rValues[j] - values3[j];
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
-        }
-    }
+    BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( cValues, expCValues ) < eps );
+
+    // 2nd test for zero matrices
+
+    aIA = HArray<IndexType>( m + 1, 0 );
+    aJA.clear();
+    aValues.clear();
+
+    bIA = HArray<IndexType>( k + 1, 0 );
+    bJA.clear();
+    bValues.clear();
+
+    testContext = Context::getHostPtr();  // ToDo: this test fails on CUDA, use routine to force diagonal property
+
+    diagonalProperty = true;
+
+    CSRUtils::matrixMultiply( cIA, cJA, cValues, alpha, aIA, aJA, aValues, bIA, bJA, bValues, m, n, k, diagonalProperty, testContext );
+
+    // due to diagonal property set we expect the identity matrix
+
+    expCIA = HArray<IndexType>( { 0, 1, 2, 3, 4 } );
+    expCJA = HArray<IndexType>( { 0, 1, 2, 3 } );
+    expCValues = HArray<ValueType>( { 0, 0, 0, 0 } );
+
+    BOOST_TEST( hostReadAccess( cIA ) == hostReadAccess( expCIA ), per_element() );
+    BOOST_TEST( hostReadAccess( cJA ) == hostReadAccess( expCJA ), per_element() );
+    BOOST_TEST( hostReadAccess( cValues ) == hostReadAccess( expCValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -1058,28 +1034,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
-    LAMAKernel<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
-
-    ContextPtr loc = testContext;
-    matrixAdd.getSupportedContext( loc, matrixAddSizes );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-
-    SCAI_LOG_INFO( logger, "matmul< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
-
     //       array 1                array 2
     //    1.0   -   2.0  -         1.0  0.5   -   -
     //    0.5  0.3   -   0.5        -    -    -   0.5
     //     -    -   3.0  -        2.0   -   1.0   0.5
 
-    const IndexType ia1[]     = { 0,        2,             5, 6 };
-    const IndexType ja1[]     = { 0,   2,   0,   1,   3,   2 };
-    const ValueType values1[] = { 1.0, 2.0, 0.5, 0.3, 0.5, 3.0 };
+    const IndexType m = 3;
+    const IndexType n = 4;
 
-    const IndexType ia2[]     = { 0,        2,   3,         6 };
-    const IndexType ja2[]     = { 0,   1,   3,   0,   2,  3 };
-    const ValueType values2[] = { 1.0, 0.5, 0.5, 2.0, 1.0, 0.5 };
+    // csr arrays for matrix a
+
+    HArray<IndexType> aIA(     { 0,        2,             5,   6 }, testContext );
+    HArray<IndexType> aJA(     { 0,   2,   0,   1,   3,   2  }, testContext );
+    HArray<ValueType> aValues( { 1.0, 2.0, 0.5, 0.3, 0.5, 3.0 }, testContext );
+
+    // csr arrays for matrix b
+
+    HArray<IndexType> bIA(     { 0,        2,   3,         6 }, testContext );
+    HArray<IndexType> bJA(     { 0,   1,   3,   0,   2,  3   }, testContext );
+    HArray<ValueType> bValues( { 1.0, 0.5, 0.5, 2.0, 1.0, 0.5 }, testContext );
 
     //       array3 = array 1 + array 2
     //
@@ -1087,99 +1060,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
     //     0.5  0.3   -   1.0
     //     2.0   -   4.0  0.5
 
-    const IndexType ia3[]     = { 0,             3,             6,            9 };
-    const HArray<IndexType> ja3( { 0,   1,   2,   0,   1,   3,   0,   2,   3 } );
-    const HArray<ValueType> values3( { 2.0, 0.5, 2.0, 0.5, 0.3, 1.0, 2.0, 4.0, 0.5 } );
+    HArray<IndexType> expCIA(     { 0,             3,             6,            9 } );
+    HArray<IndexType> expCJA(     { 0,   1,   2,   0,   1,   3,   0,   2,   3 } );
+    HArray<ValueType> expCValues( { 2.0, 0.5, 2.0, 0.5, 0.3, 1.0, 2.0, 4.0, 0.5 } );
 
-    const IndexType n1 = 3;
-    const IndexType n2 = 4;
-
-    const IndexType nnz1 = sizeof( ja1 ) / sizeof( IndexType );
-    const IndexType nnz2 = sizeof( ja2 ) / sizeof( IndexType );
-
-    // csr arrays for matrix a
-
-    HArray<IndexType> aIA( n1 + 1, ia1, testContext );
-    HArray<IndexType> aJA( nnz1, ja1, testContext );
-    HArray<ValueType> aValues( nnz1, values1, testContext );
-
-    // csr arrays for matrix b
-
-    HArray<IndexType> bIA( n2 + 1, ia2, testContext );
-    HArray<IndexType> bJA( nnz2, ja2, testContext );
-    HArray<ValueType> bValues( nnz2, values2, testContext );
-
-    bool diagonalProperty = false;
-
-    IndexType nnz3;
-    HArray<IndexType> cSizes;
-
-    SCAI_LOG_INFO( logger, "matrixAddSizes @ " << *loc )
-
-    {
-        ReadAccess<IndexType> rAIA( aIA, loc );
-        ReadAccess<IndexType> rAJA( aJA, loc );
-        ReadAccess<IndexType> rBIA( bIA, loc );
-        ReadAccess<IndexType> rBJA( bJA, loc );
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
-
-        nnz3 = matrixAddSizes[loc]( wSizes.get(), n1, n2, diagonalProperty,
-                                    rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
-
-    }
-
-    BOOST_CHECK_EQUAL( ia3[ n1 ], nnz3 );
-
-    // check sizes
-    {
-        ContextPtr host = Context::getHostPtr();
-
-        ReadAccess<IndexType> rSizes( cSizes, host );
-
-        for ( IndexType j = 0; j <= n1; ++j )
-        {
-            SCAI_LOG_TRACE( logger, "addSizes, size[" << j << "] = " << rSizes[j] )
-            BOOST_CHECK_EQUAL( rSizes[j], ia3[j] );
-        }
-    }
-
+    HArray<IndexType> cIA;
     HArray<IndexType> cJA;
     HArray<ValueType> cValues;
 
-    {
-        ReadAccess<IndexType> rAIA( aIA, loc );
-        ReadAccess<IndexType> rAJA( aJA, loc );
-        ReadAccess<ValueType> rAValues( aValues, loc );
+    ValueType alpha = 1;
+    ValueType beta  = 1;
 
-        ReadAccess<IndexType> rBIA( bIA, loc );
-        ReadAccess<IndexType> rBJA( bJA, loc );
-        ReadAccess<ValueType> rBValues( bValues, loc );
-
-        ReadAccess<IndexType> rCIA( cSizes, loc );
-
-        WriteOnlyAccess<IndexType> wCJA( cJA, loc, nnz3 );
-        WriteOnlyAccess<ValueType> wCValues( cValues, loc, nnz3 );
-
-        ValueType one = 1;
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        matrixAdd[loc]( wCJA.get(), wCValues.get(),
-                        rCIA.get(), n1, n2, diagonalProperty,
-                        one, rAIA.get(), rAJA.get(), rAValues.get(),
-                        one, rBIA.get(), rBJA.get(), rBValues.get() );
-
-    }
+    CSRUtils::matrixAdd( cIA, cJA, cValues, alpha, aIA, aJA, aValues, beta, bIA, bJA, bValues, m, n, testContext );
 
     // sort the columns, otherwise comparison might fail, no diagonals
 
-    CSRUtils::sort( cJA, cValues, cSizes, n2, false, testContext );
+    CSRUtils::sortRows( cJA, cValues, cIA, m, n, false, testContext );
 
-    BOOST_TEST( hostReadAccess( cJA ) == hostReadAccess( ja3 ), per_element() );
-    BOOST_TEST( hostReadAccess( cValues ) == hostReadAccess( values3 ), per_element() );
+    BOOST_TEST( hostReadAccess( cIA ) == hostReadAccess( expCIA ), per_element() );
+    BOOST_TEST( hostReadAccess( cJA ) == hostReadAccess( expCJA ), per_element() );
+    BOOST_TEST( hostReadAccess( cValues ) == hostReadAccess( expCValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -1768,7 +1668,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
         auto maxDiff = HArrayUtils::maxDiffNorm( expectedRes, res );
 
-        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+        auto eps = common::TypeTraits<ValueType>::small();
+
+        BOOST_CHECK( maxDiff < eps );
 
         bool mustBeIdentical = false;
 

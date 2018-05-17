@@ -112,7 +112,7 @@ struct CSRKernelTrait
      */
 
     template<typename ValueType>
-    struct sortRowElements
+    struct sortRows
     {
         /** This method sorts the elements of a row by increasing column indexes.
          *
@@ -134,7 +134,25 @@ struct CSRKernelTrait
 
         static const char* getId()
         {
-            return "CSR.sortRowElements";
+            return "CSR.sortRows";
+        }
+    };
+
+    struct hasSortedRows
+    {
+        /** This method checks for sorted column entries:
+         */
+        typedef bool ( *FuncType )(
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numValues,
+            const bool allowDiagonalFirst );
+
+        static const char* getId()
+        {
+            return "CSR.hasSortedRows";
         }
     };
 
@@ -381,7 +399,6 @@ struct CSRKernelTrait
          *  @param[out] cIa array of length numRows, will contain number of entries in each row for C
          *  @param[in]  numRows number of rows for matrix A and B
          *  @param[in]  numColumns number of columns for matrix A and B
-         *  @param[in]  diagonalProperty if true, diagonal elements will count in any case
          *  @param[in]  aIA, aJA are the index arrays of matrix A
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          *
@@ -393,7 +410,6 @@ struct CSRKernelTrait
             IndexType cIa[],
             const IndexType numRows,
             const IndexType numColumns,
-            bool diagonalProperty,
             const IndexType aIA[],
             const IndexType aJA[],
             const IndexType bIA[],
@@ -744,7 +760,6 @@ struct CSRKernelTrait
          *  @param[in]  cIA contains already computed offsets
          *  @param[in]  numRows is number of rows for matrices a, b, c
          *  @param[in]  numColums is number of columns for matrices a, b, c
-         *  @param[in]  diagonalProperty if true result matrix gets diagonal property
          *  @param[in]  aIA, aJA, aValues is input matrix a in CSR format
          *  @param[in]  bIA, bJA, bValues is input matrix b in CSR format
          *  @param[in]  op specifies the binary operation
@@ -759,7 +774,6 @@ struct CSRKernelTrait
             const IndexType cIA[],
             const IndexType numRows,
             const IndexType numColumns,
-            const bool diagonalProperty,
             const IndexType aIA[],
             const IndexType aJA[],
             const ValueType aValues[],
@@ -783,7 +797,6 @@ struct CSRKernelTrait
          *  @param[in]  cIA contains already computed offsets
          *  @param[in]  numRows is number of rows for matrices a, b, c
          *  @param[in]  numColums is number of columns for matrices a, b, c
-         *  @param[in]  diagonalProperty if true result matrix gets diagonal property
          *  @param[in]  alpha is a scalar scaling factor for matrix a
          *  @param[in]  aIA, aJA, aValues is input matrix a in CSR format
          *  @param[in]  beta is a scalar scaling factor for matrix b
@@ -799,7 +812,6 @@ struct CSRKernelTrait
             const IndexType cIA[],
             const IndexType numRows,
             const IndexType numColumns,
-            const bool diagonalProperty,
             const ValueType alpha,
             const IndexType aIA[],
             const IndexType aJA[],

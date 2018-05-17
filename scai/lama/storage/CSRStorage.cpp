@@ -456,21 +456,32 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::sortRows( bool diagonalProperty )
+void CSRStorage<ValueType>::sortRows( bool keepDiagonalFirst )
 {
-    if ( diagonalProperty && !mDiagonalProperty )
-    {
-        COMMON_THROWEXCEPTION( "not all diagonal elements available" )
-    }
-
     // sort in place 
 
-    sparsekernel::CSRUtils::sort( mJA, mValues, mIA, getNumColumns(), diagonalProperty, getContextPtr() );
+    sparsekernel::CSRUtils::sortRows( mJA, mValues, mIA, getNumRows(), getNumColumns(), keepDiagonalFirst, getContextPtr() );
 
-    // sort would have thrown an exception if diagonalProperty is set but not given
+    if ( keepDiagonalFirst )
+    {
+        mSortedRows       = false;     // no optimization for routines that rely on sorted data
+        // mDiagonalProperty remains unchanged
+    }
+    else
+    {
+        mSortedRows       = true;
+        mDiagonalProperty = false;
+    }
+}
 
-    mDiagonalProperty = diagonalProperty;
-    mSortedRows       = true;
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool CSRStorage<ValueType>::hasSortedRows( bool allowDiagonalFirst )
+{
+    // sort in place 
+
+    return sparsekernel::CSRUtils::hasSortedRows( mIA, mJA, getNumRows(), getNumColumns(), allowDiagonalFirst, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -675,8 +686,9 @@ void CSRStorage<ValueType>::swap( CSRStorage<ValueType>& other )
 template<typename ValueType>
 void CSRStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values )
 {
-    SCAI_ASSERT_EQUAL_ERROR( ia.size(), getNumRows() + 1 )
-    IndexType numValues = HArrayUtils::getVal<IndexType>( ia, getNumRows() );
+    SCAI_ASSERT_EQ_ERROR( ia.size(), getNumRows() + 1, "swap with illegally sized ia array" )
+
+    IndexType numValues = ia[ getNumRows() ];
 
     SCAI_ASSERT_EQUAL_ERROR( numValues, ja.size() )
     SCAI_ASSERT_EQUAL_ERROR( numValues, values.size() )
@@ -1937,74 +1949,53 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 {
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " +* A * B + " << beta << " * C, with " << "A = " << a << ", B = " << b << ", C = " << c )
-    SCAI_REGION( "Storage.CSR.timesMatrix" )
-    // a and b have to be CSR storages, otherwise create temporaries.
-    const CSRStorage<ValueType>* csrA = NULL;
-    const CSRStorage<ValueType>* csrB = NULL;
-    const CSRStorage<ValueType>* csrC = NULL;
-    // Define two shared pointers in case we need temporaries
-    std::shared_ptr<CSRStorage<ValueType> > tmpA;
-    std::shared_ptr<CSRStorage<ValueType> > tmpB;
-    std::shared_ptr<CSRStorage<ValueType> > tmpC;
 
-    if ( a.getFormat() == Format::CSR )
-    {
-        csrA = dynamic_cast<const CSRStorage<ValueType>*>( &a );
-        SCAI_ASSERT_DEBUG( csrA, "could not cast to CSRStorage " << a )
-    }
-    else
+    SCAI_REGION( "Storage.CSR.timesMatrix" )
+
+    if ( a.getFormat() != Format::CSR )
     {
         SCAI_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
-        tmpA.reset( new CSRStorage<ValueType>() );
-        tmpA->assign( a );
-        csrA = tmpA.get();
+        auto csrA = convert<CSRStorage<ValueType>>( a );
+        csrA.sortRows( false );
+        matrixTimesMatrix( alpha, csrA, b, beta, c );
+        return;
     }
 
-    if ( b.getFormat() == Format::CSR )
-    {
-        csrB = dynamic_cast<const CSRStorage<ValueType>*>( &b );
-        SCAI_ASSERT_DEBUG( csrB, "could not cast to CSRStorage " << b )
-    }
-    else
+    if ( b.getFormat() != Format::CSR )
     {
         SCAI_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
-        tmpB.reset( new CSRStorage<ValueType>() );
-        csrB = tmpB.get();
-        tmpB->assign( b );
+        auto csrB = convert<CSRStorage<ValueType>>( b );
+        csrB.sortRows( false );
+        matrixTimesMatrix( alpha, a, csrB, beta, c );
+        return;
     }
 
-    if ( beta != common::Constants::ZERO )
+    if ( beta != ValueType( 0 ) && c.getFormat() != Format::CSR )
     {
-        // c temporary needed if not correct format/type or aliased to this
-        if ( ( c.getFormat() == Format::CSR ) && ( &c != this ) )
-        {
-            csrC = dynamic_cast<const CSRStorage<ValueType>*>( &c );
-            SCAI_ASSERT_DEBUG( csrC, "could not cast to CSRStorage " << c )
-        }
-        else
-        {
-            SCAI_UNSUPPORTED( c << ": CSR temporary required for matrix add" )
-            tmpC.reset( new CSRStorage<ValueType>( ) );
-            csrC = tmpC.get();
-            tmpC->assign( c );
-        }
+        SCAI_UNSUPPORTED( c << ": CSR temporary required for matrix add" )
+        auto csrC = convert<CSRStorage<ValueType>>( c );
+        csrC.sortRows( false );
+        matrixTimesMatrix( alpha, a, b, beta, csrC );
+        return;
     }
 
-    ContextPtr loc = this->getContextPtr();
-
-    CSRStorage<ValueType> tmp1( loc );
-
-    tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
-
-    if ( beta != common::Constants::ZERO )
+    if ( beta == ValueType( 0 ) )
     {
-        CSRStorage<ValueType> tmp2( loc );
-        tmp2.matrixPlusMatrixImpl( static_cast<ValueType>( 1.0 ), tmp1, beta, *csrC );
-        swap( tmp2 );
+        // this = alpha * a + beta * b 
+
+        matrixTimesMatrixCSR( alpha, static_cast<const CSRStorage<ValueType>&>( a ),
+                                     static_cast<const CSRStorage<ValueType>&>( b ) );
     }
     else
     {
-        swap( tmp1 );
+        // use a temporary for a * b as this might be aliased to c
+
+        CSRStorage tmp;
+
+        tmp.matrixTimesMatrixCSR( alpha, static_cast<const CSRStorage<ValueType>&>( a ),
+                                         static_cast<const CSRStorage<ValueType>&>( b ) );
+
+        matrixPlusMatrixImpl( 1, tmp, beta, static_cast<const CSRStorage<ValueType>&>( c ) );
     }
 }
 
@@ -2018,13 +2009,11 @@ void CSRStorage<ValueType>::binaryOp(
 {
     if ( a.getFormat() != Format::CSR )
     {
-        auto csrA = convert<CSRStorage<ValueType>>( a );
-        binaryOp( csrA, op, b );
+        binaryOp( convert<CSRStorage<ValueType>>( a ), op, b );
     }
     else if ( b.getFormat() != Format::CSR )
     {
-        auto csrB = convert<CSRStorage<ValueType>>( b );
-        binaryOp( a, op, csrB );
+        binaryOp( a, op, convert<CSRStorage<ValueType>>( b ) );
     }
     else
     {
@@ -2046,7 +2035,7 @@ void CSRStorage<ValueType>::binaryOpCSR(
 
     if ( &a == this || &b == this )
     {
-        // due to alias we would get problems with Write/Read access, so use a temporary
+        // due to alias we use a temporary so that a or b is not damaged during write
 
         CSRStorage<ValueType> tmp;
         tmp.setContextPtr( getContextPtr() ); 
@@ -2056,50 +2045,22 @@ void CSRStorage<ValueType>::binaryOpCSR(
         return;
     }
 
-    SCAI_ASSERT_EQ_ERROR( a.getNumRows(), b.getNumRows(), "#rows must be equal for storages in binary op" )
-    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumColumns(), "#cols must be equal for storages in binary op" )
+    SCAI_ASSERT_EQ_DEBUG( a.getNumRows(), b.getNumRows(), "#rows must be equal for storages in binary op" )
+    SCAI_ASSERT_EQ_DEBUG( a.getNumColumns(), b.getNumColumns(), "#cols must be equal for storages in binary op" )
 
-    allocate( a.getNumRows(), a.getNumColumns() );
+    IndexType m = a.getNumRows();
+    IndexType n = a.getNumColumns();
 
-    if ( getNumRows() < 0 || getNumColumns() < 0 )
-    {
-        mDiagonalProperty = checkDiagonalProperty();
-        mSortedRows = false;
-        return;
-    }
+    sparsekernel::CSRUtils::binaryOp( mIA, mJA, mValues, 
+                                      a.getIA(), a.getJA(), a.getValues(),
+                                      b.getIA(), b.getJA(), b.getValues(),
+                                      m, n, op, getContextPtr() );
+    
+    SCAI_LOG_DEBUG( logger, *this << ": compress by removing zero elements" )
 
-    mDiagonalProperty = a.hasDiagonalProperty();   // inherit diagonal property from first storage
- 
-    {
-        ReadAccess<IndexType> aIa( a.getIA() );
-        ReadAccess<IndexType> aJa( a.getJA() );
-        ReadAccess<ValueType> aValues( a.getValues() );
-        ReadAccess<IndexType> bIa( b.getIA() );
-        ReadAccess<IndexType> bJa( b.getJA() );
-        ReadAccess<ValueType> bValues( b.getValues() );
+    // by calling the move constructor/assignment we guarantee a consistent storage
 
-        // Step 1: compute new row sizes of C, build offsets
-
-        SCAI_LOG_DEBUG( logger, "Determing sizes of result matrix C" )
-
-        WriteOnlyAccess<IndexType> cIa( mIA, getNumRows() + 1 );
-
-        IndexType nnz = OpenMPCSRUtils::matrixAddSizes ( cIa.get(), getNumRows(), getNumColumns(), mDiagonalProperty, 
-                                                         aIa.get(), aJa.get(), bIa.get(), bJa.get() );
-        // Step 2: fill in ja, values
-
-        SCAI_LOG_DEBUG( logger, "Compute the sparse values, # = " << nnz )
-
-        WriteOnlyAccess<IndexType> cJa( mJA, nnz );
-        WriteOnlyAccess<ValueType> cValues( mValues, nnz );
-
-        OpenMPCSRUtils::binaryOp( cJa.get(), cValues.get(), cIa.get(), 
-                                  getNumRows(), getNumColumns(), mDiagonalProperty, 
-                                  aIa.get(), aJa.get(), aValues.get(), 
-                                  bIa.get(), bJa.get(), bValues.get(), op );
-    }
-
-    mSortedRows = false;
+    *this = CSRStorage( m, n, std::move( mIA ), std::move( mJA ), std::move( mValues ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2123,45 +2084,22 @@ void CSRStorage<ValueType>::matrixPlusMatrixImpl(
         return;
     }
 
-    static LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
-    static LAMAKernel<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
+    SCAI_ASSERT_EQ_DEBUG( a.getNumRows(), b.getNumRows(), "serious size mismatch for matrixAdd" )
+    SCAI_ASSERT_EQ_DEBUG( a.getNumColumns(), b.getNumColumns(), "serious size mismatch for matrixAdd" )
 
-    ContextPtr loc = getContextPtr();
+    IndexType m = a.getNumRows();
+    IndexType n = a.getNumColumns();
 
-    matrixAdd.getSupportedContext( loc, matrixAddSizes );
+    sparsekernel::CSRUtils::matrixAdd( mIA, mJA, mValues, 
+                                       alpha, a.getIA(), a.getJA(), a.getValues(),
+                                       beta, b.getIA(), b.getJA(), b.getValues(),
+                                       m, n, getContextPtr() );
 
-    SCAI_REGION( "Storage.CSR.addMatrixCSR" )
-    allocate( a.getNumRows(), a.getNumColumns() );
-    SCAI_ASSERT_EQUAL_ERROR( getNumRows(), b.getNumRows() )
-    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), b.getNumColumns() )
-    mDiagonalProperty = ( getNumRows() == getNumColumns() );
-    {
-        ReadAccess<IndexType> aIa( a.getIA(), loc );
-        ReadAccess<IndexType> aJa( a.getJA(), loc );
-        ReadAccess<ValueType> aValues( a.getValues(), loc );
-        ReadAccess<IndexType> bIa( b.getIA(), loc );
-        ReadAccess<IndexType> bJa( b.getJA(), loc );
-        ReadAccess<ValueType> bValues( b.getValues(), loc );
-        // Step 1: compute row sizes of C, build offsets
-        SCAI_LOG_DEBUG( logger, "Determing sizes of result matrix C" )
-        WriteOnlyAccess<IndexType> cIa( mIA, loc, getNumRows() + 1 );
-        SCAI_CONTEXT_ACCESS( loc )
-        IndexType nnz = matrixAddSizes[loc] ( cIa.get(), getNumRows(), getNumColumns(), mDiagonalProperty, 
-                                              aIa.get(), aJa.get(),
-                                              bIa.get(), bJa.get() );
-        // Step 2: fill in ja, values
-        SCAI_LOG_DEBUG( logger, "Compute the sparse values, # = " << nnz )
-        WriteOnlyAccess<IndexType> cJa( mJA, loc, nnz );
-        WriteOnlyAccess<ValueType> cValues( mValues, loc, nnz );
-        matrixAdd[loc]( cJa.get(), cValues.get(), cIa.get(), getNumRows(), getNumColumns(), mDiagonalProperty, alpha, aIa.get(),
-                        aJa.get(), aValues.get(), beta, bIa.get(), bJa.get(), bValues.get() );
-    }
     SCAI_LOG_DEBUG( logger, *this << ": compress by removing zero elements" )
-    // Computation of C might have produced some zero elements
-    //compress();
-    check( "result of matrix + matrix" ); // just verify for a correct matrix
 
-    SCAI_LOG_INFO( logger, "CSR::matrixPlusMatrix, nnz = " << getNumValues() << " from " << a.getNumValues() << " + " << b.getNumValues() )
+    // by calling the move constructor/assignment we guarantee a consistent storage
+
+    *this = CSRStorage( m, n, std::move( mIA ), std::move( mJA ), std::move( mValues ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2170,47 +2108,42 @@ template<typename ValueType>
 void CSRStorage<ValueType>::matrixTimesMatrixCSR(
     const ValueType alpha,
     const CSRStorage<ValueType>& a,
-    const CSRStorage<ValueType>& b,
-    const ContextPtr preferedLoc )
+    const CSRStorage<ValueType>& b )
 {
     SCAI_LOG_INFO( logger, *this << ": = " << alpha << " * A * B"
                    << ", with A = " << a << ", B = " << b
-                   << ", all are CSR" << ", Context = " << *preferedLoc )
+                   << ", all are CSR" )
 
-    // get availabe implementations of needed kernel routines
-    static LAMAKernel<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
-    static LAMAKernel<CSRKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
-    // choose Context where all kernel routines are available
-    ContextPtr loc = preferedLoc;
-    matrixMultiply.getSupportedContext( loc, matrixMultiplySizes );
-    SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
-    SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
-    SCAI_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
-    IndexType k = a.getNumColumns();
-    SCAI_REGION( "Storage.CSR.timesMatrixCSR" )
-    allocate( a.getNumRows(), b.getNumColumns() );
-    mDiagonalProperty = ( getNumRows() == getNumColumns() );
-
-    if ( getNumRows() >  0 )
+    if ( &a == this || &b == this )
     {
-        ReadAccess<IndexType> aIA( a.getIA(), loc );
-        ReadAccess<IndexType> aJA( a.getJA(), loc );
-        ReadAccess<ValueType> aValues( a.getValues(), loc );
-        ReadAccess<IndexType> bIA( b.getIA(), loc );
-        ReadAccess<IndexType> bJA( b.getJA(), loc );
-        ReadAccess<ValueType> bValues( b.getValues(), loc );
-        WriteOnlyAccess<IndexType> cIA( mIA, loc, getNumRows() + 1 );
-        SCAI_CONTEXT_ACCESS( loc )
-        IndexType nnz = matrixMultiplySizes[loc] ( cIA.get(), getNumRows(), getNumColumns(), k, mDiagonalProperty, 
-                                                   aIA.get(), aJA.get(),
-                                                   bIA.get(), bJA.get() );
-        WriteOnlyAccess<IndexType> cJa( mJA, loc, nnz );
-        WriteOnlyAccess<ValueType> cValues( mValues, loc, nnz );
-        matrixMultiply[loc]( cIA.get(), cJa.get(), cValues.get(), getNumRows(), getNumColumns(), k, alpha, mDiagonalProperty,
-                             aIA.get(), aJA.get(), aValues.get(), bIA.get(), bJA.get(), bValues.get() );
+        // due to alias we would get problems with Write/Read access, so use a temporary
+
+        CSRStorage<ValueType> tmp( getContextPtr() );
+
+        tmp.matrixTimesMatrixCSR( alpha, a, b );
+
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+
+        return;
     }
 
-    buildRowIndexes();
+    const IndexType m = a.getNumRows();
+    const IndexType n = b.getNumColumns();
+
+    SCAI_ASSERT_EQ_DEBUG( a.getNumColumns(), b.getNumRows(), "serious size mismatch for matrix multiply" )
+
+    const IndexType k = a.getNumColumns();
+
+    bool diagonalProperty = m == n;
+
+    // no alias, so reuse arrays of this storage directly
+
+    sparsekernel::CSRUtils::matrixMultiply( mIA, mJA, mValues, alpha,
+                                            a.getIA(), a.getJA(), a.getValues(),
+                                            b.getIA(), b.getJA(), b.getValues(), 
+                                            m, n, k, diagonalProperty, getContextPtr() );
+
+    *this = CSRStorage( m, n, std::move( mIA ), std::move( mJA ), std::move( mValues ) );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -931,7 +931,7 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
     const MatrixStorage<ValueType>& a,
     const MatrixStorage<ValueType>& b,
     const ValueType beta,
-    const MatrixStorage<ValueType>& y )
+    const MatrixStorage<ValueType>& c )
 {
     SCAI_UNSUPPORTED( *this << ": no matrixTimesMatrix for this format available, take CSR" )
 
@@ -939,8 +939,8 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
 
     SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, "default implementation has not been overridden by CSR" )
 
-    auto csr  = convert<CSRStorage<ValueType>>( *this );
-    csr.matrixTimesMatrix( alpha, a, b, beta, y );
+    CSRStorage<ValueType> csr;
+    csr.matrixTimesMatrix( alpha, a, b, beta, c );
     assign( csr );
 }
 

@@ -335,14 +335,16 @@ public:
 
     /** This method sorts entries in each row by column indexes.
      *
-     *  @param[in] diagonalProperty if true first entry in a row is diagonal element if available
+     *  @param[in] keepDiagonalFirst if true first entry of a row remains unchanged if diagonal entry
      *
      *  This method does not force diagonal property for the storage as it will not fill up
      *  a diagonal element if it is not available.
      *
      *  Note: matrix multiplication with CUSparse requires sorted rows, diagonalProperty = false
      */
-    void sortRows( bool diagonalProperty );
+    void sortRows( bool keepDiagonalFirst );
+
+    bool hasSortedRows( bool allowDiagonalFirst );
 
     /** Set the diagonal elements as first entries. */
 
@@ -741,8 +743,7 @@ private:
 
     void matrixTimesMatrixCSR( const ValueType alpha,
                                const CSRStorage<ValueType>& a,
-                               const CSRStorage<ValueType>& b,
-                               const hmemo::ContextPtr loc );
+                               const CSRStorage<ValueType>& b );
 
     /** result += alpha * (*this) * x, where this storage has sparse rows */
 

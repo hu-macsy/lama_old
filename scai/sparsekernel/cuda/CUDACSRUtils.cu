@@ -260,7 +260,7 @@ struct identic_functor
     }
 };
 
-//trivial kernel to check diagonal property
+// trivial kernel to check diagonal property
 __global__ void hasDiagonalProperty_kernel(
     const IndexType numDiagonals,
     const IndexType ia[],
@@ -303,16 +303,127 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimGrid( ( numDiagonals - 1 ) / blockSize + 1, 1, 1 );// = makeGrid( numDiagonals, blockSize );
     dim3 dimBlock( blockSize, 1, 1 );
-    bool* d_hasProperty;
-    bool hasProperty;
-    SCAI_CUDA_RT_CALL( cudaMalloc( ( void** ) &d_hasProperty, sizeof( bool ) ),
-                       "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
-    SCAI_CUDA_RT_CALL( cudaMemset( d_hasProperty, 1, sizeof( bool ) ), "memset bool hasProperty = true" )
-    hasDiagonalProperty_kernel <<< dimGrid, dimBlock>>>( numDiagonals, csrIA, csrJA, d_hasProperty );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasDiagonalProperty failed: are ia and ja correct?" )
-    SCAI_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof( bool ), cudaMemcpyDeviceToHost ),
+
+    bool* deviceFlag;
+    bool hostFlag;     // will contain the flag copied from device
+
+    SCAI_CUDA_DRV_CALL( cuMemAlloc( ( CUdeviceptr* ) &deviceFlag, sizeof( bool ) ),
+                       "allocate bool flag on the device for the result of hasDiagonalProperty_kernel" )
+
+    SCAI_CUDA_DRV_CALL( cuMemsetD8( ( CUdeviceptr ) deviceFlag, ( unsigned char ) 1, sizeof( bool ) ), "memset bool hasSortedRows = true" )
+
+    hasDiagonalProperty_kernel <<< dimGrid, dimBlock>>>( numDiagonals, csrIA, csrJA, deviceFlag );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasDiagonalProperty::kernel failed, most likely arrays csrIA and/or csrJA are invalid" )
+
+    SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( &hostFlag, ( CUdeviceptr ) deviceFlag, sizeof( bool ) ),
                        "copy the result of hasDiagonalProperty_kernel to host" )
-    return hasProperty;
+
+    SCAI_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) deviceFlag ), "cuMemFree( " << deviceFlag << " ) failed" )
+
+    return hostFlag;
+}
+
+/* --------------------------------------------------------------------------- */
+
+__inline__ __device__ bool isSorted( const IndexType* data, const IndexType n )
+{
+    bool sortedFlag = true;
+
+    for ( IndexType i = 1; i < n; ++i )
+    {
+        if ( data[i] < data[i - 1] )
+        {
+            sortedFlag = false;
+            break;
+        }
+    }
+
+    return sortedFlag;
+}
+
+__global__ void hasSortedRows_kernel(
+    bool* hasSortedRows,
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    const IndexType numRows,
+    const bool allowDiagonalFirst )
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if ( i >= numRows )
+    {
+        return;
+    }
+
+    if ( ! *hasSortedRows )
+    {
+        return;
+    }
+
+    IndexType start = csrIA[i];
+
+    const IndexType end = csrIA[i + 1];
+
+    // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
+
+    if ( allowDiagonalFirst && start < end )
+    {
+        if ( csrJA[start] == i )
+        {
+            start++;    // so check sorting will start at next position
+        }
+    }
+
+    if ( ! isSorted( &csrJA[start], end - start ) )
+    {
+        *hasSortedRows = false;
+    }
+}
+
+bool CUDACSRUtils::hasSortedRows(
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const IndexType numRows,
+    const IndexType,
+    const IndexType,
+    const bool allowDiagonalFirst )
+{
+    SCAI_REGION( "CUDA.CSRUtils.hasSortedRows" )
+
+    if ( numRows == 0 )
+    {
+        return true;
+    }
+
+    SCAI_LOG_INFO( logger, "hasSortedRows, numRows = " << numRows << ", allowDiagonalFirst = " << allowDiagonalFirst )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    // make grid
+
+    const int blockSize = CUDASettings::getBlockSize(); 
+    dim3 dimGrid( ( numRows - 1 ) / blockSize + 1, 1, 1 );// = makeGrid( numDiagonals, blockSize );
+    dim3 dimBlock( blockSize, 1, 1 );
+
+    bool* deviceFlag;
+    bool hostFlag;     // will contain the flag copied from device
+
+    SCAI_CUDA_DRV_CALL( cuMemAlloc( ( CUdeviceptr* ) &deviceFlag, sizeof( bool ) ),
+                       "allocate global bool variable on the device for the result of hasSortedRows_kernel" )
+
+    SCAI_CUDA_DRV_CALL( cuMemsetD8( ( CUdeviceptr ) deviceFlag, ( unsigned char ) 1, sizeof( bool ) ), "memset bool hasSortedRows = true" )
+
+    hasSortedRows_kernel <<< dimGrid, dimBlock>>>( deviceFlag, csrIA, csrJA, numRows, allowDiagonalFirst );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasSortedKernel failed: most likely arrays csrIA and/or csrJA are invalid" )
+
+    SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( &hostFlag, ( CUdeviceptr ) deviceFlag, sizeof( bool ) ),
+                       "copy the result of hasSortedRows_kernel to host" )
+
+    SCAI_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) deviceFlag ), "cuMemFree( " << deviceFlag << " ) failed" )
+
+    return hostFlag;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1389,7 +1500,6 @@ __global__ void matrixAddSizesKernel(
     IndexType* cIa,
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const IndexType* aIa,
     const IndexType* aJa,
     const IndexType* bIa,
@@ -1407,11 +1517,6 @@ __global__ void matrixAddSizesKernel(
     {
         if ( rowIt < numRows )
         {
-            if ( diagonalProperty && rowIt >= numColumns )
-            {
-                diagonalProperty = false;
-            }
-
             IndexType aColIt = aIa[rowIt] + laneId;
             IndexType aColEnd = aIa[rowIt + 1];
             IndexType bColIt = bIa[rowIt] + laneId;
@@ -1461,7 +1566,6 @@ IndexType CUDACSRUtils::matrixAddSizes(
     IndexType cIa[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
     const IndexType bIa[],
@@ -1470,14 +1574,13 @@ IndexType CUDACSRUtils::matrixAddSizes(
     SCAI_REGION( "CUDA.CSRUtils.matrixAddSizes" )
     SCAI_LOG_INFO(
         logger,
-        "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+        "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
 // Reset cIa
     thrust::device_ptr<IndexType> cIaPtr( cIa );
     thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
 // TODO: Check if diagonal property needs special attention
-    matrixAddSizesKernel<NUM_WARPS> <<< NUM_BLOCKS, NUM_THREADS>>>( cIa, numRows, numColumns, diagonalProperty,
-            aIa, aJa, bIa, bJa );
+    matrixAddSizesKernel<NUM_WARPS> <<< NUM_BLOCKS, NUM_THREADS>>>( cIa, numRows, numColumns, aIa, aJa, bIa, bJa );
     cudaStreamSynchronize( 0 );
     SCAI_CHECK_CUDA_ERROR
 // Convert sizes array to offset array
@@ -2081,7 +2184,6 @@ void matrixAddKernel(
     const IndexType* cIA,
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const ValueType alpha,
     const IndexType* aIA,
     const IndexType* aJA,
@@ -2108,11 +2210,6 @@ void matrixAddKernel(
     {
         if ( rowIt < numRows )
         {
-            if ( diagonalProperty && rowIt >= numColumns )
-            {
-                diagonalProperty = false;
-            }
-
             IndexType aColIt = aIA[rowIt] + laneId;
             IndexType aColEnd = aIA[rowIt + 1];
             IndexType bColIt = bIA[rowIt] + laneId;
@@ -2192,7 +2289,6 @@ void CUDACSRUtils::matrixAdd(
     const IndexType cIA[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const ValueType alpha,
     const IndexType aIA[],
     const IndexType aJA[],
@@ -2206,7 +2302,7 @@ void CUDACSRUtils::matrixAdd(
     SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
     matrixAddKernel<ValueType, NUM_WARPS> <<< NUM_BLOCKS, NUM_THREADS>>>( cJA, cValues, cIA, numRows, numColumns,
-            diagonalProperty, alpha, aIA, aJA, aValues, beta, bIA, bJA, bValues );
+            alpha, aIA, aJA, aValues, beta, bIA, bJA, bValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync after matrixAdd kernel" )
 }
@@ -2663,7 +2759,7 @@ void sortRowKernel(
 }
 
 template<typename ValueType>
-void CUDACSRUtils::sortRowElements(
+void CUDACSRUtils::sortRows(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
@@ -2684,7 +2780,7 @@ void CUDACSRUtils::sortRowElements(
 
     sortRowKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows, keepDiagonalFirst );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sortRowElements" )
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sortRows" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2920,6 +3016,7 @@ void CUDACSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::hasSortedRows>( hasSortedRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
 }
@@ -2934,7 +3031,7 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sortRows<ValueType> >( sortRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::setDiagonalFirst<ValueType> >( setDiagonalFirst, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );

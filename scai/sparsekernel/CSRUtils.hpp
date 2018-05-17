@@ -92,19 +92,38 @@ public:
      *  @param[in,out] ja array with the column indexes
      *  @param[in,out] values array with the matrix values
      *  @param[in] ia offset array, size is numRows + 1
+     *  @param[in] numRows the number of rows, only needed for convenience
      *  @param[in] numColums the number of columns, only needed for convenience
      *  @param[in] keepDiagonalFirst if true the first element remains diagonal element
      *  @param[in] loc specifies the context where the operation should be executed
      */
     template<typename ValueType>
-    static void sort(
+    static void sortRows(
         hmemo::HArray<IndexType>& ja,
         hmemo::HArray<ValueType>& values,
         const hmemo::HArray<IndexType>& ia,
+        const IndexType numRows,
         const IndexType numColumns,
         bool keepDiagonalFirst,
         hmemo::ContextPtr loc );
 
+    /**
+     *  @brief Check if the column entries of CSR data are sorted 
+     *
+     *  @param[in] ia is the CSR offset array
+     *  @param[in] ja are the column indexes
+     *  @param[in] numColumns needed for convenience
+     *  @param[in] allowDiagonalFirst if true the first column index can also be i
+     *  @param[loc] specifies the context where the operation should be executed
+     */
+    static bool hasSortedRows(
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const IndexType numRows,
+        const IndexType numColumns,
+        bool allowDiagonalFirst,
+        hmemo::ContextPtr loc );
+ 
     /**
      *  @brief This routine moves the diagonal entries to the first entry entry for each row
      * 
@@ -141,6 +160,67 @@ public:
         const hmemo::HArray<IndexType>& rowIA,
         const hmemo::HArray<IndexType>& rowJA,
         const hmemo::HArray<ValueType>& rowValues,
+        const hmemo::ContextPtr loc );
+
+    /** Matrix multiplication 
+     *
+     *  @param[out] cIA, cJA, cValues for output storage
+     *  @param[in] aIA, aJA, aValues for first input storage
+     *  @param[in] bIA, bJA, bValues for second input storage
+     *  @param[in] m, n  are the sizes of the output matrix
+     *  @param[in] k    are the number of columns of a and number of rows of b
+     *  @param[in] diagonalProperty  if true diagonal elements in output storage will be available
+     *  @param[in] loc specifies the preferred context for execution.
+     */
+    template<typename ValueType>
+    static void matrixMultiply(
+        hmemo::HArray<IndexType>& cIA,
+        hmemo::HArray<IndexType>& cJA,
+        hmemo::HArray<ValueType>& cValues,
+        const ValueType alpha,
+        const hmemo::HArray<IndexType>& aIA,
+        const hmemo::HArray<IndexType>& aJA,
+        const hmemo::HArray<ValueType>& aValues,
+        const hmemo::HArray<IndexType>& bIA,
+        const hmemo::HArray<IndexType>& bJA,
+        const hmemo::HArray<ValueType>& bValues,
+        const IndexType m,
+        const IndexType n,
+        const IndexType k ,
+        bool  diagonalProperty,
+        const hmemo::ContextPtr loc );
+
+    template<typename ValueType>
+    static void matrixAdd(
+        hmemo::HArray<IndexType>& cIA,
+        hmemo::HArray<IndexType>& cJA,
+        hmemo::HArray<ValueType>& cValues,
+        const ValueType alpha,
+        const hmemo::HArray<IndexType>& aIA,
+        const hmemo::HArray<IndexType>& aJA,
+        const hmemo::HArray<ValueType>& aValues,
+        const ValueType beta,
+        const hmemo::HArray<IndexType>& bIA,
+        const hmemo::HArray<IndexType>& bJA,
+        const hmemo::HArray<ValueType>& bValues,
+        const IndexType m,
+        const IndexType n,
+        const hmemo::ContextPtr loc );
+
+    template<typename ValueType>
+    static void binaryOp(
+        hmemo::HArray<IndexType>& cIA,
+        hmemo::HArray<IndexType>& cJA,
+        hmemo::HArray<ValueType>& cValues,
+        const hmemo::HArray<IndexType>& aIA,
+        const hmemo::HArray<IndexType>& aJA,
+        const hmemo::HArray<ValueType>& aValues,
+        const hmemo::HArray<IndexType>& bIA,
+        const hmemo::HArray<IndexType>& bJA,
+        const hmemo::HArray<ValueType>& bValues,
+        const IndexType m,
+        const IndexType n,
+        const common::BinaryOp op,
         const hmemo::ContextPtr loc );
 
 private:

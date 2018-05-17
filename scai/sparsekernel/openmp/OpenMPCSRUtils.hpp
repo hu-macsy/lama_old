@@ -139,7 +139,7 @@ public:
     /** Host implementation for CSRKernelTrait::sortRowElements using OpenMP parallelization. */
 
     template<typename ValueType>
-    static void sortRowElements(
+    static void sortRows(
         IndexType csrJA[],
         ValueType csrValues[],
         const IndexType csrIA[],
@@ -147,6 +147,16 @@ public:
         const IndexType numColumns,
         const IndexType nnz,
         const bool keepDiagonalFirst );
+
+    /** Host implementation for CSRKernelTrait::hasSortedRows using OpenMP parallelization. */
+
+    static bool hasSortedRows(
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType nnz,
+        const bool allowDiagonalFirst );
 
     static IndexType getPosDiagonal(
         IndexType pos[],
@@ -307,7 +317,6 @@ public:
         IndexType cSizes[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const IndexType bIA[],
@@ -335,7 +344,6 @@ public:
         const IndexType cIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const ValueType alpha,
         const IndexType aIA[],
         const IndexType aJA[],
@@ -354,7 +362,6 @@ public:
         const IndexType cIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const ValueType aValues[],
