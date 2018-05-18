@@ -836,31 +836,6 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
 template<typename ValueType>
 void MatrixStorage<ValueType>::jacobiIterateHalo(
     HArray<ValueType>& localSolution,
-    const MatrixStorage<ValueType>& localStorage,
-    const HArray<ValueType>& oldHaloSolution,
-    const ValueType omega ) const
-{
-    SCAI_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
-
-    // very inefficient as we just need the diagonal
-
-    auto csrHalo  = convert<CSRStorage<ValueType>>( *this );
-   
-    // we need the diagonal from the local storage
-
-    HArray<ValueType> diagValues;
-    localStorage.getDiagonal( diagValues );
-
-    auto csrLocal = diagonal<CSRStorage<ValueType>>( diagValues );
-
-    csrHalo.jacobiIterateHalo( localSolution, csrLocal, oldHaloSolution, omega );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::jacobiIterateHalo(
-    HArray<ValueType>& localSolution,
     const HArray<ValueType>& localDiagonal,
     const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const

@@ -233,7 +233,6 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
     const IndexType m,
     const IndexType n,
     const IndexType k,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const IndexType bIA[],
@@ -242,7 +241,7 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
     SCAI_REGION( "CUDA.CSR.matrixMultiplySizes" )
     SCAI_LOG_INFO(
         logger,
-        "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
+        "matrixMutliplySizes for " << m << " x " << n << " matrix" )
 
     bool hasSortedRows = CUDACSRUtils::hasSortedRows( aIA, aJA, m, k, 1, false );
     SCAI_ASSERT( hasSortedRows, "csr data of first matrix is not sorted, required for cuSparse call of matrixMultiply" )
@@ -335,7 +334,6 @@ void CUSparseCSRUtils::matrixMultiply(
     const IndexType n,
     const IndexType k,
     const ValueType alpha,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const ValueType aValues[],

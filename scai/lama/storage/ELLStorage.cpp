@@ -1618,46 +1618,6 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
     HArray<ValueType>& localSolution,
-    const MatrixStorage<ValueType>& localStorage,
-    const HArray<ValueType>& haloOldSolution,
-    const ValueType omega ) const
-{
-    SCAI_REGION( "Storage.ELL.jacobiIterateHalo" )
-    SCAI_LOG_INFO( logger, "HOST: Jacobi iteration on halo matrix data." )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), localSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), localStorage.getNumRows() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), localStorage.getNumColumns() )
-    SCAI_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumColumns(), haloOldSolution.size() )
-    const HArray<ValueType>* localDiagonal;
-    // might be we need a temporary LAMA array for the local diagonal
-    std::shared_ptr<HArray<ValueType> > tmpLocalDiagonal;
-
-    if ( localStorage.getFormat() == Format::ELL )
-    {
-        const ELLStorage<ValueType>* ellLocal;
-        ellLocal = dynamic_cast<const ELLStorage<ValueType>*>( &localStorage );
-        SCAI_ASSERT_DEBUG( ellLocal, "could not cast to ELLStorage " << localStorage )
-        localDiagonal = &( ellLocal->mValues );
-    }
-    else
-    {
-        // make a temporary for the diagonal and get it from local storage
-        SCAI_LOG_WARN( logger, "local stroage is not ELL, temorary needed for diagonal" )
-        tmpLocalDiagonal = std::shared_ptr<HArray<ValueType> >( new HArray<ValueType>() );
-        localStorage.getDiagonal( *tmpLocalDiagonal );
-        localDiagonal = tmpLocalDiagonal.get();
-        // Note: tmpLocalDiagonal will be freed at end of routine
-    }
-
-    jacobiIterateHalo( localSolution, *localDiagonal, haloOldSolution, omega );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void ELLStorage<ValueType>::jacobiIterateHalo(
-    HArray<ValueType>& localSolution,
     const HArray<ValueType>& localDiagonal,
     const HArray<ValueType>& haloOldSolution,
     const ValueType omega ) const

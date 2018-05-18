@@ -269,27 +269,12 @@ public:
         const ValueType omega,
         const IndexType numRows );
 
+    /** Implementation for CSRKernelTrait::Jacobi::jacobiHalo  */
+
     template<typename ValueType>
     static void jacobiHalo(
         ValueType solution[],
-        const IndexType localIA[],
-        const ValueType localValues[],
-        const IndexType haloIA[],
-        const IndexType haloJA[],
-        const ValueType haloValues[],
-        const IndexType haloRowIndexes[],
-        const ValueType oldSolution[],
-        const ValueType omega,
-        const IndexType numNonEmptyRows );
-
-    /** Implementation for CSRKernelTrait::Jacobi::jacobiHaloWithDiag
-     *  @since 1.1.0
-     */
-
-    template<typename ValueType>
-    static void jacobiHaloWithDiag(
-        ValueType solution[],
-        const ValueType localDiagValues[],
+        const ValueType diagonal[],
         const IndexType haloIA[],
         const IndexType haloJA[],
         const ValueType haloValues[],
@@ -329,7 +314,6 @@ public:
         const IndexType m,
         const IndexType n,
         const IndexType k,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const IndexType bIA[],
@@ -381,7 +365,6 @@ public:
         const IndexType n,
         const IndexType k,
         const ValueType alpha,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const ValueType aValues[],
@@ -427,6 +410,33 @@ public:
         const IndexType numRows,
         const ValueType eps,
         const bool diagonalFlag );
+
+    template<typename ValueType>
+    static void getDiagonal(
+        ValueType diagonal[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        const bool isSorted );
+
+    template<typename ValueType>
+    static bool setDiagonalV(
+        ValueType csrValues[],
+        const ValueType diagonal[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const bool isSorted );
+
+    template<typename ValueType>
+    static bool setDiagonal(
+        ValueType csrValues[],
+        const ValueType diagonal,
+        const IndexType numDiagonals,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const bool isSorted );
 
 protected:
 

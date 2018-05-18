@@ -160,7 +160,7 @@ public:
         const hmemo::HArray<IndexType>& rowIA,
         const hmemo::HArray<IndexType>& rowJA,
         const hmemo::HArray<ValueType>& rowValues,
-        const hmemo::ContextPtr loc );
+        hmemo::ContextPtr loc );
 
     /** Matrix multiplication 
      *
@@ -187,8 +187,7 @@ public:
         const IndexType m,
         const IndexType n,
         const IndexType k ,
-        bool  diagonalProperty,
-        const hmemo::ContextPtr loc );
+        hmemo::ContextPtr loc );
 
     template<typename ValueType>
     static void matrixAdd(
@@ -205,7 +204,7 @@ public:
         const hmemo::HArray<ValueType>& bValues,
         const IndexType m,
         const IndexType n,
-        const hmemo::ContextPtr loc );
+        hmemo::ContextPtr loc );
 
     template<typename ValueType>
     static void binaryOp(
@@ -221,7 +220,49 @@ public:
         const IndexType m,
         const IndexType n,
         const common::BinaryOp op,
-        const hmemo::ContextPtr loc );
+        hmemo::ContextPtr loc );
+
+    /** @brief Get the diagonal of CSR storage
+     *
+     *  This routine is very efficient if diagonal elements are stored first.
+     *  It is also significantly faster if the column indexes are sorted for each row.
+     */
+    template<typename ValueType>
+    static void getDiagonal(
+        hmemo::HArray<ValueType>& diagonal,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<ValueType>& values,
+        const bool isSorted,
+        hmemo::ContextPtr loc );
+
+    /** @brief set the diagonal */
+
+    template<typename ValueType>
+    static bool setDiagonalV(
+        hmemo::HArray<ValueType>& values,
+        const hmemo::HArray<ValueType>& diagonal,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const bool isSorted,
+        hmemo::ContextPtr loc );
+
+    /** @brief set the diagonal */
+
+    template<typename ValueType>
+    static bool setDiagonal(
+        hmemo::HArray<ValueType>& values,
+        const ValueType diagonalValue,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const bool isSorted,
+        hmemo::ContextPtr loc );
 
 private:
 

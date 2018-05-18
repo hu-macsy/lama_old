@@ -643,6 +643,57 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( diagonalTest )
+{
+    typedef DefaultReal ValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    //   Input storage:
+    //   -------------
+    //    1.0   -   2.0  1.1  - 
+    //    0.5  0.0   -    -   - 
+    //     -    -   3.0   -   - 
+    //     -   0.0  4.0  0.0 1.0
+
+    HArray<IndexType> ia(     {   0,             3,        5,   6,           10  }, testContext );
+    HArray<IndexType> ja(     {   3,   2,   0,   0,   1,   2,   3,  2,  1,   4    },  testContext );
+    HArray<ValueType> values( { 1.0, 2.0, 1.5, 0.5, 0.0, 3.0, 0.0, 4.0, 0.0, 1.0   },  testContext );
+
+    HArray<ValueType> expDiag( { 1.5, 0.0, 3.0, 0.0 } );
+
+    const IndexType m = 4;
+    const IndexType n = 5;
+
+    bool isSorted = false;
+
+    HArray<ValueType> diag;
+
+    CSRUtils::getDiagonal( diag, m, n, ia, ja, values, isSorted, testContext );
+ 
+    BOOST_TEST( hostReadAccess( diag ) == hostReadAccess( expDiag ), per_element() );
+
+    HArray<ValueType> newDiag( { 1.2, 2.0, 3.3, 0.5 } );
+
+    bool okay = CSRUtils::setDiagonalV( values, newDiag, m, n, ia, ja, isSorted, testContext );
+
+    BOOST_CHECK( okay );
+
+    CSRUtils::getDiagonal( diag, m, n, ia, ja, values, isSorted, testContext );
+
+    BOOST_TEST( hostReadAccess( diag ) == hostReadAccess( newDiag ), per_element() );
+
+    ValueType diagVal = 1;
+
+    okay = CSRUtils::setDiagonal( values, diagVal, m, n, ia, ja, isSorted, testContext );
+
+    CSRUtils::getDiagonal( diag, m, n, ia, ja, values, isSorted, testContext );
+
+    BOOST_TEST( hostReadAccess( diag ) == hostReadAccess( HArray<ValueType>( m, diagVal) ), per_element() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -963,8 +1014,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
     HArray<IndexType> bJA(     { 0,   1,   2,   3,   1,   2,   3,   0,   2 }, testContext );
     HArray<ValueType> bValues( { 1.0, 0.5, 0.0, 4.0, 0.3, 0.0, 1.5, 2.0, 3.0 }, testContext );
 
-    bool diagonalProperty = false;
-
     // REMARK: explicit zeros are also in result, when no compress is called
     //       array3 ( 4 x 4 )
     //
@@ -985,7 +1034,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
   
     ValueType alpha = 1;
 
-    CSRUtils::matrixMultiply( cIA, cJA, cValues, alpha, aIA, aJA, aValues, bIA, bJA, bValues, m, n, k, diagonalProperty, testContext );
+    CSRUtils::matrixMultiply( cIA, cJA, cValues, alpha, aIA, aJA, aValues, bIA, bJA, bValues, m, n, k, testContext );
   
     BOOST_TEST( hostReadAccess( cIA ) == hostReadAccess( expCIA ), per_element() );
 
@@ -1000,32 +1049,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
     auto eps = common::TypeTraits<ValueType>::small();
 
     BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( cValues, expCValues ) < eps );
-
-    // 2nd test for zero matrices
-
-    aIA = HArray<IndexType>( m + 1, 0 );
-    aJA.clear();
-    aValues.clear();
-
-    bIA = HArray<IndexType>( k + 1, 0 );
-    bJA.clear();
-    bValues.clear();
-
-    testContext = Context::getHostPtr();  // ToDo: this test fails on CUDA, use routine to force diagonal property
-
-    diagonalProperty = true;
-
-    CSRUtils::matrixMultiply( cIA, cJA, cValues, alpha, aIA, aJA, aValues, bIA, bJA, bValues, m, n, k, diagonalProperty, testContext );
-
-    // due to diagonal property set we expect the identity matrix
-
-    expCIA = HArray<IndexType>( { 0, 1, 2, 3, 4 } );
-    expCJA = HArray<IndexType>( { 0, 1, 2, 3 } );
-    expCValues = HArray<ValueType>( { 0, 0, 0, 0 } );
-
-    BOOST_TEST( hostReadAccess( cIA ) == hostReadAccess( expCIA ), per_element() );
-    BOOST_TEST( hostReadAccess( cJA ) == hostReadAccess( expCJA ), per_element() );
-    BOOST_TEST( hostReadAccess( cValues ) == hostReadAccess( expCValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -1755,10 +1778,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
             ReadAccess<ValueType> rDiag( diag, loc );
             WriteAccess<ValueType> wSolution( solution, loc, numColumns );
 
-            jacobiHalo[loc]( wSolution.get(),
-                             rIADummy.get(), rDiag.get(),
-                             rIA.get(), rJA.get(), rValues.get(), rIndexes.get(),
-                             rOld.get(), omega, numNonEmptyRows );
+            jacobiHalo[loc]( wSolution.get(), rDiag.get(),
+                             rIA.get(), rJA.get(), rValues.get(), 
+                             rIndexes.get(), rOld.get(), omega, numNonEmptyRows );
         }
 
         HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
@@ -1791,15 +1813,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloDiagTest, ValueType, scai_numeric_test_
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<CSRKernelTrait::jacobiHaloWithDiag<ValueType> > jacobiHaloWithDiag;
+    static LAMAKernel<CSRKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
 
     ContextPtr loc = testContext;
 
-    jacobiHaloWithDiag.getSupportedContext( loc );
+    jacobiHalo.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc, testContext );
 
-    SCAI_LOG_INFO( logger, "jacobiHaloWithDiag test for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "jacobiHalo test for " << *testContext << " on " << *loc )
 
     HArray<IndexType> csrIA( testContext );
     HArray<IndexType> csrJA( testContext );
@@ -1845,10 +1867,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloDiagTest, ValueType, scai_numeric_test_
             ReadAccess<ValueType> rDiag( diag, loc );
             WriteAccess<ValueType> wSolution( solution, loc, numColumns );
 
-            jacobiHaloWithDiag[loc]( wSolution.get(),
-                                     rDiag.get(),
-                                     rIA.get(), rJA.get(), rValues.get(), rIndexes.get(),
-                                     rOld.get(), omega, numNonEmptyRows );
+            jacobiHalo[loc]( wSolution.get(),
+                             rDiag.get(),
+                             rIA.get(), rJA.get(), rValues.get(), rIndexes.get(),
+                             rOld.get(), omega, numNonEmptyRows );
         }
 
         HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );

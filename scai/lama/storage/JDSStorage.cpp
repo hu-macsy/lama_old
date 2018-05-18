@@ -1422,30 +1422,6 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 template<typename ValueType>
 void JDSStorage<ValueType>::jacobiIterateHalo(
     HArray<ValueType>& localSolution,
-    const MatrixStorage<ValueType>& localStorage,
-    const HArray<ValueType>& oldHaloSolution,
-    const ValueType omega ) const
-{
-    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
-    SCAI_REGION( "Storage.JDS.jacobiIterateHalo" )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), localSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), localStorage.getNumRows() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), localStorage.getNumColumns() )
-    SCAI_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumColumns(), oldHaloSolution.size() )
-    // need diagonal of local storage in *natural* order
-    const HArray<ValueType>* localDiagonal;
-    shared_ptr<HArray<ValueType> > tmpLocalDiagonal;
-    tmpLocalDiagonal = shared_ptr<HArray<ValueType> >( new HArray<ValueType>() );
-    localStorage.getDiagonal( *tmpLocalDiagonal );
-    localDiagonal = tmpLocalDiagonal.get();
-    jacobiIterateHalo( localSolution, *localDiagonal, oldHaloSolution, omega );
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-template<typename ValueType>
-void JDSStorage<ValueType>::jacobiIterateHalo(
-    HArray<ValueType>& localSolution,
     const HArray<ValueType>& localDiagonal,
     const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const

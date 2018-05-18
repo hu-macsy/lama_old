@@ -370,16 +370,6 @@ public:
 
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Implementation of MatrixStorage::jacobiIterateHalo for JDS
-     *  @since 1.1.0
-     */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
         const hmemo::HArray<ValueType>& localDiagonal,
         const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;

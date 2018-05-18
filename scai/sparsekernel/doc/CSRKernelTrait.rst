@@ -76,7 +76,6 @@ Calculation
 ====================== ============================================================= ==== ====
 jacobi                 compute one jacobi iteration step                             *    *
 jacobiHalo             compute one jacobi iteration step on halo values              *    *
-jacobiHaloWithDiag     compute one jacobi iteration step on halo values              *    *
 matrixAddSizes         computes row sizes for result of matrix addition              *    *
 matrixMultiplySizes    computes row sizes for result of matrix multiplication        *    *
 matrixMultiplyJA       computes column indexes for result of matrix multiplication   *

@@ -185,15 +185,16 @@ struct CSRKernelTrait
     template <typename ValueType>
     struct jacobiHalo
     {
-        /** Method to compute one iteration step in Jacobi method
+        /** Compute one iteration step in Jacobi method for halo
          *
-         *  solution -= omega * ( B(halo) * oldSolution) * dinv
+         *  \code
+         *      solution -= omega * ( csr_halo * oldSolution ) ./ diagonal 
+         *  \endcode
          *
          */
         typedef void ( *FuncType ) (
             ValueType solution[],
-            const IndexType localIA[],
-            const ValueType localValues[],
+            const ValueType diagonal[],
             const IndexType haloIA[],
             const IndexType haloJA[],
             const ValueType haloValues[],
@@ -205,32 +206,6 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.jacobiHalo";
-        }
-    };
-
-    template <typename ValueType>
-    struct jacobiHaloWithDiag
-    {
-        /** Method to compute one iteration step in Jacobi method
-         *
-         *  solution -= omega * ( B(halo) * oldSolution) * dinv
-         *
-         *  @since 1.1.0
-         */
-        typedef void ( *FuncType ) (
-            ValueType solution[],
-            const ValueType localDiagValues[],
-            const IndexType haloIA[],
-            const IndexType haloJA[],
-            const ValueType haloValues[],
-            const IndexType haloRowIndexes[],
-            const ValueType oldSolution[],
-            const ValueType omega,
-            const IndexType numNonEmptyRows );
-
-        static const char* getId()
-        {
-            return "CSR.jacobiHaloWithDiag";
         }
     };
 
@@ -439,7 +414,6 @@ struct CSRKernelTrait
             const IndexType m,
             const IndexType n,
             const IndexType k,
-            bool diagonalProperty,
             const IndexType aIA[],
             const IndexType aJA[],
             const IndexType bIA[],
@@ -470,6 +444,77 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.hasDiagonalProperty";
+        }
+    };
+
+    template<typename ValueType>
+    struct getDiagonal
+    {
+        /** This method returns the diagonal of a csr storage.
+         *
+         *  @param[in] numDiagonals number of diagonal elements, should be min( numRows, numColumns )
+         *  @param[in] csrIA, csrJA, csrValues are the CSR arrays
+         *  @param[in] isSorted if true the column entries for each row are sorted
+         *
+         *  Note: if sort flag has been set but elements were not sorted, the diagonal might have
+         *        wrong zero elements.
+         */
+        typedef void ( *FuncType ) (
+            ValueType diagonal[],
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[],
+            const bool isSorted );
+
+        static const char* getId()
+        {
+            return "CSR.getDiagonal";
+        }
+    };
+
+    template<typename ValueType>
+    struct setDiagonalV
+    {
+        /** This method sets the diagonal in a CSR storage.
+         *
+         *  Returns true if all diagonal entries were available in the CSR storage.
+         *
+         *  Note: if sort flag has been set but column indexes were not sorted, there 
+         *        might be diagonal elemens not set even if they were available.
+         */
+        typedef bool ( *FuncType ) (
+            ValueType csrValues[],
+            const ValueType diagonal[],
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const bool isSorted );
+
+        static const char* getId()
+        {
+            return "CSR.setDiagonalV";
+        }
+    };
+
+    template<typename ValueType>
+    struct setDiagonal
+    {
+        /** This method determines sets the diagonal of a csr storage.
+         *
+         *  Returns true if all diagonal elements were available.
+         */
+        typedef bool ( *FuncType ) (
+            ValueType csrValues[],
+            const ValueType diagonal,
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const bool isSorted );
+
+        static const char* getId()
+        {
+            return "CSR.setDiagonal";
         }
     };
 
@@ -854,7 +899,6 @@ struct CSRKernelTrait
             const IndexType n,
             const IndexType k,
             const ValueType alpha,
-            bool diagonalProperty,
             const IndexType aIA[],
             const IndexType aJA[],
             const ValueType aValues[],
@@ -902,7 +946,7 @@ struct CSRKernelTrait
          * @param[in] newIA   new offsets, computed by countNonZeros + sizes2offsets
          * @param[in] ia, ja, values, numRows are the data of the current CSR storage
          * @param[in] eps     threshold value for which an element is considered to be zero
-         * @param[in] diagonalFlag if true diagonal elements are counted in any case
+         * @param[in] keepDiagonals if true diagonal elements are not removed even if they are zero
          */
         typedef void ( *FuncType )(
             IndexType newJA[],

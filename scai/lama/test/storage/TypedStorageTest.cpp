@@ -901,12 +901,13 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
         std::unique_ptr<MatrixStorage<ValueType> > local( storage.newMatrixStorage() );
         setDenseSquareData( *local );
         SCAI_LOG_DEBUG( logger, "storage for jacobiIterateHalo = " << storage )
+        HArray<ValueType> diagonal;
         const HArray<ValueType> oldSolution( storage.getNumColumns(), 1 );
         // clone the storage and set its diagonal to zero, but keep inverse of diagonal
         std::unique_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
         HArray<ValueType> diagonalInverse;
-        local->getDiagonal( diagonalInverse );
-        HArrayUtils::compute( diagonalInverse, ValueType( 1 ), common::BinaryOp::DIVIDE, diagonalInverse );
+        local->getDiagonal( diagonal );
+        HArrayUtils::compute( diagonalInverse, ValueType( 1 ), common::BinaryOp::DIVIDE, diagonal );
         storage1->scaleRows( diagonalInverse );
         ValueType omegas[] = { 1.0, 0.8, 0.5 };
         const int NCASES = sizeof( omegas ) / sizeof( ValueType );
@@ -917,7 +918,7 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
             HArray<ValueType> solution1( storage.getNumRows(), 1, context );
             HArray<ValueType> solution2( storage.getNumRows(), 1, context );
             // solution1 -= omega * ( B(halo) * oldSolution ) * dinv
-            storage.jacobiIterateHalo( solution1, *local, oldSolution, omega );
+            storage.jacobiIterateHalo( solution1, diagonal, oldSolution, omega );
             const ValueType alpha = -omega;
             const ValueType beta  = 1;
             storage1->matrixTimesVector( solution2, alpha, oldSolution, beta , solution2, common::MatrixOp::NORMAL );

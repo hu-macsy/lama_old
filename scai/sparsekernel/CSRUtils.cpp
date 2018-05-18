@@ -317,7 +317,6 @@ void CSRUtils::matrixMultiply(
     const IndexType m,
     const IndexType n,
     const IndexType k ,
-    const bool diagonalProperty,
     const hmemo::ContextPtr prefLoc )
 {
     if ( m == 0 || n == 0 )
@@ -347,14 +346,14 @@ void CSRUtils::matrixMultiply(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    IndexType nnz = matrixMultiplySizes[loc] ( wCIA.get(), m, n, k, diagonalProperty,
+    IndexType nnz = matrixMultiplySizes[loc] ( wCIA.get(), m, n, k,
                                                rAIA.get(), rAJA.get(),
                                                rBIA.get(), rBJA.get() );
 
     WriteOnlyAccess<IndexType> wCJA( cJA, loc, nnz );
     WriteOnlyAccess<ValueType> wCValues( cValues, loc, nnz );
 
-    matrixMultiply[loc]( wCIA.get(), wCJA.get(), wCValues.get(), m, n, k, alpha, diagonalProperty,
+    matrixMultiply[loc]( wCIA.get(), wCJA.get(), wCValues.get(), m, n, k, alpha, 
                          rAIA.get(), rAJA.get(), rAValues.get(), rBIA.get(), rBJA.get(), rBValues.get() );
 }
 
@@ -478,6 +477,107 @@ void CSRUtils::binaryOp(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void CSRUtils::getDiagonal(
+    hmemo::HArray<ValueType>& diagonal,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<IndexType>& ia,
+    const hmemo::HArray<IndexType>& ja,
+    const hmemo::HArray<ValueType>& values,
+    const bool isSorted,
+    hmemo::ContextPtr prefLoc )
+{
+    IndexType numDiagonals = common::Math::min( numRows, numColumns );
+
+    static LAMAKernel<CSRKernelTrait::getDiagonal<ValueType>> kGetDiagonal;
+
+    // choose Context where all kernel routines are available
+
+    ContextPtr loc = prefLoc;
+    kGetDiagonal.getSupportedContext( loc );
+
+    ReadAccess<IndexType> rIA( ia, loc );
+    ReadAccess<IndexType> rJA( ja, loc );
+    ReadAccess<ValueType> rValues( values, loc );
+
+    WriteOnlyAccess<ValueType> wDiagonal( diagonal, loc, numDiagonals );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    kGetDiagonal[loc]( wDiagonal.get(), numDiagonals, rIA.get(), rJA.get(), rValues.get(), isSorted );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool CSRUtils::setDiagonalV(
+    hmemo::HArray<ValueType>& values,
+    const hmemo::HArray<ValueType>& diagonal,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<IndexType>& ia,
+    const hmemo::HArray<IndexType>& ja,
+    const bool isSorted,
+    const hmemo::ContextPtr prefLoc )
+{
+    IndexType numDiagonals = common::Math::min( numRows, numColumns );
+
+    SCAI_ASSERT_EQ_ERROR( diagonal.size(), numDiagonals, "illegal size of diagonal to set for storage" )
+
+    static LAMAKernel<CSRKernelTrait::setDiagonalV<ValueType> > setDiagonalV;
+
+    // choose Context where all kernel routines are available
+    
+    ContextPtr loc = prefLoc;
+    setDiagonalV.getSupportedContext( loc );
+    
+    ReadAccess<IndexType> rIA( ia, loc );
+    ReadAccess<IndexType> rJA( ja, loc );
+    WriteAccess<ValueType> wValues( values, loc );
+
+    ReadAccess<ValueType> rDiagonal( diagonal, loc );
+    
+    SCAI_CONTEXT_ACCESS( loc )
+
+    bool okay = setDiagonalV[loc]( wValues.get(), rDiagonal.get(), numDiagonals, rIA.get(), rJA.get(), isSorted );
+
+    return okay;
+}
+
+template<typename ValueType>
+bool CSRUtils::setDiagonal(
+    hmemo::HArray<ValueType>& values,
+    const ValueType diagonal,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<IndexType>& ia,
+    const hmemo::HArray<IndexType>& ja,
+    const bool isSorted,
+    hmemo::ContextPtr prefLoc )
+{
+    IndexType numDiagonals = common::Math::min( numRows, numColumns );
+    
+    static LAMAKernel<CSRKernelTrait::setDiagonal<ValueType>> setDiagonal;
+
+    // choose Context where all kernel routines are available
+    
+    ContextPtr loc = prefLoc;
+    setDiagonal.getSupportedContext( loc );
+    
+    ReadAccess<IndexType> rIA( ia, loc );
+    ReadAccess<IndexType> rJA( ja, loc );
+    WriteAccess<ValueType> wValues( values, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    bool okay = setDiagonal[loc]( wValues.get(), diagonal, numDiagonals, rIA.get(), rJA.get(), isSorted );
+
+    return okay;
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define CSRUTILS_SPECIFIER( ValueType )              \
                                                      \
     template void CSRUtils::sortRows(                \
@@ -494,6 +594,36 @@ void CSRUtils::binaryOp(
             HArray<ValueType>&,                      \
             const HArray<IndexType>&,                \
             const IndexType,                         \
+            ContextPtr );                            \
+                                                     \
+    template void CSRUtils::getDiagonal(             \
+            HArray<ValueType>&,                      \
+            const IndexType,                         \
+            const IndexType,                         \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<ValueType>&,                \
+            const bool,                              \
+            ContextPtr );                            \
+                                                     \
+    template bool CSRUtils::setDiagonalV(            \
+            HArray<ValueType>&,                      \
+            const HArray<ValueType>&,                \
+            const IndexType,                         \
+            const IndexType,                         \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const bool,                              \
+            ContextPtr );                            \
+                                                     \
+    template bool CSRUtils::setDiagonal(             \
+            HArray<ValueType>&,                      \
+            const ValueType,                         \
+            const IndexType,                         \
+            const IndexType,                         \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const bool,                              \
             ContextPtr );                            \
                                                      \
     template void CSRUtils::compress(                \
@@ -528,7 +658,6 @@ void CSRUtils::binaryOp(
             const IndexType,                         \
             const IndexType,                         \
             const IndexType,                         \
-            const bool,                              \
             ContextPtr );                            \
                                                      \
     template void CSRUtils::matrixAdd(               \

@@ -487,17 +487,7 @@ public:
         const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
-    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL
-     *  @since 1.1.0
-     */
+    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL  */
 
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,

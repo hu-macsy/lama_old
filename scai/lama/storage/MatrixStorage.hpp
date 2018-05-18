@@ -662,35 +662,13 @@ public:
 
     /** Jacobi iteration step on a halo storage.
      *
-     *  solution -= omega * ( B(halo) * oldSolution) * dinv
-     *
-     *  @param[in,out] localSolution is the solution vector that is updated
-     *  @param[in]     localStorage is needed to get the diagonal
-     *  @param[in]     haloOldSolution is the old solution vector of halo part
-     *  @param[in]     omega is the scaling factor.
-     *
-     *  While local storage must be square and have the diagonal property, this
-     *  matrix storage does not have to be square.
-     */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Jacobi iteration step on a halo storage.
-     *
-     *  solution -= omega * ( B(halo) * oldSolution) * dinv
+     *  solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal
      *
      *  @param[in,out] localSolution is the solution vector that is updated
      *  @param[in]     localDiagonal pointer to the diagonal of local storage
      *  @param[in]     haloOldSolution is the old solution vector of halo part
      *  @param[in]     omega is the scaling factor.
-     *
-     *  @since 1.1.0
      */
-
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
         const hmemo::HArray<ValueType>& localDiagonal,

@@ -1290,98 +1290,6 @@ template<typename ValueType, bool useTexture>
 __global__
 void csr_jacobiHalo_kernel(
     ValueType* const solution,
-    const IndexType* const localIA,
-    const ValueType* const localValues,
-    const IndexType* const haloIA,
-    const IndexType* const haloJA,
-    const ValueType* const haloValues,
-    const IndexType* const rowIndexes,
-    const IndexType numNonEmptyRows,
-    const ValueType* const oldSolution,
-    const ValueType omega )
-{
-    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( ii < numNonEmptyRows )
-    {
-        IndexType i = ii; // default: rowIndexes is identity
-
-        if ( rowIndexes )
-        {
-            i = rowIndexes[ii];
-        }
-
-        ValueType temp = 0.0;
-        const IndexType rowStart = haloIA[i];
-        const IndexType rowEnd = haloIA[i + 1];
-
-        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
-        {
-            temp += haloValues[jj] * fetchVectorX<ValueType, useTexture>( oldSolution, haloJA[jj] );
-        }
-
-        const ValueType diag = localValues[localIA[i]];
-
-        solution[i] -= temp * ( omega / diag );
-    }
-}
-
-template<typename ValueType>
-void CUDACSRUtils::jacobiHalo(
-    ValueType solution[],
-    const IndexType localIA[],
-    const ValueType localValues[],
-    const IndexType haloIA[],
-    const IndexType haloJA[],
-    const ValueType haloValues[],
-    const IndexType haloRowIndexes[],
-    const ValueType oldSolution[],
-    const ValueType omega,
-    const IndexType numNonEmptyRows )
-{
-    SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
-    SCAI_CHECK_CUDA_ACCESS
-    const int blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
-    bool useTexture = CUDASettings::useTexture();
-    useTexture = false;
-
-    if ( useTexture )
-    {
-        vectorBindTexture( oldSolution );
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-        csr_jacobiHalo_kernel <ValueType, true> <<< dimGrid, dimBlock>>>( solution, localIA, localValues, haloIA,
-                haloJA, haloValues, haloRowIndexes,
-                numNonEmptyRows, oldSolution, omega );
-    }
-    else
-    {
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-        csr_jacobiHalo_kernel<ValueType, false> <<< dimGrid, dimBlock>>>( solution, localIA, localValues, haloIA,
-                haloJA, haloValues, haloRowIndexes, numNonEmptyRows,
-                oldSolution, omega );
-    }
-
-    SCAI_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" )
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" )
-
-    if ( useTexture )
-    {
-        vectorUnbindTexture( oldSolution );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-/*                          Jacobi halo with diagonal array                    */
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture>
-__global__
-void csr_jacobiHaloWithDiag_kernel(
-    ValueType* const solution,
     const ValueType* const localDiagValues,
     const IndexType* const haloIA,
     const IndexType* const haloJA,
@@ -1418,7 +1326,7 @@ void csr_jacobiHaloWithDiag_kernel(
 }
 
 template<typename ValueType>
-void CUDACSRUtils::jacobiHaloWithDiag(
+void CUDACSRUtils::jacobiHalo(
     ValueType solution[],
     const ValueType localDiagValues[],
     const IndexType haloIA[],
@@ -1429,7 +1337,7 @@ void CUDACSRUtils::jacobiHaloWithDiag(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    SCAI_LOG_INFO( logger, "jacobiHaloWithDiag, #non-empty rows = " << numNonEmptyRows )
+    SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
@@ -1440,24 +1348,24 @@ void CUDACSRUtils::jacobiHaloWithDiag(
     if ( useTexture )
     {
         vectorBindTexture( oldSolution );
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
     else
     {
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
 
     if ( useTexture )
     {
-        csr_jacobiHaloWithDiag_kernel <ValueType, true> <<< dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
+        csr_jacobiHalo_kernel <ValueType, true> <<< dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
                 haloJA, haloValues, haloRowIndexes,
                 numNonEmptyRows, oldSolution, omega );
     }
     else
     {
-        csr_jacobiHaloWithDiag_kernel<ValueType, false> <<< dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
+        csr_jacobiHalo_kernel<ValueType, false> <<< dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
                 haloJA, haloValues, haloRowIndexes, numNonEmptyRows,
                 oldSolution, omega );
     }
@@ -1937,8 +1845,7 @@ void matrixMultiplySizesKernel(
     IndexType* chunkPtr,
     IndexType* chunkList,
     IndexType numChunks,
-    bool* hashError,
-    bool diagonalProperty )
+    bool* hashError )
 {
     __shared__ IndexType sHashTable[NUM_ELEMENTS_IN_SHARED];
     __shared__ volatile IndexType sReservedChunks;
@@ -1962,11 +1869,6 @@ void matrixMultiplySizesKernel(
                 sInsertMiss = false;
                 IndexType aColIt = aIA[aRowIt] + laneId;
                 IndexType aColEnd = aIA[aRowIt + 1];
-
-                if ( laneId == 0 && diagonalProperty )
-                {
-                    cIA[aRowIt]++;
-                }
 
                 multHlp_initializeChunks( sHashTable,
                                           chunkPtr,
@@ -1993,7 +1895,7 @@ void matrixMultiplySizesKernel(
                         {
                             colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
 
-                            if ( colB != cudaNIndex && ( !diagonalProperty || colB != aRowIt ) )
+                            if ( colB != cudaNIndex )
                             {
                                 bool inserted = multHlp_insertIndexex( colB,
                                                                        sHashTable,
@@ -2067,14 +1969,13 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType k,
-    bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
     const IndexType bIa[],
     const IndexType bJa[] )
 {
     SCAI_REGION( "CUDA.CSR.matrixMultiplySizes" )
-    SCAI_LOG_INFO( logger, "matrixMultiplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+    SCAI_LOG_INFO( logger, "matrixMultiplySizes for " << numRows << " x " << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
 
     // Reset cIa
@@ -2144,8 +2045,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
         hashTable,
         chunkList,
         numChunks,
-        hashError,
-        diagonalProperty );
+        hashError );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "snyc after matrixMultiplySizesKernel" );
 
@@ -2325,10 +2225,7 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
                                     IndexType* indexChunks,
                                     ValueType* valueChunks,
                                     volatile IndexType chunkList[],
-                                    IndexType numReservedChunks,
-                                    bool diagonalProperty,
-                                    ValueType diagonalElement )
-
+                                    IndexType numReservedChunks )
 {
     // TODO: rename sColA => destinationOffset!
 
@@ -2337,13 +2234,6 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
     IndexType one = 1;
     IndexType hashCol;
     ValueType hashVal;
-
-    if ( diagonalProperty && laneId == 0 )
-    {
-        cJA[rowOffset] = aRowIt;
-        cValues[rowOffset] = diagonalElement * alpha;
-        *sColA = 1;
-    }
 
     if ( numReservedChunks == 0 )
     {
@@ -2436,8 +2326,7 @@ void matrixMultiplyKernel(
     ValueType* valueChunks,
     IndexType* chunkList,
     const IndexType numChunks,
-    bool* hashError,
-    bool diagonalProperty )
+    bool* hashError )
 {
     __shared__ IndexType sHashTableIndexes[NUM_ELEMENTS_IN_SHARED];
     __shared__ ValueType sHashTableValues[NUM_ELEMENTS_IN_SHARED];
@@ -2447,7 +2336,6 @@ void matrixMultiplyKernel(
     __shared__ volatile ValueType sValA;
     __shared__ volatile IndexType sRowIt;
     __shared__ volatile bool sInsertMiss;
-    __shared__ volatile ValueType diagonalElement;
     IndexType globalWarpId = ( blockIdx.x * blockDim.x + threadIdx.x ) / warpSize;
     IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
     IndexType colB;
@@ -2480,11 +2368,6 @@ void matrixMultiplyKernel(
                 IndexType aColIt = aIA[aRowIt] + laneId;
                 IndexType aColEnd = aIA[aRowIt + 1];
 
-                if ( laneId == 0 && diagonalProperty )
-                {
-                    diagonalElement = 0.0;
-                }
-
                 multHlp_initializeChunks( sHashTableIndexes,
                                           indexChunks,
                                           NUM_ELEMENTS_PER_CHUNK,
@@ -2513,28 +2396,21 @@ void matrixMultiplyKernel(
                             colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
                             ValueType valB = bColIt < bColEnd ? bValues[bColIt] : static_cast<ValueType>( 0 );
 
-                            if ( diagonalProperty && colB == aRowIt )
+                            if ( colB != cudaNIndex  )
                             {
-                                diagonalElement += sValA * valB;
-                            }
-                            else
-                            {
-                                if ( colB != cudaNIndex && ( !diagonalProperty || colB != aRowIt ) )
-                                {
-                                    bool inserted = multHlp_insertValues( colB,
-                                                                          sHashTableIndexes,
-                                                                          sHashTableValues,
-                                                                          indexChunks,
-                                                                          valueChunks,
-                                                                          sChunkList,
-                                                                          sReservedChunks,
-                                                                          valB,
-                                                                          sValA );
+                                bool inserted = multHlp_insertValues( colB,
+                                                                      sHashTableIndexes,
+                                                                      sHashTableValues,
+                                                                      indexChunks,
+                                                                      valueChunks,
+                                                                      sChunkList,
+                                                                      sReservedChunks,
+                                                                      valB,
+                                                                      sValA );
 
-                                    if ( !inserted )
-                                    {
-                                        sInsertMiss = true;
-                                    }
+                                if ( !inserted )
+                                {
+                                    sInsertMiss = true;
                                 }
                             }
                         }
@@ -2555,9 +2431,7 @@ void matrixMultiplyKernel(
                                             indexChunks,
                                             valueChunks,
                                             sChunkList,
-                                            sReservedChunks,
-                                            diagonalProperty,
-                                            diagonalElement );
+                                            sReservedChunks );
                 }
                 else
                 {
@@ -2592,7 +2466,6 @@ void CUDACSRUtils::matrixMultiply(
     const IndexType numColumns,
     const IndexType k,
     const ValueType alpha,
-    bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
     const ValueType aValues[],
@@ -2673,8 +2546,7 @@ void CUDACSRUtils::matrixMultiply(
         valueChunks,
         chunkList,
         numChunks,
-        hashError,
-        diagonalProperty );
+        hashError );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync after matrixMultiply kernel" )
 
@@ -3039,7 +2911,6 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
 }
 

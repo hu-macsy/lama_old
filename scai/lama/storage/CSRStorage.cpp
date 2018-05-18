@@ -829,22 +829,12 @@ const HArray<ValueType>& CSRStorage<ValueType>::getValues() const
 template<typename ValueType>
 void CSRStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for CSR, no diagonal property" )
+    bool okay = sparsekernel::CSRUtils::setDiagonal( mValues, value, getNumRows(), getNumColumns(), 
+                                                     mIA, mJA, mSortedRows, getContextPtr() );
 
-    const IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );
-
-    // CSR: diagonal property, diagonal element (i,i) is stored at csrValues[csrIA[i]]
-
+    if ( !okay )
     {
-        static LAMAKernel<UtilKernelTrait::scatterVal<ValueType> > scatterVal;
-        ContextPtr loc = this->getContextPtr();
-        scatterVal.getSupportedContext( loc );
-        SCAI_LOG_INFO( logger, "set diagonal<" << TypeTraits<ValueType>::id() << "> ( " << numDiagonalElements << " ) @ " << *loc )
-        SCAI_CONTEXT_ACCESS( loc )
-        ReadAccess<IndexType> rIA( mIA, loc );
-        WriteAccess<ValueType> wValues( mValues, loc );  // only diagonal elements are set
-
-        scatterVal[loc]( wValues.get(), rIA.get(), value, numDiagonalElements );
+        COMMON_THROWEXCEPTION( "could not set diagonal, not all entries available" )
     }
 }
 
@@ -853,29 +843,12 @@ void CSRStorage<ValueType>::setDiagonal( const ValueType value )
 template<typename ValueType>
 void CSRStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for CSR, no diagonal property" )
+    bool okay = sparsekernel::CSRUtils::setDiagonalV( mValues, diagonal, getNumRows(), getNumColumns(), 
+                                                      mIA, mJA, mSortedRows, getContextPtr() );
 
-    // CSR: diagonal property, diagonal element (i,i) is stored at csrValues[csrIA[i]]
-
-    const IndexType numDiagonalElements = std::min( diagonal.size(), std::min( getNumColumns(), getNumRows() ) );
-
+    if ( !okay )
     {
-        static LAMAKernel<UtilKernelTrait::setScatter<ValueType, ValueType> > setScatter;
-        ContextPtr loc = this->getContextPtr();
-        setScatter.getSupportedContext( loc );
-        SCAI_LOG_INFO( logger, "set diagonal<" << TypeTraits<ValueType>::id() << "> ( " << numDiagonalElements << " ) @ " << *loc )
-        SCAI_CONTEXT_ACCESS( loc )
-        ReadAccess<ValueType> rDiagonal( diagonal, loc );
-        ReadAccess<IndexType> csrIA( mIA, loc );
-        WriteAccess<ValueType> wValues( mValues, loc );     // partial setting
-        //  csrValues[ csrIa[ i ] ] = rDiagonal[ i ];
-        setScatter[loc]( wValues.get(), csrIA.get(), true, rDiagonal.get(), BinaryOp::COPY, numDiagonalElements );
-    }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        SCAI_LOG_TRACE( logger, "CSR after setDiagonal" )
-        print( std::cout );
+        COMMON_THROWEXCEPTION( "could not set diagonal, not all entries available" )
     }
 }
 
@@ -1080,21 +1053,8 @@ void CSRStorage<ValueType>::setColumn(
 template<typename ValueType>
 void CSRStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot get diagonal for CSR, no diagonal property" )
-
-    const IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );
-
-    //  diagonal[0:numDiagonalElements] = mValues[ mIA[ 0:numDiagonalElements] ]
-    //  cannot use HArrayUtils::gather as we do not use full array, neither diagonal nor mIA
-
-    static LAMAKernel<UtilKernelTrait::setGather<ValueType, ValueType> > setGather;
-    ContextPtr loc = this->getContextPtr();
-    setGather.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    WriteOnlyAccess<ValueType> wDiagonal( diagonal, loc, numDiagonalElements );
-    ReadAccess<IndexType> csrIA( mIA, loc );
-    ReadAccess<ValueType> rValues( mValues, loc );
-    setGather[loc]( wDiagonal.get(), rValues.get(), csrIA.get(), BinaryOp::COPY, numDiagonalElements );
+    sparsekernel::CSRUtils::getDiagonal( diagonal, getNumRows(), getNumColumns(),
+                                         mIA, mJA, mValues, mSortedRows, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1806,67 +1766,6 @@ void CSRStorage<ValueType>::jacobiIterate(
 template<typename ValueType>
 void CSRStorage<ValueType>::jacobiIterateHalo(
     HArray<ValueType>& localSolution,
-    const MatrixStorage<ValueType>& localStorage,
-    const HArray<ValueType>& oldHaloSolution,
-    const ValueType omega ) const
-{
-    SCAI_REGION( "Storage.CSR.jacobiIterateHalo" )
-    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
-    SCAI_ASSERT_EQ_DEBUG( getNumRows(), localSolution.size(), "illegal size for array local solution" )
-    SCAI_ASSERT_EQ_DEBUG( getNumRows(), localStorage.getNumRows(), "illegal row size for local storage" )
-    SCAI_ASSERT_EQ_DEBUG( getNumRows(), localStorage.getNumColumns(), "illegal col size for local storage" )
-    SCAI_ASSERT_DEBUG( localStorage.hasDiagonalProperty(), localStorage << ": has not diagonal property" )
-    SCAI_ASSERT_EQ_DEBUG( getNumColumns(), oldHaloSolution.size(), "illegal size for array oldHaloSolution" )
-
-    const CSRStorage<ValueType>* csrLocal;
-
-    if ( localStorage.getFormat() == Format::CSR )
-    {
-        csrLocal = dynamic_cast<const CSRStorage<ValueType>*>( &localStorage );
-        SCAI_ASSERT_DEBUG( csrLocal, "could not cast to CSRStorage " << localStorage )
-    }
-    else
-    {
-        // either copy localStorage to CSR (not recommended) or
-        // just get the diagonal in localValues and set order in localIA
-        COMMON_THROWEXCEPTION( "local stroage is not CSR" )
-    }
-
-    static LAMAKernel<CSRKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
-    ContextPtr loc = this->getContextPtr();
-    jacobiHalo.getSupportedContext( loc );
-    {
-        WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
-        ReadAccess<IndexType> localIA( csrLocal->mIA, loc );
-        ReadAccess<ValueType> localValues( csrLocal->mValues, loc );
-        ReadAccess<IndexType> haloIA( mIA, loc );
-        ReadAccess<IndexType> haloJA( mJA, loc );
-        ReadAccess<ValueType> haloValues( mValues, loc );
-        ReadAccess<ValueType> rOldHaloSolution( oldHaloSolution, loc );
-        const IndexType numNonEmptyRows = mRowIndexes.size();
-        SCAI_LOG_INFO( logger, "#row indexes = " << numNonEmptyRows )
-
-        if ( numNonEmptyRows != 0 )
-        {
-            ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
-            SCAI_CONTEXT_ACCESS( loc )
-            jacobiHalo[loc]( wSolution.get(), localIA.get(), localValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                             haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
-        }
-        else
-        {
-            SCAI_CONTEXT_ACCESS( loc )
-            jacobiHalo[loc]( wSolution.get(), localIA.get(), localValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                             NULL, rOldHaloSolution.get(), omega, getNumRows() );
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CSRStorage<ValueType>::jacobiIterateHalo(
-    HArray<ValueType>& localSolution,
     const HArray<ValueType>& localDiagonal,
     const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
@@ -1878,9 +1777,9 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_EQ_ERROR( getNumRows(), localSolution.size(), "array localSolution has illegal size" )
     SCAI_ASSERT_EQ_ERROR( getNumColumns(), oldHaloSolution.size(), "array old halo solution has illegal size" )
 
-    static LAMAKernel<CSRKernelTrait::jacobiHaloWithDiag<ValueType> > jacobiHaloWithDiag;
+    static LAMAKernel<CSRKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
     ContextPtr loc = this->getContextPtr();
-    jacobiHaloWithDiag.getSupportedContext( loc );
+    jacobiHalo.getSupportedContext( loc );
     {
         WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
         ReadAccess<ValueType> localDiagValues( localDiagonal, loc );
@@ -1895,14 +1794,14 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
         {
             ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
             SCAI_CONTEXT_ACCESS( loc )
-            jacobiHaloWithDiag[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                                     haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
+            jacobiHalo[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+                             haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
         }
         else
         {
             SCAI_CONTEXT_ACCESS( loc )
-            jacobiHaloWithDiag[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                                     NULL, rOldHaloSolution.get(), omega, getNumRows() );
+            jacobiHalo[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+                             NULL, rOldHaloSolution.get(), omega, getNumRows() );
         }
     }
 }
@@ -2134,14 +2033,12 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 
     const IndexType k = a.getNumColumns();
 
-    bool diagonalProperty = m == n;
-
     // no alias, so reuse arrays of this storage directly
 
     sparsekernel::CSRUtils::matrixMultiply( mIA, mJA, mValues, alpha,
                                             a.getIA(), a.getJA(), a.getValues(),
                                             b.getIA(), b.getJA(), b.getValues(), 
-                                            m, n, k, diagonalProperty, getContextPtr() );
+                                            m, n, k, getContextPtr() );
 
     *this = CSRStorage( m, n, std::move( mIA ), std::move( mJA ), std::move( mValues ) );
 }

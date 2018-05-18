@@ -516,6 +516,109 @@ void OpenMPCSRUtils::compress(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPCSRUtils::getDiagonal(
+    ValueType diagonal[],
+    const IndexType numDiagonals,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const bool )
+{
+    #pragma omp parallel for 
+
+    for ( IndexType i = 0; i < numDiagonals; ++i )
+    {
+        diagonal[i] = ValueType( 0 );
+
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        {
+            if ( csrJA[jj] == i )
+            {
+                diagonal[i] = csrValues[jj];
+                break;
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool OpenMPCSRUtils::setDiagonal(
+    ValueType csrValues[],
+    const ValueType diagonal,
+    const IndexType numDiagonals,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const bool )
+{
+    bool okay = true;
+
+    #pragma omp parallel for 
+
+    for ( IndexType i = 0; i < numDiagonals; ++i )
+    {
+        bool found = false;
+
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        {   
+            if ( csrJA[jj] == i )
+            {
+                csrValues[jj] = diagonal;
+                found = true;
+                break;
+            }
+        }
+
+        if ( !found )
+        {
+            okay = false;
+        }
+    }
+
+    return okay;
+}
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool OpenMPCSRUtils::setDiagonalV(
+    ValueType csrValues[],
+    const ValueType diagonal[],
+    const IndexType numDiagonals,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const bool )
+{
+    bool okay = true;
+
+    #pragma omp parallel for 
+
+    for ( IndexType i = 0; i < numDiagonals; ++i )
+    {
+        bool found = false;
+
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+        {
+            if ( csrJA[jj] == i )
+            {
+                csrValues[jj] = diagonal[i];
+                found = true;
+                break;
+            }
+        }
+
+        if ( !found )
+        {
+            okay = false;
+        }
+    }
+
+    return okay;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPCSRUtils::scaleRows(
     ValueType csrValues[],
     const IndexType csrIA[],
@@ -1140,8 +1243,7 @@ void OpenMPCSRUtils::jacobi(
 template<typename ValueType>
 void OpenMPCSRUtils::jacobiHalo(
     ValueType solution[],
-    const IndexType localIA[],
-    const ValueType localValues[],
+    const ValueType localDiagonal[],
     const IndexType haloIA[],
     const IndexType haloJA[],
     const ValueType haloValues[],
@@ -1167,71 +1269,15 @@ void OpenMPCSRUtils::jacobiHalo(
             }
 
             ValueType temp = static_cast<ValueType>( 0.0 );
-            const ValueType diag = localValues[localIA[i]];
+
+            const ValueType diag = localDiagonal[i];
 
             for ( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
             {
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if ( omega == common::Constants::ONE )
-            {
-                solution[i] -= temp / diag;
-            }
-            else
-            {
-                solution[i] -= omega * ( temp / diag );
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPCSRUtils::jacobiHaloWithDiag(
-    ValueType solution[],
-    const ValueType localDiagValues[],
-    const IndexType haloIA[],
-    const IndexType haloJA[],
-    const ValueType haloValues[],
-    const IndexType haloRowIndexes[],
-    const ValueType oldSolution[],
-    const ValueType omega,
-    const IndexType numNonEmptyRows )
-{
-    SCAI_LOG_INFO( logger,
-                   "jacobiHaloWithDiag<" << TypeTraits<ValueType>::id() << ">" << ", #rows (not empty) = " << numNonEmptyRows << ", omega = " << omega );
-    #pragma omp parallel
-    {
-        SCAI_REGION( "OpenMP.CSR.jacabiHaloWithDiag" )
-        #pragma omp for 
-
-        for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
-        {
-            IndexType i = ii; // default: rowIndexes == NULL stands for identity
-
-            if ( haloRowIndexes )
-            {
-                i = haloRowIndexes[ii];
-            }
-
-            ValueType temp = static_cast<ValueType>( 0.0 );
-            const ValueType diag = localDiagValues[i];
-
-            for ( IndexType j = haloIA[i]; j < haloIA[i + 1]; j++ )
-            {
-                temp += haloValues[j] * oldSolution[haloJA[j]];
-            }
-
-            if ( omega == common::Constants::ONE )
-            {
-                solution[i] -= temp / diag;
-            }
-            else
-            {
-                solution[i] -= omega * ( temp / diag );
-            }
+            solution[i] -= omega * ( temp / diag );
         }
     }
 }
@@ -1367,7 +1413,6 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
     const IndexType m,
     const IndexType n,
     const IndexType /* k */,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const IndexType bIA[],
@@ -1375,7 +1420,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 {
     SCAI_REGION( "OpenMP.CSR.matrixMultiplySizes" )
     SCAI_LOG_INFO( logger,
-                   "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
+                   "matrixMutliplySizes for " << m << " x " << n << " matrix" )
 
     // determine the number of entries in output matrix
 
@@ -1414,11 +1459,6 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
                     indexList.pushIndex( k );
                 }
-            }
-
-            if ( diagonalProperty && i < n )
-            {
-                indexList.pushIndex( i );
             }
 
             // so we have now the correct length
@@ -1608,7 +1648,6 @@ void OpenMPCSRUtils::matrixMultiply(
     const IndexType n,
     const IndexType /* k */,
     const ValueType alpha,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const ValueType aValues[],
@@ -1644,16 +1683,6 @@ void OpenMPCSRUtils::matrixMultiply(
 
             IndexType offset = cIA[i];
 
-            if ( diagonalProperty )
-            {
-                // first element is reserved for diagonal element
-
-                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
-                cJA[offset] = i;
-                cValues[offset] = static_cast<ValueType>( 0.0 );
-                ++offset;
-            }
-
             SCAI_LOG_DEBUG( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
 
             // fill in csrJA, csrValues and reset indexList, valueList for next use
@@ -1667,16 +1696,9 @@ void OpenMPCSRUtils::matrixMultiply(
 
                 SCAI_LOG_TRACE( logger, "row " << i << " has entry at col " << col << ", val = " << val << ", offset = " << offset )
 
-                if ( diagonalProperty && col == i )
-                {
-                    cValues[cIA[i]] = alpha * val;
-                }
-                else
-                {
-                    cJA[offset] = col;
-                    cValues[offset] = alpha * val;
-                    ++offset;
-                }
+                cJA[offset] = col;
+                cValues[offset] = alpha * val;
+                ++offset;
             }
 
             // make sure that we have still the right offsets
@@ -1957,6 +1979,9 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sortRows<ValueType> >( sortRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::setDiagonalFirst<ValueType> >( setDiagonalFirst, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::getDiagonal<ValueType> >( getDiagonal, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setDiagonal<ValueType> >( setDiagonal, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setDiagonalV<ValueType> >( setDiagonalV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
@@ -1966,7 +1991,6 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
