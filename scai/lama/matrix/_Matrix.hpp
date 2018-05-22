@@ -722,8 +722,6 @@ protected:
 
     void resetRowDistribution( dmemo::DistributionPtr distribution );
 
-    void resetRowDistributionByFirstColumn();
-
     void checkSettings() const; // check valid member variables
 
     void swapMatrix( _Matrix& other ); // swap member variables of _Matrix

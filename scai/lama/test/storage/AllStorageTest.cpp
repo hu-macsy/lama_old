@@ -175,6 +175,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allocateTest, ValueType, scai_numeric_test_types 
     TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages for setIdentity" )
 
+    HArray<ValueType> zeroColumn( numColumns, zero );
+
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
@@ -188,16 +190,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allocateTest, ValueType, scai_numeric_test_types 
         for ( IndexType i = 0; i < numRows; ++i )
         {
             storage.getRow( row, i );
-            hmemo::ReadAccess<ValueType> rRow( row );
 
-            for ( IndexType j = 0; j < numColumns; ++j )
-            {
-                BOOST_CHECK_EQUAL( zero, rRow[j] );
-            }
+            BOOST_TEST( hostReadAccess( row ) == hostReadAccess( zeroColumn ), per_element() );
         }
 
         storage.clear();
         // verify that empty matrix has diagonal property
+ 
+        if ( !storage.hasDiagonalProperty() )
+        {
+            SCAI_LOG_FATAL( logger, storage << ": not diagonal property" ) 
+        }
+
         BOOST_CHECK( storage.hasDiagonalProperty() );
         storage.allocate( 1, 1 );
 

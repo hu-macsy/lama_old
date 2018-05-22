@@ -123,15 +123,7 @@ COOStorage<ValueType>::COOStorage( IndexType numRows, IndexType numColumns, Cont
 template<typename ValueType>
 void COOStorage<ValueType>::verifySorting()
 {
-    bool isSorted = COOUtils::isSorted( mIA, mJA, getContextPtr() );
-
-    if ( !isSorted )
-    {
-        SCAI_LOG_ERROR( logger, "sort of COO arrays required" )
-        COOUtils::sort( mIA, mJA, mValues );
-        COOUtils::unique( mIA, mJA, mValues );
-    }
-
+    COOUtils::normalize( mIA, mJA, mValues, common::BinaryOp::COPY, getContextPtr() );
     _MatrixStorage::resetDiagonalProperty();
 }
 
@@ -334,6 +326,8 @@ void COOStorage<ValueType>::clear()
     mIA.clear();
     mJA.clear();
     mValues.clear();
+
+    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -572,14 +566,7 @@ void COOStorage<ValueType>::conj()
 template<typename ValueType>
 void COOStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 {
-    static LAMAKernel<COOKernelTrait::scaleRows<ValueType, ValueType> > cooScaleRows;
-    ContextPtr loc = this->getContextPtr();
-    cooScaleRows.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> rValues( values, loc );
-    WriteAccess<ValueType> wValues( mValues, loc );  // update
-    ReadAccess<IndexType> rIa( mIA, loc );
-    cooScaleRows[loc]( wValues.get(), rValues.get(), rIa.get(), mValues.size() );
+    COOUtils::scaleRows( mValues, mIA, values, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1265,8 +1252,7 @@ void COOStorage<ValueType>::matrixPlusMatrixImpl(
 
     // sort it and make it unique
 
-    sparsekernel::COOUtils::sort( mIA, mJA, mValues );
-    sparsekernel::COOUtils::unique( mIA, mJA, mValues, BinaryOp::ADD );
+    COOUtils::normalize( mIA, mJA, mValues, BinaryOp::ADD, getContextPtr() );
 
     SCAI_LOG_INFO( logger, "COO matrix add: nnz = " << getNumValues() << " from " << nnz1 << " + " << nnz2 )
 }

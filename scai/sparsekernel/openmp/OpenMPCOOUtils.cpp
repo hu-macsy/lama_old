@@ -595,6 +595,9 @@ void OpenMPCOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register COOUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
+    KernelRegistry::set<COOKernelTrait::getDiagonal<ValueType> >( getDiagonal, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setDiagonal<ValueType> >( setDiagonal, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setDiagonalV<ValueType> >( setDiagonalV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }

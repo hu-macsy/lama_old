@@ -279,17 +279,24 @@ __global__ void hasDiagonalProperty_kernel(
         return;
     }
 
-    if ( ia[i] == ia[i + 1] )
+    bool found = false;
+
+    for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
     {
-        *hasProperty = false;
+        if ( ja[jj] == i )
+        {
+            found = true;
+            break;
+         }
     }
-    else if ( ja[ia[i]] != i )
+ 
+    if ( !found )
     {
         *hasProperty = false;
     }
 }
 
-bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] )
+bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[], const bool )
 {
     SCAI_REGION( "CUDA.CSRUtils.hasDiagonalProperty" )
 

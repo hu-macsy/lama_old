@@ -33,7 +33,9 @@
  */
 
 #include <scai/sparsekernel/COOUtils.hpp>
+
 #include <scai/sparsekernel/COOKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -147,7 +149,8 @@ template<typename ValueType>
 void COOUtils::sort(
     HArray<IndexType>& ia,
     HArray<IndexType>& ja,
-    HArray<ValueType>& values )
+    HArray<ValueType>& values,
+    ContextPtr )
 {
     using namespace utilskernel;
 
@@ -211,7 +214,8 @@ void COOUtils::unique(
     HArray<IndexType>& ia,
     HArray<IndexType>& ja,
     HArray<ValueType>& values,
-    common::BinaryOp op )
+    common::BinaryOp op,
+    ContextPtr )
 
 {
     const IndexType nnz = values.size();
@@ -254,6 +258,25 @@ void COOUtils::unique(
     ia.resize( nnzU );
     ja.resize( nnzU );
     values.resize( nnzU );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOUtils::normalize(
+    hmemo::HArray<IndexType>& cooIA,
+    hmemo::HArray<IndexType>& cooJA,
+    hmemo::HArray<ValueType>& cooValues,
+    common::BinaryOp op,
+    ContextPtr prefLoc )
+{
+    if ( COOUtils::isSorted( cooIA, cooJA, prefLoc ) )
+    {
+        return;
+    }
+
+    sort( cooIA, cooJA, cooValues, prefLoc );
+    unique( cooIA, cooJA, cooValues, op, prefLoc );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -312,7 +335,7 @@ void COOUtils::setDiagonalV(
 
     static LAMAKernel<COOKernelTrait::setDiagonalV<ValueType>> kSetDiagonalV;
 
-    // choose Context where all kernel routines are available
+    // choose context where kernel routines is available
 
     ContextPtr loc = prefLoc;
     kSetDiagonalV.getSupportedContext( loc );
@@ -348,7 +371,7 @@ void COOUtils::setDiagonal(
 
     static LAMAKernel<COOKernelTrait::setDiagonal<ValueType>> kSetDiagonal;
 
-    // choose Context where all kernel routines are available
+    // choose context where kernel routines is available
 
     ContextPtr loc = prefLoc;
     kSetDiagonal.getSupportedContext( loc );
@@ -434,16 +457,91 @@ IndexType COOUtils::getValuePos(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void COOUtils::scaleRows(
+    hmemo::HArray<ValueType>& values,
+    const hmemo::HArray<IndexType>& ia,
+    const hmemo::HArray<ValueType>& scale,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType numValues = values.size();
+
+    static LAMAKernel<COOKernelTrait::scaleRows<ValueType, ValueType> > kScaleRows;
+
+    ContextPtr loc = prefLoc;
+
+    kScaleRows.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<ValueType> rValues( scale, loc );
+    WriteAccess<ValueType> wValues( values, loc );  // update
+    ReadAccess<IndexType> rIa( ia, loc );
+    kScaleRows[loc]( wValues.get(), rValues.get(), rIa.get(), numValues );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOUtils::binaryOp(
+    hmemo::HArray<IndexType>& cIA,
+    hmemo::HArray<IndexType>& cJA,
+    hmemo::HArray<ValueType>& cValues,
+    const hmemo::HArray<IndexType>& aIA,
+    const hmemo::HArray<IndexType>& aJA,
+    const hmemo::HArray<ValueType>& aValues,
+    const hmemo::HArray<IndexType>& bIA,
+    const hmemo::HArray<IndexType>& bJA,
+    const hmemo::HArray<ValueType>& bValues,
+    const IndexType m,
+    const IndexType n,
+    const common::BinaryOp op,
+    const hmemo::ContextPtr prefLoc )
+{
+    if ( m == 0 || n == 0 )
+    {
+        cIA.clear();
+        cJA.clear();
+        cValues.clear();
+        return;
+    }
+
+    // convert COO ia arrays to offsets array and use CSR utility for binaryOp
+    // Allows also for better OpenMP/CUDA parallelization
+
+    HArray<IndexType> aOffsets;
+    HArray<IndexType> bOffsets;
+    HArray<IndexType> cOffsets;
+
+    convertCOO2CSR( aOffsets, aIA, m, prefLoc );
+    convertCOO2CSR( bOffsets, bIA, m, prefLoc );
+
+    CSRUtils::binaryOp( cOffsets, cJA, cValues, 
+                        aOffsets, aJA, aValues,
+                        bOffsets, bJA, bValues,
+                        m, n, op, prefLoc );
+
+    convertCSR2COO( cIA, cOffsets, cJA.size(), prefLoc );
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define COOUTILS_SPECIFIER( ValueType )            \
+    template void COOUtils::normalize(             \
+            HArray<IndexType>&,                    \
+            HArray<IndexType>&,                    \
+            HArray<ValueType>&,                    \
+            common::BinaryOp,                      \
+            ContextPtr );                          \
     template void COOUtils::unique(                \
             HArray<IndexType>&,                    \
             HArray<IndexType>&,                    \
             HArray<ValueType>&,                    \
-            common::BinaryOp );                    \
+            common::BinaryOp,                      \
+            ContextPtr );                          \
     template void COOUtils::sort(                  \
             HArray<IndexType>&,                    \
             HArray<IndexType>&,                    \
-            HArray<ValueType>& );                  \
+            HArray<ValueType>&,                    \
+            ContextPtr );                          \
     template void COOUtils::getDiagonal(           \
             HArray<ValueType>&,                    \
             const IndexType,                       \
@@ -467,6 +565,11 @@ IndexType COOUtils::getValuePos(
             const IndexType,                       \
             const HArray<IndexType>&,              \
             const HArray<IndexType>&,              \
+            ContextPtr );                          \
+    template void COOUtils::scaleRows(             \
+            HArray<ValueType>&,                    \
+            const HArray<IndexType>&,              \
+            const HArray<ValueType>&,              \
             ContextPtr );                          \
 
 // selectComplexPart uses Math::real and Math::imag that is not defined for IndexType

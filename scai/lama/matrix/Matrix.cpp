@@ -846,7 +846,7 @@ void Matrix<ValueType>::fillFromAssembly( const MatrixAssembly<ValueType>& assem
 
     MatrixStorage<ValueType>& localStorage = const_cast<MatrixStorage<ValueType>&>( getLocalStorage() );
 
-    COOStorage<ValueType> cooLocal = assembly.buildLocalCOO( *rowDist, numColumns );
+    COOStorage<ValueType> cooLocal = assembly.buildLocalCOO( *rowDist, numColumns, op );
 
     hmemo::HArray<IndexType> cooIA;
     hmemo::HArray<IndexType> cooJA;

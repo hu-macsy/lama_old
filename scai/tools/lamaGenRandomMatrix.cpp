@@ -121,7 +121,7 @@ void generate( const IndexType nrows, const IndexType ncols, const float fillRat
         }
     }
 
-    auto m = convert<CSRSparseMatrix<ValueType>>( assembly.buildGlobalCOO( nrows, ncols ) );
+    auto m = convert<CSRSparseMatrix<ValueType>>( assembly.buildGlobalCOO( nrows, ncols, common::BinaryOp::COPY ) );
 
     DenseVector<ValueType> x;
     DenseVector<ValueType> b;

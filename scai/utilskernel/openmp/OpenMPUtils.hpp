@@ -264,6 +264,48 @@ public:
                                const BucketType nBuckets,
                                const BucketType bucketMap[],
                                const IndexType n );
+
+    /** OpenMP implementation of SparseKernelTrait::countAddSparse */
+
+    static IndexType countAddSparse(
+        const IndexType indexes1[],
+        const IndexType n1,
+        const IndexType indexes2[],
+        const IndexType n2 );
+
+    /** OpenMP implementation of SparseKernelTrait::addSparse */
+
+    template<typename ValueType>
+    static IndexType addSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const ValueType zero1,
+        const IndexType n1,
+        const ValueType alpha,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const ValueType zero2,
+        const IndexType n2,
+        const ValueType beta );
+
+    /** OpenMP implementation of SparseKernelTrait::binopSparse */
+
+    template<typename ValueType>
+    static IndexType binopSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const ValueType zero1,
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const ValueType zero2,
+        const IndexType n2,
+        const common::BinaryOp op );
+
 private:
 
     /** Optimized reduce for common::BinaryOp::ADD as reduction operator. */
@@ -313,47 +355,6 @@ private:
         const IndexType n,
         const SourceType zero,
         const SourceType eps );
-
-    /** OpenMP implementation of SparseKernelTrait::countAddSparse */
-
-    static IndexType countAddSparse(
-        const IndexType indexes1[],
-        const IndexType n1,
-        const IndexType indexes2[],
-        const IndexType n2 );
-
-    /** OpenMP implementation of SparseKernelTrait::addSparse */
-
-    template<typename ValueType>
-    static IndexType addSparse(
-        IndexType indexes[],
-        ValueType values[],
-        const IndexType indexes1[],
-        const ValueType values1[],
-        const ValueType zero1,
-        const IndexType n1,
-        const ValueType alpha,
-        const IndexType indexes2[],
-        const ValueType values2[],
-        const ValueType zero2,
-        const IndexType n2,
-        const ValueType beta );
-
-    /** OpenMP implementation of SparseKernelTrait::binopSparse */
-
-    template<typename ValueType>
-    static IndexType binopSparse(
-        IndexType indexes[],
-        ValueType values[],
-        const IndexType indexes1[],
-        const ValueType values1[],
-        const ValueType zero1,
-        const IndexType n1,
-        const IndexType indexes2[],
-        const ValueType values2[],
-        const ValueType zero2,
-        const IndexType n2,
-        const common::BinaryOp op );
 
     /** OpenMP implementation of SparseKernelTrait::allCompareSparse */
 

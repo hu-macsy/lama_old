@@ -442,13 +442,16 @@ void CSRUtils::binaryOp(
         return;
     }
 
-    static LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
+    SCAI_ASSERT_DEBUG( hasSortedRows( aIA, aJA, m, n, false, prefLoc ), "binaryOp: input storage a not sorted" );
+    SCAI_ASSERT_DEBUG( hasSortedRows( bIA, bJA, m, n, false, prefLoc ), "binaryOp: input storage b not sorted" );
+
+    static LAMAKernel<CSRKernelTrait::binaryOpSizes> binaryOpSizes;
     static LAMAKernel<CSRKernelTrait::binaryOp<ValueType> > binaryOp;
 
     // choose Context where all kernel routines are available
 
     ContextPtr loc = prefLoc;
-    binaryOp.getSupportedContext( loc, matrixAddSizes );
+    binaryOp.getSupportedContext( loc, binaryOpSizes );
 
     ReadAccess<IndexType> rAIA( aIA, loc );
     ReadAccess<IndexType> rAJA( aJA, loc );
@@ -462,9 +465,9 @@ void CSRUtils::binaryOp(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    IndexType nnz = matrixAddSizes[loc] ( wCIA.get(), m, n,
-                                          rAIA.get(), rAJA.get(),
-                                          rBIA.get(), rBJA.get() );
+    IndexType nnz = binaryOpSizes[loc] ( wCIA.get(), m, n,
+                                         rAIA.get(), rAJA.get(),
+                                         rBIA.get(), rBJA.get() );
 
     WriteOnlyAccess<IndexType> wCJA( cJA, loc, nnz );
     WriteOnlyAccess<ValueType> wCValues( cValues, loc, nnz );
@@ -473,6 +476,33 @@ void CSRUtils::binaryOp(
                    m, n, 
                    rAIA.get(), rAJA.get(), rAValues.get(), 
                    rBIA.get(), rBJA.get(), rBValues.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
+bool CSRUtils::hasDiagonalProperty(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<IndexType>& ia,
+    const hmemo::HArray<IndexType>& ja,
+    const bool isSorted,
+    hmemo::ContextPtr prefLoc )
+{
+    IndexType numDiagonals = common::Math::min( numRows, numColumns );
+
+    static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> kHasDiagonalProperty;
+
+    // choose Context where all kernel routines are available
+
+    ContextPtr loc = prefLoc;
+    kHasDiagonalProperty.getSupportedContext( loc );
+
+    ReadAccess<IndexType> rIA( ia, loc );
+    ReadAccess<IndexType> rJA( ja, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    return kHasDiagonalProperty[loc]( numDiagonals, rIA.get(), rJA.get(), isSorted );
 }
 
 /* -------------------------------------------------------------------------- */

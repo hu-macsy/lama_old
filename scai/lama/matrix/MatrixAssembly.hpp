@@ -112,16 +112,18 @@ public:
     /**
      *  @brief Get the assembled data in COO format localized for a given distribution
      *
-     *  Be careful as the returned coo storage can have multiple entries for the same matrix position.
+     *  @param[in] dist specifies the distribution of the rows 
+     *  @param[in] numColums is the number of rows
+     *  @param[in] op specifies how to deal with multiple entries for the same matrix position.
      */
-    COOStorage<ValueType> buildLocalCOO( const dmemo::Distribution& dist, const IndexType numColumns ) const;
+    COOStorage<ValueType> buildLocalCOO( const dmemo::Distribution& dist, const IndexType numColumns, common::BinaryOp op ) const;
 
     /**
      *  @brief Get the assembled data in COO format replicated on all processors
      *
      *  Be careful as the returned coo storage can have multiple entries for the same matrix position.
      */
-    COOStorage<ValueType> buildGlobalCOO( const IndexType numRows, const IndexType numColumns ) const;
+    COOStorage<ValueType> buildGlobalCOO( const IndexType numRows, const IndexType numColumns, common::BinaryOp op ) const;
 
     /**
      *  Override Printable::writeAt 

@@ -701,6 +701,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, scai_numeric_test_types )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     // Note: we sort coordinates and not values, so this test works also for complex numbers
 
     // Here is the unsorted COO data
@@ -715,7 +717,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, scai_numeric_test_types )
     HArray<IndexType> ja1(     { 0, 0, 1, 2, 1, 1, 1, 1, 2 } );
     HArray<ValueType> values1( { 3, 7, 9, 8, 2, 5, 6, 4, 1 } );
 
-    COOUtils::sort( ia, ja, values );
+    COOUtils::sort( ia, ja, values, testContext );
 
     BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( ia1 ), boost::test_tools::per_element() );
     BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( ja1 ), boost::test_tools::per_element() );
@@ -726,6 +728,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( uniqueTest, ValueType, scai_numeric_test_types )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     // Here is the sorted COO data with double entries
 
     HArray<IndexType> ia(     { 0, 0, 0, 0, 1, 1, 1, 2, 2 } );
@@ -738,7 +742,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( uniqueTest, ValueType, scai_numeric_test_types )
     HArray<IndexType> ja1(     { 0, 1, 2, 1, 1, 2 } );
     HArray<ValueType> values1( { 7, 9, 8, 6, 4, 1 } );
 
-    COOUtils::unique( ia, ja, values );
+    COOUtils::unique( ia, ja, values, common::BinaryOp::COPY, testContext );
 
     BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( ia1 ), boost::test_tools::per_element() );
     BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( ja1 ), boost::test_tools::per_element() );
@@ -749,6 +753,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( uniqueTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( uniqueOpTest, ValueType, scai_numeric_test_types )
 {
+    ContextPtr testContext = ContextFix::testContext;
+
     // Here is the sorted COO data with double entries
 
     HArray<IndexType> ia(     { 0, 0, 0, 0, 1, 1, 1, 2, 2 } );
@@ -761,11 +767,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( uniqueOpTest, ValueType, scai_numeric_test_types 
     HArray<IndexType> ja1(     {  0, 1, 2,  1, 1, 2 } );
     HArray<ValueType> values1( { 10, 9, 8, 13, 4, 1 } );
 
-    COOUtils::unique( ia, ja, values, common::BinaryOp::ADD );
+    COOUtils::unique( ia, ja, values, common::BinaryOp::ADD, testContext );
 
     BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( ia1 ), boost::test_tools::per_element() );
     BOOST_TEST( hostReadAccess( ja ) == hostReadAccess( ja1 ), boost::test_tools::per_element() );
     BOOST_TEST( hostReadAccess( values ) == hostReadAccess( values1 ), boost::test_tools::per_element() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( diagonalTest )
+{
+    typedef DefaultReal ValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    //   Input storage:
+    //   -------------
+    //    1.0   -   2.0  1.1  - 
+    //    0.5  0.0   -    -   - 
+    //     -    -   3.0   -   - 
+    //     -   0.0  4.0  0.0 1.0
+
+    HArray<IndexType> ia(     {   0,   0,   0,   1,   1,   2,   3,  3,  3,   3 }, testContext );
+    HArray<IndexType> ja(     {   0,   2,   3,   0,   1,   2,   1,  2,  3,   4   },  testContext );
+    HArray<ValueType> values( { 1.0, 2.0, 1.1, 0.5, 0.0, 3.0, 0.0, 4.0, 0.0, 1.0   },  testContext );
+
+    HArray<ValueType> expDiag( { 1.0, 0.0, 3.0, 0.0 } );
+
+    const IndexType m = 4;
+    const IndexType n = 5;
+
+    HArray<ValueType> diag;
+
+    COOUtils::getDiagonal( diag, m, n, ia, ja, values, testContext );
+
+    BOOST_TEST( hostReadAccess( diag ) == hostReadAccess( expDiag ), per_element() );
+
+    HArray<ValueType> newDiag( { 1.2, 2.0, 3.3, 0.5 } );
+
+    COOUtils::setDiagonalV( values, newDiag, m, n, ia, ja, testContext );
+
+    COOUtils::getDiagonal( diag, m, n, ia, ja, values, testContext );
+
+    BOOST_TEST( hostReadAccess( diag ) == hostReadAccess( newDiag ), per_element() );
+
+    ValueType diagVal = 1;
+
+    COOUtils::setDiagonal( values, diagVal, m, n, ia, ja, testContext );
+
+    COOUtils::getDiagonal( diag, m, n, ia, ja, values, testContext );
+
+    BOOST_TEST( hostReadAccess( diag ) == hostReadAccess( HArray<ValueType>( m, diagVal) ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */

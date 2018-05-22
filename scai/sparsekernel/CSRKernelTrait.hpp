@@ -396,6 +396,35 @@ struct CSRKernelTrait
         }
     };
 
+    struct binaryOpSizes
+    {
+        /** This method computes the row sizes for result matrix C of matrix add A + B
+         *
+         *  @param[out] cIa array of length numRows, will contain number of entries in each row for C
+         *  @param[in]  numRows number of rows for matrix A and B
+         *  @param[in]  numColumns number of columns for matrix A and B
+         *  @param[in]  aIA, aJA are the index arrays of matrix A
+         *  @param[in]  bIA, bJA are the index arrays of matrix B
+         *
+         *  Note: filling the result matrix must use the same flag for diagonalProperty
+         *        otherwise the row sizes/offsets will not match
+         */
+
+        typedef IndexType ( *FuncType ) (
+            IndexType cIa[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType aIA[],
+            const IndexType aJA[],
+            const IndexType bIA[],
+            const IndexType bJA[] );
+
+        static const char* getId()
+        {
+            return "CSR.binaryOpSizes";
+        }
+    };
+
     struct matrixMultiplySizes
     {
         /** This method computes the row sizes for result matrix C of matrix multiplication A x B
@@ -432,6 +461,7 @@ struct CSRKernelTrait
          *  @param[in] numDiagonals  number of first rows for which diagonal property is checked.
          *  @param[in] csrIA         offset array for the rows
          *  @param[in] csrJA         column indexes
+         *  @param[in] isSorted      if true the column indexes of each row are sorted
          *  @return                  true if diagonal property is given
          *
          *  The diagonal property is given if the first column index in the row is same as the row index.
@@ -439,7 +469,8 @@ struct CSRKernelTrait
         typedef bool ( *FuncType ) (
             const IndexType numDiagonals,
             const IndexType csrIA[],
-            const IndexType csrJA[] );
+            const IndexType csrJA[],
+            bool isSorted );
 
         static const char* getId()
         {

@@ -524,59 +524,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkSymmetryTest, ValueType, scai_numeric_test_t
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
-{
-    const IndexType n1 = 3;
-    const IndexType n2 = 4;
-
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-
-    _Matrices allMatrices( context );    // is created by factory
-
-    TestDistributions testDistributions( n1 * n2 );
-    DistributionPtr repDist( new NoDistribution( n1 * n2 ) );
-
-    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for checkSymmetry" )
-
-    for ( size_t s = 0; s < allMatrices.size(); ++s )
-    {
-        _Matrix& matrix = *allMatrices[s];
-
-        if ( matrix.getMatrixKind() == MatrixKind::DENSE )
-        {
-            continue;   // Dense does not support first column indexes
-        }
-
-        if ( matrix.getFormat() == Format::DIA )
-        {
-            continue;   // DIA does not support first column indexes
-        }
-
-        for ( size_t i = 0; i < testDistributions.size(); ++i )
-        {
-            DistributionPtr dist = testDistributions[i];
-
-            matrix.clear();
-
-            MatrixCreator::buildPoisson2D( matrix, 5, n1, n2 );
-
-            matrix.setDiagonalProperty();
-
-            matrix.redistribute( dist, repDist );
-
-            HArray<IndexType> myGlobalIndexes1;
-            HArray<IndexType> myGlobalIndexes2;
-
-            matrix.getLocalStorage().getFirstColumnIndexes( myGlobalIndexes1 );
-            dist->getOwnedIndexes( myGlobalIndexes2 );
-
-            BOOST_TEST( hostReadAccess( myGlobalIndexes1 ) == hostReadAccess( myGlobalIndexes2 ), per_element() );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n1 = 3;
@@ -1066,7 +1013,7 @@ BOOST_AUTO_TEST_CASE( disassembleTest )
 
                 matrix.disassemble( assembly );
 
-                COOStorage<ValueType> coo = assembly.buildGlobalCOO( m, n );
+                COOStorage<ValueType> coo = assembly.buildGlobalCOO( m, n, common::BinaryOp::COPY );
 
                 HArray<IndexType> cooIA = coo.getIA();
                 HArray<IndexType> cooJA = coo.getJA();
@@ -1075,7 +1022,7 @@ BOOST_AUTO_TEST_CASE( disassembleTest )
                 BOOST_CHECK_EQUAL( cooIA.size(), cooJA.size() );
                 BOOST_CHECK_EQUAL( cooIA.size(), cooValues.size() );
 
-                sparsekernel::COOUtils::sort( cooIA, cooJA, cooValues );
+                sparsekernel::COOUtils::sort( cooIA, cooJA, cooValues, context );
 
                 BOOST_TEST( hostReadAccess( cooIA ) == hostReadAccess( ia ), per_element() );
                 BOOST_TEST( hostReadAccess( cooJA ) == hostReadAccess( ja ), per_element() );

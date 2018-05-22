@@ -222,6 +222,17 @@ public:
         const common::BinaryOp op,
         hmemo::ContextPtr loc );
 
+    /** 
+     *  @brief Check if all diagonal elements are available
+     */
+    static bool hasDiagonalProperty(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        const bool isSorted,
+        hmemo::ContextPtr loc );
+
     /** @brief Get the diagonal of CSR storage
      *
      *  This routine is very efficient if diagonal elements are stored first.

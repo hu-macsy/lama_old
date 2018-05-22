@@ -134,7 +134,11 @@ public:
      *  @param[in] csrJA is array with column indexes
      */
 
-    static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] );
+    static bool hasDiagonalProperty( 
+        const IndexType numDiagonals, 
+        const IndexType csrIA[], 
+        const IndexType csrJA[], 
+        const bool isSorted );
 
     /** Host implementation for CSRKernelTrait::sortRowElements using OpenMP parallelization. */
 
@@ -299,6 +303,17 @@ public:
     /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
+        IndexType cSizes[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType aIA[],
+        const IndexType aJA[],
+        const IndexType bIA[],
+        const IndexType bJA[] );
+
+    /** Implementation for CSRKernelTrait::Offsets::binaryOpSizes  */
+
+    static IndexType binaryOpSizes(
         IndexType cSizes[],
         const IndexType numRows,
         const IndexType numColumns,

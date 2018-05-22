@@ -346,62 +346,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( getFirstColTest )
-{
-    typedef SCAI_TEST_TYPE ValueType;    // value type does not matter at all here
-
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
-    TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
-
-    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
-    {
-        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
-
-        const IndexType numRows = 4;
-        const IndexType numColumns = 8;
-        const IndexType ia[] = { 0,    2,       5, 6,    8 };
-        const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
-        const IndexType firstCols[] = { 1, 3, 5, 7 };
-        const IndexType numValues = ia[numRows];
-
-        HArray<IndexType> csrIA( numRows + 1, ia, context );
-        HArray<IndexType> csrJA( numValues, ja, context );
-        HArray<ValueType> csrValues( numValues, ValueType( 1 ), context );
-
-        storage.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
-
-        SCAI_LOG_INFO( logger, "getFirstColTest, storage = " << storage )
-
-        // we check both, base class and derived class method
-
-        HArray<IndexType> firstColIndexes1;
-        HArray<IndexType> firstColIndexes2;
-
-        if (     storage.getFormat() == Format::DENSE
-                 ||  storage.getFormat() == Format::DIA  )
-        {
-            BOOST_CHECK_THROW(
-            { storage.getFirstColumnIndexes( firstColIndexes1 ); },
-            Exception );
-            continue;
-        }
-
-        storage.getFirstColumnIndexes( firstColIndexes1 );
-        storage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
-
-        BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
-        BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( firstColIndexes1[i], firstCols[i] );
-            BOOST_CHECK_EQUAL( firstColIndexes2[i], firstCols[i] );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 BOOST_AUTO_TEST_CASE( inverseTestIdentity )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
@@ -1267,6 +1211,11 @@ BOOST_AUTO_TEST_CASE( fillCOOTest )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
 
+        if ( storage.getFormat() != Format::COO )
+        {
+            continue;  // REMOVE
+        }
+
         storage.assign( denseInput );
 
         BOOST_CHECK_THROW(
@@ -1287,7 +1236,7 @@ BOOST_AUTO_TEST_CASE( fillCOOTest )
         storage.assign( denseInput );
         storage.fillCOO( ia, ja, values, common::BinaryOp::COPY );
 
-        SCAI_LOG_DEBUG( logger, "storage filled (COPY) = " << storage )
+        SCAI_LOG_ERROR( logger, "storage filled (COPY) = " << storage )
 
         denseStorage.assign( storage );
 
@@ -1297,7 +1246,7 @@ BOOST_AUTO_TEST_CASE( fillCOOTest )
         storage.assign( denseInput );
         storage.fillCOO( ia, ja, values, common::BinaryOp::ADD );
 
-        SCAI_LOG_DEBUG( logger, "storage filled (ADD) = " << storage )
+        SCAI_LOG_ERROR( logger, "storage filled (ADD) = " << storage )
 
         denseStorage.assign( storage );
 

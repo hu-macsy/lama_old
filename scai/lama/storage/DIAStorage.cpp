@@ -877,7 +877,8 @@ void DIAStorage<ValueType>::setCSRDataImpl(
         }
     }
 
-    mDiagonalProperty = hasDiagonalProperty[loc]( numRows, csrIA.get(), csrJA.get() );
+    mDiagonalProperty = hasDiagonalProperty[loc]( numRows, csrIA.get(), csrJA.get(), false );
+
     // mDiagonalProperty forces upper diagonal to be the first one
     setOffsets( maxNumDiagonals, upperDiagonalUsed.get(), lowerDiagonalUsed.get() );
 

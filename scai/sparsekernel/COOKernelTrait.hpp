@@ -180,6 +180,27 @@ struct COOKernelTrait
         }
     };
 
+    struct ia2offsets
+    {
+        /** Routine for conversion of COO ia array to CSR offsets array
+         *
+         *  @param[out] csrIA is the CSR row offset array, size is numRows+1
+         *  @param[in] numRows number of rows
+         *  @param[in] cooIA is the 'sorted' array with all row indexes
+         *  @param[in] numValues number of non-zero values, size of cooIA
+         */
+        typedef void ( *FuncType )(
+            IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType cooIA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.ia2offsets";
+        }
+    };
+
     template<typename COOValueType, typename OtherValueType>
     struct scaleRows
     {
@@ -312,7 +333,7 @@ struct COOKernelTrait
             const IndexType cooIA[],
             const IndexType cooJA[],
             const ValueType cooValues[],
-            const bool numValues );
+            const IndexType numValues );
 
         static const char* getId()
         {
@@ -332,7 +353,7 @@ struct COOKernelTrait
             const IndexType numDiagonals,
             const IndexType cooIA[],
             const IndexType cooJA[],
-            const bool numValues );
+            const IndexType numValues );
 
         static const char* getId()
         {
@@ -352,7 +373,7 @@ struct COOKernelTrait
             const IndexType numDiagonals,
             const IndexType cooIA[],
             const IndexType cooJA[],
-            const bool numValues );
+            const IndexType numValues );
 
         static const char* getId()
         {

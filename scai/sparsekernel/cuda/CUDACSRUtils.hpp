@@ -82,7 +82,11 @@ public:
         const IndexType csrJA[],
         const IndexType numValues );
 
-    static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] );
+    static bool hasDiagonalProperty( 
+        const IndexType numDiagonals, 
+        const IndexType csrIA[], 
+        const IndexType csrJA[],
+        const bool );
 
     /** Matrix transpose for CSR matrices on CUDA device. */
 

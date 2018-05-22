@@ -55,15 +55,19 @@ public:
     /**
      *  @brief Convert the COO ia array to CSR ia offset array
      *
+     *  @param[out] csrIA is the offset array
+     *  @param[in]  cooIA is the 'sorted' array with the row indexes
+     *  @param[in]  numRows number of rows
+     *
      *  \code
      *    cooIA = { 0, 0, 1, 1, 1, 2, 4, 4, 5, 6, 6 } -> csrIA = { 0, 2, 5, 6, 6, 8, 9, 11 } 
      *  \endcode
      */
     static void convertCOO2CSR( 
         hmemo::HArray<IndexType>& csrIA, 
-	const hmemo::HArray<IndexType>& cooIA, 
-	const IndexType numRows,
-	hmemo::ContextPtr loc );
+        const hmemo::HArray<IndexType>& cooIA, 
+        const IndexType numRows,
+        hmemo::ContextPtr loc );
 
     /**
      *  @brief convert the CSR offset array to an COO ia array
@@ -78,9 +82,9 @@ public:
      */
     static void convertCSR2COO( 
         hmemo::HArray<IndexType>& cooIA, 
-	const hmemo::HArray<IndexType>& csrIA, 
+        const hmemo::HArray<IndexType>& csrIA, 
         const IndexType nnz,
-	hmemo::ContextPtr loc );
+        hmemo::ContextPtr loc );
 
     /**
      *  @brief check if COO arrays ia and ja are sorted.
@@ -91,6 +95,19 @@ public:
         hmemo::ContextPtr prefContext );
 
     /** 
+     *  @brief normalize COO data
+     *
+     *  Normalizes COO data, sorts it and eliminates double entries.
+     */
+    template<typename ValueType>
+    static void normalize(
+        hmemo::HArray<IndexType>& cooIA,
+        hmemo::HArray<IndexType>& cooJA,
+        hmemo::HArray<ValueType>& cooValues,
+        common::BinaryOp,
+        hmemo::ContextPtr prefLoc );
+
+    /** 
      *  @brief sort COO data
      *
      *  The sorting is stable, i.e. entries with same coordinates keep their order.
@@ -99,7 +116,8 @@ public:
     static void sort(
         hmemo::HArray<IndexType>& ia,
         hmemo::HArray<IndexType>& ja,
-        hmemo::HArray<ValueType>& values );
+        hmemo::HArray<ValueType>& values,
+        hmemo::ContextPtr );
 
     /**
      *  @brief This method eliminates consecutive entries with same coordinates.
@@ -115,8 +133,16 @@ public:
         hmemo::HArray<IndexType>& ia,
         hmemo::HArray<IndexType>& ja,
         hmemo::HArray<ValueType>& values,
-        common::BinaryOp op = common::BinaryOp::COPY );
+        common::BinaryOp op,
+        hmemo::ContextPtr );
 
+    /** 
+     *  @brief return the position for an entry (i,j) in the COO data
+     *
+     *  @param[in] i, j are the row and column index for the searched entry
+     *  @param[in] ia, ja are the sorted row/column indexes of the non-zero entries
+     *  @return invalidIndex if not found, otherwise k with ia[k] == i & ja[k] == j
+     */
     static IndexType getValuePos( 
         const IndexType i, 
         const IndexType j,
@@ -125,7 +151,7 @@ public:
         hmemo::ContextPtr prefLoc );
 
     /**
-     *  @brief This method checks if COO indexes have an entry for each diagonal element
+     *  @brief This method checks if COO arrays have an entry for each diagonal element
      *
      *  If diagonal property is not given, some operations on COO storage might fail, e.g.
      *  jacobi, setDiagonal.
@@ -151,7 +177,8 @@ public:
         const hmemo::HArray<ValueType>& values,
         hmemo::ContextPtr prefLoc );
 
-    /** @brief Set the diagonal of COO storage
+    /**
+     * @brief Set the diagonal of COO storage
      *
      */
     template<typename ValueType>
@@ -173,6 +200,40 @@ public:
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
         hmemo::ContextPtr prefLoc );
+
+    /** 
+     *  @brief Scale each row of a COO storage with an individual values
+     * 
+     *  @param[in,out] values are the non-zero entries of the storage
+     *  @param[in]     ia are the row indexes of the non-zero entries
+     *  @param[in]     scale are the scaling factors, size is number of rows
+     *  @param[in]     prefLoc is context where the operation should be done
+     */
+    template<typename ValueType>
+    static void scaleRows(
+        hmemo::HArray<ValueType>& values,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<ValueType>& scale,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Apply a binary operation element-wise for sparse storage
+     */
+    template<typename ValueType>
+    static void binaryOp(
+        hmemo::HArray<IndexType>& cIA,
+        hmemo::HArray<IndexType>& cJA,
+        hmemo::HArray<ValueType>& cValues,
+        const hmemo::HArray<IndexType>& aIA,
+        const hmemo::HArray<IndexType>& aJA,
+        const hmemo::HArray<ValueType>& aValues,
+        const hmemo::HArray<IndexType>& bIA,
+        const hmemo::HArray<IndexType>& bJA,
+        const hmemo::HArray<ValueType>& bValues,
+        const IndexType m,
+        const IndexType n,
+        const common::BinaryOp op,
+        hmemo::ContextPtr loc );
 };
 
 /* -------------------------------------------------------------------------- */

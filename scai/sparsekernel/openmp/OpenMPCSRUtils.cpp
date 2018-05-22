@@ -237,7 +237,8 @@ void OpenMPCSRUtils::offsets2sizesGather(
 bool OpenMPCSRUtils::hasDiagonalProperty(
     const IndexType numDiagonals,
     const IndexType csrIA[],
-    const IndexType csrJA[] )
+    const IndexType csrJA[],
+    const bool )
 {
     SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
 
@@ -1419,6 +1420,81 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
 /* --------------------------------------------------------------------------- */
 
+IndexType OpenMPCSRUtils::binaryOpSizes(
+    IndexType cSizes[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType aIA[],
+    const IndexType aJA[],
+    const IndexType bIA[],
+    const IndexType bJA[] )
+{
+    SCAI_LOG_INFO( logger,
+                   "binaryOpSizes for " << numRows << " x " << numColumns << " storages" )
+
+    // determine the number of entries in output matrix
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        IndexType nb = aIA[i + 1] - aIA[i];
+        IndexType na = bIA[i + 1] - bIA[i];
+
+        cSizes[i] = utilskernel::OpenMPUtils::countAddSparse( &aJA[aIA[i]], na, &bJA[bIA[i]], nb );
+
+        SCAI_LOG_ERROR( logger, "binaryOpSizes, row " << i << ": " << cSizes[i] << ", a = " << na << ", b = " << nb )
+    } 
+
+    IndexType numValues = sizes2offsets( cSizes, numRows );
+
+    for ( IndexType i = 0; i <= numRows; ++i )
+    {
+        SCAI_LOG_ERROR( logger, "offset[" << i << "] = " << cSizes[i] )
+    }
+
+    return numValues;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCSRUtils::binaryOp(
+    IndexType cJA[],
+    ValueType cValues[],
+    const IndexType cIA[],
+    const IndexType numRows,
+    const IndexType,
+    const IndexType aIA[],
+    const IndexType aJA[],
+    const ValueType aValues[],
+    const IndexType bIA[],
+    const IndexType bJA[],
+    const ValueType bValues[],
+    const common::BinaryOp op )
+{
+    ValueType zero = 0;
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        IndexType nb = aIA[i + 1] - aIA[i];
+        IndexType na = bIA[i + 1] - bIA[i];
+        IndexType nc = cIA[i + 1] - cIA[i];
+
+        // entries for each row are sorted, so call operation for sparse arrays
+
+        IndexType n = utilskernel::OpenMPUtils::binopSparse( &cJA[cIA[i]], &cValues[cIA[i]],
+                                                             &aJA[aIA[i]], &aValues[aIA[i]], zero, na, 
+                                                             &bJA[bIA[i]], &bValues[bIA[i]], zero, nb, op );
+
+        SCAI_ASSERT_EQ_ERROR( n, nc, "serious mismatch" )
+    } 
+}
+
+/* --------------------------------------------------------------------------- */
+
 IndexType OpenMPCSRUtils::matrixMultiplySizes(
     IndexType cSizes[],
     const IndexType m,
@@ -1549,80 +1625,6 @@ void OpenMPCSRUtils::matrixAdd(
             IndexType offset = cIA[i];
 
             SCAI_LOG_DEBUG( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
-
-            // fill in csrJA, csrValues and reset indexList, valueList for next use
-
-            while ( !sparseRow.isEmpty() )
-            {
-                IndexType col;
-                ValueType val;
-
-                sparseRow.pop( col, val );
-
-                SCAI_LOG_TRACE( logger, "row " << i << " has entry at col " << col << ", val = " << val << ", offset = " << offset )
-
-                cJA[offset] = col;
-                cValues[offset] = val;
-                ++offset;
-            }
-
-            // make sure that we have still the right offsets
-
-            SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
-
-        } //end loop over all rows of input matrix a
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPCSRUtils::binaryOp(
-    IndexType cJA[],
-    ValueType cValues[],
-    const IndexType cIA[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType aIA[],
-    const IndexType aJA[],
-    const ValueType aValues[],
-    const IndexType bIA[],
-    const IndexType bJA[],
-    const ValueType bValues[],
-    const common::BinaryOp op )
-{
-    SCAI_REGION( "OpenMP.CSR.binaryOp" )
-
-    SCAI_LOG_INFO( logger,
-                   "binaryOp for " << numRows << " x " << numColumns << " matrix" )
-
-    // Note: as long as rows are not sorted this solution works only for ops with 0 as zero element
-
-    ValueType zero = common::zeroBinary<ValueType>( op );
-
-    SCAI_ASSERT_EQ_ERROR( zero, ValueType( 0 ), "binary op = " << op << " for element-wise operation not supported for sparse matrices." )
-
-    // #pragma omp parallel
-    {
-        BuildSparseVector<ValueType> sparseRow( numColumns, zero );
-
-        // #pragma omp for
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
-            {
-                sparseRow.push( aJA[jj], aValues[jj], common::BinaryOp::COPY );
-            }
-
-            for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
-            {
-                sparseRow.push( bJA[jj], bValues[jj], op );
-            }
-
-            IndexType offset = cIA[i];
-
-            SCAI_LOG_TRACE( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
 
             // fill in csrJA, csrValues and reset indexList, valueList for next use
 
@@ -1977,6 +1979,7 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<CSRKernelTrait::hasSortedRows>( hasSortedRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::getPosDiagonal>( getPosDiagonal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::binaryOpSizes>( binaryOpSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
 }
 

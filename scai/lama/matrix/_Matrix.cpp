@@ -548,66 +548,9 @@ void _Matrix::resetRowDistribution( DistributionPtr newDist )
 
 /* ---------------------------------------------------------------------------------*/
 
-void _Matrix::resetRowDistributionByFirstColumn()
-{
-    if ( getRowDistribution().isReplicated() )
-    {
-        return;   // nothing to do
-    }
-
-    bool errorFlag = false;
-
-    CommunicatorPtr comm = getRowDistribution().getCommunicatorPtr();
-
-    // catch local exceptions and throw later a global exception
-
-    try
-    {
-        SCAI_LOG_INFO( logger, "getRowDistributionByFirstColumn" )
-
-        const _MatrixStorage& localMatrix = getLocalStorage();
-
-        hmemo::HArray<IndexType> myGlobalIndexes;
-
-        localMatrix.getFirstColumnIndexes( myGlobalIndexes );
-
-        SCAI_LOG_DEBUG( logger, "first col indexes = " << myGlobalIndexes )
-
-        // if storage has not the global column index of diagonal first, this test is likely to fail
-
-        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::CompareOp::LE ),
-                           "first column indexes are not sorted, cannot be global indexes" )
-
-        // otherwise building the distribution will fail
-
-        DistributionPtr dist( new dmemo::GeneralDistribution( getNumRows(), myGlobalIndexes, comm ) );
-
-        resetRowDistribution( dist );
-    }
-    catch ( common::Exception& e )
-    {
-        SCAI_LOG_ERROR( logger, *comm << ": serious error for building general distribution by first col index" )
-        errorFlag = true;
-    }
-
-    errorFlag = comm->any( errorFlag );
-
-    if ( errorFlag )
-    {
-        COMMON_THROWEXCEPTION( "determing general distribution by column indexes failed." )
-    }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void _Matrix::readFromFile( const std::string& matrixFileName, const std::string& distributionFileName )
 {
-    if ( distributionFileName.size() == 0 )
-    {
-        readFromFile( matrixFileName );
-        resetRowDistributionByFirstColumn();
-    }
-    else if ( distributionFileName == "BLOCK" )
+    if ( distributionFileName == "BLOCK" )
     {
         CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 

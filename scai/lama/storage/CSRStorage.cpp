@@ -88,6 +88,7 @@ using common::CompareOp;
 using sparsekernel::CSRKernelTrait;
 using sparsekernel::DIAKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
+using sparsekernel::CSRUtils;
 
 using tasking::SyncToken;
 
@@ -302,8 +303,12 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 bool CSRStorage<ValueType>::checkDiagonalProperty() const
 {
+    const IndexType m = getNumRows();
+    const IndexType n = getNumColumns();
+
     // diagonal property is given if size of matrix is 0
-    if ( getNumRows() == 0 || getNumColumns() == 0 )
+
+    if ( m == 0 || n == 0 )
     {
         return true;
     }
@@ -315,17 +320,7 @@ bool CSRStorage<ValueType>::checkDiagonalProperty() const
         return false;
     }
 
-    static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-    ContextPtr loc = this->getContextPtr();
-    hasDiagonalProperty.getSupportedContext( loc );
-    //get read access
-    ReadAccess<IndexType> csrIA( mIA, loc );
-    ReadAccess<IndexType> csrJA( mJA, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    IndexType numDiagonals = std::min( getNumRows(), getNumColumns() );
-    bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, csrIA.get(), csrJA.get() );
-    SCAI_LOG_DEBUG( logger, *this << ": diagonalProperty = " << diagonalProperty );
-    return diagonalProperty;
+    return CSRUtils::hasDiagonalProperty( m, n, mIA, mJA, mSortedRows, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -346,8 +341,8 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
     HArrayUtils::setSequence( mJA, start, inc, size, getContextPtr() );
     HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), getContextPtr() );
 
-    mDiagonalProperty = true; // obviously given for identity matrix
-    mSortedRows = true; // obviously given for identity matrix
+    mDiagonalProperty = true;  // obviously given for identity matrix
+    mSortedRows = true;        // obviously given for identity matrix
 
     // Note: we do not build row indexes, no row is empty
 
@@ -460,18 +455,18 @@ void CSRStorage<ValueType>::sortRows( bool keepDiagonalFirst )
 {
     // sort in place 
 
-    sparsekernel::CSRUtils::sortRows( mJA, mValues, mIA, getNumRows(), getNumColumns(), keepDiagonalFirst, getContextPtr() );
+    CSRUtils::sortRows( mJA, mValues, mIA, getNumRows(), getNumColumns(), keepDiagonalFirst, getContextPtr() );
 
     if ( keepDiagonalFirst )
     {
         mSortedRows       = false;     // no optimization for routines that rely on sorted data
-        // mDiagonalProperty remains unchanged
     }
     else
     {
         mSortedRows       = true;
-        mDiagonalProperty = false;
     }
+
+    // Note: diagonal property remains unchanged
 }
 
 /* --------------------------------------------------------------------------- */
