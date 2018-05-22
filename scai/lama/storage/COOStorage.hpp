@@ -587,6 +587,10 @@ protected:
 
 private:
 
+    // check if COO data is sorted; sorts it if not.
+
+    void verifySorting();
+
     /** matrixTimesVector for synchronous and asynchronous execution */
 
     virtual tasking::SyncToken* gemv(

@@ -240,9 +240,10 @@ bool OpenMPCSRUtils::hasDiagonalProperty(
     const IndexType csrJA[] )
 {
     SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
-    bool diagonalProperty = true;
-    #pragma omp parallel for reduction( && : diagonalProperty )
 
+    bool diagonalProperty = true;
+
+    #pragma omp parallel for reduction( && : diagonalProperty )
     for ( IndexType i = 0; i < numDiagonals; ++i )
     {
         if ( !diagonalProperty )
@@ -250,17 +251,27 @@ bool OpenMPCSRUtils::hasDiagonalProperty(
             continue;
         }
 
-        if ( csrIA[i] == csrIA[i + 1] )
+        bool found = false;
+
+        // ToDo: binary search on sorted rows might be more efficient
+
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
         {
-            diagonalProperty = false;
+            if ( csrJA[jj] == i )
+            {
+                found = true;
+                break;
+            }
         }
-        else if ( csrJA[csrIA[i]] != i )
+   
+        if ( !found )
         {
             diagonalProperty = false;
         }
     }
 
     SCAI_LOG_DEBUG( logger, "hasDiagonalProperty = " << diagonalProperty )
+
     return diagonalProperty;
 }
 

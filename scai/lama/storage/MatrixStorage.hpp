@@ -485,8 +485,6 @@ public:
 
     virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
 
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
-
     /******************************************************************
      *   invert                                                        *
      ******************************************************************/

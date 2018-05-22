@@ -65,8 +65,7 @@ public:
         IndexType cooIA[],
         const IndexType numValues,
         const IndexType csrIA[],
-        const IndexType numRows,
-        const IndexType numDiagonals );
+        const IndexType numRows );
 
     /** Implementation for COOKernelTrait::setCSRData with CUDA on GPUs */
 

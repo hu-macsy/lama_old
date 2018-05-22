@@ -368,10 +368,6 @@ public:
         mDiagonalProperty = checkDiagonalProperty();
     }
 
-    /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
-
     /* ========================================================================= */
     /*       Filling dense storage with assembled COO data                      */
     /* ========================================================================= */

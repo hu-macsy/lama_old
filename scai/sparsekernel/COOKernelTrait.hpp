@@ -137,21 +137,20 @@ struct COOKernelTrait
 
     struct hasDiagonalProperty
     {
-        /** Routine checks for diagonal property, first n entries are the diagonal elements.
+        /** Routine checks for diagonal property, i.e. entries for all diagonal elements is available
          *
          *  @param[in] cooIA row indexes
          *  @param[in] cooJA column indexes
-         *  @param[in] n number of diagonal elements
-         *  @return true if first n entries stand for the diagonal elements
-         *
-         *  Attention: do not call this routine if n > numValues (size of cooIA, cooJA) where
-         *             diagonal property is already false
+         *  @param[in] numDiagonals number of diagonal elements to verify
+         *  @param[in] numValues size of array cooIA and cooJA
+         *  @return true if there is one entry for each diagonal element
          */
 
         typedef bool ( *FuncType )(
+            const IndexType numDiagonals,
             const IndexType cooIA[],
             const IndexType cooJA[],
-            const IndexType n );
+            const IndexType numValues );
 
         static const char* getId()
         {
@@ -167,17 +166,13 @@ struct COOKernelTrait
          *  @param[in] numValues number of non-zero values, size of cooIA
          *  @param[in] csrIA is the CSR row offset array, size is numRows+1
          *  @param[in] numRows number of rows
-         *  @param[in] numDiagonals is number of diagonals
-         *
-         *  The diagonal values will be stored at the beginning of the array cooIA.
          */
 
         typedef void ( *FuncType )(
             IndexType cooIA[],
             const IndexType numValues,
             const IndexType csrIA[],
-            const IndexType numRows,
-            const IndexType numDiagonals );
+            const IndexType numRows );
 
         static const char* getId()
         {
@@ -302,6 +297,66 @@ struct COOKernelTrait
         static const char* getId()
         {
             return "COO.jacobi";
+        }
+    };
+
+    template<typename ValueType>
+    struct getDiagonal
+    {
+        /** This method returns the diagonal of a coo storage.
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType diagonal[],
+            const IndexType numDiagonals,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const ValueType cooValues[],
+            const bool numValues );
+
+        static const char* getId()
+        {
+            return "COO.getDiagonal";
+        }
+    };
+
+    template<typename ValueType>
+    struct setDiagonalV
+    {
+        /** This method returns the diagonal of a coo storage.
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType cooValues[],
+            const ValueType diagonal[],
+            const IndexType numDiagonals,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const bool numValues );
+
+        static const char* getId()
+        {
+            return "COO.setDiagonalV";
+        }
+    };
+
+    template<typename ValueType>
+    struct setDiagonal
+    {
+        /** This method returns the diagonal of a coo storage.
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType cooValues[],
+            const ValueType diagonal,
+            const IndexType numDiagonals,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const bool numValues );
+
+        static const char* getId()
+        {
+            return "COO.setDiagonal";
         }
     };
 };

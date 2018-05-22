@@ -150,39 +150,6 @@ void MatrixStorage<ValueType>::buildCSCData(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
-{
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-
-    buildCSRData( csrIA, csrJA, csrValues );
-
-    // ToDo: csrIA[i] == csrIA[i+1], no entry in row at all
-    // ToDo: csrIA[numRows-1] == numValues possible, out of range addressing
-
-    // gather: colIndexes[i] = csrJA[ csrIA[i] ]
-
-    if ( getNumRows() > 0 )
-    {
-        SCAI_ASSERT_LT_ERROR( csrIA[getNumRows() - 1], csrJA.size(), "last row without any entry" )
-    }
-
-    static LAMAKernel<UtilKernelTrait::setGather<IndexType, IndexType> > setGather;
-
-    ContextPtr loc = getContextPtr();
-    setGather.getSupportedContext( loc );
-
-    WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> ja( csrJA, loc );
-    ReadAccess<IndexType> ia( csrIA, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), BinaryOp::COPY, getNumRows() );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MatrixStorage<ValueType>::assignDummy( const _MatrixStorage& other )
 {
     SCAI_REGION( "Storage.assign" )

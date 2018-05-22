@@ -35,11 +35,11 @@
 // hpp
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
+
 #include <scai/sparsekernel/COOUtils.hpp>
 
 // internal scai libraries
 #include <scai/sparsekernel/COOKernelTrait.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -79,7 +79,7 @@ using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
 
 using sparsekernel::COOKernelTrait;
-using sparsekernel::CSRKernelTrait;
+using sparsekernel::COOUtils;
 
 using common::BinaryOp;
 
@@ -102,8 +102,6 @@ COOStorage<ValueType>::COOStorage( ContextPtr ctx ) :
 {
     SCAI_LOG_DEBUG( logger, "COOStorage for matrix " << getNumRows() 
                              << " x " << getNumColumns() << ", no non-zero elements @ " << *ctx )
-   
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -118,7 +116,22 @@ COOStorage<ValueType>::COOStorage( IndexType numRows, IndexType numColumns, Cont
 {
     SCAI_LOG_DEBUG( logger, "COOStorage for matrix " << getNumRows() 
                              << " x " << getNumColumns() << ", no non-zero elements @ " << *ctx )
-   
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::verifySorting()
+{
+    bool isSorted = COOUtils::isSorted( mIA, mJA, getContextPtr() );
+
+    if ( !isSorted )
+    {
+        SCAI_LOG_ERROR( logger, "sort of COO arrays required" )
+        COOUtils::sort( mIA, mJA, mValues );
+        COOUtils::unique( mIA, mJA, mValues );
+    }
+
     _MatrixStorage::resetDiagonalProperty();
 }
 
@@ -143,13 +156,7 @@ COOStorage<ValueType>::COOStorage(
     SCAI_ASSERT_EQ_ERROR( mIA.size(), mJA.size(), "serious mismatch for sizes of ia, ja" )
     SCAI_ASSERT_EQ_ERROR( mIA.size(), mValues.size(), "serious mismatch for sizes of ia, ja" )
 
-    // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
-
-#ifdef SCAI_ASSERT_LEVEL_DEBUG
-    check( "COOStorage( m, n, ia, ja, values)" );
-#endif
-
-    mDiagonalProperty = checkDiagonalProperty();
+    verifySorting();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -314,34 +321,7 @@ void COOStorage<ValueType>::print( std::ostream& stream ) const
 template<typename ValueType>
 bool COOStorage<ValueType>::checkDiagonalProperty() const
 {
-    bool diagonalProperty = true;
-
-    if ( getNumRows() != getNumColumns() )
-    {
-        diagonalProperty = false;
-    }
-    else if ( getNumRows() == 0 )
-    {
-        // zero sized matrix
-        diagonalProperty = true;
-    }
-    else if ( mIA.size() == 0 )
-    {
-        diagonalProperty = false;
-    }
-    else
-    {
-        diagonalProperty = true; // intialization for reduction
-        static LAMAKernel<COOKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-        ContextPtr loc = this->getContextPtr();
-        hasDiagonalProperty.getSupportedContext( loc );
-        ReadAccess<IndexType> ia( mIA, loc );
-        ReadAccess<IndexType> ja( mJA, loc );
-        diagonalProperty = hasDiagonalProperty[loc]( ia.get(), ja.get(), getNumRows() );
-    }
-
-    SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
-    return diagonalProperty;
+    return COOUtils::hasDiagonalProperty( getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -354,8 +334,6 @@ void COOStorage<ValueType>::clear()
     mIA.clear();
     mJA.clear();
     mValues.clear();
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -490,24 +468,13 @@ ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
 
-    static LAMAKernel<COOKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = this->getContextPtr();
-    getValuePos.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> rIa( mIA, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
-
-    IndexType numValues = mIA.size();
-
-    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), numValues );
+    IndexType pos = COOUtils::getValuePos( i, j, mIA, mJA, getContextPtr() );
 
     ValueType val = 0;
 
     if ( pos != invalidIndex )
     {
-        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, numValues, "illegal value position for ( " << i << ", " << j << " )" );
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mValues.size(), "illegal value position for ( " << i << ", " << j << " )" );
 
         val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
     }
@@ -528,17 +495,7 @@ void COOStorage<ValueType>::setValue( const IndexType i,
 
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
 
-    static LAMAKernel<COOKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = this->getContextPtr();
-    getValuePos.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> rIa( mIA, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
-
-    IndexType nnz = getNumValues();
-    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), nnz );
+    IndexType pos = COOUtils::getValuePos( i, j, mIA, mJA, getContextPtr() );
 
     if ( pos == invalidIndex )
     {
@@ -597,18 +554,9 @@ IndexType COOStorage<ValueType>::getNumValues() const
 template<typename ValueType>
 void COOStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    SCAI_ASSERT_ERROR( this->hasDiagonalProperty(), "cannot set diagonal for COO, no diagonal property" )
+    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for COO, no diagonal property" )
 
-    IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );
-    ContextPtr loc = Context::getHostPtr();
-    WriteAccess<ValueType> wValues( mValues, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
-    ReadAccess<IndexType> rIa( mIA, loc );
-
-    for ( IndexType i = 0; i < numDiagonalElements; ++i )
-    {
-        wValues[i] = value;
-    }
+    COOUtils::setDiagonal( mValues, value, getNumRows(), getNumColumns(), mIA, mJA,  getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -903,91 +851,29 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
     hmemo::ContextPtr loc = prefLoc;
 
-    // ReadAccess<IndexType> csrJA( ja, loc );
-    // ReadAccess<OtherValueType> csrValues( values, loc );
-
-    // check if input csr data has the diagonal property and inherit it
-    int numDiagonals = std::min( numRows, numColumns );
-    {
-        SCAI_LOG_DEBUG( logger,
-                        "check CSR data " << numRows << " x " << numColumns << ", nnz = " << numValues << " for diagonal property, #diagonals = " << numDiagonals )
-        static utilskernel::LAMAKernel<sparsekernel::CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-        hmemo::ContextPtr loc = this->getContextPtr();
-        hasDiagonalProperty.getSupportedContext( loc );
-        hmemo::ReadAccess<IndexType> csrIA( ia, loc );
-        hmemo::ReadAccess<IndexType> csrJA( ja, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        mDiagonalProperty = hasDiagonalProperty[loc] ( numDiagonals, csrIA.get(), csrJA.get() );
-    }
-
-    if ( !mDiagonalProperty )
-    {
-        numDiagonals = 0; // do not store diagonal data at the beginning in COO data
-    }
-
     SCAI_LOG_DEBUG( logger,
                     "input csr data with " << numValues << "entries,  has diagonal property = " << mDiagonalProperty )
-    {
-        static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::offsets2ia> offsets2ia;
-        hmemo::ContextPtr loc = this->getContextPtr();
-        offsets2ia.getSupportedContext( loc );
-        hmemo::ReadAccess<IndexType> csrIA( ia, loc );
-        hmemo::WriteOnlyAccess<IndexType> cooIA( mIA, loc, numValues );
-        SCAI_CONTEXT_ACCESS( loc )
-        offsets2ia[loc]( cooIA.get(), numValues, csrIA.get(), numRows, numDiagonals );
-    }
-    {
-        static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::setCSRData<IndexType, IndexType> > setCSRData;
-        hmemo::ContextPtr loc = this->getContextPtr();   // preferred location
-        setCSRData.getSupportedContext( loc );    // supported location
-        hmemo::ReadAccess<IndexType> csrIA( ia, loc );
-        hmemo::ReadAccess<IndexType> csrJA( ja, loc );
-        hmemo::WriteOnlyAccess<IndexType> cooJA( mJA, loc, numValues );
-        SCAI_CONTEXT_ACCESS( loc )
-        setCSRData[loc]( cooJA.get(), csrJA.get(), numValues, csrIA.get(), numRows, numDiagonals );
-    }
-    {
-        static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::setCSRData<ValueType, OtherValueType> > setCSRData;
-        hmemo::ContextPtr loc = this->getContextPtr();   // preferred location
-        setCSRData.getSupportedContext( loc );    // supported location
-        hmemo::ReadAccess<IndexType> csrIA( ia, loc );
-        hmemo::ReadAccess<OtherValueType> csrValues( values, loc );
-        hmemo::WriteOnlyAccess<ValueType> cooValues( mValues, loc, numValues );
-        SCAI_CONTEXT_ACCESS( loc )
-        setCSRData[loc]( cooValues.get(), csrValues.get(), numValues, csrIA.get(), getNumRows(), numDiagonals );
-    }
+
+    COOUtils::convertCSR2COO( mIA, ia, numValues, getContextPtr() );
+
+    HArrayUtils::setArray( mJA, ja, common::BinaryOp::COPY, getContextPtr() );
+    HArrayUtils::setArray( mValues, values, common::BinaryOp::COPY, getContextPtr() );
+
+    verifySorting();
 }
 
 template<typename ValueType>
 void COOStorage<ValueType>::setDiagonalV( const hmemo::HArray<ValueType>& diagonal )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for COO, no diagonal property" )
+    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for COO, not all diagonal entries available" )
 
-    const IndexType numDiagonalElements = std::min( diagonal.size(), std::min( getNumColumns(), getNumRows() ) );
-    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<ValueType, ValueType> > set;
-    hmemo::ContextPtr loc = this->getContextPtr();
-    set.getSupportedContext( loc );
-    hmemo::ReadAccess<ValueType> rDiagonal( diagonal, loc );
-    hmemo::WriteAccess<ValueType> wValues( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    // diagonal elements are the first entries of mValues
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, BinaryOp::COPY );
+    COOUtils::setDiagonalV( mValues, diagonal, getNumRows(), getNumColumns(), mIA, mJA,  getContextPtr() );
 }
 
 template<typename ValueType>
 void COOStorage<ValueType>::getDiagonal( hmemo::HArray<ValueType>& diagonal ) const
 {
-    // diagional[0:numDiagonalElements] = mValues[0:numDiagonalElements]
-    // Note: using HArrayUtils::setArray not possible, as we only need part of mValues
-    const IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );
-    static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::set<ValueType, ValueType> > set;
-    hmemo::ContextPtr loc = this->getContextPtr();
-    set.getSupportedContext( loc );
-    hmemo::WriteOnlyAccess<ValueType> wDiagonal( diagonal, loc, numDiagonalElements );
-    hmemo::ReadAccess<ValueType> rValues( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    // diagonal elements are the first entries of mValues
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, BinaryOp::COPY );
+    COOUtils::getDiagonal( diagonal, getNumRows(), getNumColumns(), mIA, mJA, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

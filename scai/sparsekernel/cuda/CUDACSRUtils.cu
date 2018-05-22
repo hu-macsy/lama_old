@@ -448,8 +448,7 @@ void CUDACSRUtils::convertCSR2CSC(
                        "allocate temp for cooIA" )
     // Step 1 : build COO storage,  cooIA (to do), cooJA ( = csrJA ), cooValues ( = csrValues )
     //          -> translate the csrIA offset array to a cooIA array
-    const IndexType numDiagonals = 0;// not supported yet
-    CUDACOOUtils::offsets2ia( cscJA, numValues, csrIA, numRows, numDiagonals );
+    CUDACOOUtils::offsets2ia( cscJA, numValues, csrIA, numRows );
     // switch cooIA and cooJA, copy values and resort
     CUDASparseUtils::set( cooIA, csrJA, numValues, common::BinaryOp::COPY );
     CUDASparseUtils::set( cscValues, csrValues, numValues, common::BinaryOp::COPY );

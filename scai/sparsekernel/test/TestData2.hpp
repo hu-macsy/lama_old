@@ -247,9 +247,9 @@ static void getCOOTestData(
                       -1  -  1  3
      */
 
-    const IndexType ia_values[]  = { 0, 1, 2, 3, 0, 0,  1, 1, 2,  2, 3, 3 };
-    const IndexType ja_values[]  = { 0, 1, 2, 3, 1, 3,  0, 2, 1,  3, 0, 2 };
-    const ValueType nz_values[]  = { 6, 8, 9, 3, 1, 4, -2, 3, 1,  4, -1, 1 };
+    const IndexType ia_values[]  = { 0, 0, 0,  1, 1, 1, 2, 2, 2,  3, 3, 3 };
+    const IndexType ja_values[]  = { 0, 1, 3,  0, 1, 2, 1, 2, 3,  0, 2, 3 };
+    const ValueType nz_values[]  = { 6, 1, 4, -2, 8, 3, 1, 9, 4, -1, 1, 3 };
 
     numRows     = 4;
     numColumns  = 4;

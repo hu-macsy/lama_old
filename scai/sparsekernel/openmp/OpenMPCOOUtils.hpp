@@ -93,22 +93,21 @@ public:
         const IndexType cooJA[],
         const IndexType numValues );
 
-    /** OpenMP implementation for COOKernelTrait::hasDiagonalProperty */
-
-    static bool hasDiagonalProperty (
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const IndexType n );
-
     /** OpenMP implementation for COOKernelTrait::offsets2ia */
 
     static void offsets2ia(
         IndexType cooIA[],
         const IndexType numValues,
         const IndexType csrIA[],
-        const IndexType numRows,
-        const IndexType numDiagonals );
+        const IndexType numRows );
 
+    /** OpenMP implementation for COOKernelTrait::ia2offsets */
+
+    static void ia2offsets(
+        IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType cooIA[],
+        const IndexType numValues );
 
     template<typename COOValueType, typename OtherValueType>
     static void scaleRows(
@@ -159,7 +158,52 @@ public:
         const ValueType omega,
         const IndexType numRows );
 
+    /** Implementation for COOKernelTrait::hasDiagonalProperty */
+
+    static bool hasDiagonalProperty(
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::getDiagonal */
+
+    template<typename ValueType>
+    static void getDiagonal(
+        ValueType diagonal[],
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::setDiagonalV */
+
+    template<typename ValueType>
+    static void setDiagonalV(
+        ValueType cooValues[],
+        const ValueType diagonal[],
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::setDiagonal */
+
+    template<typename ValueType>
+    static void setDiagonal(
+        ValueType cooValues[],
+        const ValueType diagonal,
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const IndexType numValues );
+
 private:
+
+    static IndexType getRowStartPos( const IndexType i,
+                                     const IndexType cooIA[],
+                                     const IndexType numValues );
 
     /** Struct for registration of methods without template arguments */
 

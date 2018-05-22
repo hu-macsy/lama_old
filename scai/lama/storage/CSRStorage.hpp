@@ -531,10 +531,6 @@ public:
      */ 
     virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
 
-    /** Own implementation to get global owners of the row */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
-
     /**
      *   This routine builds compressed sparse column format data.
      *

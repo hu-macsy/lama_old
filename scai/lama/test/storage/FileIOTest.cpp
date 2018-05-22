@@ -448,9 +448,6 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         CSRStorage<ValueType> csrStorage;
         setNonSquareData( csrStorage );
 
-        HArray<IndexType> firstColIndexes1;
-        csrStorage.getFirstColumnIndexes( firstColIndexes1 );
-
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageNonSquare_" + typeName) + fileSuffix;
         BOOST_TEST_MESSAGE("NonSquareStorage: fileName = " << fileName);
@@ -478,21 +475,12 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
         // We verify that the order of the column indexes has not changed
 
-        HArray<IndexType> firstColIndexes2;
-        readStorage.getFirstColumnIndexes( firstColIndexes2 );
+        csrStorage.sortRows( false );
+        readStorage.sortRows( false );
 
-        for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
-        {
-            if ( fileSuffix != ".mat" )
-            {
-                BOOST_CHECK_EQUAL( firstColIndexes1[i], firstColIndexes2[i] );
-            }
-
-            for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
-            {
-                BOOST_CHECK_EQUAL( csrStorage.getValue( i, j ), readStorage.getValue( i, j ) );
-            }
-        }
+        BOOST_TEST( hostReadAccess( csrStorage.getIA() ) == hostReadAccess( readStorage.getIA() ), per_element() );
+        BOOST_TEST( hostReadAccess( csrStorage.getJA() ) == hostReadAccess( readStorage.getJA() ), per_element() );
+        BOOST_TEST( hostReadAccess( csrStorage.getValues() ) == hostReadAccess( readStorage.getValues() ), per_element() );
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );

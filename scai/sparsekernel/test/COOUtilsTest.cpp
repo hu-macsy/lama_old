@@ -57,6 +57,8 @@ using namespace sparsekernel;
 using namespace utilskernel;
 using common::TypeTraits;
 
+using boost::test_tools::per_element;
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( COOUtilsTest )
@@ -64,6 +66,33 @@ BOOST_AUTO_TEST_SUITE( COOUtilsTest )
 /* --------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( convert2CSRTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    HArray<IndexType> cooIA( { 0, 0, 1, 1, 1, 2, 4, 4, 5, 6, 6 }, testContext );
+    HArray<IndexType> expIA( { 0,    2,       5, 6, 6, 8, 9,    11 }  );
+
+    const IndexType numRows = 7;
+
+    SCAI_ASSERT_EQ_ERROR( expIA[numRows], cooIA.size(), "Wrong setup for test" )
+
+    HArray<IndexType> csrIA;
+
+    COOUtils::convertCOO2CSR( csrIA, cooIA, numRows, testContext );
+
+    ContextPtr validContext = csrIA.getValidContext( testContext );
+
+    if ( validContext->getType() != testContext->getType() ) 
+    {
+        SCAI_LOG_WARN( logger, "convertCSR was not executed on " << *testContext << " but on " << *validContext );
+    }
+
+    BOOST_TEST( hostReadAccess( expIA ) == hostReadAccess( csrIA ), per_element() );
+}
 
 /* ------------------------------------------------------------------------------------- */
 
@@ -80,55 +109,20 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
 
     SCAI_LOG_INFO( logger, "offsets2ia test for " << *testContext << " on " << *loc )
 
-    // Test without diagonal property
-    {
-        HArray<IndexType> offsets( { 0, 2, 2, 3, 5 }, testContext );
+    HArray<IndexType> csrIA( { 0, 2, 2, 3, 5 }, testContext );
 
-        const IndexType numOffsets = offsets.size();
-        const IndexType numRows = numOffsets - 1;
+    const IndexType numRows = csrIA.size() - 1;
 
-        IndexType numValues = HArrayUtils::getVal( offsets, numRows );
+    IndexType numValues = HArrayUtils::getVal( csrIA, numRows );
 
-        HArray<IndexType> ia;
-        ReadAccess<IndexType> rOffsets( offsets, loc );
+    HArray<IndexType> cooIA;  // result array
 
-        const IndexType numDiagonals = 0;
+    COOUtils::convertCSR2COO( cooIA, csrIA, numValues, testContext );
 
-        {
-            WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
-            SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
-        }
+    HArray<IndexType> expectedIA( { 0, 0, 2, 3, 3 } );
 
-        HArray<IndexType> expectedIA( { 0, 0, 2, 3, 3 } );
+    BOOST_TEST( hostReadAccess( cooIA ) == hostReadAccess( expectedIA ), boost::test_tools::per_element() );
 
-        BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( expectedIA ), boost::test_tools::per_element() );
-    }
-
-    // Test with diagonal property
-    {
-        HArray<IndexType> offsets( { 0, 2, 5, 7, 9 }, testContext );
-
-        const IndexType numOffsets = offsets.size();
-        const IndexType numRows = numOffsets - 1;
-
-        IndexType numValues = HArrayUtils::getVal( offsets, numRows );
-        HArray<IndexType> ia;
-
-        const IndexType numDiagonals = 3;
-        {
-            ReadAccess<IndexType> rOffsets( offsets, loc );
-            WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
-            SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
-        }
-
-        // Note: we have three diagonal elements at the beginning 
-
-        HArray<IndexType> expectedIA( { 0, 1, 2, 0, 1, 1, 2, 3, 3 } );
-
-        BOOST_TEST( hostReadAccess( ia ) == hostReadAccess( expectedIA ), boost::test_tools::per_element() );
-    }
 } // offsets2iaTest
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -406,78 +400,6 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
             BOOST_CHECK( rJA[p] == j );
         }
     }
-}
-
-/* ------------------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_test_types )
-{
-    ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    LAMAKernel<COOKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-
-    ContextPtr loc = testContext;
-
-    hasDiagonalProperty.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    HArray<IndexType> cooIA( testContext );
-    HArray<IndexType> cooJA( testContext );
-    HArray<ValueType> cooValues( testContext );
-
-    IndexType numRows;
-    IndexType numColumns;
-    IndexType numValues;
-
-    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
-
-    bool okay;
-
-    IndexType numDiagonals = common::Math::min( numRows, numColumns );
-
-    {
-        ReadAccess<IndexType> rIA( cooIA, loc );
-        ReadAccess<IndexType> rJA( cooJA, loc );
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        if ( numValues < numDiagonals )
-        {
-            okay = false;
-        }
-        else
-        {
-            okay = hasDiagonalProperty[loc]( rIA.get(), rJA.get(), numDiagonals );
-        }
-    }
-
-    BOOST_CHECK( !okay );
-
-    // data set 2 has a square matrix with diagonal entries first
-
-    data2::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
-
-    BOOST_REQUIRE_EQUAL( numRows, numColumns );
-
-    {
-        ReadAccess<IndexType> rIA( cooIA, loc );
-        ReadAccess<IndexType> rJA( cooJA, loc );
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        if ( numValues < numRows )
-        {
-            okay = false;
-        }
-        else
-        {
-            okay = hasDiagonalProperty[loc]( rIA.get(), rJA.get(), numRows );
-        }
-    }
-
-    BOOST_CHECK( okay );
 }
 
 /* ------------------------------------------------------------------------------------- */

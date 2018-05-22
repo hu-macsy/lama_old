@@ -1320,26 +1320,6 @@ void CSRStorage<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
-{
-    // gather: colIndexes[i] = csrJA[ csrIA[i] ]
-    // Be careful: only legal if csrIA[i] < csrIA[i+1], at least one entry per row
-
-    static LAMAKernel<UtilKernelTrait::setGather<IndexType, IndexType> > setGather;
-
-    ContextPtr loc = getContextPtr();
-    setGather.getSupportedContext( loc );
-
-    WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> ja( mJA, loc );
-    ReadAccess<IndexType> ia( mIA, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), BinaryOp::COPY, getNumRows() );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void CSRStorage<ValueType>::buildCSCData(
     HArray<IndexType>& colIA,
     HArray<IndexType>& colJA,

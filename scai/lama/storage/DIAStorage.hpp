@@ -231,10 +231,6 @@ public:
 
     virtual void setIdentity( const IndexType size );
 
-    /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
-
     /* ==================================================================== */
     /*  set / get CSR data                                                  */
     /* ==================================================================== */

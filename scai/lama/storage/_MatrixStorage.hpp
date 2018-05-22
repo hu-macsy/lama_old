@@ -245,14 +245,6 @@ public:
      */
     virtual void setDiagonalProperty();
 
-    /** Get for each row the first column index with value entry.
-     *  If diagonal flag is set, the column index will be the same as the (global) row
-     *  index. I.e. for a local storage this routine gives the owned indexes to reconstruct
-     *  the distribution.
-     */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
-
     /******************************************************************
      *  General operations on a matrix                                 *
      ******************************************************************/

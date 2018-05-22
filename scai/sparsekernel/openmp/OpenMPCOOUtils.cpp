@@ -64,22 +64,74 @@ SCAI_LOG_DEF_LOGGER( OpenMPCOOUtils::logger, "OpenMP.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 
+IndexType OpenMPCOOUtils::getRowStartPos( const IndexType i, 
+                                          const IndexType cooIA[], 
+                                          const IndexType numValues )
+{
+    IndexType first = 0;
+    IndexType last  = numValues;
+
+    while ( first < last )
+    {
+        IndexType middle = first + ( last - first ) / 2;
+
+        if ( cooIA[middle] == i )
+        {
+            while ( middle > 0 && cooIA[middle - 1] == i )
+            {
+                middle--;
+            }
+            return middle;
+        }
+        else if ( cooIA[middle] > i )
+        {
+            last = middle;
+        }
+        else 
+        {
+            first = middle + 1;
+        }
+    }
+
+    return invalidIndex;
+}
+
+/* --------------------------------------------------------------------------- */
+
 IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j,
                                        const IndexType cooIA[], const IndexType cooJA[],
                                        const IndexType numValues )
 {
-    IndexType pos = invalidIndex;
+    IndexType first = 0;
+    IndexType last  = numValues;
 
-    for ( IndexType k = 0; k < numValues; ++k )
+    while ( first < last )
     {
-        if ( cooJA[k] == j && cooIA[k] == i )
+        IndexType middle = first + ( last - first ) / 2;
+
+        if ( cooIA[middle] == i && cooJA[middle] == j )
         {
-            pos = k;
-            break;
+            return middle;
+        }
+        else if ( cooIA[middle] > i )
+        {
+            last = middle;
+        }
+        else if ( cooIA[middle] < i )
+        {
+            first = middle + 1;
+        }
+        else if ( cooJA[middle] > j )
+        {
+            last = middle;
+        }
+        else
+        {
+            first = middle + 1;
         }
     }
 
-    return pos;
+    return invalidIndex;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -144,68 +196,49 @@ IndexType OpenMPCOOUtils::getValuePosRow( IndexType col[], IndexType pos[],
 
 /* --------------------------------------------------------------------------- */
 
-bool OpenMPCOOUtils::hasDiagonalProperty(
-    const IndexType cooIA[],
-    const IndexType cooJA[],
-    const IndexType n )
-{
-    bool diagonalProperty = true;
-    // The diagonal property is given if the first n entries
-    // are the diagonal elements
-    #pragma omp parallel for 
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        if ( !diagonalProperty )
-        {
-            continue;
-        }
-
-        if ( cooIA[i] != i || cooJA[i] != i )
-        {
-            diagonalProperty = false;
-        }
-    }
-
-    return diagonalProperty;
-}
-
-/* --------------------------------------------------------------------------- */
-
 void OpenMPCOOUtils::offsets2ia(
     IndexType cooIA[],
     const IndexType numValues,
     const IndexType csrIA[],
-    const IndexType numRows,
-    const IndexType numDiagonals )
+    const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
-                   "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
+                   "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " )" )
     #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        IndexType csrOffset = csrIA[i];
-        IndexType cooOffset = 0; // additional offset due to diagonals
+        // fill all entries for row i
 
-        if ( i < numDiagonals )
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
         {
-            // make sure that we really have at least one element in this row
-            SCAI_ASSERT_DEBUG( csrIA[i] < csrIA[i + 1], "no elem in row " << i );
-            // diagonal elements will be the first nrows entries
-            cooIA[i] = i;
-            csrOffset += 1; // do not fill diagonal element again
-            cooOffset = numDiagonals - i - 1; // offset in coo moves
+            cooIA[jj] = i;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPCOOUtils::ia2offsets(
+    IndexType csrIA[],
+    const IndexType numRows,
+    const IndexType cooIA[],
+    const IndexType numValues )
+{
+    csrIA[0] = 0;
+
+    // Be careful, this loop is inherent sequential 
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        IndexType offs = csrIA[i];
+
+        while ( offs < numValues && cooIA[offs] == i )
+        {
+            offs++;
         }
 
-        // now fill remaining part of row i
-
-        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
-        {
-            SCAI_LOG_TRACE( logger,
-                            "cooIA[ " << ( jj + cooOffset ) << "] = " << i << ", jj = " << jj << ", cooOffset = " << cooOffset )
-            cooIA[jj + cooOffset] = i;
-        }
+        csrIA[i + 1] = offs;
     }
 }
 
@@ -226,7 +259,6 @@ void OpenMPCOOUtils::scaleRows(
         cooValues[i] *= static_cast<COOValueType>( rowValues[cooIA[i]] );
     }
 }
-
 
 /* --------------------------------------------------------------------------- */
 
@@ -376,25 +408,165 @@ void OpenMPCOOUtils::jacobi(
     // done in two steps
     // solution = omega * rhs * dinv + ( 1 - omega * oldSolution
     // solution -= omega * B * oldSolution * dinv
+
+    ValueType omega1 = ValueType( 1 ) - omega;
+
     #pragma omp parallel for
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
+        ValueType diag = 0;
+        ValueType vSum = rhs[i];
+
+        IndexType k = getRowStartPos( i, cooIA, cooNumValues );
+
+        SCAI_ASSERT_NE_ERROR( k, invalidIndex, "no entry in row " << i )
+
+        while ( k < cooNumValues && cooIA[k] == i )
+        {
+            IndexType j = cooJA[k];
+ 
+            if ( j != i )
+            {
+                vSum -= cooValues[k] * oldSolution[j];
+            }
+            else
+            {
+                diag = cooValues[k];
+            }
+            k++;
+        }
+
+        SCAI_ASSERT_NE_ERROR( diag, ValueType( 0 ), "no diagonal element or zero in row " << i )
+
+        solution[i] = omega * vSum / diag + omega1 * oldSolution[i];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCOOUtils::getDiagonal(
+    ValueType diagonal[],
+    const IndexType numDiagonals,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[],
+    const IndexType numValues )
+{
+    #pragma omp parallel for 
+    for ( IndexType i = 0; i < numDiagonals; ++i )
+    {
+        diagonal[i] = ValueType( 0 );
     }
 
-    #pragma omp parallel
+    #pragma omp parallel for 
+    for ( IndexType k = 0; k < numValues; ++k )
     {
-        SCAI_REGION( "OpenMP.COO.jacobi" )
-        #pragma omp for
+        IndexType i = cooIA[k];
 
-        for ( IndexType k = numRows; k < cooNumValues; ++k )
+        if ( cooJA[k] == i )
         {
-            IndexType i = cooIA[k];
-            IndexType j = cooJA[k];
-            // we must use atomic updates as different threads might update same row i
-            const ValueType update = -omega * cooValues[k] * oldSolution[j] / cooValues[i];
-            atomicAdd( solution[i], update );
+            SCAI_ASSERT_VALID_INDEX_DEBUG( i, numDiagonals, "number of diagonals illegally specified" )
+            diagonal[i] = cooValues[k];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+bool OpenMPCOOUtils::hasDiagonalProperty(
+    const IndexType numDiagonals,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const IndexType numValues )
+{
+    bool diagonalProperty = true;
+
+    #pragma omp parallel for 
+    for ( IndexType i = 0; i < numDiagonals; ++i )
+    {
+        if ( !diagonalProperty )
+        {
+            continue;   // no need for further checks
+        }
+
+        IndexType k = getRowStartPos( i, cooIA, numValues );
+
+        if ( k == invalidIndex )
+        {
+            // row i has no entries at all
+            diagonalProperty = false;
+            continue;
+        }
+
+        bool found = false;
+
+        while ( k < numValues && cooIA[k] == i )
+        {
+            // traverse all entrys of row
+
+            if ( cooJA[k]  == i )
+            {
+                found = true;
+                break;
+            }
+            k++;
+        }
+ 
+        if ( !found ) 
+        {
+            diagonalProperty = false;
+        }
+    }
+
+    return diagonalProperty;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCOOUtils::setDiagonalV(
+    ValueType cooValues[],
+    const ValueType diagonal[],
+    const IndexType numDiagonals,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const IndexType numValues )
+{   
+    #pragma omp parallel for 
+    for ( IndexType k = 0; k < numValues; ++k )
+    {   
+        IndexType i = cooIA[k];
+        
+        if ( cooJA[k] == i )
+        {   
+            SCAI_ASSERT_VALID_INDEX_DEBUG( i, numDiagonals, "number of diagonals illegally specified" )
+            cooValues[k] = diagonal[i];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCOOUtils::setDiagonal(
+    ValueType cooValues[],
+    const ValueType diagonalValue,
+    const IndexType numDiagonals,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const IndexType numValues )
+{   
+    #pragma omp parallel for 
+    for ( IndexType k = 0; k < numValues; ++k )
+    {
+        IndexType i = cooIA[k];
+
+        if ( cooJA[k] == i )
+        {
+            SCAI_ASSERT_VALID_INDEX_DEBUG( i, numDiagonals, "number of diagonals illegally specified" )
+            cooValues[k] = diagonalValue;
         }
     }
 }
