@@ -874,33 +874,27 @@ void COOStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::H
 
     // resize the output arrays, invalidate old data before
 
-    static LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
+    IndexType offset;    // first pos in COO data for row i
+    IndexType n;         // number of entries in row i
 
-    ContextPtr loc = this->getContextPtr();
-    getValuePosRow.getSupportedContext( loc );
-
-    HArray<IndexType> valuePos;     // positions in the values array
-
+    COOUtils::getRow( offset, n, mIA, i, getContextPtr() );
+ 
+    if ( n == 0 )
     {
-        SCAI_CONTEXT_ACCESS( loc )
+        // no entries at all for row i
 
-        WriteOnlyAccess<IndexType> wColIndexes( jA, loc, getNumColumns() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumColumns() );
-
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
-                                             rIA.get(), getNumColumns(), rJA.get(), getNumValues() );
-
-        wColIndexes.resize( cnt );
-        wValuePos.resize( cnt );
+        jA.clear();
+        values.clear();
+        return;
     }
+ 
+    // sparse data of row i is stored contiguously in cooJA and cooValues, so use setArraySection
 
-    values.clear();
-    values.resize( valuePos.size());
+    jA.resize( n );
+    values.resize( n );
 
-    HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );
+    HArrayUtils::setArraySection( jA, 0, 1, mJA, offset, 1, n, common::BinaryOp::COPY, getContextPtr() );
+    HArrayUtils::setArraySection( values, 0, 1, mValues, offset, 1, n, common::BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -910,123 +904,61 @@ void COOStorage<ValueType>::getRow( hmemo::HArray<ValueType>& row, const IndexTy
 {
     SCAI_REGION( "Storage.COO.getRow" )
 
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
+    HArray<IndexType> ja;
+    HArray<ValueType> values;
 
-    static LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
-
-    ContextPtr loc = this->getContextPtr();
-
-    getValuePosRow.getSupportedContext( loc );
-
-    HArray<IndexType> colIndexes;   // row indexes that have entry for column j
-    HArray<IndexType> valuePos;     // positions in the values array
-    HArray<ValueType> rowValues;    // contains the values of entries belonging to row i
-
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, getNumColumns() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumColumns() );
-
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
-                                             rIA.get(), getNumColumns(), rJA.get(), getNumValues() );
-
-        wColIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
+    getSparseRow( ja, values, i );
 
     row.setSameValue( getNumColumns(), ValueType( 0 ) );
 
-    // row[ colIndexes ] = mValues[ pos ];
-
-    HArrayUtils::gather( rowValues, mValues, valuePos, BinaryOp::COPY, loc );
-    HArrayUtils::scatter( row, colIndexes, true, rowValues, BinaryOp::COPY, loc );
+    HArrayUtils::scatter( row, ja, true, values, BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexType i,
-                                    const BinaryOp op )
+void COOStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexType i, const BinaryOp op )
 {
     SCAI_REGION( "Storage.COO.setRow" )
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
     SCAI_ASSERT_GE_DEBUG( row.size(), getNumColumns(), "row array to small for set" )
 
-    // get sparse vector with column indexes and positions
+    IndexType offset;
+    IndexType n;
+ 
+    COOUtils::getRow( offset, n, mIA, i, getContextPtr() );
 
-    static LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
+    HArray<IndexType> colIndexes;   // column indexes for row i
 
-    ContextPtr loc = this->getContextPtr();
+    colIndexes.resize( n );   // size must be set before as we deal with a section
 
-    getValuePosRow.getSupportedContext( loc );
+    HArrayUtils::setArraySection( colIndexes, 0, 1, mJA, offset, 1, n, BinaryOp::COPY, getContextPtr() );
 
-    HArray<IndexType> colIndexes;   // row indexes that have entry for column j
-    HArray<IndexType> valuePos;     // positions in the values array
     HArray<ValueType> rowValues;    // contains the values of entries belonging to row i
 
-    {
-        SCAI_CONTEXT_ACCESS( loc )
+    HArrayUtils::gather( rowValues, row, colIndexes, BinaryOp::COPY, getContextPtr() );
 
-        WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, getNumColumns() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumColumns() );
-
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
-                                             rIA.get(), getNumColumns(), rJA.get(), getNumValues() );
-
-        wColIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
-
-    // mValues[pos] = row[ colIndexes ]
-
-    HArrayUtils::gather( rowValues, row, colIndexes, BinaryOp::COPY, loc );
-    HArrayUtils::scatter( mValues, valuePos, true, rowValues, op, loc );
+    HArrayUtils::setArraySection( mValues, offset, 1, rowValues, 0, 1, n, op, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::HArray<ValueType>& values, const IndexType j ) const
+void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& ia, hmemo::HArray<ValueType>& values, const IndexType j ) const
 {   
     SCAI_REGION( "Storage.COO.getSparseCol" )
     
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "col index out of range" )
     
-    static LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
+    HArray<IndexType> pos;     // positions in the COO arrays with cooJA[pos] == j 
 
-    ContextPtr loc = this->getContextPtr();
-
-    getValuePosCol.getSupportedContext( loc );
-
-    HArray<IndexType> valuePos;     // positions in the values array
-
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, getNumRows() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumRows() );
-
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), getNumRows(), rJA.get(), getNumValues() );
-
-        wRowIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
+    COOUtils::getColumn( pos, mJA, j, getContextPtr() );
 
     // column[ row ] = mValues[ pos ];
 
-    HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );
+    HArrayUtils::gather( values, mValues, pos, BinaryOp::COPY, getContextPtr() );
+    HArrayUtils::gather( ia, mIA, pos, BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1054,36 +986,19 @@ void COOStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
     SCAI_ASSERT_GE_DEBUG( column.size(), getNumRows(), "column array to small for set" )
 
-    static LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
+    HArray<IndexType> pos;    // positions in the ia, values array, are unique
 
-    ContextPtr loc = this->getContextPtr();
-
-    getValuePosCol.getSupportedContext( loc );
+    COOUtils::getColumn( pos, mJA, j, getContextPtr() );
 
     HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
-    HArray<IndexType> valuePos;     // positions in the values array, are unique
+
+    HArrayUtils::gather( rowIndexes, mIA, pos, BinaryOp::COPY, getContextPtr() );
+
     HArray<ValueType> colValues;    // contains the values of entries belonging to column j
 
-    {
-        SCAI_CONTEXT_ACCESS( loc )
+    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, getContextPtr() );
 
-        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, getNumRows() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumRows() );
-
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), getNumRows(), rJA.get(), getNumValues() );
-
-        wRowIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
-
-    //  mValues[ pos ] op= column[ rowIndexes ]
-
-    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, loc );
-    HArrayUtils::scatter( mValues, valuePos, true, colValues, op, loc );
+    HArrayUtils::scatter( mValues, pos, true, colValues, op, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1155,17 +1070,14 @@ void COOStorage<ValueType>::buildCSR(
 
     SCAI_LOG_INFO( logger, "build CSR data from " << *this )
 
-    HArray<IndexType> perm;  // help array for resorting the values
-
-    utilskernel::HArrayUtils::bucketSort( csrIA, perm, mIA, getNumRows() );
+    COOUtils::convertCOO2CSR( csrIA, mIA, getNumRows(), preferredLoc );
 
     SCAI_ASSERT_EQ_DEBUG( getNumRows() + 1, csrIA.size(), "serious mismatch, should not happen" )
-    SCAI_ASSERT_EQ_ERROR( perm.size(), mIA.size(), "Illegal entries in mIA of COO storage" )
 
-    // CSR array ja, values are the COO arrays resorted
+    // CSR array ja, values can be directly copied
 
-    utilskernel::HArrayUtils::gather( *csrJA, mJA, perm, BinaryOp::COPY, preferredLoc );
-    utilskernel::HArrayUtils::gather( *csrValues, mValues, perm, BinaryOp::COPY, preferredLoc );
+    utilskernel::HArrayUtils::setArray( *csrJA, mJA, BinaryOp::COPY, preferredLoc );
+    utilskernel::HArrayUtils::setArray( *csrValues, mValues, BinaryOp::COPY, preferredLoc );
 
     // Note: sort is stable, so diagonal values remain first in each row
 }

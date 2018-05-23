@@ -1438,21 +1438,18 @@ IndexType OpenMPCSRUtils::binaryOpSizes(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        IndexType nb = aIA[i + 1] - aIA[i];
-        IndexType na = bIA[i + 1] - bIA[i];
+        IndexType na = aIA[i + 1] - aIA[i];
+        IndexType nb = bIA[i + 1] - bIA[i];
+
+        // call routine for sparse vectors, column indexes are sorted for both rows
 
         cSizes[i] = utilskernel::OpenMPUtils::countAddSparse( &aJA[aIA[i]], na, &bJA[bIA[i]], nb );
-
-        SCAI_LOG_ERROR( logger, "binaryOpSizes, row " << i << ": " << cSizes[i] << ", a = " << na << ", b = " << nb )
     } 
 
     IndexType numValues = sizes2offsets( cSizes, numRows );
 
-    for ( IndexType i = 0; i <= numRows; ++i )
-    {
-        SCAI_LOG_ERROR( logger, "offset[" << i << "] = " << cSizes[i] )
-    }
-
+    SCAI_LOG_DEBUG( logger, "result storage: nnz = " << numValues 
+                             << ", a:nnz = " << aIA[numRows] << ", b:nnz = " << bIA[numRows] )
     return numValues;
 }
 
@@ -1479,8 +1476,8 @@ void OpenMPCSRUtils::binaryOp(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        IndexType nb = aIA[i + 1] - aIA[i];
-        IndexType na = bIA[i + 1] - bIA[i];
+        IndexType na = aIA[i + 1] - aIA[i];
+        IndexType nb = bIA[i + 1] - bIA[i];
         IndexType nc = cIA[i + 1] - cIA[i];
 
         // entries for each row are sorted, so call operation for sparse arrays

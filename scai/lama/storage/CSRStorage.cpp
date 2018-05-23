@@ -40,6 +40,7 @@
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
+#include <scai/sparsekernel/COOUtils.hpp>
 #include <scai/sparsekernel/DIAKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
@@ -2151,22 +2152,49 @@ void CSRStorage<ValueType>::buildSparseRowData(
 
 template<typename ValueType>
 void CSRStorage<ValueType>::fillCOO(
-    hmemo::HArray<IndexType> ia,
-    hmemo::HArray<IndexType> ja,
-    hmemo::HArray<ValueType> values,
+    hmemo::HArray<IndexType> cooIA,
+    hmemo::HArray<IndexType> cooJA,
+    hmemo::HArray<ValueType> cooValues,
     const common::BinaryOp op )
 {
-    SCAI_ASSERT_EQ_ERROR( ia.size(), ja.size(), "COO data: ia and ja must have same size" )
-    SCAI_ASSERT_EQ_ERROR( ia.size(), values.size(), "COO data: ia and values must have same size" )
+    using sparsekernel::COOUtils;
+
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooJA.size(), "COO data: cooIA and cooJA must have same size" )
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooValues.size(), "COO data: cooIA and cooValues must have same size" )
 
     // convert the COO data to CSR, so it is sorted and filling can be done in parallel
 
-    COOStorage<ValueType> coo( getNumRows(), getNumColumns(), std::move( ia ), std::move( ja ), std::move( values ) );
+    COOUtils::normalize( cooIA, cooJA, cooValues, op, getContextPtr() );
 
-    CSRStorage<ValueType> csr1;
-    csr1.assign( coo );
+    HArray<IndexType> csrIA;
+
+    COOUtils::convertCOO2CSR( csrIA, cooIA, getNumRows(), getContextPtr() );
+
+    CSRStorage<ValueType> csr1( getNumRows(), getNumColumns(), std::move( csrIA ), std::move( cooJA ), std::move( cooValues ) );
+
+    if ( op == common::BinaryOp::COPY )
+    {
+        csr1.writeToFile( "COO_copy.mtx" );
+    }
+    else 
+    {
+        csr1.writeToFile( "COO_add.mtx" );
+    }
+
+    sortRows( false );
+
+    this->writeToFile( "CSR.mtx" );
 
     binaryOpCSR( *this, op, csr1 );
+
+    if ( op == common::BinaryOp::COPY )
+    {
+        this->writeToFile( "CSR_copy.mtx" );
+    }
+    else 
+    {
+        this->writeToFile( "CSR_add.mtx" );
+    }
 }
 
 /* ========================================================================= */

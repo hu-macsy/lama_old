@@ -69,7 +69,7 @@ int main( int, char*[] )
     mAssembly.push( 0, 0, 1 );
     mAssembly.push( size - 1, size - 1, 1 );
 
-    auto matrix = convert<CSRSparseMatrix<ValueType>>( mAssembly.buildGlobalCOO( size, size ) );
+    auto matrix = convert<CSRSparseMatrix<ValueType>>( mAssembly.buildGlobalCOO( size, size, common::BinaryOp::COPY ) );
 
     std::cout << "matrix = " << matrix << std::endl;
     matrix.writeToFile( "matrix.txt" );

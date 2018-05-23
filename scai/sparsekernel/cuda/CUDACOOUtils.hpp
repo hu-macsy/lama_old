@@ -67,17 +67,6 @@ public:
         const IndexType csrIA[],
         const IndexType numRows );
 
-    /** Implementation for COOKernelTrait::setCSRData with CUDA on GPUs */
-
-    template<typename COOValueType, typename CSRValueType>
-    static void setCSRData(
-        COOValueType cooValues[],
-        const CSRValueType csrValues[],
-        const IndexType numValues,
-        const IndexType csrIA[],
-        const IndexType numRows,
-        const IndexType numDiagonals );
-
     /** Help routine that computes an offsets array for sorted array of COO row indexes */
 
     static void ia2offsets(
@@ -122,18 +111,6 @@ private:
 
     template<typename ValueType>
     struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
     {
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };

@@ -41,6 +41,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -140,16 +141,46 @@ public:
      *  @brief return the position for an entry (i,j) in the COO data
      *
      *  @param[in] i, j are the row and column index for the searched entry
-     *  @param[in] ia, ja are the sorted row/column indexes of the non-zero entries
+     *  @param[in] cooIA, cooJA are the sorted row/column indexes of the non-zero entries
      *  @return invalidIndex if not found, otherwise k with ia[k] == i & ja[k] == j
      */
     static IndexType getValuePos( 
         const IndexType i, 
         const IndexType j,
-        const hmemo::HArray<IndexType>& ia,
-        const hmemo::HArray<IndexType>& ja,
+        const hmemo::HArray<IndexType>& cooIA,
+        const hmemo::HArray<IndexType>& cooJA,
         hmemo::ContextPtr prefLoc );
 
+    /**
+     *  @brief Get all positions with entries for a given column j
+     *
+     *  @param[out] positions will contain all positions for entries with colJA[pos[k]] == j
+     *  @param[in]  cooJA are the column indexes of the non-zero entries
+     *  @param[in]  j is the column for which non-zero entries are selected
+     *  @param[in]  prefLoc specifies the context where operation should be executed
+     *
+     *  The row indexes and the values might be gathered from cooIA and cooValues via the positions.
+     */
+    static void getColumn(
+        hmemo::HArray<IndexType>& positions,
+        const hmemo::HArray<IndexType>& cooJA,
+        const IndexType j,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Get the positions of all non-zero entries for given row i
+     *
+     *  @param[out] offset is the first position, invalidIndex if not found
+     *  @param[out] n      is the number of available entries for row i
+     *
+     *  As the entries of one row are stored contiguously, here is no need for a position array
+     */
+    static void getRow(
+        IndexType& offset,
+        IndexType& n,
+        const hmemo::HArray<IndexType>& cooIA,
+        const IndexType i,
+        hmemo::ContextPtr prefLoc );
     /**
      *  @brief This method checks if COO arrays have an entry for each diagonal element
      *
@@ -234,6 +265,41 @@ public:
         const IndexType n,
         const common::BinaryOp op,
         hmemo::ContextPtr loc );
+
+    /**
+     *  @brief Jacobi iteration step with COO storage
+     *
+     *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+     */
+    template<typename ValueType>
+    static void jacobi(
+        hmemo::HArray<ValueType>& solution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const hmemo::HArray<IndexType>& cooIA,
+        const hmemo::HArray<IndexType>& cooJA,
+        const hmemo::HArray<ValueType>& cooValues,
+        hmemo::ContextPtr loc );
+
+    /**
+     *  @brief matrix-vector multiplication 
+     */
+    template<typename ValueType>
+    static void gemv(
+        hmemo::HArray<ValueType>& result,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& cooIA,
+        const hmemo::HArray<IndexType>& cooJA,
+        const hmemo::HArray<ValueType>& cooValues,
+        const common::MatrixOp op,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr loc );
+
 };
 
 /* -------------------------------------------------------------------------- */

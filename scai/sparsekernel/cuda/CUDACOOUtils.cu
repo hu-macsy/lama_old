@@ -428,65 +428,12 @@ void CUDACOOUtils::ia2offsets(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename COOValueType, typename CSRValueType>
-__global__
-static void csr2coo_kernel( COOValueType* cooValues, const CSRValueType* csrValues,
-                            const IndexType* csrIA, const IndexType numRows, const IndexType numDiagonals )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < numRows )
-    {
-        IndexType csrOffset = csrIA[i];
-        IndexType cooOffset = 0; // additional offset due to diagonals
-
-        if ( i < numDiagonals )
-        {
-            // diagonal elements will be the first nrows entries
-            cooValues[i] = csrValues[csrOffset];
-            csrOffset += 1;// do not fill diagonal element again
-            cooOffset = numDiagonals - i - 1;// offset in coo moves
-        }
-
-        // now fill remaining part of row i
-
-        for ( IndexType jj = csrOffset; jj < csrIA[i + 1]; ++jj )
-        {
-            cooValues[ jj + cooOffset] = static_cast<COOValueType>( csrValues[ jj ] );
-        }
-    }
-}
-
-template<typename COOValueType, typename CSRValueType>
-void CUDACOOUtils::setCSRData(
-    COOValueType cooValues[],
-    const CSRValueType csrValues[],
-    const IndexType numValues,
-    const IndexType csrIA[],
-    const IndexType numRows,
-    const IndexType numDiagonals )
-{
-    SCAI_LOG_INFO( logger,
-                   "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 )
-                   << " ), #diagonals = " << numDiagonals )
-    SCAI_CHECK_CUDA_ACCESS
-    // make grid
-    const int blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    csr2coo_kernel <<< dimGrid, dimBlock>>>( cooValues, csrValues, csrIA, numRows, numDiagonals );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync for csr2coo_kernel" )
-}
-
-/* --------------------------------------------------------------------------- */
-
 void CUDACOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<COOKernelTrait::offsets2ia>( CUDACOOUtils::offsets2ia, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::setCSRData<IndexType, IndexType> >( CUDACOOUtils::setCSRData, ctx, flag );
 }
 
 template<typename ValueType>
@@ -497,16 +444,6 @@ void CUDACOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, ctx, flag );
-}
-
-template<typename ValueType, typename OtherValueType>
-void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    const common::ContextType ctx = common::ContextType::CUDA;
-    SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( CUDACOOUtils::setCSRData, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -520,7 +457,6 @@ CUDACOOUtils::CUDACOOUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDACOOUtils::~CUDACOOUtils()
@@ -530,7 +466,6 @@ CUDACOOUtils::~CUDACOOUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDACOOUtils CUDACOOUtils::guard;    // guard variable for registration

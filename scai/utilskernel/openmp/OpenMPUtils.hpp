@@ -306,6 +306,19 @@ public:
         const IndexType n2,
         const common::BinaryOp op );
 
+    /** OpenMP implementation of SparseKernelTrait::joinSparse */
+
+    template<typename ValueType>
+    static IndexType joinSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const IndexType n2 );
+
 private:
 
     /** Optimized reduce for common::BinaryOp::ADD as reduction operator. */

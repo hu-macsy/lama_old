@@ -75,69 +75,43 @@ struct COOKernelTrait
         }
     };
 
-    struct getValuePosRow
+    struct getColumn
     {
-        /** This method returns for a certain row of the COO matrix all
-         *  col indexes for which elements exist and the corresponding positions
-         *  in the cooIA/cooJA/cooValues array
+        /** Get the non-zero entries for one column
          *
-         *  @param[out] col indexes of cols that have an entry for row i
-         *  @param[out] pos positions of entries with row = i in cooXXX array
-         *  @param[in] i is the row of which positions are required
-         *  @param[in] cooIA is the COO array with row indexes
-         *  @param[in] numColumns is the number of columns
-         *  @param[in] cooJA is the COO array with col indexes
-         *  @param[in] numValues is the number of non-zero values
-         *  @returns  number of entries with row index = i
          */
         typedef IndexType ( *FuncType ) (
-            IndexType col[],
-            IndexType pos[],
-            const IndexType i,
-            const IndexType cooIA[],
-            const IndexType numColumns,
+            IndexType positions[],
             const IndexType cooJA[],
-            const IndexType numValues );
+            const IndexType numValues,
+            const IndexType j );
 
         static const char* getId()
         {
-            return "COO.getValuePosRow";
+            return "COO.getColumn";
         }
     };
 
-    struct getValuePosCol
+    struct getRow
     {
-        /** This method returns for a certain column of the COO matrix all
-         *  row indexes for which elements exist and the corresponding positions
-         *  in the cooIA/cooJA/cooValues array
+        /** Get the non-zero entries for one row
          *
-         *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in cooJA,
-         *  @param[in] j is the column of which positions are required
-         *  @param[in] cooIA is the COO array with row indexes
-         *  @param[in] numRows is the number of rows
-         *  @param[in] cooJA is the COO array with col indexes
-         *  @param[in] numValues is the number of non-zero values
-         *  @returns  number of entries with col index = j
          */
         typedef IndexType ( *FuncType ) (
-            IndexType row[],
-            IndexType pos[],
-            const IndexType j,
+            IndexType& offset,
             const IndexType cooIA[],
-            const IndexType numRows,
-            const IndexType cooJA[],
-            const IndexType numValues );
+            const IndexType numValues,
+            const IndexType i );
 
         static const char* getId()
         {
-            return "COO.getValuePosCol";
+            return "COO.getRow";
         }
     };
 
     struct hasDiagonalProperty
     {
-        /** Routine checks for diagonal property, i.e. entries for all diagonal elements is available
+        /** Routine checks for diagonal property, i.e. entries for all diagonal elements are available
          *
          *  @param[in] cooIA row indexes
          *  @param[in] cooJA column indexes
@@ -201,7 +175,7 @@ struct COOKernelTrait
         }
     };
 
-    template<typename COOValueType, typename OtherValueType>
+    template<typename ValueType>
     struct scaleRows
     {
 
@@ -216,46 +190,14 @@ struct COOKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            COOValueType cooValues[],
-            const OtherValueType rowValues[],
+            ValueType cooValues[],
+            const ValueType rowValues[],
             const IndexType cooIA[],
             const IndexType numValues );
 
         static const char* getId()
         {
             return "COO.scaleRows";
-        }
-    };
-
-    template<typename COOValueType, typename CSRValueType>
-    struct setCSRData
-    {
-
-        /** Conversion of CSR data (ja, values) to COO data.
-         *
-         *  @param[out] cooValues is new COO data with diagonal elements at first
-         *  @param[in] csrValues is given CSR data with diagonal elements first in each row
-         *  @param[in] numValues is size of arrays cooValues and csrValues
-         *  @param[in] csrIA is CSR offset array
-         *  @param[in] numRows is number of rows
-         *  @param[in] numDiagonals is number of diagonal elements to be stored at the beginning
-         *  @param[in] csrDiagonalProperty is true if CSR data has diagonal property
-         *
-         *  Note: Diagonal elements must be first in each row for CSR data, no resort done for this
-         *  Note: For numDiagonals == 0, this routine can be replaced with Utils::set.
-         */
-
-        typedef void ( *FuncType ) (
-            COOValueType cooValues[],
-            const CSRValueType csrValues[],
-            const IndexType numValues,
-            const IndexType csrIA[],
-            const IndexType numRows,
-            const IndexType numDiagonals );
-
-        static const char* getId()
-        {
-            return "COO.setCSRData";
         }
     };
 

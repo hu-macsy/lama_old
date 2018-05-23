@@ -59,7 +59,7 @@ namespace sparsekernel
 /* -------------------------------------------------------------------------- */
 
 void COOUtils::convertCOO2CSR(
-    hmemo::HArray<IndexType>& csrIA,
+    HArray<IndexType>& csrIA,
     const HArray<IndexType>& cooIA,
     const IndexType numRows,
     ContextPtr )
@@ -89,7 +89,7 @@ void COOUtils::convertCOO2CSR(
 /* -------------------------------------------------------------------------- */
 
 void COOUtils::convertCSR2COO(
-    hmemo::HArray<IndexType>& cooIA,
+    HArray<IndexType>& cooIA,
     const HArray<IndexType>& csrIA,
     const IndexType numValues,
     ContextPtr prefLoc )
@@ -264,9 +264,9 @@ void COOUtils::unique(
 
 template<typename ValueType>
 void COOUtils::normalize(
-    hmemo::HArray<IndexType>& cooIA,
-    hmemo::HArray<IndexType>& cooJA,
-    hmemo::HArray<ValueType>& cooValues,
+    HArray<IndexType>& cooIA,
+    HArray<IndexType>& cooJA,
+    HArray<ValueType>& cooValues,
     common::BinaryOp op,
     ContextPtr prefLoc )
 {
@@ -283,13 +283,13 @@ void COOUtils::normalize(
 
 template<typename ValueType>
 void COOUtils::getDiagonal(
-    hmemo::HArray<ValueType>& diagonal,
+    HArray<ValueType>& diagonal,
     const IndexType numRows,
     const IndexType numColumns,
-    const hmemo::HArray<IndexType>& ia,
-    const hmemo::HArray<IndexType>& ja,
-    const hmemo::HArray<ValueType>& values,
-    hmemo::ContextPtr prefLoc )
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const HArray<ValueType>& values,
+    ContextPtr prefLoc )
 {
     SCAI_ASSERT_EQ_ERROR( ia.size(), ja.size(), "serious size mismatch for COO arrays" )
     SCAI_ASSERT_EQ_ERROR( ia.size(), values.size(), "serious size mismatch for COO arrays" )
@@ -319,13 +319,13 @@ void COOUtils::getDiagonal(
 
 template<typename ValueType>
 void COOUtils::setDiagonalV(
-    hmemo::HArray<ValueType>& values,
-    const hmemo::HArray<ValueType>& diagonal,
+    HArray<ValueType>& values,
+    const HArray<ValueType>& diagonal,
     const IndexType numRows,
     const IndexType numColumns,
-    const hmemo::HArray<IndexType>& ia,
-    const hmemo::HArray<IndexType>& ja,
-    hmemo::ContextPtr prefLoc )
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    ContextPtr prefLoc )
 {
     SCAI_ASSERT_EQ_ERROR( ia.size(), ja.size(), "serious size mismatch for COO arrays" )
     SCAI_ASSERT_EQ_ERROR( ia.size(), values.size(), "serious size mismatch for COO arrays" )
@@ -355,13 +355,13 @@ void COOUtils::setDiagonalV(
 
 template<typename ValueType>
 void COOUtils::setDiagonal(
-    hmemo::HArray<ValueType>& values,
+    HArray<ValueType>& values,
     const ValueType diagonalValue,
     const IndexType numRows,
     const IndexType numColumns,
-    const hmemo::HArray<IndexType>& ia,
-    const hmemo::HArray<IndexType>& ja,
-    hmemo::ContextPtr prefLoc )
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    ContextPtr prefLoc )
 {
     SCAI_ASSERT_EQ_ERROR( ia.size(), ja.size(), "serious size mismatch for COO arrays" )
     SCAI_ASSERT_EQ_ERROR( ia.size(), values.size(), "serious size mismatch for COO arrays" )
@@ -390,9 +390,9 @@ void COOUtils::setDiagonal(
 bool COOUtils::hasDiagonalProperty(
     const IndexType numRows,
     const IndexType numColumns,
-    const hmemo::HArray<IndexType>& ia,
-    const hmemo::HArray<IndexType>& ja,
-    hmemo::ContextPtr prefLoc )
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    ContextPtr prefLoc )
 {
     SCAI_ASSERT_EQ_ERROR( ia.size(), ja.size(), "serious size mismatch for COO arrays" )
 
@@ -457,16 +457,71 @@ IndexType COOUtils::getValuePos(
 
 /* -------------------------------------------------------------------------- */
 
+void COOUtils::getColumn( 
+    HArray<IndexType>& positions,
+    const HArray<IndexType>& cooJA,
+    const IndexType j,
+    ContextPtr prefLoc )
+{
+    const IndexType numValues = cooJA.size();
+
+    static LAMAKernel<COOKernelTrait::getColumn> getColumn;
+
+    ContextPtr loc = prefLoc;
+
+    getColumn.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rJA( cooJA, loc );
+
+    // first call to determine the number of entries
+
+    IndexType nColumnEntries = getColumn[loc]( NULL, rJA.get(), numValues, j );
+
+    WriteOnlyAccess<IndexType> wPos( positions, loc, nColumnEntries );
+    
+    // second call to get the positions of the entries
+
+    getColumn[loc]( wPos.get(), rJA.get(), numValues, j );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void COOUtils::getRow(
+    IndexType& offset,
+    IndexType& n,
+    const HArray<IndexType>& cooIA,
+    const IndexType i,
+    ContextPtr prefLoc )
+{
+    const IndexType numValues = cooIA.size();
+
+    static LAMAKernel<COOKernelTrait::getRow> getRow;
+
+    ContextPtr loc = prefLoc;
+
+    getRow.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIA( cooIA, loc );
+
+    n = getRow[loc]( offset, rIA.get(), numValues, i );
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void COOUtils::scaleRows(
-    hmemo::HArray<ValueType>& values,
-    const hmemo::HArray<IndexType>& ia,
-    const hmemo::HArray<ValueType>& scale,
-    hmemo::ContextPtr prefLoc )
+    HArray<ValueType>& values,
+    const HArray<IndexType>& ia,
+    const HArray<ValueType>& scale,
+    ContextPtr prefLoc )
 {
     const IndexType numValues = values.size();
 
-    static LAMAKernel<COOKernelTrait::scaleRows<ValueType, ValueType> > kScaleRows;
+    static LAMAKernel<COOKernelTrait::scaleRows<ValueType>> kScaleRows;
 
     ContextPtr loc = prefLoc;
 
@@ -482,19 +537,19 @@ void COOUtils::scaleRows(
 
 template<typename ValueType>
 void COOUtils::binaryOp(
-    hmemo::HArray<IndexType>& cIA,
-    hmemo::HArray<IndexType>& cJA,
-    hmemo::HArray<ValueType>& cValues,
-    const hmemo::HArray<IndexType>& aIA,
-    const hmemo::HArray<IndexType>& aJA,
-    const hmemo::HArray<ValueType>& aValues,
-    const hmemo::HArray<IndexType>& bIA,
-    const hmemo::HArray<IndexType>& bJA,
-    const hmemo::HArray<ValueType>& bValues,
+    HArray<IndexType>& cIA,
+    HArray<IndexType>& cJA,
+    HArray<ValueType>& cValues,
+    const HArray<IndexType>& aIA,
+    const HArray<IndexType>& aJA,
+    const HArray<ValueType>& aValues,
+    const HArray<IndexType>& bIA,
+    const HArray<IndexType>& bJA,
+    const HArray<ValueType>& bValues,
     const IndexType m,
     const IndexType n,
     const common::BinaryOp op,
-    const hmemo::ContextPtr prefLoc )
+    const ContextPtr prefLoc )
 {
     if ( m == 0 || n == 0 )
     {
@@ -520,6 +575,99 @@ void COOUtils::binaryOp(
                         m, n, op, prefLoc );
 
     convertCSR2COO( cIA, cOffsets, cJA.size(), prefLoc );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOUtils::jacobi(
+    HArray<ValueType>& solution,
+    const ValueType omega,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
+    const HArray<IndexType>& cooIA,
+    const HArray<IndexType>& cooJA,
+    const HArray<ValueType>& cooValues,
+    ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQ_ERROR( rhs.size(), oldSolution.size(), "jacobi only for square matrices" )
+   
+    const IndexType numRows = rhs.size();
+    const IndexType numColumns = oldSolution.size();
+
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooJA.size(), "serious size mismatch for COO arrays" )
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooValues.size(), "serious size mismatch for COO arrays" )
+
+    const IndexType numValues = cooIA.size();
+
+    static LAMAKernel<COOKernelTrait::jacobi<ValueType> > jacobi;
+
+    ContextPtr loc = prefLoc;
+    jacobi.getSupportedContext( loc );
+
+    if ( &solution == &oldSolution )
+    {
+        COMMON_THROWEXCEPTION( "alias of new/old solution is not allowed" )
+    }
+
+    ReadAccess<IndexType> rIA( cooIA, loc );
+    ReadAccess<IndexType> rJA( cooJA, loc );
+    ReadAccess<ValueType> rValues( cooValues, loc );
+
+    ReadAccess<ValueType> rOld( oldSolution, loc );
+    ReadAccess<ValueType> rRhs( rhs, loc );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, numColumns );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    jacobi[loc]( wSolution.get(),
+                 numValues, rIA.get(), rJA.get(), rValues.get(),
+                 rOld.get(), rRhs.get(), omega, numRows );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOUtils::gemv(
+    HArray<ValueType>& result,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<IndexType>& cooIA,
+    const HArray<IndexType>& cooJA,
+    const HArray<ValueType>& cooValues,
+    const common::MatrixOp op,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y,
+    ContextPtr prefLoc )
+{
+    // SCAI_ASSERT_EQ_ERROR( x.size(), numColumns, "illegally sized array x for gemv" )
+    // SCAI_ASSERT_EQ_ERROR( y.size(), numRows, "illegally sized array y for gemv" )
+
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooJA.size(), "serious size mismatch for COO arrays" )
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooValues.size(), "serious size mismatch for COO arrays" )
+
+    const IndexType numValues = cooIA.size();
+
+    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = prefLoc;
+    normalGEMV.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    ReadAccess<IndexType> rIA( cooIA, loc );
+    ReadAccess<IndexType> rJA( cooJA, loc );
+    ReadAccess<ValueType> rValues( cooValues, loc );
+
+    ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
+    WriteOnlyAccess<ValueType> wResult( result, loc, op == common::MatrixOp::NORMAL ? numRows : numColumns );
+
+    normalGEMV[loc]( wResult.get(),
+                     alpha, rX.get(), beta, rY.get(),
+                     numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get(), op );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -569,6 +717,42 @@ void COOUtils::binaryOp(
     template void COOUtils::scaleRows(             \
             HArray<ValueType>&,                    \
             const HArray<IndexType>&,              \
+            const HArray<ValueType>&,              \
+            ContextPtr );                          \
+    template void COOUtils::binaryOp(              \
+            HArray<IndexType>&,                    \
+            HArray<IndexType>&,                    \
+            HArray<ValueType>&,                    \
+            const HArray<IndexType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<ValueType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<ValueType>&,              \
+            const IndexType,                       \
+            const IndexType,                       \
+            const common::BinaryOp op,             \
+            ContextPtr );                          \
+    template void COOUtils::jacobi(                \
+            HArray<ValueType>&,                    \
+            const ValueType,                       \
+            const HArray<ValueType>&,              \
+            const HArray<ValueType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<ValueType>&,              \
+            ContextPtr );                          \
+    template void COOUtils::gemv(                  \
+            HArray<ValueType>&,                    \
+            const IndexType,                       \
+            const IndexType,                       \
+            const HArray<IndexType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<ValueType>&,              \
+            const common::MatrixOp,                \
+            const ValueType,                       \
+            const HArray<ValueType>&,              \
+            const ValueType,                       \
             const HArray<ValueType>&,              \
             ContextPtr );                          \
 

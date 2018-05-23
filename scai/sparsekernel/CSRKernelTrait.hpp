@@ -380,7 +380,6 @@ struct CSRKernelTrait
          *  Note: filling the result matrix must use the same flag for diagonalProperty
          *        otherwise the row sizes/offsets will not match
          */
-
         typedef IndexType ( *FuncType ) (
             IndexType cIa[],
             const IndexType numRows,
@@ -398,20 +397,19 @@ struct CSRKernelTrait
 
     struct binaryOpSizes
     {
-        /** This method computes the row sizes for result matrix C of matrix add A + B
+        /** This method computes the offset array for result matrix C = matrix A + matrix B
          *
-         *  @param[out] cIa array of length numRows, will contain number of entries in each row for C
+         *  @param[out] cIA is the offset array for the result matrix
          *  @param[in]  numRows number of rows for matrix A and B
          *  @param[in]  numColumns number of columns for matrix A and B
-         *  @param[in]  aIA, aJA are the index arrays of matrix A
-         *  @param[in]  bIA, bJA are the index arrays of matrix B
+         *  @param[in]  aIA is the row offset array of matrix A
+         *  @param[in]  aJA contains the column indexes of the non-zero entries
+         *  @param[in]  bIA, bJA are the corresponding CSR arrays of matrix B
          *
-         *  Note: filling the result matrix must use the same flag for diagonalProperty
-         *        otherwise the row sizes/offsets will not match
+         *  Important: this routine relies on sorted entries (by column index) for each row
          */
-
         typedef IndexType ( *FuncType ) (
-            IndexType cIa[],
+            IndexType cIA[],
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType aIA[],
