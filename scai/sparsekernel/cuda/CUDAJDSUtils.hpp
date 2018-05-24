@@ -107,16 +107,6 @@ public:
         const IndexType perm[],
         const IndexType ja[] );
 
-    /** Implementation for JDSKernelTrait::checkDiagonalProperty */
-
-    static bool checkDiagonalProperty(
-        const IndexType numDiagonals,
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType perm[],
-        const IndexType ja[],
-        const IndexType dlg[] );
-
     /** CUDA implementation for JDSKernelTrait::ilg2dlg */
 
     static IndexType ilg2dlg(

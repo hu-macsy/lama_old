@@ -1179,9 +1179,11 @@ BOOST_AUTO_TEST_CASE( binaryOpTest )
     {
         Matrix<ValueType>& matrix1 = *allMatrices[i];
 
-        for ( size_t d1 = 0; d1 < rowDists.size(); ++d1 )
+        // for ( size_t d1 = 0; d1 < rowDists.size(); ++d1 )
+        for ( size_t d1 = 0; d1 < 1; ++d1 )
         {
-            for ( size_t d2 = 0; d2 < colDists.size(); ++d2 )
+            // for ( size_t d2 = 0; d2 < colDists.size(); ++d2 )
+            for ( size_t d2 = 0; d2 < 1; ++d2 )
             {
                 auto rowDist = rowDists[d1];
                 auto colDist = colDists[d2];
@@ -1194,6 +1196,8 @@ BOOST_AUTO_TEST_CASE( binaryOpTest )
 
                 // Note: matrices for elemen-wise binary op have same distributions
 
+                SCAI_LOG_ERROR( logger, "binary op, matrix1 = " << matrix1 << ",\nmatrix2 = " << matrix2S )
+
                 matrix1.binaryOp( matrix1, common::BinaryOp::SUB, matrix2S );
 
                 // verify results with replicated data
@@ -1204,7 +1208,7 @@ BOOST_AUTO_TEST_CASE( binaryOpTest )
 
                 BOOST_TEST( hostReadAccess( storage.getValues() ) == hostReadAccess( storageR.getValues() ), per_element() );
 
-                // second test: matrix <binop> SparseMatrix, element-wise
+                // second test: matrix <binop> DenseMatrix, element-wise
 
                 matrix1.assignDistribute( storage1, rowDist, colDist );
 

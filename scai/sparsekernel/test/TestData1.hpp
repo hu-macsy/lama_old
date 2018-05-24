@@ -281,23 +281,22 @@ static void getDIATestData(
                                    x  0  0  0  0  x  x  x  x  x
                                       0  1  0  2  x  x  x  x  x  x  */
 
-    const IndexType diag_offsets[] = { 0,
-                                       static_cast<IndexType>( -5 ),
+    const IndexType diag_offsets[] = { static_cast<IndexType>( -5 ),
                                        static_cast<IndexType>( -4 ),
                                        static_cast<IndexType>( -3 ),
                                        static_cast<IndexType>( -2 ),
                                        static_cast<IndexType>( -1 ),
-                                       1, 3
+                                       0, 1, 3
                                      };
 
     const ValueType x = 0;  // just a stupid value as these entries should never be used
 
-    const ValueType diag_values[]  = { 6, 0, 9, 3, x, x, x,
-                                       x, x, x, x, x, 0, 1,
+    const ValueType diag_values[]  = { x, x, x, x, x, 0, 1,
                                        x, x, x, x, 2, 0, 0,
                                        x, x, x, 2, 0, 0, 2,
                                        x, x, 0, 5, 0, 0, x,
                                        x, 7, 0, 0, 1, x, x,
+                                       6, 0, 9, 3, x, x, x,
                                        0, 0, 4, x, x, x, x,
                                        4, x, x, x, x, x, x
                                      };

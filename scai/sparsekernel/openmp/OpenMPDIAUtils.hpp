@@ -72,13 +72,11 @@ public:
     template<typename ValueType>
     static void getCSRSizes(
         IndexType csrSizes[],
-        bool diagonalFlag,
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        const ValueType eps );
+        const ValueType diaValues[] );
 
     /** OpenMP implementation for DIAKernelTrait::getCSRValues.  */
 
@@ -87,13 +85,11 @@ public:
         IndexType csrJA[],
         CSRValueType csrValues[],
         const IndexType csrIA[],
-        const bool diagonalFlag,
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const DIAValueType diaValues[],
-        const DIAValueType eps );
+        const DIAValueType diaValues[] );
 
     /** Implementation for DIAKernelTrait::normalGEMV  */
 

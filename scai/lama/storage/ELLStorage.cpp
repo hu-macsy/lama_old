@@ -39,6 +39,7 @@
 // internal scai libraries
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
+#include <scai/sparsekernel/ELLUtils.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -77,6 +78,7 @@ using utilskernel::SparseKernelTrait;
 using utilskernel::HArrayUtils;
 
 using sparsekernel::ELLKernelTrait;
+using sparsekernel::ELLUtils;
 using sparsekernel::CSRKernelTrait;
 
 using namespace tasking;
@@ -444,35 +446,14 @@ void ELLStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
 template<typename ValueType>
 bool ELLStorage<ValueType>::checkDiagonalProperty() const
 {
-    SCAI_LOG_INFO( logger, "checkDiagonalProperty" )
+    SCAI_LOG_DEBUG( logger, "checkDiagonalProperty: " << *this )
 
-    IndexType numDiagonals = common::Math::min( getNumRows(), getNumColumns() );
+    HArray<IndexType> diagonalPositions;
 
-    bool diagonalProperty = true;
+    IndexType numDiagonalsFound = ELLUtils::getDiagonalPositions( 
+        diagonalPositions, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
 
-    if ( numDiagonals == 0 )
-    {
-        // diagonal property is given for zero-sized matrices
-        diagonalProperty = true;
-    }
-    else if ( mNumValuesPerRow < 1 )
-    {
-        // no elements, so certainly it does not have diagonl property
-        diagonalProperty = false;
-    }
-    else
-    {
-        static LAMAKernel<ELLKernelTrait::hasDiagonalProperty> ellHasDiagonalProperty;
-        // check it where the JA array has a valid copy
-        ContextPtr loc = mJA.getValidContext();
-        ellHasDiagonalProperty.getSupportedContext( loc );
-        ReadAccess<IndexType> ja( mJA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        diagonalProperty = ellHasDiagonalProperty[loc]( numDiagonals, ja.get() );
-    }
-
-    SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty = " << diagonalProperty )
-    return diagonalProperty;
+    return numDiagonalsFound == diagonalPositions.size();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -490,7 +471,7 @@ void ELLStorage<ValueType>::clear()
     mJA.clear();
     mValues.clear();
 
-    mDiagonalProperty = checkDiagonalProperty();
+    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -614,10 +595,11 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     }
 
     // Get function pointers for needed routines at the LAMA interface
-    static LAMAKernel<ELLKernelTrait::hasDiagonalProperty > hasDiagonalProperty;
+
     static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
+
     ContextPtr loc = context;
-    setCSRValues.getSupportedContext( loc, hasDiagonalProperty );
+    setCSRValues.getSupportedContext( loc );
     {
         // now fill the matrix values and column indexes
         ReadAccess<IndexType> csrIA( *offsets, loc );
@@ -632,26 +614,9 @@ void ELLStorage<ValueType>::setCSRDataImpl(
                            getNumRows(), mNumValuesPerRow,
                            csrIA.get(), csrJA.get(), csrValues.get() );
         SCAI_LOG_DEBUG( logger, " size = " << ellJA.size() )
-        IndexType numDiagonals = std::min( getNumRows(), getNumColumns() );
-
-        if ( numDiagonals == 0 )
-        {
-            mDiagonalProperty = true;
-        }
-        else if ( numValues == 0 )
-        {
-            mDiagonalProperty = false;
-        }
-        else
-        {
-            mDiagonalProperty = hasDiagonalProperty[loc]( numDiagonals, ellJA.get() );
-        }
     }
 
-    if ( numRows == numColumns && !mDiagonalProperty )
-    {
-        SCAI_LOG_INFO( logger, *this << ": square matrix has not diagonal property" )
-    }
+    _MatrixStorage::resetDiagonalProperty();
 
     buildRowIndexes( loc );
 
@@ -724,14 +689,19 @@ IndexType ELLStorage<ValueType>::getNumValuesPerRow() const
 template<typename ValueType>
 void ELLStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    SCAI_LOG_INFO( logger, "setDiagonalImpl # value = " << value )
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    ContextPtr loc = this->getContextPtr();
-    setVal.getSupportedContext( loc );
-    IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    WriteAccess<ValueType> wValues( mValues, loc );
-    setVal[ loc ]( wValues.get(), numDiagonalElements, value, common::BinaryOp::COPY );
+    HArray<IndexType> diagonalPositions;
+    
+    IndexType numDiagonalsFound = ELLUtils::getDiagonalPositions( 
+        diagonalPositions, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
+
+    // as we have the number of found diagonals we have not to check for any invalidIndex
+
+    SCAI_ASSERT_EQ_ERROR( diagonalPositions.size(), numDiagonalsFound,
+                          "no diagonal property, some diagonal elements are missing" )
+
+    HArray<ValueType> diagonalV( numDiagonalsFound, value, getContextPtr() );
+
+    HArrayUtils::scatter( mValues, diagonalPositions, true, diagonalV, common::BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -739,19 +709,21 @@ void ELLStorage<ValueType>::setDiagonal( const ValueType value )
 template<typename ValueType>
 void ELLStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for CSR, no diagonal property" )
+    HArray<IndexType> diagonalPositions;
 
-    const IndexType numDiagonalElements = std::min( getNumColumns(), getNumRows() );
+    IndexType numDiagonalsFound = ELLUtils::getDiagonalPositions( 
+        diagonalPositions, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
 
-    SCAI_LOG_INFO( logger, "setDiagonalV # diagonal = " << diagonal )
-    static LAMAKernel<UtilKernelTrait::set<ValueType, ValueType> > set;
-    ContextPtr loc = this->getContextPtr();
-    set.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> rDiagonal( diagonal, loc );
-    WriteAccess<ValueType> wValues( mValues, loc );
-    // ELL format with diagonal property: diagonal is just the first column in mValues
-    set[ loc ]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::BinaryOp::COPY );
+    // as we have the number of found diagonals we have not to check for any invalidIndex
+
+    SCAI_ASSERT_EQ_ERROR( diagonalPositions.size(), numDiagonalsFound,
+                          "no diagonal property, some diagonal elements are missing" )
+
+    SCAI_ASSERT_EQ_ERROR( diagonal.size(), diagonalPositions.size(), "diagonal has illegal size" )
+
+    bool unique = true;  // there are no multiple diagonal entries
+
+    HArrayUtils::scatter( mValues, diagonalPositions, unique, diagonal, common::BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -902,16 +874,7 @@ void ELLStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 template<typename ValueType>
 void ELLStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 {
-    SCAI_LOG_INFO( logger, "getDiagonal # diagonal = " << diagonal )
-    IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
-    static LAMAKernel<UtilKernelTrait::set<ValueType, ValueType> > set;
-    ContextPtr loc = this->getContextPtr();
-    set.getSupportedContext( loc );
-    WriteOnlyAccess<ValueType> wDiagonal( diagonal, loc, numDiagonalElements );
-    ReadAccess<ValueType> rValues( mValues, loc );
-    // ELL format with diagonal property: diagonal is just the first column in mValues
-    SCAI_CONTEXT_ACCESS( loc )
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::BinaryOp::COPY );
+    ELLUtils::getDiagonal( diagonal, getNumRows(), getNumColumns(), mIA, mJA, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

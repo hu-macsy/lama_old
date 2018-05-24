@@ -151,44 +151,24 @@ void OpenMPDIAUtils::getCSRValues(
     IndexType csrJA[],
     CSRValueType csrValues[],
     const IndexType csrIA[],
-    const bool diagonalFlag,
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const DIAValueType diaValues[],
-    const DIAValueType eps )
+    const DIAValueType diaValues[] )
 {
-    typedef typename common::TypeTraits<DIAValueType>::RealType RealType;
-
-    RealType absEps = eps;
+    const DIAValueType ZERO = 0;
 
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id()
                    << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals
-                   << ", #non-zero values = " << csrIA[numRows] << ", diagonalFlag = " << diagonalFlag )
+                   << ", #non-zero values = " << csrIA[numRows] )
 
     // we cannot check for correct sizes, but at least for valid pointers
 
     if ( numDiagonals == 0 )
     {
-        if ( diagonalFlag )
-        {
-            IndexType n = std::min( numRows, numColumns );
-            SCAI_ASSERT_EQUAL_DEBUG( n, csrIA[numRows] )
-            #pragma omp parallel for 
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                csrJA[i] = i;
-                csrValues[i] = static_cast<CSRValueType>( 0.0 );
-            }
-        }
-        else
-        {
-            SCAI_ASSERT_EQUAL_DEBUG( 0, csrIA[numRows] )
-        }
-
+        SCAI_ASSERT_EQUAL_DEBUG( 0, csrIA[numRows] )
         return;
     }
 
@@ -203,29 +183,16 @@ void OpenMPDIAUtils::getCSRValues(
     }
 
     // go through the DIA the same way again and copy the non-zeros
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.getCSR" )
         #pragma omp for 
-
         for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType offset = csrIA[i];
-            IndexType ii0 = 0; // first index of diagonal
 
-            if ( diagonalFlag && ( i < numColumns ) )
-            {
-                // store main diagonal at first, must be first diagonal
-                SCAI_ASSERT_EQUAL_ERROR( diaOffsets[0], 0 )
-                csrJA[offset] = i;
-                csrValues[offset] = static_cast<CSRValueType>( diaValues[i] );
-                SCAI_LOG_TRACE( logger,
-                                "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
-                offset++;
-                ii0 = 1;
-            }
-
-            for ( IndexType ii = ii0; ii < numDiagonals; ii++ )
+            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
             {
                 IndexType j = i + diaOffsets[ii];
 
@@ -236,16 +203,16 @@ void OpenMPDIAUtils::getCSRValues(
 
                 const DIAValueType value = diaValues[i + ii * numRows];
 
-                bool nonZero = common::Math::abs( value ) > absEps;
-
-                if ( nonZero )
+                if ( value == ZERO )
                 {
-                    csrJA[offset] = j;
-                    csrValues[offset] = static_cast<CSRValueType>( value );
-                    SCAI_LOG_TRACE( logger,
-                                    "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
-                    offset++;
+                    continue;
                 }
+
+                csrJA[offset] = j;
+                csrValues[offset] = static_cast<CSRValueType>( value );
+                SCAI_LOG_TRACE( logger,
+                                "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
+                offset++;
             }
 
             SCAI_ASSERT_EQUAL_DEBUG( offset, csrIA[i + 1] )
@@ -258,30 +225,23 @@ void OpenMPDIAUtils::getCSRValues(
 template<typename DIAValueType>
 void OpenMPDIAUtils::getCSRSizes(
     IndexType csrSizes[],
-    bool diagonalFlag,
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const DIAValueType diaValues[],
-    const DIAValueType eps )
+    const DIAValueType diaValues[] )
 {
-    typedef typename common::TypeTraits<DIAValueType>::RealType RealType;
-    RealType absEps = eps;
-
     SCAI_LOG_INFO( logger,
                    "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " << numRows << " x " << numColumns
-                   << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
+                   << ", #diagonals = " << numDiagonals )
+
+    const DIAValueType ZERO = 0;
+
     #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType count = 0;
-
-        if ( diagonalFlag && ( i < numColumns ) )
-        {
-            count = 1;
-        }
 
         for ( IndexType ii = 0; ii < numDiagonals; ii++ )
         {
@@ -292,14 +252,7 @@ void OpenMPDIAUtils::getCSRSizes(
                 continue;
             }
 
-            bool nonZero = common::Math::abs( diaValues[i + ii * numRows] ) > absEps;
-
-            if ( diagonalFlag && ( i == j ) )
-            {
-                nonZero = false; // already counted
-            }
-
-            if ( nonZero )
+            if ( diaValues[i + ii * numRows] != ZERO )
             {
                 count++;
             }
@@ -445,8 +398,9 @@ void OpenMPDIAUtils::jacobi(
     const IndexType numRows )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns << ", #diagonals = " << numDiagonals << ", omega = " << omega )
-    SCAI_ASSERT_EQUAL_DEBUG( 0, diaOffset[0] )
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns 
+                    << ", #diagonals = " << numDiagonals << ", omega = " << omega )
+
     // main diagonal must be first
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -466,15 +420,22 @@ void OpenMPDIAUtils::jacobi(
         for ( IndexType i = 0; i < numRows; i++ )
         {
             ValueType temp = rhs[i];
-            ValueType diag = diaValues[i]; // diagonal is first
+            ValueType diag = 0;
 
-            for ( IndexType ii = 1; ii < numDiagonals; ++ii )
+            for ( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
-                const IndexType j = i + diaOffset[ii];
-
-                if ( common::Utils::validIndex( j, numColumns ) )
+                if ( diaOffset[ii] == 0 )
                 {
-                    temp -= diaValues[ii * numRows + i] * oldSolution[j];
+                    diag = diaValues[ ii * numRows + i ];
+                }
+                else
+                {
+                    const IndexType j = i + diaOffset[ii];
+
+                    if ( common::Utils::validIndex( j, numColumns ) )
+                    {
+                        temp -= diaValues[ii * numRows + i] * oldSolution[j];
+                    }
                 }
             }
 

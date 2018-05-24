@@ -148,6 +148,16 @@ public:
         const IndexType n,
         const common::BinaryOp op );
 
+    /** OpenMP implementation for UtilKernelTrait::fillSection */
+
+    template<typename ValueType>
+    static void fillSection(
+        ValueType out[],
+        const IndexType inc,
+        const ValueType val,
+        const IndexType n,
+        const common::BinaryOp op );
+
     /** OpenMP implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>

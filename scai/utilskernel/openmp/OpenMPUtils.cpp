@@ -866,6 +866,96 @@ void OpenMPUtils::setSection(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPUtils::fillSection(
+    ValueType out[],
+    const IndexType inc,
+    const ValueType val,
+    const IndexType n,
+    const BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.fillSection" )
+
+    SCAI_LOG_DEBUG( logger,
+                    "fillSection: out<" << TypeTraits<ValueType>::id() << "[" << n << "]"
+                    << ", op = " << op << ", val = " << val )
+
+    switch ( op )
+    {
+        case BinaryOp::COPY :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] = val;
+            }
+
+            break;
+        }
+
+        case BinaryOp::ADD :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] += val;
+            }
+
+            break;
+        }
+
+        case BinaryOp::SUB :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] -= val;
+            }
+
+            break;
+        }
+
+        case BinaryOp::DIVIDE :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] /= val;
+            }
+
+            break;
+        }
+
+        case BinaryOp::MULT :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] *= val;
+            }
+
+            break;
+        }
+
+        default:
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] = applyBinary( out[i * inc], op, val );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 static void floorOp( ValueType out[], const ValueType in[], const IndexType n )
 {
     #pragma omp parallel for 
@@ -2422,6 +2512,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar<ValueType> >( binaryOpScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::fillSection<ValueType> >( fillSection, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

@@ -1147,8 +1147,6 @@ BOOST_AUTO_TEST_CASE( buildCSRDataTest )
         _MatrixStorage::sizes2offsets( matrixRowSizes );
         // Now we can use matrixRowSizes as IA array
         storage.setCSRData( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues );
-        // make sure that storage has not diagonal property, otherwise it will build wrong CSR data
-        BOOST_REQUIRE_EQUAL( storage.hasDiagonalProperty(), false );
         // make sure that we have all values stored
         BOOST_CHECK_EQUAL( numValues, storage.getNumValues() );
         SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns

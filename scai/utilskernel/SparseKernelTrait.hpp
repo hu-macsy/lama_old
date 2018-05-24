@@ -36,9 +36,12 @@
 // for dll_import
 
 #include <scai/common/config.hpp>
+
 #include <scai/common/SCAITypes.hpp>
+
 #include <scai/common/BinaryOp.hpp>
 #include <scai/common/UnaryOp.hpp>
+#include <scai/common/CompareOp.hpp>
 
 namespace scai
 {

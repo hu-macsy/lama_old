@@ -487,7 +487,7 @@ protected:
 
 private:
 
-    hmemo::HArray<IndexType> mOffset; //!< size specifies number of diagonals
+    hmemo::HArray<IndexType> mOffset; //!< offset for each stored diagonal, entries are sorted
     hmemo::HArray<ValueType> mValues; //!< non-zero values, size is getNumRows() * mOffset.size()
 
     virtual bool checkDiagonalProperty() const;
@@ -522,6 +522,10 @@ private:
         const hmemo::HArray<ValueType>& y,
         const common::MatrixOp op,
         bool async ) const;
+
+    // Help routine to find the main diagonal
+
+    IndexType getMainIndex() const;
 
     // Help routine to set offset from used diagonals
 

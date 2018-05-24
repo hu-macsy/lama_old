@@ -68,10 +68,6 @@ public:
         return jj * numRows + i;
     }
 
-    /** CUDA Implementation for ELLUtils::hasDiagonalProperty */
-
-    static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] );
-
     static void check(
         const IndexType mNumRows,
         const IndexType mNumValuesPerRow,

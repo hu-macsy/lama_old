@@ -40,6 +40,7 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel.hpp>
 #include <scai/sparsekernel/JDSKernelTrait.hpp>
+#include <scai/sparsekernel/JDSUtils.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/sparsekernel/test/TestMacros.hpp>
 
@@ -325,7 +326,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
         for ( IndexType j = 0; j < numColumns; j++ )
         {
             SCAI_CONTEXT_ACCESS( loc );
-            IndexType pos = getValuePos[loc]( i, j, numRows, rDlg.get(), rIlg.get(), rPerm.get(), rJa.get() );
+            IndexType pos = getValuePos[loc]( i, j, numRows, rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
 
             if ( pos == invalidIndex )
             {
@@ -392,92 +393,88 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( diagonalTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    typedef DefaultReal ValueType;
+
+    HArray<IndexType> jdsPerm( testContext );
+    HArray<IndexType> jdsILG( testContext );
+    HArray<IndexType> jdsDLG( testContext );
+    HArray<IndexType> jdsJA( testContext );
+    HArray<ValueType> jdsValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    data2::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+
+    HArray<IndexType> diagonalPositions;
+
+    JDSUtils::getDiagonalPositions( diagonalPositions, numRows, numColumns, jdsILG, jdsDLG, jdsPerm, jdsJA, testContext );
+
+    HArray<ValueType> expDiagonalPositions( { 0, 1, 6, 3 } );
+
+    BOOST_TEST( hostReadAccess( expDiagonalPositions ) == hostReadAccess( diagonalPositions ), per_element() );
+
+    HArray<ValueType> diagonal;
+
+    JDSUtils::getDiagonal( diagonal, numRows, numColumns, jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, testContext );
+
+    HArray<ValueType> expDiagonal( { 6, 8, 9, 3 } );
+
+    BOOST_TEST( hostReadAccess( expDiagonal ) == hostReadAccess( diagonal ), per_element() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<JDSKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
+    // check JDS storage without diagonal property
 
-    ContextPtr loc = testContext;
-    checkDiagonalProperty.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    // check with matrix without diagonal property
     {
-        IndexType valuesJa[]   = { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 };
-        IndexType valuesDlg[]  = { 3, 3, 3, 3, 2, 1 };
-        IndexType valuesIlg[]  = { 6, 5, 4 };
-        IndexType valuesPerm[] = { 1, 2, 0 };
-        const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-        const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-        const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+        /*
+               0  2  4   6  8  10    row 1
+               1  3  5   7  9        row 2 
+               5  7  12 15           row 0    */
+
+        HArray<IndexType> ja( { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 } );
+        HArray<IndexType> dlg( { 3, 3, 3, 3, 2, 1 } );
+        HArray<IndexType> ilg( { 6, 5, 4 } );
+        HArray<IndexType> perm( { 1, 2, 0 } );
+
         const IndexType numRows = 3;
         const IndexType numColumns = 16;
-        const IndexType numDiagonals = 3;
-        HArray<IndexType> ja( nJa, valuesJa, testContext );
-        HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
-        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
-        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
-        ReadAccess<IndexType> rJa( ja, loc );
-        ReadAccess<IndexType> rDlg( dlg, loc );
-        ReadAccess<IndexType> rIlg( ilg, loc );
-        ReadAccess<IndexType> rPerm( perm, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty =
-            checkDiagonalProperty[loc]( numDiagonals, numRows, numColumns,
-                                        rPerm.get(), rJa.get(), rDlg.get() );
-        BOOST_CHECK_EQUAL( false, diagonalProperty );
+
+        HArray<IndexType> diagonalPositions;
+
+        IndexType nFound = JDSUtils::getDiagonalPositions( diagonalPositions, numRows, numColumns, ilg, dlg, perm, ja, testContext );
+
+        BOOST_CHECK_EQUAL( nFound, 0 );
     }
-    // check with matrix with diagonal property
+
+    // check JDS storage with diagonal property
+
     {
-        IndexType valuesJa[] =
-        { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-        IndexType valuesDlg[] =
-        { 3, 3, 3 };
-        const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-        IndexType valuesIlg[] =
-        { 3, 3, 3 };
-        const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-        IndexType valuesPerm[] =
-        { 0, 1, 2 };
-        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+        HArray<IndexType> ja( { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 } );
+        HArray<IndexType> dlg( { 3, 3, 3 } );
+        HArray<IndexType> ilg( { 3, 3, 3 } );
+        HArray<IndexType> perm( { 0, 1, 2 } );
+
         const IndexType numRows = 3;
         const IndexType numColumns = 3;
-        const IndexType numDiagonals = 3;
-        HArray<IndexType> ja( nJa, valuesJa, testContext );
-        HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
-        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
-        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
-        ReadAccess<IndexType> rJa( ja, loc );
-        ReadAccess<IndexType> rDlg( dlg, loc );
-        ReadAccess<IndexType> rIlg( ilg, loc );
-        ReadAccess<IndexType> rPerm( perm, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty;
-        diagonalProperty = checkDiagonalProperty[loc]( numDiagonals, numRows, numColumns,
-                           rPerm.get(), rJa.get(), rDlg.get() );
-        BOOST_CHECK_EQUAL( true, diagonalProperty );
-    }
-    // check with empty matrix
-    {
-        const IndexType numRows = 0;
-        const IndexType numColumns = 0;
-        const IndexType numDiagonals = 0;
-        HArray<IndexType> ja;
-        HArray<IndexType> dlg;
-        HArray<IndexType> ilg;
-        HArray<IndexType> perm;
-        ReadAccess<IndexType> rJa( ja, loc );
-        ReadAccess<IndexType> rDlg( dlg, loc );
-        ReadAccess<IndexType> rIlg( ilg, loc );
-        ReadAccess<IndexType> rPerm( perm, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty = checkDiagonalProperty[loc]( numDiagonals, numRows, numColumns,
-                                rPerm.get(), rJa.get(), rDlg.get() );
-        BOOST_CHECK_EQUAL( false, diagonalProperty );
+
+        HArray<IndexType> diagonalPositions;
+
+        IndexType nFound = JDSUtils::getDiagonalPositions( diagonalPositions, numRows, numColumns, ilg, dlg, perm, ja, testContext );
+
+        BOOST_CHECK_EQUAL( nFound, 3 );
+
+        BOOST_TEST( hostReadAccess( diagonalPositions ) == std::vector<IndexType>( { 0, 1, 2 } ), per_element() );
     }
 }
 
@@ -486,29 +483,14 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    LAMAKernel<JDSKernelTrait::ilg2dlg> ilg2dlg;
-
-    ContextPtr loc = testContext;
-    ilg2dlg.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc, testContext );
 
     HArray<IndexType> ilg( { 7, 7, 5, 4, 4, 1 }, testContext );
-    const IndexType numRows = ilg.size();
 
     const IndexType numDiagonals = 7;   // must also be maxval( valuesIlg )
 
-    HArray<IndexType> dlg( testContext );
+    HArray<IndexType> dlg;
 
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteOnlyAccess<IndexType> wDlg( dlg, loc, numDiagonals );
-        ReadAccess<IndexType> rIlg( ilg, loc );
-        ilg2dlg[loc]( wDlg.get(), numDiagonals, rIlg.get(), numRows );
-    }
+    JDSUtils::ilg2dlg( dlg, numDiagonals, ilg, testContext );
 
     std::vector<IndexType> expectedDlg( { 6, 5, 5, 5, 3, 2, 2 } );
 

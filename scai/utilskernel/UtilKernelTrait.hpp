@@ -256,7 +256,7 @@ struct UtilKernelTrait
     template<typename TargetValueType, typename SourceValueType>
     struct setSection
     {
-        /** Set out[i + inc_out] _op= in[i + inc_in],  0 <= i < n , op = +, -, *, /, min, max, ... */
+        /** Set out[i * inc_out] _op= in[i * inc_in],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
         typedef void ( *FuncType ) ( TargetValueType out[], const IndexType inc_out,
                                      const SourceValueType in[], const IndexType inc_in,
@@ -264,6 +264,20 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Util.setSection";
+        }
+    };
+
+    template<typename ValueType>
+    struct fillSection
+    {
+        /** Set out[i * inc] _op= val,  0 <= i < n , op = +, -, *, /, min, max, ... */
+
+        typedef void ( *FuncType ) ( ValueType out[], const IndexType inc,
+                                     const ValueType val,
+                                     const IndexType n, const common::BinaryOp op );
+        static const char* getId()
+        {
+            return "Util.fillSection";
         }
     };
 

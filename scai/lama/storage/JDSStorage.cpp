@@ -39,6 +39,7 @@
 // local scai libraries
 #include <scai/sparsekernel/JDSKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/JDSUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
@@ -72,6 +73,7 @@ using utilskernel::HArrayUtils;
 
 using sparsekernel::CSRKernelTrait;
 using sparsekernel::JDSKernelTrait;
+using sparsekernel::JDSUtils;
 
 using tasking::SyncToken;
 
@@ -377,18 +379,11 @@ IndexType JDSStorage<ValueType>::getNumDiagonals() const
 template<typename ValueType>
 void JDSStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for JDS, no diagonal property" )
+    const IndexType numDiagonals = common::Math::min( getNumRows(), getNumColumns() );
 
-    SCAI_LOG_INFO( logger, "setDiagonalImpl with value = " << value )
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    ContextPtr loc = this->getContextPtr();
-    setVal.getSupportedContext( loc );
-    IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );
-    // Note: diagonal is first column in mValues ( stored column-wise )
-    // values[i] = scalar
-    WriteAccess<ValueType> wValues( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    setVal[loc]( wValues.get(), numDiagonalValues, value, BinaryOp::COPY );
+    HArray<ValueType> diag( numDiagonals, value, getContextPtr() );
+
+    setDiagonalV( diag );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -396,23 +391,21 @@ void JDSStorage<ValueType>::setDiagonal( const ValueType value )
 template<typename ValueType>
 void JDSStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for JDS, no diagonal property" )
+    HArray<IndexType> diagonalPositions;
 
-    const IndexType numDiagonalElements = std::min( diagonal.size(), std::min( getNumColumns(), getNumRows() ) );
+    IndexType numDiagonalsFound = JDSUtils::getDiagonalPositions(
+        diagonalPositions, getNumRows(), getNumColumns(), mIlg, mDlg, mPerm, mJA, getContextPtr() );
 
-    // diagonal property has already been checked
-    SCAI_LOG_INFO( logger, "setDiagonalImpl" )
-    static LAMAKernel<UtilKernelTrait::setGather<ValueType, ValueType> > setGather;
-    ContextPtr loc = this->getContextPtr();
-    setGather.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> rDiagonal( diagonal, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
-    WriteAccess<ValueType> wValues( mValues, loc );
-    // diagonal is first column in JDS data
-    // values[i] = diagonal[ ja[ i ] ]
-    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), BinaryOp::COPY, numDiagonalElements );
-    // Still problem to use HArrayUtils::gather, as only part of the array is used
+    // as we have the number of found diagonals we have not to check for any invalidIndex
+
+    SCAI_ASSERT_EQ_ERROR( diagonalPositions.size(), numDiagonalsFound,
+                          "no diagonal property, some diagonal elements are missing" )
+
+    SCAI_ASSERT_EQ_ERROR( diagonal.size(), diagonalPositions.size(), "diagonal has illegal size" )
+
+    bool unique = true;  // there are no multiple diagonal entries
+
+    HArrayUtils::scatter( mValues, diagonalPositions, unique, diagonal, common::BinaryOp::COPY, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -616,21 +609,7 @@ void JDSStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 template<typename ValueType>
 void JDSStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot get diagonal for JDS, no diagonal property" )
-
-    SCAI_LOG_INFO( logger, "getDiagonalImpl" )
-    //TODO: check diagonal property?
-    static LAMAKernel<UtilKernelTrait::setScatter<ValueType, ValueType> > setScatter;
-    ContextPtr loc = this->getContextPtr();
-    setScatter.getSupportedContext( loc );
-    IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    WriteOnlyAccess<ValueType> wDiagonal( diagonal, loc, numDiagonalElements );
-    ReadAccess<IndexType> rPerm( mPerm, loc );
-    ReadAccess<ValueType> rValues( mValues, loc );
-    // diagonal is first column in JDS data
-    // wDiagonal[ rJa[ i ] ] = rValues[ i ];
-    setScatter[loc]( wDiagonal.get(), rPerm.get(), true, rValues.get(), BinaryOp::COPY, numDiagonalElements );
+    JDSUtils::getDiagonal( diagonal, getNumRows(), getNumColumns(), mIlg, mDlg, mPerm, mJA, mValues, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -674,35 +653,14 @@ void JDSStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
 template<typename ValueType>
 bool JDSStorage<ValueType>::checkDiagonalProperty() const
 {
-    SCAI_LOG_INFO( logger, "checkDiagonalProperty" )
-    IndexType n = common::Math::min( getNumRows(), getNumColumns() );
-    bool diagonalProperty = false; // initialization just for safety
+    SCAI_LOG_DEBUG( logger, "checkDiagonalProperty: " << *this )
 
-    IndexType numDiagonals = mDlg.size();
+    HArray<IndexType> diagonalPositions;
 
-    if ( n == 0 )
-    {
-        diagonalProperty = true;
-    }
-    else if ( numDiagonals == 0 )
-    {
-        // empty storage has no diagonal
-        diagonalProperty = false;
-    }
-    else
-    {
-        static LAMAKernel<JDSKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
-        ContextPtr loc = this->getContextPtr();
-        checkDiagonalProperty.getSupportedContext( loc );
-        ReadAccess<IndexType> rPerm( mPerm, loc );
-        ReadAccess<IndexType> rJa( mJA, loc );
-        ReadAccess<IndexType> rDlg( mDlg, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        diagonalProperty = checkDiagonalProperty[loc]( numDiagonals, getNumRows(), getNumColumns(), rPerm.get(), rJa.get(),
-                           rDlg.get() );
-    }
+    IndexType numDiagonalsFound = JDSUtils::getDiagonalPositions(
+        diagonalPositions, getNumRows(), getNumColumns(), mIlg, mDlg, mPerm, mJA, getContextPtr() );
 
-    return diagonalProperty;
+    return numDiagonalsFound == diagonalPositions.size();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1102,7 +1060,7 @@ ValueType JDSStorage<ValueType>::getValue( const IndexType i, const IndexType j 
     ReadAccess<IndexType> perm( mPerm, loc );
     ReadAccess<IndexType> ja( mJA, loc );
 
-    IndexType pos = getValuePos[loc]( i, j, getNumRows(), dlg.get(), ilg.get(), perm.get(), ja.get() );
+    IndexType pos = getValuePos[loc]( i, j, getNumRows(), ilg.get(), dlg.get(), perm.get(), ja.get() );
 
     ValueType val = 0;
 
@@ -1140,7 +1098,7 @@ void JDSStorage<ValueType>::setValue( const IndexType i,
     ReadAccess<IndexType> perm( mPerm, loc );
     ReadAccess<IndexType> ja( mJA, loc );
 
-    IndexType pos = getValuePos[loc]( i, j, getNumRows(), dlg.get(), ilg.get(), perm.get(), ja.get() );
+    IndexType pos = getValuePos[loc]( i, j, getNumRows(), ilg.get(), dlg.get(), perm.get(), ja.get() );
 
     if ( pos == invalidIndex )
     {

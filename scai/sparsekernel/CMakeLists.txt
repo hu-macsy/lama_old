@@ -57,6 +57,8 @@ scai_project (
 
         CSRUtils
         COOUtils
+        ELLUtils
+        JDSUtils
 
     HEADERS                  # .hpp only
 

@@ -304,6 +304,27 @@ struct ELLKernelTrait
         }
     };
 
+    struct getDiagonalPositions
+    {
+        /** Get an array with all postions of the diagonal elements.
+         *
+         *  If postions[i] == invalidIndex, the diagonal element is missing.
+         *  Otherwise ellJA[positions[i]] == i holds. 
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType positions[],
+            const IndexType numDiagonals,
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[] );
+
+        static const char* getId()
+        {
+            return "ELL.getDiagonalPositions";
+        }
+    };
+
     struct getValuePosCol
     {
         /** This method returns for a certain column of the CSR matrix all
@@ -331,18 +352,6 @@ struct ELLKernelTrait
         static const char* getId()
         {
             return "ELL.getValuePosCol";
-        }
-    };
-
-    struct hasDiagonalProperty
-    {
-        typedef bool ( *FuncType ) (
-            const IndexType numDiagonals,
-            const IndexType ellJA[] );
-
-        static const char* getId()
-        {
-            return "ELL.hasDiagonalProperty";
         }
     };
 

@@ -157,32 +157,6 @@ struct multiply
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  hasDiagonalProperty                                               */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-bool CUDAELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
-{
-    SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
-    SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<IndexType> ellJA_ptr( const_cast<IndexType*>( ellJA ) );
-    thrust::counting_iterator<IndexType> sequence( 0 );
-
-    if ( numDiagonals > 0 )
-    {
-        bool diagonalProperty = thrust::transform_reduce(
-                                    thrust::make_zip_iterator( thrust::make_tuple( ellJA_ptr, sequence ) ),
-                                    thrust::make_zip_iterator(
-                                        thrust::make_tuple( ellJA_ptr + numDiagonals, sequence + numDiagonals ) ),
-                                    identity<IndexType>(), true, thrust::logical_and<bool>() );
-        return diagonalProperty;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  check                                                             */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -1622,7 +1596,6 @@ void CUDAELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     using kregistry::KernelRegistry;
     const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
     // KernelRegistry::set<ELLKernelTrait::getValuePos >( getValuePos, ctx, flag );
 }

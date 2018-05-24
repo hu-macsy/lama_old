@@ -442,8 +442,8 @@ void CSRUtils::binaryOp(
         return;
     }
 
-    SCAI_ASSERT_DEBUG( hasSortedRows( aIA, aJA, m, n, false, prefLoc ), "binaryOp: input storage a not sorted" );
-    SCAI_ASSERT_DEBUG( hasSortedRows( bIA, bJA, m, n, false, prefLoc ), "binaryOp: input storage b not sorted" );
+    SCAI_ASSERT_ERROR( hasSortedRows( aIA, aJA, m, n, false, prefLoc ), "binaryOp: input storage a not sorted" );
+    SCAI_ASSERT_ERROR( hasSortedRows( bIA, bJA, m, n, false, prefLoc ), "binaryOp: input storage b not sorted" );
 
     static LAMAKernel<CSRKernelTrait::binaryOpSizes> binaryOpSizes;
     static LAMAKernel<CSRKernelTrait::binaryOp<ValueType> > binaryOp;

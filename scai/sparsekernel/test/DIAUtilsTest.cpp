@@ -70,95 +70,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DIAUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest0, ValueType, scai_numeric_test_types )
-{
-    // check to get a correct CSR storage from empty DIA storage
-
-    ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
-    static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
-
-    ContextPtr loc = testContext;
-
-    getCSRSizes.getSupportedContext( loc, getCSRValues, scan );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
-
-    IndexType numRows = 5;
-    IndexType numColumns = 5;
-    IndexType numDiagonals = 0;
-
-    HArray<ValueType> diaValues( testContext );
-    HArray<IndexType> diaOffsets( testContext );
-
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-
-    ValueType eps = 0;
-    bool diagonalProperty = true;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
-        ReadAccess<ValueType> rValues( diaValues, loc );
-        WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
-
-        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get(), eps );
-    }
-
-    {
-        ReadAccess<IndexType> rIA( csrIA, hostContext );
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( rIA[i], IndexType( 1 ) );
-        }
-    }
-
-    IndexType numValues = 0;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteAccess<IndexType> wIA( csrIA, loc );
-        wIA.resize( numRows + 1 );
-        numValues = scan[loc]( wIA.get(), numRows, IndexType( 0 ), true, true );
-    }
-
-    BOOST_REQUIRE_EQUAL( numRows, numValues );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<ValueType> rValues( diaValues, loc );
-        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
-        WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
-
-        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty,
-                           numRows, numColumns, numDiagonals,
-                           rOffsets.get(), rValues.get(), eps );
-    }
-
-    std::vector<IndexType> expJA( numValues );
-    std::iota( expJA.begin(), expJA.end(), 0 );
-    std::vector<ValueType> expValues( numValues, 0 );
-
-    BOOST_TEST( hostReadAccess( csrJA ) == expJA, boost::test_tools::per_element() );
-    BOOST_TEST( hostReadAccess( csrValues ) == expValues, boost::test_tools::per_element() );
-}
-
-/* ------------------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest1, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
@@ -188,9 +100,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest1, ValueType, scai_numeric_test_types )
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
-    ValueType eps = 0;
-    bool diagonalProperty = false;
-
     {
         SCAI_CONTEXT_ACCESS( loc );
 
@@ -198,7 +107,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest1, ValueType, scai_numeric_test_types )
         ReadAccess<ValueType> rValues( diaValues, loc );
         WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
 
-        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get(), eps );
+        getCSRSizes[loc]( wIA.get(), numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get() );
     }
 
     HArray<IndexType> expIA(     { 2,    1, 2,    3,       2,    0, 2 } );
@@ -226,108 +135,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest1, ValueType, scai_numeric_test_types )
         WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
         WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
 
-        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty,
+        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(),
                            numRows, numColumns, numDiagonals,
-                           rOffsets.get(), rValues.get(), eps );
+                           rOffsets.get(), rValues.get() );
     }
 
-    HArray<IndexType> expJA(     { 0, 3, 0, 2, 3, 3, 0, 1, 0, 3,    1, 3 } );
-    HArray<ValueType> expValues( { 6, 4, 7, 9, 4, 3, 2, 5, 2, 1,    1, 2 } );
+    HArray<IndexType> expJA(     { 0, 3,   0, 2,   3,   0, 1, 3,   0, 3,    1, 3 } );
+    HArray<ValueType> expValues( { 6, 4,   7, 9,   4,   2, 5, 3,   2, 1,    1, 2 } );
 
     BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( expJA ), boost::test_tools::per_element() );
     BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( expValues ), boost::test_tools::per_element() );
-}
-
-/* ------------------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest2, ValueType, scai_numeric_test_types )
-{
-    // Test conversion DIA -> CSR  this time with diagonal property
-
-    ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
-    static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
-
-    ContextPtr loc = testContext;
-
-    getCSRSizes.getSupportedContext( loc, getCSRValues, scan );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
-
-    IndexType numRows;
-    IndexType numColumns;
-    IndexType numDiagonals;
-
-    HArray<ValueType> diaValues( testContext );
-    HArray<IndexType> diaOffsets( testContext );
-
-    data2::getDIATestData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-
-    ValueType eps = 0;
-    bool diagonalProperty = true;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
-        ReadAccess<ValueType> rValues( diaValues, loc );
-        WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
-
-        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get(), eps );
-    }
-
-    IndexType numValues = 0;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteAccess<IndexType> wIA( csrIA, loc );
-        wIA.resize( numRows + 1 );
-        numValues = scan[loc]( wIA.get(), numRows, IndexType( 0 ), true, true );
-    }
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<ValueType> rValues( diaValues, loc );
-        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
-        WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
-
-        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty,
-                           numRows, numColumns, numDiagonals,
-                           rOffsets.get(), rValues.get(), eps );
-    }
-
-    // we compare the computed CSR data with expected CSR data from test data2
-
-    IndexType numRows1;
-    IndexType numColumns1;
-    IndexType numValues1;
-
-    HArray<IndexType> expIA;
-    HArray<IndexType> expJA;
-    HArray<ValueType> expValues;
-
-    data2::getCSRTestData( numRows1, numColumns1, numValues1, expIA, expJA, expValues );
-
-    BOOST_REQUIRE_EQUAL( numRows1, numRows );
-    BOOST_REQUIRE_EQUAL( numColumns1, numColumns );
-    BOOST_REQUIRE_EQUAL( numValues1, numValues );
-   
-    BOOST_TEST( hostReadAccess( expIA ) == hostReadAccess( csrIA ), boost::test_tools::per_element() );
-    BOOST_TEST( hostReadAccess( expJA ) == hostReadAccess( csrJA ), boost::test_tools::per_element() );
-    BOOST_TEST( hostReadAccess( expValues ) == hostReadAccess( csrValues ), boost::test_tools::per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */

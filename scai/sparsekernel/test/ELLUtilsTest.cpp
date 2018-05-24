@@ -37,6 +37,7 @@
 
 // others
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
+#include <scai/sparsekernel/ELLUtils.hpp>
 #include <scai/sparsekernel/openmp/OpenMPELLUtils.hpp>
 #include <scai/utilskernel.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -61,6 +62,8 @@ using namespace kregistry;
 using common::TypeTraits;
 using common::Exception;
 
+using boost::test_tools::per_element;
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( ELLUtilsTest )
@@ -75,18 +78,11 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ELLUtilsTest" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
+BOOST_AUTO_TEST_CASE( diagonalPositionsTest )
 {
     typedef DefaultReal ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
-
-    LAMAKernel<ELLKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-
-    ContextPtr loc = testContext;
-    hasDiagonalProperty.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc, testContext );
 
     HArray<IndexType> ellIA( testContext );
     HArray<IndexType> ellJA( testContext );
@@ -98,46 +94,35 @@ BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
 
     data2::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
 
-    // positive test
+    // all available test
 
-    {
-        const IndexType numDiagonals = common::Math::min( numRows, numColumns );
+    HArray<IndexType> diagonalPositions;
 
-        ReadAccess<IndexType> rEllJa( ellJA, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
-        BOOST_CHECK( diagonalProperty );
-    }
+    const IndexType numDiagonals = common::Math::min( numRows, numColumns );
+
+    ELLUtils::getDiagonalPositions( diagonalPositions, numRows, numColumns, ellIA, ellJA, testContext );
+
+    BOOST_CHECK_EQUAL( diagonalPositions.size(), numDiagonals );
+
+    HArray<IndexType> expDiagonalPositions( { 0, 5, 6, 11 } );
+
+    BOOST_TEST( hostReadAccess( diagonalPositions ) == hostReadAccess( expDiagonalPositions ), per_element() );
 
     // negative test
 
     data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
 
-    {
-        const IndexType numDiagonals = common::Math::min( numRows, numColumns );
-
-        ReadAccess<IndexType> rEllJa( ellJA, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-
-        bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
-
-        BOOST_CHECK( !diagonalProperty );
-    }
-
     // test empty array
+
+    HArrayUtils::setSameValue<IndexType>( ellIA, numRows, 0 );
 
     ellJA.clear();
 
-    {
-        const IndexType numDiagonals = 0;
-        HArray<IndexType> ellJa;
-        ReadAccess<IndexType> rEllJa( ellJa, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        bool diagonalProperty = hasDiagonalProperty[loc]( numDiagonals, rEllJa.get() );
+    IndexType zeroDiags = ELLUtils::getDiagonalPositions( diagonalPositions, numRows, numColumns, ellIA, ellJA, testContext );
 
-        BOOST_CHECK( !diagonalProperty );
-    }
+    BOOST_CHECK_EQUAL( zeroDiags, 0 );
 }
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( fillELlValuesTest, ValueType, scai_numeric_test_types )
@@ -312,7 +297,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
         }
 
         std::vector<ValueType> expectedValues( { 0, 1, 2, 3, 4 } );
-        BOOST_TEST( hostReadAccess( row ) == expectedValues, boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( row ) == expectedValues, per_element() );
     }
     // check with valid sparse values
     {
@@ -341,7 +326,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 
         HArray<ValueType> expectedValues( { 0, 0, 1, 0, 2, 0, 3, 0, 0, 0, 4 } );
 
-        BOOST_TEST( hostReadAccess( row ) == hostReadAccess( expectedValues ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( row ) == hostReadAccess( expectedValues ), per_element() );
     }
 }
 
@@ -603,8 +588,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_numeric_test_type
             compressIA[loc]( wNewSizes2.get(), rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, false );
         }
 
-        BOOST_TEST( hostReadAccess( newSizes1 ) == std::vector<IndexType>(  { 2, 3, 4 } ), boost::test_tools::per_element() );
-        BOOST_TEST( hostReadAccess( newSizes2 ) == std::vector<IndexType>(  { 1, 2, 3 } ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( newSizes1 ) == std::vector<IndexType>(  { 2, 3, 4 } ), per_element() );
+        BOOST_TEST( hostReadAccess( newSizes2 ) == std::vector<IndexType>(  { 1, 2, 3 } ), per_element() );
     }
 
     // Check with epsilon
@@ -646,8 +631,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_numeric_test_type
             compressIA[loc]( wNewSizes2.get(), rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, false );
         }
 
-        BOOST_TEST( hostReadAccess( newSizes1 ) == std::vector<IndexType>(  { 2, 3, 4 } ), boost::test_tools::per_element() );
-        BOOST_TEST( hostReadAccess( newSizes2 ) == std::vector<IndexType>(  { 1, 3, 3 } ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( newSizes1 ) == std::vector<IndexType>(  { 2, 3, 4 } ), per_element() );
+        BOOST_TEST( hostReadAccess( newSizes2 ) == std::vector<IndexType>(  { 1, 3, 3 } ), per_element() );
     }
 }
 
@@ -724,8 +709,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_numeric_test_
                                  rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, true );
         }
 
-        BOOST_TEST( hostReadAccess( newEllJa ) == hostReadAccess( expEllJa ), boost::test_tools::per_element() );
-        BOOST_TEST( hostReadAccess( newEllValues ) == hostReadAccess( expEllValues ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( newEllJa ) == hostReadAccess( expEllJa ), per_element() );
+        BOOST_TEST( hostReadAccess( newEllValues ) == hostReadAccess( expEllValues ), per_element() );
     }
 
     // Check with epsilon
@@ -1704,7 +1689,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 
         HArray<ValueType> expectedRes = data1::getGEMVNormalResult( alpha, x, beta, y );
 
-        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), per_element() );
     }
 }
 
@@ -1782,7 +1767,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
 
         HArray<ValueType> expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, y );
 
-        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), per_element() );
     }
 }
 
@@ -1868,7 +1853,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
 
         expectedRes = data1::getGEMVNormalResult( alpha, x, beta, expectedRes );
 
-        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), per_element() );
     }
 }
 
@@ -1946,7 +1931,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
 
         HArray<ValueType> expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, y );
 
-        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), per_element() );
     }
 }
 

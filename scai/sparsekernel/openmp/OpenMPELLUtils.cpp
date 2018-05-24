@@ -76,36 +76,6 @@ SCAI_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool OpenMPELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
-{
-    SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
-
-    if ( numDiagonals == 0 )
-    {
-        return false;
-    }
-
-    bool diagonalProperty = true;
-    #pragma omp parallel for reduction( && : diagonalProperty )
-
-    for ( IndexType i = 0; i < numDiagonals; ++i )
-    {
-        if ( !diagonalProperty )
-        {
-            continue;
-        }
-
-        if ( ellJA[i] != i )
-        {
-            diagonalProperty = false;
-        }
-    }
-
-    return diagonalProperty;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 template<typename ValueType>
 void OpenMPELLUtils::scaleRows(
     ValueType ellValues[],
@@ -276,6 +246,39 @@ IndexType OpenMPELLUtils::getValuePos(
     }
 
     return vPos;
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPELLUtils::getDiagonalPositions(
+    IndexType diagonalPositions[],
+    const IndexType numDiagonals,
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const IndexType ellSizes[],
+    const IndexType ellJA[] )
+{
+    IndexType count = 0;    // counts the diagonal elements really found
+
+    #pragma omp parallel for reduction( + : count )
+    for ( IndexType i = 0; i < numDiagonals; ++i )
+    {
+        diagonalPositions[i] = invalidIndex;    // will be set correctly if entry found
+
+        for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
+        {
+            IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
+
+            if ( ellJA[pos] == i )
+            {
+                diagonalPositions[i] = pos;
+                count++;  
+                break;
+            }
+        }
+    }
+
+    return count;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -973,12 +976,20 @@ void OpenMPELLUtils::jacobi(
         {
             ValueType temp = rhs[i];
             IndexType pos = ellindex( i, 0, numRows, ellNumValuesPerRow );
-            ValueType diag = ellValues[pos]; //getDiagonal
+            ValueType diag = 0;
 
-            for ( IndexType j = 1; j < ellSizes[i]; j++ )
+            for ( IndexType j = 0; j < ellSizes[i]; j++ )
             {
                 pos = ellindex( i, j, numRows, ellNumValuesPerRow );
-                temp -= ellValues[pos] * oldSolution[ellJA[pos]];
+
+                if ( ellJA[pos] == i )
+                {
+                    diag = ellValues[pos];  // diagonal element
+                }
+                else
+                {
+                    temp -= ellValues[pos] * oldSolution[ellJA[pos]];
+                }
             }
 
             if ( omega == scai::common::Constants::ONE )
@@ -1243,7 +1254,7 @@ void OpenMPELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     SCAI_LOG_DEBUG( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getDiagonalPositions>( getDiagonalPositions, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );

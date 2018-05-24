@@ -294,6 +294,25 @@ struct JDSKernelTrait
         }
     };
 
+    struct getDiagonalPositions
+    {
+        /** Get all positions for the diagonal entries of a JDS storage. 
+         */
+        typedef IndexType ( *FuncType ) ( 
+            IndexType diagonalPositions[],
+            const IndexType numDiagonals,
+            const IndexType numRows,
+            const IndexType jdsDLG[],
+            const IndexType jdsILG[],
+            const IndexType jdsPerm[],
+            const IndexType jdsJA[] );
+
+        static const char* getId()
+        {
+            return "JDS.getDiagonalPositions";
+        }
+    };
+
     struct getValuePosRow
     {
         /** This method returns for a certain row of the JDS matrix all
@@ -375,21 +394,6 @@ struct JDSKernelTrait
         static const char* getId()
         {
             return "JDS.scaleRows";
-        }
-    };
-
-    struct checkDiagonalProperty
-    {
-        typedef bool ( *FuncType ) ( const IndexType numDiagonals,
-                                     const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const IndexType perm[],
-                                     const IndexType ja[],
-                                     const IndexType dlg[] );
-
-        static const char* getId()
-        {
-            return "JDS.checkDiagonalProperty";
         }
     };
 };

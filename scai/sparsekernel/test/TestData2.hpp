@@ -118,14 +118,14 @@ static void getELLTestData(
     hmemo::HArray<ValueType>& ellValues )
 {
     /*   Matrix:       6  1  0  4        0  1  3    6  1  4
-                      -2  8  3  0        1  0  2    8 -2  3
-                       0  1  9  4        2  1  3    9  1  4
-                      -1  0  1  3        3  0  2    3 -1  1
+                      -2  8  3  0        0  1  2    -2 8  3
+                       0  1  9  4        1  2  3    1  9  4
+                      -1  0  1  3        0  2  3   -1  1  3
      */
 
     const IndexType ia_sizes[]   = { 3, 3, 3, 3 };
-    const IndexType ja_values[]  = { 0, 1, 2, 3, 1,  0, 1,  0, 3, 2, 3, 2 };
-    const ValueType nz_values[]  = { 6, 8, 9, 3, 1, -2, 1, -1, 4, 3, 4, 1 };
+    const IndexType ja_values[]  = { 0, 0, 1, 0, 1,  1, 2,  2, 3, 2, 3, 3 };
+    const ValueType nz_values[]  = { 6, -2, 1, -1, 1, 8, 9, 1, 4, 3, 4, 3 };
 
     numRows         = sizeof( ia_sizes ) / sizeof( IndexType );
     numColumns      = 4;
@@ -156,15 +156,15 @@ static void getJDSTestData(
 {
     /*   Matrix:       6  1  0  4        0  1  3    6  1  4
                       -2  8  3  0        1  0  2    8 -2  3
-                       0  1  9  4        2  1  3    9  1  4
+                       0  1  9  4        1  2  3    1  9  4
                       -1  0  1  3        3  0  2    3 -1  1
      */
 
     const IndexType perm_values[] = { 0, 1, 2, 3 };
     const IndexType ilg_values[]  = { 3, 3, 3, 3 };
     const IndexType dlg_values[]  = { 4, 4, 4 };
-    const IndexType ja_values[]   = { 0, 1, 2, 3, 1,  0, 1,  0, 3, 2, 3, 2 };
-    const ValueType nz_values[]   = { 6, 8, 9, 3, 1, -2, 1, -1, 4, 3, 4, 1 };
+    const IndexType ja_values[]   = { 0, 1, 1, 3, 1,  0, 2,  0, 3, 2, 3, 2 };
+    const ValueType nz_values[]   = { 6, 8, 1, 3, 1, -2, 9, -1, 4, 3, 4, 1 };
 
     numRows         = sizeof( perm_values ) / sizeof( IndexType );
     numColumns      = 4;
