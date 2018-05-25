@@ -283,8 +283,7 @@ bool OpenMPCSRUtils::hasSortedRows(
     const IndexType csrJA[],
     const IndexType numRows,
     const IndexType,
-    const IndexType,
-    const bool allowDiagonalFirst )
+    const IndexType )
 {
     bool isSorted = true;
 
@@ -300,17 +299,7 @@ bool OpenMPCSRUtils::hasSortedRows(
 
         const IndexType end = csrIA[i + 1];
 
-        // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
-
-        if ( allowDiagonalFirst && start < end )
-        {
-            if ( csrJA[start] == i )
-            {
-                start++;    // so check sorting will start at next position
-            }
-        }
-
-        if ( ! utilskernel::OpenMPUtils::isSorted( &csrJA[start], end - start, common::CompareOp::LE ) )
+        if ( ! utilskernel::OpenMPUtils::isSorted( &csrJA[start], end - start, common::CompareOp::LT ) )
         {
             isSorted = false;
         }
@@ -327,9 +316,8 @@ void OpenMPCSRUtils::sortRows(
     ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType nnz,
-    const bool keepDiagonalFirst )
+    const IndexType,
+    const IndexType nnz )
 {
     if ( nnz != csrIA[numRows] )
     {
@@ -338,7 +326,7 @@ void OpenMPCSRUtils::sortRows(
 
     SCAI_REGION( "OpenMP.CSR.sortRows" )
 
-    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, keep diagonals = " << keepDiagonalFirst )
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows" )
 
     #pragma omp parallel for
 
@@ -347,16 +335,6 @@ void OpenMPCSRUtils::sortRows(
         IndexType start = csrIA[i];
 
         const IndexType end = csrIA[i + 1];
-
-        // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
-
-        if ( keepDiagonalFirst && i < numColumns && start < end )
-        {
-            if ( csrJA[start] == i )
-            {
-                start++;    // so sorting will start at next position
-            }
-        }
 
         // call quicksort implementation of utilskernel
 
@@ -418,48 +396,29 @@ template<typename ValueType>
 void OpenMPCSRUtils::countNonZeros(
     IndexType sizes[],
     const IndexType ia[],
-    const IndexType ja[],
+    const IndexType[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
-    typedef typename common::TypeTraits<ValueType>::RealType RealType;
-
-    RealType absEps = eps;
-
     SCAI_REGION( "OpenMP.CSRUtils.countNonZeros" )
-    SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
-                   << "), eps = " << eps << ", diagonal = " << diagonalFlag )
+
+    SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " 
+                            << numRows << "), eps = " << eps  )
     #pragma omp parallel for
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        bool foundDiagonal = false;  // may be there are more diagonal elements that are zero
-
         IndexType cnt = 0;
 
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            bool countDiagonal = false;
-
-            if ( diagonalFlag && ( ja[jj] == i ) && !foundDiagonal )
+            if ( common::Math::abs( values[jj] ) <= eps )
             {
-                foundDiagonal = true;
-                countDiagonal = true;
+                continue;  // skip this zero element
             }
 
-            RealType absVal = common::Math::abs( values[jj] );
-
-            bool nonZero = absVal > absEps;
-
-            SCAI_LOG_TRACE( logger, "i = " << i << ", j = " << ja[jj] << ", val = " << values[jj]
-                            << ", isDiagonal = " << countDiagonal << ", nonZero = " << nonZero )
-
-            if ( nonZero || countDiagonal )
-            {
-                ++cnt;
-            }
+            ++cnt;
         }
 
         SCAI_LOG_TRACE( logger, "sizes[" << i << "] = " << cnt )
@@ -478,46 +437,32 @@ void OpenMPCSRUtils::compress(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
-    typedef typename common::TypeTraits<ValueType>::RealType RealType;
-
-    RealType absEps = eps;
-
     SCAI_REGION( "OpenMP.CSR.compress" )
-    SCAI_LOG_INFO( logger, "compress of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
-                   << "), eps = " << eps << ", diagonal = " << diagonalFlag )
-    #pragma omp parallel for
 
+    SCAI_LOG_INFO( logger, "compress of CSR<" << TypeTraits<ValueType>::id() << ">( " 
+                            << numRows << "), eps = " << eps )
+
+    #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        bool foundDiagonal = false;  // may be there are more diagonal elements that are zero
-
         IndexType offs = newIA[i];
 
         SCAI_LOG_TRACE( logger, "row i: " << ia[i] << ":" << ia[i + 1] << " -> " << newIA[i] << ":" << newIA[i + 1] )
 
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            bool countDiagonal = false;
-
-            if ( diagonalFlag && ( ja[jj] == i ) && !foundDiagonal )
+            if ( common::Math::abs( values[jj] ) <= eps )
             {
-                foundDiagonal = true;
-                countDiagonal = true;
+                continue;  // skip this zero element
             }
 
-            RealType absVal = common::Math::abs( values[jj] );
+            // take over the non-zero element
 
-            bool nonZero = absVal > absEps;
-
-            if ( nonZero || countDiagonal )
-            {
-                newJA[ offs ]     = ja[jj];
-                newValues[ offs ] = values[jj];
-                ++offs;
-            }
+            newJA[ offs ]     = ja[jj];
+            newValues[ offs ] = values[jj];
+            ++offs;
         }
 
         // make sure that filling the compressed data fits to the computed offsets
@@ -588,6 +533,11 @@ bool OpenMPCSRUtils::setDiagonal(
         }
     }
 
+    if ( diagonal == ValueType( 0 ) )
+    {
+        okay = true;  // missing diagonal entries have the correct value
+    }
+
     return okay;
 }
 /* --------------------------------------------------------------------------- */
@@ -602,6 +552,8 @@ bool OpenMPCSRUtils::setDiagonalV(
     const bool )
 {
     bool okay = true;
+
+    const ValueType ZERO = 0;  
 
     #pragma omp parallel for 
 
@@ -619,9 +571,9 @@ bool OpenMPCSRUtils::setDiagonalV(
             }
         }
 
-        if ( !found )
+        if ( !found && diagonal[i] != ZERO )
         {
-            okay = false;
+            okay = false;  // so we could not set a non-zero value
         }
     }
 
@@ -1207,7 +1159,7 @@ void OpenMPCSRUtils::jacobi(
     const ValueType omega,
     const IndexType numRows )
 {
-    SCAI_LOG_INFO( logger,
+    SCAI_LOG_DEBUG( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
@@ -1225,11 +1177,21 @@ void OpenMPCSRUtils::jacobi(
         for ( IndexType i = 0; i < numRows; i++ )
         {
             ValueType temp = rhs[i];
-            const ValueType diag = csrValues[csrIA[i]];
 
-            for ( IndexType j = csrIA[i] + 1; j < csrIA[i + 1]; j++ )
+            ValueType diag = 0;
+
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; jj++ )
             {
-                temp -= csrValues[j] * oldSolution[csrJA[j]];
+                IndexType j = csrJA[jj];
+
+                if ( j == i )
+                {
+                    diag = csrValues[jj];
+                }
+                else
+                {
+                    temp -= csrValues[jj] * oldSolution[j];
+                }
             }
 
             // here we take advantange of a good branch precondiction

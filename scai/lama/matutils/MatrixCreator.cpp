@@ -389,10 +389,6 @@ void MatrixCreator::buildPoisson(
     matrix.assignLocal( localMatrix, gridDistribution );   
     matrix.redistribute( gridDistribution, gridDistribution );     // builds also halo
 
-    // but now the local part of matrixA should have the diagonal property as global column // indexes have been localized
-    // is not for each storage format the case
-    // SCAI_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "local storage data has not diagonal property: " << matrix )
-
     SCAI_LOG_INFO( logger, "built matrix A = " << matrix )
 }
 

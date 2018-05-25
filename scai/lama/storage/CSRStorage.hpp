@@ -335,27 +335,22 @@ public:
 
     /** This method sorts entries in each row by column indexes.
      *
-     *  @param[in] keepDiagonalFirst if true first entry of a row remains unchanged if diagonal entry
-     *
-     *  This method does not force diagonal property for the storage as it will not fill up
-     *  a diagonal element if it is not available.
-     *
-     *  Note: matrix multiplication with CUSparse requires sorted rows, diagonalProperty = false
+     *  Note: matrix multiplication with CUSparse requires sorted rows
      */
-    void sortRows( bool keepDiagonalFirst );
+    void sortRows();
 
-    bool hasSortedRows( bool allowDiagonalFirst );
+    /** 
+     *  @brief Query if the entries in each row are sorted according to the column indexes. 
+     */
+    bool hasSortedRows();
 
-    /** Set the diagonal elements as first entries. */
-
+    /** 
+     *  @brief Set the diagonal element as first entry in each row.
+     * 
+     *  This operation might be used to optimize the access to the diagonal of the storage.
+     *  The methods setDiagonal(V) and getDiagonal might be significantly faster. 
+     */
     void setDiagonalFirst();
-
-    /** This method overrides _MatrixStorage::setDiagonalProperty
-     *
-     *  This routine only moves the diagonal elements at the beginning of each rows.
-     *  It throws an exception if there is no entry for the diagonal element.
-     */
-    virtual void setDiagonalProperty();
 
     /******************************************************************/
     /*  set - get  row - column                                       */
@@ -391,16 +386,25 @@ public:
 
     /** 
      * Implementation of pure method MatrixStorage<ValueType>::getDiagonal
+     *
+     * This method might be faster if either the diagonal element is the first entry in a row
+     * or if the entries of each row are sorted.
      */
     virtual void getDiagonal( hmemo::HArray<ValueType>& diagonal ) const;
 
     /** 
      * Implementation of pure method MatrixStorage<ValueType>::setDiagonalV
+     *
+     * This method does not change the sparsity pattern. So it throws an
+     * exception if a non-zero value is set for a non existing entry.
      */
     virtual void setDiagonalV( const hmemo::HArray<ValueType>& diagonal );
 
     /** 
      * Implementation of pure method MatrixStorage<ValueType>::setDiagonal
+     *
+     * This method does not change the sparsity pattern. So it throws an
+     * exception if a non-zero value is set for a non existing entry.
      */
     virtual void setDiagonal( const ValueType value );
 
@@ -453,7 +457,7 @@ public:
     /**
      *  @brief Override default implementation MatrixStorage<ValueType>::compress 
      */
-    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+    virtual void compress( const RealType<ValueType> eps = 0 );
 
     /** Swap this CSR storage data with another CSR storage.
      *
@@ -465,7 +469,7 @@ public:
      * @brief Swap the CSR arrays with new arrays.
      *
      * This routine can be used to build a CSR storage with new values. Other member variables
-     * (e.g. mDiagonalProperty, rowIndexes, ... ) will be defined correctly.
+     * will be defined correctly.
      */
     void swap( hmemo::HArray<IndexType>& ia, hmemo::HArray<IndexType>& ja, hmemo::HArray<ValueType>& values );
 
@@ -675,8 +679,6 @@ public:
         hmemo::HArray<ValueType> values,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
-    using _MatrixStorage::hasDiagonalProperty;
-
     using _MatrixStorage::prefetch;
     using _MatrixStorage::getContextPtr;
 
@@ -697,23 +699,15 @@ private:
 
     bool mSortedRows; //!< if true, the column indexes in each row are sorted
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
     static std::string initTypeName();
 
-    /**
-     * @brief checks if in each row the diagonal element is stored first.
-     *
-     */
-    virtual bool checkDiagonalProperty() const;
-
     /** Help routine that computes array with row indexes for non-empty rows.
      *  The array is only built if number of non-zero rows is smaller than
      *  a certain percentage ( mThreshold ).
      */
-
     void buildRowIndexes();
 
     /** Logger for this class. */
@@ -785,7 +779,6 @@ CSRStorage<ValueType>::CSRStorage( const CSRStorage<ValueType>& other ) :
     mJA     = other.mJA;
     mValues = other.mValues;
 
-    mDiagonalProperty = other.mDiagonalProperty;
     mSortedRows       = other.mSortedRows;
     buildRowIndexes();
 }

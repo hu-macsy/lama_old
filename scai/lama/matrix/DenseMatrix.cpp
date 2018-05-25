@@ -2557,19 +2557,6 @@ IndexType DenseMatrix<ValueType>::getNumValues() const
 }
 
 template<typename ValueType>
-bool DenseMatrix<ValueType>::hasDiagonalProperty() const
-{
-// just a dummy
-    return false;
-}
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::resetDiagonalProperty()
-{
-// just a dummy
-}
-
-template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
     common::ScalarType type = common::getScalarType<ValueType>();

@@ -201,8 +201,7 @@ public:
         const hmemo::HArray<ValueType>& localValues,
         const hmemo::HArray<IndexType>& haloIA,
         const hmemo::HArray<IndexType>& haloJA,
-        const hmemo::HArray<ValueType>& haloValues,
-        const IndexType numKeepDiagonals );
+        const hmemo::HArray<ValueType>& haloValues );
 };
 
 /* -------------------------------------------------------------------------- */

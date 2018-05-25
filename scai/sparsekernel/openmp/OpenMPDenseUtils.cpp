@@ -92,7 +92,6 @@ IndexType OpenMPDenseUtils::nonZeroValues(
 template<typename DenseValueType>
 void OpenMPDenseUtils::getCSRSizes(
     IndexType csrSizes[],
-    bool diagonalFlag,
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType denseValues[],
@@ -128,10 +127,6 @@ void OpenMPDenseUtils::getCSRSizes(
             {
                 ++nonZeros;
             }
-            else if ( i == j && diagonalFlag )
-            {
-                ++nonZeros; // count also zero elements for diagonals
-            }
         }
 
         csrSizes[i] = nonZeros;
@@ -145,7 +140,6 @@ void OpenMPDenseUtils::getCSRValues(
     IndexType csrJA[],
     CSRValueType csrValues[],
     const IndexType csrIA[],
-    bool diagonalFlag,
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType denseValues[],
@@ -165,22 +159,8 @@ void OpenMPDenseUtils::getCSRValues(
     {
         IndexType offset = csrIA[i];
 
-        if ( i < numColumns && diagonalFlag )
-        {
-            // start with diagonal element in any case
-            const DenseValueType& value = denseValues[denseindex( i, i, numRows, numColumns )];
-            csrValues[offset] = static_cast<CSRValueType>( value );
-            csrJA[offset] = i;
-            offset++;
-        }
-
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            if ( i == j && diagonalFlag )
-            {
-                continue; // diagonal element is already first element in ja, values
-            }
-
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
             RealType absValue = common::Math::abs( value );

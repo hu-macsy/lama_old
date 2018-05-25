@@ -117,37 +117,6 @@ void _Matrix::setIdentity( const IndexType n )
 
 /* ----------------------------------------------------------------------- */
 
-void _Matrix::setDiagonalProperty()
-{
-    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), getColDistribution(),
-                          "col/row distribution must be equal to set diagonal property" );
-
-    // Now we can set it for the local storage
-
-    _MatrixStorage& m = const_cast<_MatrixStorage&>( getLocalStorage() );
-
-    bool errorFlag = false;
-
-    try
-    {
-        m.setDiagonalProperty();
-    }
-    catch ( Exception& e )
-    {
-        SCAI_LOG_ERROR( logger, "This processor could not force diagonal property" )
-        errorFlag = true;
-    }
-
-    errorFlag = getRowDistribution().getCommunicator().any( errorFlag );
-
-    if ( errorFlag )
-    {
-        COMMON_THROWEXCEPTION( "Not all processes could set diagonal property" )
-    }
-}
-
-/* ----------------------------------------------------------------------- */
-
 void _Matrix::checkSettings() const
 {
     if ( !mColDistribution )

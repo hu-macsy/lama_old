@@ -97,6 +97,22 @@ public:
         const hmemo::HArray<ValueType>& values,
         hmemo::ContextPtr loc );
 
+    /** @brief This method generates new ELL data where all zero elemens are removed.
+     *
+     *  @param[in,out] ellIA, ellJA, ellValues is the ELL data that is compressed
+     *  @param[in,out] numValuesPerRow size for each row in the arrays ellJA and ellValues
+     *  @param[in] eps a value is considered to be zero if abs( value ) <= eps
+     *  @param[in] loc specficies the context where compression should be done
+     */
+    template<typename ValueType>
+    static void compress(
+        hmemo::HArray<IndexType>& ellIA,
+        hmemo::HArray<IndexType>& ellJA,
+        hmemo::HArray<ValueType>& ellValues,
+        IndexType& numValuesPerRow,
+        const RealType<ValueType> eps,
+        hmemo::ContextPtr loc );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

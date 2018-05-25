@@ -473,8 +473,7 @@ void StorageMethods<ValueType>::joinCSR(
     const HArray<ValueType>& localValues,
     const HArray<IndexType>& haloIA,
     const HArray<IndexType>& haloJA,
-    const HArray<ValueType>& haloValues,
-    const IndexType numKeepDiagonals )
+    const HArray<ValueType>& haloValues )
 {
     SCAI_REGION( "Storage.joinCSR" )
     SCAI_ASSERT_EQUAL_ERROR( localIA.size(), haloIA.size() )
@@ -482,7 +481,8 @@ void StorageMethods<ValueType>::joinCSR(
     SCAI_ASSERT_EQUAL_ERROR( haloJA.size(), haloValues.size() )
     IndexType numRows = localIA.size() - 1;
     SCAI_LOG_INFO( logger,
-                   "joinCSRData, #rows = " << numRows << ", local has " << localValues.size() << " elements" << ", halo has " << haloValues.size() << " elements" << ", keep " << numKeepDiagonals << " diagonals " )
+                   "joinCSRData, #rows = " << numRows << ", local has " << localValues.size() << " elements" 
+                   << ", halo has " << haloValues.size() << " elements" )
     WriteOnlyAccess<IndexType> ia( outIA, numRows + 1 );
     ReadAccess<IndexType> ia1( localIA );
     ReadAccess<IndexType> ia2( haloIA );
@@ -512,19 +512,6 @@ void StorageMethods<ValueType>::joinCSR(
         IndexType offset = ia[i];
         IndexType offset1 = ia1[i];
         IndexType offset2 = ia2[i];
-
-        if ( i < numKeepDiagonals )
-        {
-            if ( offset1 >= ia1[i + 1] )
-            {
-                SCAI_LOG_FATAL( logger, "no diagonal element for first CSR input data" )
-                COMMON_THROWEXCEPTION( "keep diagonal error" )
-                // @todo this exception caused segmentation faults when thrown
-            }
-
-            ja[offset] = ja1[offset1];
-            values[offset++] = values1[offset1++];
-        }
 
         // merge other data by order of column indexes
 

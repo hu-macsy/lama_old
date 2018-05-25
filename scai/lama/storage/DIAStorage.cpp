@@ -96,8 +96,6 @@ DIAStorage<ValueType>::DIAStorage( ContextPtr ctx ) :
     mValues( ctx )
 {
     SCAI_LOG_DEBUG( logger, "DIAStorage( 0 x 0 ) @ " << *ctx )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -110,8 +108,6 @@ DIAStorage<ValueType>::DIAStorage( IndexType numRows, IndexType numColumns, Cont
     mValues( ctx )
 {
     SCAI_LOG_DEBUG( logger, "DIAStorage( " << getNumRows() << " x " << getNumColumns() << " @ " << *ctx )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -124,13 +120,11 @@ DIAStorage<ValueType>::DIAStorage(
     HArray<ValueType> values,
     ContextPtr ctx ) :
 
-   MatrixStorage<ValueType>( numRows, numColumns, ctx ), 
-   mOffset( std::move( offsets ) ), 
-   mValues( std::move( values  ) )
+    MatrixStorage<ValueType>( numRows, numColumns, ctx ), 
+    mOffset( std::move( offsets ) ), 
+    mValues( std::move( values  ) )
 {
     // set diagonal property inherited as given
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -250,8 +244,6 @@ void DIAStorage<ValueType>::assignDIA( const DIAStorage<OtherValueType>& other )
     HArrayUtils::assign( mOffset, other.getOffsets(), ctx );
     HArrayUtils::assign( mValues, other.getValues(), ctx );
     
-    _MatrixStorage::resetDiagonalProperty();
-    
     SCAI_LOG_DEBUG( logger, "assignDIA: other = " << other << ", this = " << *this )
 }
 
@@ -308,8 +300,6 @@ void DIAStorage<ValueType>::clear()
 
     mOffset.clear();
     mValues.clear();
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -561,6 +551,12 @@ void DIAStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 {
     IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
 
+    if ( numDiagonalElements == 0 )
+    {
+        diagonal.clear();
+        return;
+    }
+
     // find the index for the main diagonal in array mOffsets
 
     IndexType mainIndex = getMainIndex();
@@ -587,6 +583,13 @@ template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
     IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
+
+    SCAI_ASSERT_EQ_ERROR( diagonal.size(), numDiagonalElements, "serious mismtach for diagonal" )
+
+    if ( numDiagonalElements == 0 )
+    {
+        return;
+    }
 
     // find the index for the main diagonal in array mOffsets
 
@@ -699,21 +702,6 @@ void DIAStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DIAStorage<ValueType>::checkDiagonalProperty() const
-{
-    if ( getNumRows() == 0 || getNumColumns() == 0 )
-    {
-        return true;
-    }
-
-    IndexType mainIndex = getMainIndex();
-
-    return mainIndex != invalidIndex;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void DIAStorage<ValueType>::check( const char* /* msg */ ) const
 {
     IndexType numDiagonals = mOffset.size();
@@ -735,8 +723,6 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
     mOffset = HArray<IndexType>( { 0 }, getContextPtr() );
   
     HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), getContextPtr() );
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -752,8 +738,6 @@ void DIAStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
     mOffset = HArray<IndexType>( { 0 }, getContextPtr() );
     
     HArrayUtils::setArray( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -924,8 +908,6 @@ void DIAStorage<ValueType>::setCSRDataImpl(
             }
         }
     }
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1025,8 +1007,6 @@ void DIAStorage<ValueType>::purge()
 
     mOffset.purge();
     mValues.purge();
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1039,8 +1019,6 @@ void DIAStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     clear();
 
     _MatrixStorage::setDimension( numRows, numColumns );
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

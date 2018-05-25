@@ -79,7 +79,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
-    BOOST_CHECK( csrStorage.hasDiagonalProperty() );
     {
         ReadAccess<IndexType> csrIA( csrStorage.getIA() );
         ReadAccess<IndexType> csrJA( csrStorage.getJA() );
@@ -105,7 +104,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     BOOST_REQUIRE_EQUAL( numRows, csrStorageCopy.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorageCopy.getNumValues() );
-    BOOST_CHECK( csrStorageCopy.hasDiagonalProperty() );
     {
         ReadAccess<IndexType> csrIA( csrStorageCopy.getIA() );
         ReadAccess<IndexType> csrJA( csrStorageCopy.getJA() );
@@ -160,7 +158,6 @@ BOOST_AUTO_TEST_CASE( moveConstructorTest )
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
-    BOOST_CHECK( csrStorage.hasDiagonalProperty() );
 
     // verify that move was okay
 
@@ -345,9 +342,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     BOOST_CHECK_EQUAL( IndexType( 0 ), csrValues.size() );
     BOOST_CHECK_EQUAL( numValues, csrStorage.getNumValues() );
 
-    bool diagonalProperty = csrStorage.hasDiagonalProperty();
-
-    csrStorage.sortRows( diagonalProperty );
+    csrStorage.sortRows( );
 
     const HArray<IndexType>& sortedJA = csrStorage.getJA();
     const HArray<ValueType>& sortedVals = csrStorage.getValues();

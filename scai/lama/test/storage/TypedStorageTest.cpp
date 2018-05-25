@@ -765,12 +765,17 @@ BOOST_AUTO_TEST_CASE( jacobiTest )
         storage1->getDiagonal( diagonalInverse );
         HArrayUtils::compute( diagonalInverse, ValueType( 1 ), common::BinaryOp::DIVIDE, diagonalInverse );
         storage1->setDiagonal( 0 );
+
         ValueType omegas[] = { 1.0, 0.8, 0.5 };
         const int NCASES = sizeof( omegas ) / sizeof( ValueType );
 
         for ( int k = 0; k < NCASES; ++k )
         {
             ValueType omega = omegas[k];
+
+            SCAI_LOG_DEBUG( logger, "run jacobi, omega = " << omega << ", format = " << storage.getFormat() 
+                                    << ", type = " << storage.getValueType() )
+
             HArray<ValueType> solution1( context );
             HArray<ValueType> solution2( context );
             storage.jacobiIterate( solution1, oldSolution, rhs, omega );
@@ -782,6 +787,7 @@ BOOST_AUTO_TEST_CASE( jacobiTest )
             utilskernel::HArrayUtils::arrayPlusArray( solution2, omega, solution2,
                     ValueType( 1 ) - omega, oldSolution, solution2.getValidContext() );
             // solution1 and solution2 must be the same
+
             BOOST_CHECK( HArrayUtils::maxDiffNorm( solution1, solution2 ) < common::TypeTraits<ValueType>::small() );
         }
     }
@@ -811,8 +817,13 @@ BOOST_AUTO_TEST_CASE( jacobiAsyncTest )
         for ( int k = 0; k < NCASES; ++k )
         {
             ValueType omega = omegas[k];
+
+            SCAI_LOG_DEBUG( logger, "run jacobi async, omega = " << omega << ", format = " << storage.getFormat() 
+                                    << ", type = " << storage.getValueType() )
+
             HArray<ValueType> solution1( context );
             HArray<ValueType> solution2( context );
+
             storage.jacobiIterate( solution1, oldSolution, rhs, omega );
             {
                 std::unique_ptr<tasking::SyncToken> token;

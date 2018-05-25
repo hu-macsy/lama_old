@@ -101,8 +101,6 @@ StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const commo
     mGrid( grid ),
     mStencil( stencil )
 {
-    mDiagonalProperty = true;
-
     // #dimension of grid and stencil must be equal
 
     SCAI_ASSERT_EQ_ERROR( grid.nDims(), stencil.nDims(), "dimensions of grid an stencil must be equal" )
@@ -186,8 +184,6 @@ void StencilStorage<ValueType>::setIdentity( const common::Grid& grid )
         default:
             COMMON_THROWEXCEPTION( "unsupported stencil dim for grid " << grid )
     }
-
-    mDiagonalProperty = true;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -705,8 +701,6 @@ void StencilStorage<ValueType>::assign( const _MatrixStorage& other )
     mGrid = otherStencilStorage.mGrid;
 
     mStencil = otherStencilStorage.mStencil;
-
-    mDiagonalProperty = other.hasDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -731,8 +725,6 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
     }
 
     mStencil.transpose( otherStencilStorage.mStencil );
-
-    mDiagonalProperty = other.hasDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

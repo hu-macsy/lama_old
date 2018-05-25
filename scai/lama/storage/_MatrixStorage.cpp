@@ -76,7 +76,6 @@ _MatrixStorage::_MatrixStorage( IndexType numRows, IndexType numColumns, Context
     mNumColumns( numColumns ),
     mRowIndexes(), 
     mCompressThreshold( 0.0f ), 
-    mDiagonalProperty( false ), 
     mContext( ctx )
 
 {
@@ -90,7 +89,6 @@ _MatrixStorage::_MatrixStorage( const _MatrixStorage& other ) :
     mNumColumns( other.mNumColumns ),
     mRowIndexes(),
     mCompressThreshold( other.mCompressThreshold ),
-    mDiagonalProperty( other.mDiagonalProperty ),
     mContext( other.mContext )
 
 {
@@ -103,7 +101,6 @@ _MatrixStorage::_MatrixStorage( _MatrixStorage&& other ) noexcept :
     mNumColumns( other.mNumColumns ),
     mRowIndexes( std::move( other.mRowIndexes ) ),
     mCompressThreshold( other.mCompressThreshold ),
-    mDiagonalProperty( other.mDiagonalProperty ),
     mContext( other.mContext )
 
 {
@@ -127,8 +124,6 @@ void _MatrixStorage::setDimension( const IndexType numRows, const IndexType numC
     // in any case set dimensions
     mNumRows = numRows;
     mNumColumns = numColumns;
-    // due to new settings assume that diagonalProperty, rowIndexes become invalid
-    mDiagonalProperty = false;
     mRowIndexes.clear();
     // but do not reset threshold
 }
@@ -187,7 +182,6 @@ void _MatrixStorage::swap( _MatrixStorage& other )
     std::swap( mNumColumns, other.mNumColumns );
     mRowIndexes.swap( other.mRowIndexes );
     std::swap( mCompressThreshold, other.mCompressThreshold );
-    std::swap( mDiagonalProperty, other.mDiagonalProperty );
     std::swap( mContext, other.mContext );
 }
 
@@ -201,7 +195,6 @@ void _MatrixStorage::_assignTranspose( const _MatrixStorage& other )
     mNumColumns = tmpNumRows;
     mRowIndexes.clear();
     // remains unchanged: mCompressThreshold = other.mCompressThreshold;
-    mDiagonalProperty = false;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -212,7 +205,6 @@ void _MatrixStorage::_assign( const _MatrixStorage& other )
     mNumColumns = other.mNumColumns;
     mRowIndexes.clear();
     // remains unchanged: mCompressThreshold = other.mCompressThreshold;
-    mDiagonalProperty = false;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -239,31 +231,8 @@ void _MatrixStorage::moveImpl( _MatrixStorage&& other )
 
     mContext = other.mContext;
 
-    mDiagonalProperty = other.mDiagonalProperty;
     mRowIndexes = std::move( other.mRowIndexes );
     mCompressThreshold = other.mCompressThreshold;
-}
-
-/* --------------------------------------------------------------------------- */
-
-void _MatrixStorage::setDiagonalProperty()
-{
-    // default implementation just throw an exception if diagonal property is not given
-
-    mDiagonalProperty = checkDiagonalProperty();
-
-    if ( !mDiagonalProperty )
-    {
-        COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set it" )
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-void _MatrixStorage::resetDiagonalProperty()
-{
-    mDiagonalProperty = checkDiagonalProperty();
-    SCAI_LOG_DEBUG( logger, *this << ": diagonal property = " << mDiagonalProperty )
 }
 
 /* --------------------------------------------------------------------------- */

@@ -187,6 +187,97 @@ void ELLUtils::getDiagonal(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void ELLUtils::compress(
+    HArray<IndexType>& ellIA,
+    HArray<IndexType>& ellJA,
+    HArray<ValueType>& ellValues,
+    IndexType& numValuesPerRow, 
+    const RealType<ValueType> eps,
+    ContextPtr prefLoc )
+{
+    SCAI_REGION( "Sparse.ELL.compress" )
+
+    IndexType numRows = ellIA.size();
+
+    SCAI_ASSERT_EQ_ERROR( numRows * numValuesPerRow, ellJA.size(), "serious size mismatch for ELL arrays" )
+    SCAI_ASSERT_EQ_ERROR( numRows * numValuesPerRow, ellValues.size(), "serious size mismatch for ELL arrays" )
+
+    HArray<IndexType> newIA;   // will contain size of each compressed row
+
+    ContextPtr loc = prefLoc;
+
+    static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
+    compressIA.getSupportedContext( loc );
+
+    {
+        ReadAccess<IndexType> rIA( ellIA, loc );
+        ReadAccess<IndexType> rJA( ellJA, loc );
+        ReadAccess<ValueType> rValues( ellValues, loc );
+
+        WriteOnlyAccess<IndexType> wNewIA( newIA, loc, numRows );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        compressIA[loc]( wNewIA.get(), rIA.get(), rJA.get(), rValues.get(), numRows, numValuesPerRow, eps );
+    }
+
+    IndexType nnzOld = HArrayUtils::reduce( ellIA, common::BinaryOp::ADD, prefLoc );
+    IndexType nnzNew = HArrayUtils::reduce( newIA, common::BinaryOp::ADD, prefLoc );
+
+    if ( nnzOld == nnzNew )
+    {
+        return;
+    }
+
+    IndexType newNumValuesPerRow = HArrayUtils::reduce( newIA, common::BinaryOp::MAX, prefLoc );
+
+    static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
+    loc = prefLoc;
+    compressValues.getSupportedContext( loc );
+
+    if ( newNumValuesPerRow == numValuesPerRow )
+    {
+        // compress in place
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<IndexType> rIA( ellIA, loc );
+        WriteAccess<ValueType> wValues( ellValues, loc );
+        WriteAccess<IndexType> wJA( ellJA, loc );
+        compressValues[loc]( wJA.get(), wValues.get(), numValuesPerRow,
+                             rIA.get(), wJA.get(), wValues.get(), numRows, numValuesPerRow, eps );
+    }
+    else
+    {   // compress in new arrays
+
+        HArray<ValueType> newValues;
+        HArray<IndexType> newJA;
+
+        IndexType newSize = numRows * newNumValuesPerRow;
+
+        {
+            SCAI_CONTEXT_ACCESS( loc )
+
+            ReadAccess<IndexType> rOldIA( ellIA, loc );
+            ReadAccess<IndexType> rOldJA( ellJA, loc );
+            ReadAccess<ValueType> rOldValues( ellValues, loc );
+            WriteOnlyAccess<ValueType> wNewValues( newValues, loc, newSize );
+            WriteOnlyAccess<IndexType> wNewJA( newJA, loc, newSize );
+            compressValues[loc]( wNewJA.get(), wNewValues.get(), newNumValuesPerRow,
+                                 rOldIA.get(), rOldJA.get(), rOldValues.get(), numRows, numValuesPerRow, eps );
+        }
+
+        ellJA = std::move( newJA );
+        ellValues = std::move( newValues );
+        numValuesPerRow = newNumValuesPerRow;
+    }
+
+    ellIA = std::move( newIA );
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define ELLUTILS_SPECIFIER( ValueType )              \
                                                      \
     template void ELLUtils::getDiagonal(             \
@@ -196,6 +287,13 @@ void ELLUtils::getDiagonal(
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \
             const HArray<ValueType>&,                \
+            ContextPtr );                            \
+    template void ELLUtils::compress(                \
+            HArray<IndexType>&,                      \
+            HArray<IndexType>&,                      \
+            HArray<ValueType>&,                      \
+            IndexType&,                              \
+            const RealType<ValueType>,               \
             ContextPtr );                            \
 
 SCAI_COMMON_LOOP( ELLUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )

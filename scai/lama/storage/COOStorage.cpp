@@ -124,7 +124,6 @@ template<typename ValueType>
 void COOStorage<ValueType>::verifySorting()
 {
     COOUtils::normalize( mIA, mJA, mValues, common::BinaryOp::COPY, getContextPtr() );
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -279,7 +278,7 @@ void COOStorage<ValueType>::assignCOO( const COOStorage<OtherValueType>& other )
     HArrayUtils::setArray( mJA, other.getJA(), common::BinaryOp::COPY, ctx );
     HArrayUtils::setArray( mValues, other.getValues(), common::BinaryOp::COPY, ctx );
 
-    _MatrixStorage::resetDiagonalProperty();
+    // normalize not required as other storage should contain normalized data
 }
 
 /* --------------------------------------------------------------------------- */
@@ -311,14 +310,6 @@ void COOStorage<ValueType>::print( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool COOStorage<ValueType>::checkDiagonalProperty() const
-{
-    return COOUtils::hasDiagonalProperty( getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void COOStorage<ValueType>::clear()
 {
     _MatrixStorage::setDimension( 0, 0 );
@@ -326,8 +317,6 @@ void COOStorage<ValueType>::clear()
     mIA.clear();
     mJA.clear();
     mValues.clear();
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -358,8 +347,6 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     HArrayUtils::setOrder( mJA, size, getContextPtr() );
 
     HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), getContextPtr() );
-
-    mDiagonalProperty = true;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -374,8 +361,6 @@ void COOStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
     HArrayUtils::setOrder( mJA, size, getContextPtr() );
 
     HArrayUtils::setArray( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
-
-    mDiagonalProperty = true;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -407,9 +392,11 @@ void COOStorage<ValueType>::setCOOData(
 #ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "COOStorage.setCOOData" );
 #endif
-    mDiagonalProperty = checkDiagonalProperty();
+
     // Note: no support for row indexes in COO format
     SCAI_LOG_INFO( logger, *this << ": set COO by arrays ia, ja, values" )
+
+    verifySorting();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -422,8 +409,6 @@ void COOStorage<ValueType>::purge()
     mIA.purge();
     mJA.purge();
     mValues.purge();
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -438,8 +423,6 @@ void COOStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     mIA.clear();
     mJA.clear();
     mValues.clear();
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -548,9 +531,13 @@ IndexType COOStorage<ValueType>::getNumValues() const
 template<typename ValueType>
 void COOStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for COO, no diagonal property" )
+    const IndexType M = getNumRows();
+    const IndexType N = getNumColumns();
 
-    COOUtils::setDiagonal( mValues, value, getNumRows(), getNumColumns(), mIA, mJA,  getContextPtr() );
+    SCAI_ASSERT_ERROR( COOUtils::hasDiagonalProperty( M, N, mIA, mJA, getContextPtr() ),
+                       "cannot set diagonal for COO, no diagonal property" )
+
+    COOUtils::setDiagonal( mValues, value, M, N, mIA, mJA,  getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -558,7 +545,7 @@ void COOStorage<ValueType>::setDiagonal( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::conj()
 {
-    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -839,7 +826,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
     hmemo::ContextPtr loc = prefLoc;
 
     SCAI_LOG_DEBUG( logger,
-                    "input csr data with " << numValues << "entries,  has diagonal property = " << mDiagonalProperty )
+                    "input csr data with " << numValues << "entries" )
 
     COOUtils::convertCSR2COO( mIA, ia, numValues, getContextPtr() );
 
@@ -852,9 +839,13 @@ void COOStorage<ValueType>::setCSRDataImpl(
 template<typename ValueType>
 void COOStorage<ValueType>::setDiagonalV( const hmemo::HArray<ValueType>& diagonal )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for COO, not all diagonal entries available" )
+    const IndexType M = getNumRows();
+    const IndexType N = getNumColumns();
 
-    COOUtils::setDiagonalV( mValues, diagonal, getNumRows(), getNumColumns(), mIA, mJA,  getContextPtr() );
+    SCAI_ASSERT_ERROR( COOUtils::hasDiagonalProperty( M, N, mIA, mJA, getContextPtr() ), 
+                       "cannot set diagonal for COO, not all diagonal entries available" )
+
+    COOUtils::setDiagonalV( mValues, diagonal, M, N, mIA, mJA,  getContextPtr() );
 }
 
 template<typename ValueType>
@@ -1020,8 +1011,8 @@ void COOStorage<ValueType>::jacobiIterate(
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.COO.jacobiIterate" )
+
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
-    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
@@ -1178,7 +1169,6 @@ void COOStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const
 {
     halo.halo2Global( mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

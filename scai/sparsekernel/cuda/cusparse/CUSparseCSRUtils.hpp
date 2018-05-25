@@ -157,8 +157,7 @@ public:
         const IndexType csrIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType numValues,
-        const bool keepDiagonalFirst );
+        const IndexType numValues );
 
 private:
 

@@ -55,6 +55,8 @@ using common::TypeTraits;
 using common::BinaryOp;
 using common::UnaryOp;
 
+using boost::test_tools::per_element;
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( DenseUtilsTest )
@@ -149,7 +151,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
     HArray<ValueType> csrValues;
 
     ValueType eps = 0;
-    bool diagonalProperty = false;
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -157,7 +158,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
         ReadAccess<ValueType> rDense( dense, loc );
         WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
 
-        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, rDense.get(), eps );
+        getCSRSizes[loc]( wIA.get(), numRows, numColumns, rDense.get(), eps );
     }
 
     {
@@ -190,7 +191,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
         WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
         WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
 
-        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty, numRows, numColumns,
+        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, numColumns,
                            rDense.get(), eps );
     }
 
@@ -231,9 +232,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRDiagTest, ValueType, scai_numeric_test_type
                                        6, 0, 0, 6
                                      };
 
-    const IndexType ia_values[]  = { 3,        4,           3,       2 };
-    const IndexType ja_values[]  = { 0, 2, 3,  1, 0, 2, 3,  2, 1, 3,  3,  0 };
-    const ValueType csr_values[] = { 1, 2, 3,  0, -3, 1, 2, 0, -5, 4, 6,  6 };
+    HArray<IndexType> expIA(     { 3,        3,        2,     2     } );
+    HArray<IndexType> expJA(     { 0, 2, 3,  0, 2, 3,  1, 3,  0,  3 } );
+    HArray<ValueType> expValues( { 1, 2, 3,  -3, 1, 2, -5, 4, 6,  6 } );
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 4;
@@ -249,7 +250,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRDiagTest, ValueType, scai_numeric_test_type
     HArray<ValueType> csrValues;
 
     ValueType eps = 0;
-    bool diagonalProperty = true;
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -257,17 +257,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRDiagTest, ValueType, scai_numeric_test_type
         ReadAccess<ValueType> rDense( dense, loc );
         WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
 
-        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, rDense.get(), eps );
+        getCSRSizes[loc]( wIA.get(), numRows, numColumns, rDense.get(), eps );
     }
 
-    {
-        ReadAccess<IndexType> rIA( csrIA, hostContext );
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( csrIA ) == hostReadAccess( expIA ), per_element() );
 
     IndexType numValues = 0;
 
@@ -290,20 +283,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRDiagTest, ValueType, scai_numeric_test_type
         WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
         WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
 
-        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty, numRows, numColumns,
+        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, numColumns,
                            rDense.get(), eps );
     }
 
-    {
-        ReadAccess<IndexType> rJA( csrJA, hostContext );
-        ReadAccess<ValueType> rValues( csrValues, hostContext );
-
-        for ( IndexType i = 0; i < numValues; ++i )
-        {
-            BOOST_CHECK_EQUAL( rJA[i], ja_values[i] );
-            BOOST_CHECK_EQUAL( rValues[i], csr_values[i] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( expJA ), per_element() );
+    BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( expValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */

@@ -92,9 +92,14 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
     SCAI_LOG_INFO( logger, "setDenseData, values = " << values )
 
-    // Note: diagonal property of sparse matrices will be set due to square matrix
-
     storage.assign( DenseStorage<ValueType>( numRows, numColumns, std::move( values ) ) );
+  
+    // force diagonal elements
+
+    HArray<IndexType> diagPos;
+    HArrayUtils::setSequence( diagPos, 0, 1, numRows );
+    HArray<ValueType> diagValues( numRows, ValueType( 0 ) );
+    storage.fillCOO( diagPos, diagPos, diagValues, common::BinaryOp::ADD );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -258,8 +263,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
         CSRStorage<ValueType> csrStorage;
         setDenseData( csrStorage );
 
-        BOOST_CHECK( csrStorage.hasDiagonalProperty() );
-
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageFormatted_" + typeName) + fileSuffix;
         BOOST_TEST_MESSAGE("FormattedStorage: fileName = " << fileName);
@@ -286,6 +289,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
             fileIO->readStorageInfo( numRows, numCols, numValues, fileName );
 
+            SCAI_LOG_DEBUG( logger, "read storage info for file " << fileName 
+                                    << " m = " << numRows << " n = " << numCols << ", nnz = " << numValues )
+
             BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
         }
 
@@ -293,8 +299,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
-
-        BOOST_CHECK( readStorage.hasDiagonalProperty() );
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
@@ -370,8 +374,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
         CSRStorage<ValueType> csrStorage;
         setDenseData( csrStorage );
 
-        BOOST_CHECK( csrStorage.hasDiagonalProperty() );
-
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageBinary_" + typeName) + fileSuffix;
         BOOST_TEST_MESSAGE("BinaryStorage: fileName = " << fileName);
@@ -393,7 +395,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
-        BOOST_CHECK( readStorage.hasDiagonalProperty() );
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
@@ -475,8 +476,8 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
         // We verify that the order of the column indexes has not changed
 
-        csrStorage.sortRows( false );
-        readStorage.sortRows( false );
+        csrStorage.sortRows();
+        readStorage.sortRows();
 
         BOOST_TEST( hostReadAccess( csrStorage.getIA() ) == hostReadAccess( readStorage.getIA() ), per_element() );
         BOOST_TEST( hostReadAccess( csrStorage.getJA() ) == hostReadAccess( readStorage.getJA() ), per_element() );

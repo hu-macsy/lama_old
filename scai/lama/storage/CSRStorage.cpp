@@ -113,7 +113,6 @@ CSRStorage<ValueType>::CSRStorage( ContextPtr ctx ) :
 {
     // no row indexes necessary
  
-    mDiagonalProperty = checkDiagonalProperty();
     mSortedRows = false;
 }
 
@@ -131,8 +130,6 @@ CSRStorage<ValueType>::CSRStorage( IndexType numRows, IndexType numColumns, Cont
                              << " x " << getNumColumns() << ", no non-zero elements @ " << *ctx )
 
     mSortedRows = false;
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -167,7 +164,6 @@ CSRStorage<ValueType>::CSRStorage(
 
     // now set properties
 
-    mDiagonalProperty = checkDiagonalProperty();
     mSortedRows       = false;
     buildRowIndexes();
 }
@@ -302,31 +298,6 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool CSRStorage<ValueType>::checkDiagonalProperty() const
-{
-    const IndexType m = getNumRows();
-    const IndexType n = getNumColumns();
-
-    // diagonal property is given if size of matrix is 0
-
-    if ( m == 0 || n == 0 )
-    {
-        return true;
-    }
-
-    // non-zero sized matrix with no values has not diagonal property
-
-    if ( mJA.size() == 0 )
-    {
-        return false;
-    }
-
-    return CSRUtils::hasDiagonalProperty( m, n, mIA, mJA, mSortedRows, getContextPtr() );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void CSRStorage<ValueType>::setIdentity( const IndexType size )
 {
     SCAI_LOG_DEBUG( logger, "set identity, size = " << size )
@@ -342,7 +313,6 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
     HArrayUtils::setSequence( mJA, start, inc, size, getContextPtr() );
     HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), getContextPtr() );
 
-    mDiagonalProperty = true;  // obviously given for identity matrix
     mSortedRows = true;        // obviously given for identity matrix
 
     // Note: we do not build row indexes, no row is empty
@@ -368,7 +338,6 @@ void CSRStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
     HArrayUtils::setSequence( mJA, start, inc, size, getContextPtr() );
     HArrayUtils::setArray( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
 
-    mDiagonalProperty = true; // obviously given for identity matrix
     mSortedRows = true; // obviously given for identity matrix
 
     // Note: we do not build row indexes, no row is empty
@@ -438,13 +407,6 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     HArrayUtils::assign( mValues, values, loc );
     HArrayUtils::assign( mJA, ja, loc );
 
-    /* do not sort rows, destroys diagonal property during redistribute
-
-     OpenMPCSRUtils::sortRowElements( myJA.get(), myValues.get(), myIA.get(),
-     getNumRows(), mDiagonalProperty );
-
-     */
-    mDiagonalProperty = checkDiagonalProperty();
     mSortedRows       = false;
     buildRowIndexes();
 }
@@ -452,32 +414,24 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::sortRows( bool keepDiagonalFirst )
+void CSRStorage<ValueType>::sortRows()
 {
     // sort in place 
 
-    CSRUtils::sortRows( mJA, mValues, mIA, getNumRows(), getNumColumns(), keepDiagonalFirst, getContextPtr() );
+    CSRUtils::sortRows( mJA, mValues, mIA, getNumRows(), getNumColumns(), getContextPtr() );
 
-    if ( keepDiagonalFirst )
-    {
-        mSortedRows       = false;     // no optimization for routines that rely on sorted data
-    }
-    else
-    {
-        mSortedRows       = true;
-    }
-
-    // Note: diagonal property remains unchanged
+    mSortedRows       = true;
+    // buildRowIndexes: no changes required
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool CSRStorage<ValueType>::hasSortedRows( bool allowDiagonalFirst )
+bool CSRStorage<ValueType>::hasSortedRows()
 {
     // sort in place 
 
-    return sparsekernel::CSRUtils::hasSortedRows( mIA, mJA, getNumRows(), getNumColumns(), allowDiagonalFirst, getContextPtr() );
+    return sparsekernel::CSRUtils::hasSortedRows( mIA, mJA, getNumRows(), getNumColumns(), getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -486,19 +440,12 @@ template<typename ValueType>
 void CSRStorage<ValueType>::setDiagonalFirst()
 {
     IndexType numDiagonals = std::min( getNumRows(), getNumColumns() );
-    IndexType numFirstDiagonals = sparsekernel::CSRUtils::setDiagonalFirst( mJA, mValues, mIA, getNumColumns(), getContextPtr() );
+    IndexType numFirstDiagonals = CSRUtils::setDiagonalFirst( mJA, mValues, mIA, getNumColumns(), getContextPtr() );
 
-    mDiagonalProperty = numDiagonals == numFirstDiagonals;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CSRStorage<ValueType>::setDiagonalProperty()
-{
-    setDiagonalFirst();
-
-    SCAI_ASSERT( mDiagonalProperty, "Missing diagonal element, cannot set diagonal property" )
+    if ( numDiagonals != numFirstDiagonals )
+    {
+        SCAI_LOG_WARN( logger, "Only set " << numFirstDiagonals << " of " << numDiagonals << " diagonal entries as first entry." )
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -507,12 +454,6 @@ template<typename ValueType>
 void CSRStorage<ValueType>::buildRowIndexes()
 {
     mRowIndexes.clear();
-
-    if ( mDiagonalProperty )
-    {
-        SCAI_LOG_INFO( logger, "buildRowIndexes not done as diagonal property implies at least one entry per row" );
-        return;
-    }
 
     if ( getNumRows() == 0 )
     {
@@ -581,7 +522,6 @@ void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other,
  
     _MatrixStorage::setDimension( mIA.size() - 1, other.getNumColumns() );
 
-    mDiagonalProperty = checkDiagonalProperty();
     buildRowIndexes();
 }
 
@@ -632,18 +572,16 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 
     mIA.resize( getNumRows() + 1 );
     HArrayUtils::setScalar( mIA, IndexType( 0 ), common::BinaryOp::COPY, getContextPtr() );
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
+void CSRStorage<ValueType>::compress( const RealType<ValueType> eps )
 {
     IndexType numValues = mJA.size();
 
-    sparsekernel::CSRUtils::compress( mIA, mJA, mValues, keepDiagonal, eps, this->getContextPtr() );
+    sparsekernel::CSRUtils::compress( mIA, mJA, mValues, eps, this->getContextPtr() );
 
     if ( mJA.size() == numValues )
     {
@@ -652,10 +590,9 @@ void CSRStorage<ValueType>::compress( const RealType<ValueType> eps, bool keepDi
     else
     {
         SCAI_LOG_INFO( logger, "compress, now " << mJA.size() << " entries left from " << numValues )
-
-        // sorting has not changed
-
-        mDiagonalProperty = checkDiagonalProperty();
+   
+        // mSorted remains unchanged
+        buildRowIndexes(); 
     }
 }
 
@@ -691,7 +628,6 @@ void CSRStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, 
     mIA.swap( ia );
     mJA.swap( ja );
     mValues.swap( values );
-    mDiagonalProperty = checkDiagonalProperty();
     // build new array of row indexes
     buildRowIndexes();
 }
@@ -716,7 +652,7 @@ void CSRStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "CSRStorage<" << common::getScalarType<ValueType>() << ">("
            << " size = " << getNumRows() << " x " << getNumColumns()
-           << ", nnz = " << getNumValues() << ", diag = " << mDiagonalProperty
+           << ", nnz = " << getNumValues() 
            << ", sorted = " << mSortedRows << ", ctx = " << *getContextPtr() << " )";
 }
 
@@ -1158,8 +1094,6 @@ void CSRStorage<ValueType>::assignCSR( const CSRStorage<OtherValueType>& other )
 
     mSortedRows = false; // other.mSortedRows;
 
-    _MatrixStorage::resetDiagonalProperty();
-
     buildRowIndexes();
 }
 
@@ -1191,7 +1125,6 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
         _MatrixStorage::_assignTranspose( other );
         SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
         other.buildCSCData( mIA, mJA, mValues );
-        mDiagonalProperty = checkDiagonalProperty();
         buildRowIndexes();
     }
 
@@ -1404,7 +1337,6 @@ void CSRStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const
 {
     halo.halo2Global( mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1710,7 +1642,6 @@ void CSRStorage<ValueType>::jacobiIterate(
 {
     SCAI_REGION( "Storage.CSR.jacobiIterate" )
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
-    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
@@ -1831,7 +1762,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     {
         SCAI_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
         auto csrA = convert<CSRStorage<ValueType>>( a );
-        csrA.sortRows( false );
+        csrA.sortRows();
         matrixTimesMatrix( alpha, csrA, b, beta, c );
         return;
     }
@@ -1840,7 +1771,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     {
         SCAI_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
         auto csrB = convert<CSRStorage<ValueType>>( b );
-        csrB.sortRows( false );
+        csrB.sortRows();
         matrixTimesMatrix( alpha, a, csrB, beta, c );
         return;
     }
@@ -1849,7 +1780,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     {
         SCAI_UNSUPPORTED( c << ": CSR temporary required for matrix add" )
         auto csrC = convert<CSRStorage<ValueType>>( c );
-        csrC.sortRows( false );
+        csrC.sortRows();
         matrixTimesMatrix( alpha, a, b, beta, csrC );
         return;
     }
@@ -2100,7 +2031,7 @@ RealType<ValueType> CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<Val
         return static_cast<ValueType>( 0.0 );
     }
 
-    bool sorted = mSortedRows && other.mSortedRows && ( mDiagonalProperty == other.mDiagonalProperty );
+    bool sorted = mSortedRows && other.mSortedRows;
     static LAMAKernel<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
     ContextPtr loc = this->getContextPtr();
     absMaxDiffVal.getSupportedContext( loc );
@@ -2181,7 +2112,7 @@ void CSRStorage<ValueType>::fillCOO(
         csr1.writeToFile( "COO_add.mtx" );
     }
 
-    sortRows( false );
+    sortRows();
 
     this->writeToFile( "CSR.mtx" );
 

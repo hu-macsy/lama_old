@@ -121,8 +121,7 @@ public:
         const ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const RealType<ValueType> eps,
-        bool keepDiagonal );
+        const RealType<ValueType> eps );
 
     /** Implementation for ELLKernelTrait::compressValues */
 
@@ -136,8 +135,7 @@ public:
         const ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const RealType<ValueType> eps,
-        bool keepDiagonal );
+        const RealType<ValueType> eps );
 
     /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
 

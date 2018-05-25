@@ -384,15 +384,15 @@ void MatrixStorage<ValueType>::moveImpl( MatrixStorage<ValueType>&& other )
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::joinHalo(
-    const _MatrixStorage& localData,
-    const _MatrixStorage& haloData,
+    const MatrixStorage<ValueType>& localData,
+    const MatrixStorage<ValueType>& haloData,
     const Halo& halo,
-    const Distribution& colDist,
-    const bool attemptDiagonalProperty )
+    const Distribution& colDist )
 {
     SCAI_REGION( "Storage.joinHalo" )
     SCAI_LOG_INFO( logger,
-                   "join local = " << localData << " with diag = " << localData.hasDiagonalProperty() << " and halo = " << haloData << ", col dist = " << colDist )
+                   "join local = " << localData << " and halo = " << haloData << ", col dist = " << colDist )
+
     //  Default solution joins storage data via the CSR format
     //  Note: this solution works also for *this == localData or haloData
     HArray<IndexType> localIA;
@@ -430,17 +430,9 @@ void MatrixStorage<ValueType>::joinHalo(
     HArray<IndexType> outIA;
     HArray<IndexType> outJA;
     HArray<ValueType> outValues;
-    IndexType numKeepDiagonals = 0;
-
-    if ( attemptDiagonalProperty && localData.hasDiagonalProperty() )
-    {
-        numKeepDiagonals = common::Math::min( localData.getNumRows(), localData.getNumColumns() );
-        SCAI_LOG_INFO( logger, localData << ": has diagonal property, numKeepDiagonals = " << numKeepDiagonals );
-    }
 
     // use static method of MatrixStorage
-    StorageMethods<ValueType>::joinCSR( outIA, outJA, outValues, localIA, localJA, localValues, haloIA, haloJA,
-                                        haloValues, numKeepDiagonals );
+    StorageMethods<ValueType>::joinCSR( outIA, outJA, outValues, localIA, localJA, localValues, haloIA, haloJA, haloValues );
     // here mIA is size array, NOT offsets
     const IndexType numRows = outIA.size() - 1;
     const IndexType numColumns = colDist.getGlobalSize();
@@ -606,7 +598,7 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
+void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps )
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
@@ -616,7 +608,7 @@ void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps, bool kee
 
     const IndexType numValues = csrJA.size();
 
-    sparsekernel::CSRUtils::compress( csrIA, csrJA, csrValues, keepDiagonal, eps, getContextPtr() );
+    sparsekernel::CSRUtils::compress( csrIA, csrJA, csrValues, eps, getContextPtr() );
 
     if ( csrJA.size() != numValues )
     {

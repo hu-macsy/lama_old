@@ -327,17 +327,15 @@ void StencilMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) cons
     {
         // temporary local storage with joined columns needed before
 
-        bool keepDiagonalProperty = true;
-
         if ( storage.getValueType() == getValueType() )
         {
             MatrixStorage<ValueType>& typedStorage = static_cast<MatrixStorage<ValueType>&>( storage );
-            typedStorage.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
+            typedStorage.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
         }     
         else
         {
             CSRStorage<ValueType> tmp; 
-            tmp.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
+            tmp.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
             storage = tmp;
         }
     }

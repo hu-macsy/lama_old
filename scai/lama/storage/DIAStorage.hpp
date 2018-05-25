@@ -469,7 +469,6 @@ public:
 
     void print( std::ostream& stream = std::cout ) const;
 
-    using _MatrixStorage::hasDiagonalProperty;
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
     using _MatrixStorage::getValueType;
@@ -481,7 +480,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -489,8 +487,6 @@ private:
 
     hmemo::HArray<IndexType> mOffset; //!< offset for each stored diagonal, entries are sorted
     hmemo::HArray<ValueType> mValues; //!< non-zero values, size is getNumRows() * mOffset.size()
-
-    virtual bool checkDiagonalProperty() const;
 
     // values might be stored row-wise or diagonal-wise
 

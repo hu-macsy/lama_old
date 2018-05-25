@@ -444,38 +444,31 @@ void OpenMPELLUtils::fillELLValues(
 template<typename ValueType>
 void OpenMPELLUtils::compressIA(
     IndexType newIA[],
-    const IndexType IA[],
-    const IndexType JA[],
+    const IndexType ellIA[],
+    const IndexType[],
     const ValueType ellValues[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const RealType<ValueType> eps,
-    bool keepDiagonal )
+    const RealType<ValueType> eps )
 {
-    SCAI_LOG_INFO( logger, "compressIA with eps = " << eps << ", keep diagonal = " << keepDiagonal )
+    SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
     #pragma omp parallel
     {
         #pragma omp for
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
-            IndexType length = IA[i];
+            IndexType length = ellIA[i];
 
-            for ( IndexType jj = 0; jj < IA[i]; jj++ )
+            for ( IndexType jj = 0; jj < ellIA[i]; jj++ )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
-                if ( keepDiagonal && JA[pos] == i )
+                if ( common::Math::abs( ellValues[pos] ) <= eps )
                 {
-                    continue;   // entry remains
+                    length--;    // entry is deleted
                 }
 
-                if ( common::Math::abs( ellValues[pos] ) > eps )
-                {
-                    continue;   // entry remains
-                }
-
-                length--;    // entry is deleted
             }
 
             newIA[i] = length;
@@ -495,8 +488,7 @@ void OpenMPELLUtils::compressValues(
     const ValueType values[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const RealType<ValueType> eps,
-    bool keepDiagonal )
+    const RealType<ValueType> eps )
 {
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
                    << ", values/row = " << numValuesPerRow << " / " << newNumValuesPerRow
@@ -514,9 +506,9 @@ void OpenMPELLUtils::compressValues(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
 
-                // delete it if zero and not diagonal entry
+                // delete it if zero 
  
-                if ( common::Math::abs( values[pos] ) > eps || ( keepDiagonal && JA[pos] == i ) )
+                if ( common::Math::abs( values[pos] ) > eps )
                 {
                     // move entry gap positions back in this row
     

@@ -232,9 +232,6 @@ int main( int argc, const char* argv[] )
 
         HOST_PRINT( myRank, "Poisson matrix m = " << m )
 
-        bool diagonalProperty = m.hasDiagonalProperty();
-
-        HOST_PRINT( myRank, "m has diagonal property = " << diagonalProperty )
         HOST_PRINT( myRank, "lhs = " << lhs << ", is all 1.0" )
         HOST_PRINT( myRank, "rhs = " << rhs << ", is m * lhs" )
 

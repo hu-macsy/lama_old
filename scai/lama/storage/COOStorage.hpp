@@ -563,7 +563,6 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
     using _MatrixStorage::getValueType;
@@ -575,7 +574,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -609,11 +607,6 @@ private:
                                  const hmemo::HArray<ValueType>& x,
                                  const common::MatrixOp op,
                                  bool async ) const;
-
-    /** Function that checks the diagonal property of the COO matrix. If on
-     *  the first column index for each row is the row (diagonal element).
-     */
-    virtual bool checkDiagonalProperty() const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

@@ -186,13 +186,6 @@ public:
         setIdentity( common::Grid1D( n ) );
     }
 
-    /** Implementation of pure method _MatrixStorage::checkDiagonalProperty */
-
-    virtual bool checkDiagonalProperty() const
-    {
-        COMMON_THROWEXCEPTION( "checkDiagonalProperty unsuported" )
-    }
-
     /******************************************************************/
     /*  set / get diagonal                                            */
     /******************************************************************/
@@ -446,8 +439,6 @@ public:
     using _MatrixStorage::getContextPtr;
 
 protected:
-
-    using MatrixStorage<ValueType>::mDiagonalProperty;
 
     common::Grid mGrid;                    //! grid for which this matrix storage stands
     common::Stencil<ValueType> mStencil;   //! stencil that specifies the linear mapping  with involved neighbors

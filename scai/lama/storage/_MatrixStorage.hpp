@@ -214,36 +214,27 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    void resetDiagonalProperty();
-
-    /** @brief Query if a matrix storage format has diagonal property, i.e. entries for each diagonal element.
+    /**
+     *  @brief Query the format that also stands for the identification of a derived class.
      *
-     *  Only if the diagonal property is given, the set/getDiagonal methods might be used to access it.
+     *  Each derived class should return its individual enum value for the format.
      *
-     * The diagonal property for a dense matrix storage is always given but for a sparse matrix storage only
-     * if the sparsity pattern includes all diagonal elements.
-     *
-     * Note for implementors: derived classes must set the flag mDiagonalProperty correctly.
+     *  \code
+     *     MatrixStorage<ValueType>& storage = ...
+     *     if ( storage.getFormat() == Format::CSR )
+     *     {
+     *         CSRStorage<ValueType>& csrStorage = static_cast<CSRStorage<ValueType>&>( storage );
+     *         ....
+     *     }
+     *  \endcode
      */
-    inline bool hasDiagonalProperty() const;
-
     virtual Format getFormat() const = 0;
 
     /** This method sets storage for the identity matrix
      *
      *  @param[in] n is the size of the square matrix
      */
-
     virtual void setIdentity( const IndexType n ) = 0;
-
-    /** This method resorts column indexes in such a way that the diagonal element is always the
-     *  first one in a row.
-     *
-     *  This method throws an exception if the matrix storage is not square. Furthermore
-     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
-     *  element in a sparse format.
-     */
-    virtual void setDiagonalProperty();
 
     /******************************************************************
      *  General operations on a matrix                                 *
@@ -266,9 +257,7 @@ public:
      *  @return total number of non-zero values
      *
      *  An element is considered to be zero if its value is not stored explicitly
-     *  (sparse format) or if its 'stored' value is explicitly zero. There is 
-     *  the only exception that zero diagonal elements are also counted if 
-     *  this->hasDiagonalProperty() is given.
+     *  (sparse format) or if its 'stored' value is explicitly zero ( dense, diagonal)
      *
      *  This routine gives exactly the same number of elements that will be
      *  the size of the ja and values array when calling buildCSRData.
@@ -281,11 +270,9 @@ public:
     inline const hmemo::HArray<IndexType>& getRowIndexes() const;
 
     /**
-     * @brief Get the number of entries in each row.
+     * @brief Get the number of non-zero entries in each row.
      *
      * @param[out] csrIA size array for rows, csrIA.size() == numRows
-     *
-     * If this->hasDiagonalProperty() is true, diagonal elements are also counted.
      *
      * \code
      *     DenseStorage<double> dense( ... )
@@ -295,7 +282,6 @@ public:
      *
      * This routine must be provided by each matrix storage format.
      */
-
     virtual void buildCSRSizes( hmemo::HArray<IndexType>& csrIA ) const = 0;
 
     /**
@@ -304,8 +290,6 @@ public:
      * @param[out] csrIA offset array for rows, csrIA.size() == numRows + 1
      * @param[out] csrJA column indexes, csrJA.size() == csrIA[ csrIA.size() ]
      * @param[out] csrValues are the non-zero matrix values, csrJA.size() == csrValues.size()
-     *
-     * The csr data will have the diagonal property if this->hasDiagonalProperty() is true.
      *
      * Note: This routine supports also type conversion between different value types.
      *
@@ -570,21 +554,9 @@ protected:
 
     float mCompressThreshold; //!< ratio at which compression is done, 0 for never, 1 for always
 
-    bool mDiagonalProperty; //!< if true, diagonal elements are always stored at first position in each row
-
     hmemo::ContextPtr mContext;//!< preferred context for the storage
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
-
-protected:
-
-    /** checkDiagonalProperty checks if the diagonal property of this is full filled.
-     *
-     * @return true if the diagonal property is fulfilled for the matrix data
-     */
-
-    virtual bool checkDiagonalProperty() const = 0;
-
 };
 
 /* ------------------------------------------------------------------------- */
@@ -604,11 +576,6 @@ IndexType _MatrixStorage::getNumRows() const
 IndexType _MatrixStorage::getNumColumns() const
 {
     return mNumColumns;
-}
-
-bool _MatrixStorage::hasDiagonalProperty() const
-{
-    return mDiagonalProperty;
 }
 
 const hmemo::HArray<IndexType>& _MatrixStorage::getRowIndexes() const

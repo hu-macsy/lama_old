@@ -119,7 +119,8 @@ struct CSRKernelTrait
          *  @param[in,out] csrJA, csrValues  the CSR matrix data and their column indexes
          *  @param[in]     csrIA             row offsets
          *  @param[in]     numRows           number of rows
-         *  @param[in]     keepDiagonalFirst if true first entry is diagonal element and remains it
+         *  @param[in]     numColumns        number of columns
+         *  @param[in]     numValues         number of stored non-zero entries, size of csrJA and csrValues
          *
          *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
          */
@@ -129,8 +130,7 @@ struct CSRKernelTrait
             const IndexType csrIA[],
             const IndexType numRows,
             const IndexType numColumns,
-            const IndexType numValues,
-            const bool keepDiagonalFirst );
+            const IndexType numValues );
 
         static const char* getId()
         {
@@ -147,8 +147,7 @@ struct CSRKernelTrait
             const IndexType csrJA[],
             const IndexType numRows,
             const IndexType numColumns,
-            const IndexType numValues,
-            const bool allowDiagonalFirst );
+            const IndexType numValues );
 
         static const char* getId()
         {
@@ -949,7 +948,6 @@ struct CSRKernelTrait
          * @param[out] sizes are the row sizes for the compressed data
          * @param[in] ia, ja, values, numRows are the data of the current CSR storage
          * @param[in] eps     threshold value for which an element is considered to be zero
-         * @param[in] diagonalFlag if true diagonal elements are counted in any case
          */
         typedef void ( *FuncType )(
             IndexType sizes[],
@@ -957,8 +955,7 @@ struct CSRKernelTrait
             const IndexType ja[],
             const ValueType values[],
             const IndexType numRows,
-            const ValueType eps,
-            const bool diagonalFlag );
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {
@@ -975,7 +972,6 @@ struct CSRKernelTrait
          * @param[in] newIA   new offsets, computed by countNonZeros + sizes2offsets
          * @param[in] ia, ja, values, numRows are the data of the current CSR storage
          * @param[in] eps     threshold value for which an element is considered to be zero
-         * @param[in] keepDiagonals if true diagonal elements are not removed even if they are zero
          */
         typedef void ( *FuncType )(
             IndexType newJA[],
@@ -985,8 +981,7 @@ struct CSRKernelTrait
             const IndexType ja[],
             const ValueType values[],
             const IndexType numRows,
-            const ValueType eps,
-            const bool diagonalFlag );
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {

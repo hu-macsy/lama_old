@@ -510,7 +510,7 @@ void jds_jacobi_kernel(
     const T omega )
 {
     extern __shared__ IndexType dlg[];
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
     {
@@ -525,31 +525,41 @@ void jds_jacobi_kernel(
         __syncthreads();
     }
 
-    if ( i < numRows )
+    if ( ii < numRows )
     {
-        const IndexType perm = jdsPerm[i];
-        T temp = rhs[perm];
-        const T aDiag = jdsValues[i];
-        IndexType pos = i + fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, 0 );
-        const IndexType rowEnd = jdsIlg[i];
+        const IndexType i = jdsPerm[ii];   // the original row
+        T temp = rhs[i];
+        T diag = 0;
+        IndexType pos = ii;   // for traversing jdsValues and jdsJA
+        const IndexType rowEnd = jdsIlg[ii];
 
-        for ( IndexType jj = 1; jj < rowEnd; ++jj )
+        for ( IndexType jj = 0; jj < rowEnd; ++jj )
         {
-            temp -= jdsValues[pos] * fetchVectorX<T, useTexture>( oldSolution, jdsJA[pos] );
+            IndexType j = jdsJA[pos];
+
+            if ( j == i )
+            {
+                diag = jdsValues[pos];   // save the diagonal entry for division later
+            }
+            else
+            {
+                temp -= jdsValues[pos] * fetchVectorX<T, useTexture>( oldSolution, jdsJA[pos] );
+            }
+
             pos += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
         }
 
         if ( omega == 0.5 )
         {
-            solution[perm] = omega * ( fetchVectorX<T, useTexture>( oldSolution, perm ) + temp / aDiag );
+            solution[i] = omega * ( fetchVectorX<T, useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
-            solution[perm] = temp / aDiag;
+            solution[i] = temp / diag;
         }
         else
         {
-            solution[perm] = omega * ( temp / aDiag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, perm );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, i );
         }
     }
 }

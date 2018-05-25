@@ -101,8 +101,6 @@ JDSStorage<ValueType>::JDSStorage( ContextPtr ctx ) :
     mValues( ctx )
 {
     SCAI_LOG_DEBUG( logger, "JDSStorage, matrix is 0 x 0." )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -120,8 +118,6 @@ JDSStorage<ValueType>::JDSStorage( IndexType numRows, IndexType numColumns, Cont
     HArrayUtils::setOrder( mPerm, numRows, ctx );
     SCAI_LOG_DEBUG( logger, "JDSStorage<" << common::TypeTraits<ValueType>::id()
                             << ">( " << numRows << " x " << numColumns << " @ " << *ctx << " )" )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -145,7 +141,6 @@ JDSStorage<ValueType>::JDSStorage(
     mValues( std::move( values ) )
 {
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
-    _MatrixStorage::resetDiagonalProperty();
     SCAI_LOG_INFO( logger, *this << ": constructed by JDS arrays dlg, ilg, .., values" )
 }
 
@@ -191,7 +186,6 @@ void JDSStorage<ValueType>::setJDSData(
 #ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
 #endif
-    this->resetDiagonalProperty();
     SCAI_LOG_INFO( logger, *this << ": set JDS by arrays dlg, ilg, .., values" )
 }
 
@@ -303,8 +297,6 @@ void JDSStorage<ValueType>::assignJDS( const JDSStorage<OtherValueType>& other )
     HArrayUtils::assign( mPerm, other.getPerm(), ctx );
     HArrayUtils::assign( mJA, other.getJA(), ctx );
     HArrayUtils::assign( mValues, other.getValues(), ctx );
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -346,8 +338,6 @@ void JDSStorage<ValueType>::clear()
     mPerm.clear();
     mJA.clear();
     mValues.clear();
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -651,21 +641,6 @@ void JDSStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-bool JDSStorage<ValueType>::checkDiagonalProperty() const
-{
-    SCAI_LOG_DEBUG( logger, "checkDiagonalProperty: " << *this )
-
-    HArray<IndexType> diagonalPositions;
-
-    IndexType numDiagonalsFound = JDSUtils::getDiagonalPositions(
-        diagonalPositions, getNumRows(), getNumColumns(), mIlg, mDlg, mPerm, mJA, getContextPtr() );
-
-    return numDiagonalsFound == diagonalPositions.size();
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
 void JDSStorage<ValueType>::check( const char* msg ) const
 {
     SCAI_LOG_DEBUG( logger, "check at " << *getContextPtr() << ", msg = " << msg )
@@ -763,8 +738,6 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     HArrayUtils::setSameValue( mIlg, size, IndexType( 1 ), ctx );
 
     mDlg = HArray<IndexType>( { getNumRows() }, ctx );  // one diagonal
-
-    mDiagonalProperty = true;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -786,8 +759,6 @@ void JDSStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
     HArrayUtils::setSameValue( mIlg, size, IndexType( 1 ), ctx );
 
     mDlg = HArray<IndexType>( { getNumRows() }, ctx );  // one diagonal
-
-    mDiagonalProperty = true;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -941,7 +912,6 @@ void JDSStorage<ValueType>::setCSRDataImpl(
     ReadAccess<OtherValueType> rCsrValues( values, loc );
     _MatrixStorage::setDimension( numRows, numColumns );
     // Step 1: fill up the array ilg and perm, detect diagonal property in csr data
-    mDiagonalProperty = true; // will be set to false if not valid in one row
     {
         WriteOnlyAccess<IndexType> wIlg( mIlg, loc, getNumRows() );
         WriteOnlyAccess<IndexType> wPerm( mPerm, loc, getNumRows() );
@@ -972,7 +942,6 @@ void JDSStorage<ValueType>::setCSRDataImpl(
                            rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
     }
 
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -991,7 +960,6 @@ void JDSStorage<ValueType>::purge()
 {
     _MatrixStorage::setDimension( 0, 0 );
 
-    mDiagonalProperty = checkDiagonalProperty();
     mDlg.purge();
     mIlg.purge();
     mPerm.purge();
@@ -1025,8 +993,6 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         setVal[loc]( ilg.get(), getNumRows(), 0, BinaryOp::COPY );
         setOrder[loc]( perm.get(), getNumRows() );
     }
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1277,7 +1243,6 @@ void JDSStorage<ValueType>::jacobiIterate(
     static LAMAKernel<JDSKernelTrait::jacobi<ValueType> > jacobi;
     ContextPtr loc = this->getContextPtr();
     jacobi.getSupportedContext( loc );
-    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
@@ -1337,7 +1302,6 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
-    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
@@ -1414,7 +1378,6 @@ void JDSStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const
 {   
     halo.halo2Global( mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

@@ -78,7 +78,6 @@ struct DenseKernelTrait
         /** Counting non-zero values in dense storage for conversion to CSR
          *
          *  @param[out] csrSizes is an array that contains for each row the number of non-zero elements
-         *  @param[in]  diagonalFlag if true the diagonal elements are counted in any case
          *  @param[in]  numRows number of rows
          *  @param[in]  numColumns number of columns
          *  @param[in]  denseValues size is numRows x numColumns, array with all matrix elements of dense format
@@ -89,7 +88,6 @@ struct DenseKernelTrait
 
         typedef void ( *FuncType )(
             IndexType csrSizes[],
-            bool diagonalFlag,
             const IndexType numRows,
             const IndexType numColumns,
             const DenseValueType denseValues[],
@@ -121,7 +119,6 @@ struct DenseKernelTrait
         typedef void ( *FuncType ) ( IndexType csrJA[],
                                      CSRValueType csrValues[],
                                      const IndexType csrIA[],
-                                     const bool diagonalFlag,
                                      const IndexType numRows,
                                      const IndexType numColumns,
                                      const DenseValueType denseValues[],

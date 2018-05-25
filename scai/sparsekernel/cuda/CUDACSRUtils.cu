@@ -353,8 +353,7 @@ __global__ void hasSortedRows_kernel(
     bool* hasSortedRows,
     const IndexType* csrIA,
     const IndexType* csrJA,
-    const IndexType numRows,
-    const bool allowDiagonalFirst )
+    const IndexType numRows )
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -372,16 +371,6 @@ __global__ void hasSortedRows_kernel(
 
     const IndexType end = csrIA[i + 1];
 
-    // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
-
-    if ( allowDiagonalFirst && start < end )
-    {
-        if ( csrJA[start] == i )
-        {
-            start++;    // so check sorting will start at next position
-        }
-    }
-
     if ( ! isSorted( &csrJA[start], end - start ) )
     {
         *hasSortedRows = false;
@@ -393,8 +382,7 @@ bool CUDACSRUtils::hasSortedRows(
     const IndexType csrJA[],
     const IndexType numRows,
     const IndexType,
-    const IndexType,
-    const bool allowDiagonalFirst )
+    const IndexType )
 {
     SCAI_REGION( "CUDA.CSRUtils.hasSortedRows" )
 
@@ -403,7 +391,7 @@ bool CUDACSRUtils::hasSortedRows(
         return true;
     }
 
-    SCAI_LOG_INFO( logger, "hasSortedRows, numRows = " << numRows << ", allowDiagonalFirst = " << allowDiagonalFirst )
+    SCAI_LOG_INFO( logger, "hasSortedRows, numRows = " << numRows )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -421,7 +409,7 @@ bool CUDACSRUtils::hasSortedRows(
 
     SCAI_CUDA_DRV_CALL( cuMemsetD8( ( CUdeviceptr ) deviceFlag, ( unsigned char ) 1, sizeof( bool ) ), "memset bool hasSortedRows = true" )
 
-    hasSortedRows_kernel <<< dimGrid, dimBlock>>>( deviceFlag, csrIA, csrJA, numRows, allowDiagonalFirst );
+    hasSortedRows_kernel <<< dimGrid, dimBlock>>>( deviceFlag, csrIA, csrJA, numRows );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasSortedKernel failed: most likely arrays csrIA and/or csrJA are invalid" )
 
@@ -1109,11 +1097,20 @@ void csr_jacobi_kernel(
         ValueType temp = rhs[i];
         const IndexType rowStart = csrIA[i];
         const IndexType rowEnd = csrIA[i + 1];
-        const ValueType diag = csrValues[rowStart];
+        ValueType diag = 0;
 
-        for ( IndexType jj = rowStart + 1; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
-            temp -= csrValues[jj] * fetchVectorX<ValueType, useTexture>( oldSolution, csrJA[jj] );
+            const IndexType j = csrJA[jj];
+
+            if ( j == i )
+            {
+                diag = csrValues[jj];
+            }
+            else
+            {
+                temp -= csrValues[jj] * fetchVectorX<ValueType, useTexture>( oldSolution, j );
+            }
         }
 
         if ( omega == 0.5 )
@@ -2590,8 +2587,7 @@ void sortRowKernel(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
-    const IndexType numRows,
-    const bool keepDiagonalFirst )
+    const IndexType numRows )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -2602,16 +2598,6 @@ void sortRowKernel(
 
         IndexType start = csrIA[i];
         IndexType end   = csrIA[i + 1] - 1;
-
-        // check if diagonal element is first entry, do not touch it if keepDiagonalFirst is true
-
-        if ( keepDiagonalFirst && start <= end )
-        {
-            if ( csrJA[start] == i )
-            {
-                start++;    // so sorting will start at next position
-            }
-        }
 
         bool sorted = false;
 
@@ -2643,12 +2629,11 @@ void CUDACSRUtils::sortRows(
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType,
-    const IndexType,
-    const bool keepDiagonalFirst )
+    const IndexType )
 {
     SCAI_REGION( "CUDA.CSR.sortRow" )
 
-    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, keep diagonals first = " << keepDiagonalFirst )
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -2656,7 +2641,7 @@ void CUDACSRUtils::sortRows(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    sortRowKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows, keepDiagonalFirst );
+    sortRowKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sortRows" )
 }
@@ -2772,8 +2757,7 @@ void countNonZerosKernel(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -2783,10 +2767,9 @@ void countNonZerosKernel(
 
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = common::Math::abs( values[jj] ) > common::Math::abs( eps );
+            bool nonZero = common::Math::abs( values[jj] ) > common::Math::abs( eps );
 
-            if ( nonZero || isDiagonal )
+            if ( nonZero )
             {
                 ++cnt;
             }
@@ -2803,13 +2786,12 @@ void CUDACSRUtils::countNonZeros(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
     SCAI_REGION( "CUDA.CSRUtils.countNonZeros" )
 
     SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
-                   << "), eps = " << eps << ", diagonal = " << diagonalFlag )
+                   << "), eps = " << eps )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -2817,7 +2799,7 @@ void CUDACSRUtils::countNonZeros(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    countNonZerosKernel <<< dimGrid, dimBlock>>>( sizes, ia, ja, values, numRows, eps, diagonalFlag );
+    countNonZerosKernel <<< dimGrid, dimBlock>>>( sizes, ia, ja, values, numRows, eps );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2832,8 +2814,7 @@ void compressKernel(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -2843,15 +2824,14 @@ void compressKernel(
 
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = common::Math::abs( values[jj] ) > common::Math::abs( eps );
-
-            if ( nonZero || isDiagonal )
+            if ( common::Math::abs( values[jj] ) <= eps )
             {
-                newJA[ offs ]     = ja[jj];
-                newValues[ offs ] = values[jj];
-                ++offs;
+                continue;  // skip this zero value
             }
+
+            newJA[ offs ]     = ja[jj];
+            newValues[ offs ] = values[jj];
+            ++offs;
         }
     }
 }
@@ -2865,8 +2845,7 @@ void CUDACSRUtils::compress(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
     SCAI_REGION( "CUDA.CSR.compress" )
 
@@ -2876,7 +2855,7 @@ void CUDACSRUtils::compress(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    compressKernel <<< dimGrid, dimBlock>>>( newJA, newValues, newIA, ia, ja, values, numRows, eps, diagonalFlag );
+    compressKernel <<< dimGrid, dimBlock>>>( newJA, newValues, newIA, ia, ja, values, numRows, eps );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
 }

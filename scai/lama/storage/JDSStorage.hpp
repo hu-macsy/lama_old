@@ -506,8 +506,6 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
-
     using _MatrixStorage::prefetch;
     using _MatrixStorage::getContextPtr;
 
@@ -518,7 +516,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -543,11 +540,6 @@ private:
         const hmemo::HArray<ValueType>& y,
         const common::MatrixOp op,
         bool async ) const;
-
-    /**
-     *  Mandatory routine to check storage data for the diagonal property.
-     */
-    virtual bool checkDiagonalProperty() const;
 
     /**
      *  @brief Help routine for stable sort of ilg and setting up perm correctly

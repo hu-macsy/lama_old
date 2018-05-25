@@ -194,10 +194,10 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
 
     // verify that the matrices are sorted, otherwise the kernel crashes
   
-    bool hasSortedRows = CUDACSRUtils::hasSortedRows( aIA, aJA, numRows, numColumns, 1, false );
+    bool hasSortedRows = CUDACSRUtils::hasSortedRows( aIA, aJA, numRows, numColumns, 1 );
     SCAI_ASSERT( hasSortedRows, "matrix A is not sorted, required for cuSparse call" )
 
-    hasSortedRows = CUDACSRUtils::hasSortedRows( bIA, bJA, numRows, numColumns, 1, false );
+    hasSortedRows = CUDACSRUtils::hasSortedRows( bIA, bJA, numRows, numColumns, 1 );
     SCAI_ASSERT( hasSortedRows, "matrix B is not sorted, required for cuSparse call" )
 
     SCAI_CHECK_CUDA_ACCESS
@@ -243,10 +243,10 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
         logger,
         "matrixMutliplySizes for " << m << " x " << n << " matrix" )
 
-    bool hasSortedRows = CUDACSRUtils::hasSortedRows( aIA, aJA, m, k, 1, false );
+    bool hasSortedRows = CUDACSRUtils::hasSortedRows( aIA, aJA, m, k, 1 );
     SCAI_ASSERT( hasSortedRows, "csr data of first matrix is not sorted, required for cuSparse call of matrixMultiply" )
 
-    hasSortedRows = CUDACSRUtils::hasSortedRows( bIA, bJA, k, n, 1, false );
+    hasSortedRows = CUDACSRUtils::hasSortedRows( bIA, bJA, k, n, 1 );
     SCAI_ASSERT( hasSortedRows, "csr data of second matrix is not sorted, required for cuSparse call of matrixMultiply" )
 
     SCAI_CHECK_CUDA_ACCESS
@@ -379,18 +379,9 @@ void CUSparseCSRUtils::sortRows(
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType numValues,
-    const bool keepDiagonalFirst )
+    const IndexType numValues )
 {
-    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, keep diagonals first = " << keepDiagonalFirst )
-
-    if ( keepDiagonalFirst )
-    {
-        // not supported for cusparse, so call CUDA routine
-
-        sparsekernel::CUDACSRUtils::sortRows( csrJA, csrValues, csrIA, numRows, numColumns, numValues, keepDiagonalFirst );
-        return;
-    }
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows" )
 
     SCAI_REGION( "cuSparse.CSR.sortRow" )
 

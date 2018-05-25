@@ -354,14 +354,6 @@ void DenseStorage<ValueType>::transposeImpl()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DenseStorage<ValueType>::checkDiagonalProperty() const
-{
-    return getNumRows() == getNumColumns();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 size_t DenseStorage<ValueType>::getMemoryUsageImpl() const
 {
     size_t memoryUsage = 0;
@@ -439,8 +431,7 @@ void DenseStorage<ValueType>::buildCSR(
     ReadAccess<ValueType> denseValues( mData, loc );
     WriteOnlyAccess<IndexType> wIA( csrIA, loc, getNumRows() + 1 );
     ValueType eps = 0;
-    // Note: mDiagonalProperty == ( getNumRows() == getNumColumns() )
-    getCSRSizes[loc]( wIA.get(), mDiagonalProperty, getNumRows(), getNumColumns(), denseValues.get(), eps );
+    getCSRSizes[loc]( wIA.get(), getNumRows(), getNumColumns(), denseValues.get(), eps );
 
     if ( csrJA == NULL || csrValues == NULL )
     {
@@ -452,7 +443,7 @@ void DenseStorage<ValueType>::buildCSR(
     IndexType numValues = sizes2offsets[loc]( wIA.get(), getNumRows() );
     WriteOnlyAccess<IndexType> wJA( *csrJA, loc, numValues );
     WriteOnlyAccess<OtherValueType> wValues( *csrValues, loc, numValues );
-    getCSRValues[loc]( wJA.get(), wValues.get(), wIA.get(), mDiagonalProperty, getNumRows(), getNumColumns(),
+    getCSRValues[loc]( wJA.get(), wValues.get(), wIA.get(), getNumRows(), getNumColumns(),
                        denseValues.get(), eps );
 }
 
@@ -519,9 +510,6 @@ void DenseStorage<ValueType>::setCSRDataImpl(
         WriteOnlyAccess<ValueType> data( mData, loc, getNumRows() * getNumColumns() );
         setCSRValues[loc]( data.get(), getNumRows(), getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
     }
-
-    mDiagonalProperty = checkDiagonalProperty();
-    // dense storage does not care about diagonal property, is always okay
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1040,8 +1028,6 @@ void DenseStorage<ValueType>::assignDense( const DenseStorage<OtherValueType>& o
     }
 
     SCAI_LOG_INFO( logger, *this << ": assigned dense storage " << other )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1109,8 +1095,6 @@ void DenseStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns 
 
     setZero();
 
-    mDiagonalProperty = checkDiagonalProperty();
-
     SCAI_LOG_DEBUG( logger, *this << " allocated, #values = " << getNumRows() * getNumColumns() << ", not initialized" )
 }
 
@@ -1176,9 +1160,7 @@ DenseStorage<ValueType>::DenseStorage( ContextPtr ctx ) :
 
     MatrixStorage<ValueType>( 0, 0, ctx ),
     mData( ctx )
-
 {
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 template<typename ValueType>
@@ -1189,7 +1171,6 @@ DenseStorage<ValueType>::DenseStorage( const IndexType numRows, const IndexType 
 {
     mData.resize( numRows * numColumns );
     this->setZero();
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1207,8 +1188,6 @@ DenseStorage<ValueType>::DenseStorage(
 {
     SCAI_ASSERT_EQ_ERROR( mData.size(), numRows * numColumns, 
                           "size of array does not fit the shape " << numRows << " x " << numColumns )
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

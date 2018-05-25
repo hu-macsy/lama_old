@@ -149,8 +149,7 @@ public:
         const IndexType csrIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType nnz,
-        const bool keepDiagonalFirst );
+        const IndexType nnz );
 
     /** Host implementation for CSRKernelTrait::hasSortedRows using OpenMP parallelization. */
 
@@ -159,8 +158,7 @@ public:
         const IndexType csrJA[],
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType nnz,
-        const bool allowDiagonalFirst );
+        const IndexType nnz );
 
     static IndexType getPosDiagonal(
         IndexType pos[],
@@ -409,8 +407,7 @@ public:
         const IndexType ja[],
         const ValueType values[],
         const IndexType numRows,
-        const ValueType eps,
-        const bool diagonalFlag );
+        const RealType<ValueType> eps );
 
     /** Implementation for CSRKernelTrait::compress */
 
@@ -423,8 +420,7 @@ public:
         const IndexType ja[],
         const ValueType values[],
         const IndexType numRows,
-        const ValueType eps,
-        const bool diagonalFlag );
+        const RealType<ValueType> eps );
 
     template<typename ValueType>
     static void getDiagonal(

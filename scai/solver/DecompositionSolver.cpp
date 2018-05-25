@@ -182,8 +182,7 @@ void DecompositionSolver<ValueType>::solveImpl()
     // we must sort the column indexes for solving the matrix, no diagonal flag
 
     lama::CSRStorage<ValueType>* xCSRStorage = const_cast<lama::CSRStorage<ValueType>*>( csrStorage );
-    bool diagonalFlag = false;
-    xCSRStorage->sortRows( diagonalFlag );
+    xCSRStorage->sortRows();
 
     SCAI_LOG_INFO( logger, "csrStorage = " << *csrStorage )
 

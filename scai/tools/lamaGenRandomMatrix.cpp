@@ -130,7 +130,6 @@ void generate( const IndexType nrows, const IndexType ncols, const float fillRat
     b = m * x;
 
     cout << "m = " << m << endl;
-    cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;
     cout << "x = " << x << endl;
     cout << "b = " << b << endl;
     cout << endl;

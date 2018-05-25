@@ -76,7 +76,6 @@ public:
     template<typename DenseValueType>
     static void getCSRSizes(
         IndexType csrSizes[],
-        bool diagonalFlag,
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType denseValues[],
@@ -89,7 +88,6 @@ public:
         IndexType csrJA[],
         CSRValueType csrValues[],
         const IndexType csrIA[],
-        const bool diagonalFlag,
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType denseValues[],

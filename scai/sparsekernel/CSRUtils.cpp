@@ -102,7 +102,6 @@ void CSRUtils::compress(
     HArray<IndexType>& csrIA,
     HArray<IndexType>& csrJA,
     HArray<ValueType>& csrValues,
-    const bool keepDiagonalValues,
     const RealType<ValueType> eps,
     ContextPtr prefContext )
 {
@@ -125,7 +124,7 @@ void CSRUtils::compress(
         ReadAccess<IndexType> rJA( csrJA, loc );
         ReadAccess<ValueType> rValues( csrValues, loc );
         WriteOnlyAccess<IndexType> wNewIA( newIA, loc, numRows + 1 );  // allocate already for offsets
-        countNonZeros[loc]( wNewIA.get(), rIA.get(), rJA.get(), rValues.get(), numRows, eps, keepDiagonalValues );
+        countNonZeros[loc]( wNewIA.get(), rIA.get(), rJA.get(), rValues.get(), numRows, eps );
     }
 
     newIA.resize( numRows );  //  reset size for scan1 operation
@@ -134,8 +133,8 @@ void CSRUtils::compress(
 
     IndexType newNumValues = HArrayUtils::scan1( newIA, prefContext );
 
-    SCAI_LOG_INFO( logger, "compress( keepDiagonals = " << keepDiagonalValues << ", eps = " << eps 
-                     << " ) : "  << newNumValues << " non-diagonal zero elements, was " << numValues << " before" )
+    SCAI_LOG_INFO( logger, "compress( eps = " << eps << " ) : "  << newNumValues 
+                           << " non-diagonal zero elements, was " << numValues << " before" )
 
     // ready if there are no new non-zero values
 
@@ -163,7 +162,7 @@ void CSRUtils::compress(
 
         compressData[loc]( wNewJA.get(), wNewValues.get(), rNewIA.get(),
                            rIA.get(), rJA.get(), rValues.get(), numRows,
-                           eps, keepDiagonalValues );
+                           eps );
     }
 
     // now switch in place to the new data
@@ -182,7 +181,6 @@ void CSRUtils::sortRows(
     const HArray<IndexType>& ia,
     const IndexType numRows,
     const IndexType numColumns,
-    const bool diagonalFlag,
     const ContextPtr prefLoc )
 {
     SCAI_REGION( "Sparse.CSR.sort" )
@@ -203,7 +201,7 @@ void CSRUtils::sortRows(
     WriteAccess<IndexType> wJA( ja, loc );
     WriteAccess<ValueType> wValues( values, loc );
 
-    sortRows[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, numColumns, numValues, diagonalFlag );
+    sortRows[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, numColumns, numValues );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -213,7 +211,6 @@ bool CSRUtils::hasSortedRows(
     const hmemo::HArray<IndexType>& ja,
     const IndexType numRows,
     const IndexType numColumns,
-    bool allowDiagonalFirst,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType numValues = ja.size();   // #non-zero entries
@@ -228,7 +225,7 @@ bool CSRUtils::hasSortedRows(
     ReadAccess<IndexType> rIA( ia, loc );
     ReadAccess<IndexType> rJA( ja, loc );
 
-    bool is = hasSortedRows[loc]( rIA.get(), rJA.get(), numRows, numColumns, numValues, allowDiagonalFirst );
+    bool is = hasSortedRows[loc]( rIA.get(), rJA.get(), numRows, numColumns, numValues );
 
     return is;
 }
@@ -442,8 +439,8 @@ void CSRUtils::binaryOp(
         return;
     }
 
-    SCAI_ASSERT_ERROR( hasSortedRows( aIA, aJA, m, n, false, prefLoc ), "binaryOp: input storage a not sorted" );
-    SCAI_ASSERT_ERROR( hasSortedRows( bIA, bJA, m, n, false, prefLoc ), "binaryOp: input storage b not sorted" );
+    SCAI_ASSERT_ERROR( hasSortedRows( aIA, aJA, m, n, prefLoc ), "binaryOp: input storage a not sorted" );
+    SCAI_ASSERT_ERROR( hasSortedRows( bIA, bJA, m, n, prefLoc ), "binaryOp: input storage b not sorted" );
 
     static LAMAKernel<CSRKernelTrait::binaryOpSizes> binaryOpSizes;
     static LAMAKernel<CSRKernelTrait::binaryOp<ValueType> > binaryOp;
@@ -616,7 +613,6 @@ bool CSRUtils::setDiagonal(
             const HArray<IndexType>&,                \
             const IndexType,                         \
             const IndexType,                         \
-            const bool,                              \
             ContextPtr );                            \
                                                      \
     template IndexType CSRUtils::setDiagonalFirst(   \
@@ -660,7 +656,6 @@ bool CSRUtils::setDiagonal(
             HArray<IndexType>&,                      \
             HArray<IndexType>&,                      \
             HArray<ValueType>&,                      \
-            const bool,                              \
             const RealType<ValueType>,               \
             ContextPtr );                            \
                                                      \

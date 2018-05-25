@@ -355,7 +355,6 @@ public:
     {
         _MatrixStorage::setDimension( 0, 0 );
         mData.clear();
-        mDiagonalProperty = checkDiagonalProperty();
     }
 
     /**
@@ -365,7 +364,6 @@ public:
     {
         _MatrixStorage::setDimension( 0, 0 );
         mData.purge();
-        mDiagonalProperty = checkDiagonalProperty();
     }
 
     /* ========================================================================= */
@@ -523,7 +521,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mContext;
 
     hmemo::HArray<ValueType> mData;  //!<  matrix data as HArray, stored row-wise
@@ -531,10 +528,6 @@ protected:
     /** Logger just for this class / matrix format. */
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    /** Override MatrixStorage::checkDiagonalProperty method. */
-
-    virtual    bool checkDiagonalProperty() const;
 
 private:
 

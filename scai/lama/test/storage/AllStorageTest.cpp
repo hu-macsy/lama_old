@@ -195,28 +195,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allocateTest, ValueType, scai_numeric_test_types 
         }
 
         storage.clear();
-        // verify that empty matrix has diagonal property
- 
-        if ( !storage.hasDiagonalProperty() )
-        {
-            SCAI_LOG_FATAL( logger, storage << ": not diagonal property" ) 
-        }
-
-        BOOST_CHECK( storage.hasDiagonalProperty() );
-        storage.allocate( 1, 1 );
-
-        if ( storage.getFormat() == Format::DENSE )
-        {
-            // only dense matrix keeps its diagonal property
-            BOOST_CHECK( storage.hasDiagonalProperty() );
-        }
-        else
-        {
-            BOOST_CHECK( !storage.hasDiagonalProperty() );
-        }
-
         storage.purge();
-        BOOST_CHECK( storage.hasDiagonalProperty() );
     }
 }
 

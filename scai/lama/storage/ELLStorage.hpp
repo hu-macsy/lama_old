@@ -534,7 +534,7 @@ public:
     /**
      * @brief Override default method MatrixStorage<ValueType>::compress with a more efficient one.
      */
-    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+    virtual void compress( const RealType<ValueType> eps = 0 );
 
     /** Swap this ELL storage data with another ELL storage.
      *
@@ -546,7 +546,6 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
     using _MatrixStorage::getValueType;
@@ -562,7 +561,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -587,12 +585,6 @@ private:
     /** This method fills up unused entries in ja and values with default data to allow more efficient gemv */
 
     void fillValues();
-
-    /**
-     * @brief checks storage data if diagonal property is given
-     *
-     */
-    virtual bool checkDiagonalProperty() const;
 
     /** Help routine that computes array with row indexes for non-empty rows.
      *  The array is only built if number of non-zero rows is smaller than

@@ -71,7 +71,6 @@ public:
     /** @brief This method generates new CSR data where all zero elemens are removed.
      *
      *  @param[in,out] csrIA, csrJA, csrValues is the CSR data that is compressed
-     *  @param[in] keepDiagonalValues if true each existing diagonal element remains
      *  @param[in] eps a value is considered to be zero if abs( value ) <= eps
      *  @param[in] loc specficies the context where compression should be done
      */  
@@ -80,7 +79,6 @@ public:
         hmemo::HArray<IndexType>& csrIA, 
         hmemo::HArray<IndexType>& csrJA, 
         hmemo::HArray<ValueType>& csrValues,
-        const bool keepDiagonalValues,
         const RealType<ValueType> eps, 
         hmemo::ContextPtr loc );
 
@@ -94,7 +92,6 @@ public:
      *  @param[in] ia offset array, size is numRows + 1
      *  @param[in] numRows the number of rows, only needed for convenience
      *  @param[in] numColums the number of columns, only needed for convenience
-     *  @param[in] keepDiagonalFirst if true the first element remains diagonal element
      *  @param[in] loc specifies the context where the operation should be executed
      */
     template<typename ValueType>
@@ -104,7 +101,6 @@ public:
         const hmemo::HArray<IndexType>& ia,
         const IndexType numRows,
         const IndexType numColumns,
-        bool keepDiagonalFirst,
         hmemo::ContextPtr loc );
 
     /**
@@ -112,8 +108,8 @@ public:
      *
      *  @param[in] ia is the CSR offset array
      *  @param[in] ja are the column indexes
+     *  @param[in] numRows needed for convenience, same as ia.size() - 1
      *  @param[in] numColumns needed for convenience
-     *  @param[in] allowDiagonalFirst if true the first column index can also be i
      *  @param[loc] specifies the context where the operation should be executed
      */
     static bool hasSortedRows(
@@ -121,7 +117,6 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const IndexType numRows,
         const IndexType numColumns,
-        bool allowDiagonalFirst,
         hmemo::ContextPtr loc );
  
     /**

@@ -44,6 +44,7 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/MatrixOp.hpp>
 
 #include <cuda_runtime_api.h>
@@ -247,8 +248,7 @@ public:
         const IndexType csrIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType numValues,
-        const bool keepDiagonalFirst );
+        const IndexType numValues );
 
     /** CUDA implementation for CSRKernelTrait::hasSortedRows */
 
@@ -257,8 +257,7 @@ public:
         const IndexType csrJA[],
         const IndexType numRows,
         const IndexType numColumns,
-        const IndexType nnz,
-        const bool allowDiagonalFirst );
+        const IndexType nnz );
 
     /** CUDA Implementation for CSRKernelTrait::countNonZeros */
 
@@ -269,8 +268,7 @@ public:
         const IndexType ja[],
         const ValueType values[],
         const IndexType numRows,
-        const ValueType eps,
-        const bool diagonalFlag );
+        const RealType<ValueType> eps );
 
     /** CUDA Implementation for CSRKernelTrait::compress */
 
@@ -283,8 +281,7 @@ public:
         const IndexType ja[],
         const ValueType values[],
         const IndexType numRows,
-        const ValueType eps,
-        const bool diagonalFlag );
+        const RealType<ValueType> eps );
 
 private:
 

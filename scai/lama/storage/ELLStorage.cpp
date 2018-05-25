@@ -103,8 +103,6 @@ ELLStorage<ValueType>::ELLStorage( ContextPtr ctx ) :
     mValues( ctx )
 {
     SCAI_LOG_DEBUG( logger, "ELLStorage, default constructor for zero matrix." )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -120,8 +118,6 @@ ELLStorage<ValueType>::ELLStorage( IndexType numRows, IndexType numColumns, Cont
 {
     SCAI_LOG_DEBUG( logger, "COOStorage for matrix " << getNumRows()
                              << " x " << getNumColumns() << ", no non-zero elements @ " << *ctx )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -155,8 +151,6 @@ ELLStorage<ValueType>::ELLStorage(
 #ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "ELLStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
 #endif
-
-    _MatrixStorage::resetDiagonalProperty();
 
     SCAI_LOG_INFO( logger, *this << ": set ELLPACK by arrays ia, ja, values" )
 }
@@ -302,8 +296,6 @@ void ELLStorage<ValueType>::assignELL( const ELLStorage<OtherValueType>& other )
     HArrayUtils::assign( mJA, other.getJA(), ctx );
     HArrayUtils::assign( mValues, other.getValues(), ctx );
 
-    _MatrixStorage::resetDiagonalProperty();
-
     SCAI_LOG_DEBUG( logger, "assignELL: other = " << other << ", this = " << *this )
 }
 
@@ -390,7 +382,6 @@ void ELLStorage<ValueType>::purge()
     mJA.purge();
     mValues.purge();
     mRowIndexes.purge();
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -412,8 +403,6 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     HArrayUtils::setSequence<IndexType>( mJA, 0, 1, size, getContextPtr() );
     HArrayUtils::setSameValue<ValueType>( mValues, size, 1, loc );
 
-    mDiagonalProperty = true;
-
     SCAI_LOG_INFO( logger, *this << " is identity matrix" )
 }
 
@@ -434,26 +423,9 @@ void ELLStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
     HArrayUtils::setSequence<IndexType>( mJA, 0, 1, size, getContextPtr() );
     HArrayUtils::assign( mValues, diagonal, getContextPtr() );
 
-    mDiagonalProperty = true; // obviously given for identity matrix
-
     // Note: we do not build row indexes, no row is empty
 
     SCAI_LOG_INFO( logger, *this << ": diagonal matrix" )
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-bool ELLStorage<ValueType>::checkDiagonalProperty() const
-{
-    SCAI_LOG_DEBUG( logger, "checkDiagonalProperty: " << *this )
-
-    HArray<IndexType> diagonalPositions;
-
-    IndexType numDiagonalsFound = ELLUtils::getDiagonalPositions( 
-        diagonalPositions, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
-
-    return numDiagonalsFound == diagonalPositions.size();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -470,8 +442,6 @@ void ELLStorage<ValueType>::clear()
     mIA.clear();
     mJA.clear();
     mValues.clear();
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -616,8 +586,6 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         SCAI_LOG_DEBUG( logger, " size = " << ellJA.size() )
     }
 
-    _MatrixStorage::resetDiagonalProperty();
-
     buildRowIndexes( loc );
 
     SCAI_LOG_INFO( logger, "ELL: set CSR data done, this = " << *this )
@@ -656,7 +624,6 @@ void ELLStorage<ValueType>::setELLData(
 #ifdef SCAI_ASSERT_LEVEL_DEBUG
     check( "ELLStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
 #endif
-    this->resetDiagonalProperty();
     SCAI_LOG_INFO( logger, *this << ": set ELLPACK by arrays ia, ja, values" )
 }
 
@@ -975,8 +942,6 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     mIA.clear();
     mIA.resize( getNumRows() );
     HArrayUtils::setScalar( mIA, IndexType( 0 ), common::BinaryOp::COPY );
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1145,59 +1110,13 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::compress( const RealType<ValueType> eps, const bool keepDiagonal )
+void ELLStorage<ValueType>::compress( const RealType<ValueType> eps )
 {
     SCAI_LOG_INFO( logger, "compress: eps = " << eps )
 
-    ContextPtr loc = this->getContextPtr();
-    static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-    compressIA.getSupportedContext( loc, reduce );
+    ELLUtils::compress( mIA, mJA, mValues, mNumValuesPerRow, eps, getContextPtr() );
 
-    IndexType newNumValuesPerRow = invalidIndex;
-
-    HArray<IndexType> newIAArray;
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-
-        ReadAccess<IndexType> IA( mIA, loc );
-        ReadAccess<IndexType> JA( mJA, loc );
-        ReadAccess<ValueType> values( mValues, loc );
-        // 1. Step: Check for 0 elements and write new IA array
-        WriteOnlyAccess<IndexType> newIA( newIAArray, loc, getNumRows() );
-        compressIA[loc]( newIA.get(), IA.get(), JA.get(), values.get(), getNumRows(), mNumValuesPerRow, eps, keepDiagonal );
-        // 2. Step: compute length of longest row
-        newNumValuesPerRow = reduce[ loc ]( newIA.get(), getNumRows(), 0, common::BinaryOp::MAX );
-    }
-
-    // Do further steps, if new array could be smaller
-    if ( newNumValuesPerRow < mNumValuesPerRow )
-    {
-        static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
-        compressValues.getSupportedContext( loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // 3. Step: Allocate new JA and Values array
-        HArray<ValueType> newValuesArray;
-        HArray<IndexType> newJAArray;
-
-        {
-            ReadAccess<IndexType> IA( mIA, loc );
-            ReadAccess<IndexType> JA( mJA, loc );
-            ReadAccess<ValueType> values( mValues, loc );
-            WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, getNumRows() * newNumValuesPerRow );
-            WriteOnlyAccess<IndexType> newJA( newJAArray, loc, getNumRows() * newNumValuesPerRow );
-            // 4. Step: Compute new JA and Values array
-            compressValues[loc]( newJA.get(), newValues.get(), newNumValuesPerRow,
-                                 IA.get(), JA.get(), values.get(), getNumRows(), mNumValuesPerRow, eps, keepDiagonal );
-        }
-
-        mIA = std::move( newIAArray );
-        mJA = std::move( newJAArray );
-        mValues = std::move( newValuesArray );
-        mNumValuesPerRow = newNumValuesPerRow;
-    }
+    buildRowIndexes( getContextPtr() );   // sizes of rows might have changed
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1488,7 +1407,6 @@ void ELLStorage<ValueType>::jacobiIterate(
 {
     SCAI_REGION( "Storage.ELL.jacobiIterate" )
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
-    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
@@ -1545,7 +1463,6 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     // For CUDA a solution using stream synchronization is more efficient than using a task
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
-    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
@@ -1625,7 +1542,6 @@ void ELLStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const
 {   
     halo.halo2Global( mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1841,7 +1757,6 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
     SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
     SCAI_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
     allocate( a.getNumRows(), b.getNumColumns() );
-    mDiagonalProperty = ( getNumRows() == getNumColumns() );
     {
         ReadAccess<IndexType> aIA( a.getIA(), loc );
         ReadAccess<IndexType> aJA( a.getJA(), loc );
@@ -1899,7 +1814,6 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
     allocate( a.getNumRows(), a.getNumColumns() );
     SCAI_ASSERT_EQUAL_ERROR( getNumRows(), b.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), b.getNumColumns() )
-    //mDiagonalProperty = ( getNumRows() == getNumColumns() );
     {
         ReadAccess<IndexType> aIA( a.getIA(), loc );
         ReadAccess<IndexType> aJA( a.getJA(), loc );

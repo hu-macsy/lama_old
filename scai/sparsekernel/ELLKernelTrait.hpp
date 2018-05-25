@@ -196,7 +196,6 @@ struct ELLKernelTrait
          * @param[in]  numRows number of rows
          * @param[in]  numValuesPerRow for maximal number of entries in one row
          * @param[in]  eps threshold, abs value of entry must be greater than eps to be non-zero
-         * @param[in]  keepDiagonal if true do not remove diagonal elements
          */
         typedef void ( *FuncType ) (
             IndexType newSizes[],
@@ -205,8 +204,7 @@ struct ELLKernelTrait
             const ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
-            const RealType<ValueType> eps,
-            const bool keepDiagonal );
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {
@@ -239,8 +237,7 @@ struct ELLKernelTrait
             const ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
-            const RealType<ValueType> eps,
-            const bool keepDiagonal );
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {
