@@ -265,8 +265,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gemvNormalTest, ValueType, scai_numeric_test_types )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( gemvNormalTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE( gemvNormalTest )
 {
+    typedef double ValueType;
+
     ContextPtr testContext = ContextFix::testContext;
 
     HArray<IndexType> cooIA( testContext );
@@ -303,14 +306,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvNormalTest, ValueType, scai_numeric_test_type
     const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
     const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
 
-    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
+    for ( IndexType icase = 0; icase < std::min( 1, n_alpha * n_beta ); ++icase )
     {
         ValueType alpha = alpha_values[icase % n_alpha ];
         ValueType beta  = beta_values[icase / n_alpha ];
 
         HArray<ValueType> res( testContext );
 
-        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
+        SCAI_LOG_ERROR( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y
                        << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
 

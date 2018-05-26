@@ -217,6 +217,8 @@ void OpenMPCOOUtils::normalGEMV(
     const ValueType cooValues[],
     const common::MatrixOp op )
 {
+    bool sortOptimized = true;     // should only be set if COO data is sorted by rows
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -257,6 +259,49 @@ void OpenMPCOOUtils::normalGEMV(
                 const ValueType resultUpdate = alpha * cooValues[k] * x[i];
                 // thread-safe atomic update
                 atomicAdd( result[j], resultUpdate );
+            }
+        }
+    }
+    else if ( op == common::MatrixOp::NORMAL && sortOptimized )
+    {
+        #pragma omp parallel
+        {
+            SCAI_REGION( "OpenMP.COO.GEMV_n" )
+
+            // determine for each thread a range of IA so that there is no row overlap
+            // by this way we can avoid the atomic add 
+
+            IndexType k_lb;
+            IndexType k_ub;
+
+            omp_get_my_range( k_lb, k_ub, numValues );
+
+            //      0   0   0   0   1   1   1   1  2  2   2  3  3   3
+            //                          | lb                    | ub
+
+            if ( k_lb > 0 )
+            {
+                // move lb up where a new row starts
+
+                while ( k_lb < numValues && cooIA[k_lb] == cooIA[k_lb - 1] )
+                {
+                    k_lb++;
+                }
+            }
+
+            if ( k_lb < k_ub )
+            {
+                // move ub up where a new row starts
+
+                while ( k_ub < numValues && cooIA[k_ub] == cooIA[k_ub - 1] )
+                {
+                    k_ub++;
+                }
+            }
+
+            for ( IndexType k = k_lb; k < k_ub; ++k )
+            {
+                result[cooIA[k]] += alpha * cooValues[k] * x[cooJA[k]];
             }
         }
     }
