@@ -605,6 +605,52 @@ bool CSRUtils::setDiagonal(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void CSRUtils::jacobi(
+    HArray<ValueType>& solution,
+    const ValueType omega,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
+    ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQ_ERROR( rhs.size(), oldSolution.size(), "jacobi only for square matrices" )
+
+    SCAI_ASSERT_EQ_ERROR( csrIA.size() - 1, rhs.size(), "serious size mismatch for CSR arrays" )
+    SCAI_ASSERT_EQ_ERROR( csrJA.size(), csrValues.size(), "serious size mismatch for CSR arrays" )
+
+    const IndexType numRows = rhs.size();
+    const IndexType numColumns = oldSolution.size();
+
+    static LAMAKernel<CSRKernelTrait::jacobi<ValueType> > jacobi;
+
+    ContextPtr loc = prefLoc;
+    jacobi.getSupportedContext( loc );
+
+    if ( &solution == &oldSolution )
+    {
+        COMMON_THROWEXCEPTION( "alias of new/old solution is not allowed" )
+    }
+
+    ReadAccess<IndexType> rIA( csrIA, loc );
+    ReadAccess<IndexType> rJA( csrJA, loc );
+    ReadAccess<ValueType> rValues( csrValues, loc );
+
+    ReadAccess<ValueType> rOld( oldSolution, loc );
+    ReadAccess<ValueType> rRhs( rhs, loc );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, numColumns );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    jacobi[loc]( wSolution.get(),
+                 rIA.get(), rJA.get(), rValues.get(),
+                 rOld.get(), rRhs.get(), omega, numRows );
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define CSRUTILS_SPECIFIER( ValueType )              \
                                                      \
     template void CSRUtils::sortRows(                \
@@ -714,6 +760,16 @@ bool CSRUtils::setDiagonal(
             const IndexType,                         \
             const IndexType,                         \
             const common::BinaryOp,                  \
+            ContextPtr );                            \
+                                                     \
+    template void CSRUtils::jacobi(                  \
+            HArray<ValueType>&,                      \
+            const ValueType,                         \
+            const HArray<ValueType>&,                \
+            const HArray<ValueType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<ValueType>&,                \
             ContextPtr );                            \
 
 SCAI_COMMON_LOOP( CSRUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )

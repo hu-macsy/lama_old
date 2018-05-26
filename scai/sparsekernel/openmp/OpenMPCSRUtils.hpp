@@ -258,7 +258,7 @@ public:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
-    /** Implementation for CSRKernelTrait::Jacobi::jacobi(Async/Halo) */
+    /** Implementation for CSRKernelTrait::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -271,7 +271,7 @@ public:
         const ValueType omega,
         const IndexType numRows );
 
-    /** Implementation for CSRKernelTrait::Jacobi::jacobiHalo  */
+    /** Implementation for CSRKernelTrait::jacobiHalo  */
 
     template<typename ValueType>
     static void jacobiHalo(

@@ -1159,8 +1159,9 @@ void OpenMPCSRUtils::jacobi(
     const ValueType omega,
     const IndexType numRows )
 {
-    SCAI_LOG_DEBUG( logger,
+    SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -1168,6 +1169,9 @@ void OpenMPCSRUtils::jacobi(
         syncToken->run( std::bind( jacobi<ValueType>, solution, csrIA, csrJA, csrValues, oldSolution, rhs, omega, numRows ) );
         return;
     }
+
+    const ValueType ZERO = 0;
+    const ValueType ONE = 1;
 
     #pragma omp parallel
     {
@@ -1178,7 +1182,7 @@ void OpenMPCSRUtils::jacobi(
         {
             ValueType temp = rhs[i];
 
-            ValueType diag = 0;
+            ValueType diag = ZERO;
 
             for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; jj++ )
             {
@@ -1187,6 +1191,7 @@ void OpenMPCSRUtils::jacobi(
                 if ( j == i )
                 {
                     diag = csrValues[jj];
+                    SCAI_ASSERT_NE_DEBUG( diag, ZERO, "Diagonal element for row " << i << " is zero" )
                 }
                 else
                 {
@@ -1194,19 +1199,17 @@ void OpenMPCSRUtils::jacobi(
                 }
             }
 
+            SCAI_ASSERT_NE_DEBUG( diag, ZERO, "Diagonal element for row " << i << " not available" )
+
             // here we take advantange of a good branch precondiction
 
-            if ( omega == common::Constants::ONE )
+            if ( omega == ONE )
             {
                 solution[i] = temp / diag;
             }
-            else if ( omega == 0.5 )
-            {
-                solution[i] = omega * ( temp / diag + oldSolution[i] );
-            }
             else
             {
-                solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
+                solution[i] = omega * ( temp / diag ) + ( ONE - omega ) * oldSolution[i];
             }
         }
     }

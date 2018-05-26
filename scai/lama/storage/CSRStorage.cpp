@@ -1641,31 +1641,10 @@ void CSRStorage<ValueType>::jacobiIterate(
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.CSR.jacobiIterate" )
+
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    if ( &solution == &oldSolution )
-    {
-        COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
-    }
-
-    SCAI_ASSERT_EQ_DEBUG( getNumRows(), oldSolution.size(), "array oldSolution has illegal size" )
-    SCAI_ASSERT_EQ_DEBUG( getNumRows(), rhs.size(), "array rhs has illegal size" )
-    SCAI_ASSERT_EQ_DEBUG( getNumRows(), getNumColumns(), "this storage must be square" )
-
-    // matrix must be square
-    static LAMAKernel<CSRKernelTrait::jacobi<ValueType> > jacobi;
-    ContextPtr loc = this->getContextPtr();
-    jacobi.getSupportedContext( loc );
-    ReadAccess<IndexType> csrIA( mIA, loc );
-    ReadAccess<IndexType> csrJA( mJA, loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
-    ReadAccess<ValueType> rRhs( rhs, loc );
-    WriteOnlyAccess<ValueType> wSolution( solution, loc, getNumRows() );
-    // Due to diagonal property there is no advantage by taking row indexes
-    SCAI_CONTEXT_ACCESS( loc )
-    jacobi[loc]( wSolution.get(), csrIA.get(), csrJA.get(), csrValues.get(),
-                 rOldSolution.get(), rRhs.get(), omega, getNumRows() );
+    CSRUtils::jacobi( solution, omega, oldSolution, rhs, mIA, mJA, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

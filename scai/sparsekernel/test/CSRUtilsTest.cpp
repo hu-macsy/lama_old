@@ -1627,18 +1627,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 {
+    // Run one jacobi iteration step with a CSR storage
+
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<CSRKernelTrait::jacobi<ValueType> > jacobi;
-
-    ContextPtr loc = testContext;
-
-    jacobi.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    SCAI_LOG_INFO( logger, "jacobi test for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "jacobi test for " << *testContext )
 
     HArray<IndexType> csrIA( testContext );
     HArray<IndexType> csrJA( testContext );
@@ -1650,11 +1643,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
     data2::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 
-    const ValueType rhs_values[]   = { 1, -1, 2, -2 };
-    const ValueType old_values[]   = { 3, -2, -2, 3 };
-
-    HArray<ValueType> rhs( numRows, rhs_values, testContext );
-    HArray<ValueType> oldSolution( numRows, old_values, testContext );
+    HArray<ValueType> rhs( { 1, -1, 2, -2 }, testContext );
+    HArray<ValueType> oldSolution( { 3, -2, -2, 3 }, testContext );
 
     const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
 
@@ -1664,46 +1654,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
     {
         ValueType omega  = omega_values[icase];
 
-        HArray<ValueType> res( testContext );
+        HArray<ValueType> newSolution( testContext );
 
-        {
-            SCAI_CONTEXT_ACCESS( loc );
+        CSRUtils::jacobi( newSolution, omega, oldSolution, rhs, csrIA, csrJA, csrValues, testContext );
 
-            ReadAccess<IndexType> rIA( csrIA, loc );
-            ReadAccess<IndexType> rJA( csrJA, loc );
-            ReadAccess<ValueType> rValues( csrValues, loc );
+        HArray<ValueType> expSolution;
 
-            ReadAccess<ValueType> rOld( oldSolution, loc );
-            ReadAccess<ValueType> rRhs( rhs, loc );
-            WriteOnlyAccess<ValueType> wSolution( res, loc, numColumns );
-
-            jacobi[loc]( wSolution.get(),
-                         rIA.get(), rJA.get(), rValues.get(),
-                         rOld.get(), rRhs.get(), omega, numRows );
-        }
-
-        HArray<ValueType> expectedRes( testContext );
-
-        data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
-
-        auto maxDiff = HArrayUtils::maxDiffNorm( expectedRes, res );
+        data2::getJacobiResult( expSolution, oldSolution, omega, rhs );
 
         auto eps = common::TypeTraits<ValueType>::small();
 
+        auto maxDiff = HArrayUtils::maxDiffNorm( expSolution, newSolution );
+
         BOOST_CHECK( maxDiff < eps );
-
-        bool mustBeIdentical = false;
-
-        if ( mustBeIdentical )
-        {
-            ReadAccess<ValueType> rExpected( expectedRes );
-            ReadAccess<ValueType> rComputed( res );
-
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
-            }
-        }
     }
 }
 

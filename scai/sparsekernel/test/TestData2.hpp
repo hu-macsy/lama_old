@@ -88,12 +88,12 @@ static void getCSRTestData(
                        0  1  9  4        2  1  3    9  1  4
                       -1  0  1  3        3  0  2    3 -1  1
 
-         Note: diagonals are always the first entry
+         Note: CSR data is sorted here, but is not mandatory
      */
 
     const IndexType ia_values[]  = { 0,          3,          6,       9,       12 };
-    const IndexType ja_values[]  = { 0,  1,  3,  1,  0,  2,  2, 1, 3, 3,  0, 2 };
-    const ValueType nz_values[]  = { 6,  1,  4,  8, -2,  3,  9, 1, 4, 3, -1, 1 };
+    const IndexType ja_values[]  = { 0,  1,  3,  0,  1,  2,  1, 2, 3, 0,  2, 3 };
+    const ValueType nz_values[]  = { 6,  1,  4,  -2, 8,  3,  1, 9, 4, -1, 1, 3 };
 
     numRows    = sizeof( ia_values ) / sizeof( IndexType ) - 1;
     numColumns = 4;
@@ -245,6 +245,8 @@ static void getCOOTestData(
                       -2  8  3  -
                        -  1  9  4
                       -1  -  1  3
+
+         Note: COO data is sorted with rows as first key and columns as second key.
      */
 
     const IndexType ia_values[]  = { 0, 0, 0,  1, 1, 1, 2, 2, 2,  3, 3, 3 };

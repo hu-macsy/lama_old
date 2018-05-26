@@ -155,7 +155,7 @@ struct CSRKernelTrait
         }
     };
 
-    /** Structure with type definitions for solver routines */
+    /** Kernel definition of jacobi iteration with cSR data */
 
     template <typename ValueType>
     struct jacobi
@@ -164,6 +164,7 @@ struct CSRKernelTrait
          *
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
+         *  where B is the storage without diagonal and dinv the inverse of the diagonal.
          */
         typedef void ( *FuncType ) (
             ValueType solution[],

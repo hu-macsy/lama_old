@@ -270,6 +270,22 @@ public:
         const bool isSorted,
         hmemo::ContextPtr loc );
 
+    /**
+     *  @brief Jacobi iteration step with CSR storage
+     *
+     *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+     */
+    template<typename ValueType>
+    static void jacobi(
+        hmemo::HArray<ValueType>& solution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        hmemo::ContextPtr loc );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
