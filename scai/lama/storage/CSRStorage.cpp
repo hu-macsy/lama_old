@@ -2082,29 +2082,9 @@ void CSRStorage<ValueType>::fillCOO(
 
     CSRStorage<ValueType> csr1( getNumRows(), getNumColumns(), std::move( csrIA ), std::move( cooJA ), std::move( cooValues ) );
 
-    if ( op == common::BinaryOp::COPY )
-    {
-        csr1.writeToFile( "COO_copy.mtx" );
-    }
-    else 
-    {
-        csr1.writeToFile( "COO_add.mtx" );
-    }
-
     sortRows();
 
-    this->writeToFile( "CSR.mtx" );
-
     binaryOpCSR( *this, op, csr1 );
-
-    if ( op == common::BinaryOp::COPY )
-    {
-        this->writeToFile( "CSR_copy.mtx" );
-    }
-    else 
-    {
-        this->writeToFile( "CSR_add.mtx" );
-    }
 }
 
 /* ========================================================================= */

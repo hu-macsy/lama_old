@@ -1245,7 +1245,7 @@ BOOST_AUTO_TEST_CASE( fillCOOTest )
         storage.assign( denseInput );
         storage.fillCOO( ia, ja, values, common::BinaryOp::COPY );
 
-        SCAI_LOG_ERROR( logger, "storage filled (COPY) = " << storage )
+        SCAI_LOG_DEBUG( logger, "storage filled (COPY) = " << storage )
 
         denseStorage.assign( storage );
 
@@ -1255,7 +1255,7 @@ BOOST_AUTO_TEST_CASE( fillCOOTest )
         storage.assign( denseInput );
         storage.fillCOO( ia, ja, values, common::BinaryOp::ADD );
 
-        SCAI_LOG_ERROR( logger, "storage filled (ADD) = " << storage )
+        SCAI_LOG_DEBUG( logger, "storage filled (ADD) = " << storage )
 
         denseStorage.assign( storage );
 
