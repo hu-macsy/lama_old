@@ -548,6 +548,7 @@ public:
 
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
+    using _MatrixStorage::getDiagonalSize;
     using _MatrixStorage::getValueType;
 
     using MatrixStorage<ValueType>::assign;
@@ -591,7 +592,7 @@ private:
      *  a certain percentage ( mThreshold ).
      */
 
-    void buildRowIndexes( const hmemo::ContextPtr context );
+    void buildRowIndexes();
 
     /** Logger for this class. */
 

@@ -140,9 +140,9 @@ private:
         const IndexType ellSizes[],
         const IndexType ellJA[] );
 
-    /** Implementation for ELLKernelTrait::getValuePosCol */
+    /** Implementation for ELLKernelTrait::getColumnPositions */
 
-    static IndexType getValuePosCol(
+    static IndexType getColumnPositions(
         IndexType row[],
         IndexType pos[],
         const IndexType j,

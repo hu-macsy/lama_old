@@ -123,9 +123,9 @@ public:
         const IndexType perm[],
         const IndexType ja[] );
 
-    /** Implementation for JDSKernelTrait::getValuePosRow */
+    /** Implementation for JDSKernelTrait::getRowPositions */
 
-    static IndexType getValuePosRow(
+    static IndexType getRowPositions(
         IndexType pos[],
         const IndexType j,
         const IndexType numRows,
@@ -133,9 +133,9 @@ public:
         const IndexType dlg[],
         const IndexType perm[] );
 
-    /** Implementation for JDSKernelTrait::getValuePosCol */
+    /** Implementation for JDSKernelTrait::getColumnPositions */
 
-    static IndexType getValuePosCol(
+    static IndexType getColumnPositions(
         IndexType row[],
         IndexType pos[],
         const IndexType j,

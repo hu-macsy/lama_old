@@ -165,7 +165,7 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
 }
 
 /* --------------------------------------------------------------------------- */
-/*     getValuePosCol                                                          */
+/*     getColumnPositions                                                      */
 /* --------------------------------------------------------------------------- */
 
 struct notEqual
@@ -208,13 +208,18 @@ static void get_col_pos_kernel( IndexType row[], IndexType pos[], const IndexTyp
 
 /* --------------------------------------------------------------------------- */
 
-IndexType CUDACSRUtils::getValuePosCol( IndexType row[], IndexType pos[], const IndexType j,
-                                        const IndexType csrIA[], const IndexType numRows,
-                                        const IndexType csrJA[], const IndexType numValues )
+IndexType CUDACSRUtils::getColumnPositions( 
+    IndexType row[], 
+    IndexType pos[], 
+    const IndexType j,
+    const IndexType csrIA[], 
+    const IndexType numRows,
+    const IndexType csrJA[], 
+    const IndexType numValues )
 {
-    SCAI_REGION( "CUDA.CSRUtils.getValuePosCol" )
+    SCAI_REGION( "CUDA.CSRUtils.getColumnPositions" )
 
-    SCAI_LOG_INFO( logger, "getValuePosCol: j = " << j << ", #rows = " << numRows << ", #nnz = " << numValues )
+    SCAI_LOG_INFO( logger, "getColumnPositions: j = " << j << ", #rows = " << numRows << ", #nnz = " << numValues )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -2650,7 +2655,7 @@ void CUDACSRUtils::sortRows(
 
 template<typename ValueType>
 __global__
-void setDiaFirstKernel(
+void shiftDiagKernel(
     IndexType count[],
     IndexType csrJA[],
     ValueType csrValues[],
@@ -2716,13 +2721,13 @@ void setDiaFirstKernel(
 }
 
 template<typename ValueType>
-IndexType CUDACSRUtils::setDiagonalFirst(
+IndexType CUDACSRUtils::shiftDiagonal(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType numDiagonals,
     const IndexType csrIA[] )
 {
-    SCAI_REGION( "CUDA.CSR.setDiaFirst" )
+    SCAI_REGION( "CUDA.CSR.shiftDiag" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -2734,15 +2739,15 @@ IndexType CUDACSRUtils::setDiagonalFirst(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numDiagonals, dimBlock.x );
 
-    setDiaFirstKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, numDiagonals );
+    shiftDiagKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, numDiagonals );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setDiagonalFirst" )
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "shiftDiagonal" )
 
     IndexType numFirstDiagonals = thrust::reduce( countPtr, countPtr + numDiagonals, 0, thrust::plus<IndexType>() );
 
     thrust::device_free( countPtr );
 
-    SCAI_LOG_INFO( logger, "setDiagonalFirst for CSR data, " << numFirstDiagonals << " of " << numDiagonals << " are now first entry" )
+    SCAI_LOG_INFO( logger, "shiftDiagonal for CSR data, " << numFirstDiagonals << " of " << numDiagonals << " are now first entry" )
 
     return numFirstDiagonals;
 }
@@ -2871,7 +2876,7 @@ void CUDACSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     SCAI_LOG_DEBUG( logger, "set CSR routines for CUDA in Interface" )
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::getColumnPositions>( getColumnPositions, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasSortedRows>( hasSortedRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
@@ -2889,7 +2894,7 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sortRows<ValueType> >( sortRows, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::setDiagonalFirst<ValueType> >( setDiagonalFirst, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::shiftDiagonal<ValueType> >( shiftDiagonal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );

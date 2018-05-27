@@ -344,50 +344,38 @@ void OpenMPCSRUtils::sortRows(
 
 /* --------------------------------------------------------------------------- */
 
-IndexType OpenMPCSRUtils::countNonEmptyRowsByOffsets( const IndexType offsets[], const IndexType numRows )
+IndexType OpenMPCSRUtils::nonEmptyRows( IndexType rowIndexes[], const IndexType csrIA[], const IndexType numRows )
 {
     IndexType counter = 0;
-    #pragma omp parallel for reduction( +:counter )
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    if ( rowIndexes == NULL )
     {
-        const IndexType nzRow = offsets[i + 1] - offsets[i];
-
-        if ( nzRow > 0 )
+        #pragma omp parallel for reduction( + : counter )
+       
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            counter++;
+            if ( csrIA[i + 1] > csrIA[i]  )
+            {
+                counter++;
+            }
+        }
+    }
+    else
+    {
+        // OpenMP parallelization not possible if indexes are needed
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            if ( csrIA[i + 1] > csrIA[i]  )
+            {
+                rowIndexes[counter++] = i;
+            }
         }
     }
 
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by offsets" )
+    SCAI_LOG_INFO( logger, "#non-empty rows = " << counter << ", counted by offsets" )
+
     return counter;
-}
-
-/* --------------------------------------------------------------------------- */
-
-void OpenMPCSRUtils::setNonEmptyRowsByOffsets(
-    IndexType rowIndexes[],
-    const IndexType numNonEmptyRows,
-    const IndexType offsets[],
-    const IndexType numRows )
-{
-    IndexType counter = 0;
-
-    // Note: this routine is not easy to parallelize, no offsets for rowIndexes available
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        const IndexType nzRow = offsets[i + 1] - offsets[i];
-
-        if ( nzRow > 0 )
-        {
-            rowIndexes[counter] = i;
-            counter++;
-        }
-    }
-
-    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by offsets" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -659,7 +647,7 @@ IndexType OpenMPCSRUtils::getPosDiagonal(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType OpenMPCSRUtils::setDiagonalFirst(
+IndexType OpenMPCSRUtils::shiftDiagonal(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType numDiagonals,
@@ -732,12 +720,14 @@ IndexType OpenMPCSRUtils::setDiagonalFirst(
 
 /* --------------------------------------------------------------------------- */
 
-IndexType OpenMPCSRUtils::getValuePosCol( IndexType row[], IndexType pos[],
-        const IndexType j,
-        const IndexType csrIA[], const IndexType numRows,
-        const IndexType csrJA[], const IndexType )
+IndexType OpenMPCSRUtils::getColumnPositions( 
+    IndexType row[], 
+    IndexType pos[],
+    const IndexType j,
+    const IndexType csrIA[], const IndexType numRows,
+    const IndexType csrJA[], const IndexType )
 {
-    SCAI_REGION( "OpenMP.CSRUtils.getValuePosCol" )
+    SCAI_REGION( "OpenMP.CSRUtils.getColPos" )
 
     IndexType cnt  = 0;   // counts number of available row entries in column j
 
@@ -1930,13 +1920,12 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register CSRUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<CSRKernelTrait::getValuePos>( getValuePos, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::getColumnPositions>( getColumnPositions, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizesGather>( offsets2sizesGather, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::countNonEmptyRowsByOffsets>( countNonEmptyRowsByOffsets, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::setNonEmptyRowsByOffsets>( setNonEmptyRowsByOffsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::nonEmptyRows>( nonEmptyRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasSortedRows>( hasSortedRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::getPosDiagonal>( getPosDiagonal, ctx, flag );
@@ -1954,7 +1943,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sortRows<ValueType> >( sortRows, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::setDiagonalFirst<ValueType> >( setDiagonalFirst, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::shiftDiagonal<ValueType> >( shiftDiagonal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::getDiagonal<ValueType> >( getDiagonal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::setDiagonal<ValueType> >( setDiagonal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::setDiagonalV<ValueType> >( setDiagonalV, ctx, flag );

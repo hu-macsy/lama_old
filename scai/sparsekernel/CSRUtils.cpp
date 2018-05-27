@@ -65,34 +65,42 @@ IndexType CSRUtils::nonEmptyRows(
     HArray<IndexType>& rowIndexes, 
     const HArray<IndexType>& csrIA,
     float threshold,
-    ContextPtr )
+    ContextPtr prefLoc )
 {
     // currently only available on host
 
-    ContextPtr loc = Context::getHostPtr();
+    static LAMAKernel<CSRKernelTrait::nonEmptyRows> kNonEmptyRows;
+
+    ContextPtr loc = prefLoc;
+
+    kNonEmptyRows.getSupportedContext( loc );
 
     const IndexType numRows = csrIA.size() - 1;
 
     ReadAccess<IndexType> rIA( csrIA, loc );
 
-    IndexType nonEmptyRows = OpenMPCSRUtils::countNonEmptyRowsByOffsets( rIA.get(), numRows );
+    SCAI_CONTEXT_ACCESS( loc )
 
-    float usage = float( nonEmptyRows ) / float( numRows );
+    IndexType count = kNonEmptyRows[loc]( (IndexType*) NULL, rIA.get(), numRows );
+
+    float usage = float( count ) / float( numRows );
 
     if ( usage >= threshold )
     {
         SCAI_LOG_INFO( logger, "CSRStorage: do not build row indexes, usage = " << usage
                        << ", threshold = " << threshold )
+
+        rowIndexes.clear();
     }
     else
     {
-        SCAI_LOG_INFO( logger, "CSRStorage: build row indexes, #entries = " << nonEmptyRows )
+        SCAI_LOG_INFO( logger, "CSRStorage: build row indexes, #entries = " << count )
 
-        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, nonEmptyRows );
-        OpenMPCSRUtils::setNonEmptyRowsByOffsets( wRowIndexes.get(), nonEmptyRows, rIA.get(), numRows );
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, count );
+        kNonEmptyRows[loc]( wRowIndexes.get(), rIA.get(), numRows );
     }
 
-    return nonEmptyRows;
+    return count;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -233,23 +241,23 @@ bool CSRUtils::hasSortedRows(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType CSRUtils::setDiagonalFirst(
+IndexType CSRUtils::shiftDiagonalFirst(
     HArray<IndexType>& ja,
     HArray<ValueType>& values,
     const HArray<IndexType>& ia,
     const IndexType numColumns,
     ContextPtr prefLoc )
 {
-    SCAI_REGION( "Sparse.CSR.setDiagFirst" )
+    SCAI_REGION( "Sparse.CSR.shiftDiagFirst" )
 
     const IndexType numRows = ia.size() - 1;
 
-    static LAMAKernel<CSRKernelTrait::setDiagonalFirst<ValueType> > setDiagonal;
+    static LAMAKernel<CSRKernelTrait::shiftDiagonal<ValueType> > shiftDiagonal;
 
     ContextPtr loc = prefLoc;
-    setDiagonal.getSupportedContext( loc );
+    shiftDiagonal.getSupportedContext( loc );
 
-    SCAI_LOG_INFO( logger, "setDiagonalFirst on CSR data ( " << numRows << " x " << numColumns
+    SCAI_LOG_INFO( logger, "shiftDiagonalFirst on CSR data ( " << numRows << " x " << numColumns
                      << " ), called on " << *loc << ", preferred was " << *prefLoc )
 
     SCAI_CONTEXT_ACCESS( loc )
@@ -258,9 +266,9 @@ IndexType CSRUtils::setDiagonalFirst(
     WriteAccess<IndexType> wJA( ja, loc );
     WriteAccess<ValueType> wValues( values, loc );
 
-    IndexType numDiagonals = std::min( numRows, numColumns );
+    IndexType numDiagonals = common::Math::min( numRows, numColumns );
 
-    return setDiagonal[loc]( wJA.get(), wValues.get(), numDiagonals, rIA.get() );
+    return shiftDiagonal[loc]( wJA.get(), wValues.get(), numDiagonals, rIA.get() );
 }
 
 
@@ -605,6 +613,69 @@ bool CSRUtils::setDiagonal(
 
 /* -------------------------------------------------------------------------- */
 
+IndexType CSRUtils::getValuePos(
+    const IndexType i,
+    const IndexType j,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    ContextPtr prefLoc )
+{
+    // check row index to avoid out-of-range access, illegal j does not matter
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, csrIA.size() - 1, "row index out of range" )
+
+    static LAMAKernel<CSRKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = prefLoc;
+
+    getValuePos.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIa( csrIA, loc );
+    ReadAccess<IndexType> rJa( csrJA, loc );
+
+    return getValuePos[loc]( i, j, rIa.get(), rJa.get() );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void CSRUtils::getColumnPositions(
+    hmemo::HArray<IndexType>& ia,
+    hmemo::HArray<IndexType>& positions,
+    const hmemo::HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const IndexType j,
+    const ContextPtr prefLoc )
+{
+    SCAI_REGION( "Sparse.CSR.getColPos" )
+
+    const IndexType numRows   = csrIA.size() - 1;
+    const IndexType numValues = csrJA.size();
+
+    static LAMAKernel<CSRKernelTrait::getColumnPositions> getColumnPositions;
+
+    ContextPtr loc = prefLoc;
+
+    getColumnPositions.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteOnlyAccess<IndexType> wRowIndexes( ia, loc, numRows );
+    WriteOnlyAccess<IndexType> wValuePos( positions, loc, numRows );
+
+    ReadAccess<IndexType> rIA( csrIA, loc );
+    ReadAccess<IndexType> rJA( csrJA, loc );
+
+    IndexType cnt = getColumnPositions[loc]( wRowIndexes.get(), wValuePos.get(), j,
+                                             rIA.get(), numRows, rJA.get(), numValues );
+
+    wRowIndexes.resize( cnt );
+    wValuePos.resize( cnt );
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void CSRUtils::jacobi(
     HArray<ValueType>& solution,
@@ -661,7 +732,7 @@ void CSRUtils::jacobi(
             const IndexType,                         \
             ContextPtr );                            \
                                                      \
-    template IndexType CSRUtils::setDiagonalFirst(   \
+    template IndexType CSRUtils::shiftDiagonalFirst( \
             HArray<IndexType>&,                      \
             HArray<ValueType>&,                      \
             const HArray<IndexType>&,                \

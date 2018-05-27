@@ -322,7 +322,7 @@ struct ELLKernelTrait
         }
     };
 
-    struct getValuePosCol
+    struct getColumnPositions
     {
         /** This method returns for a certain column of the CSR matrix all
          *  row indexes for which elements exist and the corresponding positions
@@ -348,7 +348,7 @@ struct ELLKernelTrait
 
         static const char* getId()
         {
-            return "ELL.getValuePosCol";
+            return "ELL.getColumnPositions";
         }
     };
 

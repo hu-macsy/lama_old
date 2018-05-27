@@ -534,8 +534,8 @@ void COOStorage<ValueType>::setDiagonal( const ValueType value )
     const IndexType M = getNumRows();
     const IndexType N = getNumColumns();
 
-    SCAI_ASSERT_ERROR( COOUtils::hasDiagonalProperty( M, N, mIA, mJA, getContextPtr() ),
-                       "cannot set diagonal for COO, no diagonal property" )
+    SCAI_ASSERT_ERROR( COOUtils::hasDiagonal( M, N, mIA, mJA, getContextPtr() ),
+                       "cannot set diagonal for COO, no all entries are available" )
 
     COOUtils::setDiagonal( mValues, value, M, N, mIA, mJA,  getContextPtr() );
 }
@@ -842,7 +842,7 @@ void COOStorage<ValueType>::setDiagonalV( const hmemo::HArray<ValueType>& diagon
     const IndexType M = getNumRows();
     const IndexType N = getNumColumns();
 
-    SCAI_ASSERT_ERROR( COOUtils::hasDiagonalProperty( M, N, mIA, mJA, getContextPtr() ), 
+    SCAI_ASSERT_ERROR( COOUtils::hasDiagonal( M, N, mIA, mJA, getContextPtr() ), 
                        "cannot set diagonal for COO, not all diagonal entries available" )
 
     COOUtils::setDiagonalV( mValues, diagonal, M, N, mIA, mJA,  getContextPtr() );
@@ -868,7 +868,7 @@ void COOStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::H
     IndexType offset;    // first pos in COO data for row i
     IndexType n;         // number of entries in row i
 
-    COOUtils::getRow( offset, n, mIA, i, getContextPtr() );
+    COOUtils::getRowPositions( offset, n, mIA, i, getContextPtr() );
  
     if ( n == 0 )
     {
@@ -918,7 +918,7 @@ void COOStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexTyp
     IndexType offset;
     IndexType n;
  
-    COOUtils::getRow( offset, n, mIA, i, getContextPtr() );
+    COOUtils::getRowPositions( offset, n, mIA, i, getContextPtr() );
 
     HArray<IndexType> colIndexes;   // column indexes for row i
 
@@ -944,7 +944,7 @@ void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& ia, hmemo
     
     HArray<IndexType> pos;     // positions in the COO arrays with cooJA[pos] == j 
 
-    COOUtils::getColumn( pos, mJA, j, getContextPtr() );
+    COOUtils::getColumnPositions( pos, mJA, j, getContextPtr() );
 
     // column[ row ] = mValues[ pos ];
 
@@ -979,7 +979,7 @@ void COOStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 
     HArray<IndexType> pos;    // positions in the ia, values array, are unique
 
-    COOUtils::getColumn( pos, mJA, j, getContextPtr() );
+    COOUtils::getColumnPositions( pos, mJA, j, getContextPtr() );
 
     HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
 

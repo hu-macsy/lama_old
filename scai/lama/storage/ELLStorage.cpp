@@ -586,7 +586,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         SCAI_LOG_DEBUG( logger, " size = " << ellJA.size() )
     }
 
-    buildRowIndexes( loc );
+    buildRowIndexes();
 
     SCAI_LOG_INFO( logger, "ELL: set CSR data done, this = " << *this )
 }
@@ -656,19 +656,7 @@ IndexType ELLStorage<ValueType>::getNumValuesPerRow() const
 template<typename ValueType>
 void ELLStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    HArray<IndexType> diagonalPositions;
-    
-    IndexType numDiagonalsFound = ELLUtils::getDiagonalPositions( 
-        diagonalPositions, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
-
-    // as we have the number of found diagonals we have not to check for any invalidIndex
-
-    SCAI_ASSERT_EQ_ERROR( diagonalPositions.size(), numDiagonalsFound,
-                          "no diagonal property, some diagonal elements are missing" )
-
-    HArray<ValueType> diagonalV( numDiagonalsFound, value, getContextPtr() );
-
-    HArrayUtils::scatter( mValues, diagonalPositions, true, diagonalV, common::BinaryOp::COPY, getContextPtr() );
+    ELLUtils::setDiagonal( mValues, value, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -676,21 +664,8 @@ void ELLStorage<ValueType>::setDiagonal( const ValueType value )
 template<typename ValueType>
 void ELLStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    HArray<IndexType> diagonalPositions;
-
-    IndexType numDiagonalsFound = ELLUtils::getDiagonalPositions( 
-        diagonalPositions, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
-
-    // as we have the number of found diagonals we have not to check for any invalidIndex
-
-    SCAI_ASSERT_EQ_ERROR( diagonalPositions.size(), numDiagonalsFound,
-                          "no diagonal property, some diagonal elements are missing" )
-
-    SCAI_ASSERT_EQ_ERROR( diagonal.size(), diagonalPositions.size(), "diagonal has illegal size" )
-
-    bool unique = true;  // there are no multiple diagonal entries
-
-    HArrayUtils::scatter( mValues, diagonalPositions, unique, diagonal, common::BinaryOp::COPY, getContextPtr() );
+    SCAI_ASSERT_EQ_ERROR( diagonal.size(), getDiagonalSize(), "diagonal has illegal size" )
+    ELLUtils::setDiagonalV( mValues, diagonal, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -722,39 +697,24 @@ void ELLStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::H
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::HArray<ValueType>& values, const IndexType j ) const
+void ELLStorage<ValueType>::getSparseColumn( 
+    hmemo::HArray<IndexType>& iA, 
+    hmemo::HArray<ValueType>& values, 
+    const IndexType j ) const
 {   
     SCAI_REGION( "Storage.ELL.getSparseCol" )
     
+    // check for legal column index j; but routine works fine and return empty column
+
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "col index out of range" )
     
-    static LAMAKernel<ELLKernelTrait::getValuePosCol> getValuePosCol;
+    HArray<IndexType> columnPositions;  // ellJA[columnPositions[i]] == j for 0 <= i < size
 
-    ContextPtr loc = this->getContextPtr();
+    ELLUtils::getColumnPositions( iA, columnPositions, mIA, mJA, j, getContextPtr() );
 
-    getValuePosCol.getSupportedContext( loc );
+    // column values[i] = mValues[ pos[i] ];  
 
-    HArray<IndexType> valuePos;     // positions in the values array
-
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, getNumRows() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumRows() );
-
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), getNumRows(), rJA.get(), mNumValuesPerRow );
-
-        wRowIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
-
-    // column_values = mValues[ pos ];
-
-    HArrayUtils::gather( values, mValues, valuePos, common::BinaryOp::COPY, loc );
+    HArrayUtils::gather( values, mValues, columnPositions, common::BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -965,16 +925,7 @@ ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
 
-    static LAMAKernel<ELLKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = this->getContextPtr();
-    getValuePos.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> rIa( mIA, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
-
-    IndexType pos = getValuePos[loc]( i, j, getNumRows(), mNumValuesPerRow, rIa.get(), rJa.get() );
+    IndexType pos = ELLUtils::getValuePos( i, j, mIA, mJA, getContextPtr() );
 
     ValueType val = 0;
 
@@ -1056,55 +1007,13 @@ void ELLStorage<ValueType>::wait() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
+void ELLStorage<ValueType>::buildRowIndexes()
 {
-    SCAI_LOG_INFO( logger, "buildRowIndexes # loc = " << context )
-    mRowIndexes.clear();
+    // build row indexes if there are only few rows that are not empty (e.g. for Halo storage)
 
-    if ( getNumRows() == 0 )
-    {
-        return;
-    }
+    ELLUtils::nonEmptyRows( mRowIndexes, mIA, mCompressThreshold, getContextPtr() );
 
-    // Note: compress functionality in HArrayUtils available but we
-    // reimplement it here in the same way as compress is optionally done
-    // depending on the threshold value
-
-    // Get function pointers for needed kernel routines
-
-    static LAMAKernel<SparseKernelTrait::countNonZeros<IndexType> > countNonZeros;
-    static LAMAKernel<SparseKernelTrait::compress<IndexType, IndexType> > compress;
-
-    // choose location where both routines are available
-
-    ContextPtr loc = context;
-    countNonZeros.getSupportedContext( loc, compress );
-
-    ReadAccess<IndexType> ellIA( mIA, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    // count the number of non-zero rows to have a good value for allocation of rowIndexes
-
-    IndexType zero = 0;   // sparse storage uses always the real 0
-    IndexType eps  = 0;   // no tolerances used here
-
-    IndexType nonZeroRows = countNonZeros[loc]( ellIA.get(), getNumRows(), zero, eps );
-
-    float usage = float( nonZeroRows ) / float( getNumRows() );
-
-    if ( usage >= mCompressThreshold )
-    {
-        SCAI_LOG_INFO( logger,
-                       "ELLStorage: do not build row indexes, usage = " << usage << " >= " << mCompressThreshold << " ( threshold )" )
-        return;
-    }
-
-    WriteOnlyAccess<IndexType> rowIndexes( mRowIndexes, loc, nonZeroRows );
-
-    IndexType cnt = compress[loc]( NULL, rowIndexes.get(), ellIA.get(), getNumRows(), zero, eps );
-
-    SCAI_ASSERT_EQ_ERROR( cnt, nonZeroRows, "serious mismatch" );
+    SCAI_LOG_INFO( logger, "#row indexes = " << mRowIndexes.size() )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1116,7 +1025,7 @@ void ELLStorage<ValueType>::compress( const RealType<ValueType> eps )
 
     ELLUtils::compress( mIA, mJA, mValues, mNumValuesPerRow, eps, getContextPtr() );
 
-    buildRowIndexes( getContextPtr() );   // sizes of rows might have changed
+    buildRowIndexes();   // sizes of rows might have changed
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1406,30 +1315,8 @@ void ELLStorage<ValueType>::jacobiIterate(
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterate" )
-    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
-    if ( &solution == &oldSolution )
-    {
-        COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
-    }
-
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), rhs.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), getNumColumns() )
-    // matrix must be square
-    static LAMAKernel<ELLKernelTrait::jacobi<ValueType> > jacobi;
-    ContextPtr loc = this->getContextPtr();
-    jacobi.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    // make all needed data available at loc
-    ReadAccess<IndexType> ellSizes( mIA, loc );
-    ReadAccess<IndexType> ellJA( mJA, loc );
-    ReadAccess<ValueType> ellValues( mValues, loc );
-    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
-    ReadAccess<ValueType> rRhs( rhs, loc );
-    WriteOnlyAccess<ValueType> wSolution( solution, loc, getNumRows() );
-    jacobi[loc] ( wSolution.get(), getNumRows(), mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get(),
-                  rOldSolution.get(), rRhs.get(), omega );
+    ELLUtils::jacobi( solution, omega, oldSolution, rhs, mIA, mJA, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

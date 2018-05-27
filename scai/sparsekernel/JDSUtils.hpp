@@ -48,6 +48,10 @@ namespace scai
 namespace sparsekernel
 {
 
+/** 
+ *  @brief Class that provides typical operations for JDS storage arrays.
+ *
+ */
 class COMMON_DLL_IMPORTEXPORT JDSUtils
 {
 public:
@@ -85,10 +89,87 @@ public:
         const hmemo::HArray<ValueType>& jdsValues,
         hmemo::ContextPtr loc );
 
+    /** 
+     *  @brief return the position for an entry (i,j) in the JDS data
+     *
+     *  @param[in] i, j are the row and column index for the searched entry
+     *  @param[in] jdsILG, jdsDLG, jdsPerm, jdsJA are the corresponding arrays of JDS format
+     *  @return invalidIndex if not found, otherwise k with ja[k] == j, k % numRows = i
+     *
+     *  The corresponding matrix value can be found via csrValues[k] if k is the not invalid.
+     */
+    static IndexType getValuePos(
+        const IndexType i,
+        const IndexType j,
+        const hmemo::HArray<IndexType>& jdsILG,
+        const hmemo::HArray<IndexType>& jdsDLG,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Identify all entries of a given column in the CSR data
+     *
+     *  @param[out] ia contains the row indexes of the entries 
+     *  @param[out] positions contains the positions of the entries in the arrays jdsJA, jdsValues
+     *  @param[in] jdsILG, jdsDLG, jdsPerm, jdsJA are the corresponding arrays of the JDS format
+     *  @param[in] j the column for which entries are needed
+     *  @param[in] prefLoc specifies the context where operation should be executed.
+     *
+     *  Be careful, the entries might be in any order.
+     */
+    static void getColumnPositions(
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>& positions,
+        const hmemo::HArray<IndexType>& jdsILG,
+        const hmemo::HArray<IndexType>& jdsDLG,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const IndexType j,
+        hmemo::ContextPtr prefLoc );
+
+    /** 
+     *  @brief Compute the dlg array by the ilg array for the JDS format.
+     */
     static void ilg2dlg(
         hmemo::HArray<IndexType>& jdsDLG,
         const IndexType numDiagonals,
         const hmemo::HArray<IndexType>& jdsILG,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Jacobi iteration step with JDS storage
+     *
+     *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+     */
+    template<typename ValueType>
+    static void jacobi(
+        hmemo::HArray<ValueType>& solution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const hmemo::HArray<IndexType>& jdsILG,
+        const hmemo::HArray<IndexType>& jdsDLG,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const hmemo::HArray<ValueType>& jdsValues,
+        hmemo::ContextPtr prefLoc );
+    /**
+     *  @brief Jacobi halo iteration step with JDS storage
+     *
+     *  solution -= omega * ( B(halo) * oldSolution) ./ diagonal
+     */
+    template<typename ValueType>
+    static void jacobiHalo(
+        hmemo::HArray<ValueType>& solution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& diagonal,
+        const hmemo::HArray<IndexType>& jdsILG,
+        const hmemo::HArray<IndexType>& jdsDLG,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const hmemo::HArray<ValueType>& jdsValues,
         hmemo::ContextPtr prefLoc );
 
 private:

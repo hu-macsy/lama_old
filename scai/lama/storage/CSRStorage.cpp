@@ -440,7 +440,7 @@ template<typename ValueType>
 void CSRStorage<ValueType>::setDiagonalFirst()
 {
     IndexType numDiagonals = std::min( getNumRows(), getNumColumns() );
-    IndexType numFirstDiagonals = CSRUtils::setDiagonalFirst( mJA, mValues, mIA, getNumColumns(), getContextPtr() );
+    IndexType numFirstDiagonals = CSRUtils::shiftDiagonalFirst( mJA, mValues, mIA, getNumColumns(), getContextPtr() );
 
     if ( numDiagonals != numFirstDiagonals )
     {
@@ -666,16 +666,7 @@ ValueType CSRStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
 
-    static LAMAKernel<CSRKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = this->getContextPtr();
-    getValuePos.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> rIa( mIA, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
-
-    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get() );
+    IndexType pos = CSRUtils::getValuePos( i, j, mIA, mJA, getContextPtr() );
 
     ValueType val = 0;
 
@@ -702,17 +693,7 @@ void CSRStorage<ValueType>::setValue( const IndexType i,
 
     SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
 
-    static LAMAKernel<CSRKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = this->getContextPtr();
-    getValuePos.getSupportedContext( loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> rIa( mIA, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
-
-    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get() );
+    IndexType pos = CSRUtils::getValuePos( i, j, mIA, mJA, getContextPtr() );
 
     if ( pos == invalidIndex )
     {
@@ -855,33 +836,13 @@ void CSRStorage<ValueType>::getSparseColumn(
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "col index out of range" )
 
-    static LAMAKernel<CSRKernelTrait::getValuePosCol> getValuePosCol;
+    HArray<IndexType> pos;     // positions in the values array
 
-    ContextPtr loc = this->getContextPtr();
-
-    getValuePosCol.getSupportedContext( loc );
-
-    HArray<IndexType> valuePos;     // positions in the values array
-
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-
-        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, getNumRows() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumRows() );
-
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), getNumRows(), rJA.get(), rJA.size() );
-
-        wRowIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
+    CSRUtils::getColumnPositions( iA, pos, mIA, mJA, j, getContextPtr() );
 
     // values = mValues[ pos ];
 
-    HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );
+    HArrayUtils::gather( values, mValues, pos, BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -947,37 +908,17 @@ void CSRStorage<ValueType>::setColumn(
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
     SCAI_ASSERT_GE_DEBUG( column.size(), getNumRows(), "column array to small for set" )
 
-    static LAMAKernel<CSRKernelTrait::getValuePosCol> getValuePosCol;
-
-    ContextPtr loc = this->getContextPtr();
-
-    getValuePosCol.getSupportedContext( loc );
-
     HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
-    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<IndexType> pos;          // positions in the values array
+
+    CSRUtils::getColumnPositions( rowIndexes, pos, mIA, mJA, j, getContextPtr() );
+
     HArray<ValueType> colValues;    // contains the values of entries belonging to column j
-
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // allocate rowIndexes, valuePos with maximal possible size
-
-        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, getNumRows() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumRows() );
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), getNumRows(), rJA.get(), rJA.size() );
-
-        wRowIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
 
     //  mValues[ pos ] op= column[row]
 
-    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, loc );
-    HArrayUtils::scatter( mValues, valuePos, true, colValues, op, loc );
+    HArrayUtils::gather( colValues, column, rowIndexes, BinaryOp::COPY, getContextPtr() );
+    HArrayUtils::scatter( mValues, pos, true, colValues, op, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

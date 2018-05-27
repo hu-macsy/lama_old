@@ -62,28 +62,22 @@ void COOUtils::convertCOO2CSR(
     HArray<IndexType>& csrIA,
     const HArray<IndexType>& cooIA,
     const IndexType numRows,
-    ContextPtr )
+    ContextPtr prefLoc )
 {
-    const IndexType nnz = cooIA.size();
+    const IndexType numValues = cooIA.size();
 
-    ContextPtr loc = Context::getHostPtr();
+    static LAMAKernel<COOKernelTrait::ia2offsets> ia2offsets;
+
+    ContextPtr loc = prefLoc;
+
+    ia2offsets.getSupportedContext( loc );
 
     WriteOnlyAccess<IndexType> wOffsets( csrIA, loc, numRows + 1 );
     ReadAccess<IndexType> rIA( cooIA, loc );
    
-    wOffsets[0] = 0;
+    SCAI_CONTEXT_ACCESS( loc )
 
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        IndexType offs = wOffsets[i];
-
-        while ( offs < nnz && rIA[offs] == i )
-        {
-            offs++;
-        }
-
-        wOffsets[i + 1] = offs;
-    }
+    ia2offsets[loc]( wOffsets.get(), numRows, rIA.get(), numValues );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -387,7 +381,7 @@ void COOUtils::setDiagonal(
 
 /* -------------------------------------------------------------------------- */
 
-bool COOUtils::hasDiagonalProperty(
+bool COOUtils::hasDiagonal(
     const IndexType numRows,
     const IndexType numColumns,
     const HArray<IndexType>& ia,
@@ -457,7 +451,7 @@ IndexType COOUtils::getValuePos(
 
 /* -------------------------------------------------------------------------- */
 
-void COOUtils::getColumn( 
+void COOUtils::getColumnPositions( 
     HArray<IndexType>& positions,
     const HArray<IndexType>& cooJA,
     const IndexType j,
@@ -488,7 +482,7 @@ void COOUtils::getColumn(
 
 /* -------------------------------------------------------------------------- */
 
-void COOUtils::getRow(
+void COOUtils::getRowPositions(
     IndexType& offset,
     IndexType& n,
     const HArray<IndexType>& cooIA,

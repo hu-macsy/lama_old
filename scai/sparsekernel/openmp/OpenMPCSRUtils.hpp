@@ -67,9 +67,9 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[] );
 
-    /** Implementation for CSRKernelTrait::getValuePosCol */
+    /** Implementation for CSRKernelTrait::getColumnPositions */
 
-    static IndexType getValuePosCol(
+    static IndexType getColumnPositions(
         IndexType row[],
         IndexType pos[],
         const IndexType j,
@@ -78,16 +78,11 @@ public:
         const IndexType csrJA[],
         const IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::countNonEmptyRowsByOffsets */
+    /** Implementation for CSRKernelTrait::nonEmptyRows */
 
-    static IndexType countNonEmptyRowsByOffsets( const IndexType offsets[], const IndexType numRows );
-
-    /** Implementation for CSRKernelTrait::setNonEmptyRowsByOffsets */
-
-    static void setNonEmptyRowsByOffsets(
+    static IndexType nonEmptyRows( 
         IndexType rowIndexes[],
-        const IndexType numNonEmptyRows,
-        const IndexType offsets[],
+        const IndexType csrIA[], 
         const IndexType numRows );
 
     /** This function build an offset array from a counter array.
@@ -167,10 +162,10 @@ public:
         const IndexType csrJA[],
         const bool isSorted );
 
-    /** Implementation for CSRKernelTrait::setDiagonalFirst  */
+    /** Implementation for CSRKernelTrait::shiftDiagonal  */
 
     template<typename ValueType>
-    static IndexType setDiagonalFirst(
+    static IndexType shiftDiagonal(
         IndexType csrJA[],
         ValueType csrValues[],
         const IndexType numDiagonals,

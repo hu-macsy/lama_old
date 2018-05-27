@@ -212,6 +212,10 @@ public:
 
     inline IndexType getNumColumns() const;
 
+    /** Getter routine for the size of main diagonal */
+
+    inline IndexType getDiagonalSize() const;
+
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
@@ -576,6 +580,12 @@ IndexType _MatrixStorage::getNumRows() const
 IndexType _MatrixStorage::getNumColumns() const
 {
     return mNumColumns;
+}
+
+IndexType _MatrixStorage::getDiagonalSize() const
+{
+    // using std::min might not work if IndexType is not a standard type.
+    return common::Math::min( mNumRows, mNumColumns );
 }
 
 const hmemo::HArray<IndexType>& _MatrixStorage::getRowIndexes() const

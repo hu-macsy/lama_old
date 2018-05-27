@@ -125,17 +125,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( getValuePosRowTest )
+BOOST_AUTO_TEST_CASE( getRowPositionsTest )
 {
     typedef DefaultReal ValueType;
 
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<JDSKernelTrait::getValuePosRow> getValuePosRow;
+    LAMAKernel<JDSKernelTrait::getRowPositions> getRowPositions;
 
     ContextPtr loc = testContext;
 
-    getValuePosRow.getSupportedContext( loc );
+    getRowPositions.getSupportedContext( loc );
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        n += getValuePosRow[loc]( wPos.get(), i, numRows, rIlg.get(), rDlg.get(), rPerm.get() );
+        n += getRowPositions[loc]( wPos.get(), i, numRows, rIlg.get(), rDlg.get(), rPerm.get() );
     }
 
     BOOST_CHECK_EQUAL( jdsJA.size(), n );
@@ -219,15 +219,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getValuePosColTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getColumnPositionsTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
-    LAMAKernel<JDSKernelTrait::getValuePosCol> getValuePosCol;
-
-    ContextPtr loc = testContext;
-
-    getValuePosCol.getSupportedContext( loc );
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -248,24 +242,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValuePosColTest, ValueType, scai_numeric_test_
         HArray<IndexType> row;
         HArray<IndexType> pos;
 
-        IndexType n = 0;
+        JDSUtils::getColumnPositions( row, pos, jdsILG, jdsDLG, jdsPerm, jdsJA, j, testContext );
+ 
+        BOOST_CHECK_EQUAL( row.size(), pos.size() );
 
-        {
-            ReadAccess<IndexType> rJa( jdsJA, loc );
-            ReadAccess<IndexType> rDlg( jdsDLG, loc );
-            ReadAccess<IndexType> rIlg( jdsILG, loc );
-            ReadAccess<IndexType> rPerm( jdsPerm, loc );
-
-            SCAI_CONTEXT_ACCESS( loc );
-
-            WriteOnlyAccess<IndexType> wRow( row, loc, numColumns );
-            WriteOnlyAccess<IndexType> wPos( pos, loc, numColumns );
-
-            n = getValuePosCol[loc]( wRow.get(), wPos.get(), j, numRows, rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
-
-        }
-
-        nTotal += n;
+        nTotal += row.size();
     }
 
     BOOST_CHECK_EQUAL( nTotal, jdsJA.size() );
@@ -277,27 +258,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<JDSKernelTrait::getValuePos> getValuePos;
+    const IndexType numColumns = 10;
+    const IndexType numRows    = 5;
 
-    ContextPtr loc = testContext;
-    getValuePos.getSupportedContext( loc );
+    // the dense storage data, stored row-wise
 
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    ValueType valuesValues[] =
-    { 1, 5, 4, 3, 1, 3, 2, 2, 2, 8, 4, 9, 9, 7, 8, 7, 2 };
-    const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-    IndexType valuesJa[] =
-    { 0, 0, 2, 2, 0, 1, 3, 5, 4, 1, 3, 7, 6, 6, 9, 9, 9 };
-    const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-    IndexType valuesDlg[] =
-    { 5, 5, 3, 3, 1 };
-    const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-    IndexType valuesIlg[] =
-    { 5, 4, 4, 2, 2 };
-    const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-    IndexType valuesPerm[] =
-    { 0, 2, 3, 1, 4 };
-    const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
     ValueType expectedValues[5][10] =
     {
         { 1, 3, 0, 4, 0, 0, 7, 0, 0, 2 },
@@ -306,18 +271,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
         { 0, 0, 4, 0, 0, 2, 9, 0, 0, 7 },
         { 1, 8, 0, 0, 0, 0, 0, 0, 0, 0 }
     };
-    const IndexType numColumns = 10;
-    const IndexType numRows = 5;
-    HArray<ValueType> values( nValues, valuesValues, testContext );
-    HArray<IndexType> ja( nJa, valuesJa, testContext );
-    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
-    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
-    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
-    ReadAccess<ValueType> rValues( values, loc );
-    ReadAccess<IndexType> rJa( ja, loc );
-    ReadAccess<IndexType> rDlg( dlg, loc );
-    ReadAccess<IndexType> rIlg( ilg, loc );
-    ReadAccess<IndexType> rPerm( perm, loc );
+
+    // here are the JDS arrays
+
+    HArray<IndexType> dlg(  { 5, 5, 3, 3, 1 }, testContext );
+    HArray<IndexType> ilg(  { 5, 4, 4, 2, 2 },  testContext );
+    HArray<IndexType> perm( { 0, 2, 3, 1, 4 }, testContext );
+
+    HArray<ValueType> values( { 1, 5, 4, 3, 1, 3, 2, 2, 2, 8, 4, 9, 9, 7, 8, 7, 2 }, testContext );
+    HArray<IndexType> ja(     { 0, 0, 2, 2, 0, 1, 3, 5, 4, 1, 3, 7, 6, 6, 9, 9, 9 }, testContext );
+
+    auto rValues = hostReadAccess( values );
 
     IndexType nnz = 0;
 
@@ -325,8 +289,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
     {
         for ( IndexType j = 0; j < numColumns; j++ )
         {
-            SCAI_CONTEXT_ACCESS( loc );
-            IndexType pos = getValuePos[loc]( i, j, numRows, rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
+            IndexType pos = JDSUtils::getValuePos( i, j, ilg, dlg, perm, ja, testContext );
 
             if ( pos == invalidIndex )
             {
@@ -334,13 +297,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
             }
             else
             {
-                BOOST_CHECK_EQUAL( expectedValues[i][j], valuesValues[pos] );
+                BOOST_CHECK_EQUAL( expectedValues[i][j], rValues[pos] );
                 nnz++;
             }
         }
     }
 
-    BOOST_CHECK_EQUAL( nValues, nnz );
+    BOOST_CHECK_EQUAL( values.size(), nnz );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -924,17 +887,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTransposeTest, ValueType, scai_numeric_test_t
 BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<JDSKernelTrait::jacobi<ValueType> > jacobi;
-
-    ContextPtr loc = testContext;
-
-    jacobi.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    SCAI_LOG_INFO( logger, "jacobi test for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "jacobi test for " << *testContext )
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -948,58 +902,36 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
     data2::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
 
-    const ValueType rhs_values[]   = { 1, -1, 2, -2 };
-    const ValueType old_values[]   = { 3, -2, -2, 3 };
-
-    HArray<ValueType> rhs( numRows, rhs_values, testContext );
-    HArray<ValueType> oldSolution( numRows, old_values, testContext );
+    HArray<ValueType> rhs( { 1, -1, 2, -2 }, testContext );
+    HArray<ValueType> oldSolution( { 3, -2, -2, 3 }, testContext );
 
     const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
 
     const IndexType n_omega  = sizeof( omega_values ) / sizeof( ValueType );
 
     for ( IndexType icase = 0; icase < n_omega; ++icase )
-    {
+    {   
         ValueType omega  = omega_values[icase];
-
-        HArray<ValueType> res( testContext );
-
-        {
-            SCAI_CONTEXT_ACCESS( loc );
-
-            ReadAccess<IndexType> rPerm( jdsPerm, loc );
-            ReadAccess<IndexType> rDLG( jdsDLG, loc );
-            ReadAccess<IndexType> rILG( jdsILG, loc );
-            ReadAccess<IndexType> rJA( jdsJA, loc );
-            ReadAccess<ValueType> rValues( jdsValues, loc );
-
-            ReadAccess<ValueType> rOld( oldSolution, loc );
-            ReadAccess<ValueType> rRhs( rhs, loc );
-            WriteOnlyAccess<ValueType> wSolution( res, loc, numColumns );
-
-            jacobi[loc]( wSolution.get(), numRows,
-                         rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get(),
-                         rOld.get(), rRhs.get(), omega );
-
-        }
-
-        HArray<ValueType> expectedRes( testContext );
-
-        data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
-
-        BOOST_CHECK( HArrayUtils::maxDiffNorm( expectedRes, res ) < 0.1 );
-
-        bool mustBeIdentical = false;
-
-        if ( mustBeIdentical )
-        {
-            ReadAccess<ValueType> rExpected( expectedRes );
-            ReadAccess<ValueType> rComputed( res );
-
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
-            }
+        
+        HArray<ValueType> newSolution( testContext );
+        
+        JDSUtils::jacobi( newSolution, omega, oldSolution, rhs, 
+                          jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, testContext );
+        
+        HArray<ValueType> expSolution;
+        
+        data2::getJacobiResult( expSolution, oldSolution, omega, rhs );
+        
+        auto eps = common::TypeTraits<ValueType>::small();
+        
+        auto maxDiff = HArrayUtils::maxDiffNorm( expSolution, newSolution );
+        
+        BOOST_CHECK( maxDiff < eps );
+        
+        if ( maxDiff >= eps )
+        {   
+            // compare the individual values to see what went wrong
+            BOOST_TEST( hostReadAccess( expSolution ) == hostReadAccess( newSolution ), per_element() );
         }
     }
 }
@@ -1009,17 +941,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<JDSKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
-
-    ContextPtr loc = testContext;
-
-    jacobiHalo.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc, testContext );
-
-    SCAI_LOG_INFO( logger, "jacobiHalo test for " << *testContext << " on " << *loc )
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -1054,25 +975,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
         ValueType omega  = omega_values[icase];
 
         HArray<ValueType> solution( numRows, ValueType( 0 ), testContext );
-
-        {
-            SCAI_CONTEXT_ACCESS( loc );
-
-            ReadAccess<IndexType> rPerm( jdsPerm, loc );
-            ReadAccess<IndexType> rILG( jdsILG, loc );
-            ReadAccess<IndexType> rDLG( jdsDLG, loc );
-            ReadAccess<IndexType> rJA( jdsJA, loc );
-            ReadAccess<ValueType> rValues( jdsValues, loc );
-
-            ReadAccess<ValueType> rOld( oldSolution, loc );
-            ReadAccess<ValueType> rDiag( diag, loc );
-            WriteAccess<ValueType> wSolution( solution, loc );
-
-            jacobiHalo[loc]( wSolution.get(), numRows, rDiag.get(),
-                             numDiagonals, rPerm.get(), rILG.get(), rDLG.get(),
-                             rJA.get(), rValues.get(),
-                             rOld.get(), omega );
-        }
+ 
+        JDSUtils::jacobiHalo( solution, omega, oldSolution, diag, 
+                              jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, testContext );
 
         auto expectedSol = utilskernel::fillHArray<ValueType>( numRows, 0, testContext );
 

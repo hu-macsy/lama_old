@@ -130,11 +130,11 @@ public:
      *  @return the number of rows where diagonal element is first element
      * 
      *  Only the diagonal element is moved to the first entry, all other elements
-     *  remain in the original order. So this routine will not destroy the sorting of
-     *  the non-diagonal entries.
+     *  remain in the original order. This operation might be used for optimization
+     *  of CSR storage to access the diagonal (set/get diagonal).
      */
     template<typename ValueType>
-    static IndexType setDiagonalFirst(
+    static IndexType shiftDiagonalFirst(
         hmemo::HArray<IndexType>& ja,
         hmemo::HArray<ValueType>& values,
         const hmemo::HArray<IndexType>& ia,
@@ -269,6 +269,42 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const bool isSorted,
         hmemo::ContextPtr loc );
+
+    /** 
+     *  @brief return the position for an entry (i,j) in the CSR data
+     *
+     *  @param[in] i, j are the row and column index for the searched entry
+     *  @param[in] csrIA, csrJA are the row offset array and the column indexes
+     *  @return invalidIndex if not found, otherwise k with ja[k] == j, ia[i] <= k < ia[i+1]
+     *
+     *  The corresponding matrix value can be found via csrValues[k] if k is the not invalid.
+     */
+    static IndexType getValuePos(
+        const IndexType i,
+        const IndexType j,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Identify all entries of a given column in the CSR data
+     *
+     *  @param[out] ia contains the row indexes of the entries 
+     *  @param[out] positions contains the positions of the entries in the arrays csrJA
+     *  @param[in] csrIA the row offset array
+     *  @param[in] csrJA is the array of column indexes
+     *  @param[in] j the column for which entries are needed
+     *  @param[in] prefLoc specifies the context where operation should be executed.
+     *
+     *  Be careful, the entries might be in any order.
+     */
+    static void getColumnPositions(
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>& positions,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const IndexType j,
+        const hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief Jacobi iteration step with CSR storage

@@ -66,6 +66,8 @@ IndexType JDSUtils::getDiagonalPositions(
     const HArray<IndexType>& jdsJA,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.JDS.getDiagPos" )
+
     SCAI_ASSERT_EQ_ERROR( numRows, jdsILG.size(), "illegally sized array jdsILG" )
 
     IndexType numDiagonals = common::Math::min( numRows, numColumns );
@@ -149,12 +151,214 @@ void JDSUtils::getDiagonal(
 
 /* -------------------------------------------------------------------------- */
 
+IndexType JDSUtils::getValuePos(
+    const IndexType i,
+    const IndexType j,
+    const HArray<IndexType>& jdsILG,
+    const HArray<IndexType>& jdsDLG,
+    const HArray<IndexType>& jdsPerm,
+    const HArray<IndexType>& jdsJA,
+    ContextPtr prefLoc )
+{
+    const IndexType numRows = jdsILG.size();
+
+    // check row index to avoid out-of-range access, illegal j does not matter
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, numRows, "row index out of range" )
+
+    static LAMAKernel<JDSKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = prefLoc;
+
+    getValuePos.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIlg( jdsILG, loc );
+    ReadAccess<IndexType> rDlg( jdsDLG, loc );
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+    ReadAccess<IndexType> rJa( jdsJA, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, numRows, rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
+
+    return pos;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void JDSUtils::getColumnPositions(
+    HArray<IndexType>& ia,
+    HArray<IndexType>& positions,
+    const HArray<IndexType>& jdsILG,
+    const HArray<IndexType>& jdsDLG,
+    const HArray<IndexType>& jdsPerm,
+    const HArray<IndexType>& jdsJA,
+    const IndexType j,
+    const ContextPtr prefLoc )
+{
+    SCAI_REGION( "Sparse.JDS.getColPos" )
+
+    const IndexType numRows = jdsILG.size();
+
+    static LAMAKernel<JDSKernelTrait::getColumnPositions> getColumnPositions;
+
+    ContextPtr loc = prefLoc;
+
+    getColumnPositions.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteOnlyAccess<IndexType> wRowIndexes( ia, loc, numRows );
+    WriteOnlyAccess<IndexType> wValuePos( positions, loc, numRows );
+
+    ReadAccess<IndexType> rIlg( jdsILG, loc );
+    ReadAccess<IndexType> rDlg( jdsDLG, loc );
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+    ReadAccess<IndexType> rJa( jdsJA, loc );
+
+    IndexType cnt = getColumnPositions[loc]( wRowIndexes.get(), wValuePos.get(), j, numRows,
+                                             rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
+
+    wRowIndexes.resize( cnt );
+    wValuePos.resize( cnt );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void JDSUtils::jacobi(
+    HArray<ValueType>& solution,
+    const ValueType omega,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
+    const HArray<IndexType>& jdsILG,
+    const HArray<IndexType>& jdsDLG,
+    const HArray<IndexType>& jdsPerm,
+    const HArray<IndexType>& jdsJA,
+    const HArray<ValueType>& jdsValues,
+    ContextPtr prefLoc )
+{
+    SCAI_REGION( "Sparse.JDS.jacobi" )
+
+    SCAI_ASSERT_EQ_ERROR( rhs.size(), oldSolution.size(), "jacobi only for square matrices" )
+
+    SCAI_ASSERT_EQ_ERROR( jdsILG.size(), rhs.size(), "serious size mismatch for JDS arrays" )
+    SCAI_ASSERT_EQ_ERROR( jdsJA.size(), jdsValues.size(), "serious size mismatch for JDS arrays" )
+
+    const IndexType numRows = rhs.size();
+    const IndexType numDiagonals = jdsDLG.size();
+
+    if ( &solution == &oldSolution )
+    {
+        COMMON_THROWEXCEPTION( "alias of new/old solution is not allowed" )
+    }
+
+    static LAMAKernel<JDSKernelTrait::jacobi<ValueType>> jacobi;
+
+    ContextPtr loc = prefLoc;
+    jacobi.getSupportedContext( loc );
+
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+    ReadAccess<IndexType> rDlg( jdsDLG, loc );
+    ReadAccess<IndexType> rIlg( jdsILG, loc );
+    ReadAccess<IndexType> rJA( jdsJA, loc );
+    ReadAccess<ValueType> rValues( jdsValues, loc );
+
+    ReadAccess<ValueType> rOld( oldSolution, loc );
+    ReadAccess<ValueType> rRhs( rhs, loc );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, numRows );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    jacobi[loc]( wSolution.get(), numRows, rPerm.get(), 
+                 rIlg.get(), numDiagonals, rDlg.get(), rJA.get(),
+                 rValues.get(), rOld.get(), rRhs.get(), omega );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void JDSUtils::jacobiHalo(
+    HArray<ValueType>& solution,
+    const ValueType omega,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& diagonal,
+    const HArray<IndexType>& jdsILG,
+    const HArray<IndexType>& jdsDLG,
+    const HArray<IndexType>& jdsPerm,
+    const HArray<IndexType>& jdsJA,
+    const HArray<ValueType>& jdsValues,
+    ContextPtr prefLoc )
+{
+    SCAI_REGION( "Sparse.JDS.jacobiHalo" )
+
+    SCAI_ASSERT_EQ_ERROR( jdsJA.size(), jdsValues.size(), "serious size mismatch for JDS arrays" )
+
+    SCAI_ASSERT_EQ_ERROR( diagonal.size(), jdsILG.size(), "serious size mismatch for JDS arrays/diagonal" )
+    SCAI_ASSERT_EQ_ERROR( jdsPerm.size(), jdsILG.size(), "serious size mismatch for JDS arrays" )
+
+    const IndexType numRows = jdsILG.size();
+    const IndexType numDiagonals = jdsDLG.size();
+
+    if ( &solution == &oldSolution )
+    {
+        COMMON_THROWEXCEPTION( "alias of new/old solution is not allowed" )
+    }
+
+    static LAMAKernel<JDSKernelTrait::jacobiHalo<ValueType>> jacobiHalo;
+
+    ContextPtr loc = prefLoc;
+    jacobiHalo.getSupportedContext( loc );
+
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+    ReadAccess<IndexType> rDlg( jdsDLG, loc );
+    ReadAccess<IndexType> rIlg( jdsILG, loc );
+    ReadAccess<IndexType> rJA( jdsJA, loc );
+    ReadAccess<ValueType> rValues( jdsValues, loc );
+
+    ReadAccess<ValueType> rOld( oldSolution, loc );
+    ReadAccess<ValueType> rDiagonal( diagonal, loc );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, numRows );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    jacobiHalo[loc]( wSolution.get(), numRows, rDiagonal.get(), numDiagonals,
+                     rPerm.get(), rIlg.get(), rDlg.get(), rJA.get(),
+                     rValues.get(), rOld.get(), omega );
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define JDSUTILS_SPECIFIER( ValueType )              \
                                                      \
     template void JDSUtils::getDiagonal(             \
             HArray<ValueType>&,                      \
             const IndexType,                         \
             const IndexType,                         \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<ValueType>&,                \
+            ContextPtr );                            \
+                                                     \
+    template void JDSUtils::jacobi(                  \
+            HArray<ValueType>&,                      \
+            const ValueType,                         \
+            const HArray<ValueType>&,                \
+            const HArray<ValueType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<ValueType>&,                \
+            ContextPtr );                            \
+                                                     \
+    template void JDSUtils::jacobiHalo(              \
+            HArray<ValueType>&,                      \
+            const ValueType,                         \
+            const HArray<ValueType>&,                \
+            const HArray<ValueType>&,                \
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \

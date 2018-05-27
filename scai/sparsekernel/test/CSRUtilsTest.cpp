@@ -190,52 +190,29 @@ BOOST_AUTO_TEST_CASE( nonEmptyRowsTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<CSRKernelTrait::countNonEmptyRowsByOffsets> countNonEmptyRowsByOffsets;
+    HArray<IndexType> csrIA{ 0, 2, 2, 5, 5, 7, 7, 9 };
+    HArray<IndexType> expRowIndexes( { 0,    2,    4,    6  } );
 
-    ContextPtr loc = testContext;
-    countNonEmptyRowsByOffsets.getSupportedContext( loc );
+    HArray<IndexType> rowIndexes;  // will be set if there are less than threshold non-zero rows
 
-    const IndexType ia[]   = { 0, 2, 2, 5, 5, 7, 7, 9 };
-    const IndexType rows[] = { 0,    2,    4,    6  };
+    CSRUtils::nonEmptyRows( rowIndexes, csrIA, 1.0f, testContext );
 
-    IndexType numRows = sizeof( ia ) / sizeof( IndexType ) - 1;
+    BOOST_TEST( hostReadAccess( rowIndexes ) == hostReadAccess( expRowIndexes ), per_element() );
 
-    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
+    // set a threshold, as there are more than 20% non-empty row, no indexes are built.
 
-    IndexType nonEmptyRows = 0;
+    CSRUtils::nonEmptyRows( rowIndexes, csrIA, 0.2f, testContext );
 
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        nonEmptyRows = countNonEmptyRowsByOffsets[loc]( rIA.get(), numRows );
-    }
+    BOOST_CHECK_EQUAL( rowIndexes.size(), IndexType( 0 ) );
 
-    const IndexType expectedNonEmptyRows = sizeof( rows ) / sizeof( IndexType );
+    csrIA = { 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2 };
+    expRowIndexes = { 0, 6 };
 
-    BOOST_REQUIRE_EQUAL( expectedNonEmptyRows, nonEmptyRows );
+    // here we have less than 20% non-empty rows
 
-    HArray<IndexType> rowIndexes( testContext );
+    CSRUtils::nonEmptyRows( rowIndexes, csrIA, 0.2f, testContext );
 
-    LAMAKernel<CSRKernelTrait::setNonEmptyRowsByOffsets> setNonEmptyRowsByOffsets;
-
-    loc = testContext;
-    setNonEmptyRowsByOffsets.getSupportedContext( loc );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        WriteOnlyAccess<IndexType> wIndexes( rowIndexes, loc, nonEmptyRows );
-        setNonEmptyRowsByOffsets[loc]( wIndexes.get(), nonEmptyRows, rIA.get(), numRows );
-    }
-
-    {
-        ReadAccess<IndexType> rIndexes( rowIndexes );
-
-        for ( IndexType i = 0; i < nonEmptyRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( rows[i], rIndexes[i] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( rowIndexes ) == hostReadAccess( expRowIndexes ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -273,7 +250,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( setDiagonalFirstTest )
+BOOST_AUTO_TEST_CASE( shiftDiagonalFirstTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
@@ -294,7 +271,7 @@ BOOST_AUTO_TEST_CASE( setDiagonalFirstTest )
 
     const IndexType numColumns = 6;
 
-    IndexType numDiags = CSRUtils::setDiagonalFirst( csrJA, csrValues, csrIA, numColumns, testContext );
+    IndexType numDiags = CSRUtils::shiftDiagonalFirst( csrJA, csrValues, csrIA, numColumns, testContext );
 
     BOOST_CHECK_EQUAL( numDiags, 4 );
 
@@ -645,15 +622,6 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    LAMAKernel<CSRKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = testContext;
-
-    getValuePos.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     HArray<IndexType> csrIA( testContext );
     HArray<IndexType> csrJA( testContext );
@@ -669,35 +637,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
     data1::getDenseTestData( numRows, numColumns, denseValues );
 
-    ValueType zero = 0;
+    const ValueType ZERO = 0;
 
+    // comparison is done via accesses on the host
+
+    auto rValues = hostReadAccess( csrValues );
+    auto rDense  = hostReadAccess( denseValues );
+
+    for ( IndexType i = 0; i < numRows; i++ )
     {
-        ReadAccess<IndexType> rIa( csrIA, loc );
-        ReadAccess<IndexType> rJa( csrJA, loc );
-
-        // comparison is done via accesses on the host
-
-        ReadAccess<ValueType> rValues( csrValues, hostContext );
-        ReadAccess<ValueType> rDense( denseValues, hostContext );
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        for ( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType j = 0; j < numColumns; ++j )
         {
-            for ( IndexType j = 0; j < numColumns; ++j )
+            IndexType pos = CSRUtils::getValuePos( i, j, csrIA, csrJA, testContext );
+
+            IndexType k = i * numColumns + j;
+
+            if ( pos == invalidIndex )
             {
-                IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get() );
-
-                IndexType k   = i * numColumns + j;
-
-                if ( pos == invalidIndex )
-                {
-                    BOOST_CHECK_EQUAL( rDense[ k ], zero );
-                }
-                else
-                {
-                    BOOST_CHECK_EQUAL( rDense[ k], rValues[pos] );
-                }
+                BOOST_CHECK_EQUAL( rDense[ k ], ZERO );
+            }
+            else
+            {
+                BOOST_CHECK_EQUAL( rDense[ k], rValues[pos] );
             }
         }
     }
@@ -705,85 +666,48 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( getValuePosColTest )
+BOOST_AUTO_TEST_CASE( getColumnPositionsTest )
 {
     ContextPtr testContext = ContextFix::testContext;
-
-    LAMAKernel<CSRKernelTrait::getValuePosCol> getValuePosCol;
-
-    ContextPtr loc = testContext;
-    getValuePosCol.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
     //    1.0   -   2.0
     //    0.5  0.3   -
     //     -    -   3.0
 
-    const IndexType ia[] = { 0, 2, 4, 5 };
-    const IndexType ja[] = { 0, 2, 0, 1, 2 };
-
-    const IndexType numRows = 3;
-    const IndexType numValues = 5;
-
-    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
-    HArray<IndexType> csrJA( numValues, ja, testContext );
+    HArray<IndexType> csrIA( { 0, 2, 4, 5 }, testContext );
+    HArray<IndexType> csrJA( { 0, 2, 0, 1, 2 }, testContext );
 
     HArray<IndexType> row;   // result for rowIndexes
     HArray<IndexType> pos;   // result for positions
 
-    IndexType cnt;
-
     IndexType columnIndex = 1;   // has 1 entry
 
-    {
-        SCAI_CONTEXT_ACCESS( loc );
+    CSRUtils::getColumnPositions( row, pos, csrIA, csrJA, columnIndex, testContext );
 
-        ReadAccess<IndexType> rCSRIA( csrIA, loc );
-        ReadAccess<IndexType> rCSRJA( csrJA, loc );
-        WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
-        WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
-    }
-
-    BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
-
-    {
-        ReadAccess<IndexType> rPos( pos );
-        ReadAccess<IndexType> rRow( row );
-
-        BOOST_CHECK_EQUAL( IndexType( 1 ), rRow[0] );   // is in entry row
-        BOOST_CHECK_EQUAL( IndexType( 3 ), rPos[0] );   // value of for (1,1) is at pos 3
-    }
+    BOOST_TEST( hostReadAccess( row ) == hostReadAccess( HArray<IndexType>( { 1 } ) ), per_element() );
+    BOOST_TEST( hostReadAccess( pos ) == hostReadAccess( HArray<IndexType>( { 3 } ) ), per_element() );
 
     columnIndex = 2;
-    {
-        SCAI_CONTEXT_ACCESS( loc );
 
-        ReadAccess<IndexType> rCSRIA( csrIA, loc );
-        ReadAccess<IndexType> rCSRJA( csrJA, loc );
-        WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
-        WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
-    }
+    CSRUtils::getColumnPositions( row, pos, csrIA, csrJA, columnIndex, testContext );
 
-    BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for column 2, order might be arbitrary
+    //  two entries for column 2, order might be arbitrary
 
-    {
-        ReadAccess<IndexType> rPos( pos );
-        ReadAccess<IndexType> rRow( row );
-        ReadAccess<IndexType> rJA( csrJA );
-        ReadAccess<IndexType> rIA( csrIA );
+    BOOST_REQUIRE_EQUAL( row.size(), IndexType( 2 ) );   //  two entries for column 2, order might be arbitrary
+    BOOST_REQUIRE_EQUAL( pos.size(), IndexType( 2 ) );   //  two entries for column 2, order might be arbitrary
 
-        for ( IndexType k = 0; k < cnt; ++k )
-        {
-            IndexType p = rPos[k];
-            IndexType i = rRow[k];
-            BOOST_CHECK_EQUAL( rJA[ p ], columnIndex );
-            BOOST_CHECK( rIA[i] <= p );
-            BOOST_CHECK( p < rIA[i + 1] );
-        }
-    }
+    // Verifiy: ellJA[ pos[ i ] ] == j, row[i] == pos[i] % numRows
+
+    HArray<IndexType> ja;
+    HArrayUtils::gather( ja, csrJA, pos, common::BinaryOp::COPY, testContext );
+    BOOST_TEST( hostReadAccess( ja ) == std::vector<IndexType>( ja.size(), columnIndex ), per_element() );
+
+    // sort sparse entries by row indexes, ascending = true
+
+    HArrayUtils::sortSparseEntries( row, pos, true );
+
+    BOOST_TEST( hostReadAccess( row ) == std::vector<IndexType>( { 0, 2 } ), per_element() );
+    BOOST_TEST( hostReadAccess( pos ) == std::vector<IndexType>( { 1, 4 } ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */

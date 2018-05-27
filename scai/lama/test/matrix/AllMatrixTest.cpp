@@ -1196,7 +1196,7 @@ BOOST_AUTO_TEST_CASE( binaryOpTest )
 
                 // Note: matrices for elemen-wise binary op have same distributions
 
-                SCAI_LOG_ERROR( logger, "binary op, matrix1 = " << matrix1 << ",\nmatrix2 = " << matrix2S )
+                SCAI_LOG_DEBUG( logger, "binary op, matrix1 = " << matrix1 << ",\nmatrix2 = " << matrix2S )
 
                 matrix1.binaryOp( matrix1, common::BinaryOp::SUB, matrix2S );
 

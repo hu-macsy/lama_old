@@ -97,6 +97,69 @@ public:
         const hmemo::HArray<ValueType>& values,
         hmemo::ContextPtr loc );
 
+    /** @brief set the diagonal */
+
+    template<typename ValueType>
+    static void setDiagonalV(
+        hmemo::HArray<ValueType>& ellValues,
+        const hmemo::HArray<ValueType>& diagonal,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
+        hmemo::ContextPtr loc );
+
+    /** @brief set the diagonal */
+
+    template<typename ValueType>
+    static void setDiagonal(
+        hmemo::HArray<ValueType>& ellValues,
+        const ValueType diagonalValue,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
+        hmemo::ContextPtr loc );
+
+    /** 
+     *  @brief return the position for an entry (i,j) in the ELL data
+     *
+     *  @param[in] i, j are the row and column index for the searched entry
+     *  @param[in] ellIA, ellJA are the sizes array and the column indexes
+     *  @return invalidIndex if not found, otherwise k with ja[k] == j, k % numRows = i
+     *
+     *  The corresponding matrix value can be found via csrValues[k] if k is the not invalid.
+     */
+    static IndexType getValuePos(
+        const IndexType i,
+        const IndexType j,
+        const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Identify all entries of a given column in the ELL data
+     *
+     *  @param[out] ia contains the row indexes of the entries 
+     *  @param[out] positions contains the positions of the entries in the arrays ellJA
+     *  @param[in] ellIA the sizes of each row
+     *  @param[in] ellJA is the array of column indexes
+     *  @param[in] j the column for which entries are needed
+     *  @param[in] prefLoc specifies the context where operation should be executed.
+     *
+     *  The array ia is not really needed as the rows can be identified by the positions.
+     *  ia[i] is same as positions[i] % numRows.
+     *  
+     *  Be careful, the entries might be in any order.
+     */
+    static void getColumnPositions(
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>& positions,
+        const hmemo::HArray<IndexType>& ellIA, 
+        const hmemo::HArray<IndexType>& ellJA,
+        const IndexType j,
+        const hmemo::ContextPtr prefLoc );
+
     /** @brief This method generates new ELL data where all zero elemens are removed.
      *
      *  @param[in,out] ellIA, ellJA, ellValues is the ELL data that is compressed
@@ -111,6 +174,22 @@ public:
         hmemo::HArray<ValueType>& ellValues,
         IndexType& numValuesPerRow,
         const RealType<ValueType> eps,
+        hmemo::ContextPtr loc );
+
+    /**
+     *  @brief Jacobi iteration step with ELL storage
+     *
+     *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+     */
+    template<typename ValueType>
+    static void jacobi(
+        hmemo::HArray<ValueType>& solution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
+        const hmemo::HArray<ValueType>& ellValues,
         hmemo::ContextPtr loc );
 
 private:

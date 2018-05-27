@@ -253,7 +253,7 @@ IndexType OpenMPJDSUtils::getDiagonalPositions(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IndexType OpenMPJDSUtils::getValuePosCol(
+IndexType OpenMPJDSUtils::getColumnPositions(
     IndexType row[],
     IndexType pos[],
     const IndexType j,
@@ -263,7 +263,7 @@ IndexType OpenMPJDSUtils::getValuePosCol(
     const IndexType perm[],
     const IndexType ja[] )
 {
-    SCAI_REGION( "OpenMP.JDSUtils.getValuePosCol" )
+    SCAI_REGION( "OpenMP.JDSUtils.getColumnPositions" )
 
     IndexType cnt  = 0;   // counts number of available row entries in column j
 
@@ -294,7 +294,7 @@ IndexType OpenMPJDSUtils::getValuePosCol(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IndexType OpenMPJDSUtils::getValuePosRow(
+IndexType OpenMPJDSUtils::getRowPositions(
     IndexType pos[],
     const IndexType i,
     const IndexType numRows,
@@ -302,7 +302,7 @@ IndexType OpenMPJDSUtils::getValuePosRow(
     const IndexType dlg[],
     const IndexType perm[] )
 {
-    SCAI_REGION( "OpenMP.JDSUtils.getValuePosRow" )
+    SCAI_REGION( "OpenMP.JDSUtils.getRowPositions" )
 
     IndexType ii = invalidIndex;
 
@@ -735,8 +735,8 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getValuePosRow>( getValuePosRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getColumnPositions>( getColumnPositions, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getRowPositions>( getRowPositions, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getDiagonalPositions>( getDiagonalPositions, ctx, flag );
 }
 

@@ -594,6 +594,7 @@ void OpenMPCOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<COOKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<COOKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<COOKernelTrait::offsets2ia>( offsets2ia, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::ia2offsets>( ia2offsets, ctx, flag );
     KernelRegistry::set<COOKernelTrait::getColumn>( getColumn, ctx, flag );
     KernelRegistry::set<COOKernelTrait::getRow>( getRow, ctx, flag );
 }

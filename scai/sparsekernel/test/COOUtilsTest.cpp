@@ -92,6 +92,14 @@ BOOST_AUTO_TEST_CASE( convert2CSRTest )
     }
 
     BOOST_TEST( hostReadAccess( expIA ) == hostReadAccess( csrIA ), per_element() );
+
+    // now convert back the CSR offsets to COO ia indexes and compare against original values
+
+    HArray<IndexType> cooIA1;   // new result array
+
+    COOUtils::convertCSR2COO( cooIA1, csrIA, cooIA.size(), testContext );
+
+    BOOST_TEST( hostReadAccess( cooIA1 ) == hostReadAccess( cooIA ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -117,6 +125,32 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
     BOOST_TEST( hostReadAccess( cooIA ) == hostReadAccess( expectedIA ), boost::test_tools::per_element() );
 
 } // offsets2iaTest
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( hasDiagonalTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "has diagonal test for " << *testContext )
+
+    HArray<IndexType> cooIA( { 0, 1, 2, 3 }, testContext );
+    HArray<IndexType> cooJA( { 0, 1, 2, 3 }, testContext );
+
+    BOOST_CHECK( COOUtils::hasDiagonal( 4, 4, cooIA, cooJA, testContext ) );
+    BOOST_CHECK( !COOUtils::hasDiagonal( 5, 5, cooIA, cooJA, testContext ) );
+
+    cooIA = { 0, 1, 2, 3 };
+    cooJA = { 0, 1, 3, 3 };
+
+    BOOST_CHECK( !COOUtils::hasDiagonal( 4, 4, cooIA, cooJA, testContext ) );
+
+    cooIA.clear();
+    cooJA.clear();
+
+    BOOST_CHECK( COOUtils::hasDiagonal( 0, 0, cooIA, cooJA, testContext ) );
+    BOOST_CHECK( !COOUtils::hasDiagonal( 1, 1, cooIA, cooJA, testContext ) );
+} 
 
 /* ------------------------------------------------------------------------------------- */
 
@@ -165,7 +199,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( getColumnTest )
+BOOST_AUTO_TEST_CASE( getColumnPositionsTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
@@ -181,16 +215,16 @@ BOOST_AUTO_TEST_CASE( getColumnTest )
 
     HArray<IndexType> pos;   // result for positions
 
-    COOUtils::getColumn( pos, cooJA, 1, testContext );
+    COOUtils::getColumnPositions( pos, cooJA, 1, testContext );
     BOOST_TEST( hostReadAccess( pos ) == hostReadAccess( column1Pos ), per_element() );
 
-    COOUtils::getColumn( pos, cooJA, 2, testContext );
+    COOUtils::getColumnPositions( pos, cooJA, 2, testContext );
     BOOST_TEST( hostReadAccess( pos ) == hostReadAccess( column2Pos ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( getRowTest )
+BOOST_AUTO_TEST_CASE( getRowPositionsTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
@@ -204,15 +238,15 @@ BOOST_AUTO_TEST_CASE( getRowTest )
     IndexType offset;
     IndexType n;
 
-    COOUtils::getRow( offset, n, cooIA, 1, testContext );
+    COOUtils::getRowPositions( offset, n, cooIA, 1, testContext );
     BOOST_CHECK_EQUAL( offset, 2 );
     BOOST_CHECK_EQUAL( n, 2 );
 
-    COOUtils::getRow( offset, n, cooIA, 2, testContext );
+    COOUtils::getRowPositions( offset, n, cooIA, 2, testContext );
     BOOST_CHECK_EQUAL( offset, invalidIndex );
     BOOST_CHECK_EQUAL( n, 0 );
 
-    COOUtils::getRow( offset, n, cooIA, 3, testContext );
+    COOUtils::getRowPositions( offset, n, cooIA, 3, testContext );
     BOOST_CHECK_EQUAL( offset, 4 );
     BOOST_CHECK_EQUAL( n, 1 );
 }
@@ -313,9 +347,9 @@ BOOST_AUTO_TEST_CASE( gemvNormalTest )
 
         HArray<ValueType> res( testContext );
 
-        SCAI_LOG_ERROR( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
-                       << ", with x = " << x << ", y = " << y
-                       << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
+        SCAI_LOG_DEBUG( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
+                         << ", with x = " << x << ", y = " << y
+                         << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
 
         COOUtils::gemv( res, numRows, numColumns, cooIA, cooJA, cooValues, common::MatrixOp::NORMAL,
                         alpha, x, beta, y, testContext );
@@ -393,6 +427,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
     IndexType numValues;
 
     data2::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    // verify that there is at least one entry for each diagonal element 
+
+    BOOST_CHECK( COOUtils::hasDiagonal( numRows, numColumns, cooIA, cooJA, testContext ) );
 
     const ValueType rhs_values[]   = { 1, -1, 2, -2 };
     const ValueType old_values[]   = { 3, -2, -2, 3 };

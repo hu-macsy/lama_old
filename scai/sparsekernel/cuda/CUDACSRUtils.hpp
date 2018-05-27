@@ -72,9 +72,9 @@ public:
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
-    /** Implementation for CSRKernelTrait::getValuePosCol */
+    /** Implementation for CSRKernelTrait::getColumnPositions */
 
-    static IndexType getValuePosCol(
+    static IndexType getColumnPositions(
         IndexType row[],
         IndexType pos[],
         const IndexType j,
@@ -230,10 +230,10 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** CUDA Implementation for CSRKernelTrait::setDiagonalFirst  */
+    /** CUDA Implementation for CSRKernelTrait::shiftDiagonal  */
 
     template<typename ValueType>
-    static IndexType setDiagonalFirst(
+    static IndexType shiftDiagonal(
         IndexType csrJA[],
         ValueType csrValues[],
         const IndexType numDiagonals,

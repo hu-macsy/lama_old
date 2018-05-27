@@ -76,14 +76,14 @@ struct CSRKernelTrait
         }
     };
 
-    struct getValuePosCol
+    struct getColumnPositions
     {
         /** This method returns for a certain column of the CSR matrix all
          *  row indexes for which elements exist and the corresponding positions
          *  in the csrJA/csrValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in csrJA,
+         *  @param[out] pos positions of entries in csrJA[pos[i]] == j,
          *  @param[in] j is the column of which positions are required
          *  @param[in] csrIA is the CSR offset array
          *  @param[in] numRows is the number of rows
@@ -102,7 +102,7 @@ struct CSRKernelTrait
 
         static const char* getId()
         {
-            return "CSR.getValuePosCol";
+            return "CSR.getColumnPositions";
         }
     };
 
@@ -326,44 +326,27 @@ struct CSRKernelTrait
         }
     };
 
-    struct countNonEmptyRowsByOffsets
-    {
-        /** This method computes the total number of non-zero rows by the offset array
-         *
-         *  @param[in] offsets is the array with offsets
-         *  @param[in] n s number of rows, offset has n + 1 entries
-         *  @return    number of rows with at least one element
-         *
-         *  Note: the number of rows is needed to allocate the array with indexes of non-empty rows
-         */
-
-        typedef IndexType ( *FuncType ) ( const IndexType offsets[], const IndexType n );
-
-        static const char* getId()
-        {
-            return "CSR.countNonEmptyRowsByOffsets";
-        }
-    };
-
-    struct setNonEmptyRowsByOffsets
+    struct nonEmptyRows
     {
         /** Bild a vector of indexes for non-empty rows.
          *
-         *  @param[out] rowIndexes
-         *  @param[in]  numNonEmptyRows is allocated size of rowIndexes
-         *  @param[in]  offsets is the offset array
+         *  @param[out] rowIndexes will contain all indexes of non-empty rows
+         *  @param[in]  csrIA is the offset array
          *  @param[in]  n is the number of rows, offsets has size n + 1
+         *  @return     the number of non-empty rowssets has size n + 1
+         *  
+         *  With rowIndexes == NULL the function can be used just to determine the number 
+         *  of non-empty rows.
          */
 
-        typedef void ( *FuncType ) (
+        typedef IndexType ( *FuncType ) (
             IndexType rowIndexes[],
-            const IndexType numNonEmptyRows,
-            const IndexType offsets[],
+            const IndexType csrIA[],
             const IndexType numRows );
 
         static const char* getId()
         {
-            return "CSR.setNonEmptyRowsByOffsets";
+            return "CSR.nonEmptyRows";
         }
     };
 
@@ -574,7 +557,7 @@ struct CSRKernelTrait
     };
 
     template<typename ValueType>
-    struct setDiagonalFirst
+    struct shiftDiagonal
     {
         /** This method sets the diagonal entries of a row as first entry wherever possible.
          *
@@ -587,7 +570,7 @@ struct CSRKernelTrait
 
         static const char* getId()
         {
-            return "CSR.setDiagonalFirst";
+            return "CSR.shiftDiagonal";
         }
     };
 

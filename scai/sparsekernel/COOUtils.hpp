@@ -143,6 +143,8 @@ public:
      *  @param[in] i, j are the row and column index for the searched entry
      *  @param[in] cooIA, cooJA are the sorted row/column indexes of the non-zero entries
      *  @return invalidIndex if not found, otherwise k with ia[k] == i & ja[k] == j
+     *
+     *  The corresponding matrix value can be found via cooValues[pos].
      */
     static IndexType getValuePos( 
         const IndexType i, 
@@ -161,7 +163,7 @@ public:
      *
      *  The row indexes and the values might be gathered from cooIA and cooValues via the positions.
      */
-    static void getColumn(
+    static void getColumnPositions(
         hmemo::HArray<IndexType>& positions,
         const hmemo::HArray<IndexType>& cooJA,
         const IndexType j,
@@ -175,7 +177,7 @@ public:
      *
      *  As the entries of one row are stored contiguously, here is no need for a position array
      */
-    static void getRow(
+    static void getRowPositions(
         IndexType& offset,
         IndexType& n,
         const hmemo::HArray<IndexType>& cooIA,
@@ -184,10 +186,10 @@ public:
     /**
      *  @brief This method checks if COO arrays have an entry for each diagonal element
      *
-     *  If diagonal property is not given, some operations on COO storage might fail, e.g.
+     *  If not all diagonal elements are available, some operations on COO storage might fail, e.g.
      *  jacobi, setDiagonal.
      */
-    static bool hasDiagonalProperty(
+    static bool hasDiagonal(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,

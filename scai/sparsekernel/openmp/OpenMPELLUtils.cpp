@@ -283,12 +283,16 @@ IndexType OpenMPELLUtils::getDiagonalPositions(
 
 /* --------------------------------------------------------------------------- */
 
-IndexType OpenMPELLUtils::getValuePosCol( IndexType row[], IndexType pos[],
-        const IndexType j,
-        const IndexType ellIA[], const IndexType numRows,
-        const IndexType ellJA[], const IndexType numValuesPerRow )
+IndexType OpenMPELLUtils::getColumnPositions( 
+    IndexType row[], 
+    IndexType pos[],
+    const IndexType j,
+    const IndexType ellIA[], 
+    const IndexType numRows,
+    const IndexType ellJA[], 
+    const IndexType numValuesPerRow )
 {
-    SCAI_REGION( "OpenMP.ELLUtils.getValuePosCol" )
+    SCAI_REGION( "OpenMP.ELLUtils.getColumnPositions" )
 
     IndexType cnt  = 0;   // counts number of available row entries in column j
 
@@ -1245,7 +1249,7 @@ void OpenMPELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getColumnPositions>( getColumnPositions, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::getDiagonalPositions>( getDiagonalPositions, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
