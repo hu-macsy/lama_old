@@ -50,7 +50,7 @@
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -89,7 +89,7 @@ using std::bind;
 using std::cref;
 using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
-using sparsekernel::CSRKernelTrait;
+using sparsekernel::CSRUtils;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 
@@ -384,7 +384,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         SCAI_LOG_DEBUG( logger,
                         matrix.getHaloStorage() << ": CSC data, IA = " << sendIA << ", JA = " << sendJA << ", Values = " << sendValues )
         // for initial communication we need the sizes and not the offsets
-        _MatrixStorage::offsets2sizes( sendSizes, sendIA );
+        CSRUtils::offsets2sizes( sendSizes, sendIA, Context::getHostPtr() );
         SCAI_LOG_DEBUG( logger, "sendSizes with " << sendSizes.size() << " entries" )
         HArray<IndexType> recvSizes;
         const Halo& matrixHalo = matrix.getHalo();
@@ -435,7 +435,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
                                             recvJA, recvValues );
         // Now this partition has all sparse data from other partitions to build my new halo
         mHaloData->setCompressThreshold( 1.0f ); // halo rows might be compressed
-        _MatrixStorage::sizes2offsets( haloRowSizes );
+        CSRUtils::sizes2offsets( haloRowSizes, haloRowSizes, Context::getHostPtr() );
         mHaloData->setCSRData( mNumLocalRows, getNumColumns(), haloRowSizes, haloJA, haloValues );
         // Now build a new halo and localize columns in mHaloData
         mHaloData->buildHalo( mHalo, getColDistribution() );

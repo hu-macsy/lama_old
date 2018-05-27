@@ -354,8 +354,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     const IndexType numColumns,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const HArray<OtherValueType>& values,
-    const ContextPtr /* loc */ )
+    const HArray<OtherValueType>& values )
 {
     SCAI_REGION( "Storage.CSR.setCSR" )
 
@@ -1006,14 +1005,12 @@ void CSRStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
     }
     else 
     {
-        ContextPtr ctx = getContextPtr();   // will force a valid copy in this context
-
         other.buildCSRData( mIA, mJA, mValues );
 
         // setCSRDataImpl can deal with alias and takes advantage of it 
         // and it will set all relevant attributes of this storage correctly.
 
-        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), mIA, mJA, mValues, ctx );
+        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), mIA, mJA, mValues );
     }
 }
 
@@ -2083,8 +2080,7 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_NUMERIC_TYPES_HOST )
             const IndexType,                                  \
             const hmemo::HArray<IndexType>&,                  \
             const hmemo::HArray<IndexType>&,                  \
-            const hmemo::HArray<OtherValueType>&,             \
-            const hmemo::ContextPtr );                        \
+            const hmemo::HArray<OtherValueType>& );           \
     template void CSRStorage<ValueType>::buildCSR(            \
             hmemo::HArray<IndexType>&,                        \
             hmemo::HArray<IndexType>*,                        \

@@ -52,6 +52,40 @@ class COMMON_DLL_IMPORTEXPORT CSRUtils
 {
 public:
 
+    /** 
+     *  @brief check that csrIA is a valid row offset array for the CSR format.
+     *
+     *  @param[in] csrIA array to check
+     *  @param[in] numValues is the total number of non-zeros 
+     */
+    static bool validOffsets(
+        const hmemo::HArray<IndexType>& csrIA,
+        const IndexType numValues,
+        hmemo::ContextPtr loc );
+
+    /**
+     *  @brief compute the offset array from size array
+     *
+     *  @param[in]  sizes contains number of entries for each row
+     *  @param[out] offsets is the offset array, size will be sizes.size()
+     *  @param[in] loc specfies the context where to execute it
+     * 
+     *  \code
+     *     HArray<IndexType> sizes( { 2, 5, 7 } );
+     *     CSRUtils::sizes2offsets( sizes, sizes, loc );
+     *     -> sizes == { 0, 2, 7, 14 }, returns 14
+     *  \endcode
+     */
+    static IndexType sizes2offsets( 
+        hmemo::HArray<IndexType>& offsets, 
+        const hmemo::HArray<IndexType>& sizes, 
+        hmemo::ContextPtr loc );
+
+    static void offsets2sizes( 
+        hmemo::HArray<IndexType>& sizes, 
+        const hmemo::HArray<IndexType>& offsets, 
+        hmemo::ContextPtr loc );
+
     /** @brief get the indexes of non-empty rows 
      *
      *  @param[out] rowIndexes contains the indexes of non-zero rows

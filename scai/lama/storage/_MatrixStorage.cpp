@@ -261,80 +261,14 @@ void _MatrixStorage::localize( const _MatrixStorage& global, const Distribution&
 IndexType _MatrixStorage::getNumValues() const
 {
     // Default implementation builds sum of row sizes, derived classes have more efficient routines
+
     HArray<IndexType> sizes;
+
     buildCSRSizes( sizes );
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-    ContextPtr loc = sizes.getValidContext();
-    reduce.getSupportedContext( loc );
-    ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, BinaryOp::ADD );
+
+    IndexType numValues = utilskernel::HArrayUtils::reduce( sizes, BinaryOp::ADD );
+
     return numValues;
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-void _MatrixStorage::offsets2sizes( HArray<IndexType>& offsets )
-{
-    const IndexType n = offsets.size() - 1;
-    WriteAccess<IndexType> writeSizes( offsets );
-
-    // the following loop  is not parallel
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        writeSizes[i] = writeSizes[i + 1] - writeSizes[i];
-    }
-
-    writeSizes.resize( n );
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-void _MatrixStorage::offsets2sizes( HArray<IndexType>& sizes, const HArray<IndexType>& offsets )
-{
-    if ( &sizes == &offsets )
-    {
-        SCAI_LOG_WARN( logger, "offset2sizes: sizes and offsets are same array" )
-        offsets2sizes( sizes );
-        return;
-    }
-
-    const IndexType n = offsets.size() - 1;
-
-    ReadAccess<IndexType> readOffsets( offsets );
-
-    WriteAccess<IndexType> writeSizes( sizes );
-
-    writeSizes.clear(); // old values are not used
-
-    writeSizes.resize( n );
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        writeSizes[i] = readOffsets[i + 1] - readOffsets[i];
-    }
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& sizes )
-{
-    IndexType n = sizes.size();
-    WriteAccess<IndexType> writeOffsets( sizes );
-    writeOffsets.resize( n + 1 );
-    return OpenMPCSRUtils::sizes2offsets( writeOffsets, n );
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& offsets, const HArray<IndexType>& sizes, ContextPtr loc )
-{
-    {
-        // allocate offsets with one more element that sizes
-        WriteOnlyAccess<IndexType> wOffsets( offsets, loc, sizes.size() + 1 );
-    }
-    utilskernel::HArrayUtils::assign( offsets, sizes, loc );
-    return utilskernel::HArrayUtils::scan1( offsets, loc );
 }
 
 /* ---------------------------------------------------------------------------------- */

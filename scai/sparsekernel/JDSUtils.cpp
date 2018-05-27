@@ -99,15 +99,22 @@ IndexType JDSUtils::getDiagonalPositions(
 
 /* -------------------------------------------------------------------------- */
 
-void JDSUtils::ilg2dlg(
+IndexType JDSUtils::ilg2dlg(
     HArray<IndexType>& jdsDLG,
-    const IndexType numDiagonals,
     const HArray<IndexType>& jdsILG,
     ContextPtr prefLoc )
 {
     const IndexType numRows = jdsILG.size();
 
-    // numDiagonals == jdsILG[0] 
+    if ( 0 == numRows )
+    {
+        jdsDLG.clear();
+        return 0;
+    }
+
+    // numDiagonals, becomes size of array DLG, 
+
+    IndexType numDiagonals = jdsILG[0];  // is maximal number of entries in row
 
     LAMAKernel<JDSKernelTrait::ilg2dlg> ilg2dlg;
 
@@ -119,7 +126,8 @@ void JDSUtils::ilg2dlg(
 
     WriteOnlyAccess<IndexType> wDLG( jdsDLG, loc, numDiagonals );
     ReadAccess<IndexType> rILG( jdsILG, loc );
-    ilg2dlg[loc]( wDLG.get(), numDiagonals, rILG.get(), numRows );
+
+    return ilg2dlg[loc]( wDLG.get(), numDiagonals, rILG.get(), numRows );
 }
 
 /* -------------------------------------------------------------------------- */

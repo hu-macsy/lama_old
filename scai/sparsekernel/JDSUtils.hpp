@@ -130,10 +130,13 @@ public:
 
     /** 
      *  @brief Compute the dlg array by the ilg array for the JDS format.
+     *  
+     *  @param[in] jdsILG, contains sizes of all rows (weak descending, as rows are sorted by size)
+     *  @param[in] jdsDLG, jdsDLG[i] contains number of rows that have more than i entries
+     *  @param[out] return total number of entries, is sum(jdsDLG), same as sum(jdsILG)
      */
-    static void ilg2dlg(
+    static IndexType ilg2dlg(
         hmemo::HArray<IndexType>& jdsDLG,
-        const IndexType numDiagonals,
         const hmemo::HArray<IndexType>& jdsILG,
         hmemo::ContextPtr prefLoc );
 

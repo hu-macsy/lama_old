@@ -36,10 +36,10 @@
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/sparsekernel/COOUtils.hpp>
-
 // internal scai libraries
 #include <scai/sparsekernel/COOKernelTrait.hpp>
+#include <scai/sparsekernel/COOUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -80,6 +80,7 @@ using utilskernel::HArrayUtils;
 
 using sparsekernel::COOKernelTrait;
 using sparsekernel::COOUtils;
+using sparsekernel::CSRUtils;
 
 using common::BinaryOp;
 
@@ -223,8 +224,6 @@ template<typename ValueType>
 template<typename OtherValueType>
 void COOStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& other )
 {
-    ContextPtr ctx = getContextPtr();   // will force a valid copy in this context
-
     if ( other.getFormat() == Format::COO )
     {
         // both storage have COO format, use special method for it
@@ -236,20 +235,20 @@ void COOStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
         const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
 
         setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(), 
-                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues(), ctx );
+                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
     }
     else 
     {
-        HArray<IndexType>  csrIA( ctx );
-        HArray<IndexType>  csrJA( ctx );
-        HArray<ValueType>  csrValues( ctx );     // might also be OtherValueType, depending on size
+        HArray<IndexType>  csrIA;
+        HArray<IndexType>  csrJA;
+        HArray<ValueType>  csrValues;     // might also be OtherValueType, depending on size
 
         other.buildCSRData( csrIA, csrJA, csrValues );
 
         // just a thought for optimization: use mIA, mJA, mValues instead of csrIA, csrJA, csrValues
         // but does not help much at all as resort of entries requires already temporaries.
 
-        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues, ctx );
+        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
     }
 }
 
@@ -799,8 +798,7 @@ void COOStorage<ValueType>::setCSRDataImpl(
     const IndexType numColumns,
     const hmemo::HArray<IndexType>& ia,
     const hmemo::HArray<IndexType>& ja,
-    const hmemo::HArray<OtherValueType>& values,
-    const hmemo::ContextPtr prefLoc )
+    const hmemo::HArray<OtherValueType>& values )
 {
     IndexType numValues = ja.size();
 
@@ -810,9 +808,9 @@ void COOStorage<ValueType>::setCSRDataImpl(
     {
         // offset array required
         hmemo::HArray<IndexType> offsets;
-        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+        IndexType total = CSRUtils::sizes2offsets( offsets, ia, getContextPtr() );
         SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
-        setCSRDataImpl( numRows, numColumns, offsets, ja, values, prefLoc );
+        setCSRDataImpl( numRows, numColumns, offsets, ja, values );
         return;
     }
 
@@ -822,8 +820,6 @@ void COOStorage<ValueType>::setCSRDataImpl(
 
     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
-
-    hmemo::ContextPtr loc = prefLoc;
 
     SCAI_LOG_DEBUG( logger,
                     "input csr data with " << numValues << "entries" )
@@ -1245,7 +1241,7 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
     template void COOStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& other );           \
     template void COOStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                   \
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
+            const hmemo::HArray<OtherValueType>& );                          
 
 #define COO_STORAGE_INST_LVL1( ValueType )                                                                   \
     SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )

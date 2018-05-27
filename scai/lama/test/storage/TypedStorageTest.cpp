@@ -45,6 +45,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/Context.hpp>
@@ -1155,7 +1156,7 @@ BOOST_AUTO_TEST_CASE( buildCSRDataTest )
         getMatrix_7_4 ( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues, matrixDense );
         IndexType numValues = matrixJA.size();
         // IA array not available yet, we have only sizes
-        _MatrixStorage::sizes2offsets( matrixRowSizes );
+        sparsekernel::CSRUtils::sizes2offsets( matrixRowSizes, matrixRowSizes, context );
         // Now we can use matrixRowSizes as IA array
         storage.setCSRData( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues );
         // make sure that we have all values stored

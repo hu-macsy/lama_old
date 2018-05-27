@@ -275,7 +275,7 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::StorageWrapper<ELLStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
     }
 
     /**
@@ -294,8 +294,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr ctx );
+        const hmemo::HArray<OtherValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */

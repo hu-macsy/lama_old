@@ -75,47 +75,24 @@ BOOST_AUTO_TEST_CASE( validOffsetsTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<CSRKernelTrait::validOffsets> validOffsets;
+    HArray<IndexType> csrIA( { 0, 2, 5, 7 }, testContext );
 
-    ContextPtr loc = testContext;
+    IndexType numRows = csrIA.size() - 1;
+    IndexType total   = csrIA[ numRows ];
 
-    validOffsets.getSupportedContext( loc );
+    BOOST_CHECK( CSRUtils::validOffsets( csrIA, total, testContext ) );
 
-    const IndexType ia[]   = { 0, 2, 5, 7 };
-    const IndexType ia_f[] = { 0, 5, 2, 7 };
+    csrIA.resize( numRows -  1 );
+    BOOST_CHECK( !CSRUtils::validOffsets( csrIA, total, testContext ) );
 
-    IndexType numRows = sizeof( ia ) / sizeof( IndexType ) - 1;
-    IndexType total   = ia[numRows];
+    csrIA =  { 0, 5, 2, 7 };
+    BOOST_CHECK( !CSRUtils::validOffsets( csrIA, total, testContext ) );
 
-    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
+    csrIA =  {};
+    BOOST_CHECK( !CSRUtils::validOffsets( csrIA, 0, testContext ) );
 
-    bool okay = false;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        okay = validOffsets[loc]( rIA.get(), numRows, total );
-    }
-
-    BOOST_CHECK( okay );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        okay = validOffsets[loc]( rIA.get(), numRows - 1, total );
-    }
-
-    BOOST_CHECK( !okay );
-
-    csrIA.setRawData( numRows + 1, ia_f );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        okay = validOffsets[loc]( rIA.get(), numRows, total );
-    }
-
-    BOOST_CHECK( !okay );
+    csrIA =  { 0 };
+    BOOST_CHECK( CSRUtils::validOffsets( csrIA, 0, testContext ) );
 }
 
 /* ------------------------------------------------------------------------------------- */

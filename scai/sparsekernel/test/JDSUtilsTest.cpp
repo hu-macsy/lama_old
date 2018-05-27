@@ -449,11 +449,15 @@ BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 
     HArray<IndexType> ilg( { 7, 7, 5, 4, 4, 1 }, testContext );
 
-    const IndexType numDiagonals = 7;   // must also be maxval( valuesIlg )
+    HArray<IndexType> dlg;   // result array
 
-    HArray<IndexType> dlg;
+    IndexType numValues = JDSUtils::ilg2dlg( dlg, ilg, testContext );
 
-    JDSUtils::ilg2dlg( dlg, numDiagonals, ilg, testContext );
+    BOOST_CHECK_EQUAL( numValues, HArrayUtils::reduce( dlg, common::BinaryOp::ADD ) );
+    BOOST_CHECK_EQUAL( numValues, HArrayUtils::reduce( ilg, common::BinaryOp::ADD ) );
+
+    // Expected results: 6 rows have at least 1 entry, 5 rows have at least 2, 3, 4 entries, 
+    //                   3 rows have hat least 5 entries, 2 rows have at least 6, 7 entries
 
     std::vector<IndexType> expectedDlg( { 6, 5, 5, 5, 3, 2, 2 } );
 

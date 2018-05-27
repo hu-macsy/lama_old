@@ -250,7 +250,7 @@ void ELLStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
         const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
 
         setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(),
-                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues(), ctx );
+                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
     }
     else
     {
@@ -263,7 +263,7 @@ void ELLStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
         // just a thought for optimization: use mIA, mJA, mValues instead of csrIA, csrJA, csrValues
         // but does not help much at all as resort of entries requires already temporaries.
 
-        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues, ctx );
+        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
     }
 }
 
@@ -499,15 +499,14 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     const IndexType numColumns,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const HArray<OtherValueType>& values,
-    const ContextPtr context )
+    const HArray<OtherValueType>& values )
 {
     SCAI_REGION( "Storage.ELL.setCSR" )
 
     IndexType numValues = ja.size();
 
     SCAI_LOG_INFO( logger,
-                   "set CSR data on " << *context << ": numRows = " << numRows << ", numColumns = " << numColumns
+                   "set CSR data: numRows = " << numRows << ", numColumns = " << numColumns
                    << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
 
     if ( numRows == 0 )
@@ -524,7 +523,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     if ( ia.size() == numRows + 1 )
     {
-        ContextPtr loc = context;
+        ContextPtr loc = getContextPtr();
         static LAMAKernel<CSRKernelTrait::offsets2sizes > offsets2sizes;
         offsets2sizes.getSupportedContext( loc );
         ReadAccess<IndexType> csrIA( ia, loc );
@@ -534,10 +533,10 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     }
     else if ( ia.size() == numRows )
     {
-        HArrayUtils::assign( mIA, ia, context );
+        HArrayUtils::assign( mIA, ia, getContextPtr() );
         // as the offset array is also needed
         tmpOffsets.reset( ia.copy() );
-        IndexType total = HArrayUtils::scan1( *tmpOffsets, context );
+        IndexType total = HArrayUtils::scan1( *tmpOffsets, getContextPtr() );
         SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
         offsets = tmpOffsets.get();
     }
@@ -547,7 +546,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     }
 
     // determine the maximal number of non-zero in one row
-    mNumValuesPerRow = HArrayUtils::reduce( mIA, common::BinaryOp::MAX, context );
+    mNumValuesPerRow = HArrayUtils::reduce( mIA, common::BinaryOp::MAX, getContextPtr() );
     SCAI_LOG_DEBUG( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
     //  Now we know the size of the ja and values arrays for the ELL format
     const IndexType dataSize = mNumValuesPerRow * getNumRows();
@@ -568,7 +567,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
 
-    ContextPtr loc = context;
+    ContextPtr loc = getContextPtr();
     setCSRValues.getSupportedContext( loc );
     {
         // now fill the matrix values and column indexes
@@ -1799,7 +1798,7 @@ SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
 #define ELL_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                \
     template void ELLStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                \
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                             \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                              \
+            const hmemo::HArray<OtherValueType>& );                                                       \
     template void ELLStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,  \
             hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;              
 

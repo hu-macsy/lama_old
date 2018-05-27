@@ -376,18 +376,8 @@ public:
     _MatrixStorage& operator=( _MatrixStorage&& other ) = delete;
 
     /******************************************************************
-     *   Help routines (ToDo: -> HArrayUtils ?? )                   *
+     *   Query routines                                                *
      ******************************************************************/
-
-    /** Help routines to convert arrays with sizes to offsets and vice versa */
-
-    static void offsets2sizes( hmemo::HArray<IndexType>& offsets );
-
-    static void offsets2sizes( hmemo::HArray<IndexType>& sizes, const hmemo::HArray<IndexType>& offsets );
-
-    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets );
-
-    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets, const hmemo::HArray<IndexType>& sizes, const hmemo::ContextPtr loc );
 
     /** Returns the number of bytes needed for the current matrix.
      *
@@ -395,10 +385,6 @@ public:
      *        might be allocated on more than one device. Furthermore, it is possible that
      *        arrays have more memory reserved than needed for its current size.
      */
-
-    /******************************************************************
-     *   Query routines                                                *
-     ******************************************************************/
 
     size_t getMemoryUsage() const;
 

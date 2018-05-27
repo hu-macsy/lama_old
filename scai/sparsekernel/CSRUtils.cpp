@@ -61,6 +61,86 @@ SCAI_LOG_DEF_LOGGER( CSRUtils::logger, "CSRUtils" )
 
 /* -------------------------------------------------------------------------- */
 
+bool CSRUtils::validOffsets(
+    const HArray<IndexType>& csrIA,
+    const IndexType numValues,
+    ContextPtr prefLoc )
+{
+    if ( csrIA.size() == 0 )
+    {  
+        return false;
+    }
+
+    LAMAKernel<CSRKernelTrait::validOffsets> validOffsets;
+
+    ContextPtr loc = prefLoc;
+
+    validOffsets.getSupportedContext( loc );
+
+    IndexType numRows = csrIA.size() - 1;
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    ReadAccess<IndexType> rIA( csrIA, loc );
+
+    return validOffsets[loc]( rIA.get(), numRows, numValues );
+}
+
+/* -------------------------------------------------------------------------- */
+
+IndexType CSRUtils::sizes2offsets(
+    HArray<IndexType>& offsets,
+    const HArray<IndexType>& sizes,
+    ContextPtr loc )
+{
+    const IndexType n = sizes.size();
+
+    if ( &sizes != &offsets )
+    {
+        offsets.clear();
+        offsets.reserve( loc, n +  1 );
+        utilskernel::HArrayUtils::assign( offsets, sizes, loc );
+    }
+
+    return utilskernel::HArrayUtils::scan1( offsets, loc );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void CSRUtils::offsets2sizes (
+    HArray<IndexType>& sizes,
+    const HArray<IndexType>& offsets,
+    ContextPtr )
+{
+    const IndexType n = offsets.size() - 1;
+
+    if ( &sizes == &offsets )
+    {
+        auto wArray = hostWriteAccess( sizes );
+
+        //   { 0, 5, 7, 11, 16  } -> { 5  2  4  5 }, no parallelism here
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            wArray[i] = wArray[i + 1] - wArray[i];
+        }
+ 
+        wArray.resize( n );
+    }
+    else
+    { 
+        auto rOffsets = hostReadAccess( offsets );
+        auto wSizes = hostWriteOnlyAccess( sizes, n );
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            wSizes[i] = rOffsets[i + 1] - rOffsets[i];
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 IndexType CSRUtils::nonEmptyRows(        
     HArray<IndexType>& rowIndexes, 
     const HArray<IndexType>& csrIA,

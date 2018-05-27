@@ -38,7 +38,7 @@
 
 // internal scai libraries
 #include <scai/sparsekernel/DIAKernelTrait.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -74,7 +74,7 @@ using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
 using utilskernel::HArrayUtils;
 
-using sparsekernel::CSRKernelTrait;
+using sparsekernel::CSRUtils;
 using sparsekernel::DIAKernelTrait;
 
 using common::BinaryOp;
@@ -191,8 +191,6 @@ template<typename ValueType>
 template<typename OtherValueType>
 void DIAStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& other )
 {
-    ContextPtr ctx = getContextPtr();   // will force a valid copy in this context
-
     if ( other.getFormat() == Format::DIA )
     {
         // same format conversion, more efficient solution available
@@ -204,19 +202,19 @@ void DIAStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
         const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
 
         setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(),
-                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues(), ctx );
+                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
 
         SCAI_LOG_INFO( logger, "assignImpl: other CSR = " << other )
     }
     else
     {
-        HArray<IndexType>  csrIA( ctx );
-        HArray<IndexType>  csrJA( ctx );
-        HArray<ValueType>  csrValues( ctx );     // might also be OtherValueType, depending on size
+        HArray<IndexType>  csrIA;
+        HArray<IndexType>  csrJA;
+        HArray<ValueType>  csrValues;     // might also be OtherValueType, depending on size
 
         other.buildCSRData( csrIA, csrJA, csrValues );
 
-        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues, ctx );
+        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
 
         SCAI_LOG_INFO( logger, "assignImpl: other = " << other << " -> tmpCSR: ia = " << csrIA 
                                 << ", ja = " << csrJA << ", values = " << csrValues << ", this = " << *this )
@@ -785,31 +783,53 @@ void DIAStorage<ValueType>::buildCSR(
 
     IndexType numDiagonals = mOffset.size();
 
-    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
     static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, CSRValueType> > getCSRValues;
-    // do it where all routines are avaialble
+
     ContextPtr loc = prefLoc;
-    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
+
+    getCSRSizes.getSupportedContext( loc );
+
     SCAI_LOG_INFO( logger,
                    "buildTypedCSRData<" << common::getScalarType<CSRValueType>() << ">"
                    << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this )
-    ReadAccess<IndexType> diaOffsets( mOffset );
-    ReadAccess<ValueType> diaValues( mValues );
-    WriteOnlyAccess<IndexType> csrIA( ia, loc, getNumRows() + 1 );
-    // In contrary to COO and CSR, the DIA format stores also some ZERO values like Dense
-    getCSRSizes[loc]( csrIA.get(), getNumRows(), getNumColumns(), numDiagonals, diaOffsets.get(), diaValues.get() );
+
+    {
+        ReadAccess<IndexType> diaOffsets( mOffset, loc );
+        ReadAccess<ValueType> diaValues( mValues, loc );
+        WriteOnlyAccess<IndexType> csrIA( ia, loc, getNumRows() + 1 );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        // In contrary to COO and CSR, the DIA format stores also some ZERO values like Dense
+
+        getCSRSizes[loc]( csrIA.get(), getNumRows(), getNumColumns(), numDiagonals, diaOffsets.get(), diaValues.get() );
+
+        csrIA.resize( getNumRows() );
+    }
 
     if ( ja == NULL || values == NULL )
     {
-        csrIA.resize( getNumRows() );
         return;
     }
 
-    IndexType numValues = sizes2offsets[loc]( csrIA.get(), getNumRows() );
+    IndexType numValues = CSRUtils::sizes2offsets( ia, ia, getContextPtr() );
+
     SCAI_LOG_INFO( logger, "CSR: #non-zero values = " << numValues )
+
+    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, CSRValueType> > getCSRValues;
+
+    loc = prefLoc;
+    getCSRValues.getSupportedContext( loc );
+
+    ReadAccess<IndexType> csrIA( ia, loc );
     WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
     WriteOnlyAccess<CSRValueType> csrValues( *values, loc, numValues );
+
+    ReadAccess<IndexType> diaOffsets( mOffset, loc );
+    ReadAccess<ValueType> diaValues( mValues, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
     getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), getNumRows(), getNumColumns(),
                        numDiagonals, diaOffsets.get(), diaValues.get() );
 }
@@ -823,8 +843,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     const IndexType numColumns,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const HArray<OtherValueType>& values,
-    ContextPtr prefLoc )
+    const HArray<OtherValueType>& values )
 {
     SCAI_REGION( "Storage.DIA.setCSR" )
 
@@ -834,16 +853,15 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     {
         // offset array required
         HArray<IndexType> offsets;
-        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
+        IndexType total = CSRUtils::sizes2offsets( offsets, ia, getContextPtr() );
         SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
-        setCSRDataImpl( numRows, numColumns, offsets, ja, values, prefLoc );
+        setCSRDataImpl( numRows, numColumns, offsets, ja, values );
         return;
     }
 
     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
-    static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-    // prefLoc is ignored, we do it on the Host
+
     // ToDo: replace Host code with kernels, implement kernels for other devices
     ContextPtr loc = Context::getHostPtr();
     ReadAccess<IndexType> csrIA( ia, loc );
@@ -908,21 +926,6 @@ void DIAStorage<ValueType>::setCSRDataImpl(
             }
         }
     }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void DIAStorage<ValueType>::setDIADataImpl(
-    const IndexType /*numRows*/,
-    const IndexType /*numColumns*/,
-    const IndexType /*numDiagonals*/,
-    const HArray<IndexType>& /*offsets*/,
-    const HArray<OtherValueType>& /*values*/,
-    const ContextPtr /*prefLoc*/ )
-{
-    COMMON_THROWEXCEPTION( "not yet implemeted" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1461,16 +1464,14 @@ _MatrixStorage* DIAStorage<ValueType>::create()
 
 SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_NUMERIC_TYPES_HOST )
 
-#define DIA_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
-    template void DIAStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                                 \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
-    template void DIAStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;                                               \
-    template void DIAStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
+#define DIA_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                  \
+    template void DIAStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                  \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                               \
+            const hmemo::HArray<OtherValueType>& );                                                         \
+    template void DIAStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,    \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;                                \
 
-#define DIA_STORAGE_INST_LVL1( ValueType )                                                                                  \
+#define DIA_STORAGE_INST_LVL1( ValueType )                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, DIA_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
 SCAI_COMMON_LOOP( DIA_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )

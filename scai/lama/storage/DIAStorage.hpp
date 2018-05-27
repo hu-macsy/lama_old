@@ -245,7 +245,7 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::StorageWrapper<DIAStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
     }
 
     /**
@@ -256,7 +256,6 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -264,8 +263,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::HArray<OtherValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -302,25 +300,6 @@ public:
         hmemo::HArray<IndexType>* ja,
         hmemo::HArray<OtherValueType>* values,
         const hmemo::ContextPtr loc ) const;
-
-    /**
-     * @brief fills DIA sparse matrix by dia sparse data.
-     *
-     * @param[in] numRows      number of rows
-     * @param[in] numColumns   number of columns
-     * @param[in] numDiagonals the number of stored diagonals
-     * @param[in] offsets      raw pointer of the input csr sparse matrix
-     * @param[in] values       the data values of the input csr sparse matrix
-     * @param[in] loc          is the context where filling takes place
-     */
-    template<typename OtherValueType>
-    void setDIADataImpl(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const hmemo::HArray<IndexType>& offsets,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
 
     /** Implementation of MatrixStorage::matrixTimesVector for DIA */
 
