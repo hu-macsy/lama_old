@@ -52,9 +52,9 @@ Here are the corresponding arrays for the representation:
 .. math::
     
     \begin{align}
-    #rows &= 7 \\
-    #colums &= 4 \\
-    #diagonals &= 12 \\
+    rows &= 7 \\
+    colums &= 4 \\
+    diagonals &= 12 \\
     values &= \left( \begin{matrix}
                      0 & 0 & 0 & 0 & 0 & 0 & 1 \\
                      0 & 0 & 0 & 0 & 2 & 0 & 0 \\
