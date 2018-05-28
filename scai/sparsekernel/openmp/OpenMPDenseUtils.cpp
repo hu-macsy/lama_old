@@ -61,14 +61,14 @@ SCAI_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 /*     Template implementations                                                */
 /* --------------------------------------------------------------------------- */
 
-template<typename DenseValueType>
+template<typename ValueType>
 IndexType OpenMPDenseUtils::nonZeroValues(
-    const DenseValueType denseValues[],
+    const ValueType denseValues[],
     const IndexType numRows,
     const IndexType numColumns,
-    const DenseValueType eps )
+    const ValueType eps )
 {
-    typedef typename TypeTraits<DenseValueType>::RealType RealType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
     RealType absEps = Math::abs( eps );
 
     SCAI_REGION( "OpenMP.DenseUtils.nonZeroValues" )
@@ -89,13 +89,13 @@ IndexType OpenMPDenseUtils::nonZeroValues(
     return count;
 }
 
-template<typename DenseValueType>
+template<typename ValueType>
 void OpenMPDenseUtils::getCSRSizes(
     IndexType csrSizes[],
     const IndexType numRows,
     const IndexType numColumns,
-    const DenseValueType denseValues[],
-    const RealType<DenseValueType> eps )
+    const ValueType denseValues[],
+    const RealType<ValueType> eps )
 {
     SCAI_REGION( "OpenMP.DenseUtils.getCSRSizes" )
 
@@ -117,7 +117,7 @@ void OpenMPDenseUtils::getCSRSizes(
 
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
+            const ValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
             if ( common::Math::abs( value ) > eps )
             {
@@ -131,22 +131,22 @@ void OpenMPDenseUtils::getCSRSizes(
 
 /** Helper routine for conversion Dense to CSR */
 
-template<typename CSRValueType, typename DenseValueType>
+template<typename ValueType>
 void OpenMPDenseUtils::getCSRValues(
     IndexType csrJA[],
-    CSRValueType csrValues[],
+    ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType numColumns,
-    const DenseValueType denseValues[],
-    const RealType<DenseValueType> eps )
+    const ValueType denseValues[],
+    const RealType<ValueType> eps )
 {
-    typedef typename TypeTraits<DenseValueType>::RealType RealType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "OpenMP.DenseUtils.getCSRValues" )
 
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<DenseValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
+                   "get CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
     #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
@@ -155,13 +155,13 @@ void OpenMPDenseUtils::getCSRValues(
 
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
+            const ValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
             RealType absValue = common::Math::abs( value );
 
             if ( absValue > eps )
             {
-                csrValues[offset] = static_cast<CSRValueType>( value );
+                csrValues[offset] = value;
                 csrJA[offset] = j;
                 offset++;
             }
@@ -175,20 +175,25 @@ void OpenMPDenseUtils::getCSRValues(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename DenseValueType, typename CSRValueType>
+template<typename ValueType>
 void OpenMPDenseUtils::setCSRValues(
-    DenseValueType denseValues[],
+    ValueType denseValues[],
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const CSRValueType csrValues[] )
+    const ValueType csrValues[] )
 {
     SCAI_REGION( "OpenMP.DenseUtils.setCSRValues" )
 
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << TypeTraits<DenseValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
+                   "set CSRValues<" << TypeTraits<ValueType>::id() << ">" 
+                   << ", size is " << numRows << " x " << numColumns )
+
+    const ValueType ZERO = 0;
+
     // parallelization possible as offset array csrIA is available
+
     #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; i++ )
@@ -196,8 +201,8 @@ void OpenMPDenseUtils::setCSRValues(
         // Initialize complete row with zero values
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
-            elem = static_cast<DenseValueType>( 0.0 );
+            ValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
+            elem = ZERO;
         }
 
         // fill up positions for which non-zero values are given
@@ -205,8 +210,8 @@ void OpenMPDenseUtils::setCSRValues(
         for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
         {
             const IndexType j = csrJA[jj];
-            DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
-            elem = static_cast<DenseValueType>( csrValues[jj] );
+            ValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
+            elem = csrValues[jj];
         }
     }
 }
@@ -261,12 +266,12 @@ void OpenMPDenseUtils::set(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename DenseValueType>
+template<typename ValueType>
 void OpenMPDenseUtils::setValue(
-    DenseValueType denseValues[],
+    ValueType denseValues[],
     const IndexType numRows,
     const IndexType numColumns,
-    const DenseValueType val,
+    const ValueType val,
     const common::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.DenseUtils.setValue" )
@@ -316,7 +321,7 @@ void OpenMPDenseUtils::setValue(
             {
                 for ( IndexType j = 0; j < numColumns; ++j )
                 {
-                    DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
+                    ValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
                     elem = applyBinary( elem, op, val );
                 }
             }
@@ -365,6 +370,8 @@ void OpenMPDenseUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kern
     KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
@@ -374,8 +381,6 @@ void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels
     common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
 }
 

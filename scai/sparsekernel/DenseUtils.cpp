@@ -72,9 +72,11 @@ void DenseUtils::convertDense2CSR(
 {
     getSparseRowSizes( csrIA, numRows, numColumns, denseValues, prefLoc );
 
+    SCAI_REGION( "Sparse.Dense.buildCSR" )
+
     IndexType numValues = HArrayUtils::scan1( csrIA, prefLoc );
 
-    static LAMAKernel<DenseKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
+    static LAMAKernel<DenseKernelTrait::getCSRValues<ValueType> > getCSRValues;
 
     ContextPtr loc = prefLoc;
     getCSRValues.getSupportedContext( loc );
@@ -135,7 +137,9 @@ void DenseUtils::convertCSR2Dense(
     const HArray<ValueType>& csrValues,
     ContextPtr prefLoc )
 {
-    static LAMAKernel<DenseKernelTrait::setCSRValues<ValueType, ValueType> > setCSRValues;
+    SCAI_REGION( "Sparse.Dense.setCSR" )
+
+    static LAMAKernel<DenseKernelTrait::setCSRValues<ValueType> > setCSRValues;
 
     ContextPtr loc = prefLoc;
     setCSRValues.getSupportedContext( loc );
