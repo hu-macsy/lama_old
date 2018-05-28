@@ -19,28 +19,61 @@ Example
 
 Matrix:
 
+-------
+
+.. math::
+
+  A = \left(\begin{matrix} 6 & 0  & 0 & 4 \\
+    7 & 0 & 0 & 0 \\
+    0 & 0 & -9 & 4 \\
+    2 & 5 & 0 & 3 \\
+    2 & 0 & 0 & 1 \\
+    0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 2 \end{matrix}\right) 
+
+The ELL representation of the sparse matrix is:
+
+.. math::
+
+  values_{A} = \left(\begin{matrix} 6 & 4 & V0 \\
+    7 & V0 & V0 \\
+    -9 & 4 & V0 \\
+    2 & 5 & 3 \\
+    2 & 1 & V0 \\
+    V0 & V0 & V0 \\
+    1 & 2 & V0 \end{matrix}\right) 
+  ja_{A} = \left(\begin{matrix} 0 & 3 & J0 \\
+    0 & J0 & J0 \\
+    2 & 3  & J0 \\
+    0 & 1 & 3 \\
+    0 & 3 & J0 \\
+    J0 & J0 & J0 \\
+    1 & 3 & J0 \end{matrix}\right) 
+  ia_{A} = \left(\begin{matrix} 2 \\
+    1  \\
+    2 \\
+    3 \\
+    2 \\
+    0 \\
+    2 \end{matrix}\right) 
+
+Here are the corresponding arrays for the representation:
+
+.. math::
+    
+    \begin{align}
+    numRows &= 7 \\
+    numColums &= 4 \\
+    numValues &= 12 \\
+    ia &= [ 0, 0, 1, 2, 2, 3, 3, 3, 4, 4, 6, 6 ] \\
+    ja &=     [ 0, 3, J0, 0, J0, J0, 2, 3, J0, 0, 1, 3, 0, 3, J0, J0, J0, J0, 1, 3, J0 ] \\
+    values &= [ 6, 4, V0, 7, V0, V0, -9, 4, V0, 2, 5, 3, 2, 1, V0, V0, V0, V0, 1, 2, V0 ]
+    \end{align}
+                                                                                                                                   59,5          11%
 .. image:: _images/Storage.png
     :align: center
     :width: 200px
     
-With diagonal element shifting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The ELL format with diagonal element shifting for the example matrix looks like this:
-
-.. image:: _images/ELLStorageW.png
-    :align: center
-    :width: 200px
-    
-.. image:: _images/ELLStorageWStructure.png
-    :align: center
-    :width: 800px
-    
-Without diagonal element shifting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
-The ELL format without diagonal element shifting looks like this:
-
 .. image:: _images/ELLStorageWO.png
     :align: center
     :width: 200px
@@ -49,6 +82,16 @@ The ELL format without diagonal element shifting looks like this:
     :align: center
     :width: 800px  
 
+Remarks
+-------
+
+ * LAMA uses always zero-based indexing within the array ``ja`` for the column indexes.
+ * The arrays ``ja`` and ``values`` are always filled with zero values that allows for 
+   faster matrix-vector multiplication on devices that work in an SIMD mode.
+ * An explicit offset array is never needed as the offset can be computed by a closed formula.
+ * The arrays ``ja`` and ``values`` are stored column-wise. 
+
+    
 ELLKernelTrait
 --------------
 

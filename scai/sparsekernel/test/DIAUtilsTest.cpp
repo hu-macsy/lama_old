@@ -39,6 +39,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/sparsekernel/DIAKernelTrait.hpp>
+#include <scai/sparsekernel/DIAUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/tasking/SyncToken.hpp>
@@ -58,6 +59,8 @@ using namespace hmemo;
 using namespace sparsekernel;
 using namespace utilskernel;
 
+using boost::test_tools::per_element;
+
 using common::TypeTraits;
 
 /* --------------------------------------------------------------------- */
@@ -70,81 +73,53 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DIAUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE( convertCSRTest )
 {
+    typedef DefaultReal ValueType;
+
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
-    static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
+    const IndexType numRows = 7;
+    const IndexType numColumns = 4;
 
-    ContextPtr loc = testContext;
+    HArray<IndexType> csrIA(     { 0, 2, 3, 5, 8, 10, 10, 12 } );
+    HArray<IndexType> csrJA(     { 0, 3,   0, 2,   3,   0, 1, 3,   0, 3,    1, 3 } );
+    HArray<ValueType> csrValues( { 6, 4,   7, 9,   4,   2, 5, 3,   2, 1,    1, 2 } );
 
-    getCSRSizes.getSupportedContext( loc, getCSRValues, scan );
+    HArray<IndexType> expOffset( { -5, -4, -3, -2, -1, 0, 1, 3 } );
 
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+    HArray<ValueType> expValues( { 0, 0, 0, 0, 0, 0, 1,
+                                   0, 0, 0, 0, 2, 0, 0,
+                                   0, 0, 0, 2, 0, 0, 2,
+                                   0, 0, 0, 5, 0, 0, 0,
+                                   0, 7, 0, 0, 1, 0, 0,
+                                   6, 0, 9, 3, 0, 0, 0,
+                                   0, 0, 4, 0, 0, 0, 0,
+                                   4, 0, 0, 0, 0, 0, 0 } );
 
-    SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
+    HArray<IndexType> diaOffset;
+    HArray<ValueType> diaValues;
 
-    IndexType numRows;
-    IndexType numColumns;
-    IndexType numDiagonals;
+    DIAUtils::convertCSR2DIA( diaOffset, diaValues, 
+                              numRows, numColumns, csrIA, csrJA, csrValues, testContext );
 
-    HArray<ValueType> diaValues( testContext );
-    HArray<IndexType> diaOffsets( testContext );
+    BOOST_TEST( hostReadAccess(	diaOffset ) == hostReadAccess( expOffset ), per_element() );
+    BOOST_TEST( hostReadAccess(	diaValues ) == hostReadAccess( expValues ), per_element() );
 
-    data1::getDIATestData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+    HArray<IndexType> newIA;
+    HArray<IndexType> newJA;
+    HArray<ValueType> newValues;
 
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
+    DIAUtils::convertDIA2CSR( newIA, newJA, newValues, 
+                              numRows, numColumns, diaOffset, diaValues, testContext );
 
-    {
-        SCAI_CONTEXT_ACCESS( loc );
+    // Note: conversion DIA -> CSR gives sorted CSR entries
 
-        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
-        ReadAccess<ValueType> rValues( diaValues, loc );
-        WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
+    // BOOST_CHECK( CSRUtils::isSorted( .. )
 
-        getCSRSizes[loc]( wIA.get(), numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get() );
-    }
-
-    HArray<IndexType> expIA(     { 2,    1, 2,    3,       2,    0, 2 } );
-
-    BOOST_TEST( hostReadAccess( csrIA ) == hostReadAccess( expIA ), boost::test_tools::per_element() );
-
-    IndexType numValues = 0;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteAccess<IndexType> wIA( csrIA, loc );
-        wIA.resize( numRows + 1 );
-        numValues = scan[loc]( wIA.get(), numRows, IndexType( 0 ), true, true );
-    }
-
-    BOOST_REQUIRE_EQUAL( IndexType( 12 ), numValues );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<ValueType> rValues( diaValues, loc );
-        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
-        WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
-
-        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(),
-                           numRows, numColumns, numDiagonals,
-                           rOffsets.get(), rValues.get() );
-    }
-
-    HArray<IndexType> expJA(     { 0, 3,   0, 2,   3,   0, 1, 3,   0, 3,    1, 3 } );
-    HArray<ValueType> expValues( { 6, 4,   7, 9,   4,   2, 5, 3,   2, 1,    1, 2 } );
-
-    BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( expJA ), boost::test_tools::per_element() );
-    BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( expValues ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess(	newIA ) == hostReadAccess( csrIA ), per_element() );
+    BOOST_TEST( hostReadAccess(	newJA ) == hostReadAccess( csrJA ), per_element() );
+    BOOST_TEST( hostReadAccess(	newValues ) == hostReadAccess( csrValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */

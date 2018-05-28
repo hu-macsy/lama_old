@@ -3,49 +3,67 @@
 Compressed Sparse Row Format (CSR)
 ==================================
 
-In the CSR format all non-zero-elements are shifted to the left. If the option for shifting the main diagonal to the
-front is set to true, the main diagonal elements will stand in the very beginning of each row. Zeroes that are off
-the main diagonal are ignored in any case. The CSR saves the number of the saved elements (non-zero-elements plus the
-number of zeroes on the main diagonal, if the option is set) (numValues), the number of rows of the matrix (numRows),
-the number of columns in the original non-compressed format (numColumns) and arrays for all the non-zero-values and
-zeroes in the main diagonal (values), the associated columns for these elements (ja) and the indices of the new
-beginnings of a row in *values* as well as the value of *numValues* at the very end (ia).
+The compressed sparse row (CSR) format represents the nonzero values of a matrix by three arrays:
+
+- the CSR ``values`` array contains the non-zero values stored row-wise, its size is exactly
+  ``numValues`` 
+- the CSR ja array contains the corresponding column indices for the values
+- the CSR ia array contains the running sum (offsets) of the  row sizes; it has numRows + 1 entries, the first one is always 0 and the last one
+  is numValues
 
 Example
 -------
 
-Matrix:
+.. math::
 
-.. image:: _images/Storage.png
-    :align: center
-    :width: 200px
-    
-With diagonal element shifting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  A = \left(\begin{matrix} 6 & 0  & 0 & 4 \\
+    7 & 0 & 0 & 0 \\
+    0 & 0 & -9 & 4 \\
+    2 & 5 & 0 & 3 \\
+    2 & 0 & 0 & 1 \\
+    0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 2 \end{matrix}\right) 
 
-The CSR format with diagonal element shifting for the example matrix looks like this:
+The CSR representation of the sparse matrix is:
 
-.. image:: _images/CSRStorageW.png
-    :align: center
-    :width: 200px
-    
-.. image:: _images/CSRStorageWStructure.png
-    :align: center
-    :width: 500px
-    
-Without diagonal element shifting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
-The CSR format without diagonal element shifting looks like this:
+.. math::
 
-.. image:: _images/CSRStorageWO.png
-    :align: center
-    :width: 200px
-    
-.. image:: _images/CSRStorageWOStructure.png
-    :align: center
-    :width: 500px    
+  values_{A} = \left(\begin{matrix} 6 & 4 \\
+    7  \\
+    -9 & 4 \\
+    2 & 5 & 3 \\
+    2 & 1 \\
+    \\
+    1 & 2 \end{matrix}\right) 
+  ja_{A} = \left(\begin{matrix} 0 & 3 \\
+    0  \\
+    2 & 3 \\
+    0 & 1 & 3 \\
+    0 & 3 \\
+    \\
+    1 & 3 \end{matrix}\right) 
 
+Here are the corresponding arrays for the representation:
+
+.. math::
+    
+    \begin{align}
+    numRows &= 7 \\
+    numColums &= 4 \\
+    numValues &= 12 \\
+    ia &= [ 0, 2, 3, 5, 8, 10, 10, 12 ] \\
+    ja &= [ 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 ] \\
+    values &= [ 6, 4, 7, -9, 4, 2, 5, 3, 2, 1, 1, 2 ]
+    \end{align}
+
+Remarks
+-------
+
+ * LAMA uses always zero-based indexing.
+ * The entries for one row do not have to be sorted by column indices. But 
+   there are some operations (matrix add, matrix-multiplication, element-wise binary
+   operations) that will be faster if they are sorted. 
+ * It is assumed that there will be never two entries for the same matrix position (i,j).
 
 CSRKernelTrait
 --------------
@@ -97,7 +115,5 @@ Properties
 **Functionname**       **Description**                                               Host CUDA
 ====================== ============================================================= ==== ====
 validOffsets           checks for legal offset array                                 *
-hasDiagonalProperty    checks if CSR data has diagonal property                      *    *
-countNonZeros          count non-zero entries                                        *
 ====================== ============================================================= ==== ====
 

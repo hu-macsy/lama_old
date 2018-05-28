@@ -95,12 +95,8 @@ void OpenMPDenseUtils::getCSRSizes(
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType denseValues[],
-    const DenseValueType eps )
+    const RealType<DenseValueType> eps )
 {
-    typedef typename TypeTraits<DenseValueType>::RealType RealType;
-
-    RealType absEps = Math::abs( eps );
-
     SCAI_REGION( "OpenMP.DenseUtils.getCSRSizes" )
 
     if ( numRows > 0 )
@@ -123,7 +119,7 @@ void OpenMPDenseUtils::getCSRSizes(
         {
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if ( common::Math::abs( value ) > absEps )
+            if ( common::Math::abs( value ) > eps )
             {
                 ++nonZeros;
             }
@@ -143,11 +139,9 @@ void OpenMPDenseUtils::getCSRValues(
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType denseValues[],
-    const DenseValueType eps )
+    const RealType<DenseValueType> eps )
 {
     typedef typename TypeTraits<DenseValueType>::RealType RealType;
-
-    RealType absEps = eps;
 
     SCAI_REGION( "OpenMP.DenseUtils.getCSRValues" )
 
@@ -165,7 +159,7 @@ void OpenMPDenseUtils::getCSRValues(
 
             RealType absValue = common::Math::abs( value );
 
-            if ( absValue > absEps )
+            if ( absValue > eps )
             {
                 csrValues[offset] = static_cast<CSRValueType>( value );
                 csrJA[offset] = j;
@@ -262,27 +256,6 @@ void OpenMPDenseUtils::set(
                 }
             }
         }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename DenseValueType>
-void OpenMPDenseUtils::setDiagonalValue(
-    DenseValueType denseValues[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const DenseValueType diagonalValue )
-{
-    SCAI_REGION( "OpenMP.DenseUtils.setDiagonalValue" )
-
-    IndexType numDiagonalValues = std::min( numRows, numColumns );
-    #pragma omp parallel for 
-
-    for ( IndexType i = 0; i < numDiagonalValues; ++i )
-    {
-        DenseValueType& elem = denseValues[denseindex( i, i, numRows, numColumns )];
-        elem = diagonalValue;
     }
 }
 
@@ -391,7 +364,6 @@ void OpenMPDenseUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kern
     KernelRegistry::set<DenseKernelTrait::nonZeroValues<ValueType> >( nonZeroValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ValueType> >( setDiagonalValue, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
 }
 
