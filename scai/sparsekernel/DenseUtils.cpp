@@ -65,15 +65,12 @@ void DenseUtils::convertDense2CSR(
     HArray<IndexType>& csrIA,
     HArray<IndexType>& csrJA,
     HArray<ValueType>& csrValues,
-    const hmemo::HArray<ValueType>& denseValues,
     const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<ValueType>& denseValues,
     ContextPtr prefLoc )
 {
-    getSparseRowSizes( csrIA, denseValues, numRows, prefLoc );
-
-    IndexType numColumns = denseValues.size() / numRows;
-
-    // IndexType numValues = CSRUtils::sizes2offsets( csrIA, csrIA, loc );
+    getSparseRowSizes( csrIA, numRows, numColumns, denseValues, prefLoc );
 
     IndexType numValues = HArrayUtils::scan1( csrIA, prefLoc );
 
@@ -101,12 +98,11 @@ void DenseUtils::convertDense2CSR(
 template<typename ValueType>
 void DenseUtils::getSparseRowSizes(
     HArray<IndexType>& csrSizes,
-    const hmemo::HArray<ValueType>& denseValues,
     const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<ValueType>& denseValues,
     ContextPtr prefLoc )
 {
-    const IndexType numColumns = denseValues.size() / numRows;
-
     SCAI_ASSERT_EQ_DEBUG( denseValues.size(), numRows * numColumns, 
                           "denseValues: size not " << numRows << " x " << numColumns )
 
@@ -115,9 +111,10 @@ void DenseUtils::getSparseRowSizes(
     ContextPtr loc = prefLoc;
     getCSRSizes.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
+
     ReadAccess<ValueType> rDenseValues( denseValues, loc );
 
-    // allocate sizes with one more element, so sizes2offsets might be done in-place later
+    // allocate sizes with one more element, so it can be used for offsets
     WriteOnlyAccess<IndexType> wSizes( csrSizes, loc, numRows + 1 );
 
     RealType<ValueType> eps = 0;
@@ -131,11 +128,11 @@ void DenseUtils::getSparseRowSizes(
 template<typename ValueType>
 void DenseUtils::convertCSR2Dense(
     HArray<ValueType>& denseValues,
+    const IndexType numRows,
+    const IndexType numColumns,
     const HArray<IndexType>& csrIA,
     const HArray<IndexType>& csrJA,
     const HArray<ValueType>& csrValues,
-    const IndexType numRows,
-    const IndexType numColumns,
     ContextPtr prefLoc )
 {
     static LAMAKernel<DenseKernelTrait::setCSRValues<ValueType, ValueType> > setCSRValues;
@@ -160,25 +157,27 @@ void DenseUtils::convertCSR2Dense(
                                                      \
     template void DenseUtils::getSparseRowSizes(     \
         HArray<IndexType>&,                          \
-        const HArray<ValueType>&,                    \
         const IndexType,                             \
+        const IndexType,                             \
+        const HArray<ValueType>&,                    \
         ContextPtr );                                \
                                                      \
     template void DenseUtils::convertDense2CSR(      \
         HArray<IndexType>&,                          \
         HArray<IndexType>&,                          \
         HArray<ValueType>&,                          \
-        const HArray<ValueType>&,                    \
         const IndexType,                             \
+        const IndexType,                             \
+        const HArray<ValueType>&,                    \
         ContextPtr );                                \
                                                      \
     template void DenseUtils::convertCSR2Dense(      \
         HArray<ValueType>&,                          \
+        const IndexType,                             \
+        const IndexType,                             \
         const HArray<IndexType>&,                    \
         const HArray<IndexType>&,                    \
         const HArray<ValueType>&,                    \
-        const IndexType,                             \
-        const IndexType,                             \
         ContextPtr );                                \
                                                      \
 

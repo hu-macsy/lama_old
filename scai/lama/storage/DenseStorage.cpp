@@ -37,11 +37,13 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // internal scai libraries
+#include <scai/sparsekernel/DenseUtils.hpp>
 #include <scai/sparsekernel/DenseKernelTrait.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/freeFunction.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
@@ -76,6 +78,7 @@ using utilskernel::UtilKernelTrait;
 
 using sparsekernel::DenseKernelTrait;
 using sparsekernel::CSRUtils;
+using sparsekernel::DenseUtils;
 
 using common::BinaryOp;
 
@@ -419,116 +422,91 @@ void DenseStorage<ValueType>::setZero()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
-void DenseStorage<ValueType>::buildCSR(
-    HArray<IndexType>& csrIA,
-    HArray<IndexType>* csrJA,
-    HArray<OtherValueType>* csrValues,
-    const ContextPtr prefLoc ) const
+void DenseStorage<ValueType>::buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
 {
-    ValueType eps = 0;   // threshold, dense entry is non-zero if abs( val ) > eps
-
-    // Step 1: build an array of sizes, i.e. number of non-zeros for each row
-
-    { 
-        static LAMAKernel<DenseKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-
-        ContextPtr loc = prefLoc;
-
-        getCSRSizes.getSupportedContext( loc );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        ReadAccess<ValueType> rDenseValues( mData, loc );
-        WriteOnlyAccess<IndexType> wIA( csrIA, loc, getNumRows() + 1 );
-
-        getCSRSizes[loc]( wIA.get(), getNumRows(), getNumColumns(), rDenseValues.get(), eps );
-        wIA.resize( getNumRows() );
-    }
-
-    if ( csrJA == NULL || csrValues == NULL )
-    {
-        return;
-    }
-
-    // build offset array, get number of non-zero values for size of ja, values
-
-    IndexType numValues = HArrayUtils::scan1( csrIA );
-
-    // now copy / convert values from dense array to allocated CSR arrays
-
-    static LAMAKernel<DenseKernelTrait::getCSRValues<OtherValueType, ValueType> > getCSRValues;
-
-    ContextPtr loc = prefLoc;
-
-    getCSRValues.getSupportedContext( loc );
-
-    ReadAccess<IndexType> rIA( csrIA, loc );
-    ReadAccess<ValueType> rDenseValues( mData, loc );
-    WriteOnlyAccess<IndexType> wJA( *csrJA, loc, numValues );
-    WriteOnlyAccess<OtherValueType> wValues( *csrValues, loc, numValues );
-
-    getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), getNumRows(), getNumColumns(),
-                       rDenseValues.get(), eps );
+    DenseUtils::getSparseRowSizes( ia, getNumRows(), getNumColumns(), mData, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
+void DenseStorage<ValueType>::buildCSRData( 
+    hmemo::HArray<IndexType>& csrIA, 
+    hmemo::HArray<IndexType>& csrJA, 
+    hmemo::_HArray& csrValues ) const
+{
+    if ( csrValues.getValueType() == getValueType() )
+    {
+        HArray<ValueType>& typedCSRValues = static_cast<HArray<ValueType>&>( csrValues );
+
+        DenseUtils::convertDense2CSR( csrIA, csrJA, typedCSRValues,
+                                      getNumRows(), getNumColumns(), mData, getContextPtr() );
+    }
+    else
+    {
+        HArray<ValueType> tmpValues;
+
+        DenseUtils::convertDense2CSR( csrIA, csrJA, tmpValues, 
+                                      getNumRows(), getNumColumns(), mData, getContextPtr() );
+
+        HArrayUtils::_assign( csrValues, tmpValues );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::setCSRData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const _HArray& values )
+{
+    if ( values.getValueType() == getValueType() )
+    {
+        setCSRDataImpl( numRows, numColumns, ia, ja, 
+		        static_cast<const HArray<ValueType>&>( values ) );
+    }
+    else
+    {
+        setCSRDataImpl( numRows, numColumns, ia, ja, 
+                        utilskernel::convertHArray<ValueType>( values, getContextPtr() ) );
+    }
+}
+
+template<typename ValueType>
 void DenseStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const HArray<OtherValueType>& values )
-{
+    const HArray<ValueType>& values )
+{   
     IndexType numValues = ja.size();
 
-
+    
     SCAI_LOG_INFO( logger,
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
-
+    
     _MatrixStorage::setDimension( numRows, numColumns );
-
-    std::unique_ptr<HArray<IndexType> > tmpOffsets;   // build temporry if given ia is size array
-
-    const HArray<IndexType>* offsets = &ia;
-
+    
     if ( ia.size() == numRows )
-    {
-        tmpOffsets.reset( ia.copy() );
-        IndexType total = HArrayUtils::scan1( *tmpOffsets, getContextPtr() );
+    {   
+        HArray<IndexType> tmpOffsets;
+        IndexType total = CSRUtils::sizes2offsets( tmpOffsets, ia, getContextPtr() );
         SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
-        offsets = tmpOffsets.get();
+        setCSRDataImpl( numRows, numColumns, tmpOffsets, ja, values );
+        return;
     }
-    else
-    {
-        SCAI_ASSERT_EQ_ERROR( ia.size(), numRows + 1, "size mismatch of csr IA array" )
-    }
-
-    SCAI_ASSERT_ERROR( CSRUtils::validOffsets( *offsets, numValues, getContextPtr() ), "illegal CSR offset array" );
-
+    
+    SCAI_ASSERT_EQ_ERROR( ia.size(), numRows + 1, "size mismatch of csr IA array" )
+    SCAI_ASSERT_ERROR( CSRUtils::validOffsets( ia, numValues, getContextPtr() ), "illegal CSR offset array" );
+    
     SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( ja, numColumns, getContextPtr() ),
                        "CSR ja array contains illegal column indexes, #columns = " << numColumns );
-
-    static LAMAKernel<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
-
-    ContextPtr loc = getContextPtr();
-
-    setCSRValues.getSupportedContext( loc );
-
-    {
-        ReadAccess<IndexType> csrIA( *offsets, loc );
-        ReadAccess<IndexType> csrJA( ja, loc );
-        ReadAccess<OtherValueType> csrValues( values, loc );
-
-        WriteOnlyAccess<ValueType> data( mData, loc, getNumRows() * getNumColumns() );
-
-        SCAI_CONTEXT_ACCESS( loc )
-
-        setCSRValues[loc]( data.get(), getNumRows(), getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
-    }
+    
+    DenseUtils::convertCSR2Dense( mData, numRows, numColumns, ia, ja, values, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1057,8 +1035,8 @@ void DenseStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& o
     {
         const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
 
-        setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(),
-                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
+        setCSRData( otherCSR.getNumRows(), otherCSR.getNumColumns(),
+                    otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
 
         SCAI_LOG_INFO( logger, "DenseStorage: assign CSR : " << other << ", this = " << *this );
     }
@@ -1346,21 +1324,6 @@ void DenseStorage<ValueType>::fillCOO(
 /* ========================================================================= */
 
 SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_NUMERIC_TYPES_HOST )
-
-#define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                   \
-    template void DenseStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                   \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                  \
-            const hmemo::HArray<OtherValueType>& );                                                            \
-    template void DenseStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,     \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;                                   \
-     
-#define DENSE_STORAGE_INST_LVL1( ValueType )                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, DENSE_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
-
-SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
-
-#undef DENSE_STORAGE_INST_LVL2
-#undef DENSE_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 

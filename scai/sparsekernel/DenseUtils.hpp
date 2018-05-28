@@ -67,8 +67,9 @@ public:
         hmemo::HArray<IndexType>& csrIA, 
         hmemo::HArray<IndexType>& csrJA, 
         hmemo::HArray<ValueType>& csrValues,
-        const hmemo::HArray<ValueType>& denseValues,
         const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<ValueType>& denseValues,
         hmemo::ContextPtr loc );
 
     /** 
@@ -76,14 +77,15 @@ public:
      *
      *  \param{in] denseValues is an array of size numRows * numColumns, values are stored row-wise
      *  \param[in] numRows is the number of rows
-     *  \param[out] csrSizes will contain for each row the number of non-zero elements
+     *  \param[out] rowSizes will contain for each row the number of non-zero elements
      *  \param[in] loc is the context where conversion should be executed.
      */
     template<typename ValueType>
     static void getSparseRowSizes( 
         hmemo::HArray<IndexType>& rowSizes,
+        const IndexType numRows,
+        const IndexType numColumns,
         const hmemo::HArray<ValueType>& denseValues,
-        const IndexType csrSizes,
         hmemo::ContextPtr loc );
 
     /** 
@@ -95,11 +97,11 @@ public:
     template<typename ValueType>
     static void convertCSR2Dense(
         hmemo::HArray<ValueType>& denseValues,
+        const IndexType numRows,
+        const IndexType numColumns,
         const hmemo::HArray<IndexType>& csrIA,
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::HArray<ValueType>& csrValues,
-        const IndexType numRows,
-        const IndexType numColumns,
         hmemo::ContextPtr loc );
 
 private:

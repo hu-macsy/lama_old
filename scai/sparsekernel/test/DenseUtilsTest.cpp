@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains tests for the DenseUtils interface to be tested on different devices
+ * @brief Contains tests for the class DenseUtils that run on different devices
  * @author Thomas Brandes
  * @date 19.07.2013
  */
@@ -135,10 +135,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
-    DenseUtils::getSparseRowSizes( csrIA, dense, numRows, testContext );
+    DenseUtils::getSparseRowSizes( csrIA, numRows, numColumns, dense, testContext );
     BOOST_TEST( hostReadAccess( expIA ) == hostReadAccess( csrIA ), per_element() );
 
-    DenseUtils::convertDense2CSR( csrIA, csrJA, csrValues, dense, numRows, testContext );
+    DenseUtils::convertDense2CSR( csrIA, csrJA, csrValues, numRows, numColumns, dense, testContext );
 
     BOOST_TEST( hostReadAccess( expJA ) == hostReadAccess( csrJA ), per_element() );
     BOOST_TEST( hostReadAccess( expValues ) == hostReadAccess( csrValues ), per_element() );
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRTest, ValueType, scai_numeric_test_types )
 
     HArray<ValueType> dense;
 
-    DenseUtils::convertCSR2Dense( dense, csrIA, csrJA, csrValues, numRows, numColumns, testContext );
+    DenseUtils::convertCSR2Dense( dense, numRows, numColumns, csrIA, csrJA, csrValues, testContext );
 
     BOOST_TEST( hostReadAccess( expDense ) == hostReadAccess( dense ), per_element() );
 }

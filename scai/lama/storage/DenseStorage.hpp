@@ -248,11 +248,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values )
-    {
-        mepr::StorageWrapper<DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
-    }
+        const hmemo::_HArray& values );
 
     /**
      * @brief template (non-virtual) version of setCSRData with explicit other value type.
@@ -264,13 +260,12 @@ public:
      * @param[in] values     the data values of the input csr sparse matrix
      * @param[in] loc        is the context where filling takes place
      */
-    template<typename OtherValueType>
     void setCSRDataImpl(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values );
+        const hmemo::HArray<ValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -278,35 +273,11 @@ public:
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
-    {
-        hmemo::HArray<IndexType>* ja = NULL;
-        hmemo::HArray<ValueType>* values = NULL;
-        buildCSR( ia, ja, values, getContextPtr() );
-    }
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const;
 
     /** Implementation for _MatrixStorage::buildCSRData */
 
-    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
-    {
-        mepr::StorageWrapper<DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );
-    }
-
-    /** 
-     *  @brief Template (non-virtual) version of building CSR data
-     *
-     *  @param[out] ia is the CSR offset array
-     *  @param[out] ja is the array with the column indexes (optional)
-     *  @param[out] values is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
-     */
-    template<typename OtherValueType>
-    void buildCSR(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>* ja,
-        hmemo::HArray<OtherValueType>* values,
-        const hmemo::ContextPtr loc ) const;
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const;
 
     /* Print relevant information about matrix storage format. */
 
