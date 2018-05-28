@@ -59,6 +59,8 @@ scai_project (
         COOUtils
         ELLUtils
         JDSUtils
+        DIAUtils
+        DenseUtils
 
     HEADERS                  # .hpp only
 

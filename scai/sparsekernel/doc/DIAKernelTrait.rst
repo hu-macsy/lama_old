@@ -17,29 +17,27 @@ positive values represent diagonals "above" or "right" from the main diagonal.
 Example
 -------
 
-Matrix:
+.. math::
 
-.. image:: _images/Storage.png
-    :align: center
-    :width: 200px
-    
-With diagonal element shifting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  A = \left(\begin{matrix} 6 & 0  & 0 & 4 \\
+    7 & 0 & 0 & 0 \\
+    0 & 0 & -9 & 4 \\
+    2 & 5 & 0 & 3 \\
+    2 & 0 & 0 & 1 \\
+    0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 2 \end{matrix}\right) 
 
-The DIA format with diagonal element shifting for the example matrix looks like this:
-
-.. image:: _images/DIAStorageW.png
-    :align: center
-    :width: 500px
-    
-.. image:: _images/DIAStorageWStructure.png
-    :align: center
-    :width: 500px
-    
-Without diagonal element shifting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
 The DIA format without diagonal element shifting looks like this:
+
+.. math::
+  values_{A} = \left(\begin{matrix} 
+    0 & 0 & 0 & 0 & 0 & 6 & 0 &  - & 4 & - & - & - & -  & - & - \\
+    - & 0 & 0 & 0 & 0 & 7 & 0 &  0 & - & 0 & - & - & -  & - & - \\
+    - & - & 0 & 0 & 0 & 0 & 0 & -9 & 4 & - & 0 & - & -  & - & - \\
+    - & - & - & 0 & 0 & 2 & 5 &  0 & 3 & 0 & - & 0 & -  & - & - \\
+    - & - & - & - & 0 & 2 & 0 &  0 & 1 & 0 & 0 & - & 0  & - & - \\
+    - & - & - & - & - & 0 & 0 &  0 & 0 & 0 & 0 & 0 & -  & 0 & - \\
+    - & - & - & - & - & - & 1 &  0 & 2 & 0 & 0 & 0 & 0  & - & 0  \end{matrix}\right) 
 
 .. image:: _images/DIAStorageWO.png
     :align: center
@@ -48,6 +46,35 @@ The DIA format without diagonal element shifting looks like this:
 .. image:: _images/DIAStorageWOStructure.png
     :align: center
     :width: 500px  
+
+Here are the corresponding arrays for the representation:
+
+.. math::
+    
+    \begin{align}
+    #rows &= 7 \\
+    #colums &= 4 \\
+    #diagonals &= 12 \\
+    values &= \left( \begin{matrix}
+                     0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+                     0 & 0 & 0 & 0 & 2 & 0 & 0 \\
+                     0 & 0 & 0 & 2 & 0 & 0 & 2 \\
+                     0 & 0 & 0 & 5 & 1 & 0 & 0 \\
+                     0 & 7 & 0 & 0 & 1 & 0 & 0 \\
+                     6 & 0 & 9 & 3 & 0 & 0 & 0 \\
+                     0 & 0 & 4 & 0 & 0 & 0 & 0 \\
+                     4 & 0 & 0 & 0 & 0 & 0 & 0 \\
+                     \end{matrix}\right) \\
+    offset &= [ -5, -4, -3, -2, -1, 0, 1, 3 ] \\
+    \end{align}
+
+Remarks
+-------
+
+ * Using the DIA format is only helpful if there is only a limited number of diagonals
+   that are really used.
+ * The ``values`` array contains a lot of zero entries that stand for out-of-range 
+   elements of the original matrix.
 
 DIAKernelTrait
 --------------
@@ -69,7 +96,6 @@ Calculation
 **Functionname**          **Description**                                               Host CUDA
 ========================= ============================================================= ==== ====
 normalGEMV                matrix-vector multiplication                                  *    *
-normalGEVM                vector-matrix multiplication                                  *    *
 jacobi                    compute one jacobi iteration step                             *
 absMaxVal                 compute the maximal absolute value                            *
 ========================= ============================================================= ==== ====

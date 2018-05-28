@@ -39,21 +39,58 @@ Contents
    DIAKernelTrait
    ELLKernelTrait
    JDSKernelTrait
+   StencilKernelTrait
 
 *******
 Example
 *******
 
-Calculate matrix-vector multiplication with given ELL input-set on host.
+Calculate matrix-vector multiplication with a matrix stored in CSR format.
+
+.. math::
+
+  A = \left(\begin{matrix} 
+    6  &  1 &  0 &  4  \\
+    -2 &  8 &  3 &  0  \\
+     0 &  1 &  9 &  4  \\
+     -1 &  0 &  1 &  3  \\
+    \end{matrix}\right) 
 
 .. code-block:: c++
 
-	// Get function from Registry
-	kregistry::KernelTraitContextFunction<ELLKernelTrait::normalGEMV<ValueType> > gemv;
+    ContextPtr ctx = Context::getContextPtr();  // default context
 	
-	// Call function on host
-	gemv[context::Host]( b, one, x, zero, b, m, max_nnz, sizes, ja, values );
-	
+    HArray<IndexType> csrIA(  {  0,          3,          6,          9,         12 } );
+    HArray<IndexType> csrJA(  {  0,  1,  3,  1,  0,  2,  2,  1,  3,  3,  0,  2 } );
+    HArray<double> csrValues( {  6,  1,  4,  8, -2,  3,  9,  1,  4,  3, -1,  1 } );
+
+    HArray<double> x( 4, 4.0 );
+    HArray<double> b( 4, 2.0 );
+
+    // compute b = b + A * x 
+
+    CSRUtils::gemv( b, 1, x, 1, b, csrIA, csrJA, csrValues, ctx );
+
+The CSR arrays might also be computed from the dense array.
+
+.. code-block:: c++
+
+    ContextPtr ctx = Context::getContextPtr();  // default context
+    
+    HArray<double> values( {  6,  1,  0, 4,  -2,  8,  3, 0 , 0,  1,  9,  4, -1, 0, 1, 3 }, ctx );
+
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<double> csrValues;
+
+    DenseUtils::compressSparseRows( csrIA, csrJA, csrValues, denseValues, ctx );
+
+    HArray<double> x( 4, 4.0 );
+    HArray<double> b( 4, 2.0 );
+
+    // compute b = b + A * x 
+
+    CSRUtils::gemv( b, 1, x, 1, b, csrIA, csrJA, csrValues, ctx );
 
 *********************
 Environment-Variables

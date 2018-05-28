@@ -270,14 +270,19 @@ void DenseStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 template<typename ValueType>
 void DenseStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    // Note: dense storage has always diagonal property
+    const IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );
 
-    static LAMAKernel<DenseKernelTrait::setDiagonalValue<ValueType> > setDiagonalValue;
-    ContextPtr loc = getContextPtr();
-    setDiagonalValue.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    WriteAccess<ValueType> wData( mData, loc ); // use existing data
-    setDiagonalValue[loc]( wData.get(), getNumRows(), getNumColumns(), value );
+    // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+    // first = denseindex( 0, 0, numRows, numColumns )
+    // dense values are stored row-wise
+
+    const IndexType inc   = getNumRows() + 1;
+    const IndexType first = 0;
+
+    HArrayUtils::fillArraySection( mData, first, inc,
+                                   value, numDiagonalValues,
+                                   BinaryOp::COPY,
+                                   mData.getValidContext() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -285,7 +290,7 @@ void DenseStorage<ValueType>::setDiagonal( const ValueType value )
 template<typename ValueType>
 void DenseStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );
+    const IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );
 
     SCAI_ASSERT_GE_DEBUG( diagonal.size(), numDiagonalValues, "diagonal array has insufficient size" )
 
@@ -947,14 +952,7 @@ RealType<ValueType> DenseStorage<ValueType>::maxNorm() const
         return ValueType( 0 );
     }
 
-    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-    ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-    ReadAccess<ValueType> read1( mData, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ValueType zero   = 0;
-    RealType<ValueType> maxval = reduce[loc]( read1.get(), n, zero, BinaryOp::ABS_MAX );
-    return maxval;
+    return HArrayUtils::maxNorm( mData, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1014,20 +1012,9 @@ void DenseStorage<ValueType>::assignDense( const DenseStorage<OtherValueType>& o
 
     _MatrixStorage::_assign( other ); // copy sizes, flags
 
-    LAMAKernel<DenseKernelTrait::set<ValueType, OtherValueType> > set;
+    // copy the dense data, maybe with type conversion
 
-    ContextPtr loc = getContextPtr();
-
-    set.getSupportedContext( loc );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-        WriteOnlyAccess<ValueType> data( mData, loc, getNumRows() * getNumColumns() );
-        ReadAccess<OtherValueType> otherData( other.getValues(), loc );
-        set[loc]( data.get(), getNumRows(), getNumColumns(), otherData.get(), BinaryOp::COPY );
-    }
-
-    SCAI_LOG_INFO( logger, *this << ": assigned dense storage " << other )
+    HArrayUtils::setArray( mData, other.getValues(), common::BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

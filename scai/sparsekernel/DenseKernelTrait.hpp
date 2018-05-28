@@ -91,7 +91,7 @@ struct DenseKernelTrait
             const IndexType numRows,
             const IndexType numColumns,
             const DenseValueType denseValues[],
-            const DenseValueType eps );
+            const RealType<DenseValueType> eps );
 
         static const char* getId()
         {
@@ -116,13 +116,14 @@ struct DenseKernelTrait
          *  Very important: the offsets in csrIA must correspond to the csrSizes computed
          *                  by getCSRSizes.
          */
-        typedef void ( *FuncType ) ( IndexType csrJA[],
-                                     CSRValueType csrValues[],
-                                     const IndexType csrIA[],
-                                     const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const DenseValueType denseValues[],
-                                     const DenseValueType eps );
+        typedef void ( *FuncType ) ( 
+            IndexType csrJA[],
+            CSRValueType csrValues[],
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const DenseValueType denseValues[],
+            const RealType<DenseValueType> eps );
 
         static const char* getId()
         {
@@ -183,23 +184,6 @@ struct DenseKernelTrait
         static const char* getId()
         {
             return "Dense.setValue";
-        }
-    };
-
-    template<typename DenseValueType>
-    struct setDiagonalValue
-    {
-        /** Set diagonal elements with one and the same value. */
-
-        typedef void ( *FuncType ) (
-            DenseValueType denseValues[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const DenseValueType val );
-
-        static const char* getId()
-        {
-            return "Dense.setDiagonalValue";
         }
     };
 
