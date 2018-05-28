@@ -254,6 +254,12 @@ IndexType ELLUtils::getValuePos(
     ContextPtr prefLoc )
 {   
     const IndexType numRows = ellIA.size();
+
+    if ( numRows == 0 )
+    {
+        return invalidIndex;
+    }
+
     const IndexType numValuesPerRow = ellJA.size() / numRows;
 
     // check row index to avoid out-of-range access, illegal j does not matter
@@ -287,7 +293,15 @@ void ELLUtils::getColumnPositions(
     SCAI_REGION( "Storage.ELL.getSparseCol" )
 
     const IndexType numRows = ellIA.size();
-    const IndexType numValuesPerRow = ellJA.size() / numRows;
+
+    if ( numRows == 0 )
+    {
+        ia.clear();
+        positions.clear();
+        return;
+    }
+
+    const IndexType numValuesPerRow = ellJA.size() / numRows;    // numRows must not be 0
 
     static LAMAKernel<ELLKernelTrait::getColumnPositions> getColumnPositions;
 
@@ -420,6 +434,12 @@ void ELLUtils::jacobi(
     SCAI_ASSERT_EQ_ERROR( ellJA.size(), ellValues.size(), "serious size mismatch for CSR arrays" )
     
     const IndexType numRows = rhs.size();
+
+    if ( numRows == 0 )
+    {
+        return;
+    }
+
     const IndexType numColumns = oldSolution.size();
     const IndexType numValuesPerRow = ellJA.size() / numRows;
     
