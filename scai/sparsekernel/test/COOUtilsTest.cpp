@@ -491,6 +491,42 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( isSortedTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    // Here is some sorted COO data
+
+    HArray<IndexType> ia(     { 0, 0, 0, 0, 1, 1, 1, 2, 2 } );
+    HArray<IndexType> ja(     { 0, 1, 3, 5, 1, 3, 5, 1, 2 } );
+
+    BOOST_CHECK( COOUtils::isSorted( ia, ja, testContext ) );
+
+    ia     = { 2, 1, 0, 2, 1, 1, 0, 0, 0 };
+    ja     = { 2, 1, 0, 1, 1, 1, 0, 2, 1 };
+
+    BOOST_CHECK( !COOUtils::isSorted( ia, ja, testContext ) );
+
+    ia.clear();
+    ja.clear();
+
+    BOOST_CHECK( COOUtils::isSorted( ia, ja, testContext ) );
+
+    ia = { 1 };
+    ja = { 1 };
+
+    BOOST_CHECK( COOUtils::isSorted( ia, ja, testContext ) );
+
+    // double elements, is also not sorted
+
+    ia = { 0, 0, 1, 1, 3 };
+    ja = { 0, 3, 1, 1, 1 };
+
+    BOOST_CHECK( !COOUtils::isSorted( ia, ja, testContext ) );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( uniqueTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;

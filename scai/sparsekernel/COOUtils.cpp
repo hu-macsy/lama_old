@@ -115,10 +115,15 @@ bool COOUtils::isSorted(
 
     const IndexType numValues = ia.size();
 
-    auto rIA = hostReadAccess( ia );
-    auto rJA = hostReadAccess( ja );
+    if ( numValues < 2 )
+    {
+        return true;   // Important: numValues - 1 might be illegal value
+    }
 
     bool sorted = true;
+
+    auto rIA = hostReadAccess( ia );
+    auto rJA = hostReadAccess( ja );
 
     #pragma omp parallel for
 

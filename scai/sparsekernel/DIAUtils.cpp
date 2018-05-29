@@ -213,7 +213,7 @@ void DIAUtils::convertCSR2DIA(
     const HArray<ValueType>& csrValues,
     ContextPtr prefLoc )
 {
-    SCAI_LOG_ERROR( logger, "convert CSR " << numRows << " x " << numColumns
+    SCAI_LOG_INFO( logger, "convert CSR " << numRows << " x " << numColumns
                      << ", ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
 
     if ( numRows == 0 || numColumns == 0 || csrJA.size() == 0 )
