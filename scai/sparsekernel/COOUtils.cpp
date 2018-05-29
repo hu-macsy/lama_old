@@ -120,7 +120,7 @@ bool COOUtils::isSorted(
 
     bool sorted = true;
 
-    #pragma parallel for
+    #pragma omp parallel for
 
     for ( IndexType k = 0; k < numValues - 1; ++k )
     {

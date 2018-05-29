@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE( gemvNormalTest )
     const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
     const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
 
-    for ( IndexType icase = 0; icase < std::min( 1, n_alpha * n_beta ); ++icase )
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
     {
         ValueType alpha = alpha_values[icase % n_alpha ];
         ValueType beta  = beta_values[icase / n_alpha ];
