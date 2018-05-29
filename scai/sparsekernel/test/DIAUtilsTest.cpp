@@ -73,6 +73,11 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DIAUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
+static IndexType op_convert( int i )
+{ 
+    return static_cast<IndexType>( i ); 
+}
+
 BOOST_AUTO_TEST_CASE( convertCSRTest )
 {
     typedef DefaultReal ValueType;
@@ -86,7 +91,15 @@ BOOST_AUTO_TEST_CASE( convertCSRTest )
     HArray<IndexType> csrJA(     { 0, 3,   0, 2,   3,   0, 1, 3,   0, 3,    1, 3 } );
     HArray<ValueType> csrValues( { 6, 4,   7, 9,   4,   2, 5, 3,   2, 1,    1, 2 } );
 
-    HArray<IndexType> expOffset( { -5, -4, -3, -2, -1, 0, 1, 3 } );
+    std::vector<int> offset_vals( { -5, -4, -3, -2, -1, 0, 1, 3 } );
+
+    HArray<IndexType> expOffset;
+    expOffset.resize( offset_vals.size() );
+
+    transform( offset_vals.begin(), offset_vals.end(), 
+               hostWriteOnlyAccess( expOffset, offset_vals.size() ).begin(), op_convert );
+
+    // HArray<IndexType> expOffset( { -5, -4, -3, -2, -1, 0, 1, 3 } );
 
     HArray<ValueType> expValues( { 0, 0, 0, 0, 0, 0, 1,
                                    0, 0, 0, 0, 2, 0, 0,

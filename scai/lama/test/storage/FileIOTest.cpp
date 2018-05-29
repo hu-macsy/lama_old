@@ -97,7 +97,7 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
     // force diagonal elements
 
     HArray<IndexType> diagPos;
-    HArrayUtils::setSequence( diagPos, 0, 1, numRows );
+    HArrayUtils::setSequence<IndexType>( diagPos, 0, 1, numRows );
     HArray<ValueType> diagValues( numRows, ValueType( 0 ) );
     storage.fillCOO( diagPos, diagPos, diagValues, common::BinaryOp::ADD );
 }
