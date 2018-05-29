@@ -287,6 +287,8 @@ bool OpenMPCSRUtils::hasSortedRows(
 {
     bool isSorted = true;
 
+    SCAI_LOG_DEBUG( logger, "hasSortedRows: #rows = " << numRows )
+
     #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -296,8 +298,14 @@ bool OpenMPCSRUtils::hasSortedRows(
         }
 
         IndexType start = csrIA[i];
-
         const IndexType end = csrIA[i + 1];
+
+        SCAI_LOG_TRACE( logger, "check row " << i << " : " << start << " - " << end )
+
+        if ( start + 1 >= end )
+        {
+            continue;  // less than 2 elements, is sorted
+        }
 
         if ( ! utilskernel::OpenMPUtils::isSorted( &csrJA[start], end - start, common::CompareOp::LT ) )
         {
@@ -319,6 +327,8 @@ void OpenMPCSRUtils::sortRows(
     const IndexType,
     const IndexType nnz )
 {
+    // argument numColumns is not needed here, we make no checks here
+
     if ( nnz != csrIA[numRows] )
     {
         COMMON_THROWEXCEPTION( "serious error for arguments, nnz = " << nnz << ", csrIA[" << numRows << " ] = " << csrIA[ numRows ] )
@@ -336,9 +346,14 @@ void OpenMPCSRUtils::sortRows(
 
         const IndexType end = csrIA[i + 1];
 
-        // call quicksort implementation of utilskernel
+        SCAI_LOG_TRACE( logger, "sort row " << i << ", start = " << start << ", end = " << end )
 
-        utilskernel::OpenMPUtils::sortInPlace( &csrJA[start], &csrValues[start], end - start, true );
+        if ( start + 1 < end )
+        { 
+            // at least two elements in row, call quicksort implementation of utilskernel
+
+            utilskernel::OpenMPUtils::sortInPlace( &csrJA[start], &csrValues[start], end - start, true );
+        }
     }
 }
 
