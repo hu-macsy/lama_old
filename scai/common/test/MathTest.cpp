@@ -245,6 +245,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( argTest, ValueType, scai_math_complex_test_types 
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( signTest, ValueType, scai_numeric_test_types )
+{
+    BOOST_CHECK_EQUAL( Math::sign( ValueType( 0.2 ) ), ValueType( 1 ) );
+    BOOST_CHECK_EQUAL( Math::sign( ValueType( -0.1 ) ), ValueType( -1 ) );
+    BOOST_CHECK_EQUAL( Math::sign( ValueType( 0 ) ), ValueType( 0 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( logTest, ValueType, scai_numeric_test_types )
 {
     ValueType x = ValueType( 10 );

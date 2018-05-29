@@ -22,6 +22,7 @@ ATAN       call atan on each vector element
 LOG        call log on each vector element
 FLOOR      rounds downward
 CEIL       rounds upward
+SIGN       sign/signum function, same as x / abs( x ) and 0 for x = 0
 =========  =================================
 
 The enum class is used in order to have one common function with an addtional op argument instead
