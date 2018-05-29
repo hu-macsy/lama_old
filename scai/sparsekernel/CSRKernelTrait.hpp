@@ -442,7 +442,6 @@ struct CSRKernelTrait
          *  @param[in] numDiagonals  number of first rows for which diagonal property is checked.
          *  @param[in] csrIA         offset array for the rows
          *  @param[in] csrJA         column indexes
-         *  @param[in] isSorted      if true the column indexes of each row are sorted
          *  @return                  true if diagonal property is given
          *
          *  The diagonal property is given if the first column index in the row is same as the row index.

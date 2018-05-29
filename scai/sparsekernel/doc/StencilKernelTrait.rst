@@ -42,7 +42,7 @@ Remarks
    of stencil points and the values array can be updated to deal with special bounary conditions.
 
 StencilKernelTrait
---------------
+------------------
 
 The StencilKernelTrait contains various functions for operations on a stencil storage.
 The most important ones are the conversion into the CSR format and the matrix-vector 

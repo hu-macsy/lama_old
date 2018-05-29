@@ -56,7 +56,7 @@ public:
      *
      *  @param[out] rowIndexes contains the indexes of non-zero rows
      *  @param[in]  ellSizes continas the number of non-zero entries of each row
-       @param[in]  threshold builds rowIndexes only if #nonZeroRows/#numRows < threshhold
+     *  @param[in]  threshold builds rowIndexes only if nonZeroRows / numRows < threshhold
      *  @param[in]  loc is the context where operation is executed
      *  @returns the number of non-zero rows, will also be the size of rowIndexes if built
      *
@@ -126,9 +126,10 @@ public:
      *
      *  @param[in] i, j are the row and column index for the searched entry
      *  @param[in] ellIA, ellJA are the sizes array and the column indexes
+     *  @param[in] prefLoc specifies the context where the operation should be executed
      *  @return invalidIndex if not found, otherwise k with ja[k] == j, k % numRows = i
      *
-     *  The corresponding matrix value can be found via csrValues[k] if k is the not invalid.
+     *  The corresponding matrix value can be found via csrValues[k] if k is not invalid.
      */
     static IndexType getValuePos(
         const IndexType i,

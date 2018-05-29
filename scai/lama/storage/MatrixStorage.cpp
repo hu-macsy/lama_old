@@ -144,7 +144,8 @@ void MatrixStorage<ValueType>::buildCSCData(
     HArray<ValueType> rowValues;
     buildCSRData( rowIA, rowJA, rowValues );
     ContextPtr loc = Context::getHostPtr();
-    sparsekernel::CSRUtils::convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), rowIA, rowJA, rowValues, loc );
+    sparsekernel::CSRUtils::convertCSR2CSC( colIA, colJA, colValues, 
+                                            getNumRows(), getNumColumns(), rowIA, rowJA, rowValues, loc );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -246,9 +246,10 @@ BOOST_AUTO_TEST_CASE( shiftDiagonalFirstTest )
     HArray<IndexType> csrJA(     { 0, 1, 2,    0, 1, 2, 0, 1, 2, 4, 4, 5 }, testContext );
     HArray<ValueType> csrValues( { 0, 1, 2,    0, 1, 2, 0, 1, 2, 4, 4, 5 }, testContext );
 
+    const IndexType numRows    = 6;
     const IndexType numColumns = 6;
 
-    IndexType numDiags = CSRUtils::shiftDiagonalFirst( csrJA, csrValues, csrIA, numColumns, testContext );
+    IndexType numDiags = CSRUtils::shiftDiagonalFirst( csrJA, csrValues, numRows, numColumns, csrIA, testContext );
 
     BOOST_CHECK_EQUAL( numDiags, 4 );
 
@@ -431,9 +432,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 
     BOOST_TEST( hostReadAccess( cscIA ) == hostReadAccess( ia2 ), per_element() );
 
-    // for comparison we sort the values, no diagonal elements
+    // for comparison we sort the values, take care of the switched dimensions
 
-    CSRUtils::sortRows( cscJA, cscValues, cscIA, numColumns, numRows, testContext );
+    CSRUtils::sortRows( cscJA, cscValues, numColumns, numRows, cscIA, testContext );
 
     BOOST_TEST( hostReadAccess( cscJA ) == hostReadAccess( ja2 ), per_element() );
     BOOST_TEST( hostReadAccess( cscValues ) == hostReadAccess( values2 ), per_element() );
@@ -462,7 +463,7 @@ BOOST_AUTO_TEST_CASE( sortRowsTest )
     const IndexType numRows = 4;
     const IndexType numColumns = 4;
     
-    CSRUtils::sortRows( csrJA, csrValues, csrIA, numRows, numColumns, testContext );
+    CSRUtils::sortRows( csrJA, csrValues, numRows, numColumns, csrIA, testContext );
 
     BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( sortedJA ), per_element() );
     BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( sortedValues ), per_element() );
@@ -486,20 +487,20 @@ BOOST_AUTO_TEST_CASE( hasSortedRowsTest )
 
     // csrJA is not sorted as all
 
-    BOOST_CHECK( !CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, testContext ) );
+    BOOST_CHECK( !CSRUtils::hasSortedRows( numRows, numColumns, csrIA, csrJA, testContext ) );
 
-    CSRUtils::sortRows( csrJA, csrValues, csrIA, numRows, numColumns, testContext );
+    CSRUtils::sortRows( csrJA, csrValues, numRows, numColumns, csrIA, testContext );
 
     // csrJA is sorted in any case
 
-    BOOST_CHECK( CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, testContext ) );
+    BOOST_CHECK( CSRUtils::hasSortedRows( numRows, numColumns, csrIA, csrJA, testContext ) );
 
     // CSR data with double entry is also not sorted
 
     csrIA = HArray<IndexType>( { 0,       3,    5,    6,  8 }, testContext );
     csrJA = HArray<IndexType>( { 0, 0, 3, 1, 2, 2, 3, 2 }, testContext );
 
-    BOOST_CHECK( !CSRUtils::hasSortedRows( csrIA, csrJA, numRows, numColumns, testContext ) );
+    BOOST_CHECK( !CSRUtils::hasSortedRows( numRows, numColumns, csrIA, csrJA, testContext ) );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -739,7 +740,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
     SCAI_LOG_INFO( logger, "sortRows< " << TypeTraits<ValueType>::id() << "> for " << *testContext << " on " << *loc )
 
-    CSRUtils::sortRows( cscJA, cscValues, cscIA, numColumns, numRows, testContext );
+    CSRUtils::sortRows( cscJA, cscValues, numColumns, numRows, cscIA, testContext );
 
     //  compare with the CSC test data
 
@@ -889,7 +890,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
     // sort the columns, otherwise comparison might fail
 
-    CSRUtils::sortRows( cJA, cValues, cIA, m, n, testContext );
+    CSRUtils::sortRows( cJA, cValues, m, n, cIA, testContext );
 
     BOOST_TEST( hostReadAccess( cJA ) == hostReadAccess( expCJA ), per_element() );
 
@@ -947,7 +948,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
     // sort the columns, otherwise comparison might fail, no diagonals
 
-    CSRUtils::sortRows( cJA, cValues, cIA, m, n, testContext );
+    CSRUtils::sortRows( cJA, cValues, m, n, cIA, testContext );
 
     BOOST_TEST( hostReadAccess( cIA ) == hostReadAccess( expCIA ), per_element() );
     BOOST_TEST( hostReadAccess( cJA ) == hostReadAccess( expCJA ), per_element() );

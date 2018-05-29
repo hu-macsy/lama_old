@@ -417,7 +417,7 @@ void CSRStorage<ValueType>::sortRows()
 {
     // sort in place 
 
-    CSRUtils::sortRows( mJA, mValues, mIA, getNumRows(), getNumColumns(), getContextPtr() );
+    CSRUtils::sortRows( mJA, mValues, getNumRows(), getNumColumns(), mIA, getContextPtr() );
 
     mSortedRows       = true;
     // buildRowIndexes: no changes required
@@ -430,7 +430,7 @@ bool CSRStorage<ValueType>::hasSortedRows()
 {
     // sort in place 
 
-    return sparsekernel::CSRUtils::hasSortedRows( mIA, mJA, getNumRows(), getNumColumns(), getContextPtr() );
+    return sparsekernel::CSRUtils::hasSortedRows( getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -438,8 +438,9 @@ bool CSRStorage<ValueType>::hasSortedRows()
 template<typename ValueType>
 void CSRStorage<ValueType>::setDiagonalFirst()
 {
-    IndexType numDiagonals = std::min( getNumRows(), getNumColumns() );
-    IndexType numFirstDiagonals = CSRUtils::shiftDiagonalFirst( mJA, mValues, mIA, getNumColumns(), getContextPtr() );
+    IndexType numDiagonals = this->getDiagonalSize();
+
+    IndexType numFirstDiagonals = CSRUtils::shiftDiagonalFirst( mJA, mValues, getNumRows(), getNumColumns(), mIA, getContextPtr() );
 
     if ( numDiagonals != numFirstDiagonals )
     {
@@ -1194,7 +1195,8 @@ void CSRStorage<ValueType>::buildCSCData(
 {
     SCAI_LOG_INFO( logger, *this << ": buildCSCData by call of CSR2CSC" )
     // build the CSC data directly on the device where this matrix is located.
-    sparsekernel::CSRUtils::convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), mIA, mJA, mValues, getContextPtr() );
+    sparsekernel::CSRUtils::convertCSR2CSC( colIA, colJA, colValues, 
+                                            getNumRows(), getNumColumns(), mIA, mJA, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

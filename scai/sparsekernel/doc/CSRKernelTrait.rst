@@ -11,6 +11,23 @@ The compressed sparse row (CSR) format represents the nonzero values of a matrix
 - the CSR ia array contains the running sum (offsets) of the  row sizes; it has numRows + 1 entries, the first one is always 0 and the last one
   is numValues
 
+In contrary to an array ``ia`` that contains only the sizes of each row, the offset array is very helpful for 
+more efficient operations. Its main advantage is that it allows the row parallelization of many operations, 
+i.e. each thread can operate independently on a bundle of rows.
+
+.. code-block:: c++
+
+   #pragma omp parallel for
+   for ( IndexType i = 0; i < numRows; ++i )
+   {
+       // code that operates on row i of the storage
+
+       for ( IndexType k = ia[i]; k < ia[i+1]; ++k )
+       {
+           ... csrJA[k] for column pos, csrValues[k] for value
+       }
+   }
+
 Example
 -------
 
@@ -51,9 +68,9 @@ Here are the corresponding arrays for the representation:
     numRows &= 7 \\
     numColums &= 4 \\
     numValues &= 12 \\
-    ia &= [ 0, 2, 3, 5, 8, 10, 10, 12 ] \\
-    ja &= [ 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 ] \\
-    values &= [ 6, 4, 7, -9, 4, 2, 5, 3, 2, 1, 1, 2 ]
+    ia &= [\begin{matrix} 0 & 2 & 3 & 5 & 8 & 10 & 10 & 12 \end{matrix}] \\
+    ja &= [\begin{matrix} 0 & 3 & 0 & 2 & 3 & 0 & 1 & 3 & 0 & 3 & 1 & 3 \end{matrix}] \\
+    values &= [\begin{matrix} 6 & 4 & 7 & -9 & 4 & 2 & 5 & 3 & 2 & 1 & 1 & 2 \end{matrix}]
     \end{align}
 
 Remarks

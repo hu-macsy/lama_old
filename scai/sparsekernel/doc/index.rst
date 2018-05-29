@@ -45,7 +45,8 @@ Contents
 Example
 *******
 
-Calculate matrix-vector multiplication with a matrix stored in CSR format.
+Calculate matrix-vector multiplication with a matrix stored in CSR format, where the
+CSR data is converted from the following dense matrix:
 
 .. math::
 
@@ -59,23 +60,6 @@ Calculate matrix-vector multiplication with a matrix stored in CSR format.
 .. code-block:: c++
 
     ContextPtr ctx = Context::getContextPtr();  // default context
-	
-    HArray<IndexType> csrIA(  {  0,          3,          6,          9,         12 } );
-    HArray<IndexType> csrJA(  {  0,  1,  3,  1,  0,  2,  2,  1,  3,  3,  0,  2 } );
-    HArray<double> csrValues( {  6,  1,  4,  8, -2,  3,  9,  1,  4,  3, -1,  1 } );
-
-    HArray<double> x( 4, 4.0 );
-    HArray<double> b( 4, 2.0 );
-
-    // compute b = b + A * x 
-
-    CSRUtils::gemv( b, 1, x, 1, b, csrIA, csrJA, csrValues, ctx );
-
-The CSR arrays might also be computed from the dense array.
-
-.. code-block:: c++
-
-    ContextPtr ctx = Context::getContextPtr();  // default context
     
     HArray<double> values( {  6,  1,  0, 4,  -2,  8,  3, 0 , 0,  1,  9,  4, -1, 0, 1, 3 }, ctx );
 
@@ -83,10 +67,13 @@ The CSR arrays might also be computed from the dense array.
     HArray<IndexType> csrJA;
     HArray<double> csrValues;
 
-    DenseUtils::compressSparseRows( csrIA, csrJA, csrValues, denseValues, ctx );
+    const IndexType M = 4;
+    const IndexType N = 4;
 
-    HArray<double> x( 4, 4.0 );
-    HArray<double> b( 4, 2.0 );
+    DenseUtils::convertDense2CSR( csrIA, csrJA, csrValues, M, N, denseValues, ctx );
+
+    HArray<double> x( N, 4.0 );
+    HArray<double> b( M, 2.0 );
 
     // compute b = b + A * x 
 

@@ -14,6 +14,22 @@ values (plus the main diagonal zeroes, if needed) (ia) and one for their associa
 
 The ELL format is used for matrices with about equivalent numbers of non-zero-values in each row.
 
+In contrary to the CSR format the ELL format uses the array ``ia`` with the sizes of each row. 
+The offsets become redundant as the position of an entry can be directly determined.
+
+.. code-block:: c++
+
+   #pragma omp parallel for
+   for ( IndexType i = 0; i < numRows; ++i )
+   {
+       // code that operates on row i of the storage
+
+       for ( IndexType k = 0; k < ia[i]; ++k )
+       {
+           ... csrJA[k * numRows + i] for column pos, csrValues[k * numRows + i] for value
+       }
+   }
+
 Example
 -------
 
@@ -35,20 +51,20 @@ The ELL representation of the sparse matrix is:
 
 .. math::
 
-  values_{A} = \left(\begin{matrix} 6 & 4 & V0 \\
-    7 & V0 & V0 \\
-    -9 & 4 & V0 \\
+  values_{A} = \left(\begin{matrix} 6 & 4 & - \\
+    7 & - & - \\
+    -9 & 4 & - \\
     2 & 5 & 3 \\
-    2 & 1 & V0 \\
-    V0 & V0 & V0 \\
-    1 & 2 & V0 \end{matrix}\right) 
-  ja_{A} = \left(\begin{matrix} 0 & 3 & J0 \\
-    0 & J0 & J0 \\
-    2 & 3  & J0 \\
+    2 & 1 & - \\
+    - & - & - \\
+    1 & 2 & - \end{matrix}\right) 
+  ja_{A} = \left(\begin{matrix} 0 & 3 & - \\
+    0 & - & - \\
+    2 & 3  & - \\
     0 & 1 & 3 \\
-    0 & 3 & J0 \\
-    J0 & J0 & J0 \\
-    1 & 3 & J0 \end{matrix}\right) 
+    0 & 3 & - \\
+    - & - & - \\
+    1 & 3 & - \end{matrix}\right) 
   ia_{A} = \left(\begin{matrix} 2 \\
     1  \\
     2 \\
@@ -65,15 +81,17 @@ Here are the corresponding arrays for the representation:
     numRows &= 7 \\
     numColums &= 4 \\
     numValues &= 12 \\
-    ia &= [ 0, 0, 1, 2, 2, 3, 3, 3, 4, 4, 6, 6 ] \\
-    ja &=     [ 0, 3, J0, 0, J0, J0, 2, 3, J0, 0, 1, 3, 0, 3, J0, J0, J0, J0, 1, 3, J0 ] \\
-    values &= [ 6, 4, V0, 7, V0, V0, -9, 4, V0, 2, 5, 3, 2, 1, V0, V0, V0, V0, 1, 2, V0 ]
+    ia &= [\begin{matrix} 0 & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 4 & 4 & 6 & 6 \end{matrix} ] \\
+    ja &= \left[\begin{matrix} 
+                 0 & 0 & 2 & 0 & 0 & - & 1 & 
+                 3 & - & 3 & 1 & 3 & - & 3 &
+                 - & - & - & 3 & - & - & -   \end{matrix} \right] \\
+    values &= \left[\begin{matrix} 
+                 6 & 7 & -9 & 2 & 2 & - & 1 & 
+                 4 & - & 4 & 5 & 1 & - & 2 &
+                 - & - & - & 3 & - & - & -   \end{matrix} \right]
     \end{align}
-                                                                                                                                   59,5          11%
-.. image:: _images/Storage.png
-    :align: center
-    :width: 200px
-    
+
 .. image:: _images/ELLStorageWO.png
     :align: center
     :width: 200px

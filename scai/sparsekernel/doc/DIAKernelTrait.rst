@@ -39,22 +39,14 @@ The DIA format without diagonal element shifting looks like this:
     - & - & - & - & - & 0 & 0 &  0 & 0 & 0 & 0 & 0 & -  & 0 & - \\
     - & - & - & - & - & - & 1 &  0 & 2 & 0 & 0 & 0 & 0  & - & 0  \end{matrix}\right) 
 
-.. image:: _images/DIAStorageWO.png
-    :align: center
-    :width: 500px
-    
-.. image:: _images/DIAStorageWOStructure.png
-    :align: center
-    :width: 500px  
-
 Here are the corresponding arrays for the representation:
 
 .. math::
     
     \begin{align}
-    rows &= 7 \\
-    colums &= 4 \\
-    diagonals &= 12 \\
+    numRows &= 7 \\
+    numColums &= 4 \\
+    numDiagonals &= 8 \\
     values &= \left( \begin{matrix}
                      0 & 0 & 0 & 0 & 0 & 0 & 1 \\
                      0 & 0 & 0 & 0 & 2 & 0 & 0 \\
@@ -65,7 +57,9 @@ Here are the corresponding arrays for the representation:
                      0 & 0 & 4 & 0 & 0 & 0 & 0 \\
                      4 & 0 & 0 & 0 & 0 & 0 & 0 \\
                      \end{matrix}\right) \\
-    offset &= [ -5, -4, -3, -2, -1, 0, 1, 3 ] \\
+    offset &= \left( \begin{matrix}
+                      -5 & -4 & -3 & -2 & -1 & 0 & 1 & 3 
+                     \end{matrix}\right) \\
     \end{align}
 
 Remarks

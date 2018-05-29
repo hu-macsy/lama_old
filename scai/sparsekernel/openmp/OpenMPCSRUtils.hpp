@@ -99,14 +99,13 @@ public:
      *  CSR sparse representation of matrices store the sum of all values at an additional
      *  position at the end of the array.
      */
-
     static IndexType scan( IndexType array[], const IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::Offsets::sizes2offsets */
+    /** Implementation for CSRKernelTrait::sizes2offsets */
 
     static IndexType sizes2offsets( IndexType sizes[], const IndexType numRows );
 
-    /** Implementation for CSRKernelTrait::Offsets::offsets2sizes */
+    /** Implementation for CSRKernelTrait::offsets2sizes */
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
@@ -118,16 +117,11 @@ public:
         const IndexType rowIndexes[],
         const IndexType numRows );
 
-    /** Implementation for CSRKernelTrait::Offsets::validOffsets  */
+    /** Implementation for CSRKernelTrait::validOffsets  */
 
     static bool validOffsets( const IndexType array[], const IndexType n, const IndexType total );
 
-    /** This function checks if csr data has diagonal property.
-     *
-     *  @param[in] numDiagonals is min( numRows, numColumns )
-     *  @param[in] csrIA is the csr offset array
-     *  @param[in] csrJA is array with column indexes
-     */
+    /** Implementation for CSRKernelTrait::hasDiagonalProperty using OpenMP parallelization. */
 
     static bool hasDiagonalProperty( 
         const IndexType numDiagonals, 

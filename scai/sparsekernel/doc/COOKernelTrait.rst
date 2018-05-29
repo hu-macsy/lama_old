@@ -57,9 +57,9 @@ Here are the corresponding arrays for the representation:
     numRows &= 7 \\
     numColums &= 4 \\
     numValues &= 12 \\
-    ia &= [ 0, 0, 1, 2, 2, 3, 3, 3, 4, 4, 6, 6 ] \\
-    ja &= [ 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 ] \\
-    values &= [ 6, 4, 7, -9, 4, 2, 5, 3, 2, 1, 1, 2 ]
+    ia &= \left[ \begin{matrix} 0 & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 4 & 4 & 6 & 6 \end{matrix} \right] \\
+    ja &= \left[ \begin{matrix}  0 & 3 & 0 & 2 & 3 & 0 & 1 & 3 & 0 & 3 & 1 & 3 \end{matrix}\right] \\
+    values &= \left[ \begin{matrix} 6 & 4 & 7 & -9 & 4 & 2 & 5 & 3 & 2 & 1 & 1 & 2 \end{matrix}\right] 
     \end{align}
 
 Remarks

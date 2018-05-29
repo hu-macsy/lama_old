@@ -70,12 +70,9 @@ public:
         const hmemo::HArray<IndexType>& jdsDLG,
         const hmemo::HArray<IndexType>& jdsPerm,
         const hmemo::HArray<IndexType>& jdsJA,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief Get the diagonal of JDS storage
-     *
-     *  This routine is very efficient if diagonal elements are stored first.
-     *  It is also significantly faster if the column indexes are sorted for each row.
      */
     template<typename ValueType>
     static void getDiagonal(
@@ -87,16 +84,17 @@ public:
         const hmemo::HArray<IndexType>& jdsPerm,
         const hmemo::HArray<IndexType>& jdsJA,
         const hmemo::HArray<ValueType>& jdsValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** 
      *  @brief return the position for an entry (i,j) in the JDS data
      *
      *  @param[in] i, j are the row and column index for the searched entry
      *  @param[in] jdsILG, jdsDLG, jdsPerm, jdsJA are the corresponding arrays of JDS format
+     *  @param[in] prefLoc specifies the context where the operation should be executed
      *  @return invalidIndex if not found, otherwise k with ja[k] == j, k % numRows = i
      *
-     *  The corresponding matrix value can be found via csrValues[k] if k is the not invalid.
+     *  The corresponding matrix value can be found via csrValues[k] if k is not invalid.
      */
     static IndexType getValuePos(
         const IndexType i,
@@ -131,9 +129,10 @@ public:
     /** 
      *  @brief Compute the dlg array by the ilg array for the JDS format.
      *  
-     *  @param[in] jdsILG, contains sizes of all rows (weak descending, as rows are sorted by size)
-     *  @param[in] jdsDLG, jdsDLG[i] contains number of rows that have more than i entries
-     *  @param[out] return total number of entries, is sum(jdsDLG), same as sum(jdsILG)
+     *  @param[in] jdsILG contains sizes of all rows (weak descending, as rows are sorted by size)
+     *  @param[out] jdsDLG where jdsDLG[i] contains number of rows that have more than i entries
+     *  @param[in] prefLoc is the context where operation should be executed
+     *  @return total number of entries, is sum(jdsDLG), same as sum(jdsILG)
      */
     static IndexType ilg2dlg(
         hmemo::HArray<IndexType>& jdsDLG,

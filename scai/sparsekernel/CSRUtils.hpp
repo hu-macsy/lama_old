@@ -57,41 +57,42 @@ public:
      *
      *  @param[in] csrIA array to check
      *  @param[in] numValues is the total number of non-zeros 
+     *  @param[in] prefLoc specfies the context where to execute it
      */
     static bool validOffsets(
         const hmemo::HArray<IndexType>& csrIA,
         const IndexType numValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief compute the offset array from size array
      *
      *  @param[in]  sizes contains number of entries for each row
      *  @param[out] offsets is the offset array, size will be sizes.size()
-     *  @param[in] loc specfies the context where to execute it
+     *  @param[in] prefLoc specfies the context where to execute it
      * 
      *  \code
      *     HArray<IndexType> sizes( { 2, 5, 7 } );
-     *     CSRUtils::sizes2offsets( sizes, sizes, loc );
+     *     CSRUtils::sizes2offsets( sizes, sizes, prefLoc );
      *     -> sizes == { 0, 2, 7, 14 }, returns 14
      *  \endcode
      */
     static IndexType sizes2offsets( 
         hmemo::HArray<IndexType>& offsets, 
         const hmemo::HArray<IndexType>& sizes, 
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     static void offsets2sizes( 
         hmemo::HArray<IndexType>& sizes, 
         const hmemo::HArray<IndexType>& offsets, 
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief get the indexes of non-empty rows 
      *
      *  @param[out] rowIndexes contains the indexes of non-zero rows
      *  @param[in]  the CSR row offset array
      *  @param[in]  threshold builds rowIndexes only if #nonZeroRows/#numRows < threshhold
-     *  @param[in]  loc is the context where operation is executed
+     *  @param[in]  prefLoc is the context where operation is executed
      *  @returns the number of non-zero rows, will also be the size of rowIndexes if built
      *
      *  If threshhold is 0, the row indexes are never built.
@@ -100,13 +101,13 @@ public:
         hmemo::HArray<IndexType>& rowIndexes, 
         const hmemo::HArray<IndexType>& csrIA, 
         float threshhold,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief This method generates new CSR data where all zero elemens are removed.
      *
      *  @param[in,out] csrIA, csrJA, csrValues is the CSR data that is compressed
      *  @param[in] eps a value is considered to be zero if abs( value ) <= eps
-     *  @param[in] loc specficies the context where compression should be done
+     *  @param[in] prefLoc specficies the context where compression should be done
      */  
     template<typename ValueType>
     static void compress( 
@@ -114,7 +115,7 @@ public:
         hmemo::HArray<IndexType>& csrJA, 
         hmemo::HArray<ValueType>& csrValues,
         const RealType<ValueType> eps, 
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** 
      *  @brief sort column entries in each row of CSR data
@@ -125,17 +126,17 @@ public:
      *  @param[in,out] values array with the matrix values
      *  @param[in] ia offset array, size is numRows + 1
      *  @param[in] numRows the number of rows, only needed for convenience
-     *  @param[in] numColums the number of columns, only needed for convenience
-     *  @param[in] loc specifies the context where the operation should be executed
+     *  @param[in] numColumns the number of columns, only needed for convenience
+     *  @param[in] prefLoc specifies the context where the operation should be executed
      */
     template<typename ValueType>
     static void sortRows(
         hmemo::HArray<IndexType>& ja,
         hmemo::HArray<ValueType>& values,
-        const hmemo::HArray<IndexType>& ia,
         const IndexType numRows,
         const IndexType numColumns,
-        hmemo::ContextPtr loc );
+        const hmemo::HArray<IndexType>& ia,
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief Check if the column entries of CSR data are sorted 
@@ -144,14 +145,14 @@ public:
      *  @param[in] ja are the column indexes
      *  @param[in] numRows needed for convenience, same as ia.size() - 1
      *  @param[in] numColumns needed for convenience
-     *  @param[loc] specifies the context where the operation should be executed
+     *  @param[prefLoc] specifies the context where the operation should be executed
      */
     static bool hasSortedRows(
-        const hmemo::HArray<IndexType>& ia,
-        const hmemo::HArray<IndexType>& ja,
         const IndexType numRows,
         const IndexType numColumns,
-        hmemo::ContextPtr loc );
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& ja,
+        hmemo::ContextPtr prefLoc );
  
     /**
      *  @brief This routine moves the diagonal entries to the first entry entry for each row
@@ -159,8 +160,9 @@ public:
      *  @param[in,out] ja array with the column indexes
      *  @param[in,out] values array with the matrix values
      *  @param[in] ia offset array, size is numRows + 1
-     *  @param[in] numColums the number of columns, only needed for convenience
-     *  @param[in] loc specifies the context where the operation should be executed
+     *  @param[in] numRows the number of rows, only needed for convenience
+     *  @param[in] numColumns the number of columns, only needed for convenience
+     *  @param[in] prefLoc specifies the context where the operation should be executed
      *  @return the number of rows where diagonal element is first element
      * 
      *  Only the diagonal element is moved to the first entry, all other elements
@@ -171,9 +173,10 @@ public:
     static IndexType shiftDiagonalFirst(
         hmemo::HArray<IndexType>& ja,
         hmemo::HArray<ValueType>& values,
-        const hmemo::HArray<IndexType>& ia,
+        const IndexType numRows,   
         const IndexType numColumns,
-        hmemo::ContextPtr loc );
+        const hmemo::HArray<IndexType>& ia,
+        hmemo::ContextPtr prefLoc );
 
     /** Conversion routine of compressed sparse row data to compressed sparse column.
      *
@@ -185,11 +188,12 @@ public:
         hmemo::HArray<IndexType>& colIA,
         hmemo::HArray<IndexType>& colJA,
         hmemo::HArray<ValueType>& colValues,
+        const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& rowIA,
         const hmemo::HArray<IndexType>& rowJA,
         const hmemo::HArray<ValueType>& rowValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** Matrix multiplication 
      *
@@ -199,7 +203,7 @@ public:
      *  @param[in] m, n  are the sizes of the output matrix
      *  @param[in] k    are the number of columns of a and number of rows of b
      *  @param[in] diagonalProperty  if true diagonal elements in output storage will be available
-     *  @param[in] loc specifies the preferred context for execution.
+     *  @param[in] prefLoc specifies the preferred context for execution.
      */
     template<typename ValueType>
     static void matrixMultiply(
@@ -216,7 +220,7 @@ public:
         const IndexType m,
         const IndexType n,
         const IndexType k ,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     template<typename ValueType>
     static void matrixAdd(
@@ -233,7 +237,7 @@ public:
         const hmemo::HArray<ValueType>& bValues,
         const IndexType m,
         const IndexType n,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     template<typename ValueType>
     static void binaryOp(
@@ -249,10 +253,13 @@ public:
         const IndexType m,
         const IndexType n,
         const common::BinaryOp op,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** 
-     *  @brief Check if all diagonal elements are available
+     *  @brief Check if the CSR data has for each diagonal element an entry.
+     *
+     *  Some operations on matrices require that a full diagonal is available
+     *  (setDiagonal, jacobi).
      */
     static bool hasDiagonalProperty(
         const IndexType numRows,
@@ -260,7 +267,7 @@ public:
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
         const bool isSorted,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief Get the diagonal of CSR storage
      *
@@ -276,7 +283,7 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::HArray<ValueType>& values,
         const bool isSorted,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief set the diagonal */
 
@@ -289,7 +296,7 @@ public:
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
         const bool isSorted,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief set the diagonal */
 
@@ -302,7 +309,7 @@ public:
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
         const bool isSorted,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** 
      *  @brief return the position for an entry (i,j) in the CSR data
@@ -354,7 +361,7 @@ public:
         const hmemo::HArray<IndexType>& csrIA,
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::HArray<ValueType>& csrValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
 private:
 

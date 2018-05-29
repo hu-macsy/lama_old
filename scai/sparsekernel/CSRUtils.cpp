@@ -266,9 +266,9 @@ template<typename ValueType>
 void CSRUtils::sortRows(
     HArray<IndexType>& ja,
     HArray<ValueType>& values,
-    const HArray<IndexType>& ia,
     const IndexType numRows,
     const IndexType numColumns,
+    const HArray<IndexType>& ia,
     const ContextPtr prefLoc )
 {
     SCAI_REGION( "Sparse.CSR.sort" )
@@ -295,10 +295,10 @@ void CSRUtils::sortRows(
 /* -------------------------------------------------------------------------- */
 
 bool CSRUtils::hasSortedRows(
-    const hmemo::HArray<IndexType>& ia,
-    const hmemo::HArray<IndexType>& ja,
     const IndexType numRows,
     const IndexType numColumns,
+    const hmemo::HArray<IndexType>& ia,
+    const hmemo::HArray<IndexType>& ja,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType numValues = ja.size();   // #non-zero entries
@@ -324,13 +324,12 @@ template<typename ValueType>
 IndexType CSRUtils::shiftDiagonalFirst(
     HArray<IndexType>& ja,
     HArray<ValueType>& values,
-    const HArray<IndexType>& ia,
+    const IndexType numRows,
     const IndexType numColumns,
+    const HArray<IndexType>& ia,
     ContextPtr prefLoc )
 {
     SCAI_REGION( "Sparse.CSR.shiftDiagFirst" )
-
-    const IndexType numRows = ia.size() - 1;
 
     static LAMAKernel<CSRKernelTrait::shiftDiagonal<ValueType> > shiftDiagonal;
 
@@ -359,13 +358,13 @@ void CSRUtils::convertCSR2CSC(
     HArray<IndexType>& colIA,
     HArray<IndexType>& colJA,
     HArray<ValueType>& colValues,
+    const IndexType numRows,
     const IndexType numColumns,
     const HArray<IndexType>& rowIA,
     const HArray<IndexType>& rowJA,
     const HArray<ValueType>& rowValues,
     const ContextPtr preferredLoc )
 {
-    const IndexType numRows = rowIA.size() - 1;
     const IndexType numValues = rowJA.size();
     SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
     static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
@@ -527,8 +526,8 @@ void CSRUtils::binaryOp(
         return;
     }
 
-    SCAI_ASSERT_ERROR( hasSortedRows( aIA, aJA, m, n, prefLoc ), "binaryOp: input storage a not sorted" );
-    SCAI_ASSERT_ERROR( hasSortedRows( bIA, bJA, m, n, prefLoc ), "binaryOp: input storage b not sorted" );
+    SCAI_ASSERT_ERROR( hasSortedRows( m, n, aIA, aJA, prefLoc ), "binaryOp: input storage a not sorted" );
+    SCAI_ASSERT_ERROR( hasSortedRows( m, n, bIA, bJA, prefLoc ), "binaryOp: input storage b not sorted" );
 
     static LAMAKernel<CSRKernelTrait::binaryOpSizes> binaryOpSizes;
     static LAMAKernel<CSRKernelTrait::binaryOp<ValueType> > binaryOp;
@@ -807,16 +806,17 @@ void CSRUtils::jacobi(
     template void CSRUtils::sortRows(                \
             HArray<IndexType>&,                      \
             HArray<ValueType>&,                      \
+            const IndexType,                         \
+            const IndexType,                         \
             const HArray<IndexType>&,                \
-            const IndexType,                         \
-            const IndexType,                         \
             ContextPtr );                            \
                                                      \
     template IndexType CSRUtils::shiftDiagonalFirst( \
             HArray<IndexType>&,                      \
             HArray<ValueType>&,                      \
-            const HArray<IndexType>&,                \
             const IndexType,                         \
+            const IndexType,                         \
+            const HArray<IndexType>&,                \
             ContextPtr );                            \
                                                      \
     template void CSRUtils::getDiagonal(             \
@@ -860,6 +860,7 @@ void CSRUtils::jacobi(
             HArray<IndexType>&,                      \
             HArray<IndexType>&,                      \
             HArray<ValueType>&,                      \
+            const IndexType,                         \
             const IndexType,                         \
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \

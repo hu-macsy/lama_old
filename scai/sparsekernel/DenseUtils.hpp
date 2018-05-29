@@ -55,12 +55,12 @@ public:
     /** 
      *  @brief Conversion of dense matrix storage data to the CSR storage format.
      *
-     *  \param{in] denseValues is an array of size numRows * numColumns, values are stored row-wise
-     *  \param[in] numRows is the number of rows
+     *  \param[in] denseValues is an array of size numRows * numColumns, values are stored row-wise
+     *  \param[in] numRows, numColumns are the dimension of the storage
      *  \param[out] csrIA will be the offset array for the row sizes
      *  \param[out] csrJA contains the columns of the nonz-zero entries
      *  \param[out] csrValues contains the non-zero values
-     *  \param[in] loc is the context where conversion should be executed.
+     *  \param[in] prefLoc is the context where conversion should be executed.
      */
     template<typename ValueType>
     static void convertDense2CSR( 
@@ -70,15 +70,15 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<ValueType>& denseValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** 
      *  @brief Determine for each row the number of non-zero entries
      *
+     *  \param[in] numRows, numColumns are the dimension of the storage
      *  \param{in] denseValues is an array of size numRows * numColumns, values are stored row-wise
-     *  \param[in] numRows is the number of rows
      *  \param[out] rowSizes will contain for each row the number of non-zero elements
-     *  \param[in] loc is the context where conversion should be executed.
+     *  \param[in] prefLoc is the context where conversion should be executed.
      */
     template<typename ValueType>
     static void getSparseRowSizes( 
@@ -86,13 +86,15 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<ValueType>& denseValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** 
-     *  @brief Determine for each row the number of non-zero entries
+     *  @brief Convert CSR storage data to a dense storage
      *
      *  \param{out] denseValues is an array of size numRows * numColumns, values are stored row-wise
-     *  \param[in] numRows is the number of rows
+     *  \param[in] numRows, numColumns are the dimensions of the storage
+     *  \param[in] csrIA, csrJA, csrVaues are the CSR array to be converted
+     *  \param[in] prefLoc is the context where conversion should be executed.
      */
     template<typename ValueType>
     static void convertCSR2Dense(
@@ -102,7 +104,7 @@ public:
         const hmemo::HArray<IndexType>& csrIA,
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::HArray<ValueType>& csrValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
 private:
 

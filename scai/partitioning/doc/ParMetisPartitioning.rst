@@ -1,4 +1,4 @@
-.. _ParMetis:
+.. _ParMetisPartitioning:
 
 ParMetis Partitioning
 ^^^^^^^^^^^^^^^^^^^^^

@@ -108,10 +108,10 @@ Here are the corresponding arrays for the representation:
     numRows &= 7 \\
     numColums &= 4 \\
     numValues &= 12 \\
-    ilg &= [ 3 2 2 2 2 1 0 ] \\
-    perm &= [ 3 0 2 4 6 1 5 ] \\
+    ilg &= \left[\begin{matrix} 3 & 2 & 2 & 2 & 2 & 1 & 0 \end{matrix}\right] \\
+    perm &= \left[\begin{matrix} 3 & 0 & 2 & 4 & 6 & 1 & 5 \end{matrix}\right] \\
     ja     &= [ 0, 0,  2, 0, 1, 0, 1, 3, 3, 3, 3, 3 ] \\
-    values &= [ 2, 6, -9, 2, 1, 7, 5, 4, 4, 1, 2, 3 ]
+    values &= [ 2, 6, -9, 2, 1, 7, 5, 4, 4, 1, 2, 3 ] \\
     dlg &= [ 6, 5, 1 ] \\
     \end{align}
 
