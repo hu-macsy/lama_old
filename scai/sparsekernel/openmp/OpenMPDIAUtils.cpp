@@ -146,22 +146,22 @@ ValueType OpenMPDIAUtils::absMaxVal(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename DIAValueType, typename CSRValueType>
+template<typename ValueType>
 void OpenMPDIAUtils::getCSRValues(
     IndexType csrJA[],
-    CSRValueType csrValues[],
+    ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numDiagonals,
     const IndexType diaOffsets[],
-    const DIAValueType diaValues[] )
+    const ValueType diaValues[] )
 {
-    const DIAValueType ZERO = 0;
+    const ValueType ZERO = 0;
 
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id()
-                   << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals
+                   "get CSRValues<" << TypeTraits<ValueType>::id() << ">" 
+                   << ", #rows = " << numRows << ", #diagonals = " << numDiagonals
                    << ", #non-zero values = " << csrIA[numRows] )
 
     // we cannot check for correct sizes, but at least for valid pointers
@@ -201,7 +201,7 @@ void OpenMPDIAUtils::getCSRValues(
                     continue;
                 }
 
-                const DIAValueType value = diaValues[i + ii * numRows];
+                const ValueType value = diaValues[i + ii * numRows];
 
                 if ( value == ZERO )
                 {
@@ -209,7 +209,7 @@ void OpenMPDIAUtils::getCSRValues(
                 }
 
                 csrJA[offset] = j;
-                csrValues[offset] = static_cast<CSRValueType>( value );
+                csrValues[offset] = value;
                 SCAI_LOG_TRACE( logger,
                                 "csrJA[" << offset << "] = " << csrJA[offset] << ", csrValues[" << offset << "] = " << csrValues[offset] )
                 offset++;
@@ -469,18 +469,7 @@ void OpenMPDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<DIAKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, typename OtherValueType>
-void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    common::ContextType ctx = common::ContextType::Host;
-    SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -495,7 +484,6 @@ OpenMPDIAUtils::OpenMPDIAUtils()
 
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPDIAUtils::~OpenMPDIAUtils()
@@ -506,7 +494,6 @@ OpenMPDIAUtils::~OpenMPDIAUtils()
 
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

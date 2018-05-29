@@ -79,7 +79,7 @@ void DIAUtils::convertDIA2CSR(
 
     IndexType numValues = HArrayUtils::scan1( csrIA, prefLoc );
 
-    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
+    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType> > getCSRValues;
     ContextPtr loc = prefLoc;
     getCSRValues.getSupportedContext( loc );
 
@@ -213,6 +213,18 @@ void DIAUtils::convertCSR2DIA(
     const HArray<ValueType>& csrValues,
     ContextPtr prefLoc )
 {
+    SCAI_LOG_ERROR( logger, "convert CSR " << numRows << " x " << numColumns
+                     << ", ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+
+    if ( numRows == 0 || numColumns == 0 || csrJA.size() == 0 )
+    {
+        // no entries, no diagonals, avoid bad allocations
+
+        diaOffset.clear();
+        diaValues.clear();
+        return;
+    }
+
     getDIAOffset( diaOffset, numRows, numColumns, csrIA, csrJA, csrValues, prefLoc );
 
     const IndexType numDiagonals = diaOffset.size();

@@ -105,7 +105,7 @@ struct DIAKernelTrait
         }
     };
 
-    template<typename DIAValueType, typename CSRValueType>
+    template<typename ValueType>
     struct getCSRValues
     {
         /** Type definition of function pointer for conversion of DIA storage data to CSR data.
@@ -124,13 +124,13 @@ struct DIAKernelTrait
          */
         typedef void ( *FuncType ) (
             IndexType csrJA[],
-            CSRValueType csrValues[],
+            ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
-            const DIAValueType diaValues[] );
+            const ValueType diaValues[] );
 
         static const char* getId()
         {
