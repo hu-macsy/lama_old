@@ -1874,7 +1874,10 @@ void OpenMPUtils::sortInPlace(
 {
     SCAI_REGION( "OpenMP.Utils.sortInPlace" )
 
-    qsort( indexes, values, 0, n - 1, ascending );
+    if ( n >= 2 )
+    {
+        qsort( indexes, values, 0, n - 1, ascending );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
