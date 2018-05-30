@@ -187,7 +187,6 @@ public:
      *  @param[out] csrIA, csrJA, csrValues will contain the local CSR storage
      *  @param[in]  localIA, localJA, localValues containing the local CSR storage
      *  @param[in]  haloIA, haloJA, haloValues containing the halo CSR storage
-     *  @param[in]  numKeepDiagonals number of rows where diagonal element of local should be taken at first
      *
      *  The data of one row is sorted according to the column indexes.
      */
@@ -201,8 +200,7 @@ public:
         const hmemo::HArray<ValueType>& localValues,
         const hmemo::HArray<IndexType>& haloIA,
         const hmemo::HArray<IndexType>& haloJA,
-        const hmemo::HArray<ValueType>& haloValues,
-        const IndexType numKeepDiagonals );
+        const hmemo::HArray<ValueType>& haloValues );
 };
 
 /* -------------------------------------------------------------------------- */

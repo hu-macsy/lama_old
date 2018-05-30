@@ -231,26 +231,20 @@ public:
 
     virtual void setIdentity( const IndexType size );
 
-    /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
-
     /* ==================================================================== */
     /*  set / get CSR data                                                  */
     /* ==================================================================== */
 
-    /** Implementation of _MatrixStorage::setCSRData for this class.  */
-
+    /** Implementation of _MatrixStorage::setCSRData for this class.  
+     *
+     *  Context for conversion is given by the context of the storage.
+     */
     void setCSRData(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values )
-    {
-        mepr::StorageWrapper<DIAStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
-    }
+        const hmemo::_HArray& values );
 
     /**
      * @brief template (non-virtual) version of setCSRData with explicit other value type.
@@ -260,16 +254,13 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
-    template<typename OtherValueType>
     void setCSRDataImpl(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::HArray<ValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -277,54 +268,11 @@ public:
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
-    {
-        hmemo::HArray<IndexType>* ja = NULL;
-        hmemo::HArray<ValueType>* values = NULL;
-        buildCSR( ia, ja, values, this->getContextPtr() );
-    }
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const;
 
     /** Implementation for _MatrixStorage::buildCSRData */
 
-    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
-    {
-        mepr::StorageWrapper<DIAStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );
-    }
-
-    /** 
-     *  @brief Template (non-virtual) version of building CSR data
-     *
-     *  @param[out] ia is the CSR offset array
-     *  @param[out] ja is the array with the column indexes (optional)
-     *  @param[out] values is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
-     */
-    template<typename OtherValueType>
-    void buildCSR(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>* ja,
-        hmemo::HArray<OtherValueType>* values,
-        const hmemo::ContextPtr loc ) const;
-
-    /**
-     * @brief fills DIA sparse matrix by dia sparse data.
-     *
-     * @param[in] numRows      number of rows
-     * @param[in] numColumns   number of columns
-     * @param[in] numDiagonals the number of stored diagonals
-     * @param[in] offsets      raw pointer of the input csr sparse matrix
-     * @param[in] values       the data values of the input csr sparse matrix
-     * @param[in] loc          is the context where filling takes place
-     */
-    template<typename OtherValueType>
-    void setDIADataImpl(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numDiagonals,
-        const hmemo::HArray<IndexType>& offsets,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const;
 
     /** Implementation of MatrixStorage::matrixTimesVector for DIA */
 
@@ -473,7 +421,6 @@ public:
 
     void print( std::ostream& stream = std::cout ) const;
 
-    using _MatrixStorage::hasDiagonalProperty;
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
     using _MatrixStorage::getValueType;
@@ -485,16 +432,13 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
 private:
 
-    hmemo::HArray<IndexType> mOffset; //!< size specifies number of diagonals
+    hmemo::HArray<IndexType> mOffset; //!< offset for each stored diagonal, entries are sorted
     hmemo::HArray<ValueType> mValues; //!< non-zero values, size is getNumRows() * mOffset.size()
-
-    virtual bool checkDiagonalProperty() const;
 
     // values might be stored row-wise or diagonal-wise
 
@@ -527,11 +471,9 @@ private:
         const common::MatrixOp op,
         bool async ) const;
 
-    // Help routine to set offset from used diagonals
+    // Help routine to find the main diagonal
 
-    void setOffsets( const IndexType maxNumDiagonals, const bool upperDiagonalUsed[], const bool lowerDiagonalUsed[] );
-
-    static void setUsedDiagonal( bool upperDiagonalUsed[], bool lowerDiagonalUsed[], IndexType i, IndexType j );
+    IndexType getMainIndex() const;
 
     static std::string initTypeName();
 

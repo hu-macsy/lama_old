@@ -112,9 +112,20 @@ public:
         const IndexType perm[],
         const IndexType ja[] );
 
-    /** Implementation for JDSKernelTrait::getValuePosRow */
+    /** Implementation for JDSKernelTrait::getDiagonalPositions */
 
-    static IndexType getValuePosRow(
+    static IndexType getDiagonalPositions(
+        IndexType diagonalPositions[],
+        const IndexType numDiagonals,
+        const IndexType numRows,
+        const IndexType dlg[],
+        const IndexType ilg[],
+        const IndexType perm[],
+        const IndexType ja[] );
+
+    /** Implementation for JDSKernelTrait::getRowPositions */
+
+    static IndexType getRowPositions(
         IndexType pos[],
         const IndexType j,
         const IndexType numRows,
@@ -122,9 +133,9 @@ public:
         const IndexType dlg[],
         const IndexType perm[] );
 
-    /** Implementation for JDSKernelTrait::getValuePosCol */
+    /** Implementation for JDSKernelTrait::getColumnPositions */
 
-    static IndexType getValuePosCol(
+    static IndexType getColumnPositions(
         IndexType row[],
         IndexType pos[],
         const IndexType j,
@@ -133,16 +144,6 @@ public:
         const IndexType dlg[],
         const IndexType perm[],
         const IndexType ja[] );
-
-    /** Implementation for JDSKernelTrait::checkDiagonalProperty */
-
-    static bool checkDiagonalProperty(
-        const IndexType numDiagonals,
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType perm[],
-        const IndexType ja[],
-        const IndexType dlg[] );
 
     /** Implementation for JDSKernelTrait::ilg2dlg */
 

@@ -76,14 +76,14 @@ struct CSRKernelTrait
         }
     };
 
-    struct getValuePosCol
+    struct getColumnPositions
     {
         /** This method returns for a certain column of the CSR matrix all
          *  row indexes for which elements exist and the corresponding positions
          *  in the csrJA/csrValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in csrJA,
+         *  @param[out] pos positions of entries in csrJA[pos[i]] == j,
          *  @param[in] j is the column of which positions are required
          *  @param[in] csrIA is the CSR offset array
          *  @param[in] numRows is the number of rows
@@ -102,7 +102,7 @@ struct CSRKernelTrait
 
         static const char* getId()
         {
-            return "CSR.getValuePosCol";
+            return "CSR.getColumnPositions";
         }
     };
 
@@ -112,14 +112,15 @@ struct CSRKernelTrait
      */
 
     template<typename ValueType>
-    struct sortRowElements
+    struct sortRows
     {
         /** This method sorts the elements of a row by increasing column indexes.
          *
          *  @param[in,out] csrJA, csrValues  the CSR matrix data and their column indexes
          *  @param[in]     csrIA             row offsets
          *  @param[in]     numRows           number of rows
-         *  @param[in]     diagonalFlag      if true first entry of each row will be the diagonal element if available
+         *  @param[in]     numColumns        number of columns
+         *  @param[in]     numValues         number of stored non-zero entries, size of csrJA and csrValues
          *
          *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
          */
@@ -128,15 +129,33 @@ struct CSRKernelTrait
             ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
-            const bool diagonalFlag );
+            const IndexType numColumns,
+            const IndexType numValues );
 
         static const char* getId()
         {
-            return "CSR.sortRowElements";
+            return "CSR.sortRows";
         }
     };
 
-    /** Structure with type definitions for solver routines */
+    struct hasSortedRows
+    {
+        /** This method checks for sorted column entries:
+         */
+        typedef bool ( *FuncType )(
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "CSR.hasSortedRows";
+        }
+    };
+
+    /** Kernel definition of jacobi iteration with cSR data */
 
     template <typename ValueType>
     struct jacobi
@@ -145,6 +164,7 @@ struct CSRKernelTrait
          *
          *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
          *
+         *  where B is the storage without diagonal and dinv the inverse of the diagonal.
          */
         typedef void ( *FuncType ) (
             ValueType solution[],
@@ -165,15 +185,16 @@ struct CSRKernelTrait
     template <typename ValueType>
     struct jacobiHalo
     {
-        /** Method to compute one iteration step in Jacobi method
+        /** Compute one iteration step in Jacobi method for halo
          *
-         *  solution -= omega * ( B(halo) * oldSolution) * dinv
+         *  \code
+         *      solution -= omega * ( csr_halo * oldSolution ) ./ diagonal 
+         *  \endcode
          *
          */
         typedef void ( *FuncType ) (
             ValueType solution[],
-            const IndexType localIA[],
-            const ValueType localValues[],
+            const ValueType diagonal[],
             const IndexType haloIA[],
             const IndexType haloJA[],
             const ValueType haloValues[],
@@ -185,32 +206,6 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.jacobiHalo";
-        }
-    };
-
-    template <typename ValueType>
-    struct jacobiHaloWithDiag
-    {
-        /** Method to compute one iteration step in Jacobi method
-         *
-         *  solution -= omega * ( B(halo) * oldSolution) * dinv
-         *
-         *  @since 1.1.0
-         */
-        typedef void ( *FuncType ) (
-            ValueType solution[],
-            const ValueType localDiagValues[],
-            const IndexType haloIA[],
-            const IndexType haloJA[],
-            const ValueType haloValues[],
-            const IndexType haloRowIndexes[],
-            const ValueType oldSolution[],
-            const ValueType omega,
-            const IndexType numNonEmptyRows );
-
-        static const char* getId()
-        {
-            return "CSR.jacobiHaloWithDiag";
         }
     };
 
@@ -287,27 +282,33 @@ struct CSRKernelTrait
         }
     };
 
-    struct offsets2sizesGather
+    struct gatherSizes
     {
-        /** This method computes size array from an offset array.
+        /** This method gets the sizes for a set of rows
          *
-         *  @param[out] sizes will contain the sizes (e.g. for each row ), has numRows entries
-         *  @param[in] offsets contains the offsets, has numRows + 1 entries
-         *  @param[in] rows only sizes of these rows are needed
-         *  @param[in] n is size of array sizes and pos
+         *  @param[out] sizes will contain the sizes (e.g. for each row ), has n entries
+         *  @param[in] csrIA contains the offsets, has numRows + 1 entries
+         *  @param[in] numRows might be used to check for valid row indexes
+         *  @param[in] rowIndexes an array of row indexes for which the size is neeted
+         *  @param[in] nIndexes is size of rowIndexes and sizes
          *
          *  \code
-         *           offsets :   0   5  11   16  19  19  21  23
-         *           pos     :   0   2  4   6
+         *           csrIA   :   0   5  11   16  19  19  21  23
+         *           rows    :   0   2  4   6
          *           sizes   :   5   5  0   2
          *  \endcode
          *
          */
-        typedef void ( *FuncType ) ( IndexType sizes[], const IndexType offsets[], const IndexType pos[], const IndexType n );
+        typedef void ( *FuncType ) ( 
+            IndexType sizes[], 
+            const IndexType csrIA[], 
+            const IndexType numRows,
+            const IndexType rowIndexes[], 
+            const IndexType nIndexes );
 
         static const char* getId()
         {
-            return "CSR.offsets2sizesGather";
+            return "CSR.gatherSizes";
         }
     };
 
@@ -331,44 +332,27 @@ struct CSRKernelTrait
         }
     };
 
-    struct countNonEmptyRowsByOffsets
-    {
-        /** This method computes the total number of non-zero rows by the offset array
-         *
-         *  @param[in] offsets is the array with offsets
-         *  @param[in] n s number of rows, offset has n + 1 entries
-         *  @return    number of rows with at least one element
-         *
-         *  Note: the number of rows is needed to allocate the array with indexes of non-empty rows
-         */
-
-        typedef IndexType ( *FuncType ) ( const IndexType offsets[], const IndexType n );
-
-        static const char* getId()
-        {
-            return "CSR.countNonEmptyRowsByOffsets";
-        }
-    };
-
-    struct setNonEmptyRowsByOffsets
+    struct nonEmptyRows
     {
         /** Bild a vector of indexes for non-empty rows.
          *
-         *  @param[out] rowIndexes
-         *  @param[in]  numNonEmptyRows is allocated size of rowIndexes
-         *  @param[in]  offsets is the offset array
+         *  @param[out] rowIndexes will contain all indexes of non-empty rows
+         *  @param[in]  csrIA is the offset array
          *  @param[in]  n is the number of rows, offsets has size n + 1
+         *  @return     the number of non-empty rowssets has size n + 1
+         *  
+         *  With rowIndexes == NULL the function can be used just to determine the number 
+         *  of non-empty rows.
          */
 
-        typedef void ( *FuncType ) (
+        typedef IndexType ( *FuncType ) (
             IndexType rowIndexes[],
-            const IndexType numNonEmptyRows,
-            const IndexType offsets[],
+            const IndexType csrIA[],
             const IndexType numRows );
 
         static const char* getId()
         {
-            return "CSR.setNonEmptyRowsByOffsets";
+            return "CSR.nonEmptyRows";
         }
     };
 
@@ -379,19 +363,16 @@ struct CSRKernelTrait
          *  @param[out] cIa array of length numRows, will contain number of entries in each row for C
          *  @param[in]  numRows number of rows for matrix A and B
          *  @param[in]  numColumns number of columns for matrix A and B
-         *  @param[in]  diagonalProperty if true, diagonal elements will count in any case
          *  @param[in]  aIA, aJA are the index arrays of matrix A
          *  @param[in]  bIA, bJA are the index arrays of matrix B
          *
          *  Note: filling the result matrix must use the same flag for diagonalProperty
          *        otherwise the row sizes/offsets will not match
          */
-
         typedef IndexType ( *FuncType ) (
             IndexType cIa[],
             const IndexType numRows,
             const IndexType numColumns,
-            bool diagonalProperty,
             const IndexType aIA[],
             const IndexType aJA[],
             const IndexType bIA[],
@@ -400,6 +381,34 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.matrixAddSizes";
+        }
+    };
+
+    struct binaryOpSizes
+    {
+        /** This method computes the offset array for result matrix C = matrix A + matrix B
+         *
+         *  @param[out] cIA is the offset array for the result matrix
+         *  @param[in]  numRows number of rows for matrix A and B
+         *  @param[in]  numColumns number of columns for matrix A and B
+         *  @param[in]  aIA is the row offset array of matrix A
+         *  @param[in]  aJA contains the column indexes of the non-zero entries
+         *  @param[in]  bIA, bJA are the corresponding CSR arrays of matrix B
+         *
+         *  Important: this routine relies on sorted entries (by column index) for each row
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType cIA[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType aIA[],
+            const IndexType aJA[],
+            const IndexType bIA[],
+            const IndexType bJA[] );
+
+        static const char* getId()
+        {
+            return "CSR.binaryOpSizes";
         }
     };
 
@@ -421,7 +430,6 @@ struct CSRKernelTrait
             const IndexType m,
             const IndexType n,
             const IndexType k,
-            bool diagonalProperty,
             const IndexType aIA[],
             const IndexType aJA[],
             const IndexType bIA[],
@@ -447,11 +455,127 @@ struct CSRKernelTrait
         typedef bool ( *FuncType ) (
             const IndexType numDiagonals,
             const IndexType csrIA[],
-            const IndexType csrJA[] );
+            const IndexType csrJA[],
+            bool isSorted );
 
         static const char* getId()
         {
             return "CSR.hasDiagonalProperty";
+        }
+    };
+
+    template<typename ValueType>
+    struct getDiagonal
+    {
+        /** This method returns the diagonal of a csr storage.
+         *
+         *  @param[in] numDiagonals number of diagonal elements, should be min( numRows, numColumns )
+         *  @param[in] csrIA, csrJA, csrValues are the CSR arrays
+         *  @param[in] isSorted if true the column entries for each row are sorted
+         *
+         *  Note: if sort flag has been set but elements were not sorted, the diagonal might have
+         *        wrong zero elements.
+         */
+        typedef void ( *FuncType ) (
+            ValueType diagonal[],
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[],
+            const bool isSorted );
+
+        static const char* getId()
+        {
+            return "CSR.getDiagonal";
+        }
+    };
+
+    template<typename ValueType>
+    struct setDiagonalV
+    {
+        /** This method sets the diagonal in a CSR storage.
+         *
+         *  Returns true if all diagonal entries were available in the CSR storage.
+         *
+         *  Note: if sort flag has been set but column indexes were not sorted, there 
+         *        might be diagonal elemens not set even if they were available.
+         */
+        typedef bool ( *FuncType ) (
+            ValueType csrValues[],
+            const ValueType diagonal[],
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const bool isSorted );
+
+        static const char* getId()
+        {
+            return "CSR.setDiagonalV";
+        }
+    };
+
+    template<typename ValueType>
+    struct setDiagonal
+    {
+        /** This method determines sets the diagonal of a csr storage.
+         *
+         *  Returns true if all diagonal elements were available.
+         */
+        typedef bool ( *FuncType ) (
+            ValueType csrValues[],
+            const ValueType diagonal,
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const bool isSorted );
+
+        static const char* getId()
+        {
+            return "CSR.setDiagonal";
+        }
+    };
+
+    struct getPosDiagonal
+    {
+        /** This method determines the positions of the diagonal elements in csr arrays
+         *
+         *  @param[out] pos  will contain the positions in csrJA/csrValues of the i-th diagonal element
+         *  @param[in] numDiagonals  number of diagonals 
+         *  @param[in] csrIA         offset array for the rows
+         *  @param[in] csrJA         column indexes
+         *  @param[in] isSorted      if true the column indexes are sorted
+         *  @return                  number of available diagonal elements
+         *
+         *  If a diagonal element is not available, the corresponding entry is invalidIndex.
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType pos[],
+            const IndexType numDiagonals,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const bool isSorted );
+
+        static const char* getId()
+        {
+            return "CSR.getPosDiagonal";
+        }
+    };
+
+    template<typename ValueType>
+    struct shiftDiagonal
+    {
+        /** This method sets the diagonal entries of a row as first entry wherever possible.
+         *
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType csrJA[], 
+            ValueType csrValues[],
+            const IndexType numDiagonals,
+            const IndexType csrIA[] );
+
+        static const char* getId()
+        {
+            return "CSR.shiftDiagonal";
         }
     };
 
@@ -698,7 +822,6 @@ struct CSRKernelTrait
          *  @param[in]  cIA contains already computed offsets
          *  @param[in]  numRows is number of rows for matrices a, b, c
          *  @param[in]  numColums is number of columns for matrices a, b, c
-         *  @param[in]  diagonalProperty if true result matrix gets diagonal property
          *  @param[in]  aIA, aJA, aValues is input matrix a in CSR format
          *  @param[in]  bIA, bJA, bValues is input matrix b in CSR format
          *  @param[in]  op specifies the binary operation
@@ -713,7 +836,6 @@ struct CSRKernelTrait
             const IndexType cIA[],
             const IndexType numRows,
             const IndexType numColumns,
-            const bool diagonalProperty,
             const IndexType aIA[],
             const IndexType aJA[],
             const ValueType aValues[],
@@ -737,7 +859,6 @@ struct CSRKernelTrait
          *  @param[in]  cIA contains already computed offsets
          *  @param[in]  numRows is number of rows for matrices a, b, c
          *  @param[in]  numColums is number of columns for matrices a, b, c
-         *  @param[in]  diagonalProperty if true result matrix gets diagonal property
          *  @param[in]  alpha is a scalar scaling factor for matrix a
          *  @param[in]  aIA, aJA, aValues is input matrix a in CSR format
          *  @param[in]  beta is a scalar scaling factor for matrix b
@@ -753,7 +874,6 @@ struct CSRKernelTrait
             const IndexType cIA[],
             const IndexType numRows,
             const IndexType numColumns,
-            const bool diagonalProperty,
             const ValueType alpha,
             const IndexType aIA[],
             const IndexType aJA[],
@@ -796,7 +916,6 @@ struct CSRKernelTrait
             const IndexType n,
             const IndexType k,
             const ValueType alpha,
-            bool diagonalProperty,
             const IndexType aIA[],
             const IndexType aJA[],
             const ValueType aValues[],
@@ -818,7 +937,6 @@ struct CSRKernelTrait
          * @param[out] sizes are the row sizes for the compressed data
          * @param[in] ia, ja, values, numRows are the data of the current CSR storage
          * @param[in] eps     threshold value for which an element is considered to be zero
-         * @param[in] diagonalFlag if true diagonal elements are counted in any case
          */
         typedef void ( *FuncType )(
             IndexType sizes[],
@@ -826,8 +944,7 @@ struct CSRKernelTrait
             const IndexType ja[],
             const ValueType values[],
             const IndexType numRows,
-            const ValueType eps,
-            const bool diagonalFlag );
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {
@@ -844,7 +961,6 @@ struct CSRKernelTrait
          * @param[in] newIA   new offsets, computed by countNonZeros + sizes2offsets
          * @param[in] ia, ja, values, numRows are the data of the current CSR storage
          * @param[in] eps     threshold value for which an element is considered to be zero
-         * @param[in] diagonalFlag if true diagonal elements are counted in any case
          */
         typedef void ( *FuncType )(
             IndexType newJA[],
@@ -854,8 +970,7 @@ struct CSRKernelTrait
             const IndexType ja[],
             const ValueType values[],
             const IndexType numRows,
-            const ValueType eps,
-            const bool diagonalFlag );
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {

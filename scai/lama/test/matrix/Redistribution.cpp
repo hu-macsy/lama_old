@@ -124,8 +124,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
                         << ", halo = " << *haloStorage << ", halo exchg = " << halo );
         BOOST_CHECK_EQUAL( localStorage->getNumRows(), storage.getNumRows() );
         BOOST_CHECK_EQUAL( haloStorage->getNumRows(), storage.getNumRows() );
-        bool keepDiagonalFlag = false;  // does not matter here
-        storage.joinHalo( *localStorage, *haloStorage, halo, *colDist, keepDiagonalFlag );
+        storage.joinHalo( *localStorage, *haloStorage, halo, *colDist );
         SCAI_LOG_DEBUG( logger, *comm << ": join done, result = " << storage );
         BOOST_REQUIRE_EQUAL( storage.getNumRows(), numRows );
         BOOST_REQUIRE_EQUAL( storage.getNumColumns(), numColumns );

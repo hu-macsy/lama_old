@@ -260,7 +260,7 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::StorageWrapper<JDSStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
     }
 
     /**
@@ -271,7 +271,6 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -279,8 +278,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::HArray<OtherValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -367,16 +365,6 @@ public:
         const ValueType omega ) const;
 
     /** Implementation of MatrixStorage::jacobiIterateHalo for JDS */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Implementation of MatrixStorage::jacobiIterateHalo for JDS
-     *  @since 1.1.0
-     */
 
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
@@ -516,8 +504,6 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
-
     using _MatrixStorage::prefetch;
     using _MatrixStorage::getContextPtr;
 
@@ -528,7 +514,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -555,18 +540,9 @@ private:
         bool async ) const;
 
     /**
-     *  Mandatory routine to check storage data for the diagonal property.
-     */
-    virtual bool checkDiagonalProperty() const;
-
-    /**
      *  @brief Help routine for stable sort of ilg and setting up perm correctly
      */
     void sortRows();
-
-    /** Help routine that sets up mDlg by mIlg and returns the total sum of non-zero entries */
-
-    IndexType setupDiagonals();
 
     void print( std::ostream& ) const;
 

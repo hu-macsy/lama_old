@@ -240,15 +240,6 @@ public:
      */
     void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
 
-    /** This method resorts column indexes in such a way that the diagonal element is always the
-     *  first one in a row.
-     *
-     *  This method throws an exception if row and column distribution are not equal. Furhtermore
-     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
-     *  element in a sparse format.
-     */
-    void setDiagonalProperty();
-
     /** @brief Assignment of a matrix to this matrix
      *
      * Assignment of a matrix to this matrix with automatic conversion
@@ -363,8 +354,6 @@ public:
     /** @brief Gets the total number of non-zero values in the matrix.
      *
      *  An element is considered to be non-zero if its absolute value
-     *  is greater equal than mEpsilon. Zero diagonal elements are also
-     *  counted if this->hasDiagonalProperty() is given.
      *
      *  This routine does not count zero elements even if they are stored
      *  (e.g. for dense or dia storage data).
@@ -556,25 +545,6 @@ public:
      */
     virtual size_t getValueTypeSize() const = 0;
 
-    /** Returns the diagonalProperty of the local storage.
-     *
-     * @return if the diagonal property is full filled.
-     */
-    virtual bool hasDiagonalProperty() const = 0;
-
-    /**
-     * @brief Rechecks the storages for their diagonal property.
-     *
-     * Usually each matrix has a flag that indicates if the diagonal property is given.
-     * This makes the query hasDiagonalProperty very efficient. Therefore matrices
-     * keep track of this flag for all their operations and reset it if necessary.
-     *
-     * This routine is only available to have a workaround if matrix or storage data
-     * has been modified by the user outside of the class (NOT RECOMMENDED).
-     */
-
-    virtual void resetDiagonalProperty() = 0;
-
     /**
      * @brief Returns the global memory that is allocated to hold this matrix.
      *
@@ -721,8 +691,6 @@ protected:
     void readFromPartitionedFile( const std::string& fileName );
 
     void resetRowDistribution( dmemo::DistributionPtr distribution );
-
-    void resetRowDistributionByFirstColumn();
 
     void checkSettings() const; // check valid member variables
 

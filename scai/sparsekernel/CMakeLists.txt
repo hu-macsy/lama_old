@@ -55,6 +55,12 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
+        CSRUtils
+        COOUtils
+        ELLUtils
+        JDSUtils
+        DIAUtils
+        DenseUtils
 
     HEADERS                  # .hpp only
 
@@ -65,7 +71,6 @@ scai_project (
         ELLKernelTrait
         JDSKernelTrait
         StencilKernelTrait
-        
 )
 
 ## add subdirectories

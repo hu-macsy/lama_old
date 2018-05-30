@@ -37,6 +37,7 @@
 #include <scai/lama/matrix/MatrixAssembly.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
 
@@ -207,7 +208,8 @@ void MatrixAssembly<ValueType>::checkLegalIndexes( const IndexType numRows, cons
 template<typename ValueType>
 COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO( 
     const dmemo::Distribution& dist, 
-    const IndexType numColumns ) const
+    const IndexType numColumns,
+    common::BinaryOp op ) const
 {
     SCAI_ASSERT_EQ_ERROR( dist.getCommunicator(), *mComm, "dist has illegal communicator" )
 
@@ -227,6 +229,8 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
 
     dist.global2localV( ownedIA, ownedIA );   // translates global row indexes to local ones
 
+    sparsekernel::COOUtils::normalize( ownedIA, ownedJA, ownedValues, op, Context::getHostPtr() );
+
     return COOStorage<ValueType>( dist.getLocalSize(), numColumns,
                                   std::move( ownedIA ), std::move( ownedJA ), std::move( ownedValues ) );
 }
@@ -236,7 +240,8 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
 template<typename ValueType>
 COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO( 
     const IndexType numRows,
-    const IndexType numColumns ) const
+    const IndexType numColumns,
+    common::BinaryOp op ) const
 {
     using utilskernel::HArrayUtils;
 
@@ -312,6 +317,8 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO(
     SCAI_ASSERT_EQ_ERROR( allIA.size(), numValues, "serious mismatch" )
     SCAI_ASSERT_EQ_ERROR( allJA.size(), numValues, "serious mismatch" )
     SCAI_ASSERT_EQ_ERROR( allValues.size(), numValues, "serious mismatch" )
+
+    sparsekernel::COOUtils::normalize( allIA, allJA, allValues, op, Context::getHostPtr() );
 
     return COOStorage<ValueType>( numRows, numColumns,
                                   std::move( allIA ), std::move( allJA ), std::move( allValues ) );

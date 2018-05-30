@@ -75,6 +75,7 @@ enum class UnaryOp
     LOG,        //!< call log on each vector element
     FLOOR,      //!< rounds downward
     CEIL,       //!< rounds upward
+    SIGN,       //!< signum function
     RECIPROCAL, //!< builds multiplicate inverse, x^-1
 
 
@@ -127,6 +128,8 @@ inline ValueType applyUnary( const UnaryOp op, const ValueType& x )
             return common::Math::floor( x );
         case UnaryOp::CEIL:
             return common::Math::ceil( x );
+        case UnaryOp::SIGN:
+            return common::Math::sign( x );
         case UnaryOp::RECIPROCAL:
             return ValueType( 1 ) / x;
         default:
@@ -234,6 +237,10 @@ inline std::ostream& operator<<( std::ostream& stream, const UnaryOp& op )
 
         case UnaryOp::CEIL:
             stream << "CEIL";
+            break;
+
+        case UnaryOp::SIGN:
+            stream << "SIGN";
             break;
 
         case UnaryOp::RECIPROCAL:

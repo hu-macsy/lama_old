@@ -79,7 +79,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
-    BOOST_CHECK( csrStorage.hasDiagonalProperty() );
     {
         ReadAccess<IndexType> csrIA( csrStorage.getIA() );
         ReadAccess<IndexType> csrJA( csrStorage.getJA() );
@@ -105,7 +104,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     BOOST_REQUIRE_EQUAL( numRows, csrStorageCopy.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorageCopy.getNumValues() );
-    BOOST_CHECK( csrStorageCopy.hasDiagonalProperty() );
     {
         ReadAccess<IndexType> csrIA( csrStorageCopy.getIA() );
         ReadAccess<IndexType> csrJA( csrStorageCopy.getJA() );
@@ -160,7 +158,6 @@ BOOST_AUTO_TEST_CASE( moveConstructorTest )
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
-    BOOST_CHECK( csrStorage.hasDiagonalProperty() );
 
     // verify that move was okay
 
@@ -345,9 +342,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     BOOST_CHECK_EQUAL( IndexType( 0 ), csrValues.size() );
     BOOST_CHECK_EQUAL( numValues, csrStorage.getNumValues() );
 
-    bool diagonalProperty = csrStorage.hasDiagonalProperty();
-
-    csrStorage.sortRows( diagonalProperty );
+    csrStorage.sortRows( );
 
     const HArray<IndexType>& sortedJA = csrStorage.getJA();
     const HArray<ValueType>& sortedVals = csrStorage.getValues();
@@ -361,45 +356,6 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
         BOOST_CHECK_EQUAL( ValueType( sorted_ja[i] ), sortedVals[i] );
     }
 }
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE( getFirstColTest )
-{
-    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-    ContextPtr context = Context::getContextPtr();
-    const IndexType numRows = 4;
-    const IndexType numColumns = 8;
-    const IndexType ia[] = { 0,    2,       5, 6,    8 };
-    const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
-    const IndexType firstCols[] = { 1, 3, 5, 7 };
-    const IndexType numValues = ia[numRows];
-    HArray<IndexType> csrIA( numRows + 1, ia, context );
-    HArray<IndexType> csrJA( numValues, ja, context );
-    HArray<ValueType> csrValues( numValues, ValueType( 1 ), context );
-    CSRStorage<ValueType> csrStorage;
-    csrStorage.setContextPtr( context );
-    csrStorage.allocate( numRows, numColumns );
-    csrStorage.swap( csrIA, csrJA, csrValues );
-
-    // we check both, base class and derived class method
-
-    HArray<IndexType> firstColIndexes1;
-    HArray<IndexType> firstColIndexes2;
-    csrStorage.getFirstColumnIndexes( firstColIndexes1 );
-    csrStorage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
-
-    BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
-    BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        BOOST_CHECK_EQUAL( firstColIndexes1[i], firstCols[i] );
-        BOOST_CHECK_EQUAL( firstColIndexes2[i], firstCols[i] );
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_CASE( CSRCopyTest )
 {

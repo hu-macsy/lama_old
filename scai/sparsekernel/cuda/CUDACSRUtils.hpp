@@ -44,6 +44,7 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/MatrixOp.hpp>
 
 #include <cuda_runtime_api.h>
@@ -71,9 +72,9 @@ public:
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
-    /** Implementation for CSRKernelTrait::getValuePosCol */
+    /** Implementation for CSRKernelTrait::getColumnPositions */
 
-    static IndexType getValuePosCol(
+    static IndexType getColumnPositions(
         IndexType row[],
         IndexType pos[],
         const IndexType j,
@@ -82,7 +83,11 @@ public:
         const IndexType csrJA[],
         const IndexType numValues );
 
-    static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] );
+    static bool hasDiagonalProperty( 
+        const IndexType numDiagonals, 
+        const IndexType csrIA[], 
+        const IndexType csrJA[],
+        const bool );
 
     /** Matrix transpose for CSR matrices on CUDA device. */
 
@@ -151,29 +156,13 @@ public:
         const ValueType omega,
         const IndexType numRows );
 
-    /** Implementation for CSRKernelTrait::Solver::jacobiHalo  */
+    /** Implementation for CSRKernelTrait::Solver::jacobiHalo
+     */
 
     template<typename ValueType>
     static void jacobiHalo(
         ValueType solution[],
-        const IndexType localIA[],
-        const ValueType localValues[],
-        const IndexType haloIA[],
-        const IndexType haloJA[],
-        const ValueType haloValues[],
-        const IndexType haloRowIndexes[],
-        const ValueType oldSolution[],
-        const ValueType omega,
-        const IndexType numNonEmptyRows );
-
-    /** Implementation for CSRKernelTrait::Solver::jacobiHaloWithDiag
-     *  @since 1.1.0
-     */
-
-    template<typename ValueType>
-    static void jacobiHaloWithDiag(
-        ValueType solution[],
-        const ValueType localDiagValues[],
+        const ValueType localDiagonal[],
         const IndexType haloIA[],
         const IndexType haloJA[],
         const ValueType haloValues[],
@@ -188,7 +177,6 @@ public:
         IndexType cSizes[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const IndexType bIA[],
@@ -201,7 +189,6 @@ public:
         const IndexType m,
         const IndexType n,
         const IndexType k,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const IndexType bIA[],
@@ -216,7 +203,6 @@ public:
         const IndexType cIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const ValueType alpha,
         const IndexType aIA[],
         const IndexType aJA[],
@@ -237,7 +223,6 @@ public:
         const IndexType n,
         const IndexType k,
         const ValueType alpha,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const ValueType aValues[],
@@ -245,15 +230,34 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
-    /** CUDA implementation for CSRKernelTrait::sortRowElements */
+    /** CUDA Implementation for CSRKernelTrait::shiftDiagonal  */
 
     template<typename ValueType>
-    static void sortRowElements(
+    static IndexType shiftDiagonal(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[] );
+
+    /** CUDA implementation for CSRKernelTrait::sortRows */
+
+    template<typename ValueType>
+    static void sortRows(
         IndexType csrJA[],
         ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const bool diagonalFlag );
+        const IndexType numColumns,
+        const IndexType numValues );
+
+    /** CUDA implementation for CSRKernelTrait::hasSortedRows */
+
+    static bool hasSortedRows(
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType nnz );
 
     /** CUDA Implementation for CSRKernelTrait::countNonZeros */
 
@@ -264,8 +268,7 @@ public:
         const IndexType ja[],
         const ValueType values[],
         const IndexType numRows,
-        const ValueType eps,
-        const bool diagonalFlag );
+        const RealType<ValueType> eps );
 
     /** CUDA Implementation for CSRKernelTrait::compress */
 
@@ -278,8 +281,7 @@ public:
         const IndexType ja[],
         const ValueType values[],
         const IndexType numRows,
-        const ValueType eps,
-        const bool diagonalFlag );
+        const RealType<ValueType> eps );
 
 private:
 

@@ -95,7 +95,6 @@ public:
         IndexType cSizes[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const IndexType bIA[],
@@ -108,7 +107,6 @@ public:
         const IndexType m,
         const IndexType n,
         const IndexType k,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const IndexType bIA[],
@@ -123,7 +121,6 @@ public:
         const IndexType cIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const ValueType alpha,
         const IndexType aIA[],
         const IndexType aJA[],
@@ -144,13 +141,23 @@ public:
         const IndexType n,
         const IndexType k,
         const ValueType alpha,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const ValueType aValues[],
         const IndexType bIA[],
         const IndexType bJA[],
         const ValueType bValues[] );
+
+    /** cuSparse implementation for CSRKernelTrait::sortRows */
+
+    template<typename ValueType>
+    static void sortRows(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValues );
 
 private:
 

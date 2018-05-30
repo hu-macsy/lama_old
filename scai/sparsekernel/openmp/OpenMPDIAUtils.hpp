@@ -72,28 +72,24 @@ public:
     template<typename ValueType>
     static void getCSRSizes(
         IndexType csrSizes[],
-        bool diagonalFlag,
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const ValueType diaValues[],
-        const ValueType eps );
+        const ValueType diaValues[] );
 
     /** OpenMP implementation for DIAKernelTrait::getCSRValues.  */
 
-    template<typename DIAValueType, typename CSRValueType>
+    template<typename ValueType>
     static void getCSRValues(
         IndexType csrJA[],
-        CSRValueType csrValues[],
+        ValueType csrValues[],
         const IndexType csrIA[],
-        const bool diagonalFlag,
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType numDiagonals,
         const IndexType diaOffsets[],
-        const DIAValueType diaValues[],
-        const DIAValueType eps );
+        const ValueType diaValues[] );
 
     /** Implementation for DIAKernelTrait::normalGEMV  */
 
@@ -152,18 +148,6 @@ private:
 
     template<typename ValueType>
     struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
     {
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };

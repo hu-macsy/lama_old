@@ -353,14 +353,6 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-     virtual bool hasDiagonalProperty() const
-    {
-        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
-    }
-     virtual void resetDiagonalProperty()
-    {
-        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
-    }
      virtual size_t getMemoryUsage() const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )

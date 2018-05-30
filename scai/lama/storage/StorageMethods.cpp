@@ -41,6 +41,7 @@
 #include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/utilskernel/TransferUtils.hpp>
 
 #include <scai/common/macros/assert.hpp>
@@ -58,6 +59,7 @@ using namespace hmemo;
 using namespace dmemo;
 
 using sparsekernel::OpenMPCSRUtils;
+using sparsekernel::CSRUtils;
 
 namespace lama
 {
@@ -226,6 +228,9 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     const Communicator& comm )
 {
     SCAI_REGION( "Storage.exchangeHaloCSR" )
+
+    ContextPtr loc = Context::getHostPtr();
+
     // get the number of rows for the new matrix
     const IndexType numRecvRows = halo.getRequiredPlan().totalQuantity();
     HArray<IndexType> sourceSizes;
@@ -234,12 +239,9 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     const IndexType numSendRows = providesIndexes.size();
     SCAI_LOG_INFO( logger,
                    "exchange halo matrix, #rows to send = " << numSendRows << ", #rows to recv = " << numRecvRows )
-    {
-        ReadAccess<IndexType> ia( sourceIA );
-        ReadAccess<IndexType> indexes( providesIndexes );
-        WriteOnlyAccess<IndexType> sizes( sourceSizes, numSendRows );
-        OpenMPCSRUtils::offsets2sizesGather( sizes.get(), ia.get(), indexes, numSendRows );
-    }
+
+    CSRUtils::gatherSizes( sourceSizes, sourceIA, providesIndexes, loc );
+
     {
         // allocate target IA with the right size
         WriteOnlyAccess<IndexType> tmpIA( targetIA, numRecvRows + 1 );
@@ -260,11 +262,9 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     recvSizes.release();
     SCAI_LOG_INFO( logger, "released read access to recvSizes" )
     // row sizes of target will now become offsets
-    {
-        WriteAccess<IndexType> ia( targetIA );
-        ia.resize( numRecvRows + 1 );
-        OpenMPCSRUtils::sizes2offsets( ia.get(), numRecvRows );
-    }
+
+    CSRUtils::sizes2offsets( targetIA, targetIA, loc );
+
     // sendJA, sendValues must already be allocated before calling gatherV
     // as its size cannot be determined by arguments
     HArray<IndexType> sendJA( sendVSize );
@@ -473,8 +473,7 @@ void StorageMethods<ValueType>::joinCSR(
     const HArray<ValueType>& localValues,
     const HArray<IndexType>& haloIA,
     const HArray<IndexType>& haloJA,
-    const HArray<ValueType>& haloValues,
-    const IndexType numKeepDiagonals )
+    const HArray<ValueType>& haloValues )
 {
     SCAI_REGION( "Storage.joinCSR" )
     SCAI_ASSERT_EQUAL_ERROR( localIA.size(), haloIA.size() )
@@ -482,7 +481,8 @@ void StorageMethods<ValueType>::joinCSR(
     SCAI_ASSERT_EQUAL_ERROR( haloJA.size(), haloValues.size() )
     IndexType numRows = localIA.size() - 1;
     SCAI_LOG_INFO( logger,
-                   "joinCSRData, #rows = " << numRows << ", local has " << localValues.size() << " elements" << ", halo has " << haloValues.size() << " elements" << ", keep " << numKeepDiagonals << " diagonals " )
+                   "joinCSRData, #rows = " << numRows << ", local has " << localValues.size() << " elements" 
+                   << ", halo has " << haloValues.size() << " elements" )
     WriteOnlyAccess<IndexType> ia( outIA, numRows + 1 );
     ReadAccess<IndexType> ia1( localIA );
     ReadAccess<IndexType> ia2( haloIA );
@@ -512,19 +512,6 @@ void StorageMethods<ValueType>::joinCSR(
         IndexType offset = ia[i];
         IndexType offset1 = ia1[i];
         IndexType offset2 = ia2[i];
-
-        if ( i < numKeepDiagonals )
-        {
-            if ( offset1 >= ia1[i + 1] )
-            {
-                SCAI_LOG_FATAL( logger, "no diagonal element for first CSR input data" )
-                COMMON_THROWEXCEPTION( "keep diagonal error" )
-                // @todo this exception caused segmentation faults when thrown
-            }
-
-            ja[offset] = ja1[offset1];
-            values[offset++] = values1[offset1++];
-        }
 
         // merge other data by order of column indexes
 

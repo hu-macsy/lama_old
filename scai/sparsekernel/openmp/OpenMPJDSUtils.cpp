@@ -160,8 +160,8 @@ IndexType OpenMPJDSUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
-    const IndexType dlg[],
     const IndexType ilg[],
+    const IndexType dlg[],
     const IndexType perm[],
     const IndexType ja[] )
 {
@@ -206,7 +206,54 @@ IndexType OpenMPJDSUtils::getValuePos(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IndexType OpenMPJDSUtils::getValuePosCol(
+IndexType OpenMPJDSUtils::getDiagonalPositions(
+    IndexType diagonalPositions[],
+    const IndexType numDiagonals,
+    const IndexType numRows,
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType perm[],
+    const IndexType ja[] )
+{
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < numDiagonals; i++ )
+    {
+        diagonalPositions[i] = invalidIndex;
+    }
+
+    IndexType numDiagonalsFound = 0;  
+
+    #pragma omp parallel for reduction( + : numDiagonalsFound )
+    for ( IndexType ii = 0; ii < numRows; ii++ )
+    {
+        IndexType i = perm[ii];    // original row
+
+        IndexType k = 0;
+
+        SCAI_LOG_TRACE( logger, "find diag entry for row " << i << ", has " << ilg[ii] << " entries" )
+
+        for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
+        {
+            SCAI_LOG_TRACE( logger, "check entry " << jj << " of " << ilg[ii] << ", j = " << ja[ii+k] )
+
+            if ( ja[ii + k] == i )
+            {
+                SCAI_ASSERT_LT_ERROR( i, numDiagonals, "more diagonals than expected" )
+                diagonalPositions[i] = ii + k;
+                numDiagonalsFound++;
+                break;
+            }
+    
+            k += dlg[jj];
+        }
+    }
+
+    return numDiagonalsFound;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPJDSUtils::getColumnPositions(
     IndexType row[],
     IndexType pos[],
     const IndexType j,
@@ -216,7 +263,7 @@ IndexType OpenMPJDSUtils::getValuePosCol(
     const IndexType perm[],
     const IndexType ja[] )
 {
-    SCAI_REGION( "OpenMP.JDSUtils.getValuePosCol" )
+    SCAI_REGION( "OpenMP.JDSUtils.getColumnPositions" )
 
     IndexType cnt  = 0;   // counts number of available row entries in column j
 
@@ -247,7 +294,7 @@ IndexType OpenMPJDSUtils::getValuePosCol(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IndexType OpenMPJDSUtils::getValuePosRow(
+IndexType OpenMPJDSUtils::getRowPositions(
     IndexType pos[],
     const IndexType i,
     const IndexType numRows,
@@ -255,7 +302,7 @@ IndexType OpenMPJDSUtils::getValuePosRow(
     const IndexType dlg[],
     const IndexType perm[] )
 {
-    SCAI_REGION( "OpenMP.JDSUtils.getValuePosRow" )
+    SCAI_REGION( "OpenMP.JDSUtils.getRowPositions" )
 
     IndexType ii = invalidIndex;
 
@@ -312,63 +359,6 @@ void OpenMPJDSUtils::scaleRows(
             offset += dlg[jj];
         }
     }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-bool OpenMPJDSUtils::checkDiagonalProperty(
-    const IndexType numDiagonals,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType perm[],
-    const IndexType ja[],
-    const IndexType dlg[] )
-{
-    SCAI_LOG_INFO( logger,
-                   "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numColumns = " << numColumns << " and numRows = " << numRows )
-
-    if ( numRows > 0 )
-    {
-        bool diagonalProperty = true;
-
-        if ( dlg[0] < std::min( numDiagonals, numColumns ) )
-        {
-            // not even one entry for each row / column
-            diagonalProperty = false;
-            return diagonalProperty;
-        }
-
-        #pragma omp parallel for 
-
-        for ( IndexType ii = 0; ii < numRows; ++ii )
-        {
-            if ( !diagonalProperty )
-            {
-                continue;
-            }
-
-            const IndexType i = perm[ii];
-
-            if ( i >= numColumns )
-            {
-                continue;
-            }
-
-            if ( ii >= dlg[0] )
-            {
-                // ilg[ii] = 0, empty row
-                diagonalProperty = false;
-            }
-            else if ( ja[ii] != i )
-            {
-                diagonalProperty = false;
-            }
-        }
-
-        return diagonalProperty;
-    }
-
-    return false;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -639,12 +629,20 @@ void OpenMPJDSUtils::jacobi(
         {
             const IndexType i = jdsPerm[ii]; // original row index
             ValueType temp = rhs[i];
-            IndexType pos = jdsDLG[0] + ii; // index for jdsValues
-            ValueType diag = jdsValues[ii]; // diagonal element
+            IndexType pos = ii; // index for jdsValues
+            ValueType diag = 0;
 
-            for ( IndexType j = 1; j < jdsILG[ii]; j++ )
+            for ( IndexType j = 0; j < jdsILG[ii]; j++ )
             {
-                temp -= jdsValues[pos] * oldSolution[jdsJA[pos]];
+                if ( jdsJA[pos] == i )
+                {
+                    diag = jdsValues[pos];
+                }
+                else
+                {
+                    temp -= jdsValues[pos] * oldSolution[jdsJA[pos]];
+                }
+
                 pos += jdsDLG[j];
             }
 
@@ -736,10 +734,10 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getValuePosRow>( getValuePosRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getColumnPositions>( getColumnPositions, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getRowPositions>( getRowPositions, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getDiagonalPositions>( getDiagonalPositions, ctx, flag );
 }
 
 template<typename ValueType>

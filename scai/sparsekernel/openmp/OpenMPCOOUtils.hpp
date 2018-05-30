@@ -71,62 +71,28 @@ public:
         const IndexType cooJA[],
         const IndexType numValues );
 
-    /** Implementation for COOKernelTrait::getValuePosCol */
-
-    static IndexType getValuePosCol(
-        IndexType row[],
-        IndexType pos[],
-        const IndexType j,
-        const IndexType cooIA[],
-        const IndexType numRows,
-        const IndexType cooJA[],
-        const IndexType numValues );
-
-    /** Implementation for COOKernelTrait::getValuePosRow */
-
-    static IndexType getValuePosRow(
-        IndexType col[],
-        IndexType pos[],
-        const IndexType i,
-        const IndexType cooIA[],
-        const IndexType numColumns,
-        const IndexType cooJA[],
-        const IndexType numValues );
-
-    /** OpenMP implementation for COOKernelTrait::hasDiagonalProperty */
-
-    static bool hasDiagonalProperty (
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const IndexType n );
-
     /** OpenMP implementation for COOKernelTrait::offsets2ia */
 
     static void offsets2ia(
         IndexType cooIA[],
         const IndexType numValues,
         const IndexType csrIA[],
+        const IndexType numRows );
+
+    /** OpenMP implementation for COOKernelTrait::ia2offsets */
+
+    static void ia2offsets(
+        IndexType csrIA[],
         const IndexType numRows,
-        const IndexType numDiagonals );
-
-
-    template<typename COOValueType, typename OtherValueType>
-    static void scaleRows(
-        COOValueType cooValues[],
-        const OtherValueType rowValues[],
         const IndexType cooIA[],
         const IndexType numValues );
 
-    /** OpenMP implementation for COOKernelTrait::setCSRData */
-
-    template<typename COOValueType, typename CSRValueType>
-    static void setCSRData(
-        COOValueType cooValues[],
-        const CSRValueType csrValues[],
-        const IndexType numValues,
-        const IndexType csrIA[],
-        const IndexType numRows,
-        const IndexType numDiagonals );
+    template<typename ValueType>
+    static void scaleRows(
+        ValueType cooValues[],
+        const ValueType rowValues[],
+        const IndexType cooIA[],
+        const IndexType numValues );
 
     /** Implementation for COOKernelTrait::normalGEMV  */
 
@@ -159,7 +125,68 @@ public:
         const ValueType omega,
         const IndexType numRows );
 
+    /** Implementation for COOKernelTrait::hasDiagonalProperty */
+
+    static bool hasDiagonalProperty(
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::getDiagonal */
+
+    template<typename ValueType>
+    static void getDiagonal(
+        ValueType diagonal[],
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::setDiagonalV */
+
+    template<typename ValueType>
+    static void setDiagonalV(
+        ValueType cooValues[],
+        const ValueType diagonal[],
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::setDiagonal */
+
+    template<typename ValueType>
+    static void setDiagonal(
+        ValueType cooValues[],
+        const ValueType diagonal,
+        const IndexType numDiagonals,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::getRow */
+
+    static IndexType getRow(
+        IndexType& offset,
+        const IndexType cooIA[],
+        const IndexType numValues,
+        const IndexType i );
+
+    /** Implementation for COOKernelTrait::getColumn */
+
+    static IndexType getColumn(
+        IndexType positions[],
+        const IndexType cooJA[],
+        const IndexType numValues,
+        const IndexType j );
+
 private:
+
+    static IndexType getRowStartPos( const IndexType i,
+                                     const IndexType cooIA[],
+                                     const IndexType numValues );
 
     /** Struct for registration of methods without template arguments */
 
@@ -176,18 +203,6 @@ private:
 
     template<typename ValueType>
     struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
     {
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };

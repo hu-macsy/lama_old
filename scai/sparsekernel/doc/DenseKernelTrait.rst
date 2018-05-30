@@ -10,6 +10,38 @@ array which contains the values. The size of the array can be calculated with *n
 These are provided by the library BLASKernel. In addition functions for the conversion
 to CSR are needed. These are provided by this library. 
 
+Example
+------
+
+.. math::
+
+  A = \left(\begin{matrix} 
+    6 & 0  & 0 & 4 \\
+    7 & 0 & 0 & 0 \\
+    0 & 0 & -9 & 4 \\
+    2 & 5 & 0 & 3 \\
+    2 & 0 & 0 & 1 \\
+    0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 2 \end{matrix}\right) 
+
+Here are the corresponding arrays for the representation:
+
+.. math::
+    
+    \begin{align}
+    numRows &= 7 \\
+    numColums &= 4 \\
+    values &= [ \begin{matrix}
+               6 & 0 & 0 & 4 & 
+               7 & 0 & 0 & 0 & 
+               0 & 0 & -9 & 4 & 
+               2 & 5 & 0 & 3 & 
+               2 & 0 & 0 & 1 & 
+               0 & 0 & 0 & 0 & 
+               0 & 1 & 0 & 2 
+               \end{matrix} ]
+    \end{align}
+
 DenseKernelTrait
 ----------------
 

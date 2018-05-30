@@ -144,6 +144,12 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
             count++;
         }
 
+        if ( op == UnaryOp::SIGN )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "SIGN" );
+            count++;
+        }
+
         if ( op == UnaryOp::RECIPROCAL )
         {
             BOOST_CHECK_EQUAL( s.str(), "RECIPROCAL" );

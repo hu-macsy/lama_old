@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( moveConstructorTest )
     const IndexType numValues = 4;
 
     HArray<IndexType> cooIA( { 0, 1, 2, 2 } );
-    HArray<IndexType> cooJA( { 0, 1, 2, 1 } );
+    HArray<IndexType> cooJA( { 0, 1, 1, 2 } );
     HArray<ValueType> cooValues( { 5, 5, 3, 3 } );
 
     const IndexType* ptrIA = getPointer( cooIA, context );
@@ -121,11 +121,10 @@ BOOST_AUTO_TEST_CASE( moveConstructorTest )
     BOOST_REQUIRE_EQUAL( numColumns, cooStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, cooStorage.getNumValues() );
 
-    // verify that move was okay
+    // verify that move was okay (no changes as COO data is sorted), ja has been copied
 
     BOOST_CHECK_EQUAL( ptrIA, getPointer( cooStorage.getIA(), context ) );
     BOOST_CHECK( ptrJA != getPointer( cooStorage.getJA(), context ) );
-    ptrJA = getPointer( cooStorage.getJA(), context );
     BOOST_CHECK_EQUAL( ptrValues, getPointer( cooStorage.getValues(), context ) );
 
     BOOST_CHECK_EQUAL( cooIA.size(), 0 );
@@ -145,7 +144,7 @@ BOOST_AUTO_TEST_CASE( splitUpTest )
     const IndexType numColumns = 3;
 
     HArray<IndexType> cooIA( { 0, 1, 2, 2 } );
-    HArray<IndexType> cooJA( { 0, 1, 2, 1 } );
+    HArray<IndexType> cooJA( { 0, 1, 1, 2 } );
     HArray<ValueType> cooValues( { 5, 5, 3, 3 } );
 
     const IndexType* ptrIA = getPointer( cooIA, context );

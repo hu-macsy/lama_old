@@ -866,6 +866,96 @@ void OpenMPUtils::setSection(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPUtils::fillSection(
+    ValueType out[],
+    const IndexType inc,
+    const ValueType val,
+    const IndexType n,
+    const BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.fillSection" )
+
+    SCAI_LOG_DEBUG( logger,
+                    "fillSection: out<" << TypeTraits<ValueType>::id() << "[" << n << "]"
+                    << ", op = " << op << ", val = " << val )
+
+    switch ( op )
+    {
+        case BinaryOp::COPY :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] = val;
+            }
+
+            break;
+        }
+
+        case BinaryOp::ADD :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] += val;
+            }
+
+            break;
+        }
+
+        case BinaryOp::SUB :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] -= val;
+            }
+
+            break;
+        }
+
+        case BinaryOp::DIVIDE :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] /= val;
+            }
+
+            break;
+        }
+
+        case BinaryOp::MULT :
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] *= val;
+            }
+
+            break;
+        }
+
+        default:
+        {
+            #pragma omp parallel for 
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc] = applyBinary( out[i * inc], op, val );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 static void floorOp( ValueType out[], const ValueType in[], const IndexType n )
 {
     #pragma omp parallel for 
@@ -1784,7 +1874,10 @@ void OpenMPUtils::sortInPlace(
 {
     SCAI_REGION( "OpenMP.Utils.sortInPlace" )
 
-    qsort( indexes, values, 0, n - 1, ascending );
+    if ( n >= 2 )
+    {
+        qsort( indexes, values, 0, n - 1, ascending );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1951,6 +2044,8 @@ IndexType OpenMPUtils::countAddSparse(
     const IndexType indexes2[],
     const IndexType n2 )
 {
+    SCAI_LOG_DEBUG( logger, "countAddSparse( n1 = " << n1 << ", n2 = " << n2 << ")" )
+
     IndexType n = 0;
 
     IndexType i1 = 0;
@@ -2068,6 +2163,82 @@ IndexType OpenMPUtils::addSparse(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+IndexType OpenMPUtils::joinSparse(
+    IndexType indexes[],
+    ValueType values[],
+    const IndexType indexes1[],
+    const ValueType values1[],
+    const IndexType n1,
+    const IndexType indexes2[],
+    const ValueType values2[],
+    const IndexType n2 )
+{
+    SCAI_REGION( "OpenMP.Utils.joinSparse" )
+
+    SCAI_LOG_DEBUG( logger, "joinSparse: Sp( n1 = " << n1 << " ), "
+                             << " with Sp( n2 = " << n2 << " )" )
+
+    IndexType n = 0;
+
+    IndexType i1 = 0;
+    IndexType i2 = 0;
+
+    // join merge via the sorted indexes
+
+    while ( i1 < n1 && i2 < n2 )
+    {
+        if ( indexes1[i1] == indexes2[i2] )
+        {
+            // entry at same position, take the new one
+
+            indexes[n] = indexes1[i1];
+            values[n]  = values2[i2];
+            ++n;
+            ++i1;
+            ++i2;
+        }
+        else if ( indexes1[i1] < indexes2[i2] )
+        {
+            // entry only in array1
+
+            indexes[n] = indexes1[i1];
+            values[n]  = values1[i1];
+            ++n;
+            ++i1;
+        }
+        else
+        {
+            // entry only in array2
+
+            indexes[n] = indexes2[i2];
+            values[n]  = values2[i2];
+            ++n;
+            ++i2;
+        }
+    }
+
+    while ( i1 < n1 )
+    {
+        indexes[n] = indexes1[i1];
+        values[n]  = values1[i1];
+        ++n;
+        ++i1;
+    }
+
+    while ( i2 < n2 )
+    {
+        indexes[n] = indexes2[i2];
+        values[n]  = values2[i2];
+        ++n;
+        ++i2;
+    }
+
+    return n;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 IndexType OpenMPUtils::binopSparse(
     IndexType indexes[],
     ValueType values[],
@@ -2081,6 +2252,11 @@ IndexType OpenMPUtils::binopSparse(
     const IndexType n2,
     const BinaryOp op )
 {
+    if ( op == common::BinaryOp::COPY )
+    {
+        return joinSparse( indexes, values, indexes1, values1, n1, indexes2, values2, n2 );
+    }
+
     SCAI_REGION( "OpenMP.Utils.binopSparse" )
 
     SCAI_LOG_DEBUG( logger, "binopSparse: Sp( n1 = " << n1 << ", zero1 = " << zero1 << "), "
@@ -2339,6 +2515,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar<ValueType> >( binaryOpScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::fillSection<ValueType> >( fillSection, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

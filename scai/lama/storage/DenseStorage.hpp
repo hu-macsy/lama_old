@@ -248,11 +248,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values )
-    {
-        mepr::StorageWrapper<DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, getContextPtr() );
-    }
+        const hmemo::_HArray& values );
 
     /**
      * @brief template (non-virtual) version of setCSRData with explicit other value type.
@@ -262,16 +258,13 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
-    template<typename OtherValueType>
     void setCSRDataImpl(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::HArray<ValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -279,35 +272,11 @@ public:
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
-    {
-        hmemo::HArray<IndexType>* ja = NULL;
-        hmemo::HArray<ValueType>* values = NULL;
-        buildCSR( ia, ja, values, getContextPtr() );
-    }
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const;
 
     /** Implementation for _MatrixStorage::buildCSRData */
 
-    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
-    {
-        mepr::StorageWrapper<DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );
-    }
-
-    /** 
-     *  @brief Template (non-virtual) version of building CSR data
-     *
-     *  @param[out] ia is the CSR offset array
-     *  @param[out] ja is the array with the column indexes (optional)
-     *  @param[out] values is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
-     */
-    template<typename OtherValueType>
-    void buildCSR(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>* ja,
-        hmemo::HArray<OtherValueType>* values,
-        const hmemo::ContextPtr loc ) const;
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const;
 
     /* Print relevant information about matrix storage format. */
 
@@ -355,7 +324,6 @@ public:
     {
         _MatrixStorage::setDimension( 0, 0 );
         mData.clear();
-        mDiagonalProperty = checkDiagonalProperty();
     }
 
     /**
@@ -365,12 +333,7 @@ public:
     {
         _MatrixStorage::setDimension( 0, 0 );
         mData.purge();
-        mDiagonalProperty = checkDiagonalProperty();
     }
-
-    /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /* ========================================================================= */
     /*       Filling dense storage with assembled COO data                      */
@@ -527,7 +490,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mContext;
 
     hmemo::HArray<ValueType> mData;  //!<  matrix data as HArray, stored row-wise
@@ -535,10 +497,6 @@ protected:
     /** Logger just for this class / matrix format. */
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    /** Override MatrixStorage::checkDiagonalProperty method. */
-
-    virtual    bool checkDiagonalProperty() const;
 
 private:
 

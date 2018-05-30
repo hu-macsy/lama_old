@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains tests for the DenseUtils interface to be tested on different devices
+ * @brief Contains tests for the class DenseUtils that run on different devices
  * @author Thomas Brandes
  * @date 19.07.2013
  */
@@ -39,6 +39,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/sparsekernel/DenseKernelTrait.hpp>
+#include <scai/sparsekernel/DenseUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
@@ -54,6 +55,8 @@ using namespace utilskernel;
 using common::TypeTraits;
 using common::BinaryOp;
 using common::UnaryOp;
+
+using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
@@ -111,199 +114,34 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( nonZeroValuesTest, ValueType, scai_numeric_test_t
 BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<DenseKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-    static LAMAKernel<DenseKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
-    static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
+    HArray<ValueType> dense( { 1, 0, 2,
+                              -3, 1, 0,
+                               0, 0, -5,
+                               6, 0, 1   }, testContext );
 
-    ContextPtr loc = testContext;
+    // Note: compress keeps order of values
 
-    getCSRSizes.getSupportedContext( loc, getCSRValues, scan );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
-
-    const ValueType dense_values[] = { 1, 0, 2,
-                                       -3, 1, 0,
-                                       0, 0, -5,
-                                       6, 0, 1
-                                     };
-
-    const IndexType ia_values[]  = { 2, 2, 1, 2 };
-    const IndexType ja_values[]  = { 0, 2, 0, 1, 2, 0, 2 };
-    const ValueType csr_values[] = { 1, 2, -3, 1, -5, 6, 1 };
+    HArray<IndexType> expIA( { 2, 2, 1, 2 } );
+    HArray<IndexType> expJA( { 0, 2, 0, 1, 2, 0, 2 } );
+    HArray<ValueType> expValues( { 1, 2, -3, 1, -5, 6, 1 } );
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;
 
-    const IndexType dense_n = sizeof( dense_values ) / sizeof( ValueType );
-
-    BOOST_REQUIRE_EQUAL( dense_n, numRows * numColumns );
-
-    HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
+    BOOST_REQUIRE_EQUAL( dense.size(), numRows * numColumns );
 
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
-    ValueType eps = 0;
-    bool diagonalProperty = false;
+    DenseUtils::getSparseRowSizes( csrIA, numRows, numColumns, dense, testContext );
+    BOOST_TEST( hostReadAccess( expIA ) == hostReadAccess( csrIA ), per_element() );
 
-    {
-        SCAI_CONTEXT_ACCESS( loc );
+    DenseUtils::convertDense2CSR( csrIA, csrJA, csrValues, numRows, numColumns, dense, testContext );
 
-        ReadAccess<ValueType> rDense( dense, loc );
-        WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
-
-        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, rDense.get(), eps );
-    }
-
-    {
-        ReadAccess<IndexType> rIA( csrIA, hostContext );
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
-        }
-    }
-
-    IndexType numValues = 0;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteAccess<IndexType> wIA( csrIA, loc );
-        wIA.resize( numRows + 1 );
-        IndexType zero = 0;
-        bool exclusive = true;
-        bool append = true;
-        numValues = scan[loc]( wIA.get(), numRows, zero , exclusive, append );
-    }
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<ValueType> rDense( dense, loc );
-        WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
-
-        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty, numRows, numColumns,
-                           rDense.get(), eps );
-    }
-
-    {
-        ReadAccess<IndexType> rJA( csrJA, hostContext );
-        ReadAccess<ValueType> rValues( csrValues, hostContext );
-
-        for ( IndexType i = 0; i < numValues; ++i )
-        {
-            BOOST_CHECK_EQUAL( rJA[i], ja_values[i] );
-            BOOST_CHECK_EQUAL( rValues[i], csr_values[i] );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRDiagTest, ValueType, scai_numeric_test_types )
-{
-    ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<DenseKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-    static LAMAKernel<DenseKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
-    static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
-
-    ContextPtr loc = testContext;
-
-    getCSRSizes.getSupportedContext( loc, getCSRValues, scan );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
-
-    const ValueType dense_values[] = { 1, 0, 2, 3,
-                                       -3, 0, 1, 2,
-                                       0, -5, 0, 4,
-                                       6, 0, 0, 6
-                                     };
-
-    const IndexType ia_values[]  = { 3,        4,           3,       2 };
-    const IndexType ja_values[]  = { 0, 2, 3,  1, 0, 2, 3,  2, 1, 3,  3,  0 };
-    const ValueType csr_values[] = { 1, 2, 3,  0, -3, 1, 2, 0, -5, 4, 6,  6 };
-
-    const IndexType numRows    = 4;
-    const IndexType numColumns = 4;
-
-    const IndexType dense_n = sizeof( dense_values ) / sizeof( ValueType );
-
-    BOOST_REQUIRE_EQUAL( dense_n, numRows * numColumns );
-
-    HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
-
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-
-    ValueType eps = 0;
-    bool diagonalProperty = true;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<ValueType> rDense( dense, loc );
-        WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
-
-        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, rDense.get(), eps );
-    }
-
-    {
-        ReadAccess<IndexType> rIA( csrIA, hostContext );
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( rIA[i], ia_values[i] );
-        }
-    }
-
-    IndexType numValues = 0;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteAccess<IndexType> wIA( csrIA, loc );
-        wIA.resize( numRows + 1 );
-        IndexType zero = 0;
-        bool exclusive = true;
-        bool append = true;
-        numValues = scan[loc]( wIA.get(), numRows, zero, exclusive, append );
-    }
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<ValueType> rDense( dense, loc );
-        WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
-
-        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty, numRows, numColumns,
-                           rDense.get(), eps );
-    }
-
-    {
-        ReadAccess<IndexType> rJA( csrJA, hostContext );
-        ReadAccess<ValueType> rValues( csrValues, hostContext );
-
-        for ( IndexType i = 0; i < numValues; ++i )
-        {
-            BOOST_CHECK_EQUAL( rJA[i], ja_values[i] );
-            BOOST_CHECK_EQUAL( rValues[i], csr_values[i] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( expJA ) == hostReadAccess( csrJA ), per_element() );
+    BOOST_TEST( hostReadAccess( expValues ) == hostReadAccess( csrValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -311,73 +149,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRDiagTest, ValueType, scai_numeric_test_type
 BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
 
-    static LAMAKernel<DenseKernelTrait::setCSRValues<ValueType, ValueType> > setCSRValues;
+    SCAI_LOG_INFO( logger, "setCSRValues test for " << *testContext )
 
-    ContextPtr loc = testContext;
+    HArray<IndexType> csrIA( { 0, 2, 4, 5, 7 }, testContext );
+    HArray<IndexType> csrJA( { 0, 2, 0, 1, 2, 0, 2 }, testContext );
+    HArray<ValueType> csrValues( { 1, 2, -3, 1, -5, 6, 1 }, testContext );
 
-    setCSRValues.getSupportedContext( loc );
+    // expected dense storage data, stored row-wise
 
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    SCAI_LOG_INFO( logger, "setCSRValues test for " << *testContext << " on " << *loc )
-
-    const IndexType ia_values[]  = { 0, 2, 4, 5, 7 };
-    const IndexType ja_values[]  = { 0, 2, 0, 1, 2, 0, 2 };
-    const ValueType csr_values[] = { 1, 2, -3, 1, -5, 6, 1 };
-
-    // convert the above RAW CSR data and compare it later with thise RAW dense data
-
-    const ValueType dense_values[] = { 1, 0, 2,
-                                       -3, 1, 0,
-                                       0, 0, -5,
-                                       6, 0, 1
-                                     };
+    HArray<ValueType> expDense( { 1, 0, 2,
+                                 -3, 1, 0,
+                                  0, 0, -5,
+                                  6, 0, 1   } );
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;
 
-    const IndexType numValues = ia_values[ numRows ];
-
-    // some checks to verify that RAW arrays have coorrect sizes
-
-    const IndexType dense_n = sizeof( dense_values ) / sizeof( ValueType );
-    const IndexType ia_n = sizeof( ia_values ) / sizeof( IndexType );
-    const IndexType ja_n = sizeof( ja_values ) / sizeof( IndexType );
-    const IndexType values_n = sizeof( csr_values ) / sizeof( ValueType );
-
-    BOOST_REQUIRE_EQUAL( dense_n, numRows * numColumns );
-    BOOST_REQUIRE_EQUAL( numRows + 1, ia_n );
-    BOOST_REQUIRE_EQUAL( numValues, ja_n );
-    BOOST_REQUIRE_EQUAL( numValues, values_n );
+    BOOST_REQUIRE_EQUAL( csrValues.size(), csrJA.size() );
+    BOOST_REQUIRE_EQUAL( csrIA.size(), numRows + 1 );
+    BOOST_REQUIRE_EQUAL( expDense.size(), numRows * numColumns );
 
     HArray<ValueType> dense;
 
-    HArray<IndexType> csrIA( numRows + 1, ia_values, testContext );
-    HArray<IndexType> csrJA( numValues, ja_values, testContext );
-    HArray<ValueType> csrValues( numValues, csr_values, testContext );
+    DenseUtils::convertCSR2Dense( dense, numRows, numColumns, csrIA, csrJA, csrValues, testContext );
 
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<IndexType> rJA( csrJA, loc );
-        ReadAccess<ValueType> rValues( csrValues, loc );
-
-        WriteOnlyAccess<ValueType> wDense( dense, loc, numRows * numColumns );
-
-        setCSRValues[loc]( wDense.get(), numRows, numColumns, rIA.get(), rJA.get(), rValues.get() );
-    }
-
-    {
-        ReadAccess<ValueType> rDense( dense, hostContext );
-
-        for ( IndexType i = 0; i < dense_n; ++i )
-        {
-            BOOST_CHECK_EQUAL( rDense[i], dense_values[i] );
-        }
-    }
+    BOOST_TEST( hostReadAccess( expDense ) == hostReadAccess( dense ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -499,64 +296,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
                 ValueType expectedVal = applyBinary( dense_values[i], binOp, val );
                 BOOST_CHECK_EQUAL( expectedVal, rDense[i] );
             }
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( setDiagonalValueTest, ValueType, scai_numeric_test_types )
-{
-    ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<DenseKernelTrait::setDiagonalValue<ValueType> > setDiagonalValue;
-
-    ContextPtr loc = testContext;
-
-    setDiagonalValue.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    SCAI_LOG_INFO( logger, "setDiagonalValue test for " << *testContext << " on " << *loc )
-
-    const ValueType dense_values[] = { 1, 1, 2,
-                                       3, 1, 3,
-                                       2, 4, 5,
-                                       6, 9, 1
-                                     };
-
-    const ValueType dense1_values[] = { 0, 1, 2,
-                                        3, 0, 3,
-                                        2, 4, 0,
-                                        6, 9, 1
-                                      };
-
-    const IndexType numRows    = 4;
-    const IndexType numColumns = 3;
-
-    const IndexType dense_n = sizeof( dense_values ) / sizeof( ValueType );
-
-    BOOST_REQUIRE_EQUAL( dense_n, numRows * numColumns );
-
-    HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
-
-    ValueType val = 0;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteAccess<ValueType> wDense( dense, loc );
-
-        setDiagonalValue[loc]( wDense.get(), numRows, numColumns, val );
-    }
-
-    {
-        ReadAccess<ValueType> rDense( dense, hostContext );
-
-        for ( IndexType i = 0; i < dense_n; ++i )
-        {
-            BOOST_CHECK_EQUAL( dense1_values[i], rDense[i] );
         }
     }
 }

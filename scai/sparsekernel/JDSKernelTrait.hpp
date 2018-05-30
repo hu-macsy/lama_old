@@ -294,7 +294,26 @@ struct JDSKernelTrait
         }
     };
 
-    struct getValuePosRow
+    struct getDiagonalPositions
+    {
+        /** Get all positions for the diagonal entries of a JDS storage. 
+         */
+        typedef IndexType ( *FuncType ) ( 
+            IndexType diagonalPositions[],
+            const IndexType numDiagonals,
+            const IndexType numRows,
+            const IndexType jdsDLG[],
+            const IndexType jdsILG[],
+            const IndexType jdsPerm[],
+            const IndexType jdsJA[] );
+
+        static const char* getId()
+        {
+            return "JDS.getDiagonalPositions";
+        }
+    };
+
+    struct getRowPositions
     {
         /** This method returns for a certain row of the JDS matrix all
          *  corresponding positions in the jdsJA/jdsValues array belonging to the row
@@ -317,18 +336,18 @@ struct JDSKernelTrait
 
         static const char* getId()
         {
-            return "JDS.getValuePosRow";
+            return "JDS.getRowPositions";
         }
     };
 
-    struct getValuePosCol
+    struct getColumnPositions
     {
         /** This method returns for a certain column of the JDS matrix all
          *  row indexes for which elements exist and the corresponding positions
          *  in the jdsJA/jdsValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in csrJA,
+         *  @param[out] pos positions of entries with jdsJA[pos[i]] = j
          *  @param[in] j is the column of which positions are required
          *  @param[in] numRows is the number of rows
          *  @param[in] ilg
@@ -349,7 +368,7 @@ struct JDSKernelTrait
 
         static const char* getId()
         {
-            return "JDS.getValuePosCol";
+            return "JDS.getColumnPositions";
         }
     };
 
@@ -375,21 +394,6 @@ struct JDSKernelTrait
         static const char* getId()
         {
             return "JDS.scaleRows";
-        }
-    };
-
-    struct checkDiagonalProperty
-    {
-        typedef bool ( *FuncType ) ( const IndexType numDiagonals,
-                                     const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const IndexType perm[],
-                                     const IndexType ja[],
-                                     const IndexType dlg[] );
-
-        static const char* getId()
-        {
-            return "JDS.checkDiagonalProperty";
         }
     };
 };

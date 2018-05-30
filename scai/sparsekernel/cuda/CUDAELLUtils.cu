@@ -157,32 +157,6 @@ struct multiply
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  hasDiagonalProperty                                               */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-bool CUDAELLUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] )
-{
-    SCAI_LOG_INFO( logger, "hasDiagonalProperty, #numDiagonals = " << numDiagonals )
-    SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<IndexType> ellJA_ptr( const_cast<IndexType*>( ellJA ) );
-    thrust::counting_iterator<IndexType> sequence( 0 );
-
-    if ( numDiagonals > 0 )
-    {
-        bool diagonalProperty = thrust::transform_reduce(
-                                    thrust::make_zip_iterator( thrust::make_tuple( ellJA_ptr, sequence ) ),
-                                    thrust::make_zip_iterator(
-                                        thrust::make_tuple( ellJA_ptr + numDiagonals, sequence + numDiagonals ) ),
-                                    identity<IndexType>(), true, thrust::logical_and<bool>() );
-        return diagonalProperty;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  check                                                             */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -1254,40 +1228,47 @@ void CUDAELLUtils::sparseGEMV(
 /*                                                  Jacobi                                                           */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename T, bool useTexture>
+template<typename ValueType, bool useTexture>
 __global__
 void ell_jacobi_kernel(
-    const IndexType* ellIA,
+    const IndexType ellIA[],
     const IndexType* ellJA,
-    const T* ellValues,
+    const ValueType* ellValues,
     const IndexType numRows,
-    const T* const rhs,
-    T* const solution,
-    const T* const oldSolution,
-    const T omega )
+    const ValueType rhs[],
+    ValueType solution[],
+    const ValueType oldSolution[],
+    const ValueType omega )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
-        T temp = rhs[i];
+        ValueType temp = rhs[i];
         ellValues += i;
         ellJA += i;
-        const T diag = *ellValues;
-        ellValues += numRows;
-        ellJA += numRows;
+        ValueType diag = 0;  // will be set 
 
-        for ( IndexType kk = 1; kk < ellIA[i]; ++kk )
+        for ( IndexType kk = 0; kk < ellIA[i]; ++kk )
         {
-            const T aValue = *ellValues;
-            temp -= aValue * fetchVectorX<T, useTexture>( oldSolution, *ellJA );
+            const ValueType aValue = *ellValues;
+            const IndexType j = *ellJA;
+
+            if ( j == i )
+            {
+                diag = aValue;
+            }
+            else
+            {
+                temp -= aValue * fetchVectorX<ValueType, useTexture>( oldSolution, j );
+            }
             ellValues += numRows;
             ellJA += numRows;
         }
 
         if ( omega == 0.5 )
         {
-            solution[i] = omega * ( fetchVectorX<T, useTexture>( oldSolution, i ) + temp / diag );
+            solution[i] = omega * ( fetchVectorX<ValueType, useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
@@ -1295,7 +1276,7 @@ void ell_jacobi_kernel(
         }
         else
         {
-            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, i );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<ValueType, useTexture>( oldSolution, i );
         }
     }
 }
@@ -1477,7 +1458,6 @@ void ell_compressIA_kernel(
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const RealType<ValueType> eps,
-    bool keepDiagonal,
     IndexType* newIA )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -1489,11 +1469,6 @@ void ell_compressIA_kernel(
         for ( IndexType jj = 0; jj < IA[i]; jj++ )
         {
             IndexType pos = jj * numRows + i;
-
-            if ( keepDiagonal && JA[pos] == i )
-            {
-                continue;
-            }
 
             if ( common::Math::abs( ellValues[pos] ) > eps )
             {
@@ -1515,8 +1490,7 @@ void CUDAELLUtils::compressIA(
     const ValueType ellValues[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const RealType<ValueType> eps,
-    const bool keepDiagonal )
+    const RealType<ValueType> eps )
 {
     SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
 
@@ -1526,7 +1500,7 @@ void CUDAELLUtils::compressIA(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    ell_compressIA_kernel <<< dimGrid, dimBlock>>>( IA, JA, ellValues, numRows, numValuesPerRow, eps, keepDiagonal, newIA );
+    ell_compressIA_kernel <<< dimGrid, dimBlock>>>( IA, JA, ellValues, numRows, numValuesPerRow, eps, newIA );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
 }
@@ -1542,7 +1516,6 @@ void ell_compressValues_kernel(
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const RealType<ValueType> eps,
-    bool keepDiagonal,
     const IndexType newNumValuesPerRow,
     IndexType* newJA,
     ValueType* newValues )
@@ -1559,7 +1532,7 @@ void ell_compressValues_kernel(
 
             // delete it if zero and not diagonal entry
 
-            if ( common::Math::abs( values[pos] ) > eps || ( keepDiagonal && JA[pos] == i ) )
+            if ( common::Math::abs( values[pos] ) > eps )
             {   
                 // move entry gap positions back in this row
                 
@@ -1594,8 +1567,7 @@ void CUDAELLUtils::compressValues(
     const ValueType values[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
-    const RealType<ValueType> eps,
-    const bool keepDiagonal )
+    const RealType<ValueType> eps )
 {
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
                    << ", values per row (old/new) = " << numValuesPerRow << " / " << newNumValuesPerRow
@@ -1607,7 +1579,7 @@ void CUDAELLUtils::compressValues(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    ell_compressValues_kernel <<< dimGrid, dimBlock>>>( IA, JA, values, numRows, numValuesPerRow, eps, keepDiagonal,
+    ell_compressValues_kernel <<< dimGrid, dimBlock>>>( IA, JA, values, numRows, numValuesPerRow, eps, 
             newNumValuesPerRow, newJA, newValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
@@ -1622,7 +1594,6 @@ void CUDAELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     using kregistry::KernelRegistry;
     const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
-    KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
     // KernelRegistry::set<ELLKernelTrait::getValuePos >( getValuePos, ctx, flag );
 }

@@ -50,7 +50,6 @@ set ( CLASSES
         StencilStorage
 
         StorageMethods
-        COOUtils
     )
     
 scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )

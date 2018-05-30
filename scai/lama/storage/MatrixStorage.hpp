@@ -119,8 +119,6 @@ public:
      * @param[in] numRows      number of rows
      * @param[in] numColumns   number of columns
      * @param[in] values       the dense matrix values in row-major order (C-style)
-     *
-     * Sparse formats will have the diagonal property if numRows == numColums
      */
     template<typename OtherValueType>
     void setRawDenseData(
@@ -244,8 +242,7 @@ public:
      *
      * Implementation of this routine must be provided by all derived classes.
      * It might throw an exception if the diagonal property is not given 
-     * (e.g. the sparse pattern has not all entries for the diagonal elements) or
-     * if the matrix storage format does not support this operation at all.
+     * (i.e. the sparse pattern has not all entries for the diagonal elements).
      */
     virtual void setDiagonalV( const hmemo::HArray<ValueType>& diagonal ) = 0;
 
@@ -254,8 +251,7 @@ public:
      *
      * Implementation of this routine must be provided by all derived classes.
      * It might throw an exception if the diagonal property is not given 
-     * (e.g. the sparse pattern has not all entries for the diagonal elements) or
-     * if the matrix storage format does not support this operation at all.
+     * (i.e. the sparse pattern has not all entries for the diagonal elements).
      */
     virtual void setDiagonal( const ValueType value ) = 0;
 
@@ -266,20 +262,16 @@ public:
      * The size of the output array will be min( nRows, nCols ).
      *
      * This pure method must be implemented by all storage classes. 
-     * It might throw an exception if the diagonal property is not given.
-     * ToDo: getDiagonal in any case by filling missing entries with 0
      */
     virtual void getDiagonal( hmemo::HArray<ValueType>& diagonal ) const = 0;
 
     /** Join local and halo storage back into one storage as needed for NoDistribution.
      *  This matrix storage is used as output matrix.
      *
-     *
      * @param[in] localData is matrix storage with local data
      * @param[in] haloData is the matrix storage with halo data
      * @param[in] halo is the communicaton halo, contains also mapping halo to global indexes
      * @param[in] colDist is the distribution that has be used for getting the local data
-     * @param[in] keepDiagonalProperty if true routine attempts to keep diagonal property
      *
      * Attention: localData might be aliased with this matrix storage,
      *            while haloData must not
@@ -287,13 +279,11 @@ public:
      * Derived classes might use a default implementation that is based on joining
      * CSR data with corresponding conversions.
      */
-
     virtual void joinHalo(
-        const _MatrixStorage& localData,
-        const _MatrixStorage& haloData,
+        const MatrixStorage<ValueType>& localData,
+        const MatrixStorage<ValueType>& haloData,
         const dmemo:: Halo& halo,
-        const dmemo::Distribution& colDist,
-        const bool keepDiagonalProperty );
+        const dmemo::Distribution& colDist );
 
     /** Splitting of matrix storage for halo
      *
@@ -335,16 +325,15 @@ public:
      *        value is greater than eps are considered to be non-zero.
      *
      * @param[in] eps  is the threshold when a values is to be considered as zero
-     * @param[in] keepDiagonal if true existing diagonal elements will not be removed
      *
      * The default implementation uses temporary CSR storage to compress it.
      *
      * \code
      *    auto diffStorage = eval<CSRStorage<ValueType>>( storage1 - storage2 );
-     *    diffStorage.compress( 0.0001, false );
+     *    diffStorage.compress( 0.0001 );
      * \endcode
      */
-    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+    virtual void compress( const RealType<ValueType> eps = 0 );
 
     /** This method build for this matrix the local part of a global matrix.
      *
@@ -440,17 +429,6 @@ public:
         const MatrixStorage<ValueType>& matrix,
         const dmemo::Communicator& comm );
 
-    /** Conversion routine of Compressed Sparse Row data to Compressed Sparse Column.  */
-
-    static void convertCSR2CSC(
-        hmemo::HArray<IndexType>& colIA,
-        hmemo::HArray<IndexType>& colJA,
-        hmemo::HArray<ValueType>& colValues,
-        const IndexType numColumns,
-        const hmemo::HArray<IndexType>& rowIA,
-        const hmemo::HArray<IndexType>& rowJA,
-        const hmemo::HArray<ValueType>& rowValues,
-        const hmemo::ContextPtr loc );
     /**
      *  Method that joins rows of another matrix storage
      *
@@ -495,8 +473,6 @@ public:
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /******************************************************************
      *   invert                                                        *
@@ -559,8 +535,11 @@ public:
 
     virtual void matrixTimesScalar( const ValueType alpha, const MatrixStorage<ValueType>& a );
 
-    /** assign alpha * a * b + beta * c */
-
+    /** this = alpha * a * b + beta * c 
+     *
+     *  This class provides a default implementation where it calls the routine for CSR storage
+     *  and converts the result afterwards.
+     */
     virtual void matrixTimesMatrix(
         const ValueType alpha,
         const MatrixStorage<ValueType>& a,
@@ -670,35 +649,13 @@ public:
 
     /** Jacobi iteration step on a halo storage.
      *
-     *  solution -= omega * ( B(halo) * oldSolution) * dinv
-     *
-     *  @param[in,out] localSolution is the solution vector that is updated
-     *  @param[in]     localStorage is needed to get the diagonal
-     *  @param[in]     haloOldSolution is the old solution vector of halo part
-     *  @param[in]     omega is the scaling factor.
-     *
-     *  While local storage must be square and have the diagonal property, this
-     *  matrix storage does not have to be square.
-     */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Jacobi iteration step on a halo storage.
-     *
-     *  solution -= omega * ( B(halo) * oldSolution) * dinv
+     *  solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal
      *
      *  @param[in,out] localSolution is the solution vector that is updated
      *  @param[in]     localDiagonal pointer to the diagonal of local storage
      *  @param[in]     haloOldSolution is the old solution vector of halo part
      *  @param[in]     omega is the scaling factor.
-     *
-     *  @since 1.1.0
      */
-
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
         const hmemo::HArray<ValueType>& localDiagonal,

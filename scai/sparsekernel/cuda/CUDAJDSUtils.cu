@@ -227,100 +227,6 @@ void CUDAJDSUtils::scaleRows(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  checkDiagonalProperty                                             */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-__global__
-void checkDiagonalPropertyKernel(
-    bool* result,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType nonEmptyRows,
-    const IndexType* perm,
-    const IndexType* ja )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i >= numRows )
-    {
-        return;
-    }
-
-    const IndexType iRow = perm[i];
-
-    if ( iRow >= numColumns )
-    {
-        // row does not count for diagonal
-        return;
-    }
-
-    if ( i >= nonEmptyRows )
-    {
-        // iRow has no entries at all, ilg[i] is 0
-        result[0] = false;
-    }
-    else if ( ja[i] != iRow )
-    {
-        result[0] = false;
-    }
-}
-
-bool CUDAJDSUtils::checkDiagonalProperty(
-    const IndexType numDiagonals,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType perm[],
-    const IndexType ja[],
-    const IndexType dlg[] )
-{
-    SCAI_LOG_INFO( logger, "checkDiagonalProperty with numDiagonals = " << numDiagonals
-                   << ", numRows = " << numRows << " and numColumns = " << numColumns )
-    SCAI_CHECK_CUDA_ACCESS
-
-    if ( numRows <= 0 )
-    {
-        return false;
-    }
-
-    if ( numDiagonals <= 0 )
-    {
-        return false;
-    }
-
-    // now it is sure that dlg, perm and ja are not empty
-    const IndexType diagSize = std::min( numRows, numColumns );
-    IndexType nonEmptyRows = 0;
-    SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &dlg[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
-                       "get number of non-zero rows from dlg" );
-
-    // Be careful: numDiagonals has nothing to do with size of diagonal
-
-    if ( nonEmptyRows < diagSize )
-    {
-        return false;
-    }
-
-    bool* d_hasProperty; // will be ptr to device version of hasProperty
-    bool hasProperty = true;
-    SCAI_CUDA_RT_CALL( cudaMalloc( ( void** ) &d_hasProperty, sizeof( bool ) ),
-                       "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
-    SCAI_CUDA_RT_CALL( cudaMemcpy( d_hasProperty, &hasProperty, sizeof( bool ), cudaMemcpyHostToDevice ),
-                       "copy flag for diagonalProperty to device" )
-    const int blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    checkDiagonalPropertyKernel <<< dimGrid, dimBlock>>>( d_hasProperty,
-            numRows, numColumns, nonEmptyRows,
-            perm, ja );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:checkDiagonalPropertyKernel FAILED" )
-    SCAI_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof( bool ), cudaMemcpyDeviceToHost ),
-                       "copy flag for diagonalProperty to host" )
-    SCAI_CUDA_RT_CALL( cudaFree( d_hasProperty ),
-                       "free result var for diagonal property" )
-    return hasProperty;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  ilg2dlg                                                           */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -604,7 +510,7 @@ void jds_jacobi_kernel(
     const T omega )
 {
     extern __shared__ IndexType dlg[];
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
     {
@@ -619,31 +525,41 @@ void jds_jacobi_kernel(
         __syncthreads();
     }
 
-    if ( i < numRows )
+    if ( ii < numRows )
     {
-        const IndexType perm = jdsPerm[i];
-        T temp = rhs[perm];
-        const T aDiag = jdsValues[i];
-        IndexType pos = i + fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, 0 );
-        const IndexType rowEnd = jdsIlg[i];
+        const IndexType i = jdsPerm[ii];   // the original row
+        T temp = rhs[i];
+        T diag = 0;
+        IndexType pos = ii;   // for traversing jdsValues and jdsJA
+        const IndexType rowEnd = jdsIlg[ii];
 
-        for ( IndexType jj = 1; jj < rowEnd; ++jj )
+        for ( IndexType jj = 0; jj < rowEnd; ++jj )
         {
-            temp -= jdsValues[pos] * fetchVectorX<T, useTexture>( oldSolution, jdsJA[pos] );
+            IndexType j = jdsJA[pos];
+
+            if ( j == i )
+            {
+                diag = jdsValues[pos];   // save the diagonal entry for division later
+            }
+            else
+            {
+                temp -= jdsValues[pos] * fetchVectorX<T, useTexture>( oldSolution, jdsJA[pos] );
+            }
+
             pos += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
         }
 
         if ( omega == 0.5 )
         {
-            solution[perm] = omega * ( fetchVectorX<T, useTexture>( oldSolution, perm ) + temp / aDiag );
+            solution[i] = omega * ( fetchVectorX<T, useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
-            solution[perm] = temp / aDiag;
+            solution[i] = temp / diag;
         }
         else
         {
-            solution[perm] = omega * ( temp / aDiag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, perm );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, i );
         }
     }
 }
@@ -1255,7 +1171,6 @@ void CUDAJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
 }
 
 template<typename ValueType>

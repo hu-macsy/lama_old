@@ -210,8 +210,6 @@ BOOST_AUTO_TEST_CASE( moveConstructorTest )
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, ellStorage.getNumValues() );
 
-    BOOST_CHECK( ellStorage.hasDiagonalProperty() );
-
     // verify that move was okay
 
     BOOST_CHECK_EQUAL( ptrIA, getPointer( ellStorage.getIA(), context ) );

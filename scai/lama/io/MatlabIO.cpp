@@ -706,11 +706,16 @@ uint32_t MatlabIO::getSparseStorage( MatrixStorage<ValueType>& storage,
         }
     }
 
-    CSRStorage<ValueType> csrStorage;
-    csrStorage.allocate( dims[1], dims[0] );  // will be transposed
-    csrStorage.swap( ja, ia, values );
+    // build CSR storage that will be transposed
+
+    CSRStorage<ValueType> csrStorage( dims[1], dims[0], std::move( ja ), std::move( ia ), std::move( values ) );
+
     csrStorage.assignTranspose( csrStorage );
-    csrStorage.sortRows( dims[0] == dims[1] );
+
+    // transpose might change order, so we set back the diagonal elements as first entries
+
+    csrStorage.setDiagonalFirst();
+
     storage = csrStorage;
 
     return offset;

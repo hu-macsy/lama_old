@@ -528,6 +528,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
     {
         BinaryOp op = BinaryOp( i );
 
+        if ( op == BinaryOp::COPY )
+        {
+            continue;   // works differently
+        }
+
         HArray<IndexType> ia1( nnz1, indexes1, ctx );
         HArray<IndexType> ia2( nnz2, indexes2, ctx );
         HArray<IndexType> ia3( ctx );

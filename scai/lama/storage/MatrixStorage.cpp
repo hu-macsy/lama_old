@@ -47,7 +47,7 @@
 #include <scai/lama/io/FileIO.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -79,7 +79,6 @@ using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
 using utilskernel::OpenMPUtils;
 
-using sparsekernel::CSRKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
 
 using common::BinaryOp;
@@ -135,39 +134,6 @@ common::ScalarType MatrixStorage<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::convertCSR2CSC(
-    HArray<IndexType>& colIA,
-    HArray<IndexType>& colJA,
-    HArray<ValueType>& colValues,
-    const IndexType numColumns,
-    const HArray<IndexType>& rowIA,
-    const HArray<IndexType>& rowJA,
-    const HArray<ValueType>& rowValues,
-    const ContextPtr preferredLoc )
-{
-    const IndexType numRows = rowIA.size() - 1;
-    const IndexType numValues = rowJA.size();
-    SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
-    static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-    ContextPtr loc = preferredLoc;
-    convertCSR2CSC.getSupportedContext( loc );
-    SCAI_LOG_INFO( logger,
-                   "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
-    SCAI_REGION( "Storage.CSR2CSC" )
-    WriteOnlyAccess<IndexType> cIA( colIA, loc, numColumns + 1 );
-    WriteOnlyAccess<IndexType> cJA( colJA, loc, numValues );
-    WriteOnlyAccess<ValueType> cValues( colValues, loc, numValues );
-    ReadAccess<IndexType> rIA( rowIA, loc );
-    ReadAccess<IndexType> rJA( rowJA, loc );
-    ReadAccess<ValueType> rValues( rowValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    convertCSR2CSC[loc]( cIA.get(), cJA.get(), cValues.get(),  // output args
-                         rIA.get(), rJA.get(), rValues.get(), numRows, numColumns, numValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MatrixStorage<ValueType>::buildCSCData(
     HArray<IndexType>& colIA,
     HArray<IndexType>& colJA,
@@ -178,40 +144,8 @@ void MatrixStorage<ValueType>::buildCSCData(
     HArray<ValueType> rowValues;
     buildCSRData( rowIA, rowJA, rowValues );
     ContextPtr loc = Context::getHostPtr();
-    convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), rowIA, rowJA, rowValues, loc );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
-{
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-
-    buildCSRData( csrIA, csrJA, csrValues );
-
-    // ToDo: csrIA[i] == csrIA[i+1], no entry in row at all
-    // ToDo: csrIA[numRows-1] == numValues possible, out of range addressing
-
-    // gather: colIndexes[i] = csrJA[ csrIA[i] ]
-
-    if ( getNumRows() > 0 )
-    {
-        SCAI_ASSERT_LT_ERROR( csrIA[getNumRows() - 1], csrJA.size(), "last row without any entry" )
-    }
-
-    static LAMAKernel<UtilKernelTrait::setGather<IndexType, IndexType> > setGather;
-
-    ContextPtr loc = getContextPtr();
-    setGather.getSupportedContext( loc );
-
-    WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> ja( csrJA, loc );
-    ReadAccess<IndexType> ia( csrIA, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), BinaryOp::COPY, getNumRows() );
+    sparsekernel::CSRUtils::convertCSR2CSC( colIA, colJA, colValues, 
+                                            getNumRows(), getNumColumns(), rowIA, rowJA, rowValues, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -451,15 +385,15 @@ void MatrixStorage<ValueType>::moveImpl( MatrixStorage<ValueType>&& other )
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::joinHalo(
-    const _MatrixStorage& localData,
-    const _MatrixStorage& haloData,
+    const MatrixStorage<ValueType>& localData,
+    const MatrixStorage<ValueType>& haloData,
     const Halo& halo,
-    const Distribution& colDist,
-    const bool attemptDiagonalProperty )
+    const Distribution& colDist )
 {
     SCAI_REGION( "Storage.joinHalo" )
     SCAI_LOG_INFO( logger,
-                   "join local = " << localData << " with diag = " << localData.hasDiagonalProperty() << " and halo = " << haloData << ", col dist = " << colDist )
+                   "join local = " << localData << " and halo = " << haloData << ", col dist = " << colDist )
+
     //  Default solution joins storage data via the CSR format
     //  Note: this solution works also for *this == localData or haloData
     HArray<IndexType> localIA;
@@ -497,17 +431,9 @@ void MatrixStorage<ValueType>::joinHalo(
     HArray<IndexType> outIA;
     HArray<IndexType> outJA;
     HArray<ValueType> outValues;
-    IndexType numKeepDiagonals = 0;
-
-    if ( attemptDiagonalProperty && localData.hasDiagonalProperty() )
-    {
-        numKeepDiagonals = common::Math::min( localData.getNumRows(), localData.getNumColumns() );
-        SCAI_LOG_INFO( logger, localData << ": has diagonal property, numKeepDiagonals = " << numKeepDiagonals );
-    }
 
     // use static method of MatrixStorage
-    StorageMethods<ValueType>::joinCSR( outIA, outJA, outValues, localIA, localJA, localValues, haloIA, haloJA,
-                                        haloValues, numKeepDiagonals );
+    StorageMethods<ValueType>::joinCSR( outIA, outJA, outValues, localIA, localJA, localValues, haloIA, haloJA, haloValues );
     // here mIA is size array, NOT offsets
     const IndexType numRows = outIA.size() - 1;
     const IndexType numColumns = colDist.getGlobalSize();
@@ -673,7 +599,7 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
+void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps )
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
@@ -681,9 +607,14 @@ void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps, bool kee
 
     buildCSRData( csrIA, csrJA, csrValues );
 
-    CSRStorage<ValueType>::compress( csrIA, csrJA, csrValues, keepDiagonal, eps, getContextPtr() );
+    const IndexType numValues = csrJA.size();
 
-    setCSRData( getNumRows(), getNumColumns(), csrIA, csrJA, csrValues );
+    sparsekernel::CSRUtils::compress( csrIA, csrJA, csrValues, eps, getContextPtr() );
+
+    if ( csrJA.size() != numValues )
+    {
+        setCSRData( getNumRows(), getNumColumns(), csrIA, csrJA, csrValues );
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -865,31 +796,6 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
 template<typename ValueType>
 void MatrixStorage<ValueType>::jacobiIterateHalo(
     HArray<ValueType>& localSolution,
-    const MatrixStorage<ValueType>& localStorage,
-    const HArray<ValueType>& oldHaloSolution,
-    const ValueType omega ) const
-{
-    SCAI_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
-
-    // very inefficient as we just need the diagonal
-
-    auto csrHalo  = convert<CSRStorage<ValueType>>( *this );
-   
-    // we need the diagonal from the local storage
-
-    HArray<ValueType> diagValues;
-    localStorage.getDiagonal( diagValues );
-
-    auto csrLocal = diagonal<CSRStorage<ValueType>>( diagValues );
-
-    csrHalo.jacobiIterateHalo( localSolution, csrLocal, oldHaloSolution, omega );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::jacobiIterateHalo(
-    HArray<ValueType>& localSolution,
     const HArray<ValueType>& localDiagonal,
     const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
@@ -960,7 +866,7 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
     const MatrixStorage<ValueType>& a,
     const MatrixStorage<ValueType>& b,
     const ValueType beta,
-    const MatrixStorage<ValueType>& y )
+    const MatrixStorage<ValueType>& c )
 {
     SCAI_UNSUPPORTED( *this << ": no matrixTimesMatrix for this format available, take CSR" )
 
@@ -968,8 +874,8 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
 
     SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, "default implementation has not been overridden by CSR" )
 
-    auto csr  = convert<CSRStorage<ValueType>>( *this );
-    csr.matrixTimesMatrix( alpha, a, b, beta, y );
+    CSRStorage<ValueType> csr;
+    csr.matrixTimesMatrix( alpha, a, b, beta, c );
     assign( csr );
 }
 

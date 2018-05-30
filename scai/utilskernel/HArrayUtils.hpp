@@ -334,6 +334,18 @@ public:
         const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
+    /** Fill a regular section of an array with a certain value */
+
+    template<typename ValueType>
+    static void fillArraySection(
+        hmemo::HArray<ValueType>& value,
+        const IndexType offset,
+        const IndexType stride,
+        const ValueType val,
+        const IndexType n,
+        const common::BinaryOp op = common::BinaryOp::COPY,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
+
     template<typename ValueType>
     static void setScalar(
         hmemo::HArray<ValueType>& target,

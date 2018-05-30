@@ -506,14 +506,6 @@ public:
 
     virtual IndexType getNumValues() const;
 
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual bool hasDiagonalProperty() const;
-
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual void resetDiagonalProperty();
-
     /* Implementation of method writeAt for dense matrix. */
 
     virtual void writeAt( std::ostream& stream ) const;

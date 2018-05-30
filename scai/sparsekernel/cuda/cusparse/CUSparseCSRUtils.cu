@@ -38,6 +38,8 @@
 // local library
 #include <scai/sparsekernel/cuda/cusparse/CUSPARSEWrapper.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/cuda/CUDACSRUtils.hpp>
+#include <scai/utilskernel/cuda/CUDASparseUtils.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/UtilKernelTrait.hpp>
@@ -156,7 +158,7 @@ void CUSparseCSRUtils::normalGEMV(
     // Note: alpha, beta are passed as pointers
     SCAI_LOG_INFO( logger, "Start cusparseXcsrmv, stream = " << stream )
 
-    CUSPARSEWrapper<ValueType>::csrmv( handle, 
+    CUSPARSEWrapper<ValueType>::csrmv( handle,
                                        common::isTranspose( op ) ? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE,
                                        numRows, numColumns, nnz, &alpha, descrCSR,
                                        csrValues, csrIA, csrJA, x, &beta, result );
@@ -180,7 +182,6 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
     IndexType cIA[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const IndexType bIA[],
@@ -189,7 +190,16 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
     SCAI_REGION( "CUDA.cuCSR.matrixAddSizes" )
     SCAI_LOG_INFO(
         logger,
-        "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+        "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" )
+
+    // verify that the matrices are sorted, otherwise the kernel crashes
+  
+    bool hasSortedRows = CUDACSRUtils::hasSortedRows( aIA, aJA, numRows, numColumns, 1 );
+    SCAI_ASSERT( hasSortedRows, "matrix A is not sorted, required for cuSparse call" )
+
+    hasSortedRows = CUDACSRUtils::hasSortedRows( bIA, bJA, numRows, numColumns, 1 );
+    SCAI_ASSERT( hasSortedRows, "matrix B is not sorted, required for cuSparse call" )
+
     SCAI_CHECK_CUDA_ACCESS
     cusparseMatDescr_t descrCSR;
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
@@ -223,7 +233,6 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
     const IndexType m,
     const IndexType n,
     const IndexType k,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const IndexType bIA[],
@@ -232,7 +241,14 @@ IndexType CUSparseCSRUtils::matrixMultiplySizes(
     SCAI_REGION( "CUDA.CSR.matrixMultiplySizes" )
     SCAI_LOG_INFO(
         logger,
-        "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
+        "matrixMutliplySizes for " << m << " x " << n << " matrix" )
+
+    bool hasSortedRows = CUDACSRUtils::hasSortedRows( aIA, aJA, m, k, 1 );
+    SCAI_ASSERT( hasSortedRows, "csr data of first matrix is not sorted, required for cuSparse call of matrixMultiply" )
+
+    hasSortedRows = CUDACSRUtils::hasSortedRows( bIA, bJA, k, n, 1 );
+    SCAI_ASSERT( hasSortedRows, "csr data of second matrix is not sorted, required for cuSparse call of matrixMultiply" )
+
     SCAI_CHECK_CUDA_ACCESS
     cusparseMatDescr_t descrCSR;
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
@@ -273,7 +289,6 @@ void CUSparseCSRUtils::matrixAdd(
     const IndexType cIA[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const ValueType alpha,
     const IndexType aIA[],
     const IndexType aJA[],
@@ -319,7 +334,6 @@ void CUSparseCSRUtils::matrixMultiply(
     const IndexType n,
     const IndexType k,
     const ValueType alpha,
-    bool diagonalProperty,
     const IndexType aIA[],
     const IndexType aJA[],
     const ValueType aValues[],
@@ -358,6 +372,60 @@ void CUSparseCSRUtils::matrixMultiply(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+template<typename ValueType>
+void CUSparseCSRUtils::sortRows(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValues )
+{
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows" )
+
+    SCAI_REGION( "cuSparse.CSR.sortRow" )
+
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+
+    cusparseMatDescr_t descrCSR;
+    SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrCSR ), "cusparseCreateMatDescr" )
+    cusparseSetMatType( descrCSR, CUSPARSE_MATRIX_TYPE_GENERAL );
+    cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
+
+    size_t pBufferSizeInBytes = 0;
+    void* pBuffer = NULL;
+    int* perm = NULL;
+
+    // step 1: allocate buffer
+    cusparseXcsrsort_bufferSizeExt( handle, numRows, numColumns, numValues, csrIA, csrJA, &pBufferSizeInBytes );
+    SCAI_CUDA_RT_CALL( cudaMalloc( &pBuffer, sizeof( char )* pBufferSizeInBytes ), "alloc sort buffer" )
+
+    size_t sizeOfValuesInBytes = sizeof( ValueType )* numValues;
+
+    SCAI_LOG_DEBUG( logger, "allocated pBuffer for sort, size = " << pBufferSizeInBytes << " bytes, #rows = " << numRows 
+                    << ", nnz = " << numValues << ", sizeof( values ) = " << sizeOfValuesInBytes )
+
+    // step 2: setup permutation vector P to identity
+    SCAI_CUDA_RT_CALL( cudaMalloc( ( void** )&perm, sizeof( int ) * numValues ), "alloc perm" )
+    cusparseCreateIdentityPermutation( handle, numValues, perm );
+
+    // step 3: sort CSR format
+    cusparseXcsrsort( handle, numRows, numColumns, numValues, descrCSR, csrIA, csrJA, perm, pBuffer );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cusparsXcsrsort" )
+
+    // step 4: gather sorted csrVal
+    ValueType* tmp = NULL;
+    SCAI_CUDA_RT_CALL( cudaMalloc( ( void** ) &tmp, sizeOfValuesInBytes ), "alloc tmp for sort" )
+    SCAI_CUDA_RT_CALL( cudaMemcpy( tmp, csrValues, sizeOfValuesInBytes, cudaMemcpyDeviceToDevice ), "memcopy" )
+
+    utilskernel::CUDASparseUtils::setGather( csrValues, tmp, perm, common::BinaryOp::COPY, numValues );
+
+    SCAI_CUDA_RT_CALL( cudaFree( tmp ), "freeTmp" )
+    SCAI_CUDA_RT_CALL( cudaFree( perm ), "freePerm" )
+    SCAI_CUDA_RT_CALL( cudaFree( pBuffer ), "freeBuffer" )
+}
+
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
@@ -382,6 +450,7 @@ void CUSparseCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kern
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sortRows<ValueType> >( sortRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

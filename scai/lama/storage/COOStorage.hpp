@@ -278,7 +278,7 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::StorageWrapper<COOStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
     }
 
     /**
@@ -289,7 +289,6 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -297,8 +296,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::HArray<OtherValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -563,7 +561,6 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
     using _MatrixStorage::getValueType;
@@ -575,7 +572,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -586,6 +582,10 @@ protected:
     hmemo::HArray<ValueType> mValues; //!< non-zero values 
 
 private:
+
+    // check if COO data is sorted; sorts it if not.
+
+    void verifySorting();
 
     /** matrixTimesVector for synchronous and asynchronous execution */
 
@@ -605,11 +605,6 @@ private:
                                  const hmemo::HArray<ValueType>& x,
                                  const common::MatrixOp op,
                                  bool async ) const;
-
-    /** Function that checks the diagonal property of the COO matrix. If on
-     *  the first column index for each row is the row (diagonal element).
-     */
-    virtual bool checkDiagonalProperty() const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

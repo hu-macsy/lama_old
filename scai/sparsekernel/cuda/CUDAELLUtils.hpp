@@ -68,10 +68,6 @@ public:
         return jj * numRows + i;
     }
 
-    /** CUDA Implementation for ELLUtils::hasDiagonalProperty */
-
-    static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] );
-
     static void check(
         const IndexType mNumRows,
         const IndexType mNumValuesPerRow,
@@ -125,8 +121,7 @@ public:
         const ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const RealType<ValueType> eps,
-        bool keepDiagonal );
+        const RealType<ValueType> eps );
 
     /** Implementation for ELLKernelTrait::compressValues */
 
@@ -140,8 +135,7 @@ public:
         const ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const RealType<ValueType> eps,
-        bool keepDiagonal );
+        const RealType<ValueType> eps );
 
     /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
 

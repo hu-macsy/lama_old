@@ -180,12 +180,12 @@ BOOST_AUTO_TEST_CASE( transposeTest )
             StencilStorage<ValueType> stencilStorageT( grid, stencilT );
         
             auto csrStorage = convert<CSRStorage<ValueType>>( stencilStorage );
-            csrStorage.sortRows( false );
-            csrStorage.compress( ValueType( 0 ) );
+            csrStorage.sortRows();
+            csrStorage.compress();
 
             auto csrStorageT = convert<CSRStorage<ValueType>>( stencilStorageT );
-            csrStorageT.sortRows( false );
-            csrStorageT.compress( ValueType( 0 ) );
+            csrStorageT.sortRows();
+            csrStorageT.compress();
         
             CSRStorage<ValueType> csrStorageT1;
             csrStorageT1.assignTranspose( csrStorage );

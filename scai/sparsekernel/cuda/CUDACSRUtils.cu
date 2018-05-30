@@ -165,7 +165,7 @@ void CUDACSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[], 
 }
 
 /* --------------------------------------------------------------------------- */
-/*     getValuePosCol                                                          */
+/*     getColumnPositions                                                      */
 /* --------------------------------------------------------------------------- */
 
 struct notEqual
@@ -208,13 +208,18 @@ static void get_col_pos_kernel( IndexType row[], IndexType pos[], const IndexTyp
 
 /* --------------------------------------------------------------------------- */
 
-IndexType CUDACSRUtils::getValuePosCol( IndexType row[], IndexType pos[], const IndexType j,
-                                        const IndexType csrIA[], const IndexType numRows,
-                                        const IndexType csrJA[], const IndexType numValues )
+IndexType CUDACSRUtils::getColumnPositions( 
+    IndexType row[], 
+    IndexType pos[], 
+    const IndexType j,
+    const IndexType csrIA[], 
+    const IndexType numRows,
+    const IndexType csrJA[], 
+    const IndexType numValues )
 {
-    SCAI_REGION( "CUDA.CSRUtils.getValuePosCol" )
+    SCAI_REGION( "CUDA.CSRUtils.getColumnPositions" )
 
-    SCAI_LOG_INFO( logger, "getValuePosCol: j = " << j << ", #rows = " << numRows << ", #nnz = " << numValues )
+    SCAI_LOG_INFO( logger, "getColumnPositions: j = " << j << ", #rows = " << numRows << ", #nnz = " << numValues )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -260,7 +265,7 @@ struct identic_functor
     }
 };
 
-//trivial kernel to check diagonal property
+// trivial kernel to check diagonal property
 __global__ void hasDiagonalProperty_kernel(
     const IndexType numDiagonals,
     const IndexType ia[],
@@ -279,17 +284,24 @@ __global__ void hasDiagonalProperty_kernel(
         return;
     }
 
-    if ( ia[i] == ia[i + 1] )
+    bool found = false;
+
+    for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
     {
-        *hasProperty = false;
+        if ( ja[jj] == i )
+        {
+            found = true;
+            break;
+         }
     }
-    else if ( ja[ia[i]] != i )
+ 
+    if ( !found )
     {
         *hasProperty = false;
     }
 }
 
-bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] )
+bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[], const bool )
 {
     SCAI_REGION( "CUDA.CSRUtils.hasDiagonalProperty" )
 
@@ -303,16 +315,115 @@ bool CUDACSRUtils::hasDiagonalProperty( const IndexType numDiagonals, const Inde
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimGrid( ( numDiagonals - 1 ) / blockSize + 1, 1, 1 );// = makeGrid( numDiagonals, blockSize );
     dim3 dimBlock( blockSize, 1, 1 );
-    bool* d_hasProperty;
-    bool hasProperty;
-    SCAI_CUDA_RT_CALL( cudaMalloc( ( void** ) &d_hasProperty, sizeof( bool ) ),
-                       "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
-    SCAI_CUDA_RT_CALL( cudaMemset( d_hasProperty, 1, sizeof( bool ) ), "memset bool hasProperty = true" )
-    hasDiagonalProperty_kernel <<< dimGrid, dimBlock>>>( numDiagonals, csrIA, csrJA, d_hasProperty );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasDiagonalProperty failed: are ia and ja correct?" )
-    SCAI_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof( bool ), cudaMemcpyDeviceToHost ),
+
+    bool* deviceFlag;
+    bool hostFlag;     // will contain the flag copied from device
+
+    SCAI_CUDA_DRV_CALL( cuMemAlloc( ( CUdeviceptr* ) &deviceFlag, sizeof( bool ) ),
+                       "allocate bool flag on the device for the result of hasDiagonalProperty_kernel" )
+
+    SCAI_CUDA_DRV_CALL( cuMemsetD8( ( CUdeviceptr ) deviceFlag, ( unsigned char ) 1, sizeof( bool ) ), "memset bool hasSortedRows = true" )
+
+    hasDiagonalProperty_kernel <<< dimGrid, dimBlock>>>( numDiagonals, csrIA, csrJA, deviceFlag );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasDiagonalProperty::kernel failed, most likely arrays csrIA and/or csrJA are invalid" )
+
+    SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( &hostFlag, ( CUdeviceptr ) deviceFlag, sizeof( bool ) ),
                        "copy the result of hasDiagonalProperty_kernel to host" )
-    return hasProperty;
+
+    SCAI_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) deviceFlag ), "cuMemFree( " << deviceFlag << " ) failed" )
+
+    return hostFlag;
+}
+
+/* --------------------------------------------------------------------------- */
+
+__inline__ __device__ bool isSorted( const IndexType* data, const IndexType n )
+{
+    bool sortedFlag = true;
+
+    for ( IndexType i = 1; i < n; ++i )
+    {
+        if ( data[i] < data[i - 1] )
+        {
+            sortedFlag = false;
+            break;
+        }
+    }
+
+    return sortedFlag;
+}
+
+__global__ void hasSortedRows_kernel(
+    bool* hasSortedRows,
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    const IndexType numRows )
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if ( i >= numRows )
+    {
+        return;
+    }
+
+    if ( ! *hasSortedRows )
+    {
+        return;
+    }
+
+    IndexType start = csrIA[i];
+
+    const IndexType end = csrIA[i + 1];
+
+    if ( ! isSorted( &csrJA[start], end - start ) )
+    {
+        *hasSortedRows = false;
+    }
+}
+
+bool CUDACSRUtils::hasSortedRows(
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const IndexType numRows,
+    const IndexType,
+    const IndexType )
+{
+    SCAI_REGION( "CUDA.CSRUtils.hasSortedRows" )
+
+    if ( numRows == 0 )
+    {
+        return true;
+    }
+
+    SCAI_LOG_INFO( logger, "hasSortedRows, numRows = " << numRows )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    // make grid
+
+    const int blockSize = CUDASettings::getBlockSize(); 
+    dim3 dimGrid( ( numRows - 1 ) / blockSize + 1, 1, 1 );// = makeGrid( numDiagonals, blockSize );
+    dim3 dimBlock( blockSize, 1, 1 );
+
+    bool* deviceFlag;
+    bool hostFlag;     // will contain the flag copied from device
+
+    SCAI_CUDA_DRV_CALL( cuMemAlloc( ( CUdeviceptr* ) &deviceFlag, sizeof( bool ) ),
+                       "allocate global bool variable on the device for the result of hasSortedRows_kernel" )
+
+    SCAI_CUDA_DRV_CALL( cuMemsetD8( ( CUdeviceptr ) deviceFlag, ( unsigned char ) 1, sizeof( bool ) ), "memset bool hasSortedRows = true" )
+
+    hasSortedRows_kernel <<< dimGrid, dimBlock>>>( deviceFlag, csrIA, csrJA, numRows );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "hasSortedKernel failed: most likely arrays csrIA and/or csrJA are invalid" )
+
+    SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( &hostFlag, ( CUdeviceptr ) deviceFlag, sizeof( bool ) ),
+                       "copy the result of hasSortedRows_kernel to host" )
+
+    SCAI_CUDA_DRV_CALL( cuMemFree( ( CUdeviceptr ) deviceFlag ), "cuMemFree( " << deviceFlag << " ) failed" )
+
+    return hostFlag;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -337,8 +448,7 @@ void CUDACSRUtils::convertCSR2CSC(
                        "allocate temp for cooIA" )
     // Step 1 : build COO storage,  cooIA (to do), cooJA ( = csrJA ), cooValues ( = csrValues )
     //          -> translate the csrIA offset array to a cooIA array
-    const IndexType numDiagonals = 0;// not supported yet
-    CUDACOOUtils::offsets2ia( cscJA, numValues, csrIA, numRows, numDiagonals );
+    CUDACOOUtils::offsets2ia( cscJA, numValues, csrIA, numRows );
     // switch cooIA and cooJA, copy values and resort
     CUDASparseUtils::set( cooIA, csrJA, numValues, common::BinaryOp::COPY );
     CUDASparseUtils::set( cscValues, csrValues, numValues, common::BinaryOp::COPY );
@@ -992,11 +1102,20 @@ void csr_jacobi_kernel(
         ValueType temp = rhs[i];
         const IndexType rowStart = csrIA[i];
         const IndexType rowEnd = csrIA[i + 1];
-        const ValueType diag = csrValues[rowStart];
+        ValueType diag = 0;
 
-        for ( IndexType jj = rowStart + 1; jj < rowEnd; ++jj )
+        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
         {
-            temp -= csrValues[jj] * fetchVectorX<ValueType, useTexture>( oldSolution, csrJA[jj] );
+            const IndexType j = csrJA[jj];
+
+            if ( j == i )
+            {
+                diag = csrValues[jj];
+            }
+            else
+            {
+                temp -= csrValues[jj] * fetchVectorX<ValueType, useTexture>( oldSolution, j );
+            }
         }
 
         if ( omega == 0.5 )
@@ -1179,98 +1298,6 @@ template<typename ValueType, bool useTexture>
 __global__
 void csr_jacobiHalo_kernel(
     ValueType* const solution,
-    const IndexType* const localIA,
-    const ValueType* const localValues,
-    const IndexType* const haloIA,
-    const IndexType* const haloJA,
-    const ValueType* const haloValues,
-    const IndexType* const rowIndexes,
-    const IndexType numNonEmptyRows,
-    const ValueType* const oldSolution,
-    const ValueType omega )
-{
-    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( ii < numNonEmptyRows )
-    {
-        IndexType i = ii; // default: rowIndexes is identity
-
-        if ( rowIndexes )
-        {
-            i = rowIndexes[ii];
-        }
-
-        ValueType temp = 0.0;
-        const IndexType rowStart = haloIA[i];
-        const IndexType rowEnd = haloIA[i + 1];
-
-        for ( IndexType jj = rowStart; jj < rowEnd; ++jj )
-        {
-            temp += haloValues[jj] * fetchVectorX<ValueType, useTexture>( oldSolution, haloJA[jj] );
-        }
-
-        const ValueType diag = localValues[localIA[i]];
-
-        solution[i] -= temp * ( omega / diag );
-    }
-}
-
-template<typename ValueType>
-void CUDACSRUtils::jacobiHalo(
-    ValueType solution[],
-    const IndexType localIA[],
-    const ValueType localValues[],
-    const IndexType haloIA[],
-    const IndexType haloJA[],
-    const ValueType haloValues[],
-    const IndexType haloRowIndexes[],
-    const ValueType oldSolution[],
-    const ValueType omega,
-    const IndexType numNonEmptyRows )
-{
-    SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
-    SCAI_CHECK_CUDA_ACCESS
-    const int blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numNonEmptyRows, dimBlock.x );
-    bool useTexture = CUDASettings::useTexture();
-    useTexture = false;
-
-    if ( useTexture )
-    {
-        vectorBindTexture( oldSolution );
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-        csr_jacobiHalo_kernel <ValueType, true> <<< dimGrid, dimBlock>>>( solution, localIA, localValues, haloIA,
-                haloJA, haloValues, haloRowIndexes,
-                numNonEmptyRows, oldSolution, omega );
-    }
-    else
-    {
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                           "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
-        csr_jacobiHalo_kernel<ValueType, false> <<< dimGrid, dimBlock>>>( solution, localIA, localValues, haloIA,
-                haloJA, haloValues, haloRowIndexes, numNonEmptyRows,
-                oldSolution, omega );
-    }
-
-    SCAI_CUDA_RT_CALL( cudaGetLastError(), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" )
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "LAMA_STATUS_CSRJACOBIHALO_CUDAKERNEL_FAILED" )
-
-    if ( useTexture )
-    {
-        vectorUnbindTexture( oldSolution );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-/*                          Jacobi halo with diagonal array                    */
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture>
-__global__
-void csr_jacobiHaloWithDiag_kernel(
-    ValueType* const solution,
     const ValueType* const localDiagValues,
     const IndexType* const haloIA,
     const IndexType* const haloJA,
@@ -1307,7 +1334,7 @@ void csr_jacobiHaloWithDiag_kernel(
 }
 
 template<typename ValueType>
-void CUDACSRUtils::jacobiHaloWithDiag(
+void CUDACSRUtils::jacobiHalo(
     ValueType solution[],
     const ValueType localDiagValues[],
     const IndexType haloIA[],
@@ -1318,7 +1345,7 @@ void CUDACSRUtils::jacobiHaloWithDiag(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
-    SCAI_LOG_INFO( logger, "jacobiHaloWithDiag, #non-empty rows = " << numNonEmptyRows )
+    SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
@@ -1329,24 +1356,24 @@ void CUDACSRUtils::jacobiHaloWithDiag(
     if ( useTexture )
     {
         vectorBindTexture( oldSolution );
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
     else
     {
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHaloWithDiag_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr_jacobiHalo_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
     }
 
     if ( useTexture )
     {
-        csr_jacobiHaloWithDiag_kernel <ValueType, true> <<< dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
+        csr_jacobiHalo_kernel <ValueType, true> <<< dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
                 haloJA, haloValues, haloRowIndexes,
                 numNonEmptyRows, oldSolution, omega );
     }
     else
     {
-        csr_jacobiHaloWithDiag_kernel<ValueType, false> <<< dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
+        csr_jacobiHalo_kernel<ValueType, false> <<< dimGrid, dimBlock>>>( solution, localDiagValues, haloIA,
                 haloJA, haloValues, haloRowIndexes, numNonEmptyRows,
                 oldSolution, omega );
     }
@@ -1389,7 +1416,6 @@ __global__ void matrixAddSizesKernel(
     IndexType* cIa,
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const IndexType* aIa,
     const IndexType* aJa,
     const IndexType* bIa,
@@ -1407,11 +1433,6 @@ __global__ void matrixAddSizesKernel(
     {
         if ( rowIt < numRows )
         {
-            if ( diagonalProperty && rowIt >= numColumns )
-            {
-                diagonalProperty = false;
-            }
-
             IndexType aColIt = aIa[rowIt] + laneId;
             IndexType aColEnd = aIa[rowIt + 1];
             IndexType bColIt = bIa[rowIt] + laneId;
@@ -1461,7 +1482,6 @@ IndexType CUDACSRUtils::matrixAddSizes(
     IndexType cIa[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
     const IndexType bIa[],
@@ -1470,14 +1490,13 @@ IndexType CUDACSRUtils::matrixAddSizes(
     SCAI_REGION( "CUDA.CSRUtils.matrixAddSizes" )
     SCAI_LOG_INFO(
         logger,
-        "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+        "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
 // Reset cIa
     thrust::device_ptr<IndexType> cIaPtr( cIa );
     thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
 // TODO: Check if diagonal property needs special attention
-    matrixAddSizesKernel<NUM_WARPS> <<< NUM_BLOCKS, NUM_THREADS>>>( cIa, numRows, numColumns, diagonalProperty,
-            aIa, aJa, bIa, bJa );
+    matrixAddSizesKernel<NUM_WARPS> <<< NUM_BLOCKS, NUM_THREADS>>>( cIa, numRows, numColumns, aIa, aJa, bIa, bJa );
     cudaStreamSynchronize( 0 );
     SCAI_CHECK_CUDA_ERROR
 // Convert sizes array to offset array
@@ -1834,8 +1853,7 @@ void matrixMultiplySizesKernel(
     IndexType* chunkPtr,
     IndexType* chunkList,
     IndexType numChunks,
-    bool* hashError,
-    bool diagonalProperty )
+    bool* hashError )
 {
     __shared__ IndexType sHashTable[NUM_ELEMENTS_IN_SHARED];
     __shared__ volatile IndexType sReservedChunks;
@@ -1859,11 +1877,6 @@ void matrixMultiplySizesKernel(
                 sInsertMiss = false;
                 IndexType aColIt = aIA[aRowIt] + laneId;
                 IndexType aColEnd = aIA[aRowIt + 1];
-
-                if ( laneId == 0 && diagonalProperty )
-                {
-                    cIA[aRowIt]++;
-                }
 
                 multHlp_initializeChunks( sHashTable,
                                           chunkPtr,
@@ -1890,7 +1903,7 @@ void matrixMultiplySizesKernel(
                         {
                             colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
 
-                            if ( colB != cudaNIndex && ( !diagonalProperty || colB != aRowIt ) )
+                            if ( colB != cudaNIndex )
                             {
                                 bool inserted = multHlp_insertIndexex( colB,
                                                                        sHashTable,
@@ -1964,14 +1977,13 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType k,
-    bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
     const IndexType bIa[],
     const IndexType bJa[] )
 {
     SCAI_REGION( "CUDA.CSR.matrixMultiplySizes" )
-    SCAI_LOG_INFO( logger, "matrixMultiplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+    SCAI_LOG_INFO( logger, "matrixMultiplySizes for " << numRows << " x " << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
 
     // Reset cIa
@@ -2041,8 +2053,7 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
         hashTable,
         chunkList,
         numChunks,
-        hashError,
-        diagonalProperty );
+        hashError );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "snyc after matrixMultiplySizesKernel" );
 
@@ -2081,7 +2092,6 @@ void matrixAddKernel(
     const IndexType* cIA,
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const ValueType alpha,
     const IndexType* aIA,
     const IndexType* aJA,
@@ -2108,11 +2118,6 @@ void matrixAddKernel(
     {
         if ( rowIt < numRows )
         {
-            if ( diagonalProperty && rowIt >= numColumns )
-            {
-                diagonalProperty = false;
-            }
-
             IndexType aColIt = aIA[rowIt] + laneId;
             IndexType aColEnd = aIA[rowIt + 1];
             IndexType bColIt = bIA[rowIt] + laneId;
@@ -2192,7 +2197,6 @@ void CUDACSRUtils::matrixAdd(
     const IndexType cIA[],
     const IndexType numRows,
     const IndexType numColumns,
-    bool diagonalProperty,
     const ValueType alpha,
     const IndexType aIA[],
     const IndexType aJA[],
@@ -2206,7 +2210,7 @@ void CUDACSRUtils::matrixAdd(
     SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
     matrixAddKernel<ValueType, NUM_WARPS> <<< NUM_BLOCKS, NUM_THREADS>>>( cJA, cValues, cIA, numRows, numColumns,
-            diagonalProperty, alpha, aIA, aJA, aValues, beta, bIA, bJA, bValues );
+            alpha, aIA, aJA, aValues, beta, bIA, bJA, bValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync after matrixAdd kernel" )
 }
@@ -2229,10 +2233,7 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
                                     IndexType* indexChunks,
                                     ValueType* valueChunks,
                                     volatile IndexType chunkList[],
-                                    IndexType numReservedChunks,
-                                    bool diagonalProperty,
-                                    ValueType diagonalElement )
-
+                                    IndexType numReservedChunks )
 {
     // TODO: rename sColA => destinationOffset!
 
@@ -2241,13 +2242,6 @@ inline void multHlp_copyHashtable ( volatile IndexType* sColA,
     IndexType one = 1;
     IndexType hashCol;
     ValueType hashVal;
-
-    if ( diagonalProperty && laneId == 0 )
-    {
-        cJA[rowOffset] = aRowIt;
-        cValues[rowOffset] = diagonalElement * alpha;
-        *sColA = 1;
-    }
 
     if ( numReservedChunks == 0 )
     {
@@ -2340,8 +2334,7 @@ void matrixMultiplyKernel(
     ValueType* valueChunks,
     IndexType* chunkList,
     const IndexType numChunks,
-    bool* hashError,
-    bool diagonalProperty )
+    bool* hashError )
 {
     __shared__ IndexType sHashTableIndexes[NUM_ELEMENTS_IN_SHARED];
     __shared__ ValueType sHashTableValues[NUM_ELEMENTS_IN_SHARED];
@@ -2351,7 +2344,6 @@ void matrixMultiplyKernel(
     __shared__ volatile ValueType sValA;
     __shared__ volatile IndexType sRowIt;
     __shared__ volatile bool sInsertMiss;
-    __shared__ volatile ValueType diagonalElement;
     IndexType globalWarpId = ( blockIdx.x * blockDim.x + threadIdx.x ) / warpSize;
     IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
     IndexType colB;
@@ -2384,11 +2376,6 @@ void matrixMultiplyKernel(
                 IndexType aColIt = aIA[aRowIt] + laneId;
                 IndexType aColEnd = aIA[aRowIt + 1];
 
-                if ( laneId == 0 && diagonalProperty )
-                {
-                    diagonalElement = 0.0;
-                }
-
                 multHlp_initializeChunks( sHashTableIndexes,
                                           indexChunks,
                                           NUM_ELEMENTS_PER_CHUNK,
@@ -2417,28 +2404,21 @@ void matrixMultiplyKernel(
                             colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
                             ValueType valB = bColIt < bColEnd ? bValues[bColIt] : static_cast<ValueType>( 0 );
 
-                            if ( diagonalProperty && colB == aRowIt )
+                            if ( colB != cudaNIndex  )
                             {
-                                diagonalElement += sValA * valB;
-                            }
-                            else
-                            {
-                                if ( colB != cudaNIndex && ( !diagonalProperty || colB != aRowIt ) )
-                                {
-                                    bool inserted = multHlp_insertValues( colB,
-                                                                          sHashTableIndexes,
-                                                                          sHashTableValues,
-                                                                          indexChunks,
-                                                                          valueChunks,
-                                                                          sChunkList,
-                                                                          sReservedChunks,
-                                                                          valB,
-                                                                          sValA );
+                                bool inserted = multHlp_insertValues( colB,
+                                                                      sHashTableIndexes,
+                                                                      sHashTableValues,
+                                                                      indexChunks,
+                                                                      valueChunks,
+                                                                      sChunkList,
+                                                                      sReservedChunks,
+                                                                      valB,
+                                                                      sValA );
 
-                                    if ( !inserted )
-                                    {
-                                        sInsertMiss = true;
-                                    }
+                                if ( !inserted )
+                                {
+                                    sInsertMiss = true;
                                 }
                             }
                         }
@@ -2459,9 +2439,7 @@ void matrixMultiplyKernel(
                                             indexChunks,
                                             valueChunks,
                                             sChunkList,
-                                            sReservedChunks,
-                                            diagonalProperty,
-                                            diagonalElement );
+                                            sReservedChunks );
                 }
                 else
                 {
@@ -2496,7 +2474,6 @@ void CUDACSRUtils::matrixMultiply(
     const IndexType numColumns,
     const IndexType k,
     const ValueType alpha,
-    bool diagonalProperty,
     const IndexType aIa[],
     const IndexType aJa[],
     const ValueType aValues[],
@@ -2577,8 +2554,7 @@ void CUDACSRUtils::matrixMultiply(
         valueChunks,
         chunkList,
         numChunks,
-        hashError,
-        diagonalProperty );
+        hashError );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync after matrixMultiply kernel" )
 
@@ -2616,8 +2592,7 @@ void sortRowKernel(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
-    const IndexType numRows,
-    const bool diagonalFlag )
+    const IndexType numRows )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -2626,8 +2601,8 @@ void sortRowKernel(
     {
         // use serial bubble sort as sort algorithm for one row
 
-        const IndexType start = csrIA[i];
-        IndexType end = csrIA[i + 1] - 1;
+        IndexType start = csrIA[i];
+        IndexType end   = csrIA[i + 1] - 1;
 
         bool sorted = false;
 
@@ -2637,22 +2612,7 @@ void sortRowKernel(
 
             for ( IndexType jj = start; jj < end; ++jj )
             {
-                bool swapIt = false;
-
-                // if diagonalFlag is set, column i is the smallest one
-
-                if ( diagonalFlag && ( csrJA[jj + 1] == i ) && ( csrJA[jj] != i ) )
-                {
-                    swapIt = true;
-                }
-                else if ( diagonalFlag && ( csrJA[jj] == i ) )
-                {
-                    swapIt = false;
-                }
-                else
-                {
-                    swapIt = csrJA[jj] > csrJA[jj + 1];
-                }
+                bool swapIt = csrJA[jj] > csrJA[jj + 1];
 
                 if ( swapIt )
                 {
@@ -2668,16 +2628,17 @@ void sortRowKernel(
 }
 
 template<typename ValueType>
-void CUDACSRUtils::sortRowElements(
+void CUDACSRUtils::sortRows(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const bool diagonalFlag )
+    const IndexType,
+    const IndexType )
 {
     SCAI_REGION( "CUDA.CSR.sortRow" )
 
-    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -2685,9 +2646,110 @@ void CUDACSRUtils::sortRowElements(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    sortRowKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows, diagonalFlag );
+    sortRowKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sortRowElements" )
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sortRows" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void shiftDiagKernel(
+    IndexType count[],
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType numDiagonals )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i >= numDiagonals )
+    {
+        return;
+    }
+
+    IndexType start = csrIA[i];
+    IndexType end   = csrIA[i+1] - 1;
+
+    if ( end < start )
+    {
+        count[i] = 0;  // empty row, no diagonal element
+        return;
+    }
+
+    if ( csrJA[start] == i )
+    {
+        count[i] = 1;  // diagonal element is already first
+        return;
+    }
+
+    bool found = false;
+    count[i]   = 0;      // count this row only if diagonal element found
+
+    ValueType diagonalValue;  // will be set when found
+
+    // traverse reverse
+
+    while ( end > start )
+    {
+        // check if it is the diagonal element, save the diagonal value
+
+        if ( not found && csrJA[end] == i )
+        {
+            found = true;
+            diagonalValue = csrValues[end];
+        }
+
+        // move up elements to fill the gap of diagonal element
+        if ( found )
+        {
+            csrJA[end] = csrJA[end - 1];
+            csrValues[end] = csrValues[end - 1];
+        }
+
+        end--;
+    }
+
+    if ( found )
+    {
+        // now set the first row element as the diagonal element
+        csrValues[start] = diagonalValue;
+        csrJA[start] = i;
+        count[i] = 1;
+    }
+}
+
+template<typename ValueType>
+IndexType CUDACSRUtils::shiftDiagonal(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType numDiagonals,
+    const IndexType csrIA[] )
+{
+    SCAI_REGION( "CUDA.CSR.shiftDiag" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<IndexType> countPtr = thrust::device_malloc<IndexType>( numDiagonals );
+
+    IndexType* d_count = thrust::raw_pointer_cast( countPtr );
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numDiagonals, dimBlock.x );
+
+    shiftDiagKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, numDiagonals );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "shiftDiagonal" )
+
+    IndexType numFirstDiagonals = thrust::reduce( countPtr, countPtr + numDiagonals, 0, thrust::plus<IndexType>() );
+
+    thrust::device_free( countPtr );
+
+    SCAI_LOG_INFO( logger, "shiftDiagonal for CSR data, " << numFirstDiagonals << " of " << numDiagonals << " are now first entry" )
+
+    return numFirstDiagonals;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2700,8 +2762,7 @@ void countNonZerosKernel(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -2711,10 +2772,9 @@ void countNonZerosKernel(
 
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = common::Math::abs( values[jj] ) > common::Math::abs( eps );
+            bool nonZero = common::Math::abs( values[jj] ) > common::Math::abs( eps );
 
-            if ( nonZero || isDiagonal )
+            if ( nonZero )
             {
                 ++cnt;
             }
@@ -2731,13 +2791,12 @@ void CUDACSRUtils::countNonZeros(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
     SCAI_REGION( "CUDA.CSRUtils.countNonZeros" )
 
     SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
-                   << "), eps = " << eps << ", diagonal = " << diagonalFlag )
+                   << "), eps = " << eps )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -2745,7 +2804,7 @@ void CUDACSRUtils::countNonZeros(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    countNonZerosKernel <<< dimGrid, dimBlock>>>( sizes, ia, ja, values, numRows, eps, diagonalFlag );
+    countNonZerosKernel <<< dimGrid, dimBlock>>>( sizes, ia, ja, values, numRows, eps );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2760,8 +2819,7 @@ void compressKernel(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -2771,15 +2829,14 @@ void compressKernel(
 
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = common::Math::abs( values[jj] ) > common::Math::abs( eps );
-
-            if ( nonZero || isDiagonal )
+            if ( common::Math::abs( values[jj] ) <= eps )
             {
-                newJA[ offs ]     = ja[jj];
-                newValues[ offs ] = values[jj];
-                ++offs;
+                continue;  // skip this zero value
             }
+
+            newJA[ offs ]     = ja[jj];
+            newValues[ offs ] = values[jj];
+            ++offs;
         }
     }
 }
@@ -2793,8 +2850,7 @@ void CUDACSRUtils::compress(
     const IndexType ja[],
     const ValueType values[],
     const IndexType numRows,
-    const ValueType eps,
-    const bool diagonalFlag )
+    const RealType<ValueType> eps )
 {
     SCAI_REGION( "CUDA.CSR.compress" )
 
@@ -2804,7 +2860,7 @@ void CUDACSRUtils::compress(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    compressKernel <<< dimGrid, dimBlock>>>( newJA, newValues, newIA, ia, ja, values, numRows, eps, diagonalFlag );
+    compressKernel <<< dimGrid, dimBlock>>>( newJA, newValues, newIA, ia, ja, values, numRows, eps );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
 }
@@ -2820,8 +2876,9 @@ void CUDACSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     SCAI_LOG_DEBUG( logger, "set CSR routines for CUDA in Interface" )
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::getColumnPositions>( getColumnPositions, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::hasSortedRows>( hasSortedRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
 }
@@ -2836,14 +2893,14 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::sortRows<ValueType> >( sortRows, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::shiftDiagonal<ValueType> >( shiftDiagonal, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::jacobiHaloWithDiag<ValueType> >( jacobiHaloWithDiag, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
 }
 

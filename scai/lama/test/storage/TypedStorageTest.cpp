@@ -45,6 +45,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/Context.hpp>
@@ -341,62 +342,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types
         // as get/set column is using same data type, storage must now be completely zero
 
         BOOST_CHECK_EQUAL( storage.maxNorm(), 0 );
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE( getFirstColTest )
-{
-    typedef SCAI_TEST_TYPE ValueType;    // value type does not matter at all here
-
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr();
-    TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
-
-    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
-    {
-        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
-
-        const IndexType numRows = 4;
-        const IndexType numColumns = 8;
-        const IndexType ia[] = { 0,    2,       5, 6,    8 };
-        const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
-        const IndexType firstCols[] = { 1, 3, 5, 7 };
-        const IndexType numValues = ia[numRows];
-
-        HArray<IndexType> csrIA( numRows + 1, ia, context );
-        HArray<IndexType> csrJA( numValues, ja, context );
-        HArray<ValueType> csrValues( numValues, ValueType( 1 ), context );
-
-        storage.setCSRData( numRows, numColumns, csrIA, csrJA, csrValues );
-
-        SCAI_LOG_INFO( logger, "getFirstColTest, storage = " << storage )
-
-        // we check both, base class and derived class method
-
-        HArray<IndexType> firstColIndexes1;
-        HArray<IndexType> firstColIndexes2;
-
-        if (     storage.getFormat() == Format::DENSE
-                 ||  storage.getFormat() == Format::DIA  )
-        {
-            BOOST_CHECK_THROW(
-            { storage.getFirstColumnIndexes( firstColIndexes1 ); },
-            Exception );
-            continue;
-        }
-
-        storage.getFirstColumnIndexes( firstColIndexes1 );
-        storage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
-
-        BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
-        BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( firstColIndexes1[i], firstCols[i] );
-            BOOST_CHECK_EQUAL( firstColIndexes2[i], firstCols[i] );
-        }
     }
 }
 
@@ -821,12 +766,17 @@ BOOST_AUTO_TEST_CASE( jacobiTest )
         storage1->getDiagonal( diagonalInverse );
         HArrayUtils::compute( diagonalInverse, ValueType( 1 ), common::BinaryOp::DIVIDE, diagonalInverse );
         storage1->setDiagonal( 0 );
+
         ValueType omegas[] = { 1.0, 0.8, 0.5 };
         const int NCASES = sizeof( omegas ) / sizeof( ValueType );
 
         for ( int k = 0; k < NCASES; ++k )
         {
             ValueType omega = omegas[k];
+
+            SCAI_LOG_DEBUG( logger, "run jacobi, omega = " << omega << ", format = " << storage.getFormat() 
+                                    << ", type = " << storage.getValueType() )
+
             HArray<ValueType> solution1( context );
             HArray<ValueType> solution2( context );
             storage.jacobiIterate( solution1, oldSolution, rhs, omega );
@@ -838,6 +788,7 @@ BOOST_AUTO_TEST_CASE( jacobiTest )
             utilskernel::HArrayUtils::arrayPlusArray( solution2, omega, solution2,
                     ValueType( 1 ) - omega, oldSolution, solution2.getValidContext() );
             // solution1 and solution2 must be the same
+
             BOOST_CHECK( HArrayUtils::maxDiffNorm( solution1, solution2 ) < common::TypeTraits<ValueType>::small() );
         }
     }
@@ -867,8 +818,13 @@ BOOST_AUTO_TEST_CASE( jacobiAsyncTest )
         for ( int k = 0; k < NCASES; ++k )
         {
             ValueType omega = omegas[k];
+
+            SCAI_LOG_DEBUG( logger, "run jacobi async, omega = " << omega << ", format = " << storage.getFormat() 
+                                    << ", type = " << storage.getValueType() )
+
             HArray<ValueType> solution1( context );
             HArray<ValueType> solution2( context );
+
             storage.jacobiIterate( solution1, oldSolution, rhs, omega );
             {
                 std::unique_ptr<tasking::SyncToken> token;
@@ -901,12 +857,13 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
         std::unique_ptr<MatrixStorage<ValueType> > local( storage.newMatrixStorage() );
         setDenseSquareData( *local );
         SCAI_LOG_DEBUG( logger, "storage for jacobiIterateHalo = " << storage )
+        HArray<ValueType> diagonal;
         const HArray<ValueType> oldSolution( storage.getNumColumns(), 1 );
         // clone the storage and set its diagonal to zero, but keep inverse of diagonal
         std::unique_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
         HArray<ValueType> diagonalInverse;
-        local->getDiagonal( diagonalInverse );
-        HArrayUtils::compute( diagonalInverse, ValueType( 1 ), common::BinaryOp::DIVIDE, diagonalInverse );
+        local->getDiagonal( diagonal );
+        HArrayUtils::compute( diagonalInverse, ValueType( 1 ), common::BinaryOp::DIVIDE, diagonal );
         storage1->scaleRows( diagonalInverse );
         ValueType omegas[] = { 1.0, 0.8, 0.5 };
         const int NCASES = sizeof( omegas ) / sizeof( ValueType );
@@ -917,7 +874,7 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
             HArray<ValueType> solution1( storage.getNumRows(), 1, context );
             HArray<ValueType> solution2( storage.getNumRows(), 1, context );
             // solution1 -= omega * ( B(halo) * oldSolution ) * dinv
-            storage.jacobiIterateHalo( solution1, *local, oldSolution, omega );
+            storage.jacobiIterateHalo( solution1, diagonal, oldSolution, omega );
             const ValueType alpha = -omega;
             const ValueType beta  = 1;
             storage1->matrixTimesVector( solution2, alpha, oldSolution, beta , solution2, common::MatrixOp::NORMAL );
@@ -1199,11 +1156,9 @@ BOOST_AUTO_TEST_CASE( buildCSRDataTest )
         getMatrix_7_4 ( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues, matrixDense );
         IndexType numValues = matrixJA.size();
         // IA array not available yet, we have only sizes
-        _MatrixStorage::sizes2offsets( matrixRowSizes );
+        sparsekernel::CSRUtils::sizes2offsets( matrixRowSizes, matrixRowSizes, context );
         // Now we can use matrixRowSizes as IA array
         storage.setCSRData( numRows, numColumns, matrixRowSizes, matrixJA, matrixValues );
-        // make sure that storage has not diagonal property, otherwise it will build wrong CSR data
-        BOOST_REQUIRE_EQUAL( storage.hasDiagonalProperty(), false );
         // make sure that we have all values stored
         BOOST_CHECK_EQUAL( numValues, storage.getNumValues() );
         SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
@@ -1265,6 +1220,11 @@ BOOST_AUTO_TEST_CASE( fillCOOTest )
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        if ( storage.getFormat() != Format::COO )
+        {
+            continue;  // REMOVE
+        }
 
         storage.assign( denseInput );
 

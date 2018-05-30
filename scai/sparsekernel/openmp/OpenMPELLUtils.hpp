@@ -130,9 +130,19 @@ private:
         const IndexType ellSizes[],
         const IndexType ellJA[] );
 
-    /** Implementation for ELLKernelTrait::getValuePosCol */
+    /** Implementation for ELLKernelTrait::getDiagonalPositions */
 
-    static IndexType getValuePosCol(
+    static IndexType getDiagonalPositions(
+        IndexType diagonalPositions[],
+        const IndexType numDiagonals,
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[] );
+
+    /** Implementation for ELLKernelTrait::getColumnPositions */
+
+    static IndexType getColumnPositions(
         IndexType row[],
         IndexType pos[],
         const IndexType j,
@@ -140,10 +150,6 @@ private:
         const IndexType numRows,
         const IndexType ellJA[],
         const IndexType numValuesPerRow );
-
-    /** check diagonal property */
-
-    static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrJA[] );
 
     /** Implementation for ELLKernelTrait::scaleRows */
 
@@ -165,8 +171,7 @@ private:
         const ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const RealType<ValueType> eps,
-        bool keepDiagonal );
+        const RealType<ValueType> eps );
 
     /** Implementation for ELLKernelTrait::compressValues */
 
@@ -180,8 +185,7 @@ private:
         const ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
-        const RealType<ValueType> eps,
-        bool keepDiagonal );
+        const RealType<ValueType> eps );
 
     /** Implementation for ELLKernelTrait::getCSRValues */
 

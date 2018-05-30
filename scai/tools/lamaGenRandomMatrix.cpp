@@ -121,7 +121,7 @@ void generate( const IndexType nrows, const IndexType ncols, const float fillRat
         }
     }
 
-    auto m = convert<CSRSparseMatrix<ValueType>>( assembly.buildGlobalCOO( nrows, ncols ) );
+    auto m = convert<CSRSparseMatrix<ValueType>>( assembly.buildGlobalCOO( nrows, ncols, common::BinaryOp::COPY ) );
 
     DenseVector<ValueType> x;
     DenseVector<ValueType> b;
@@ -130,7 +130,6 @@ void generate( const IndexType nrows, const IndexType ncols, const float fillRat
     b = m * x;
 
     cout << "m = " << m << endl;
-    cout << "m has diagonal property = " << m.hasDiagonalProperty() << endl;
     cout << "x = " << x << endl;
     cout << "b = " << b << endl;
     cout << endl;

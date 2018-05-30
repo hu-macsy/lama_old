@@ -206,7 +206,7 @@ public:
      *    diffMatrix.compress( 0.0001 );
      * \endcode
      */
-    void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+    void compress( const RealType<ValueType> eps = 0 );
 
     /** @brief Implementation of pure method Matrix<ValueType>::getColumn 
      *
@@ -562,14 +562,6 @@ public:
     /* Implementation of pure method of class _Matrix. */
 
     virtual void wait() const;
-
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual bool hasDiagonalProperty() const;
-
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual void resetDiagonalProperty();
 
     /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 

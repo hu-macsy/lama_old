@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE( globalTest )
         }
     }
 
-    COOStorage<ValueType> cooGlobal = assembly.buildGlobalCOO( numRows, numColumns );
+    COOStorage<ValueType> cooGlobal = assembly.buildGlobalCOO( numRows, numColumns, common::BinaryOp::COPY );
  
     BOOST_REQUIRE_EQUAL( numRows, cooGlobal.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, cooGlobal.getNumColumns() );
@@ -213,14 +213,14 @@ BOOST_AUTO_TEST_CASE( failTest )
 
     COOStorage<ValueType> localStorage;
 
-    localStorage = assembly.buildLocalCOO( *dist, numColumns );
+    localStorage = assembly.buildLocalCOO( *dist, numColumns, common::BinaryOp::COPY );
 
     BOOST_CHECK_EQUAL( comm->sum( localStorage.getNumValues() ), nnz );
 
     // number of columns too small
 
     BOOST_CHECK_THROW( {
-        localStorage = assembly.buildLocalCOO( *dist, 5 );
+        localStorage = assembly.buildLocalCOO( *dist, 5, common::BinaryOp::COPY );
     }, common::Exception );
 
     // number of rows too small
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE( failTest )
     dist = std::make_shared<dmemo::BlockDistribution>( 5, comm);
 
     BOOST_CHECK_THROW( {
-        localStorage = assembly.buildLocalCOO( *dist, numColumns );
+        localStorage = assembly.buildLocalCOO( *dist, numColumns, common::BinaryOp::COPY );
     }, common::Exception );
 
     // building local data only with distribution that has same communicator
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE( failTest )
         SCAI_LOG_INFO( logger, "noDist::comm = " << noDist->getCommunicator() <<
                                " != assembly::comm = " << assembly.getCommunicator() )
         BOOST_CHECK_THROW( {
-            localStorage = assembly.buildLocalCOO( *noDist, numColumns );
+            localStorage = assembly.buildLocalCOO( *noDist, numColumns, common::BinaryOp::COPY );
         }, common::Exception );
     }
 }

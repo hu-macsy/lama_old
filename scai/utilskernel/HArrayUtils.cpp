@@ -277,6 +277,38 @@ void HArrayUtils::setArraySection(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void HArrayUtils::fillArraySection(
+    HArray<ValueType>& array,
+    const IndexType offset,
+    const IndexType stride,
+    const ValueType val,
+    const IndexType n,
+    const BinaryOp op,
+    const ContextPtr prefLoc )
+{
+    static LAMAKernel<UtilKernelTrait::fillSection<ValueType> > fillSection;
+
+    ContextPtr loc = prefLoc;
+
+    if ( loc == ContextPtr() )
+    {
+        // optional argument has not been set, take default
+
+        loc = array.getValidContext();  // avoids moving of data
+    }
+
+    fillSection.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wValues( array, loc );
+
+    fillSection[loc]( wValues.get() + offset, stride, val, n, op );
+}
+
+/* --------------------------------------------------------------------------- */
+
 void HArrayUtils::_gather(
     _HArray& target,
     const _HArray& source,
@@ -2619,6 +2651,14 @@ void HArrayUtils::buildComplex(
             const IndexType,                                            \
             const ValueType,                                            \
             hmemo::ContextPtr);                                         \
+    template void HArrayUtils::fillArraySection<ValueType>(             \
+            HArray<ValueType>& array,                                   \
+            const IndexType,                                            \
+            const IndexType,                                            \
+            const ValueType,                                            \
+            const IndexType,                                            \
+            const BinaryOp,                                             \
+            ContextPtr prefLoc );                                       \
     template void HArrayUtils::appendArray<ValueType>(                  \
             hmemo::HArray<ValueType>&,                                  \
             const hmemo::HArray<ValueType>&,                            \

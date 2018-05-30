@@ -50,7 +50,7 @@
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -89,7 +89,7 @@ using std::bind;
 using std::cref;
 using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
-using sparsekernel::CSRKernelTrait;
+using sparsekernel::CSRUtils;
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueType>::logger, "Matrix.SparseMatrix" )
 
@@ -384,7 +384,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         SCAI_LOG_DEBUG( logger,
                         matrix.getHaloStorage() << ": CSC data, IA = " << sendIA << ", JA = " << sendJA << ", Values = " << sendValues )
         // for initial communication we need the sizes and not the offsets
-        _MatrixStorage::offsets2sizes( sendSizes, sendIA );
+        CSRUtils::offsets2sizes( sendSizes, sendIA, Context::getHostPtr() );
         SCAI_LOG_DEBUG( logger, "sendSizes with " << sendSizes.size() << " entries" )
         HArray<IndexType> recvSizes;
         const Halo& matrixHalo = matrix.getHalo();
@@ -435,7 +435,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
                                             recvJA, recvValues );
         // Now this partition has all sparse data from other partitions to build my new halo
         mHaloData->setCompressThreshold( 1.0f ); // halo rows might be compressed
-        _MatrixStorage::sizes2offsets( haloRowSizes );
+        CSRUtils::sizes2offsets( haloRowSizes, haloRowSizes, Context::getHostPtr() );
         mHaloData->setCSRData( mNumLocalRows, getNumColumns(), haloRowSizes, haloJA, haloValues );
         // Now build a new halo and localize columns in mHaloData
         mHaloData->buildHalo( mHalo, getColDistribution() );
@@ -575,9 +575,9 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
     else
     {
         // temporary local storage with joined columns needed before
-        bool keepDiagonalProperty = true;
+
         shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->newMatrixStorage() );
-        tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
+        tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
         storage = *tmp;
     }
 }
@@ -638,8 +638,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
     else
     {
         SCAI_LOG_DEBUG( logger, "remove halo, join local = " << *mLocalData << " and halo = " << *mHaloData )
-        bool keepDiagonalProperty = ( *oldColDistributionPtr == *oldRowDistributionPtr );
-        mLocalData->joinHalo( *mLocalData, *mHaloData, mHalo, *oldColDistributionPtr, keepDiagonalProperty );
+        mLocalData->joinHalo( *mLocalData, *mHaloData, mHalo, *oldColDistributionPtr );
         mHaloData->allocate( mLocalData->getNumRows(), 0 );
         mHalo.clear();
         SCAI_LOG_INFO( logger, "removed column distribution / halo, local data = " << *mLocalData )
@@ -1689,13 +1688,13 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
+void SparseMatrix<ValueType>::compress( const RealType<ValueType> eps )
 {
-    mLocalData->compress( eps, keepDiagonal);
+    mLocalData->compress( eps );
 
     if ( !getColDistribution().isReplicated() )
     {
-         mHaloData->compress( eps, false );   //  diagonal elements in halo are irrelevant
+         mHaloData->compress( eps );   //  diagonal elements in halo are irrelevant
 
          // rebuild the Halo schedule as entries might have been deleted
 
@@ -2393,14 +2392,14 @@ RealType<ValueType> SparseMatrix<ValueType>::maxDiffNormImpl( const SparseMatrix
     if ( !getColDistribution().isReplicated() )
     {
         tmp1.reset( new CSRStorage<ValueType>() );
-        tmp1->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), false );
+        tmp1->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
         myLocalStorage = tmp1.get();
     }
 
     if ( !other.getColDistribution().isReplicated() )
     {
         tmp2.reset( new CSRStorage<ValueType>() );
-        tmp2->joinHalo( *other.mLocalData, *other.mHaloData, other.mHalo, other.getColDistribution(), false );
+        tmp2->joinHalo( *other.mLocalData, *other.mHaloData, other.mHalo, other.getColDistribution() );
         otherLocalStorage = tmp2.get();
     }
 
@@ -2585,34 +2584,6 @@ void SparseMatrix<ValueType>::wait() const
 {
     mLocalData->wait();
     mHaloData->wait();
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-bool SparseMatrix<ValueType>::hasDiagonalProperty() const
-{
-    if ( getRowDistribution() != getColDistribution() )
-    {
-        return false;
-    }
-
-    bool localDiagProperty = mLocalData->hasDiagonalProperty();
-    bool globalDiagProperty = getRowDistribution().getCommunicator().all( localDiagProperty );
-    return globalDiagProperty;
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void SparseMatrix<ValueType>::resetDiagonalProperty()
-{
-    if ( getRowDistribution() != getColDistribution() )
-    {
-        COMMON_THROWEXCEPTION( "diagonal property not possible " )
-    }
-
-    this->mLocalData->resetDiagonalProperty();
 }
 
 /* ------------------------------------------------------------------------- */

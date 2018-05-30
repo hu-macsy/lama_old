@@ -130,6 +130,12 @@ struct Math
     static inline ValueType ceil( const ValueType& x );
 
     /*
+     * sign function for ValueType
+     */
+    template<typename ValueType>
+    static inline ValueType sign( const ValueType& x );
+
+    /*
      * sin-function for ValueType
      */
 
@@ -466,6 +472,35 @@ inline
 long double Math::ceil( const long double& x )
 {
     return ceill( x );
+}
+
+// -------------------------------- sign -----------------------------
+
+template<>
+inline CUDA_CALLABLE_MEMBER
+float Math::sign( const float& x )
+{
+    if ( x < 0 ) return -1;
+    if ( x > 0 ) return 1;
+    return 0;
+}
+
+template<>
+inline CUDA_CALLABLE_MEMBER
+double Math::sign( const double& x )
+{
+    if ( x < 0 ) return -1;
+    if ( x > 0 ) return 1;
+    return 0;
+}
+
+template<>
+inline
+long double Math::sign( const long double& x )
+{
+    if ( x < 0 ) return -1;
+    if ( x > 0 ) return 1;
+    return 0;
 }
 
 // -------------------------------- sin -----------------------------
@@ -1097,6 +1132,50 @@ inline
 Complex<long double> Math::ceil( const Complex<long double>& x )
 {
     return Complex<long double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
+}
+
+// ------------------ Math::sign --------------------------------
+
+template<>
+inline CUDA_CALLABLE_MEMBER
+Complex<float> Math::sign( const Complex<float>& x )
+{
+    if ( x == 0 )
+    {
+        return x;
+    }
+    else
+    {
+        return x / common::Math::abs( x );
+    }
+}
+
+template<>
+inline CUDA_CALLABLE_MEMBER
+Complex<double> Math::sign( const Complex<double>& x )
+{
+    if ( x == 0 )
+    {
+        return x;
+    }
+    else
+    {
+        return x / common::Math::abs( x );
+    }
+}
+
+template<>
+inline
+Complex<long double> Math::sign( const Complex<long double>& x )
+{
+    if ( x == 0 )
+    {
+        return x;
+    }
+    else
+    {
+        return x / common::Math::abs( x );
+    }
 }
 
 // ------------------ Math::sin --------------------------------

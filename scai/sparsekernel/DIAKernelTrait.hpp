@@ -77,13 +77,11 @@ struct DIAKernelTrait
         /** Type definition of function pointer for counting sparse values in DIA storage
          *
          *  @param[out] csrSizes array with number of non-zero entries in each row
-         *  @param[in]  diagonalFlag if true count also zero diagonal elements
          *  @param[in] numRows is the number of rows
          *  @param[in] numColumns is the number of columns
          *  @param[in] numDiagonals number of diagonals used in the DIA format
          *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
          *  @param[in] diaValues are stored values of the diagonals
-         *  @param[in] eps threshold value when an element should be considered as zero
          *
          *  Note: the diagonals might contain zero entries so the number of non-zero
          *        elements might be less than number of stored elements
@@ -95,13 +93,11 @@ struct DIAKernelTrait
 
         typedef void ( *FuncType )(
             IndexType csrSizes[],
-            bool diagonalFlag,
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
-            const ValueType diaValues[],
-            const ValueType eps );
+            const ValueType diaValues[] );
 
         static const char* getId()
         {
@@ -109,7 +105,7 @@ struct DIAKernelTrait
         }
     };
 
-    template<typename DIAValueType, typename CSRValueType>
+    template<typename ValueType>
     struct getCSRValues
     {
         /** Type definition of function pointer for conversion of DIA storage data to CSR data.
@@ -122,23 +118,19 @@ struct DIAKernelTrait
          *  @param[in] numDiagonals number of diagonals used in the DIA format
          *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
          *  @param[in] diaValues are stored values of the diagonals
-         *  @param[in] eps threshold value when an element should be considered as zero
          *
          *   - csrIA has numRows + 1 entries
          *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
          */
-
         typedef void ( *FuncType ) (
             IndexType csrJA[],
-            CSRValueType csrValues[],
+            ValueType csrValues[],
             const IndexType csrIA[],
-            const bool diagonalFlag,
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
-            const DIAValueType diaValues[],
-            const DIAValueType eps );
+            const ValueType diaValues[] );
 
         static const char* getId()
         {

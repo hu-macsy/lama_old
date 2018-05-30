@@ -275,7 +275,7 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::StorageWrapper<ELLStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
     }
 
     /**
@@ -286,7 +286,6 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] ctx        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -294,8 +293,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr ctx );
+        const hmemo::HArray<OtherValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -487,17 +485,7 @@ public:
         const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
-    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL
-     *  @since 1.1.0
-     */
+    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL  */
 
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
@@ -544,7 +532,7 @@ public:
     /**
      * @brief Override default method MatrixStorage<ValueType>::compress with a more efficient one.
      */
-    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+    virtual void compress( const RealType<ValueType> eps = 0 );
 
     /** Swap this ELL storage data with another ELL storage.
      *
@@ -556,9 +544,9 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
+    using _MatrixStorage::getDiagonalSize;
     using _MatrixStorage::getValueType;
 
     using MatrixStorage<ValueType>::assign;
@@ -572,7 +560,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -598,18 +585,12 @@ private:
 
     void fillValues();
 
-    /**
-     * @brief checks storage data if diagonal property is given
-     *
-     */
-    virtual bool checkDiagonalProperty() const;
-
     /** Help routine that computes array with row indexes for non-empty rows.
      *  The array is only built if number of non-zero rows is smaller than
      *  a certain percentage ( mThreshold ).
      */
 
-    void buildRowIndexes( const hmemo::ContextPtr context );
+    void buildRowIndexes();
 
     /** Logger for this class. */
 

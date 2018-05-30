@@ -63,8 +63,7 @@ struct StorageWrapper<Derived, common::mepr::NullType>
         const IndexType,
         const hmemo::HArray<IndexType>&,
         const hmemo::HArray<IndexType>&,
-        const hmemo::_HArray&,
-        hmemo::ContextPtr )
+        const hmemo::_HArray& )
     {}
 
     static void buildCSRDataImpl(
@@ -95,16 +94,15 @@ struct StorageWrapper<Derived, common::mepr::TypeList<H, T> >
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values,
-        hmemo::ContextPtr ctx )
+        const hmemo::_HArray& values )
     {
         if ( values.getValueType() == common::getScalarType<H>() )
         {
-            obj->setCSRDataImpl( numRows, numColumns, ia, ja, reinterpret_cast<const hmemo::HArray<H>& >( values ), ctx );
+            obj->setCSRDataImpl( numRows, numColumns, ia, ja, reinterpret_cast<const hmemo::HArray<H>& >( values ) );
         }
         else
         {
-            StorageWrapper<Derived, T>::setCSRDataImpl( obj, numRows, numColumns, ia, ja, values, ctx );
+            StorageWrapper<Derived, T>::setCSRDataImpl( obj, numRows, numColumns, ia, ja, values );
         }
     }
 
