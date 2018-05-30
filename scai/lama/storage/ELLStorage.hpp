@@ -286,7 +286,6 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] ctx        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(

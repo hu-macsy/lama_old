@@ -113,7 +113,7 @@ public:
      *  @brief Get the assembled data in COO format localized for a given distribution
      *
      *  @param[in] dist specifies the distribution of the rows 
-     *  @param[in] numColums is the number of rows
+     *  @param[in] numColumns is required to set the second dimension of the storage
      *  @param[in] op specifies how to deal with multiple entries for the same matrix position.
      */
     COOStorage<ValueType> buildLocalCOO( const dmemo::Distribution& dist, const IndexType numColumns, common::BinaryOp op ) const;

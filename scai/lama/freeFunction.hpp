@@ -1,5 +1,5 @@
 /**
- * @file freeFunction.hpp
+ * @file lama/freeFunction.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definiton of free functions to construct objects
+ * @brief Definiton of free functions to construct objects in lama namespace.
  * @author Thomas Brandes, Andreas Borgen Longva
  * @date 25.01.18
  */

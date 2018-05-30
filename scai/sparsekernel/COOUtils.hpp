@@ -59,6 +59,7 @@ public:
      *  @param[out] csrIA is the offset array
      *  @param[in]  cooIA is the 'sorted' array with the row indexes
      *  @param[in]  numRows number of rows
+     *  @param[in]  prefLoc specifies the context where operation should be executed
      *
      *  \code
      *    cooIA = { 0, 0, 1, 1, 1, 2, 4, 4, 5, 6, 6 } -> csrIA = { 0, 2, 5, 6, 6, 8, 9, 11 } 
@@ -68,7 +69,7 @@ public:
         hmemo::HArray<IndexType>& csrIA, 
         const hmemo::HArray<IndexType>& cooIA, 
         const IndexType numRows,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief convert the CSR offset array to an COO ia array
@@ -76,6 +77,7 @@ public:
      *  @param[in]  csrIA contains the offset array, number of rows is csrIA.size() - 1
      *  @param[in]  nnz are the number of non-zero elements, must be same as csrIA[ numRows ]
      *  @param[out] cooIA contains the row positions, size will be nnz 
+     *  @param[in]  prefLoc specifies the context where operation should be executed
      *
      *  \code
      *    csrIA = { 0, 2, 5, 6, 6, 8, 9, 11 } -> cooIA = { 0, 0, 1, 1, 1, 2, 4, 4, 5, 6, 6 } 
@@ -85,7 +87,7 @@ public:
         hmemo::HArray<IndexType>& cooIA, 
         const hmemo::HArray<IndexType>& csrIA, 
         const IndexType nnz,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief check if COO arrays ia and ja are sorted.
@@ -118,7 +120,7 @@ public:
         hmemo::HArray<IndexType>& ia,
         hmemo::HArray<IndexType>& ja,
         hmemo::HArray<ValueType>& values,
-        hmemo::ContextPtr );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief This method eliminates consecutive entries with same coordinates.
@@ -135,16 +137,26 @@ public:
         hmemo::HArray<IndexType>& ja,
         hmemo::HArray<ValueType>& values,
         common::BinaryOp op,
-        hmemo::ContextPtr );
+        hmemo::ContextPtr prefLoc );
 
     /** 
      *  @brief return the position for an entry (i,j) in the COO data
      *
      *  @param[in] i, j are the row and column index for the searched entry
      *  @param[in] cooIA, cooJA are the sorted row/column indexes of the non-zero entries
+     *  @param[in]  prefLoc specifies the context where operation should be executed
      *  @return invalidIndex if not found, otherwise k with ia[k] == i & ja[k] == j
      *
-     *  The corresponding matrix value can be found via cooValues[pos].
+     *  When the position is known, the corresponding matrix value entry can be read or updated.
+     *
+     *  \code
+     *    IndexType pos = COOUtils::getValuePos( i, j, cooIA, cooJA, loc );
+     *    if ( pos != invalidIndex )
+     *    {
+     *        ValueType v = cooValues[pos];
+     *        std::cout << "Value at (" << i << ", " << j << ") is " << v << std::endl;
+     *    }
+     *  \endcode
      */
     static IndexType getValuePos( 
         const IndexType i, 
@@ -174,6 +186,8 @@ public:
      *
      *  @param[out] offset is the first position, invalidIndex if not found
      *  @param[out] n      is the number of available entries for row i
+     *  @param[in] cooIA   the (sorted) array with the row indexes
+     *  @param[in]  prefLoc specifies the context where operation should be executed
      *
      *  As the entries of one row are stored contiguously, here is no need for a position array
      */
@@ -266,7 +280,7 @@ public:
         const IndexType m,
         const IndexType n,
         const common::BinaryOp op,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief Jacobi iteration step with COO storage
@@ -282,7 +296,7 @@ public:
         const hmemo::HArray<IndexType>& cooIA,
         const hmemo::HArray<IndexType>& cooJA,
         const hmemo::HArray<ValueType>& cooValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief matrix-vector multiplication 
@@ -300,7 +314,7 @@ public:
         const hmemo::HArray<ValueType>& x,
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
 };
 

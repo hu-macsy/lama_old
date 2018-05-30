@@ -109,13 +109,14 @@ public:
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
-    /** offset2sizes for indexed rows */
+    /** Implementation for CSRKernelTrait::gatherSizes */
 
-    static void offsets2sizesGather(
+    static void gatherSizes(
         IndexType sizes[],
-        const IndexType offsets[],
+        const IndexType csrIA[],
+        const IndexType numRows,
         const IndexType rowIndexes[],
-        const IndexType numRows );
+        const IndexType nIndexes );
 
     /** Implementation for CSRKernelTrait::validOffsets  */
 

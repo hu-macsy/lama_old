@@ -217,18 +217,20 @@ void OpenMPCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[]
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPCSRUtils::offsets2sizesGather(
+void OpenMPCSRUtils::gatherSizes(
     IndexType sizes[],
-    const IndexType offsets[],
+    const IndexType csrIA[],
+    const IndexType numRows,
     const IndexType rowIndexes[],
-    const IndexType numRows )
+    const IndexType nIndexes )
 {
     #pragma omp parallel for 
 
-    for ( IndexType i = 0; i < numRows; i++ )
+    for ( IndexType i = 0; i < nIndexes; i++ )
     {
         IndexType row = rowIndexes[i];
-        sizes[i] = offsets[row + 1] - offsets[row];
+        SCAI_ASSERT_VALID_INDEX_DEBUG( row, numRows, "illegal row index" );
+        sizes[i] = csrIA[row + 1] - csrIA[row];
     }
 }
 
@@ -1938,7 +1940,7 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<CSRKernelTrait::getColumnPositions>( getColumnPositions, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::offsets2sizesGather>( offsets2sizesGather, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::gatherSizes>( gatherSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::nonEmptyRows>( nonEmptyRows, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );

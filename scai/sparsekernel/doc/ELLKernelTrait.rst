@@ -80,8 +80,8 @@ Here are the corresponding arrays for the representation:
     \begin{align}
     numRows &= 7 \\
     numColums &= 4 \\
-    numValues &= 12 \\
-    ia &= [\begin{matrix} 0 & 0 & 1 & 2 & 2 & 3 & 3 & 3 & 4 & 4 & 6 & 6 \end{matrix} ] \\
+    numValuesPerRow &= 3 \\
+    ia &= [\begin{matrix} 2 & 1 & 2 & 3 & 2 & 0 & 2 \end{matrix} ] \\
     ja &= \left[\begin{matrix} 
                  0 & 0 & 2 & 0 & 0 & - & 1 & 
                  3 & - & 3 & 1 & 3 & - & 3 &
@@ -91,14 +91,6 @@ Here are the corresponding arrays for the representation:
                  4 & - & 4 & 5 & 1 & - & 2 &
                  - & - & - & 3 & - & - & -   \end{matrix} \right]
     \end{align}
-
-.. image:: _images/ELLStorageWO.png
-    :align: center
-    :width: 200px
-    
-.. image:: _images/ELLStorageWOStructure.png
-    :align: center
-    :width: 800px  
 
 Remarks
 -------

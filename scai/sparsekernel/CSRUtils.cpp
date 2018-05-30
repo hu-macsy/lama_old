@@ -141,6 +141,30 @@ void CSRUtils::offsets2sizes (
 
 /* -------------------------------------------------------------------------- */
 
+void CSRUtils::gatherSizes( 
+    HArray<IndexType>& sizes,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& rowIndexes,
+    ContextPtr prefLoc )
+{
+    LAMAKernel<CSRKernelTrait::gatherSizes> gatherSizes;
+
+    ContextPtr loc = prefLoc;
+    gatherSizes.getSupportedContext( loc );
+
+    const IndexType nIndexes = rowIndexes.size();
+    const IndexType numRows  = csrIA.size() - 1;
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    ReadAccess<IndexType> rIA( csrIA, loc );
+    ReadAccess<IndexType> rRows( rowIndexes, loc );
+    WriteOnlyAccess<IndexType> wSizes( sizes, loc, nIndexes );
+    gatherSizes[loc]( wSizes.get(), rIA.get(), numRows, rRows.get(), nIndexes );
+}
+
+/* -------------------------------------------------------------------------- */
+
 IndexType CSRUtils::nonEmptyRows(        
     HArray<IndexType>& rowIndexes, 
     const HArray<IndexType>& csrIA,

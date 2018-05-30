@@ -57,7 +57,7 @@ public:
      *  @param[out] rowIndexes contains the indexes of non-zero rows
      *  @param[in]  ellSizes continas the number of non-zero entries of each row
      *  @param[in]  threshold builds rowIndexes only if nonZeroRows / numRows < threshhold
-     *  @param[in]  loc is the context where operation is executed
+     *  @param[in]  prefLoc is the context where operation is executed
      *  @returns the number of non-zero rows, will also be the size of rowIndexes if built
      *
      *  If threshhold is 0, the row indexes are never built.
@@ -65,8 +65,8 @@ public:
     static IndexType nonEmptyRows( 
         hmemo::HArray<IndexType>& rowIndexes, 
         const hmemo::HArray<IndexType>& ellSizes,
-        float threshhold,
-        hmemo::ContextPtr loc );
+        float threshold,
+        hmemo::ContextPtr prefLoc );
 
     /** @brief Get the diagonal entries for an ELL storage
      *
@@ -80,7 +80,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ellIA,
         const hmemo::HArray<IndexType>& ellJA,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief Get the diagonal of ELL storage
      *
@@ -95,7 +95,7 @@ public:
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
         const hmemo::HArray<ValueType>& values,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief set the diagonal */
 
@@ -107,7 +107,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ellIA,
         const hmemo::HArray<IndexType>& ellJA,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** @brief set the diagonal */
 
@@ -119,7 +119,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ellIA,
         const hmemo::HArray<IndexType>& ellJA,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /** 
      *  @brief return the position for an entry (i,j) in the ELL data
@@ -166,7 +166,7 @@ public:
      *  @param[in,out] ellIA, ellJA, ellValues is the ELL data that is compressed
      *  @param[in,out] numValuesPerRow size for each row in the arrays ellJA and ellValues
      *  @param[in] eps a value is considered to be zero if abs( value ) <= eps
-     *  @param[in] loc specficies the context where compression should be done
+     *  @param[in] prefLoc specficies the context where compression should be done
      */
     template<typename ValueType>
     static void compress(
@@ -175,7 +175,7 @@ public:
         hmemo::HArray<ValueType>& ellValues,
         IndexType& numValuesPerRow,
         const RealType<ValueType> eps,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief Jacobi iteration step with ELL storage
@@ -191,7 +191,7 @@ public:
         const hmemo::HArray<IndexType>& ellIA,
         const hmemo::HArray<IndexType>& ellJA,
         const hmemo::HArray<ValueType>& ellValues,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
 private:
 

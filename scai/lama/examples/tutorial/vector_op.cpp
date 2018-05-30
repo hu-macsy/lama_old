@@ -78,6 +78,7 @@ void methods2()
     x = log( x );
     y = floor( y );
     x = ceil( x );
+    x = sign( x );
     x = sqrt( x );
     x = sin( x );
     x = cos( x );

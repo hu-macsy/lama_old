@@ -161,6 +161,12 @@ UnaryVectorExpression<ValueType> sqrt( const Vector<ValueType>& v )
 }
 
 template<typename ValueType>
+UnaryVectorExpression<ValueType> sign( const Vector<ValueType>& v )
+{
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::SIGN );
+}
+
+template<typename ValueType>
 UnaryVectorExpression<ValueType> sin( const Vector<ValueType>& v )
 {
     return UnaryVectorExpression<ValueType>( v, common::UnaryOp::SIN );

@@ -51,7 +51,7 @@ Starting from this compressed representation
      \\
     1 & 3 \end{matrix}\right) 
 
-the arrays are sorted corresponding its sizes.
+the arrays are sorted corresponding to its sizes.
 
 .. math::
 
@@ -86,21 +86,7 @@ the arrays are sorted corresponding its sizes.
     0 \\
      \end{matrix}\right) 
 
-.. image:: _images/Storage.png
-    :align: center
-    :width: 200px
-    
-The JDS format for the above matrix looks like this:
-
-.. image:: _images/JDSStorageWO.png
-    :align: center
-    :width: 200px
-    
-.. image:: _images/JDSStorageWOStructure.png
-    :align: center
-    :width: 700px  
-
-Here are the corresponding arrays for the representation:
+Here are the JDS arrays for the representation:
 
 .. math::
     
@@ -108,11 +94,12 @@ Here are the corresponding arrays for the representation:
     numRows &= 7 \\
     numColums &= 4 \\
     numValues &= 12 \\
+    numDiagonals &= 3 \\
     ilg &= \left[\begin{matrix} 3 & 2 & 2 & 2 & 2 & 1 & 0 \end{matrix}\right] \\
     perm &= \left[\begin{matrix} 3 & 0 & 2 & 4 & 6 & 1 & 5 \end{matrix}\right] \\
-    ja     &= [ 0, 0,  2, 0, 1, 0, 1, 3, 3, 3, 3, 3 ] \\
-    values &= [ 2, 6, -9, 2, 1, 7, 5, 4, 4, 1, 2, 3 ] \\
-    dlg &= [ 6, 5, 1 ] \\
+    ja     &= [ \begin{matrix} 0 & 0 &  2 & 0 & 1 & 0 & 1 & 3 & 3 & 3 & 3 & 3 \end{matrix} ] \\
+    values &= [ \begin{matrix} 2 & 6 & -9 & 2 & 1 & 7 & 5 & 4 & 4 & 1 & 2 & 3 \end{matrix} ] \\
+    dlg &= [ \begin{matrix} 6 & 5 & 1 \end{matrix} ] \\
     \end{align}
 
 JDSKernelTrait

@@ -101,65 +101,72 @@ BOOST_AUTO_TEST_CASE( offsets2sizesTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
+    HArray<IndexType> csrIA( { 0, 5, 11, 16, 19, 19, 21, 23 }, testContext );
+    HArray<IndexType> expSizes( { 5, 6,  5,  3,  0,  2,  2 } );
 
-    ContextPtr loc = testContext;
-    offsets2sizes.getSupportedContext( loc );
+    HArray<IndexType> csrSizes;
 
-    const IndexType offsets[] = { 0, 5, 11, 16, 19, 19, 21, 23 };
-    const IndexType sizes[]   = { 5, 6,  5,  3,  0,  2,  2 };
+    CSRUtils::offsets2sizes( csrSizes, csrIA, testContext );
+  
+    BOOST_TEST( hostReadAccess( csrSizes ) == hostReadAccess( expSizes ), per_element() );
 
-    IndexType numRows = sizeof( offsets ) / sizeof( IndexType ) - 1;
+    // might also be aliased
 
-    HArray<IndexType> csrIA( numRows + 1, offsets, testContext );
-
-    HArray<IndexType> csrSizes( testContext );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        WriteOnlyAccess<IndexType> wSizes( csrSizes, loc, numRows );
-        offsets2sizes[loc]( wSizes.get(), rIA.get(), numRows );
-    }
-
-    {
-        ReadAccess<IndexType> rSizes( csrSizes );
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            BOOST_CHECK_EQUAL( sizes[i], rSizes[i] );
-        }
-    }
-
-    LAMAKernel<CSRKernelTrait::offsets2sizesGather> offsets2sizesGather;
-
-    loc = testContext;
-    offsets2sizesGather.getSupportedContext( loc );
-
-    const IndexType row_indexes[] = { 0, 2, 4, 6 };
-
-    IndexType n = sizeof( row_indexes ) / sizeof( IndexType );
-
-    HArray<IndexType> rows( n, row_indexes, testContext );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<IndexType> rRows( rows, loc );
-        WriteOnlyAccess<IndexType> wSizes( csrSizes, loc, n );
-        offsets2sizesGather[loc]( wSizes.get(), rIA.get(), rRows.get(), n );
-    }
-
-    {
-        ReadAccess<IndexType> rSizes( csrSizes );
-
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            BOOST_CHECK_EQUAL( sizes[row_indexes[i]], rSizes[i] );
-        }
-    }
+    CSRUtils::offsets2sizes( csrIA, csrIA, testContext );
+ 
+    BOOST_TEST( hostReadAccess( csrIA ) == hostReadAccess( expSizes ), per_element() );
 }
 
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( sizes2offsetTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    HArray<IndexType> csrSizes( { 5, 6,  5,  3,  0,  2,  2 } );
+    HArray<IndexType> expIA( { 0, 5, 11, 16, 19, 19, 21, 23 }, testContext );
+
+    HArray<IndexType> csrIA;
+
+    CSRUtils::sizes2offsets( csrIA, csrSizes, testContext );
+ 
+    BOOST_TEST( hostReadAccess( csrIA ) == hostReadAccess( expIA ), per_element() );
+
+    // might also be aliased
+
+    CSRUtils::sizes2offsets( csrSizes, csrSizes, testContext );
+ 
+    BOOST_TEST( hostReadAccess( csrSizes ) == hostReadAccess( expIA ), per_element() );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( gatherSizesTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    HArray<IndexType> csrIA( { 0, 5, 11, 16, 19, 19, 21, 23 }, testContext );
+
+    HArray<IndexType> rowIndexes( { 6, 5, 4, 3, 2, 1, 0 }, testContext );
+    HArray<IndexType> expSizes( { 2, 2, 0, 3, 5, 6, 5 } );
+
+    HArray<IndexType> sizes;
+
+    CSRUtils::gatherSizes( sizes, csrIA, rowIndexes, testContext );
+    BOOST_TEST( hostReadAccess( sizes ) == hostReadAccess( expSizes ), per_element() );
+
+    rowIndexes = { 0, 2, 4, 6 };
+    expSizes = { 5, 5, 0, 2 };
+
+    CSRUtils::gatherSizes( sizes, csrIA, rowIndexes, testContext );
+    BOOST_TEST( hostReadAccess( sizes ) == hostReadAccess( expSizes ), per_element() );
+
+    rowIndexes = {};
+    expSizes = {};
+
+    CSRUtils::gatherSizes( sizes, csrIA, rowIndexes, testContext );
+    BOOST_TEST( hostReadAccess( sizes ) == hostReadAccess( expSizes ), per_element() );
+}
 
 /* ------------------------------------------------------------------------------------- */
 
@@ -167,7 +174,7 @@ BOOST_AUTO_TEST_CASE( nonEmptyRowsTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    HArray<IndexType> csrIA{ 0, 2, 2, 5, 5, 7, 7, 9 };
+    HArray<IndexType> csrIA( { 0, 2, 2, 5, 5, 7, 7, 9 }, testContext );
     HArray<IndexType> expRowIndexes( { 0,    2,    4,    6  } );
 
     HArray<IndexType> rowIndexes;  // will be set if there are less than threshold non-zero rows
@@ -390,54 +397,39 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> test for " << *testContext )
 
-    ContextPtr loc = testContext;
-    convertCSR2CSC.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
     //    1.0   -   2.0       1.0  0.5   -
     //    0.5  0.3   -         -   0.3   -
     //     -    -   3.0       2.0   -   3.0
-    const IndexType ia1[] =
-    { 0, 2, 4, 5 };
-    const IndexType ja1[] =
-    { 0, 2, 0, 1, 2 };
-    const HArray<IndexType> ia2( { 0, 2, 3, 5 } );
-    const HArray<IndexType> ja2( { 0, 1, 1, 0, 2 } );
-    const ValueType values1[] =
-    { 1.0, 2.0, 0.5, 0.3, 3.0 };
+
+    HArray<IndexType> csrIA( { 0, 2, 4, 5 }, testContext );
+    HArray<IndexType> csrJA( { 0, 2, 0, 1, 2 }, testContext );
+    HArray<ValueType> csrValues( { 1.0, 2.0, 0.5, 0.3, 3.0 }, testContext );
+
+    HArray<IndexType> expIA( { 0, 2, 3, 5 }, testContext );
+    HArray<IndexType> expJA(  { 0, 1, 1, 0, 2 }, testContext );
+    HArray<ValueType> expValues( { 1.0, 0.5, 0.3, 2.0, 3.0 }, testContext );
+
     const HArray<ValueType> values2( { 1.0, 0.5, 0.3, 2.0, 3.0 } );
+
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
-    const IndexType numValues = 5;
-    HArray<IndexType> csrIA( numRows + 1, ia1, testContext );
-    HArray<IndexType> csrJA( numValues, ja1, testContext );
-    HArray<ValueType> csrValues( numValues, values1, testContext );
+
     HArray<IndexType> cscIA;
     HArray<IndexType> cscJA;
     HArray<ValueType> cscValues;
-    {
-        ReadAccess<IndexType> rCSRIA( csrIA, loc );
-        ReadAccess<IndexType> rCSRJA( csrJA, loc );
-        ReadAccess<ValueType> rCSRValues( csrValues, loc );
-        WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
-        WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
-        SCAI_CONTEXT_ACCESS( loc );
-        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                             numColumns, numValues );
-    }
 
-    BOOST_TEST( hostReadAccess( cscIA ) == hostReadAccess( ia2 ), per_element() );
+    CSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, numRows, numColumns, csrIA, csrJA, csrValues, testContext );
+
+    BOOST_TEST( hostReadAccess( cscIA ) == hostReadAccess( expIA ), per_element() );
 
     // for comparison we sort the values, take care of the switched dimensions
 
     CSRUtils::sortRows( cscJA, cscValues, numColumns, numRows, cscIA, testContext );
 
-    BOOST_TEST( hostReadAccess( cscJA ) == hostReadAccess( ja2 ), per_element() );
-    BOOST_TEST( hostReadAccess( cscValues ) == hostReadAccess( values2 ), per_element() );
+    BOOST_TEST( hostReadAccess( cscJA ) == hostReadAccess( expJA ), per_element() );
+    BOOST_TEST( hostReadAccess( cscValues ) == hostReadAccess( expValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -694,14 +686,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-
-    ContextPtr loc = testContext;
-    convertCSR2CSC.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-
-    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext )
 
     HArray<IndexType> csrIA( testContext );
     HArray<IndexType> csrJA( testContext );
@@ -723,22 +708,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
     // CSC <- transpose CSR
 
-    {
-        ReadAccess<IndexType> rCSRIA( csrIA, loc );
-        ReadAccess<IndexType> rCSRJA( csrJA, loc );
-        ReadAccess<ValueType> rCSRValues( csrValues, loc );
-        WriteOnlyAccess<IndexType> wCSCIA( cscIA, loc, numColumns + 1 );
-        WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
-        WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
-        SCAI_CONTEXT_ACCESS( loc );
-        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(),
-                             rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                             numColumns, numValues );
-    }
+    CSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, numRows, numColumns, csrIA, csrJA, csrValues, testContext );
 
     //  For comparison later we sort cscJA and cscValue
 
-    SCAI_LOG_INFO( logger, "sortRows< " << TypeTraits<ValueType>::id() << "> for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "sortRows< " << TypeTraits<ValueType>::id() << "> for " << *testContext )
 
     CSRUtils::sortRows( cscJA, cscValues, numColumns, numRows, cscIA, testContext );
 

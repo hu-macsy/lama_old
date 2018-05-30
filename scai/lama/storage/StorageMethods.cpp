@@ -41,6 +41,7 @@
 #include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/utilskernel/TransferUtils.hpp>
 
 #include <scai/common/macros/assert.hpp>
@@ -58,6 +59,7 @@ using namespace hmemo;
 using namespace dmemo;
 
 using sparsekernel::OpenMPCSRUtils;
+using sparsekernel::CSRUtils;
 
 namespace lama
 {
@@ -226,6 +228,9 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     const Communicator& comm )
 {
     SCAI_REGION( "Storage.exchangeHaloCSR" )
+
+    ContextPtr loc = Context::getHostPtr();
+
     // get the number of rows for the new matrix
     const IndexType numRecvRows = halo.getRequiredPlan().totalQuantity();
     HArray<IndexType> sourceSizes;
@@ -234,12 +239,9 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     const IndexType numSendRows = providesIndexes.size();
     SCAI_LOG_INFO( logger,
                    "exchange halo matrix, #rows to send = " << numSendRows << ", #rows to recv = " << numRecvRows )
-    {
-        ReadAccess<IndexType> ia( sourceIA );
-        ReadAccess<IndexType> indexes( providesIndexes );
-        WriteOnlyAccess<IndexType> sizes( sourceSizes, numSendRows );
-        OpenMPCSRUtils::offsets2sizesGather( sizes.get(), ia.get(), indexes, numSendRows );
-    }
+
+    CSRUtils::gatherSizes( sourceSizes, sourceIA, providesIndexes, loc );
+
     {
         // allocate target IA with the right size
         WriteOnlyAccess<IndexType> tmpIA( targetIA, numRecvRows + 1 );
@@ -260,11 +262,9 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     recvSizes.release();
     SCAI_LOG_INFO( logger, "released read access to recvSizes" )
     // row sizes of target will now become offsets
-    {
-        WriteAccess<IndexType> ia( targetIA );
-        ia.resize( numRecvRows + 1 );
-        OpenMPCSRUtils::sizes2offsets( ia.get(), numRecvRows );
-    }
+
+    CSRUtils::sizes2offsets( targetIA, targetIA, loc );
+
     // sendJA, sendValues must already be allocated before calling gatherV
     // as its size cannot be determined by arguments
     HArray<IndexType> sendJA( sendVSize );

@@ -76,7 +76,7 @@ public:
      *  @brief Determine for each row the number of non-zero entries
      *
      *  \param[in] numRows, numColumns are the dimension of the storage
-     *  \param{in] denseValues is an array of size numRows * numColumns, values are stored row-wise
+     *  \param[in] denseValues is an array of size numRows * numColumns, values are stored row-wise
      *  \param[out] rowSizes will contain for each row the number of non-zero elements
      *  \param[in] prefLoc is the context where conversion should be executed.
      */
@@ -91,9 +91,9 @@ public:
     /** 
      *  @brief Convert CSR storage data to a dense storage
      *
-     *  \param{out] denseValues is an array of size numRows * numColumns, values are stored row-wise
+     *  \param[out] denseValues is an array of size numRows * numColumns, values are stored row-wise
      *  \param[in] numRows, numColumns are the dimensions of the storage
-     *  \param[in] csrIA, csrJA, csrVaues are the CSR array to be converted
+     *  \param[in] csrIA, csrJA, csrValues are the CSR array to be converted
      *  \param[in] prefLoc is the context where conversion should be executed.
      */
     template<typename ValueType>

@@ -79,14 +79,6 @@ public:
 
     MPI_Comm getMPIComm() const;
 
-    /** All-to-all exchange of an integer value between all processors.
-     *
-     * @param[out] recvValues will contain one value from each processor
-     * @param[in]  sendValues must contain one value for each processor
-     *
-     * recvValues and sendValues must both have a size of communicator size.
-     * recvValues[i] on processor j contains sendValues[j] of processor i.
-     */
     /** MPI Implementation for pure method Communciator::all2allImpl */
 
     void all2allImpl( void* recvBuffer, 

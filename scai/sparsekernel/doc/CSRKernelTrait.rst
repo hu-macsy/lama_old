@@ -59,6 +59,21 @@ The CSR representation of the sparse matrix is:
     0 & 3 \\
     \\
     1 & 3 \end{matrix}\right) 
+  sizes_{A} = \left(\begin{matrix} 2 \\
+    1  \\
+    2 \\
+    3 \\
+    2 \\
+    0 \\
+    2 \end{matrix}\right) 
+  offsets_{A} = \left(\begin{matrix} 0 \\
+    2 \\
+    3  \\
+    5 \\
+    8 \\
+    10 \\
+    10 \\
+    12 \end{matrix}\right) 
 
 Here are the corresponding arrays for the representation:
 

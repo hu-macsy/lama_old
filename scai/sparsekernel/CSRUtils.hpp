@@ -87,10 +87,24 @@ public:
         const hmemo::HArray<IndexType>& offsets, 
         hmemo::ContextPtr prefLoc );
 
+    /**
+     *  @brief Get the sizes for a set of rows 
+     *
+     *  @param[in] csrIA is the offset array of the CSR storage
+     *  @param[in] rowIndexes is an array with the row indexes for which sizes are needed
+     *  @param[out] sizes contains the sizes of the rows as specified in rowIndexes
+     *  @param[in] prefLoc is the context where operation should be executed.
+     */
+    static void gatherSizes( 
+        hmemo::HArray<IndexType>& sizes, 
+        const hmemo::HArray<IndexType>& csrIA, 
+        const hmemo::HArray<IndexType>& rowIndexes, 
+        hmemo::ContextPtr prefLoc );
+
     /** @brief get the indexes of non-empty rows 
      *
      *  @param[out] rowIndexes contains the indexes of non-zero rows
-     *  @param[in]  the CSR row offset array
+     *  @param[in]  csrIA the CSR row offset array
      *  @param[in]  threshold builds rowIndexes only if #nonZeroRows/#numRows < threshhold
      *  @param[in]  prefLoc is the context where operation is executed
      *  @returns the number of non-zero rows, will also be the size of rowIndexes if built
@@ -100,7 +114,7 @@ public:
     static IndexType nonEmptyRows( 
         hmemo::HArray<IndexType>& rowIndexes, 
         const hmemo::HArray<IndexType>& csrIA, 
-        float threshhold,
+        float threshold,
         hmemo::ContextPtr prefLoc );
 
     /** @brief This method generates new CSR data where all zero elemens are removed.
@@ -197,12 +211,15 @@ public:
 
     /** Matrix multiplication 
      *
-     *  @param[out] cIA, cJA, cValues for output storage
+     *  This method multiplies two matrices A and B (both CSR format) and 
+     *  delivers the result also in CSR format.
+     *
+     *  @param[out] cIA, cJA, cValues for output storage in CSR format
      *  @param[in] aIA, aJA, aValues for first input storage
      *  @param[in] bIA, bJA, bValues for second input storage
      *  @param[in] m, n  are the sizes of the output matrix
      *  @param[in] k    are the number of columns of a and number of rows of b
-     *  @param[in] diagonalProperty  if true diagonal elements in output storage will be available
+     *  @param[in] alpha scaling factor 
      *  @param[in] prefLoc specifies the preferred context for execution.
      */
     template<typename ValueType>
@@ -316,6 +333,7 @@ public:
      *
      *  @param[in] i, j are the row and column index for the searched entry
      *  @param[in] csrIA, csrJA are the row offset array and the column indexes
+     *  @param[in] prefLoc specifies the location where operation is done
      *  @return invalidIndex if not found, otherwise k with ja[k] == j, ia[i] <= k < ia[i+1]
      *
      *  The corresponding matrix value can be found via csrValues[k] if k is the not invalid.
