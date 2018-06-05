@@ -60,6 +60,8 @@ using namespace lama;
 using scai::testsupport::uniquePath;
 using scai::testsupport::GlobalTempDir;
 
+using boost::test_tools::per_element;
+
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( MatrixConstructorTest )
@@ -452,8 +454,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
 {
     typedef typename MatrixType::StorageType StorageType;
 
-    const IndexType numRows = 4;
-    const IndexType numCols = 7;
+    const IndexType numRows = 5;
+    const IndexType numCols = 8;
 
     float fillRate = 0.2;
 
@@ -462,6 +464,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 10 );
 
     auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
+
+    DenseStorage<ValueType> expStorage;
+    expStorage.assignTranspose( globalStorage );
 
     dmemo::TestDistributions rowDists( numRows );
     dmemo::TestDistributions colDists( numCols );
@@ -480,19 +485,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
                 continue; // transpose not supported for replicated matrices with distributed columns
             }
 
-            MatrixType matrix1( globalStorage );
-            matrix1.redistribute( rowDist, colDist );
+            auto matrix1 = distribute<MatrixType>( globalStorage, rowDist, colDist );
 
-            SCAI_LOG_INFO( logger, "transposeConstructorTest with matrix1 = " << matrix1 )
+            SCAI_LOG_DEBUG( logger, "transposeConstructorTest " << irow << " x " << icol << " with matrix1 = " << matrix1 )
 
-            MatrixType matrix2;
-            matrix2.assignTranspose( matrix1 );
+            auto matrix2 = eval<MatrixType>( transpose( matrix1 ) );
 
             const StorageType& localStorage1 = matrix1.getLocalStorage();
             const StorageType& localStorage2 = matrix2.getLocalStorage();
 
             BOOST_REQUIRE_EQUAL( localStorage1.getNumRows(), localStorage2.getNumColumns() );
             BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumRows() );
+
+            auto result = distribute<DenseMatrix<ValueType>>( matrix2, 
+                                  std::make_shared<dmemo::NoDistribution>( numCols ),
+                                  std::make_shared<dmemo::NoDistribution>( numRows ) );
+ 
+            BOOST_TEST( hostReadAccess( expStorage.getValues() ) == 
+                        hostReadAccess( result.getLocalStorage().getValues() ), per_element() );
         }
     }
 }
@@ -752,7 +762,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagConstructorTest, MatrixType, MatrixTypes )
         hmemo::HArray<ValueType> diagonalM;
         repMatrix.getLocalStorage().getDiagonal( diagonalM );
 
-        BOOST_TEST( hostReadAccess( diagonalArray ) == hostReadAccess( diagonalM ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( diagonalArray ) == hostReadAccess( diagonalM ), per_element() );
 
         // set the matrix diagonal to zero in the matrix and it must be a full zero matrix
 
