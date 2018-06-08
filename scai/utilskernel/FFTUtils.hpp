@@ -60,11 +60,17 @@ public:
  *  @param[in]  ctx preferred context for execution   
  */
 template<typename ValueType>
-static void fft( 
-    hmemo::HArray<common::Complex<RealType<ValueType>>>& result, 
-    const hmemo::HArray<ValueType>& x, 
+static void fft1D( 
+    hmemo::HArray<common::Complex<RealType<ValueType>>>& out, 
+    const hmemo::HArray<ValueType>& in,
     const IndexType n,
-    const int direction,
+    const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
+
+template<typename ValueType>
+static void ifft1D( 
+    hmemo::HArray<ValueType>& out, 
+    const hmemo::HArray<common::Complex<RealType<ValueType>>>& in, 
+    const IndexType n,
     const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
 
 /** Compute the discrete fourier transform multiple vectors using the FFT algorithm
@@ -83,6 +89,15 @@ static void fft_many(
     const IndexType many,
     const IndexType n, 
     const int direction,
+    const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
+
+template<typename ValueType>
+static void fftcall(
+    hmemo::HArray<common::Complex<RealType<ValueType>>>& data,
+    const IndexType k,
+    const IndexType n,
+    const IndexType m,
+    int direction,
     const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
 
 #endif

@@ -977,7 +977,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_fft_test_types )
 {
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    DenseVector<ValueType> x( HArray<ValueType>( { 0.2, 0.16 } ) );
+    DenseVector<FFTType> x( HArray<FFTType>( { 0.2, 0.16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } ) );
     DenseVector<FFTType> y;
 
     const IndexType n = 8;
@@ -1001,7 +1001,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest2, ValueType, scai_fft_test_types )
 {
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    DenseVector<ValueType> x( HArray<ValueType>( { 0.5, 1.0 } ) );
+    DenseVector<FFTType> x( HArray<FFTType>( { 0.5, 1.0 } ) );
     DenseVector<FFTType> y;
 
     const IndexType n = 4;

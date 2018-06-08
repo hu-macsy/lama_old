@@ -129,15 +129,17 @@ void OpenMPFFT::fft1( Complex<ValueType> x[], IndexType n, IndexType m, int dir 
 }
 
 template<typename ValueType>
-void OpenMPFFT::fft( Complex<ValueType> x[], IndexType nb, IndexType n, IndexType m, int dir )
+void OpenMPFFT::fft( Complex<ValueType> x[], IndexType k, IndexType n, IndexType m, int dir )
 {
     SCAI_REGION( "OpenMP.fft" )
 
+    SCAI_ASSERT_EQ_DEBUG( ( 1 << m ), n , " 2 ** m ( " << m << " ) != " << n << " = n" )
+
     SCAI_LOG_INFO( logger, "fft<" << common::TypeTraits<ValueType>::id() << "> @ OpenMP, "
-                     << nb << " x " << n << " = 2 ** " << m )
+                     << k << " x " << n << " = 2 ** " << m )
 
     #pragma omp parallel for
-    for ( IndexType i = 0; i < nb; ++i )
+    for ( IndexType i = 0; i < k; ++i )
     {
         OpenMPFFT::fft1( x + i * n, n, m, dir );
     }

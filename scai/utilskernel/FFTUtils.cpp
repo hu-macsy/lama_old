@@ -73,51 +73,82 @@ static void pow2( IndexType& m, IndexType& n2, const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void FFTUtils::fft( 
-    HArray<Complex<RealType<ValueType>>>& result, 
-    const HArray<ValueType>& x, 
+void FFTUtils::fftcall(
+    HArray<Complex<RealType<ValueType>>>& data, 
+    const IndexType k,
     const IndexType n,
+    const IndexType m,
     int direction,
     const ContextPtr context )
 {
-    typedef Complex<RealType<ValueType>> FFTType;
+    ContextPtr loc = context;
 
-    static LAMAKernel<UtilKernelTrait::set<FFTType, ValueType>> set;
-    static LAMAKernel<UtilKernelTrait::setVal<FFTType>> setVal;
     static LAMAKernel<FFTKernelTrait::fft<RealType<ValueType>>> fft;
 
-    ContextPtr loc = context;
+    SCAI_ASSERT_EQ_ERROR( ( 1 << m ), n, "n = " << n << " != 2 ** m = " << m )
+    SCAI_ASSERT_EQ_ERROR( k * n, data.size(), "size of data must be " << n << " x " << k )
 
     if ( !loc )
     {
-        loc = x.getValidContext();
+        loc = data.getValidContext();
     }
 
-    fft.getSupportedContext( loc, set, setVal );
+    fft.getSupportedContext( loc );
 
+    WriteAccess<Complex<RealType<ValueType>>> wData( data );
+
+    fft[loc]( wData.get(), k, n, m, direction );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void FFTUtils::fft1D( 
+    HArray<Complex<RealType<ValueType>>>& out, 
+    const HArray<ValueType>& in, 
+    const IndexType n,
+    const ContextPtr context )
+{
     IndexType n2;
     IndexType m;
  
-    pow2( m, n2, n );
+    pow2( m, n2, n );   // n <= n2 = 2**m
 
-    SCAI_LOG_INFO( logger, "fft<" << common::TypeTraits<ValueType>::id() 
-                    << ">( array[" << n << " -> " << n2 << " = 2 ** " << m << "], dir = " << direction
-                    << " @ ctx = " << *loc ) 
+    SCAI_ASSERT_EQ_ERROR( n, n2, "n = " << n << " not power of 2, take n = " << n2 )
 
-    SCAI_CONTEXT_ACCESS( loc )
+    HArrayUtils::assignResized( out, n2, in, context );
 
-    ReadAccess<ValueType> rX( x, loc );
-    WriteOnlyAccess<FFTType> wResult( result, loc, n2 );
+    const int direction = 1;   // forward fast fourier transform
+    const IndexType k = 1;     // one single vector
 
-    IndexType nx = std::min( n, x.size() );
+    fftcall<Complex<RealType<ValueType>>>( out, k, n2, m, direction, context );
+}
 
-    SCAI_LOG_DEBUG( logger, "copy x[" << nx << "] and pad to " << n2 )
-    set[loc]( wResult.get(), rX.get(), x.size(), common::BinaryOp::COPY );
-    setVal[loc]( wResult.get() + nx, n2 - nx, FFTType( 0 ), common::BinaryOp::COPY );
+/* --------------------------------------------------------------------------- */
 
-    fft[loc]( wResult.get(), 1, n2, m, direction );
+template<typename ValueType>
+void FFTUtils::ifft1D(
+    HArray<ValueType>& out,
+    const HArray<Complex<RealType<ValueType>>>& in,
+    const IndexType n,
+    const ContextPtr context )
+{   
+    typedef Complex<RealType<ValueType>> FFTType;
 
-    wResult.resize( n );
+    IndexType n2;
+    IndexType m;
+
+    pow2( m, n2, in.size() ); 
+
+    SCAI_ASSERT_EQ_ERROR( in.size(), n2, "inverse fft, input array size must be power of 2" )
+    
+    const int direction = -1;     // backward fast fourier transform 
+    const IndexType k = 1;        // one single vector
+
+    HArray<FFTType> inCopy( in );
+    fftcall<FFTType>( inCopy, k, n2, m, direction, context );
+
+    HArrayUtils::assignResized( out, n, inCopy, context );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -206,11 +237,22 @@ void FFTUtils::fft_many(
 /* --------------------------------------------------------------------------- */
 
 #define FFTUTILS_SPECIFIER( ValueType )                     \
-    template void FFTUtils::fft<ValueType>(                 \
+    template void FFTUtils::fft1D<ValueType>(               \
         hmemo::HArray<Complex<RealType<ValueType>>>&,       \
         const hmemo::HArray<ValueType>&,                    \
-        const IndexType n,                                  \
-        const int direction,                                \
+        const IndexType,                                    \
+        hmemo::ContextPtr);                                 \
+    template void FFTUtils::ifft1D<ValueType>(              \
+        hmemo::HArray<ValueType>&,                          \
+        const hmemo::HArray<Complex<RealType<ValueType>>>&, \
+        const IndexType,                                    \
+        hmemo::ContextPtr);                                 \
+    template void FFTUtils::fftcall<ValueType>(             \
+        hmemo::HArray<Complex<RealType<ValueType>>>&,       \
+        const IndexType,                                    \
+        const IndexType,                                    \
+        const IndexType,                                    \
+        const int,                                          \
         hmemo::ContextPtr);                                 \
     template void FFTUtils::fft_many<ValueType>(            \
         hmemo::HArray<Complex<RealType<ValueType>>>&,       \
@@ -219,7 +261,6 @@ void FFTUtils::fft_many(
         const IndexType,                                    \
         const int,                                          \
         hmemo::ContextPtr);                    
-
 
     SCAI_COMMON_LOOP( FFTUTILS_SPECIFIER, SCAI_FFT_TYPES_HOST )
 
