@@ -1111,6 +1111,34 @@ void DenseMatrix<ValueType>::redistribute( const Redistributor& redistributor, D
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::resize( DistributionPtr rowDistributionPtr, DistributionPtr colDistributionPtr )
+{
+    // disassemble this matrix and fill it up again
+
+    MatrixAssembly<ValueType> assembly;
+
+    this->disassemble( assembly );
+
+    IndexType newNumRows = rowDistributionPtr->getGlobalSize();
+    IndexType newNumCols = colDistributionPtr->getGlobalSize();
+
+    // truncate elements if necessary to avoid ERROR messages when we fil up
+
+    if ( newNumRows < getNumRows() || newNumCols < getNumColumns() )
+    {
+        assembly.truncate( newNumRows, newNumCols );
+    }
+
+    // and now fill the assembly back
+
+    allocate( rowDistributionPtr, colDistributionPtr );
+
+    this->fillFromAssembly( assembly );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::localize(
     DenseStorage<ValueType>& local,
     const DenseStorage<ValueType>& global,

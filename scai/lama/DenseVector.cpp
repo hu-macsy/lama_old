@@ -1821,6 +1821,38 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void DenseVector<ValueType>::resize( DistributionPtr distribution )
+{
+    // disassemble this vector and fill it up again
+
+    VectorAssembly<ValueType> assembly;
+
+    this->disassemble( assembly );
+
+    SCAI_LOG_INFO( logger, "resize, old dist = " << getDistribution() << ", new dist = " << *distribution 
+                           << ", asssembly = " << assembly )
+
+    IndexType newSize = distribution->getGlobalSize();
+
+    // truncate elements if necessary to avoid ERROR messages when we fil up
+
+    if ( newSize < size() )
+    {
+        assembly.truncate( newSize );
+    }
+
+    // initialize with 0
+
+    this->setSameValue( distribution, ValueType( 0 ) );
+
+    // and now fill the assembly back
+
+    this->fillFromAssembly( assembly );
+}
+
+/* ------------------------------------------------------------------------ */
+
+template<typename ValueType>
 void DenseVector<ValueType>::redistribute( const Redistributor& redistributor )
 {
     SCAI_ASSERT_EQ_ERROR( getDistribution(), *redistributor.getSourceDistributionPtr(), 

@@ -324,6 +324,34 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO(
                                   std::move( allIA ), std::move( allJA ), std::move( allValues ) );
 }
 
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixAssembly<ValueType>::truncate( 
+    const IndexType numRows,
+    const IndexType numColumns )
+{
+    IndexType offset = 0;
+
+    for ( size_t k = 0; k < mIA.size(); ++k )
+    {
+        if ( mIA[k] >= numRows || mJA[k] >= numColumns )
+        {
+            continue;   // skip this element
+        }
+
+        mIA[offset] = mIA[k];
+        mJA[offset] = mJA[k];
+        mValues[offset] = mValues[k];
+
+        ++offset;
+    }
+
+    mIA.resize( offset );
+    mJA.resize( offset );
+    mValues.resize( offset );
+}
+
 /* ================================================================================ */
 /*   Instantion of MatrixAssembly with numeric types                                */
 /* ================================================================================ */

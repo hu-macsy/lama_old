@@ -35,6 +35,8 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/utilskernel/FFTUtils.hpp>
 
 namespace scai
@@ -45,144 +47,107 @@ namespace lama
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-/** Compute the discrete fourier transform of a dense vector using a fast fourier transform
- *
- *  @param[out] result is the result vector, length will be n 
- *  @param[in]  x  is the input vector
- *  @param[in]  n  padding length (n > x.size()) or truncate length , optional
- *
- *  - This operation is not available for distributed vectors
- *  - The result vector is always a complex vector while the input vector can be real or complex.
- */
-
-template<typename ValueType>
-void fft( 
-    DenseVector<common::Complex<RealType<ValueType>>>& result, 
-    const DenseVector<ValueType>& x, 
-    const IndexType n = invalidIndex )
+template<typename ComplexType>
+void fft1D( DenseVector<ComplexType>& denseVector, const int direction )
 {
     // result array for fft is alway complex
 
-    typedef common::Complex<RealType<ValueType>> FFTType;
+    SCAI_ASSERT_ERROR( denseVector.getDistribution().isReplicated(), "fft only on replicated vectors" )
 
-    SCAI_ASSERT_ERROR( x.getDistribution().isReplicated(), "fft only on replicated vectors" )
+    hmemo::ContextPtr ctx = denseVector.getContextPtr();   // preferred location for FFT
+    
+    hmemo::HArray<ComplexType>& localData = denseVector.getLocalValues();
 
-    hmemo::ContextPtr ctx = result.getContextPtr();   // preferred location for FFT
+    const IndexType size = localData.size();
 
-    dmemo::DistributionPtr dummyDist;
-    hmemo::HArray<FFTType> resultArray;
+    IndexType m = common::Math::nextpow2( size );
+    IndexType n2 = 1 << m;
 
-    result.splitUp( dummyDist, resultArray );    // reuse allocated array of result vector
+    SCAI_ASSERT_EQ_ERROR( n2, size, "FFT vector size must be power of 2" )
 
-    const IndexType size = n == invalidIndex ? x.size() : n;
+    const IndexType many = 1;   // one single vector only
 
-    utilskernel::FFTUtils::fft1D<ValueType>( resultArray, x.getLocalValues(), size, ctx );
-
-    result = DenseVector<FFTType>( std::move( resultArray ), ctx );
+    utilskernel::FFTUtils::fftcall<RealType<ComplexType>>( localData, many, size, m, direction, denseVector.getContextPtr() );
 }
 
-/** Apply the inverse fast Fourier transform  to a dense vector 
- *
- *  @param[out] result is the result vector, length will be n 
- *  @param[in]  x  is the input vector, must 
- *  @param[in]  n  padding length (n > x.size()) or truncate length , optional
- *
- *  - This operation is not available for distributed vectors
- *  - The result vector is always a complex vector while the input vector can be real or complex.
- */
-template<typename ValueType>
-void ifft(
-    DenseVector<ValueType>& result,
-    const DenseVector<common::Complex<RealType<ValueType>>>& x,
-    const IndexType n = invalidIndex )
+template<typename ComplexType>
+void fft( DenseVector<ComplexType>& denseVector )
 {
-    // result array for fft is alway complex
-
-    SCAI_ASSERT_ERROR( x.getDistribution().isReplicated(), "fft only on replicated vectors" )
-
-    hmemo::ContextPtr ctx = result.getContextPtr();   // preferred location for FFT
-
-    dmemo::DistributionPtr dummyDist;
-    hmemo::HArray<ValueType> resultArray;
-
-    result.splitUp( dummyDist, resultArray );    // reuse allocated array of result vector
-
-    const IndexType size = n == invalidIndex ? x.size() : n;
-
-    utilskernel::FFTUtils::ifft1D<ValueType>( resultArray, x.getLocalValues(), size, result.getContextPtr() );
-
-    result = DenseVector<ValueType>( std::move( resultArray ), ctx );
+    fft1D( denseVector, 1 );
 }
 
-/* --------------------------------------------------------------------- */
+template<typename ComplexType>
+void ifft( DenseVector<ComplexType>& denseVector )
+{
+    fft1D( denseVector, -1 );
+}
 
 /** 
- *  @brief Apply FFT on a two-dimensional matrix (in-place)
+ *  @brief Apply FFT to each row for a 2D dense matrix
  *
- *  - For dim = 0 the FFT is applied to each column
- *  - For dim = 1 the FFT is applied to each row 
- *  - The matrix size in the dimension where the FFT is applied must be a power of 2
  *  - FFT can only be applied to complex matrices
- *  - use resize function to fill up, convert or truncate matrices
+ *  - The column size must be a power of 2
+ *  - use resize function to fill up or truncate matrices
  */
-
-template<typename ValueType>
+template<typename ComplexType>
 void fftRows( 
-    DenseMatrix<common::Complex<RealType<ValueType>>>& data,
+    DenseMatrix<ComplexType>& data,
     int direction )
 {
-    typedef common::Complex<RealType<ValueType>> FFTType;
-
     IndexType numColumns = data.getNumColumns();  // size of each vector to which FFT is applied
 
-    pow2( m, n2, numColumns );
- 
+    IndexType m = common::Math::nextpow2( numColumns );
+    IndexType n2 = 1 << m;
+
     SCAI_ASSERT_EQ_ERROR( n2, numColumns, "not power of 2" )
 
     if ( !data.getColDistribution().isReplicated() )
     {
-        IndexType numColumns = data.getNumColumns();
-
-        DistributionPtr repColumns = std::make_shared<NoDistribution( data.getNumColumns() );
-        DistributionPtr distColumns = data.getColDistribuitonPtr();
-        data.redistribute( data.getRowDistibutionPtr(), repColumns );
-        fft( data, dim );
-        data.redistribute( data.getRowDistibutionPtr(), distColumns );
+        dmemo::DistributionPtr repColumns = std::make_shared<dmemo::NoDistribution>( data.getNumColumns() );
+        dmemo::DistributionPtr distColumns = data.getColDistributionPtr();
+        data.redistribute( data.getRowDistributionPtr(), repColumns );
+        fftRows( data, direction );
+        data.redistribute( data.getRowDistributionPtr(), distColumns );
     }
     else
     {
-        // fft  for each row
+        // fft  for each row, each processor does it on its local rows
 
         IndexType nLocalRows = data.getRowDistribution().getLocalSize();
 
-        utilskernel::FFTUtils::fftcall( localData, nLocalRows, numColumns, m, direction, data.getContextPtr() );
+        DenseStorage<ComplexType>& localMatrix = data.getLocalStorage();
+        hmemo::HArray<ComplexType>& localData = localMatrix.getData();
+
+        utilskernel::FFTUtils::fftcall<RealType<ComplexType>>( localData, nLocalRows, numColumns, m, direction, data.getContextPtr() );
     }
 }
 
-template<typename ValueType>
+template<typename ComplexType>
 void fftCols(
-    DenseMatrix<common::Complex<RealType<ValueType>>>& data,
+    DenseMatrix<ComplexType>& data,
     int direction )
 {
-    typedef common::Complex<RealType<ValueType>> FFTType;
-
     // transpose the matrix, apply FFT row-wise and transpose back
 
     if ( !data.getRowDistribution().isReplicated() && data.getColDistribution().isReplicated() )
     {
+        // distributed rows, columns must also be distributed for transpose
+
         dmemo::DistributionPtr saveColDistributionPtr = data.getColDistributionPtr();
-        dmemo::DistributionPtr blockDist = std::make_shared<dmemo::BlockDistribution>( numColumns );
+        dmemo::DistributionPtr blockDist = std::make_shared<dmemo::BlockDistribution>( data.getNumColumns() );
         data.redistribute( data.getRowDistributionPtr(), blockDist );
         fftCols( data, direction );
-        data.redistribute( data.getRowDistribuitonPtr(), savedColDistributionPtr );
+        data.redistribute( data.getRowDistributionPtr(), saveColDistributionPtr );
     }
     else if ( data.getRowDistribution().isReplicated() && !data.getColDistribution().isReplicated() )
     {
+        // replicated rows, columns must also be replicated
+
         dmemo::DistributionPtr saveRowDistributionPtr = data.getRowDistributionPtr();
-        dmemo::DistributionPtr blockDist = std::make_shared<dmemo::BlockDistribution>( numRows );
+        dmemo::DistributionPtr blockDist = std::make_shared<dmemo::BlockDistribution>( data.getNumRows() );
         data.redistribute( blockDist, data.getColDistributionPtr() );
         fftCols( data, direction );
-        data.redistribute( savedRowDistributionPtr, data.getColDistributionPtr() );
+        data.redistribute( saveRowDistributionPtr, data.getColDistributionPtr() );
     }
     else
     {   // now transpose works fine, we do it in place
@@ -193,11 +158,21 @@ void fftCols(
     }
 }
 
+/** 
+ *  @brief Apply fast fourier transform to a matrix
+ *
+ *  - For dim = 0 the FFT is applied to each column
+ *  - For dim = 1 the FFT is applied to each row 
+ *  - The matrix size in the dimension to which the FFT is applied must be a power of 2
+ *  - FFT can only be applied to complex matrices
+ *  - use resize function to fill up or truncate matrices
+ */
+
 /* --------------------------------------------------------------------- */
 
-template<typename ValueType>
+template<typename ComplexType>
 void fft( 
-    DenseMatrix<common::Complex<RealType<ValueType>>>& data,
+    DenseMatrix<ComplexType>& data,
     const IndexType dim )
 {
    if ( dim == 0 )
@@ -208,11 +183,15 @@ void fft(
    {
        fftRows( data, 1 ); // treat each row as a vector
    }
+   else
+   {
+       SCAI_THROWEXCEPTION( common::InvalidArgumentException, "dim = " << dim << ": illegal, must be 0 or 1" )
+   }
 }
 
-template<typename ValueType>
+template<typename ComplexType>
 void ifft( 
-    DenseMatrix<common::Complex<RealType<ValueType>>>& data,
+    DenseMatrix<ComplexType>& data,
     const IndexType dim )
 {
    if ( dim == 0 )
@@ -223,19 +202,33 @@ void ifft(
    {
        fftRows( data, -1 ); // treat each row as a vector
    }
+   else
+   {
+       SCAI_THROWEXCEPTION( common::InvalidArgumentException, "dim = " << dim << ": illegal, must be 0 or 1" )
+   }
 }
 
-template<typename ValueType>
+/**
+ * Apply Fast Fourier Transform in both dimensions of a matrix.
+ *
+ * @param[in,out] data is a two-dimensional dense matrix, must be complex and its sizes a power of 2
+ */
+template<typename ComplexType>
 void fft(
-    DenseMatrix<common::Complex<RealType<ValueType>>>& data )
+    DenseMatrix<ComplexType>& data )
 {
     fftRows( data, -1 );   // fast backward FFT alon rows
     fftCols( data, -1 );   // fast backward FFT along columns
 }
 
-template<typename ValueType>
+/**
+ * Apply inverse Fast Fourier Transform in both dimensions of a matrix.
+ *
+ * @param[in,out] data is a two-dimensional dense matrix, must be complex and its sizes a power of 2
+ */
+template<typename ComplexType>
 void ifft(
-    DenseMatrix<common::Complex<RealType<ValueType>>>& data )
+    DenseMatrix<ComplexType>& data )
 {
     fftRows( data, -1 );   // fast backward FFT alon rows
     fftCols( data, -1 );   // fast backward FFT along columns

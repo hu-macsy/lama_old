@@ -264,6 +264,32 @@ void VectorAssembly<ValueType>::buildGlobalData(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void VectorAssembly<ValueType>::truncate( const IndexType size )
+{
+    IndexType offset = 0;
+
+    for ( size_t k = 0; k < mIA.size(); ++k )
+    {
+        if ( mIA[k] >= size )
+        {
+            continue;   // skip this element
+        }
+
+        mIA[offset] = mIA[k];
+        mValues[offset] = mValues[k];
+
+        ++offset;
+    }
+
+    SCAI_LOG_INFO( logger, "truncate size = " << size << ", now " << offset << " entries, were " << mIA.size() << " before" )
+
+    mIA.resize( offset );
+    mValues.resize( offset );
+}
+
+/* -------------------------------------------------------------------------- */
+
 
 SCAI_COMMON_INST_CLASS( VectorAssembly, SCAI_ARRAY_TYPES_HOST )
 

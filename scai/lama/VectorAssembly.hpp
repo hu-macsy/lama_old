@@ -123,6 +123,11 @@ public:
      */
     const dmemo::Communicator& getCommunicator() const;
 
+    /**
+     *   Remove all entries where index is out of range
+     */
+    void truncate( const IndexType size );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

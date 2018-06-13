@@ -531,6 +531,10 @@ public:
 
     virtual void redistribute( const dmemo::Redistributor& redistributor );
 
+    /** Implementation of pure method _Vector::resize */
+
+    virtual void resize( const dmemo::DistributionPtr distribution );
+
 private:
 
     using _Vector::setDistributionPtr;

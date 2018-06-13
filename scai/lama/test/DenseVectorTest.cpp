@@ -764,12 +764,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE ( gatherTest, ValueType, scai_array_test_types )
-
-BOOST_AUTO_TEST_CASE( gatherTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( gatherTest, ValueType, scai_array_test_types )
 {
-    typedef DefaultReal ValueType;
-
     ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2, 3 };
     ValueType indexValues[]  = { 3, 4, 1, 0, 6, 2 };
     ValueType targetValues[] = { 8, 1, 9, 5, 3, 4 };
@@ -945,6 +941,52 @@ BOOST_AUTO_TEST_CASE( moveTest )
     BOOST_CHECK_EQUAL( ptr1, ptr2 );  // that is great, all the same data used
 }
 
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( resizeTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;     // value type does not matter for resize
+
+    using namespace hmemo;
+
+    const IndexType n = 13;
+
+    dmemo::TestDistributions oldDists( n );
+
+    dmemo::TestDistributions fillDists( n + 2 );
+    dmemo::TestDistributions truncDists( n - 2 );
+
+    std::srand( 1311 );   // same random numbers on all processors
+
+    DenseVector<ValueType> v1;
+
+    HArray<ValueType> data1( n );
+    utilskernel::HArrayUtils::setRandom( data1, 1 );
+
+    for ( size_t j = 0; j < oldDists.size(); ++j )
+    {
+        for ( size_t k = 0; k < fillDists.size(); ++k )
+        {
+            v1.assign( data1 );
+            v1.resize( fillDists[k] );
+            ValueType v = v1[ n + 1 ];
+            BOOST_CHECK_EQUAL( v, 0 );
+            v = v1[3];
+            ValueType r = data1[3];
+            BOOST_CHECK_EQUAL( v, r );
+        }
+
+        for ( size_t k = 0; k < truncDists.size(); ++k )
+        {
+            v1.assign( data1 );
+            v1.resize( truncDists[k] );
+            ValueType x = v1[ n - 3 ];      // get distributed value
+            ValueType y = data1[ n - 3 ];   // get replicated value
+            BOOST_CHECK_EQUAL( x, y );
+        }
+    }
+}
+
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 /* --------------------------------------------------------------------- */
@@ -953,14 +995,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
 {
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    DenseVector<ValueType> x( HArray<ValueType>( { 0.2, 0.16 } ) );
-    DenseVector<FFTType> y;
+    DenseVector<FFTType> y( HArray<FFTType>( { 0.2, 0.16, 0, 0, 0, 0, 0, 0 } ) );
 
-    const IndexType n = 8;
+    const IndexType n = y.size();
 
-    fft( y, x, n );
-
-    BOOST_CHECK_EQUAL( y.size(), n );
+    fft( y );
 
     FFTType yS1 = y[0];
     FFTType yS2 = y[n - 2];
@@ -977,12 +1016,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_fft_test_types )
 {
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    DenseVector<FFTType> x( HArray<FFTType>( { 0.2, 0.16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } ) );
-    DenseVector<FFTType> y;
+    DenseVector<FFTType> y( HArray<FFTType>( { 0.2, 0.16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } ) );
 
-    const IndexType n = 8;
+    const IndexType n = y.size();
 
-    ifft( y, x, n );
+    ifft( y );
 
     BOOST_CHECK_EQUAL( y.size(), n );
 
@@ -997,22 +1035,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest, ValueType, scai_fft_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTest2, ValueType, scai_fft_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
 {
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    DenseVector<FFTType> x( HArray<FFTType>( { 0.5, 1.0 } ) );
+    const IndexType N = 13;   
+
+    // generate random vector
+
+    HArray<ValueType> randomValues( N );
+    utilskernel::HArrayUtils::setRandom( randomValues, 1 );
+
+    DenseVector<ValueType> x( randomValues );
+
+    // fill up to N2 with is next power 2 value
+ 
+    const IndexType N2 = 1 << common::Math::nextpow2( N );
+
+    SCAI_LOG_INFO( logger, "allFFTTest, N = " << N << ", N2 = " << N2 )
+
     DenseVector<FFTType> y;
+    y = cast<FFTType>( x );
+    y.resize( std::make_shared<dmemo::NoDistribution>( N2 ) );
 
-    const IndexType n = 4;
+    fft( y );        // FFT forward
+    ifft( y );       // FFT backward
 
-    ifft( y, x, n );
+    y.resize( x.getDistributionPtr() );
 
-    HArray<FFTType> result( { 1.5, FFTType( 0.5, 1.0 ), -0.5, FFTType( 0.5, -1.0 ) } );
+    // divide by N after fft - ifft to get the original result
 
-    RealType<ValueType> eps = 0.00001;
+    y /= ValueType( N2 );
 
-    BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( y.getLocalValues(), result ) < eps );
+    auto x1 = convert<DenseVector<ValueType>>( y );
+
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    // due to rounding errors: not possible is
+    // BOOST_TEST( hostReadAccess( x.getLocalValues() ) == hostReadAccess( x1.getLocalValues() ), per_element() );
+
+    BOOST_CHECK( utilskernel::HArrayUtils::maxDiffNorm( x.getLocalValues(), x1.getLocalValues() ) < eps );
 }
 
 #endif

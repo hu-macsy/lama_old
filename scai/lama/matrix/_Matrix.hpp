@@ -278,6 +278,14 @@ public:
      */
     virtual void assignDistribute( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
 
+    /** @brief assignmnet of a matrix with redistribution 
+     *
+     *  The global size of the new row and column distribution must fit the existing sizes of the input matrix.
+     *
+     *  @param[in] other     the matrix that will be assigned and redistributed
+     *  @param[in] rowDist   the new row distribution
+     *  @param[in] colDist   the new column distribution
+     */
     virtual void assignDistribute( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
 
     virtual void assignLocal( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist ) = 0;
@@ -330,6 +338,14 @@ public:
      *  @brief Redistribute this matrix with a redistribution, columns are eiter replicated or have same dist as rows
      */
     virtual void redistribute( const dmemo::Redistributor& redistributor );
+
+    /**
+     *  @brief Resize a given matrix.
+     *
+     *  This method is very similiar to redistribute but the new distributions might have a different global size.
+     *  Therefore the matrix might be either truncated or filled up with zero in each of its dimension.
+     */
+    virtual void resize( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
 
     /** @brief This method replaces all elements with its conjugate value. */
 

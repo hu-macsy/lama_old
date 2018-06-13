@@ -130,6 +130,11 @@ public:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
+    /**
+     *   Remove all entries where either row or column index is out of range
+     */
+    void truncate( const IndexType numRows, const IndexType numColumns );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
