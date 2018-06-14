@@ -85,7 +85,7 @@ void FFTUtils::fftcall(
 
     static LAMAKernel<FFTKernelTrait::fft<RealType<ValueType>>> fft;
 
-    SCAI_ASSERT_EQ_ERROR( ( 1 << m ), n, "n = " << n << " != 2 ** m = " << m )
+    SCAI_ASSERT_EQ_ERROR( ( IndexType( 1 ) << m ), n, "n = " << n << " != 2 ** m = " << m )
     SCAI_ASSERT_EQ_ERROR( k * n, data.size(), "size of data must be " << n << " x " << k )
 
     if ( !loc )
