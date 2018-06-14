@@ -118,7 +118,7 @@ int main( int argc, const char* argv[] )
 
     time = common::Walltime::get();
 
-    y *= ValueType( 1 ) / ( M2 * N2 );
+    y *= ValueType( 1 ) / ValueType( M2 * N2 );
 
     // resize back to original data
 

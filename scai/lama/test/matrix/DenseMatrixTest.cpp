@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow, ValueType, scai_fft_test_types )
 
     ifft( matrix, 1 );   // inverse fft
  
-    matrix *= ValueType( 1 ) / numColumns;
+    matrix *= ValueType( 1 ) / ValueType( numColumns );
 
     BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( input ), boost::test_tools::per_element() );
 }
@@ -360,19 +360,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestCol, ValueType, scai_fft_test_types )
 
     ifft( matrix, 0 );   // inverse fft
  
-    matrix *= ValueType( 1 ) / numRows;
+    matrix *= ValueType( 1 ) / ValueType( numRows );
 
     BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( input ), boost::test_tools::per_element() );
 }
 
 /* ------------------------------------------------------------------------- */
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
-
-BOOST_AUTO_TEST_CASE( allFFTTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
 {
-    typedef SCAI_TEST_TYPE ValueType;
-
     typedef common::Complex<RealType<ValueType>> FFTType;
 
     const IndexType M = 13; 
@@ -406,7 +402,7 @@ BOOST_AUTO_TEST_CASE( allFFTTest )
     fft( y );        // FFT forward
     ifft( y );       // FFT backward
 
-    y *= ValueType( 1 ) / ( M2 * N2 );
+    y *= ValueType( 1 ) / ValueType( M2 * N2 );
 
     // resize back to original data
 
