@@ -1113,11 +1113,13 @@ void DenseMatrix<ValueType>::redistribute( const Redistributor& redistributor, D
 template<typename ValueType>
 void DenseMatrix<ValueType>::resize( DistributionPtr rowDistributionPtr, DistributionPtr colDistributionPtr )
 {
-    // disassemble this matrix and fill it up again
+    // disassemble this matrix, take processor set from row distribution 
 
-    MatrixAssembly<ValueType> assembly;
+    MatrixAssembly<ValueType> assembly( getRowDistribution().getCommunicatorPtr() );
 
     this->disassemble( assembly );
+
+    SCAI_LOG_INFO( logger, "disassembled dense matrix (for resize): " << assembly )
 
     IndexType newNumRows = rowDistributionPtr->getGlobalSize();
     IndexType newNumCols = colDistributionPtr->getGlobalSize();

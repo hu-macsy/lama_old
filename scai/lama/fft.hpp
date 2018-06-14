@@ -103,6 +103,7 @@ void fftRows(
 
     if ( !data.getColDistribution().isReplicated() )
     {
+        SCAI_REGION( "Matrix.fftRowsRep" )
         dmemo::DistributionPtr repColumns = std::make_shared<dmemo::NoDistribution>( data.getNumColumns() );
         dmemo::DistributionPtr distColumns = data.getColDistributionPtr();
         data.redistribute( data.getRowDistributionPtr(), repColumns );
@@ -111,6 +112,8 @@ void fftRows(
     }
     else
     {
+        SCAI_REGION( "Matrix.fftRows" )
+
         // fft  for each row, each processor does it on its local rows
 
         IndexType nLocalRows = data.getRowDistribution().getLocalSize();
@@ -151,6 +154,8 @@ void fftCols(
     }
     else
     {   // now transpose works fine, we do it in place
+
+        SCAI_REGION( "Matrix.fftCols" )
 
         data.assignTranspose( data );
         fftRows( data, direction );
@@ -217,8 +222,8 @@ template<typename ComplexType>
 void fft(
     DenseMatrix<ComplexType>& data )
 {
-    fftRows( data, -1 );   // fast backward FFT alon rows
-    fftCols( data, -1 );   // fast backward FFT along columns
+    fftRows( data, 1 );   // fast backward FFT alon rows
+    fftCols( data, 1 );   // fast backward FFT along columns
 }
 
 /**
@@ -230,6 +235,8 @@ template<typename ComplexType>
 void ifft(
     DenseMatrix<ComplexType>& data )
 {
+    // order does not matter, so fftCols before fftRows works also fine
+
     fftRows( data, -1 );   // fast backward FFT alon rows
     fftCols( data, -1 );   // fast backward FFT along columns
 }

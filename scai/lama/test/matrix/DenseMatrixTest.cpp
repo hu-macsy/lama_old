@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_SUITE( DenseMatrixTest )
 
 /* ------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest" );
 
 /* ------------------------------------------------------------------------- */
 
@@ -367,12 +367,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestCol, ValueType, scai_fft_test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
+
+BOOST_AUTO_TEST_CASE( allFFTTest )
 {
+    typedef SCAI_TEST_TYPE ValueType;
+
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    const IndexType M = 7; 
-    const IndexType N = 13;
+    const IndexType M = 4; 
+    const IndexType N = 4;
 
     // generate random vector
 
@@ -382,24 +386,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
     DenseStorage<ValueType> storage( M, N, randomValues );
     DenseMatrix<ValueType> x( storage );
 
-    // fill up to N2 with is next power 2 value
+    // fill up to M2 x N2, dimensions that are the next power 2 values
 
     const IndexType M2 = 1 << common::Math::nextpow2( M );
     const IndexType N2 = 1 << common::Math::nextpow2( N );
 
-    auto rowDist = std::make_shared<dmemo::NoDistribution>( M2 );
-    auto colDist = std::make_shared<dmemo::NoDistribution>( N2 );
+    auto rowDist = std::make_shared<dmemo::BlockDistribution>( M2 );
+    auto colDist = std::make_shared<dmemo::BlockDistribution>( N2 );
 
     // convert to complex matrix, fill it up and distribute it
 
     DenseMatrix<FFTType> y;
     y = cast<FFTType>( x );
+
+    SCAI_LOG_ERROR( logger, "resize y = " << y << " with row dist = " << *rowDist << ", col dist = " << *colDist )
+
     y.resize( rowDist, colDist );   // fill up and distribute
 
-    return;
+    SCAI_LOG_ERROR( logger, "now y = " << y << ", now apply FFT" )
 
     fft( y );        // FFT forward
     ifft( y );       // FFT backward
+
+    y *= ValueType( 1 ) / ( M2 * N2 );
 
     // resize back to original data
 
@@ -407,11 +416,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
 
     // divide by M * N after fft - ifft to get the original result
 
-    y *= ValueType( 1 ) / ( M2 * N2 );
-
     auto x1 = convert<DenseMatrix<ValueType>>( y );
 
     RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    if ( false )
+    {
+        // helpful for debugging, but we have only close equality here
+
+        const hmemo::HArray<ValueType>& denseData = x1.getLocalStorage().getValues();
+        BOOST_TEST( hostReadAccess( denseData ) == hostReadAccess( randomValues ), boost::test_tools::per_element() );
+    }
 
     BOOST_CHECK( x.maxDiffNorm( x1 ) < eps );
 }

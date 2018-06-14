@@ -126,6 +126,26 @@ public:
     COOStorage<ValueType> buildGlobalCOO( const IndexType numRows, const IndexType numColumns, common::BinaryOp op ) const;
 
     /**
+     * @brief Return COO storage of assembled data but only the owned entries.
+     *
+     *  @param[in] dist is the (row) distribution to check for owned entries
+     *  @param[in] numColumns is required to set the second dimension of the storage
+     *  @param[in] op specifies how to deal with multiple entries for the same matrix position.
+     *
+     * This method should be called if the assembled data is replicated on all processors that are used for the new distribution.
+     * This method does not involve any interprocessor communication.
+     */
+    COOStorage<ValueType> buildOwnedCOO( const dmemo::Distribution& dist, const IndexType numColumns, common::BinaryOp op ) const;
+
+    /**
+     * @brief Return COO storage of assembled data according to the new distribution.
+     *
+     * This method calls either buildLocalCOO, buildOwnedCOO, or buildGlobalCOO according to the communicator of
+     * the assembled data and the communicator of the new distribution.
+     */
+    COOStorage<ValueType> buildCOO( const dmemo::Distribution& dist, const IndexType numColumns, common::BinaryOp op ) const;
+
+    /**
      *  Override Printable::writeAt 
      */
     virtual void writeAt( std::ostream& stream ) const;

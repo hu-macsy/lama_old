@@ -238,6 +238,81 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+COOStorage<ValueType> MatrixAssembly<ValueType>::buildOwnedCOO(
+    const dmemo::Distribution& dist,
+    const IndexType numColumns,
+    common::BinaryOp op ) const
+{
+    // These COO arrays will keep the matrix items owned by this processor
+
+    HArray<IndexType> ownedIA;
+    HArray<IndexType> ownedJA;
+    HArray<ValueType> ownedValues;
+
+    if ( dist.isReplicated() )
+    {
+        // all entries are used, we can save overhead for dist.isLocal and dist.global2local
+
+        IndexType numValues = mIA.size();
+
+        WriteOnlyAccess<IndexType> wIA( ownedIA, numValues );
+        WriteOnlyAccess<IndexType> wJA( ownedJA, numValues );
+        WriteOnlyAccess<ValueType> wValues( ownedValues, numValues );
+
+        for ( IndexType k = 0; k < numValues; ++k )
+        {
+            wIA[k] = mIA[k];
+            wJA[k] = mJA[k];
+            wValues[k] = mValues[k];
+        }
+    }
+    else
+    { 
+        // Step 1 : count number of local entries
+
+        IndexType numValues = 0;
+
+        for ( size_t k = 0; k < mIA.size(); ++k )
+        {
+            if ( dist.isLocal( mIA[k] ) )
+            {
+                numValues++;
+            }
+        }
+    
+        // Step 2 : allocate the COO arrays and copy the local values
+
+        WriteOnlyAccess<IndexType> wIA( ownedIA, numValues );
+        WriteOnlyAccess<IndexType> wJA( ownedJA, numValues );
+        WriteOnlyAccess<ValueType> wValues( ownedValues, numValues );
+
+        IndexType count = 0;
+
+        for ( size_t k = 0; k < mIA.size(); ++k )
+        {
+            const IndexType local = dist.global2local( mIA[k] );
+
+            if ( local != invalidIndex )
+            {
+                wIA[count] = local;       // IMPORTANT: global->local index required
+                wJA[count] = mJA[k];
+                wValues[count] = mValues[k];
+                count++;
+            }
+        }
+
+        SCAI_ASSERT_EQ_ERROR( count, numValues, "serious mismatch" )
+    }
+
+    sparsekernel::COOUtils::normalize( ownedIA, ownedJA, ownedValues, op, Context::getHostPtr() );
+
+    return COOStorage<ValueType>( dist.getLocalSize(), numColumns,
+                                  std::move( ownedIA ), std::move( ownedJA ), std::move( ownedValues ) );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO( 
     const IndexType numRows,
     const IndexType numColumns,
@@ -322,6 +397,44 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO(
 
     return COOStorage<ValueType>( numRows, numColumns,
                                   std::move( allIA ), std::move( allJA ), std::move( allValues ) );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOStorage<ValueType> MatrixAssembly<ValueType>::buildCOO( 
+    const dmemo::Distribution& dist, 
+    const IndexType numColumns,
+    common::BinaryOp op ) const
+{
+    if ( mComm->getType() == dmemo::Communicator::NO )
+    {
+        // replicated assembly, so just select the owned entries
+
+        SCAI_LOG_INFO( logger, "build (distributed) COO from replicated assembly, select owned entries" )
+
+        return buildOwnedCOO( dist, numColumns, op );
+    }
+    else if ( dist.getCommunicator() == *mComm )
+    {
+        SCAI_LOG_INFO( logger, "build COO from assembly, same processor set" )
+
+        // distributed assembly -> distributed matrix, sends non-local entries to owners
+
+        return buildLocalCOO( dist, numColumns, op );
+    }
+    else if ( dist.getCommunicator().getType() == dmemo::Communicator::NO )
+    {
+        // distributed assembly -> replicated matrix 
+
+        SCAI_LOG_INFO( logger, "build replicated COO from distributed assembly, circular shift it around" )
+
+        return buildGlobalCOO( dist.getGlobalSize(), numColumns, op );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unhandled, mismatch of assembly processor set and new processor set" )
+    }
 }
 
 /* -------------------------------------------------------------------------- */

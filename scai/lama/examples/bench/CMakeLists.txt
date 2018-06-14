@@ -37,7 +37,7 @@ include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 include ( scai_function/scai_example_directory )
 
-foreach ( executable conversion matadd matmul matvecmul maxnorm rowcol scan sort )
+foreach ( executable conversion matadd matmul matvecmul maxnorm rowcol scan sort fft )
 
     scai_add_example( EXECUTABLE ${executable}.exe 
                       FILES      ${executable}.cpp )
