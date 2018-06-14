@@ -47,12 +47,27 @@ namespace lama
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
+/** 
+ *  @brief Apply FFT to a one-dimensional vector
+ *
+ *  - FFT can only be applied to complex vectors
+ *  - The size must be a power of 2
+ *  - use resize function to fill up or truncate matrices
+ */
 template<typename ComplexType>
 void fft1D( DenseVector<ComplexType>& denseVector, const int direction )
 {
-    // result array for fft is alway complex
+    if (  !denseVector.getDistribution().isReplicated() )
+    {
+        // FFT not available yet for distributed vectors, so replicate it
 
-    SCAI_ASSERT_ERROR( denseVector.getDistribution().isReplicated(), "fft only on replicated vectors" )
+        auto repDist = std::make_shared<dmemo::NoDistribution>( denseVector.size() );
+        auto saveDist = denseVector.getDistributionPtr();
+        denseVector.redistribute( repDist );
+        fft1D( denseVector, direction );
+        denseVector.redistribute( saveDist );
+        return;
+    }
 
     hmemo::ContextPtr ctx = denseVector.getContextPtr();   // preferred location for FFT
     
@@ -70,12 +85,24 @@ void fft1D( DenseVector<ComplexType>& denseVector, const int direction )
     utilskernel::FFTUtils::fftcall<RealType<ComplexType>>( localData, many, size, m, direction, denseVector.getContextPtr() );
 }
 
+/** 
+ *  @brief Apply forward FFT to a one-dimensional vector
+ *
+ *  @param[in,out] denseVector vector to which (forward) FFT is applied to, size must be a power of 2
+ *
+ */
 template<typename ComplexType>
 void fft( DenseVector<ComplexType>& denseVector )
 {
     fft1D( denseVector, 1 );
 }
 
+/** 
+ *  @brief Apply inverse FFT to a one-dimensional vector
+ *
+ *  @param[in,out] denseVector vector to which (backward) FFT is applied to, size must be a power of 2
+ *
+ */
 template<typename ComplexType>
 void ifft( DenseVector<ComplexType>& denseVector )
 {
