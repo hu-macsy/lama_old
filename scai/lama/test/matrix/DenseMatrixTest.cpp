@@ -375,8 +375,8 @@ BOOST_AUTO_TEST_CASE( allFFTTest )
 
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    const IndexType M = 4; 
-    const IndexType N = 4;
+    const IndexType M = 13; 
+    const IndexType N = 19;
 
     // generate random vector
 
@@ -399,11 +399,9 @@ BOOST_AUTO_TEST_CASE( allFFTTest )
     DenseMatrix<FFTType> y;
     y = cast<FFTType>( x );
 
-    SCAI_LOG_ERROR( logger, "resize y = " << y << " with row dist = " << *rowDist << ", col dist = " << *colDist )
+    SCAI_LOG_INFO( logger, "resize y = " << y << " with row dist = " << *rowDist << ", col dist = " << *colDist )
 
     y.resize( rowDist, colDist );   // fill up and distribute
-
-    SCAI_LOG_ERROR( logger, "now y = " << y << ", now apply FFT" )
 
     fft( y );        // FFT forward
     ifft( y );       // FFT backward
