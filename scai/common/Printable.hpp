@@ -93,6 +93,47 @@ public:
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Printable& object );
 
+/**
+ *  @brief Wrapper class to print contents of container
+ *
+ *  \code
+ *     std::vector<int> list( { 0, 1, 2, 3, 5, 7 } );
+ *     std::cout << "Content of list = " << common::Wrapper( list ) << std::endl;
+ *  \endcode
+ */
+template<class Container>
+class Wrapper : public Printable
+{
+
+public:
+
+    Wrapper( const Container& container ) :  mContainer( container ) 
+    {
+    }
+
+    ~Wrapper()
+    {
+    }
+
+    virtual void writeAt( std::ostream& stream ) const
+    {
+        typename Container::const_iterator beg = mContainer.begin();
+
+        stream << "["; 
+
+        while( beg != mContainer.end())
+        {
+            stream << " " << *beg++; 
+        }
+
+        stream  << " ]"; 
+    }
+
+private:
+
+    const Container& mContainer;  // keep a reference
+};
+
 } /* end namespace common */
 
 } /* end namespace scai */

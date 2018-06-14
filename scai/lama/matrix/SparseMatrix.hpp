@@ -579,6 +579,10 @@ public:
 
     virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistribution );
 
+    /* Implementation of pure method _Matrix::resize */
+
+    virtual void resize( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+
     /**
      * @brief Assign another matrix transposed to this matrix.
      *

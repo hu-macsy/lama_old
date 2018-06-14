@@ -493,50 +493,52 @@ void DenseMatrix<ValueType>::assignTranspose( const _Matrix& other  )
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& Mat )
+void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& matrix )
 {
-    SCAI_REGION( "Mat.Dense.assignTranspose" )
+    SCAI_REGION( "Mat.Dense.transpose" )
 
-    const Communicator& comm = Mat.getRowDistribution().getCommunicator();
-    IndexType size = comm.getSize();
-    DistributionPtr distRow = Mat.getRowDistributionPtr();
-    DistributionPtr distCol = Mat.getColDistributionPtr();
+    auto colDist = matrix.getColDistributionPtr();
+    auto rowDist = matrix.getRowDistributionPtr();
 
-    if ( size == 1 )        // localTranspose == globalTranpose, if processor nr == 1
+    SCAI_LOG_INFO( logger, "transpose dense matrix with same value type, switch row/col distributions" )
+
+    if ( rowDist->isReplicated() && colDist->isReplicated() )
     {
-        if ( this != &Mat )
-        {
-            assign( Mat );
-        }
+        DenseMatrix<ValueType> newMatrix( colDist, rowDist );
 
-        mData[0]->transposeImpl();
-        redistribute( distCol, distRow );
+        newMatrix.mData[0]->assignTranspose( matrix.getLocalStorage() );
+
+        *this = std::move( newMatrix );
+    }
+    else if ( rowDist->isReplicated() )
+    {
+        COMMON_THROWEXCEPTION( "transpose not supported for replicated matrices with distributed columns, matrix = " << matrix )
+    }
+    else if ( colDist->isReplicated() )
+    {
+        COMMON_THROWEXCEPTION( "transpose not supported for distributed matrices with replicated columns, matrix = " << matrix )
     }
     else
     {
-        //new storage, distribution already changed
-        DenseMatrix<ValueType> targetMat( distCol, distRow );
+        SCAI_ASSERT_EQ_ERROR( rowDist->getCommunicator(), colDist->getCommunicator(), "transpose only on same set of processors" )
 
-        //local transpose of Mat
-        for ( IndexType i = 0; i < size; ++i )
-        {
-            Mat.mData[i]->transposeImpl();
-        }
+        const Communicator& comm = rowDist->getCommunicator();
+
+        const IndexType size = comm.getSize();
+
+        DenseMatrix<ValueType> newMatrix( colDist, rowDist );
 
         // preparation for all2allv
-
+ 
         std::vector<IndexType> receiveSizes( size );
         std::vector<ValueType*> recvBuffer( size );
 
         for ( IndexType i = 0; i < size; ++i )
         {
-            IndexType localSize = targetMat.mData[i]->getValues().size();
+            HArray<ValueType>& recvData = newMatrix.mData[i]->getData();
 
-            WriteAccess<ValueType> wData( targetMat.mData[i]->getData() );
-            //local data
-            recvBuffer[i] = wData.get();
-            //local data sizes
-            receiveSizes[i] = localSize;
+            recvBuffer[i]   = hmemo::hostWriteAccess( recvData ).get();
+            receiveSizes[i] = recvData.size();
         }
 
         std::vector<IndexType> sendSizes( size );
@@ -544,27 +546,24 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
 
         for ( IndexType i = 0; i < size; ++i )
         {
-            IndexType localSize =  Mat.mData[i]->getValues().size();
-            WriteAccess<ValueType> wDatas( Mat.mData[i]->getData() );
-            //local datal
-            sendBuffer[i] = wDatas.get();
-            //local data sizes
-            sendSizes[i] = localSize;
+            const HArray<ValueType>& sendData = matrix.mData[i]->getValues();
+
+            sendSizes[i] = sendData.size();
+            sendBuffer[i] = hmemo::hostReadAccess( sendData ).get();
         }
 
-        //MPI call
+        // MPI call
+
         comm.all2allv( recvBuffer.data(), receiveSizes.data(), sendBuffer.data(), sendSizes.data() );
 
-        //transpose back of Mat (A^t)^t = A
-        if ( this != &Mat ) // no need if we override Mat anyways
+        for ( IndexType i = 0; i < size; ++i )
         {
-            for ( IndexType i = 0; i < size; ++i )
-            {
-                Mat.mData[i]->transposeImpl();
-            }
+            DenseStorage<ValueType>& storage = *newMatrix.mData[i];
+            HArray<ValueType>& data = storage.getData();
+            utilskernel::HArrayUtils::transpose( data, storage.getNumRows(), storage.getNumColumns(), data, false );
         }
 
-        *this = targetMat;
+        *this = std::move( newMatrix );
     }
 }
 
@@ -1107,6 +1106,36 @@ void DenseMatrix<ValueType>::redistribute( const Redistributor& redistributor, D
     _Matrix::setDistributedMatrix( redistributor.getTargetDistributionPtr(), getColDistributionPtr() );
 
     redistribute( getRowDistributionPtr(), colDistributionPtr );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::resize( DistributionPtr rowDistributionPtr, DistributionPtr colDistributionPtr )
+{
+    // disassemble this matrix, take processor set from row distribution 
+
+    MatrixAssembly<ValueType> assembly( getRowDistribution().getCommunicatorPtr() );
+
+    this->disassemble( assembly );
+
+    SCAI_LOG_INFO( logger, "disassembled dense matrix (for resize): " << assembly )
+
+    IndexType newNumRows = rowDistributionPtr->getGlobalSize();
+    IndexType newNumCols = colDistributionPtr->getGlobalSize();
+
+    // truncate elements if necessary to avoid ERROR messages when we fil up
+
+    if ( newNumRows < getNumRows() || newNumCols < getNumColumns() )
+    {
+        assembly.truncate( newNumRows, newNumCols );
+    }
+
+    // and now fill the assembly back
+
+    allocate( rowDistributionPtr, colDistributionPtr );
+
+    this->fillFromAssembly( assembly );
 }
 
 /* ------------------------------------------------------------------------- */

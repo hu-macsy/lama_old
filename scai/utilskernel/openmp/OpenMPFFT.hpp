@@ -65,7 +65,7 @@ public:
     template<typename ValueType>
     static void fft(
         common::Complex<ValueType> array[],
-        const IndexType nb,
+        const IndexType k,
         const IndexType n,
         const IndexType m,
         const int direction );

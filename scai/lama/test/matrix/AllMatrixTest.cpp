@@ -370,8 +370,8 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
             // transpse the matrix first time
 
+            SCAI_LOG_DEBUG( logger, "transposeTest: orig is " << matrix );
             matrixT.assignTranspose( matrix );
-            SCAI_LOG_DEBUG( logger, "transposeTest: " << matrixT << " , orig is " << matrix );
             BOOST_CHECK_EQUAL( matrix.getRowDistribution(), matrixT.getColDistribution() );
             BOOST_CHECK_EQUAL( matrix.getColDistribution(), matrixT.getRowDistribution() );
             MatrixPtr<ValueType> matrixTT( matrix.newMatrix() );

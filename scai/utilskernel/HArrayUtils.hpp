@@ -83,6 +83,16 @@ public:
         const hmemo::HArray<SourceValueType>& source,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** 
+     *  Assign to a resized array, so either target array is filled up or truncated.
+     */
+    template<typename TargetValueType, typename SourceValueType>
+    static void assignResized(
+        hmemo::HArray<TargetValueType>& target,
+        const IndexType newSize,
+        const hmemo::HArray<SourceValueType>& source,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /**
      *  @brief Gathering (unstructured read) of values with heterogeneous arrays.
      *

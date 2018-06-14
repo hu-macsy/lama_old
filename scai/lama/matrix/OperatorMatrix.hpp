@@ -163,14 +163,22 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
     virtual void redistribute(dmemo::DistributionPtr, dmemo::DistributionPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
     virtual void redistribute( const dmemo::Redistributor&, dmemo::DistributionPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
+    virtual void resize(dmemo::DistributionPtr, dmemo::DistributionPtr)
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
+
     virtual void setLocalRow( const hmemo::HArray<ValueType>&, IndexType, common::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )

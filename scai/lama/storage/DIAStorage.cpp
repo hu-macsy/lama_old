@@ -808,7 +808,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
 {
     SCAI_REGION( "Storage.DIA.setCSR" )
 
-    SCAI_LOG_ERROR( logger, "setCSRData " << numRows << " x " << numColumns 
+    SCAI_LOG_INFO( logger, "setCSRData " << numRows << " x " << numColumns 
                             << ", ia = " << ia << ", ja = " << ja << ", values = " << values )
 
     IndexType numValues = ja.size();

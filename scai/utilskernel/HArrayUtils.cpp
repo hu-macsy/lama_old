@@ -128,6 +128,60 @@ void HArrayUtils::assign( HArray<TargetValueType>& target, const HArray<SourceVa
 
 /* --------------------------------------------------------------------------- */
 
+template<typename TargetValueType, typename SourceValueType>
+void HArrayUtils::assignResized( 
+    HArray<TargetValueType>& target, 
+    const IndexType newSize,
+    const HArray<SourceValueType>& source, 
+    const ContextPtr prefLoc )
+{
+    if ( static_cast<const _HArray*>( &target ) == static_cast<const _HArray*>( &source ) )
+    {
+        // target and source are same, so no assign required, but maybe resize and fill up
+
+        IndexType n = source.size();
+
+        target.resize( newSize );
+
+        if ( newSize > n )
+        {
+            // fill up with zero
+
+            fillArraySection( target, n, 1, TargetValueType( 0 ), newSize - n, common::BinaryOp::COPY, prefLoc );
+        }
+
+        return;
+    }
+
+    static LAMAKernel<UtilKernelTrait::set<TargetValueType, SourceValueType> > set;
+    static LAMAKernel<UtilKernelTrait::setVal<TargetValueType>> setVal;
+
+    ContextPtr loc = prefLoc;
+
+    if ( !loc )
+    {
+        // if no context is given we assign where source has a valid copy available
+        loc = source.getValidContext();
+    }
+
+    set.getSupportedContext( loc, setVal );
+
+    const IndexType n = std::min( source.size(), newSize );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<SourceValueType> sourceVals( source, loc );
+    WriteOnlyAccess<TargetValueType> targetVals( target, loc, newSize );
+    set[loc]( targetVals.get(), sourceVals.get(), n, common::BinaryOp::COPY );
+
+    if ( n < newSize )
+    {
+        setVal[loc]( targetVals.get() + n, newSize - n, TargetValueType( 0 ), common::BinaryOp::COPY );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 void HArrayUtils::_setArray(
     _HArray& target,
     const _HArray& source,
@@ -2583,6 +2637,11 @@ void HArrayUtils::buildComplex(
             const hmemo::ContextPtr );                                               \
     template void HArrayUtils::assign<TargetType, SourceType>(                       \
             hmemo::HArray<TargetType>&,                                              \
+            const hmemo::HArray<SourceType>&,                                        \
+            hmemo::ContextPtr );                                                     \
+    template void HArrayUtils::assignResized<TargetType, SourceType>(                \
+            hmemo::HArray<TargetType>&,                                              \
+            const IndexType newSize,                                                 \
             const hmemo::HArray<SourceType>&,                                        \
             hmemo::ContextPtr );                                                     \
     template void HArrayUtils::setArray<TargetType, SourceType>(                     \

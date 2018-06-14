@@ -325,6 +325,10 @@ public:
 
     virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr );
 
+    /* Implementation of pure method of _Matrix::resize */
+
+    virtual void resize( dmemo::DistributionPtr rowDistributionPtr, dmemo::DistributionPtr colDistributionPtr );
+
     /** Implementation of pure method Matrix<ValueType>::getDiagonal */
 
     virtual void getDiagonal( Vector<ValueType>& diagonal ) const;

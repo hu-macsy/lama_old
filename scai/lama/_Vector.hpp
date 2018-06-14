@@ -575,6 +575,14 @@ public:
      */
     virtual void redistribute( const dmemo::Redistributor& redistributor ) = 0;
 
+    /**
+     * @brief Resize this vector with a new passed distribution.
+     *
+     * In contrary to redistribute the vector might be truncated or filled up with the zero element.
+     *
+     */
+    virtual void resize( dmemo::DistributionPtr distribution ) = 0;
+
     /** 
      * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )
      */

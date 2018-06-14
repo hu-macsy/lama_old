@@ -51,6 +51,7 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/test/TestDistributions.hpp>
 
@@ -65,7 +66,7 @@ BOOST_AUTO_TEST_SUITE( DenseMatrixTest )
 
 /* ------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.SparseMatrixTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.DenseMatrixTest" );
 
 /* ------------------------------------------------------------------------- */
 
@@ -255,216 +256,176 @@ BOOST_AUTO_TEST_CASE( dense2SparseTest )
     }
 }
 
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( resizeTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;     // value type does not matter for resize
+
+    using namespace hmemo;
+
+    const IndexType m = 8;
+    const IndexType n = 13;
+
+    std::srand( 1311 );   // same random numbers on all processors
+
+    DenseMatrix<ValueType> matrix1;
+
+    HArray<ValueType> data1( m * n );
+    utilskernel::HArrayUtils::setRandom( data1, 1 );
+    DenseStorage<ValueType> repMatrix( m, n, data1 );
+
+    dmemo::DistributionPtr rowDistBig = std::make_shared<dmemo::BlockDistribution>( m + 1 );
+    dmemo::DistributionPtr rowDistSmall = std::make_shared<dmemo::CyclicDistribution>( m - 1, 2 );
+    dmemo::DistributionPtr colDistBig = std::make_shared<dmemo::NoDistribution>( n + 1 );
+    dmemo::DistributionPtr colDistSmall = std::make_shared<dmemo::NoDistribution>( n - 1 );
+
+    matrix1.assign( repMatrix );
+
+    matrix1.resize( rowDistBig, colDistSmall );
+
+    ValueType v1 = matrix1.getValue( 2, 5 );
+    ValueType v2 = repMatrix.getValue( 2, 5 );
+    BOOST_CHECK_EQUAL( v1, v2 );
+
+    v1 = matrix1.getValue( m, 3 );   // row m has been filled with zero
+    BOOST_CHECK_EQUAL( v1, 0 );
+ 
+    matrix1.resize( rowDistSmall, colDistBig );
+
+    v1 = matrix1.getValue( 4, n );   // column n has been filled with zero
+    BOOST_CHECK_EQUAL( v1, 0 );
+}
+
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow1, ValueType, scai_fft_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow, ValueType, scai_fft_test_types )
 {
     using hmemo::HArray;
     using hmemo::hostReadAccess;
 
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    HArray<ValueType> input( { 0.5, 1.0 } );
+    HArray<FFTType> input( { 0.5, 1.0, 0.0, 0.0,
+                             1,   2,   3,   4   } );
 
-    DenseMatrix<ValueType> x( DenseStorage<ValueType>( 1, 2, input ) );
+    const IndexType numRows = 2;
+    const IndexType numColumns = 4;
 
-    HArray<FFTType> result( { 1.5, FFTType( 0.5, -1 ), -0.5, FFTType( 0.5, 1 ) } );
+    DenseMatrix<FFTType> matrix( DenseStorage<FFTType>( numRows, numColumns, input ) );
 
-    DenseMatrix<FFTType> res;
+    fft( matrix, 1 );    // fft along columns, is parallel for each row
 
-    const IndexType dim = 1;
+    HArray<FFTType> expResult( { 1.5, FFTType( 0.5, -1 ), -0.5, FFTType( 0.5, 1 ),
+                                 10, FFTType( -2, 2 ), -2, FFTType( -2, -2 ) } );
 
-    fft( res, x, dim, 4 );    // fft for each row
+    BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( expResult ), boost::test_tools::per_element() );
 
-    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
+    ifft( matrix, 1 );   // inverse fft
+ 
+    matrix *= ValueType( 1 ) / ValueType( numColumns );
 
-    BOOST_CHECK_EQUAL( res.getNumRows(), 1 );
-    BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );
-
-    BOOST_TEST( hostReadAccess( res.getLocalStorage().getValues() ) == hostReadAccess( result ), boost::test_tools::per_element() );
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow2, ValueType, scai_fft_test_types )
-{
-    using hmemo::HArray;
-    using hmemo::hostReadAccess;
-
-    typedef common::Complex<RealType<ValueType>> FFTType;
-
-    HArray<ValueType> input( { 1.0, 1.5 } );
-
-    DenseMatrix<ValueType> x( DenseStorage<ValueType>( 1, 2, input ) );
-
-    HArray<FFTType> result( { 2.5, FFTType( 1, -1.5 ), -0.5, FFTType( 1, 1.5 )  } );
-
-    DenseMatrix<FFTType> res;
-
-    const IndexType dim = 1;
-
-    fft( res, x, dim, 4 );    // fft for each row
-
-    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
-
-    BOOST_CHECK_EQUAL( res.getNumRows(), 1 );
-    BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );
-
-    BOOST_TEST( hostReadAccess( res.getLocalStorage().getValues() ) == hostReadAccess( result ), boost::test_tools::per_element() );
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowArray, ValueType, scai_fft_test_types )
-{
-    using hmemo::HArray;
-    using hmemo::hostReadAccess;
-
-    typedef common::Complex<RealType<ValueType>> FFTType;
-
-    HArray<ValueType> input( { 0.5, 1.0, 1.0, 1.5 } );
-
-    HArray<FFTType> result( { 1.5, FFTType( 0.5, -1 ), -0.5, FFTType( 0.5, 1 ) ,
-                              2.5, FFTType( 1, -1.5 ), -0.5, FFTType( 1, 1.5 )  } );
-
-    hmemo::HArray<FFTType> res;
-
-    utilskernel::FFTUtils::fft_many( res, input, 2, 4, 1 );
-
-    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
-
-    BOOST_TEST( hostReadAccess( res ) == hostReadAccess( result ), boost::test_tools::per_element() );
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRowMatrix, ValueType, scai_fft_test_types )
-{
-    using hmemo::HArray;
-    using hmemo::hostReadAccess;
-
-    typedef common::Complex<RealType<ValueType>> FFTType;
-
-    HArray<ValueType> input( { 0.5, 1.0, 1.0, 1.5 } );
-
-    DenseMatrix<ValueType> x( DenseStorage<ValueType>( 2, 2, input ) );
-
-    HArray<FFTType> result( { 1.5, FFTType( 0.5, -1 ), -0.5, FFTType( 0.5, 1 ) ,
-                              2.5, FFTType( 1, -1.5 ), -0.5, FFTType( 1, 1.5 )  } );
-
-    DenseMatrix<FFTType> res;
-
-    const IndexType dim = 1;
-
-    fft( res, x, dim, 4 );    // fft for each row
-
-    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
-
-    BOOST_CHECK_EQUAL( res.getNumRows(), 2 );
-    BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );
-
-    BOOST_TEST( hostReadAccess( res.getLocalStorage().getValues() ) == hostReadAccess( result ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( input ), boost::test_tools::per_element() );
 }
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestCol, ValueType, scai_fft_test_types )
 {
-    return;
-
     using hmemo::HArray;
     using hmemo::hostReadAccess;
 
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    HArray<ValueType> input( { 0.5, 1.0, 1.0, 1.5 } );
+    HArray<FFTType> input( { 0.5,  1, 
+                             1.0,  2, 
+                             0.0,  3,
+                             0.0,  4 } );
 
-    DenseMatrix<ValueType> x( DenseStorage<ValueType>( 2, 2, input ) );
+    const IndexType numRows = 4;
+    const IndexType numColumns = 2;
 
-    HArray<FFTType> result( { 1.5, 2.5, FFTType( 0.5, -1 ), FFTType( 1, -1.5 ) ,
-                              -0.5, -0.5, FFTType( 0.5, 1 ), FFTType( 1, 1.5 )  } );
+    DenseMatrix<FFTType> matrix( DenseStorage<FFTType>( numRows, numColumns, input ) );
 
-    DenseMatrix<FFTType> res;
+    fft( matrix, 0 );    // fft along rows, is parallel for each column
 
-    const IndexType dim = 0;
+    HArray<FFTType> expResult( { 1.5,                10,
+                                 FFTType( 0.5, -1 ), FFTType( -2, 2 ),
+                                 -0.5,               -2, 
+                                 FFTType( 0.5, 1 ),  FFTType( -2, -2 ) } );
 
-    fft( res, x, dim, 4 );    // fft for each column
+    BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( expResult ), boost::test_tools::per_element() );
 
-    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
+    ifft( matrix, 0 );   // inverse fft
+ 
+    matrix *= ValueType( 1 ) / ValueType( numRows );
 
-    BOOST_CHECK_EQUAL( res.getNumRows(), 4 );
-    BOOST_CHECK_EQUAL( res.getNumColumns(), 2 );
-
-    BOOST_TEST( hostReadAccess( res.getLocalStorage().getValues() ) == hostReadAccess( result ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( input ), boost::test_tools::per_element() );
 }
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestRow, ValueType, scai_fft_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
 {
-    return;
-
-    using hmemo::HArray;
-    using hmemo::hostReadAccess;
-
     typedef common::Complex<RealType<ValueType>> FFTType;
 
-    HArray<ValueType> input( { 0.5, 1.0, 2.0, 2.5 } );
+    const IndexType M = 13; 
+    const IndexType N = 19;
 
-    DenseMatrix<ValueType> x( DenseStorage<ValueType>( 2, 2, input ) );
+    // generate random vector
 
-    HArray<FFTType> result( { 1.5, FFTType( 0.5, 1.0 ), -0.5, FFTType( 0.5, -1.0 ) ,
-                              4.5, FFTType( 2.0, 2.5 ), -0.5, FFTType( 2.0, -2.5 )  } );
+    hmemo::HArray<ValueType> randomValues( M * N );
+    utilskernel::HArrayUtils::setRandom( randomValues, 1 );
 
-    DenseMatrix<FFTType> res;
+    DenseStorage<ValueType> storage( M, N, randomValues );
+    DenseMatrix<ValueType> x( storage );
 
-    const IndexType dim = 1;
+    // fill up to M2 x N2, dimensions that are the next power 2 values
 
-    ifft( res, x, dim, 4 );    // ifft for each row
+    const IndexType M2 = 1 << common::Math::nextpow2( M );
+    const IndexType N2 = 1 << common::Math::nextpow2( N );
 
-    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
+    auto rowDist = std::make_shared<dmemo::BlockDistribution>( M2 );
+    auto colDist = std::make_shared<dmemo::BlockDistribution>( N2 );
 
-    BOOST_CHECK_EQUAL( res.getNumRows(), 2 );
-    BOOST_CHECK_EQUAL( res.getNumColumns(), 4 );
+    // convert to complex matrix, fill it up and distribute it
 
-    // BOOST_TEST( hostReadAccess( res.getLocalStorage().getValues() ) == hostReadAccess( result ), boost::test_tools::per_element() );
+    DenseMatrix<FFTType> y;
+    y = cast<FFTType>( x );
+
+    SCAI_LOG_INFO( logger, "resize y = " << y << " with row dist = " << *rowDist << ", col dist = " << *colDist )
+
+    y.resize( rowDist, colDist );   // fill up and distribute
+
+    fft( y );        // FFT forward
+    ifft( y );       // FFT backward
+
+    y *= ValueType( 1 ) / ValueType( M2 * N2 );
+
+    // resize back to original data
+
+    y.resize( x.getRowDistributionPtr(), x.getColDistributionPtr() );
+
+    // divide by M * N after fft - ifft to get the original result
+
+    auto x1 = convert<DenseMatrix<ValueType>>( y );
+
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    if ( false )
+    {
+        // helpful for debugging, but we have only close equality here
+
+        const hmemo::HArray<ValueType>& denseData = x1.getLocalStorage().getValues();
+        BOOST_TEST( hostReadAccess( denseData ) == hostReadAccess( randomValues ), boost::test_tools::per_element() );
+    }
+
+    BOOST_CHECK( x.maxDiffNorm( x1 ) < eps );
 }
 
 /* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( ifftTestCol, ValueType, scai_fft_test_types )
-{
-    return;
-
-    using hmemo::HArray;
-    using hmemo::hostReadAccess;
-
-    typedef common::Complex<RealType<ValueType>> FFTType;
-
-    HArray<ValueType> input( { 0.5, 1.0, 1.0, 1.5 } );
-
-    DenseMatrix<ValueType> x( DenseStorage<ValueType>( 2, 2, input ) );
-
-    HArray<FFTType> result( { 2.5, 3.5, 
-                              FFTType( 0.5, 2.0 ), FFTType( 1.0, 2.5 ) ,
-                              -1.5, -1.5, 
-                              FFTType( 0.5, -2.0 ), FFTType( 1.0, -2.5 )  } );
-
-    DenseMatrix<FFTType> res;
-
-    const IndexType dim = 0;
-
-    ifft( res, x, dim, 4 );    // ifft for each column
-
-    SCAI_LOG_DEBUG( logger, "Result of fft : " << res )
-
-    BOOST_CHECK_EQUAL( res.getNumRows(), 4 );
-    BOOST_CHECK_EQUAL( res.getNumColumns(), 2 );
-
-    BOOST_TEST( hostReadAccess( res.getLocalStorage().getValues() ) == hostReadAccess( result ), boost::test_tools::per_element() );
-}
 
 #endif
 

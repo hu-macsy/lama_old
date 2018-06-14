@@ -1658,6 +1658,33 @@ void SparseVector<ValueType>::redistribute( const Redistributor& redistributor )
     assign( tmp );
 }
 
+/* ------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void SparseVector<ValueType>::resize( DistributionPtr distribution )
+{
+    // disassemble this vector and fill it up again
+
+    VectorAssembly<ValueType> assembly;
+
+    this->disassemble( assembly );
+
+    IndexType newSize = distribution->getGlobalSize();
+
+    // truncate elements if necessary to avoid ERROR messages when we fil up
+
+    if ( newSize < size() )
+    {
+        assembly.truncate( newSize );
+    }
+
+    // and now fill the assembly back
+
+    allocate( distribution );
+
+    this->fillFromAssembly( assembly );
+}
+
 /* -- IO ------------------------------------------------------------------- */
 
 template<typename ValueType>
