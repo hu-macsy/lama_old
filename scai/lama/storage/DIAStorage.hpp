@@ -302,6 +302,14 @@ public:
         const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
+    /** Implementation of MatrixStorage::jacobiIterateHalo for DIA */
+
+    virtual void jacobiIterateHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& haloOldSolution,
+        const ValueType omega ) const;
+
     /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;

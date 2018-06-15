@@ -1674,15 +1674,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    static LAMAKernel<ELLKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
-
-    ContextPtr loc = testContext;
-
-    jacobiHalo.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc, testContext );
-
-    SCAI_LOG_INFO( logger, "jacobiHalo test for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "jacobiHalo test @ " << *testContext )
 
     HArray<IndexType> ellIA( testContext );
     HArray<IndexType> ellJA( testContext );
@@ -1695,8 +1687,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
     data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
 
     data1::getRowIndexes( rowIndexes );
-
-    IndexType numNonEmptyRows = rowIndexes.size();
 
     HArray<ValueType> oldSolution( { 3, -2, -2, 3, 1, 0, 2 }, testContext );
     HArray<ValueType> diag( { 9,  8,  7, 6, 7, 8, 9 }, testContext );
@@ -1713,24 +1703,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
         ValueType omega  = omega_values[icase];
 
         HArray<ValueType> solution( numRows, ValueType( 0 ), testContext );
-
-        {
-            SCAI_CONTEXT_ACCESS( loc );
-
-            ReadAccess<IndexType> rIA( ellIA, loc );
-            ReadAccess<IndexType> rJA( ellJA, loc );
-            ReadAccess<ValueType> rValues( ellValues, loc );
-            ReadAccess<IndexType> rIndexes( rowIndexes, loc );
-
-            ReadAccess<ValueType> rOld( oldSolution, loc );
-            ReadAccess<ValueType> rDiag( diag, loc );
-            WriteAccess<ValueType> wSolution( solution, loc, numColumns );
-
-            jacobiHalo[loc]( wSolution.get(), numRows, rDiag.get(),
-                             numValuesPerRow, rIA.get(), rJA.get(), rValues.get(),
-                             rIndexes.get(), numNonEmptyRows,
-                             rOld.get(), omega );
-        }
+       
+        ELLUtils::jacobiHalo( solution, omega, diag, oldSolution,
+                             ellIA, ellJA, ellValues, rowIndexes, testContext );
 
         HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
 
@@ -1738,19 +1713,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
 
         auto maxDiff = HArrayUtils::maxDiffNorm( expectedSol, solution );
 
-        BOOST_CHECK( maxDiff < 0.1 );
-
-        bool mustBeIdentical = false;
-
-        if ( mustBeIdentical )
+        if ( maxDiff >= common::TypeTraits<ValueType>::small() )
         {
-            ReadAccess<ValueType> rExpected( expectedSol );
-            ReadAccess<ValueType> rComputed( solution );
-
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
-            }
+            BOOST_TEST( hostReadAccess( expectedSol ) == hostReadAccess( oldSolution ), per_element() );
+        }
+        else 
+        {
+            BOOST_CHECK( maxDiff < common::TypeTraits<ValueType>::small() );
         }
     }
 }

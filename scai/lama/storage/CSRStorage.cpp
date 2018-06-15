@@ -1603,33 +1603,10 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_EQ_ERROR( getNumRows(), localSolution.size(), "array localSolution has illegal size" )
     SCAI_ASSERT_EQ_ERROR( getNumColumns(), oldHaloSolution.size(), "array old halo solution has illegal size" )
 
-    static LAMAKernel<CSRKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
-    ContextPtr loc = this->getContextPtr();
-    jacobiHalo.getSupportedContext( loc );
-    {
-        WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
-        ReadAccess<ValueType> localDiagValues( localDiagonal, loc );
-        ReadAccess<IndexType> haloIA( mIA, loc );
-        ReadAccess<IndexType> haloJA( mJA, loc );
-        ReadAccess<ValueType> haloValues( mValues, loc );
-        ReadAccess<ValueType> rOldHaloSolution( oldHaloSolution, loc );
-        const IndexType numNonEmptyRows = mRowIndexes.size();
-        SCAI_LOG_INFO( logger, "#row indexes = " << numNonEmptyRows )
+    // as it is an update, here we can optimize by traversing only non-empty rows as stated by mRowIndexes
 
-        if ( numNonEmptyRows != 0 )
-        {
-            ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
-            SCAI_CONTEXT_ACCESS( loc )
-            jacobiHalo[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                             haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
-        }
-        else
-        {
-            SCAI_CONTEXT_ACCESS( loc )
-            jacobiHalo[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                             NULL, rOldHaloSolution.get(), omega, getNumRows() );
-        }
-    }
+    CSRUtils::jacobiHalo( localSolution, omega, localDiagonal, oldHaloSolution, 
+                          mIA, mJA, mValues, mRowIndexes, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1875,6 +1852,7 @@ template<typename ValueType>
 RealType<ValueType> CSRStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
+
     return HArrayUtils::l1Norm( mValues, this->getContextPtr() );
 }
 
@@ -1884,10 +1862,8 @@ template<typename ValueType>
 RealType<ValueType> CSRStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
-    ContextPtr prefLoc = this->getContextPtr();
-    RealType<ValueType> res = HArrayUtils::dotProduct( mValues, mValues, prefLoc );
-    res = common::Math::sqrt( res );
-    return res;
+
+    return HArrayUtils::l2Norm( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1895,22 +1871,9 @@ RealType<ValueType> CSRStorage<ValueType>::l2Norm() const
 template<typename ValueType>
 RealType<ValueType> CSRStorage<ValueType>::maxNorm() const
 {
-    // no more checks needed here
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    if ( mValues.size() == 0 )
-    {
-        return 0;
-    }
-
-    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-    ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ValueType zero   = 0;
-    ValueType maxval = reduce[loc]( csrValues.get(), mValues.size(), zero, BinaryOp::ABS_MAX );
-    return maxval;
+    return HArrayUtils::maxNorm( mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -193,6 +193,29 @@ public:
         const hmemo::HArray<ValueType>& ellValues,
         hmemo::ContextPtr prefLoc );
 
+    /** Jacobi iteration step using a halo storage.
+     *
+     *  solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal
+     *
+     *  @param[in,out] localSolution is the solution vector that is updated
+     *  @param[in]     localDiagonal pointer to the diagonal of local storage
+     *  @param[in]     oldSolution is the old solution vector of halo part
+     *  @param[in]     omega is the scaling factor.
+     *  @param[in]     csrIA, csrJA, csrValues are the CSR containers
+     *  @param[in]     rowIndexes if not empty it contains row indexes of non-empty rows
+     */
+    template<typename ValueType>
+    static void jacobiHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& rowIndexes,
+        hmemo::ContextPtr prefLoc );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

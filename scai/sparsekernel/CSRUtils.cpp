@@ -825,6 +825,58 @@ void CSRUtils::jacobi(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void CSRUtils::jacobiHalo(
+    HArray<ValueType>& localSolution,
+    const ValueType omega,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& oldHaloSolution,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
+    const HArray<IndexType>& rowIndexes,
+    ContextPtr prefLoc )
+{
+    const IndexType numRows = localSolution.size();
+
+    // not needed here: const IndexType numColumns = oldSolution.size();
+
+    static LAMAKernel<CSRKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
+
+    ContextPtr loc = prefLoc;
+
+    jacobiHalo.getSupportedContext( loc );
+
+    WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
+    ReadAccess<ValueType> localDiagValues( localDiagonal, loc );
+    ReadAccess<IndexType> haloIA( csrIA, loc );
+    ReadAccess<IndexType> haloJA( csrJA, loc );
+    ReadAccess<ValueType> haloValues( csrValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldHaloSolution, loc );
+
+    const IndexType numNonEmptyRows = rowIndexes.size();
+
+    if ( numNonEmptyRows != 0 )
+    {
+        SCAI_LOG_INFO( logger, "jacobiHalo optimized, #non-zero rows = " << numNonEmptyRows )
+
+        ReadAccess<IndexType> rRowIndexes( rowIndexes, loc );
+        SCAI_CONTEXT_ACCESS( loc )
+        jacobiHalo[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+                         rRowIndexes.get(), rOldSolution.get(), omega, numNonEmptyRows );
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "jacobiHalo normal" )
+
+        SCAI_CONTEXT_ACCESS( loc )
+        jacobiHalo[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
+                         NULL, rOldSolution.get(), omega, numRows );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define CSRUTILS_SPECIFIER( ValueType )              \
                                                      \
     template void CSRUtils::sortRows(                \
@@ -946,6 +998,17 @@ void CSRUtils::jacobi(
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \
             const HArray<ValueType>&,                \
+            ContextPtr );                            \
+                                                     \
+    template void CSRUtils::jacobiHalo(              \
+            HArray<ValueType>&,                      \
+            const ValueType,                         \
+            const HArray<ValueType>&,                \
+            const HArray<ValueType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<ValueType>&,                \
+            const HArray<IndexType>&,                \
             ContextPtr );                            \
 
 SCAI_COMMON_LOOP( CSRUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )

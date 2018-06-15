@@ -184,19 +184,45 @@ struct DIAKernelTrait
          *
          */
         typedef void ( *FuncType ) (
-            ValueType* solution,
-            const IndexType numColumns,
+            ValueType solution[],
+            const IndexType n,
             const IndexType numDiagonals,
             const IndexType diaOffset[],
             const ValueType diaValues[],
             const ValueType oldSolution[],
             const ValueType rhs[],
-            const ValueType omega,
-            const IndexType numRows );
+            const ValueType omega );
 
         static const char* getId()
         {
             return "DIA.jacobi";
+        }
+    };
+
+    template<typename ValueType>
+    struct jacobiHalo
+    {
+        /** Compute one iteration step in Jacobi method for halo
+         *
+         *  \code
+         *      solution -= omega * ( dia_halo * oldSolution ) ./ diagonal 
+         *  \endcode
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType solution[],
+            const ValueType diagonal[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numDiagonals,
+            const IndexType diaOffset[],
+            const ValueType diaValues[],
+            const ValueType oldSolution[],
+            const ValueType omega );
+
+        static const char* getId()
+        {
+            return "DIA.jacobiHalo";
         }
     };
 

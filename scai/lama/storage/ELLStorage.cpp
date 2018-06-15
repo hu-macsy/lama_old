@@ -1385,40 +1385,17 @@ template<typename ValueType>
 void ELLStorage<ValueType>::jacobiIterateHalo(
     HArray<ValueType>& localSolution,
     const HArray<ValueType>& localDiagonal,
-    const HArray<ValueType>& haloOldSolution,
+    const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterateHalo" )
+
     SCAI_LOG_INFO( logger, "HOST: Jacobi iteration on halo matrix data." )
     SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), localSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumColumns(), haloOldSolution.size() )
-    static LAMAKernel<ELLKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
-    ContextPtr loc = this->getContextPtr();
-    jacobiHalo.getSupportedContext( loc );
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-        WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
-        ReadAccess<ValueType> rLocalDiagonal( localDiagonal, loc );
-        ReadAccess<IndexType> haloIA( mIA, loc );
-        ReadAccess<IndexType> haloJA( mJA, loc );
-        ReadAccess<ValueType> haloValues( mValues, loc );
-        ReadAccess<ValueType> rOldHaloSolution( haloOldSolution, loc );
-        const IndexType numNonEmptyRows = mRowIndexes.size();
+    SCAI_ASSERT_EQUAL_DEBUG( getNumColumns(), oldHaloSolution.size() )
 
-        if ( numNonEmptyRows != 0 )
-        {
-            ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
-            jacobiHalo[loc]( wSolution.get(), getNumRows(), rLocalDiagonal.get(), mNumValuesPerRow, haloIA.get(), haloJA.get(),
-                             haloValues.get(), haloRowIndexes.get(), numNonEmptyRows, rOldHaloSolution.get(), omega );
-        }
-        else
-        {
-            // no row indexes available, computation is done over all rows
-            const IndexType numNonEmptyRows = getNumRows();
-            jacobiHalo[loc]( wSolution.get(), getNumRows(), rLocalDiagonal.get(), mNumValuesPerRow, haloIA.get(), haloJA.get(),
-                             haloValues.get(), NULL, numNonEmptyRows, rOldHaloSolution.get(), omega );
-        }
-    }
+    ELLUtils::jacobiHalo( localSolution, omega, localDiagonal, oldHaloSolution,
+                          mIA, mJA, mValues, mRowIndexes, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1437,17 +1414,7 @@ RealType<ValueType> ELLStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
-    if ( getNumRows() == 0 || mNumValuesPerRow == 0 )
-    {
-        return static_cast<ValueType>( 0.0 );
-    }
-
-    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
-    ContextPtr loc = this->getContextPtr();
-    asum.getSupportedContext( loc );
-    ReadAccess<ValueType> data( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc );
-    return asum[loc]( mValues.size(), data.get(), 1 );
+    return HArrayUtils::l1Norm( mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1457,17 +1424,9 @@ RealType<ValueType> ELLStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
-    if ( getNumRows() == 0 || mNumValuesPerRow == 0 )
-    {
-        return static_cast<ValueType>( 0.0 );
-    }
+    // Note: un-used entries of values have been filled with 0, so use norm for arrays
 
-    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
-    ContextPtr loc = this->getContextPtr();
-    dot.getSupportedContext( loc );
-    ReadAccess<ValueType> data( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc );
-    return common::Math::sqrt( dot[loc]( mValues.size(), data.get(), 1, data.get(), 1 ) );
+    return HArrayUtils::l2Norm( mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1477,19 +1436,7 @@ RealType<ValueType> ELLStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    if ( getNumRows() == 0 || mNumValuesPerRow == 0 )
-    {
-        return RealType<ValueType>( 0 );
-    }
-
-    static LAMAKernel<ELLKernelTrait::absMaxVal<ValueType> > absMaxVal;
-    ContextPtr loc = this->getContextPtr();
-    absMaxVal.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> ellIA( mIA, loc );
-    ReadAccess<ValueType> ellValues( mValues, loc );
-    ValueType maxval = absMaxVal[loc]( getNumRows(), mNumValuesPerRow, ellIA.get(), ellValues.get() );
-    return maxval;
+    return HArrayUtils::maxNorm( mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

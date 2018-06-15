@@ -470,6 +470,67 @@ void ELLUtils::jacobi(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void ELLUtils::jacobiHalo(
+    HArray<ValueType>& localSolution,
+    const ValueType omega,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& oldHaloSolution,
+    const HArray<IndexType>& ellIA,
+    const HArray<IndexType>& ellJA,
+    const HArray<ValueType>& ellValues,
+    const HArray<IndexType>& rowIndexes,
+    ContextPtr prefLoc )
+{
+    const IndexType numRows = localSolution.size();
+    const IndexType numValuesPerRow = ellValues.size() / numRows;
+
+    SCAI_ASSERT_EQ_ERROR( numRows, ellIA.size(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( numRows * numValuesPerRow, ellJA.size(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( numRows * numValuesPerRow, ellValues.size(), "serious mismatch" )
+
+    // not needed here: const IndexType numColumns = oldSolution.size();
+
+    static LAMAKernel<ELLKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
+
+    ContextPtr loc = prefLoc;
+
+    jacobiHalo.getSupportedContext( loc );
+
+    WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
+    ReadAccess<ValueType> rDiagonal( localDiagonal, loc );
+    ReadAccess<IndexType> haloIA( ellIA, loc );
+    ReadAccess<IndexType> haloJA( ellJA, loc );
+    ReadAccess<ValueType> haloValues( ellValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldHaloSolution, loc );
+
+    const IndexType numNonEmptyRows = rowIndexes.size();
+
+    if ( numNonEmptyRows != 0 )
+    {
+        SCAI_LOG_DEBUG( logger, "jacobiHalo optimized, #non-zero rows = " << numNonEmptyRows )
+
+        ReadAccess<IndexType> rRowIndexes( rowIndexes, loc );
+        SCAI_CONTEXT_ACCESS( loc )
+
+        jacobiHalo[loc]( wSolution.get(), numRows, rDiagonal.get(), 
+                         numValuesPerRow, haloIA.get(), haloJA.get(), haloValues.get(), 
+                         rRowIndexes.get(), numNonEmptyRows, rOldSolution.get(), omega );
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, "jacobiHalo normal" )
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        jacobiHalo[loc]( wSolution.get(), numRows, rDiagonal.get(), 
+                         numValuesPerRow, haloIA.get(), haloJA.get(), haloValues.get(), 
+                         NULL, numRows, rOldSolution.get(), omega );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define ELLUTILS_SPECIFIER( ValueType )              \
                                                      \
     template void ELLUtils::getDiagonal(             \
@@ -480,6 +541,7 @@ void ELLUtils::jacobi(
             const HArray<IndexType>&,                \
             const HArray<ValueType>&,                \
             ContextPtr );                            \
+                                                     \
     template void ELLUtils::setDiagonalV(            \
             HArray<ValueType>&,                      \
             const HArray<ValueType>&,                \
@@ -488,6 +550,7 @@ void ELLUtils::jacobi(
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \
             ContextPtr );                            \
+                                                     \
     template void ELLUtils::setDiagonal(             \
             HArray<ValueType>&,                      \
             const ValueType,                         \
@@ -496,6 +559,7 @@ void ELLUtils::jacobi(
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \
             ContextPtr );                            \
+                                                     \
     template void ELLUtils::compress(                \
             HArray<IndexType>&,                      \
             HArray<IndexType>&,                      \
@@ -503,6 +567,7 @@ void ELLUtils::jacobi(
             IndexType&,                              \
             const RealType<ValueType>,               \
             ContextPtr );                            \
+                                                     \
     template void ELLUtils::jacobi(                  \
             HArray<ValueType>&,                      \
             const ValueType,                         \
@@ -511,6 +576,17 @@ void ELLUtils::jacobi(
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \
             const HArray<ValueType>&,                \
+            ContextPtr );                            \
+                                                     \
+    template void ELLUtils::jacobiHalo(              \
+            HArray<ValueType>&,                      \
+            const ValueType,                         \
+            const HArray<ValueType>&,                \
+            const HArray<ValueType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<IndexType>&,                \
+            const HArray<ValueType>&,                \
+            const HArray<IndexType>&,                \
             ContextPtr );                            \
 
 SCAI_COMMON_LOOP( ELLUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )

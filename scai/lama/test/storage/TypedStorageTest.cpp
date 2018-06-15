@@ -848,11 +848,6 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
 
-        if ( storage.getFormat() == Format::DIA )
-        {
-            continue;   // DIA  has still bug for diagonal property
-        }
-
         setDenseHalo( storage );
         std::unique_ptr<MatrixStorage<ValueType> > local( storage.newMatrixStorage() );
         setDenseSquareData( *local );
@@ -878,28 +873,21 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
             const ValueType alpha = -omega;
             const ValueType beta  = 1;
             storage1->matrixTimesVector( solution2, alpha, oldSolution, beta , solution2, common::MatrixOp::NORMAL );
-            // now solution1 and solution2 must be the same
-            /* for debug
-            std::cout << "Solution1 :";
-            for ( IndexType i = 0; i < storage.getNumRows(); ++i )
-            {
-                std::cout << " ";
-                std::cout << solution1[i];
-            }
-            std::cout << std::endl;
 
-            std::cout << "Solution2 :";
-            for ( IndexType i = 0; i < storage.getNumRows(); ++i )
-            {
-                std::cout << " ";
-                std::cout << solution2[i];
-            }
-            std::cout << std::endl;
-            std::cout << "max diff norm = " << solution1.maxDiffNorm( solution2 );
-            std::cout << ", small = " << common::TypeTraits<ValueType>::small() << std::endl;
-            */
+            auto maxDiff = HArrayUtils::maxDiffNorm( solution1, solution2 );
+            auto eps     = common::TypeTraits<ValueType>::small();
 
-            BOOST_CHECK( HArrayUtils::maxDiffNorm( solution1, solution2 ) < common::TypeTraits<ValueType>::small() );
+            if ( maxDiff >= eps )
+            {
+                SCAI_LOG_ERROR( logger, "jacobiHalo fails for storage: " << storage 
+                                        << ", omega = " << omega << ", maxDiff = " << maxDiff  )
+
+                BOOST_TEST( hostReadAccess( solution1 ) == hostReadAccess( solution2 ), per_element() );
+            }
+            else
+            {
+                BOOST_CHECK( maxDiff < eps );
+            }
         }
     }
 }
