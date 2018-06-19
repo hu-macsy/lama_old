@@ -44,6 +44,8 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
 
+#include <scai/tasking/TaskSyncToken.hpp>
+
 #include <scai/tracing.hpp>
 
 namespace scai
@@ -54,6 +56,7 @@ namespace sparsekernel
 
 using common::TypeTraits;
 using common::Math;
+using tasking::TaskSyncToken;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 
@@ -218,54 +221,6 @@ void OpenMPDenseUtils::setCSRValues(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename DenseValueType1, typename DenseValueType2>
-void OpenMPDenseUtils::set(
-    DenseValueType1 out[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const DenseValueType2 in[],
-    const common::BinaryOp op )
-{
-    using namespace common;
-
-    SCAI_REGION( "OpenMP.DenseUtils.set" )
-
-    switch ( op )
-    {
-        case BinaryOp::COPY :
-        {
-            #pragma omp parallel for 
-
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                for ( IndexType j = 0; j < numColumns; ++j )
-                {
-                    IndexType k = denseindex( i, j, numRows, numColumns );
-                    out[k] = static_cast<DenseValueType1>( in[k] );
-                }
-            }
-
-            break;
-        }
-
-        default:
-        {
-            #pragma omp parallel for 
-
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                for ( IndexType j = 0; j < numColumns; ++j )
-                {
-                    IndexType k = denseindex( i, j, numRows, numColumns );
-                    out[k] = applyBinary( out[k], op, static_cast<DenseValueType1>( in[k] ) );
-                }
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType>
 void OpenMPDenseUtils::setValue(
     ValueType denseValues[],
@@ -332,11 +287,12 @@ void OpenMPDenseUtils::setValue(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPDenseUtils::scaleRows(
+void OpenMPDenseUtils::setRows(
     ValueType denseValues[],
     const IndexType numRows,
     const IndexType numColumns,
-    const ValueType rowValues[] )
+    const ValueType rowValues[],
+    common::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.DenseUtils.scaleRows" )
 
@@ -344,14 +300,117 @@ void OpenMPDenseUtils::scaleRows(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        const ValueType scaleValue = rowValues[i];
+        const ValueType rowValue = rowValues[i];
 
-        // scale the whole row with this value
+        if ( common::BinaryOp::MULT == op )
+        {
+            // scale the whole row with this value
+
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                denseValues[denseindex( i, j, numRows, numColumns )] *= rowValue;
+            }
+        }
+        else
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                ValueType& updateVal = denseValues[denseindex( i, j, numRows, numColumns )];
+                updateVal = applyBinary( updateVal, op, rowValue ); 
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPDenseUtils::jacobi(
+    ValueType solution[],
+    const IndexType n,
+    const ValueType denseValues[],
+    const ValueType oldSolution[],
+    const ValueType rhs[],
+    const ValueType omega )
+{
+    SCAI_LOG_INFO( logger,
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", " << n << " x " << n
+                    << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken != NULL )
+    {
+        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+    }
+
+    ValueType omega1 = 1;
+    omega1 -= omega;
+
+    // computations for each element are independent
+
+    #pragma omp parallel
+    {
+        SCAI_REGION( "OpenMP.Dense.Jacobi" )
+        #pragma omp for 
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            ValueType temp = rhs[i];
+            ValueType diag = 0;
+
+            for ( IndexType j = 0; j < n; ++j )
+            {
+                if ( i == j )
+                {
+                    // save the diagonal element for division later
+
+                    diag = denseValues[ i * n + j ];
+                }
+                else
+                {
+                    temp -= denseValues[i * n + j] * oldSolution[j];
+                }
+            }
+
+            solution[i] = omega * ( temp / diag ) + omega1 * oldSolution[i];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPDenseUtils::jacobiHalo(
+    ValueType solution[],
+    const ValueType diagonal[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const ValueType denseValues[],
+    const ValueType oldSolution[],
+    const ValueType omega )
+{
+    SCAI_LOG_INFO( logger,
+                   "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", " << numRows << " x " << numColumns
+                    << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken != NULL )
+    {
+        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+    }
+
+    for ( IndexType i = 0; i < numRows; i++ )
+    {
+        ValueType sum = 0;
 
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            denseValues[denseindex( i, j, numRows, numColumns )] *= scaleValue;
+            sum += denseValues[i * numColumns + j] * oldSolution[j];
         }
+
+        solution[i] -= omega * sum / diagonal[i];
     }
 }
 
@@ -369,19 +428,11 @@ void OpenMPDenseUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kern
     KernelRegistry::set<DenseKernelTrait::nonZeroValues<ValueType> >( nonZeroValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
-}
-
-template<typename ValueType, typename OtherValueType>
-void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    common::ContextType ctx = common::ContextType::Host;
-    SCAI_LOG_DEBUG( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<DenseKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -394,7 +445,6 @@ OpenMPDenseUtils::OpenMPDenseUtils()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPDenseUtils::~OpenMPDenseUtils()
@@ -403,7 +453,6 @@ OpenMPDenseUtils::~OpenMPDenseUtils()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -149,26 +149,6 @@ struct DenseKernelTrait
         }
     };
 
-    template<typename DenseValueType1, typename DenseValueType2>
-    struct set
-    {
-        /** Set values of dense matrix with other matrix; supports also conversion.
-         *
-         *  This routine is exactly the same as UtilskernelTrait::set with n = numRows * numColumns.
-         *  The only difference is that OpenMP parallelization is only for rows and not the whole vector.
-         */
-        typedef void ( *FuncType ) ( DenseValueType1 out[],
-                                     const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const DenseValueType2 in[],
-                                     const common::BinaryOp op );
-
-        static const char* getId()
-        {
-            return "Dense.set";
-        }
-    };
-
     template<typename ValueType>
     struct setValue
     {
@@ -188,27 +168,79 @@ struct DenseKernelTrait
     };
 
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
-        /** Scale rows of the matrix individually.
+        /** Set/update rows of the matrix individually.
          *
          *  @param[in,out] denseValues  data of the dense matrix, size is numRows * numColumns
          *  @param[in]     numRows      number of rows
          *  @param[in]     numColumns   number of columns
          *  @param[in]     rowValues    scale values for each row, size is numRows
+         *  @param[in]     op           binary operation that is applied 
          */
 
         typedef void ( *FuncType ) (
             ValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
-            const ValueType rowValues[] );
+            const ValueType rowValues[],
+            const common::BinaryOp op );
 
         static const char* getId()
         {
-            return "Dense.scaleRows";
+            return "Dense.setRows";
         }
     };
+
+    /** Structure with type definitions for solver routines */
+
+    template<typename ValueType>
+    struct jacobi
+    {
+        /** Method to compute one iteration step in Jacobi method
+         *
+         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType solution[],
+            const IndexType n,
+            const ValueType denseValues[],
+            const ValueType oldSolution[],
+            const ValueType rhs[],
+            const ValueType omega );
+
+        static const char* getId()
+        {
+            return "Dense.jacobi";
+        }
+    };
+
+    template<typename ValueType>
+    struct jacobiHalo
+    {
+        /** Compute one iteration step in Jacobi method for halo
+         *
+         *  \code
+         *      solution -= omega * ( dia_halo * oldSolution ) ./ diagonal 
+         *  \endcode
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType solution[],
+            const ValueType diagonal[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const ValueType denseValues[],
+            const ValueType oldSolution[],
+            const ValueType omega );
+
+        static const char* getId()
+        {
+            return "Dense.jacobiHalo";
+        }
+    };
+
 };
 
 } /* end namespace sparsekernel */

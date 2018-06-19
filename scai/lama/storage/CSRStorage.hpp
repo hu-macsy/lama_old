@@ -725,32 +725,6 @@ private:
                                const CSRStorage<ValueType>& a,
                                const CSRStorage<ValueType>& b );
 
-    /** result += alpha * (*this) * x, where this storage has sparse rows */
-
-    tasking::SyncToken* sparseGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
-    /** result = alpha * (*this) * x  */
-
-    tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
-    /** result = alpha * (*this) * x + beta * y */
-
-    tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const ValueType beta,
-                                    const hmemo::HArray<ValueType>& y,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
     /** matrixTimesVector for synchronous and asynchronous execution */
 
     virtual tasking::SyncToken* gemv(

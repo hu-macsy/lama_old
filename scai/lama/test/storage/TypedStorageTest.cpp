@@ -473,9 +473,13 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
         // test multiplication with zero matrix
         storage.matrixTimesVector( result4, alpha, x, beta, y, common::MatrixOp::NORMAL );
         BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult4, result4 ) < eps );
+
         // result5 = 0 * storage * x + beta * y, storage can be anything as not used at all
+
         HArray<ValueType> result5( context );
-        storage.clear();  // with alpha == 0, storage is not used at all
+
+        storage.clear();  
+        storage.allocate( y.size(), 0 );   // even with alpha = 0, storage must have correct numRows
         storage.matrixTimesVector( result5, ValueType( 0 ), x, beta, y, common::MatrixOp::NORMAL );
         BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult4, result5 ) < eps );
     }

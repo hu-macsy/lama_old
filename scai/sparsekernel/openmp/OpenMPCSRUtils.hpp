@@ -180,14 +180,15 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::scaleRows  */
+    /** Implementation for CSRKernelTrait::setRows  */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const ValueType values[] );
+        const ValueType values[], 
+        common::BinaryOp op );
 
 
     template<typename ValueType>
@@ -246,7 +247,8 @@ public:
         const IndexType p,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
+        const ValueType csrValues[], 
+        const common::MatrixOp op );
 
     /** Implementation for CSRKernelTrait::jacobi */
 
@@ -378,7 +380,7 @@ public:
     /** Implementation for CSRKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
-    static ValueType absMaxDiffVal(
+    static RealType<ValueType> absMaxDiffVal(
         IndexType numRows,
         bool sortedRows,
         const IndexType csrIA1[],
@@ -481,12 +483,12 @@ private:
     static IndexType scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues );
 
     template<typename ValueType>
-    static ValueType absMaxDiffRowSorted(
+    static RealType<ValueType> absMaxDiffRowSorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
 
     template<typename ValueType>
-    static ValueType absMaxDiffRowUnsorted(
+    static RealType<ValueType> absMaxDiffRowUnsorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
 };
