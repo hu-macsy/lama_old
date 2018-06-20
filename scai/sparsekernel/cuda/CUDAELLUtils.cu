@@ -325,40 +325,58 @@ ValueType CUDAELLUtils::getValue(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  scaleValue                                                        */
+/*                                                  setRows                                                           */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void CUDAELLUtils::scaleRows(
+__global__
+void setRowsKernel(
+    ValueType ellValues[],
+    const IndexType numRows,
+    const IndexType ellSizes[],
+    const ValueType rowValues[],
+    const common::BinaryOp op )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i <  numRows )
+    {
+        for ( IndexType jj = 0; jj < ellSizes[i]; jj++ ) //elements in row
+        {
+            IndexType pos = jj * numRows + i;
+            ellValues[pos] = common::applyBinary( ellValues[pos], op, rowValues[i] );
+        }
+    }
+}
+
+template<typename ValueType>
+void CUDAELLUtils::setRows(
     ValueType ellValues[],
     const IndexType numRows,
     const IndexType SCAI_UNUSED( numValuesPerRow ),
-    const IndexType ia[],
-    const ValueType values[] )
+    const IndexType ellIA[],
+    const ValueType rowValues[],
+    const common::BinaryOp op )
 {
     SCAI_LOG_INFO( logger,
-                   "scaleRows, #numRows = " << numRows << ", ia = " << ia << ", ellValues = " << ellValues << ", values = " << values )
+                   "setRows, #numRows = " << numRows << ", op = " << op )
+
     SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<IndexType> ia_ptr( const_cast<IndexType*>( ia ) );
-    thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
-    thrust::device_ptr<ValueType> values_ptr( const_cast<ValueType*>( values ) );
 
-    IndexType maxCols = CUDAReduceUtils::reduce( ia, numRows, IndexType( 0 ), common::BinaryOp::MAX );
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
-    // TODO: maybe find better implementation
+    setRowsKernel<ValueType> <<< dimGrid, dimBlock>>> ( ellValues, numRows, ellIA, rowValues, op );
 
-    for ( IndexType i = 0; i < maxCols; i++ )
-    {
-        thrust::transform( ellValues_ptr + i * numRows, ellValues_ptr + i * numRows + numRows, values_ptr,
-                           ellValues_ptr + i * numRows, multiply<ValueType, ValueType>() );
-    }
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "ELL:setRowsKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  getCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType>
 __global__
 void ell2csrKernel(
     IndexType* csrJa,
@@ -367,7 +385,7 @@ void ell2csrKernel(
     const IndexType numRows,
     const IndexType* const ellIa,
     const IndexType* const ellJa,
-    const OtherValueType* const ellValues )
+    const ValueType* const ellValues )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -380,25 +398,25 @@ void ell2csrKernel(
         {
             IndexType pos = jj * numRows + i;
             csrJa[offset + jj] = ellJa[pos];
-            csrValues[offset + jj] = static_cast<OtherValueType>( ellValues[pos] );
+            csrValues[offset + jj] = ellValues[pos];
         }
     }
 }
 
-template<typename ELLValueType, typename CSRValueType>
+template<typename ValueType>
 void CUDAELLUtils::getCSRValues(
     IndexType csrJA[],
-    CSRValueType csrValues[],
+    ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType SCAI_UNUSED( numValuesPerRow ),
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ELLValueType ellValues[] )
+    const ValueType ellValues[] )
 {
     SCAI_REGION( "CUDA.ELL->CSR_values" )
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows )
 
     if ( numRows == 0 )
     {
@@ -420,17 +438,17 @@ void CUDAELLUtils::getCSRValues(
 /*                                                  setCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename T1, typename T2>
+template<typename ValueType>
 __global__
 void csr2ellKernel(
     IndexType* ell_ja,
-    T1* ell_values,
+    ValueType* ell_values,
     const IndexType* const ell_ia,
     IndexType n,
     IndexType ellNumValuesPerRow,
     const IndexType* const csr_ia,
     const IndexType* const csr_ja,
-    const T2* const csr_values )
+    const ValueType* const csr_values )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -458,20 +476,20 @@ void csr2ellKernel(
     }
 }
 
-template<typename ELLValueType, typename CSRValueType>
+template<typename ValueType>
 void CUDAELLUtils::setCSRValues(
     IndexType ellJA[],
-    ELLValueType ellValues[],
+    ValueType ellValues[],
     const IndexType ellSizes[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const CSRValueType csrValues[] )
+    const ValueType csrValues[] )
 {
     SCAI_REGION( "CUDA.ELL.setCSR" )
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
+                   "set CSRValues<" << TypeTraits<ValueType>::id() << ">"
                    << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     SCAI_LOG_DEBUG( logger,
@@ -1613,18 +1631,9 @@ void CUDAELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::compressIA<ValueType> >( compressIA, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::compressValues<ValueType> >( compressValues, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
-}
-
-template<typename ValueType, typename OtherValueType>
-void CUDAELLUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    const common::ContextType ctx = common::ContextType::CUDA;
-    SCAI_LOG_DEBUG( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1638,7 +1647,6 @@ CUDAELLUtils::CUDAELLUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDAELLUtils::~CUDAELLUtils()
@@ -1648,7 +1656,6 @@ CUDAELLUtils::~CUDAELLUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDAELLUtils CUDAELLUtils::guard;    // guard variable for registration

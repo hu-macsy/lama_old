@@ -1227,7 +1227,7 @@ SyncToken* CSRUtils::gemm(
         return NULL;
     }
 
-    SCAI_LOG_ERROR( logger, "gemm: result[ " << numRows << " x " << k << " ] = " << alpha 
+    SCAI_LOG_INFO( logger, "gemm: result[ " << numRows << " x " << k << " ] = " << alpha 
                           << " * csr [ " << numRows << " x " << numColumns << " ] * "
                           << " x [ " << numColumns << " x " << k << " ] " 
                           << " + y [ " << numRows << " x " << k << " ] " )

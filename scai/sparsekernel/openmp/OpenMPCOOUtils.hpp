@@ -125,6 +125,20 @@ public:
         const ValueType omega,
         const IndexType numRows );
 
+    /** Implementation for COOKernelTrait::jacobiHalo  */
+
+    template<typename ValueType>
+    static void jacobiHalo(
+        ValueType solution[],
+        const IndexType cooNumValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
+        const ValueType localDiagonal[],
+        const ValueType oldSolution[],
+        const ValueType omega,
+        const IndexType numRows );
+
     /** Implementation for COOKernelTrait::hasDiagonalProperty */
 
     static bool hasDiagonalProperty(

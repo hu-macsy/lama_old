@@ -40,7 +40,6 @@
 #include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/sparsekernel/DIAUtils.hpp>
 
-#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/TransferUtils.hpp>
 #include <scai/utilskernel/freeFunction.hpp>
@@ -69,7 +68,6 @@ namespace scai
 
 using tasking::SyncToken;
 
-using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
 using utilskernel::TransferUtils;
 

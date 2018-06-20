@@ -1266,8 +1266,10 @@ void CSRStorage<ValueType>::matrixTimesVector(
     const common::MatrixOp op ) const
 {
     bool async = false; // synchronously execution, no SyncToken required
+
     SyncToken* token = gemv( result, alpha, x, beta, y, op, async );
-    SCAI_ASSERT( token == NULL, "There should be no sync token for synchronous execution" )
+
+    SCAI_ASSERT_DEBUG( token == NULL, "There should be no sync token for synchronous execution" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1318,6 +1320,8 @@ SyncToken* CSRStorage<ValueType>::gemv(
                    << " ), result = " << alpha << " * A * x + " << beta << " * y "
                    << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
+
+    MatrixStorage<ValueType>::gemvCheck( alpha, x, beta, y, op );  // checks for correct sizes
 
     SyncToken* token = NULL;
 

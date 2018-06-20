@@ -38,7 +38,6 @@
 
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/StencilKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>

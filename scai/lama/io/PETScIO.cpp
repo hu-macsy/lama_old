@@ -36,7 +36,6 @@
 #include <scai/lama/io/PETScIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 #include <scai/lama/io/IOStream.hpp>
 #include <scai/lama/io/IOWrapper.hpp>

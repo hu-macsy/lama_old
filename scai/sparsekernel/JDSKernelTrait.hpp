@@ -373,7 +373,7 @@ struct JDSKernelTrait
     };
 
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
         /** This method scales each row of the matrix with a certain value
          *
@@ -382,18 +382,20 @@ struct JDSKernelTrait
          * @param[in]     ilg        ilg[i] number of entries in row i
          * @param[in]     dlg        diagonals
          * @param[in,out] jdsValues  array containing all non-zero values, are scaled row-wise
-         * @param[in]     rowValues  rowvalues[i] is used to scale row i
+         * @param[in]     rowValues  rowvalues[i] is applied to  row i
+         * @param[in]     op         binary operation specifies how to update
          */
         typedef void ( *FuncType ) ( ValueType jdsValues[],
                                      const IndexType numRows,
                                      const IndexType perm[],
                                      const IndexType ilg[],
                                      const IndexType dlg[],
-                                     const ValueType rowValues[] );
+                                     const ValueType rowValues[],
+                                     const common::BinaryOp op );
 
         static const char* getId()
         {
-            return "JDS.scaleRows";
+            return "JDS.setRows";
         }
     };
 };

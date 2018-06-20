@@ -335,15 +335,16 @@ IndexType OpenMPJDSUtils::getRowPositions(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void OpenMPJDSUtils::scaleRows(
+void OpenMPJDSUtils::setRows(
     ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    const ValueType rowValues[] )
+    const ValueType rowValues[],
+    const common::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "scaleRows with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "setRows with numRows = " << numRows )
 
     // Due to false sharing, use of OpenMP is not recommended here
 
@@ -355,7 +356,7 @@ void OpenMPJDSUtils::scaleRows(
 
         for ( IndexType jj = 0; jj < ilg[i]; jj++ )
         {
-            jdsValues[offset] *= rowScale;
+            jdsValues[offset] = common::applyBinary( jdsValues[offset], op, rowScale );
             offset += dlg[jj];
         }
     }
@@ -603,7 +604,7 @@ void OpenMPJDSUtils::jacobi(
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
-    const IndexType SCAI_UNUSED( jdsNumDiagonals ),
+    const IndexType jdsNumDiagonals,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
@@ -613,11 +614,18 @@ void OpenMPJDSUtils::jacobi(
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken != NULL )
     {
-        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        // run this method with exactly this arguments by an own thread
+
+        syncToken->run( std::bind( jacobi<ValueType>,
+                                   solution, numRows, 
+                                   jdsPerm, jdsILG, jdsNumDiagonals, jdsDLG,
+                                   jdsJA, jdsValues, oldSolution, rhs, omega ) );
+        return;
     }
 
     #pragma omp parallel
@@ -751,7 +759,7 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType> >( getRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setRow<ValueType> >( setRow, ctx, flag );
 }
 

@@ -39,8 +39,13 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
+#include <scai/tasking/SyncToken.hpp>
+
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -55,6 +60,52 @@ namespace sparsekernel
 class COMMON_DLL_IMPORTEXPORT JDSUtils
 {
 public:
+
+    /** Build the row sizes by using JDS data */
+
+    static void buildRowSizes(
+        hmemo::HArray<IndexType>& rowSizes,
+        const hmemo::HArray<IndexType>& jdsIlg,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        hmemo::ContextPtr loc );
+
+    /** 
+     *  @brief Conversion of JDS storage data to the CSR storage format.
+     *
+     *  Note: the order of the entries in each row remains unchanged.
+     */
+    template<typename ValueType>
+    static void convertJDS2CSR(
+        hmemo::HArray<IndexType>& csrIA,
+        hmemo::HArray<IndexType>& csrJA,
+        hmemo::HArray<ValueType>& csrValues,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& jdsIlg,
+        const hmemo::HArray<IndexType>& jdsDlg,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const hmemo::HArray<ValueType>& jdsValues,
+        hmemo::ContextPtr loc );
+
+    /** 
+     *  @brief Conversion of CSR storage data to the JDS storage format.
+     *
+     *  Note: the order of the entries in each row remains unchanged.
+     */
+    template<typename ValueType>
+    static void convertCSR2JDS(
+        hmemo::HArray<IndexType>& jdsIlg,
+        hmemo::HArray<IndexType>& jdsDlg,
+        hmemo::HArray<IndexType>& jdsPerm,
+        hmemo::HArray<IndexType>& jdsJA,
+        hmemo::HArray<ValueType>& jdsValues,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        hmemo::ContextPtr loc );
 
     /** @brief Get the diagonal entries for an JDS storage
      *
@@ -139,13 +190,47 @@ public:
         const hmemo::HArray<IndexType>& jdsILG,
         hmemo::ContextPtr prefLoc );
 
+    template<typename ValueType>
+    static tasking::SyncToken* gemv0(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& jdsIlg,
+        const hmemo::HArray<IndexType>& jdsDlg,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const hmemo::HArray<ValueType>& jdsValues,
+        const common::MatrixOp op,
+        const bool async,
+        hmemo::ContextPtr prefLoc );
+
+    template<typename ValueType>
+    static tasking::SyncToken* gemv(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& jdsIlg,
+        const hmemo::HArray<IndexType>& jdsDlg,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const hmemo::HArray<ValueType>& jdsValues,
+        const common::MatrixOp op,
+        const bool async,
+        hmemo::ContextPtr prefLoc );
+
     /**
      *  @brief Jacobi iteration step with JDS storage
      *
      *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
      */
     template<typename ValueType>
-    static void jacobi(
+    static tasking::SyncToken* jacobi(
         hmemo::HArray<ValueType>& solution,
         const ValueType omega,
         const hmemo::HArray<ValueType>& oldSolution,
@@ -155,7 +240,9 @@ public:
         const hmemo::HArray<IndexType>& jdsPerm,
         const hmemo::HArray<IndexType>& jdsJA,
         const hmemo::HArray<ValueType>& jdsValues,
+        bool async,
         hmemo::ContextPtr prefLoc );
+
     /**
      *  @brief Jacobi halo iteration step with JDS storage
      *
@@ -172,6 +259,24 @@ public:
         const hmemo::HArray<IndexType>& jdsPerm,
         const hmemo::HArray<IndexType>& jdsJA,
         const hmemo::HArray<ValueType>& jdsValues,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     * @brief Set/update each row in a JDS storage with an individual value
+     *
+     *  \code
+     *      for all i = 0, ..., n-1; j = 0, ..., m-1
+     *      jdsValues( i, j ) = jdsValues( i, j ) <op> rowValues( i )
+     *  \endcode
+     */
+    template<typename ValueType>
+    static void setRows(
+        hmemo::HArray<ValueType>& jdsValues,
+        const hmemo::HArray<IndexType>& jdsILG,
+        const hmemo::HArray<IndexType>& jdsDLG,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<ValueType>& rowValues,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
 
 private:

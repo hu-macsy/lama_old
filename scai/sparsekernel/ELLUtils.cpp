@@ -36,6 +36,8 @@
 
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
 
+#include <scai/sparsekernel/CSRUtils.hpp>
+
 #include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -47,14 +49,116 @@ namespace scai
 {
 
 using namespace hmemo;
+
+using tasking::SyncToken;
+
 using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
 using utilskernel::SparseKernelTrait;
 
+using sparsekernel::CSRUtils;
+
 namespace sparsekernel
 {
 
-SCAI_LOG_DEF_LOGGER( ELLUtils::logger, "CSRUtils" )
+SCAI_LOG_DEF_LOGGER( ELLUtils::logger, "ELLUtils" )
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLUtils::convertELL2CSR(
+    hmemo::HArray<IndexType>& csrIA,
+    hmemo::HArray<IndexType>& csrJA,
+    hmemo::HArray<ValueType>& csrValues,
+    const IndexType numRows,
+    const IndexType,
+    const hmemo::HArray<IndexType>& ellIA,
+    const hmemo::HArray<IndexType>& ellJA,
+    const hmemo::HArray<ValueType>& ellValues,
+    hmemo::ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQ_DEBUG( ellIA.size(), numRows, "serious size mismatch" )
+
+    if ( numRows == 0 )
+    {
+        csrIA = { 0 };
+        csrJA.clear();
+        csrValues.clear();
+        return;
+    }
+
+    const IndexType numValuesPerRow = ellJA.size() / numRows;
+
+    SCAI_ASSERT_EQ_DEBUG( numRows * numValuesPerRow, ellJA.size(), "serious size mismatch" )
+    SCAI_ASSERT_EQ_DEBUG( ellValues.size(), ellJA.size(), "serious size mismatch" )
+
+    const IndexType numValues = CSRUtils::sizes2offsets( csrIA, ellIA, prefLoc );
+
+    // compute csrJA, csrValues
+
+    static LAMAKernel<ELLKernelTrait::getCSRValues<ValueType> > getCSRValues;
+
+    ContextPtr loc = prefLoc;
+
+    getCSRValues.getSupportedContext( loc );
+
+    ReadAccess<IndexType> rEllJA( ellJA, loc );
+    ReadAccess<ValueType> rEllValues( ellValues, loc );
+    ReadAccess<IndexType> rCsrIA( csrIA, loc );
+    ReadAccess<IndexType> rEllIA( ellIA, loc );
+
+    WriteOnlyAccess<IndexType> wCsrJA( csrJA, loc, numValues );
+    WriteOnlyAccess<ValueType> wCsrValues( csrValues, loc, numValues );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    getCSRValues[loc]( wCsrJA.get(), wCsrValues.get(), rCsrIA.get(), 
+                       numRows, numValuesPerRow,
+                       rEllIA.get(), rEllJA.get(), rEllValues.get() );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLUtils::convertCSR2ELL(
+    hmemo::HArray<IndexType>& ellIA,
+    hmemo::HArray<IndexType>& ellJA,
+    hmemo::HArray<ValueType>& ellValues,
+    const IndexType numRows,
+    const IndexType,
+    const hmemo::HArray<IndexType>& csrIA,
+    const hmemo::HArray<IndexType>& csrJA,
+    const hmemo::HArray<ValueType>& csrValues,
+    hmemo::ContextPtr prefLoc )
+{
+    CSRUtils::offsets2sizes( ellIA, csrIA, prefLoc );
+
+    const IndexType numValuesPerRow = HArrayUtils::reduce( ellIA, common::BinaryOp::MAX, prefLoc );
+
+    static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType> > setCSRValues;
+
+    ContextPtr loc = prefLoc;
+
+    setCSRValues.getSupportedContext( loc );
+
+    // now fill the array ellJA and ellValues
+
+    ReadAccess<IndexType> rCsrIA( csrIA, loc );
+    ReadAccess<IndexType> rCsrJA( csrJA, loc );
+    ReadAccess<ValueType> rCsrValues( csrValues, loc );
+    ReadAccess<IndexType> rEllIA( ellIA, loc );
+
+    WriteOnlyAccess<IndexType> wEllJA( ellJA, loc, numRows * numValuesPerRow );
+    WriteOnlyAccess<ValueType> wEllValues( ellValues, loc, numRows * numValuesPerRow );
+
+    SCAI_LOG_DEBUG( logger, "convert CSR -> ELL, ellSize = " << numRows << " x " << numValuesPerRow )
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    setCSRValues[loc]( wEllJA.get(), wEllValues.get(), rEllIA.get(),
+                       numRows, numValuesPerRow,
+                       rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -418,7 +522,7 @@ void ELLUtils::compress(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLUtils::jacobi(
+tasking::SyncToken* ELLUtils::jacobi(
     HArray<ValueType>& solution,
     const ValueType omega,
     const HArray<ValueType>& oldSolution,
@@ -426,18 +530,19 @@ void ELLUtils::jacobi(
     const HArray<IndexType>& ellIA,
     const HArray<IndexType>& ellJA,
     const HArray<ValueType>& ellValues,
+    const bool async,
     ContextPtr prefLoc )
 {   
     SCAI_ASSERT_EQ_ERROR( rhs.size(), oldSolution.size(), "jacobi only for square matrices" )
     
     SCAI_ASSERT_EQ_ERROR( ellIA.size(), rhs.size(), "serious size mismatch for ELL arrays" ) 
-    SCAI_ASSERT_EQ_ERROR( ellJA.size(), ellValues.size(), "serious size mismatch for CSR arrays" )
+    SCAI_ASSERT_EQ_ERROR( ellJA.size(), ellValues.size(), "serious size mismatch for ELL arrays" )
     
     const IndexType numRows = rhs.size();
 
     if ( numRows == 0 )
     {
-        return;
+        return NULL;
     }
 
     const IndexType numColumns = oldSolution.size();
@@ -453,6 +558,15 @@ void ELLUtils::jacobi(
         COMMON_THROWEXCEPTION( "alias of new/old solution is not allowed" )
     }
     
+    std::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() )
+
     ReadAccess<IndexType> rIA( ellIA, loc );
     ReadAccess<IndexType> rJA( ellJA, loc );
     ReadAccess<ValueType> rValues( ellValues, loc );
@@ -466,6 +580,18 @@ void ELLUtils::jacobi(
     jacobi[ loc ]( wSolution.get(), numRows, numValuesPerRow, 
                    rIA.get(), rJA.get(), rValues.get(),
                    rOld.get(), rRhs.get(), omega );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wSolution.releaseDelayed() );
+        syncToken->pushRoutine( rRhs.releaseDelayed() );
+        syncToken->pushRoutine( rOld.releaseDelayed() );
+        syncToken->pushRoutine( rValues.releaseDelayed() );
+        syncToken->pushRoutine( rJA.releaseDelayed() );
+        syncToken->pushRoutine( rIA.releaseDelayed() );
+    }
+
+    return syncToken.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -531,7 +657,63 @@ void ELLUtils::jacobiHalo(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void ELLUtils::setRows(
+    hmemo::HArray<ValueType>& ellValues,
+    const hmemo::HArray<IndexType>& ellIA,
+    const hmemo::HArray<ValueType>& rowValues,
+    const common::BinaryOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType numRows = ellIA.size();
+
+    if ( numRows == 0 || ellValues.size() == 0 )
+    {
+        return;
+    }
+
+    const IndexType numValuesPerRow = ellValues.size() / numRows;
+
+    static LAMAKernel<ELLKernelTrait::setRows<ValueType> > setRows;
+
+    ContextPtr loc = prefLoc;
+
+    setRows.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    WriteAccess<ValueType> wValues( ellValues, loc );
+    ReadAccess<IndexType> rIA( ellIA, loc );
+    ReadAccess<ValueType> rRows( rowValues, loc );
+
+    setRows[loc]( wValues.get(), numRows, numValuesPerRow, rIA.get(), rRows.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define ELLUTILS_SPECIFIER( ValueType )              \
+                                                     \
+    template void ELLUtils::convertELL2CSR(          \
+        HArray<IndexType>&,                          \
+        HArray<IndexType>&,                          \
+        HArray<ValueType>&,                          \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<ValueType>&,                    \
+        ContextPtr );                                \
+                                                     \
+    template void ELLUtils::convertCSR2ELL(          \
+        HArray<IndexType>&,                          \
+        HArray<IndexType>&,                          \
+        HArray<ValueType>&,                          \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<ValueType>&,                    \
+        ContextPtr );                                \
                                                      \
     template void ELLUtils::getDiagonal(             \
             HArray<ValueType>&,                      \
@@ -568,7 +750,7 @@ void ELLUtils::jacobiHalo(
             const RealType<ValueType>,               \
             ContextPtr );                            \
                                                      \
-    template void ELLUtils::jacobi(                  \
+    template SyncToken* ELLUtils::jacobi(            \
             HArray<ValueType>&,                      \
             const ValueType,                         \
             const HArray<ValueType>&,                \
@@ -576,6 +758,7 @@ void ELLUtils::jacobiHalo(
             const HArray<IndexType>&,                \
             const HArray<IndexType>&,                \
             const HArray<ValueType>&,                \
+            const bool,                              \
             ContextPtr );                            \
                                                      \
     template void ELLUtils::jacobiHalo(              \
@@ -588,6 +771,14 @@ void ELLUtils::jacobiHalo(
             const HArray<ValueType>&,                \
             const HArray<IndexType>&,                \
             ContextPtr );                            \
+                                                     \
+    template void ELLUtils::setRows(                 \
+        HArray<ValueType>&,                          \
+        const HArray<IndexType>&,                    \
+        const HArray<ValueType>&,                    \
+        const common::BinaryOp,                      \
+        ContextPtr );                                \
+
 
 SCAI_COMMON_LOOP( ELLUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 

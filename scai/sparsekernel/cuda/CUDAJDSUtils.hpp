@@ -44,6 +44,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/MatrixOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -59,16 +60,17 @@ class COMMON_DLL_IMPORTEXPORT CUDAJDSUtils
 {
 public:
 
-    /** CUDA implementation of JDSKernelTrait::scaleRows */
+    /** CUDA implementation of JDSKernelTrait::setRows */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        const ValueType rowValues[] );
+        const ValueType rowValues[],
+        common::BinaryOp op );
 
     /** CUDA implementation of JDSKernelTrait::getRow */
 

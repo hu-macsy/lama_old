@@ -45,8 +45,6 @@
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 
-#include <scai/blaskernel/BLASKernelTrait.hpp>
-
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/tracing.hpp>
@@ -254,8 +252,8 @@ void JDSStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
     {
         const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
 
-        setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(), 
-                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
+        setCSRData( otherCSR.getNumRows(), otherCSR.getNumColumns(), 
+                    otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
     }
     else
     {
@@ -268,7 +266,7 @@ void JDSStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
         // just a thought for optimization: use mIA, mJA, mValues instead of csrIA, csrJA, csrValues
         // but does not help much at all as resort of entries requires already temporaries.
         
-        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
+        setCSRData( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
     }
 }
 
@@ -580,16 +578,10 @@ template<typename ValueType>
 void JDSStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
 {
     SCAI_LOG_INFO( logger, "scaleRows" )
-    static LAMAKernel<JDSKernelTrait::scaleRows<ValueType> > jdsScaleRows;
-    ContextPtr loc = this->getContextPtr();
-    jdsScaleRows.getSupportedContext( loc );
-    ReadAccess<ValueType> rDiagonal( diagonal, loc );
-    ReadAccess<IndexType> rPerm( mPerm, loc );
-    ReadAccess<IndexType> rIlg( mIlg, loc );
-    ReadAccess<IndexType> rDlg( mDlg, loc );
-    WriteAccess<ValueType> wValues( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    jdsScaleRows[loc]( wValues.get(), getNumRows(), rPerm.get(), rIlg.get(), rDlg.get(), rDiagonal.get() );
+
+    auto op = common::BinaryOp::MULT;
+
+    JDSUtils::setRows( mValues, mIlg, mDlg, mPerm, diagonal, op, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -718,156 +710,80 @@ void JDSStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::sortRows()
-{
-    SCAI_LOG_INFO( logger, *this << "sortRows, #rows = " << getNumRows() )
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-    static LAMAKernel<UtilKernelTrait::sort<IndexType> > sortRowsKernel;
-    ContextPtr loc = getContextPtr();
-    reduce.getSupportedContext( loc, sortRowsKernel );
-    // sort the rows according to the array ilg, take sorting over in perm
-    WriteAccess<IndexType> ilg( mIlg, loc );
-    WriteAccess<IndexType> perm( mPerm, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    // reduce with ABS_MAX returns 0 ( instead of -max ) for getNumRows() == 0
-
-    SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc )
-
-    bool descending = false;
-    sortRowsKernel[loc]( perm.get(), ilg.get(), ilg.get(), getNumRows(), descending );
-
-    // Note: first entry is maximal, contains number of diagonals
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void JDSStorage<ValueType>::buildCSR(
-    HArray<IndexType>& ia,
-    HArray<IndexType>* ja,
-    HArray<OtherValueType>* values,
-    const ContextPtr context ) const
+void JDSStorage<ValueType>::buildCSRData(
+    HArray<IndexType>& csrIA,
+    HArray<IndexType>& csrJA,
+    _HArray& csrValues ) const
 {
     SCAI_REGION( "Storage.JDS.buildCSR" )
 
     SCAI_LOG_INFO( logger,
-                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">"
-                   << " from JDS<" << common::getScalarType<ValueType>() << ">" << " on " << *context )
+                   "buildCSR<" << csrValues.getValueType() << ">"
+                   << " from JDS<" << common::getScalarType<ValueType>() << ">"
+                   << " on " << *getContextPtr() << " ( preferred )" )
 
-    // rowValues[ perm[i] ] = ilg[i]
-
-    ia.clear();
-    ia.reserve( getContextPtr(), getNumRows() + 1 );
-    ia.resize( getNumRows() );  // no initialization required
-
-    HArrayUtils::scatter( ia, mPerm, true, mIlg, BinaryOp::COPY, getContextPtr() );
-
-    if ( ja == NULL || values == NULL )
+    if ( csrValues.getValueType() == this->getValueType() )
     {
-        return;
+        auto& castCSRValues = static_cast<HArray<ValueType>&>( csrValues );
+        JDSUtils::convertJDS2CSR( csrIA, csrJA, castCSRValues, getNumRows(), getNumColumns(), 
+                                  mIlg, mDlg, mPerm, mJA, mValues, getContextPtr() );
     }
-
-    IndexType numValues = HArrayUtils::scan1( ia );   // build  the offset aray
-
-    SCAI_ASSERT_EQ_DEBUG( numValues, mValues.size(), "row sizes do not sum up to number of nnz entries" )
-
-    SCAI_LOG_DEBUG( logger, "buildCSR from JDS with " << numValues << " values" )
-
-    // compute the inverse permutation so that we find original row in JDS data
-
-    HArray<IndexType> invPerm; 
-    HArrayUtils::inversePerm( invPerm, mPerm, getContextPtr() );
-
-    static LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
-
-    ContextPtr loc = getContextPtr();
-
-    getCSRValues.getSupportedContext( loc );
-
-    ReadAccess<IndexType> rJdsILG( mIlg, loc );
-    ReadAccess<IndexType> rJdsDLG( mDlg, loc );
-    ReadAccess<IndexType> rJdsInversePerm( invPerm, loc );
-    ReadAccess<IndexType> rJdsJA( mJA, loc );
-    ReadAccess<ValueType> rJdsValues( mValues, loc );
-
-    ReadAccess<IndexType> rCsrIA( ia, loc );
-    WriteOnlyAccess<IndexType> wCsrJA( *ja, loc, numValues );
-    WriteOnlyAccess<OtherValueType> wCsrValues( *values, loc, numValues );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    // now we can convert JDS to CSR via interface
-
-    getCSRValues[loc]( wCsrJA.get(), wCsrValues.get(), rCsrIA.get(), 
-                       getNumRows(), rJdsInversePerm.get(), rJdsILG.get(),
-                       rJdsDLG.get(), rJdsJA.get(), rJdsValues.get() );
+    else
+    {
+        HArray<ValueType> tmpValues;  // use temporary for conversion of values
+        JDSUtils::convertJDS2CSR( csrIA, csrJA, tmpValues, getNumRows(), getNumColumns(), 
+                                  mIlg, mDlg, mPerm, mJA, mValues, getContextPtr() );
+        HArrayUtils::_assign( csrValues, tmpValues );
+    }
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
-void JDSStorage<ValueType>::setCSRDataImpl(
+void JDSStorage<ValueType>::buildCSRSizes( hmemo::HArray<IndexType>& csrSizes ) const
+{
+   JDSUtils::buildRowSizes( csrSizes, mIlg, mPerm, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void JDSStorage<ValueType>::setCSRData(
     const IndexType numRows,
     const IndexType numColumns,
-    const HArray<IndexType>& ia,
-    const HArray<IndexType>& ja,
-    const HArray<OtherValueType>& values )
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const _HArray& csrValues )
 {
-    IndexType numValues = ja.size();
+    SCAI_REGION( "Storage.ELL.setCSR" )
 
-    if ( ia.size() == numRows )
+    if ( csrIA.size() == numRows )
     {
-        // offset array required
-        HArray<IndexType> offsets;
-        IndexType total = CSRUtils::sizes2offsets( offsets, ia, getContextPtr() );
-        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
-        setCSRDataImpl( numRows, numColumns, offsets, ja, values );
+        HArray<IndexType> offsetIA;
+        CSRUtils::sizes2offsets( offsetIA, csrIA, getContextPtr() );
+        setCSRData( numRows, numColumns, offsetIA, csrJA, csrValues );
         return;
     }
 
-    SCAI_REGION( "Storage.JDS.setCSR" )
-    SCAI_LOG_INFO( logger,
-                   "setCSRDataImpl<" << common::getScalarType<ValueType>() << "," << common::getScalarType<OtherValueType>() << ">" 
-                    << ", shape is " << numRows << " x " << numColumns << ", #values for CSR = " << ja.size() )
+    if ( csrValues.getValueType() != this->getValueType() )
+    {
+        SCAI_LOG_INFO( logger, "setCSRData<" << csrValues.getValueType() << ">, convert values to " << getValueType() )
+
+        HArray<ValueType> sameTypeCSRValues;
+        HArrayUtils::_assign( sameTypeCSRValues, csrValues, getContextPtr() );
+        setCSRData( numRows, numColumns, csrIA, csrJA, sameTypeCSRValues );
+        return;
+    }
+
+    SCAI_LOG_INFO( logger, "setCSRData<" << getValueType() << "> " << numRows << " x " << numColumns << ", nnz = " << csrJA.size() )
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
-    // Step 1: fill up the array ilg and perm
+    // jdsValues have same type, so we only have to cast
 
-    CSRUtils::offsets2sizes( mIlg, ia, getContextPtr() );
-    HArrayUtils::setOrder( mPerm, getNumRows(), getContextPtr() );
+    const auto& sameTypeCSRValues = static_cast<const HArray<ValueType>&>( csrValues );
 
-    sortRows(); // sorts ilg and builds perm
-
-    numValues = JDSUtils::ilg2dlg( mDlg, mIlg, getContextPtr() );  // dlg is now correctly defined
-
-    SCAI_ASSERT_EQ_ERROR( numValues, ja.size(), "sum of row sizes does not match size of ja" )
-    SCAI_ASSERT_EQ_ERROR( numValues, values.size(), "sum of row sizes does not match size of values." )
- 
-    IndexType numDiagonals = mDlg.size();
-
-    static LAMAKernel<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
-    ContextPtr loc = getContextPtr();
-    setCSRValues.getSupportedContext( loc );
-
-    {
-        ReadAccess<IndexType> rCsrIA( ia, loc );
-        ReadAccess<IndexType> rCsrJA( ja, loc );
-        ReadAccess<OtherValueType> rCsrValues( values, loc );
-
-        ReadAccess<IndexType> rPerm( mPerm, loc );
-        ReadAccess<IndexType> rIlg( mIlg, loc );
-        ReadAccess<IndexType> rDlg( mDlg, loc );
-
-        WriteOnlyAccess<ValueType> wValues( mValues, loc, numValues );
-        WriteOnlyAccess<IndexType> wJa( mJA, loc, numValues );
-
-        SCAI_CONTEXT_ACCESS( loc )
-        setCSRValues[loc]( wJa.get(), wValues.get(), numRows, rPerm.get(), rIlg.get(), numDiagonals, rDlg.get(),
-                           rCsrIA.get(), rCsrJA.get(), rCsrValues.get() );
-    }
+    JDSUtils::convertCSR2JDS( mIlg, mDlg, mPerm, mJA, mValues, numRows, numColumns, csrIA, csrJA, sameTypeCSRValues, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -907,17 +823,9 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     if ( getNumRows() > 0 )
     {
         // the arrays mIlg and mPerm need initialization
-        static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
-        static LAMAKernel<UtilKernelTrait::setOrder<IndexType> > setOrder;
-        ContextPtr loc = this->getContextPtr();
-        setOrder.getSupportedContext( loc, setVal );
 
-        // we allocate at least ilg and perm with the correct value for a zero matrix
-        SCAI_CONTEXT_ACCESS( loc )
-        WriteOnlyAccess<IndexType> ilg( mIlg, loc, getNumRows() );
-        WriteOnlyAccess<IndexType> perm( mPerm, loc, getNumRows() );
-        setVal[loc]( ilg.get(), getNumRows(), 0, BinaryOp::COPY );
-        setOrder[loc]( perm.get(), getNumRows() );
+        HArrayUtils::setSameValue( mIlg, getNumRows(), IndexType( 0 ), getContextPtr() );
+        HArrayUtils::setOrder( mPerm, getNumRows(), getContextPtr() );
     }
 }
 
@@ -995,110 +903,22 @@ SyncToken* JDSStorage<ValueType>::gemv(
 {
     SCAI_REGION( "Storage.JDS.gemv" )
 
-    const IndexType nSource = common::isTranspose( op ) ? getNumRows() : getNumColumns();
-    const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
-
-    IndexType numDiagonals = mDlg.size();
-
     SCAI_LOG_INFO( logger,
-                   "GEMV ( op = " << op << ", async = " << async
+                   "gemv ( op = " << op << ", async = " << async
                    << " ), result = " << alpha << " * A * x + " << beta << " * y "
                    << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
-    if ( alpha == common::Constants::ZERO || ( numDiagonals == 0 ) )
-    {
-        // so we just have result = beta * y, will be done synchronously
+    MatrixStorage<ValueType>::gemvCheck( alpha, x, beta, y, op );  // checks for correct sizes
 
-        if ( beta == common::Constants::ZERO )
-        {
-            HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), this->getContextPtr() );
-        }
-        else
-        {
-            HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
-        }
+    SyncToken* token = NULL;
 
-        if ( async )
-        {
-            return new tasking::NoSyncToken();
-        }
-        else
-        {
-            return NULL;
-        }
-    }
+    token = JDSUtils::gemv( result, alpha, x, beta, y,
+                            getNumRows(), getNumColumns(), 
+                            mIlg, mDlg, mPerm, mJA, mValues,
+                            op, async, getContextPtr() );
 
-    // check for correct sizes of x
-
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), nSource )
-    static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
-
-    std::unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> jdsPerm( mPerm, loc );
-    ReadAccess<IndexType> jdsDLG( mDlg, loc );
-    ReadAccess<IndexType> jdsILG( mIlg, loc );
-    ReadAccess<IndexType> jdsJA( mJA, loc );
-    ReadAccess<ValueType> jdsValues( mValues, loc );
-
-    ReadAccess<ValueType> rX( x, loc );
-
-    if ( beta != common::Constants::ZERO )
-    {
-        SCAI_ASSERT_EQ_ERROR( y.size(), nTarget, "y has illegal size" )
-
-        ReadAccess<ValueType> rY( y, loc );
-        WriteOnlyAccess<ValueType> wResult( result, loc, nTarget );  // result might be aliased to y
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), 
-                         getNumRows(), getNumColumns(), jdsPerm.get(), jdsILG.get(),
-                         numDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), op );
-        if ( async )
-        {
-            syncToken->pushRoutine( rY.releaseDelayed() );
-            syncToken->pushRoutine( wResult.releaseDelayed() );
-        }
-    }
-    else
-    {
-        // do not access y at all
-
-        WriteOnlyAccess<ValueType> wResult( result, loc, nTarget );
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), ValueType( 0 ), NULL,
-                         getNumRows(), getNumColumns(), jdsPerm.get(), jdsILG.get(),
-                         numDiagonals, jdsDLG.get(), jdsJA.get(), jdsValues.get(), op );
-
-        if ( async )
-        {
-            syncToken->pushRoutine( wResult.releaseDelayed() );
-        }
-    }
-
-    if ( async )
-    {
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( jdsPerm.releaseDelayed() );
-        syncToken->pushRoutine( jdsDLG.releaseDelayed() );
-        syncToken->pushRoutine( jdsILG.releaseDelayed() );
-        syncToken->pushRoutine( jdsJA.releaseDelayed() );
-        syncToken->pushRoutine( jdsValues.releaseDelayed() );
-    }
-
-    return syncToken.release();
+    return token;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1145,8 +965,10 @@ void JDSStorage<ValueType>::jacobiIterate(
 {
     SCAI_REGION( "Storage.JDS.jacobiIterate" )
 
+    bool async = false;
+
     JDSUtils::jacobi( solution, omega, oldSolution, rhs, 
-                      mIlg, mDlg, mPerm, mJA, mValues, getContextPtr() );
+                      mIlg, mDlg, mPerm, mJA, mValues, async, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1159,62 +981,15 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.JDS.jacobiIterateAsync" )
-    static LAMAKernel<JDSKernelTrait::jacobi<ValueType> > jacobi;
-    ContextPtr loc = this->getContextPtr();
-    jacobi.getSupportedContext( loc );
+ 
+    bool async = true;
 
-    if ( loc->getType() == common::ContextType::Host )
-    {
-        // On host we start directly a new task, avoids pushing accesses
-        void ( JDSStorage::*jb )(
-            HArray<ValueType>&,
-            const HArray<ValueType>&,
-            const HArray<ValueType>&,
-            const ValueType omega ) const
-        = &JDSStorage<ValueType>::jacobiIterate;
-        using std::bind;
-        using std::ref;
-        using std::cref;
-        return new tasking::TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
-    }
+    SyncToken* token = 
 
-    // For CUDA a solution using stream synchronization is more efficient than using a task
-    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
+        JDSUtils::jacobi( solution, omega, oldSolution, rhs,
+                          mIlg, mDlg, mPerm, mJA, mValues, async, getContextPtr() );
 
-    if ( &solution == &oldSolution )
-    {
-        COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
-    }
-
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), getNumColumns() )
-
-    IndexType numDiagonals = mDlg.size();
-
-    // matrix must be square
-    std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
-    syncToken->setCurrent();
-    WriteOnlyAccess<ValueType> wSolution( solution, loc, getNumRows() );
-    ReadAccess<IndexType> jdsDLG( mDlg, loc );
-    ReadAccess<IndexType> jdsILG( mIlg, loc );
-    ReadAccess<IndexType> jdsPerm( mPerm, loc );
-    ReadAccess<IndexType> jdsJA( mJA, loc );
-    ReadAccess<ValueType> jdsValues( mValues, loc );
-    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
-    ReadAccess<ValueType> rRhs( rhs, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    jacobi[loc]( wSolution.get(), getNumRows(), jdsPerm.get(), jdsILG.get(), numDiagonals, jdsDLG.get(), jdsJA.get(),
-                 jdsValues.get(), rOldSolution.get(), rRhs.get(), omega );
-    syncToken->pushRoutine( wSolution.releaseDelayed() );
-    syncToken->pushRoutine( jdsDLG.releaseDelayed() );
-    syncToken->pushRoutine( jdsILG.releaseDelayed() );
-    syncToken->pushRoutine( jdsPerm.releaseDelayed() );
-    syncToken->pushRoutine( jdsJA.releaseDelayed() );
-    syncToken->pushRoutine( jdsValues.releaseDelayed() );
-    syncToken->pushRoutine( rOldSolution.releaseDelayed() );
-    syncToken->pushRoutine( rRhs.releaseDelayed() );
-    syncToken->unsetCurrent();
-    return syncToken.release();
+    return token;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1254,15 +1029,10 @@ RealType<ValueType> JDSStorage<ValueType>::l1Norm() const
 
     if ( n == 0 )
     {
-        return static_cast<ValueType>( 0 );
+        return RealType<ValueType>( 0 );
     }
 
-    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
-    ContextPtr loc = this->getContextPtr();
-    asum.getSupportedContext( loc );
-    ReadAccess<ValueType> data( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    return asum[loc]( n, data.get(), 1 );
+    return HArrayUtils::l1Norm( mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1276,15 +1046,10 @@ RealType<ValueType> JDSStorage<ValueType>::l2Norm() const
 
     if ( n == 0 )
     {
-        return static_cast<ValueType>( 0.0 );
+        return RealType<ValueType>( 0 );
     }
 
-    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
-    ContextPtr loc = this->getContextPtr();
-    dot.getSupportedContext( loc );
-    ReadAccess<ValueType> data( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    return common::Math::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
+    return HArrayUtils::l2Norm( mValues, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1293,7 +1058,8 @@ template<typename ValueType>
 RealType<ValueType> JDSStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
-    return HArrayUtils::maxNorm( mValues );
+
+    return HArrayUtils::maxNorm( mValues, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1501,21 +1267,6 @@ _MatrixStorage* JDSStorage<ValueType>::create()
 /* ========================================================================= */
 
 SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
-
-#define JDS_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
-    template void JDSStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                                 \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
-            const hmemo::HArray<OtherValueType>& );                                                                        \
-    template void JDSStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;
-
-#define JDS_STORAGE_INST_LVL1( ValueType )                                                                                 \
-    SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
-
-SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
-
-#undef JDS_STORAGE_INST_LVL2
-#undef JDS_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 

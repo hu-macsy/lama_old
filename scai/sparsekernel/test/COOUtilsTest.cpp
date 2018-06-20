@@ -351,8 +351,10 @@ BOOST_AUTO_TEST_CASE( gemvNormalTest )
                          << ", with x = " << x << ", y = " << y
                          << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
 
+        bool async = false;
+
         COOUtils::gemv( res, numRows, numColumns, cooIA, cooJA, cooValues, common::MatrixOp::NORMAL,
-                        alpha, x, beta, y, testContext );
+                        alpha, x, beta, y, async, testContext );
                    
         HArray<ValueType> expectedRes = data1::getGEMVNormalResult( alpha, x, beta, y );
 
@@ -401,8 +403,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTransposeTest, ValueType, scai_numeric_test_t
 
         HArray<ValueType> res( testContext );
 
+        bool async = false;
+
         COOUtils::gemv( res, numRows, numColumns, cooIA, cooJA, cooValues, common::MatrixOp::TRANSPOSE,
-                        alpha, x, beta, y, testContext );
+                        alpha, x, beta, y, async, testContext );
 
         HArray<ValueType> expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, y );
 
@@ -459,6 +463,59 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
         // ?? how to set tolerance 
 
         // BOOST_TEST( hostReadAccess( res ) == hostReadAccess( expectedRes ), boost::test_tools::per_element() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "jacobiHalo test @ " << *testContext )
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+    HArray<IndexType> rowIndexes( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    HArray<ValueType> oldSolution( { 3, -2, -2, 3, 1, 0, 2 }, testContext );
+    HArray<ValueType> diag( { 9,  8,  7, 6, 7, 8, 9 }, testContext );
+
+    const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
+
+    const IndexType n_omega  = sizeof( omega_values ) / sizeof( ValueType );
+
+    // create a dummy array for the offsets of the local part
+
+    HArray<IndexType> iaDummy;
+    HArrayUtils::setOrder( iaDummy, numRows + 1, testContext );
+
+    for ( IndexType icase = 0; icase < n_omega; ++icase )
+    {
+        ValueType omega  = omega_values[icase];
+
+        HArray<ValueType> solution( numRows, ValueType( 0 ), testContext );
+
+        COOUtils::jacobiHalo( solution, omega, diag, oldSolution,
+                              cooIA, cooJA, cooValues, testContext );
+
+        HArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+
+        data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
+
+        auto maxDiff = HArrayUtils::maxDiffNorm( expectedSol, solution );
+
+        if ( maxDiff >= common::TypeTraits<ValueType>::small() )
+        {
+            BOOST_TEST( hostReadAccess( expectedSol ) == hostReadAccess( oldSolution ), per_element() );
+        }
     }
 }
 

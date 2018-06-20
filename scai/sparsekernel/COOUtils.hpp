@@ -39,6 +39,8 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
 #include <scai/common/MatrixOp.hpp>
@@ -298,11 +300,33 @@ public:
         const hmemo::HArray<ValueType>& cooValues,
         hmemo::ContextPtr prefLoc );
 
+    /** Jacobi iteration step using a COO halo storage.
+     *
+     *  solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal
+     *
+     *  @param[in,out] localSolution is the solution vector that is updated
+     *  @param[in]     localDiagonal pointer to the diagonal of local storage
+     *  @param[in]     oldSolution is the old solution vector of halo part
+     *  @param[in]     omega is the scaling factor.
+     *  @param[in]     csrIA, csrJA, csrValues are the CSR containers
+     *  @param[in]     rowIndexes if not empty it contains row indexes of non-empty rows
+     */
+    template<typename ValueType>
+    static void jacobiHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<IndexType>& cooIA,
+        const hmemo::HArray<IndexType>& cooJA,
+        const hmemo::HArray<ValueType>& cooValues,
+        hmemo::ContextPtr prefLoc );
+
     /**
      *  @brief matrix-vector multiplication 
      */
     template<typename ValueType>
-    static void gemv(
+    static tasking::SyncToken* gemv(
         hmemo::HArray<ValueType>& result,
         const IndexType numRows,
         const IndexType numColumns,
@@ -314,6 +338,7 @@ public:
         const hmemo::HArray<ValueType>& x,
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
+        bool async,
         hmemo::ContextPtr prefLoc );
 
 };

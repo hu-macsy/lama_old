@@ -61,16 +61,17 @@ class COMMON_DLL_IMPORTEXPORT OpenMPJDSUtils
 {
 public:
 
-    /** Implementation for JDSKernelTrait::scaleRows */
+    /** Implementation for JDSKernelTrait::setRows */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        const ValueType rowValues[] );
+        const ValueType rowValues[],
+        const common::BinaryOp op );
 
     /** Implementation for JDSKernelTrait::getRow */
 

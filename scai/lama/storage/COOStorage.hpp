@@ -42,11 +42,8 @@
 #include <scai/lama/mepr/StorageWrapper.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/sparsekernel/COOKernelTrait.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
+
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
 
 #include <memory>
 
@@ -464,12 +461,20 @@ public:
         const hmemo::HArray<ValueType>& y,
         const common::MatrixOp op ) const;
 
-    /** solution = xxx */
+    /** Implementation of MatrixStorage<ValueType>::jacobiIterate for COO */
 
     virtual void jacobiIterate(
         hmemo::HArray<ValueType>& solution,
         const hmemo::HArray<ValueType>& oldSolution,
         const hmemo::HArray<ValueType>& rhs,
+        const ValueType omega ) const;
+
+    /** Implementation of MatrixStorage<ValueType>::jacobiIterateHalo for COO */
+
+    virtual void jacobiIterateHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /** @brief Override default implementation of MatrixStorage::matrixPlusMatrix 

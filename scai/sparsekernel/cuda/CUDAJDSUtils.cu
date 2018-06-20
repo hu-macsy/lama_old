@@ -185,13 +185,14 @@ void CUDAJDSUtils::getRow(
 
 template<typename ValueType>
 __global__
-void scaleRowsKernel(
-    ValueType* jdsValues,
+void setRowsKernel(
+    ValueType jdsValues[],
     const IndexType numRows,
-    const IndexType* perm,
-    const IndexType* ilg,
-    const IndexType* dlg,
-    const ValueType* rowValues )
+    const IndexType perm[],
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const ValueType rowValues[],
+    const common::BinaryOp op )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -202,28 +203,29 @@ void scaleRowsKernel(
 
         for ( IndexType j = 0; j < ilg[i]; j++ )
         {
-            jdsValues[offset] *= rowScale;
+            jdsValues[offset] = common::applyBinary( jdsValues[offset], op, rowScale );
             offset += dlg[j];
         }
     }
 }
 
 template<typename ValueType>
-void CUDAJDSUtils::scaleRows(
+void CUDAJDSUtils::setRows(
     ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    const ValueType rowValues[] )
+    const ValueType rowValues[],
+    const common::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    scaleRowsKernel <<< dimGrid, dimBlock>>>( jdsValues, numRows, perm, ilg, dlg, rowValues );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleRowsKernel FAILED" )
+    setRowsKernel <<< dimGrid, dimBlock>>>( jdsValues, numRows, perm, ilg, dlg, rowValues, op );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:setRowsKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1184,7 +1186,7 @@ void CUDAJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType> >( getRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>

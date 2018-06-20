@@ -264,6 +264,28 @@ struct COOKernelTrait
     };
 
     template<typename ValueType>
+    struct jacobiHalo
+    {
+        /** Method to compute one iteration step in Jacobi method on halo storage
+         */
+        typedef void ( *FuncType ) (
+            ValueType* const solution,
+            const IndexType cooNumValues,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const ValueType cooValues[],
+            const ValueType localDiagonal[],
+            const ValueType oldSolution[],
+            const ValueType omega,
+            const IndexType numRows );
+
+        static const char* getId()
+        {
+            return "COO.jacobiHalo";
+        }
+    };
+
+    template<typename ValueType>
     struct getDiagonal
     {
         /** This method returns the diagonal of a coo storage.

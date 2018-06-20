@@ -312,46 +312,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<JDSKernelTrait::scaleRows<ValueType> > scaleRows;
+    /* Example jds storage:
+     *
+     *      1  2   3   4   5  6    |  row 1  * 1
+     *      7  8   9  10  11       |  row 2  * 2
+     *     12 13  14  15           |  row 3  * 3
+     */
 
-    ContextPtr loc = testContext;
-    scaleRows.getSupportedContext( loc );
+    HArray<ValueType> values( { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 }, testContext );
+    HArray<IndexType> dlg( { 3, 3, 3, 3, 2, 1 }, testContext );
+    HArray<IndexType> ilg( { 6, 5, 4 }, testContext );
+    HArray<IndexType> perm( { 1, 2, 0 },  testContext );
+    HArray<ValueType> diagonal( { 3, 1, 2 }, testContext );
 
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    ValueType valuesValues[] = { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
-    IndexType valuesDlg[]    = { 3, 3, 3, 3, 2, 1 };
-    IndexType valuesIlg[]    = { 6, 5, 4 };
-    IndexType valuesPerm[]   = { 1, 2, 0 };
-    ValueType valuesDiagonal[] = { 3, 1, 2 };
-    ValueType expectedValues[] = { 1, 14, 36, 2, 16, 39, 3, 18, 42, 4, 20, 45, 5, 22, 6 };
-    const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-    const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-    const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-    const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-    const IndexType nDiagonal = sizeof( valuesDiagonal ) / sizeof( ValueType );
-    const IndexType numRows = 3;
-    HArray<ValueType> values( nValues, valuesValues, testContext );
-    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
-    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
-    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
-    HArray<ValueType> diagonal( nDiagonal, valuesDiagonal, testContext );
-    {
-        ReadAccess<IndexType> rDlg( dlg, loc );
-        ReadAccess<IndexType> rIlg( ilg, loc );
-        ReadAccess<IndexType> rPerm( perm, loc );
-        ReadAccess<ValueType> rDiagonal( diagonal, loc );
-        WriteAccess<ValueType> wValues( values, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        scaleRows[loc]( wValues.get(), numRows, rPerm.get(), rIlg.get(), rDlg.get(), rDiagonal.get() );
-    }
-    {
-        ReadAccess<ValueType> rValues( values );
+    common::BinaryOp op = common::BinaryOp::MULT;
 
-        for ( IndexType i = 0; i < nValues; i++ )
-        {
-            BOOST_CHECK_EQUAL( expectedValues[i], rValues[i] );
-        }
-    }
+    JDSUtils::setRows( values, ilg, dlg, perm, diagonal, op, testContext );
+
+    HArray<ValueType> expectedValues( { 1, 14, 36, 2, 16, 39, 3, 18, 42, 4, 20, 45, 5, 22, 6 } );
+
+    BOOST_TEST( hostReadAccess( expectedValues ) == hostReadAccess( values ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -466,18 +446,10 @@ BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( convertCSRTest, ValueType, scai_numeric_test_types )
 {
-    typedef DefaultReal OtherValueType;
-
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
-
-    ContextPtr loc = testContext;
-    setCSRValues.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     /*
      * Testmatrix:
      * 0 0 5 3 0 0 4 0
@@ -486,140 +458,54 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_numeric_test_ty
      * 2 0 3 0 0 0 0 0
      * 5 0 0 7 0 0 0 9
      */
-    IndexType valuesJDSDlg[] =
-    { 5, 5, 4, 2, 1 };
-    const IndexType nJDSDlg = sizeof( valuesJDSDlg ) / sizeof( IndexType );
-    IndexType valuesJDSIlg[] =
-    { 5, 4, 3, 3, 2 };
-    const IndexType nJDSIlg = sizeof( valuesJDSIlg ) / sizeof( IndexType );
-    IndexType valuesJDSPerm[] =
-    { 2, 1, 0, 4, 3 };
-    const IndexType nJDSPerm = sizeof( valuesJDSPerm ) / sizeof( IndexType );
-    IndexType valuesCSRIa[] =
-    { 0, 3, 7, 12, 14, 17 };
-    const IndexType nCSRIa = sizeof( valuesCSRIa ) / sizeof( IndexType );
-    IndexType valuesCSRJa[] =
-    { 2, 3, 6, 0, 2, 4, 5, 1, 3, 4, 5, 7, 0, 2, 0, 3, 7 };
-    const IndexType nCSRJa = sizeof( valuesCSRJa ) / sizeof( IndexType );
-    OtherValueType valuesCSRValues[] =
-    { 5, 3, 4, 3, 4, 3, 5, 2, 8, 7, 9, 5, 2, 3, 5, 7, 9 };
-    const IndexType nCSRValues = sizeof( valuesCSRValues ) / sizeof( OtherValueType );
-    IndexType expectedJDSJa[] =
-    { 1, 0, 2, 0, 0, 3, 2, 3, 3, 2, 4, 4, 6, 7, 5, 5, 7 };
-    ValueType expectedJDSValues[] =
-    { 2, 3, 5, 5, 2, 8, 4, 3, 7, 3, 7, 3, 4, 9, 9, 5, 5 };
+
+    HArray<IndexType> expJDSDlg( { 5, 5, 4, 2, 1 } );
+    HArray<IndexType> expJDSIlg( { 5, 4, 3, 3, 2 } );
+    HArray<IndexType> expJDSPerm(  { 2, 1, 0, 4, 3 } );
+
+    HArray<IndexType> expJDSJa(     { 1, 0, 2, 0, 0, 3, 2, 3, 3, 2, 4, 4, 6, 7, 5, 5, 7 } );
+    HArray<ValueType> expJDSValues( { 2, 3, 5, 5, 2, 8, 4, 3, 7, 3, 7, 3, 4, 9, 9, 5, 5 } );
 
     const IndexType numRows = 5;
-    const IndexType nJDS = nCSRValues;
-    HArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg );
-    HArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg );
-    HArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm );
-    HArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
-    HArray<IndexType> CSRJa( nCSRJa, valuesCSRJa );
-    HArray<OtherValueType> CSRValues( nCSRValues, valuesCSRValues );
-    // output arrays
+    const IndexType numColumns = 8;
+
+    HArray<IndexType> CSRIa( { 0, 3, 7, 12, 14, 17 }  );
+    HArray<IndexType> CSRJa(  { 2, 3, 6, 0, 2, 4, 5, 1, 3, 4, 5, 7, 0, 2, 0, 3, 7 } );
+    HArray<ValueType> CSRValues( { 5, 3, 4, 3, 4, 3, 5, 2, 8, 7, 9, 5, 2, 3, 5, 7, 9 } );
+
+    // output arrays for JDS Storage
+
+    HArray<IndexType> JDSIlg;
+    HArray<IndexType> JDSDlg;
+    HArray<IndexType> JDSPerm;
+
     HArray<IndexType> JDSJa;
     HArray<ValueType> JDSValues;
-    {
-        WriteOnlyAccess<IndexType> wJDSJa( JDSJa, loc, nJDS );
-        WriteOnlyAccess<ValueType> wJDSValues( JDSValues, loc, nJDS );
-        ReadAccess<IndexType> rJDSDlg( JDSDlg, loc );
-        ReadAccess<IndexType> rJDSIlg( JDSIlg, loc );
-        ReadAccess<IndexType> rJDSPerm( JDSPerm, loc );
-        ReadAccess<IndexType> rCSRIa( CSRIa, loc );
-        ReadAccess<IndexType> rCSRJa( CSRJa, loc );
-        ReadAccess<OtherValueType> rCSRValues( CSRValues, loc );
-        SCAI_CONTEXT_ACCESS( loc );
-        setCSRValues[loc]( wJDSJa.get(), wJDSValues.get(), numRows, rJDSPerm.get(), rJDSIlg.get(), nJDSDlg, rJDSDlg.get(),
-                           rCSRIa.get(), rCSRJa.get(), rCSRValues.get() );
-    }
-    ReadAccess<IndexType> rJDSJa( JDSJa );
-    ReadAccess<ValueType> rJDSValues( JDSValues );
 
-    for ( IndexType i = 0; i < nJDS; i++ )
-    {
-        BOOST_CHECK_EQUAL( expectedJDSJa[i], rJDSJa.get()[i] );
-        BOOST_CHECK_EQUAL( expectedJDSValues[i], rJDSValues.get()[i] );
-    }
-}
+    JDSUtils::convertCSR2JDS( JDSIlg, JDSDlg, JDSPerm, JDSJa, JDSValues,
+                              numRows, numColumns, CSRIa, CSRJa, CSRValues, testContext );
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+    BOOST_TEST( hostReadAccess( JDSIlg ) == hostReadAccess( expJDSIlg ), per_element() );
+    BOOST_TEST( hostReadAccess( JDSDlg ) == hostReadAccess( expJDSDlg ), per_element() );
+    BOOST_TEST( hostReadAccess( JDSPerm ) == hostReadAccess( expJDSPerm ), per_element() );
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_numeric_test_types )
-{
-    typedef DefaultReal OtherValueType;
+    BOOST_TEST( hostReadAccess( JDSJa ) == hostReadAccess( expJDSJa ), per_element() );
+    BOOST_TEST( hostReadAccess( JDSValues ) == hostReadAccess( expJDSValues ), per_element() );
 
-    ContextPtr testContext = ContextFix::testContext;
+    // output arrays for new CSR Storage
 
-    LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
+    HArray<IndexType> newCSRIa;
+    HArray<IndexType> newCSRJa;
+    HArray<ValueType> newCSRValues;
 
-    ContextPtr loc = testContext;
-    getCSRValues.getSupportedContext( loc );
+    JDSUtils::convertJDS2CSR( newCSRIa, newCSRJa, newCSRValues, 
+                              numRows, numColumns, 
+                              JDSIlg, JDSDlg, JDSPerm, JDSJa, JDSValues,
+                              testContext );
 
-    BOOST_WARN_EQUAL( loc, testContext );
-    /*
-     * Testmatrix:
-     * 0 0 5 3 0 0 4 0
-     * 3 0 4 0 3 5 0 0
-     * 0 2 0 8 7 9 0 5
-     * 2 0 3 0 0 0 0 0
-     * 5 0 0 7 0 0 0 9
-     */
-    IndexType valuesJDSDlg[] =
-    { 5, 5, 4, 2, 1 };
-    const IndexType nJDSDlg = sizeof( valuesJDSDlg ) / sizeof( IndexType );
-    IndexType valuesJDSIlg[] =
-    { 5, 4, 3, 3, 2 };
-    const IndexType nJDSIlg = sizeof( valuesJDSIlg ) / sizeof( IndexType );
-    IndexType valuesJDSPerm[] =
-    { 2, 1, 0, 4, 3 };
-    const IndexType nJDSPerm = sizeof( valuesJDSPerm ) / sizeof( IndexType );
-    IndexType valuesCSRIa[] =
-    { 0, 3, 7, 12, 14, 17 };
-    const IndexType nCSRIa = sizeof( valuesCSRIa ) / sizeof( IndexType );
-    IndexType valuesJDSJa[] =
-    { 1, 0, 2, 0, 0, 3, 2, 3, 3, 2, 4, 4, 6, 7, 5, 5, 7 };
-    const IndexType nJDSJa = sizeof( valuesJDSJa ) / sizeof( IndexType );
-    ValueType valuesJDSValues[] =
-    { 2, 3, 5, 5, 2, 8, 4, 3, 7, 3, 7, 3, 4, 9, 9, 5, 5 };
-    const IndexType nJDSValues = sizeof( valuesJDSValues ) / sizeof( ValueType );
-    IndexType expectedCSRJa[] =
-    { 2, 3, 6, 0, 2, 4, 5, 1, 3, 4, 5, 7, 0, 2, 0, 3, 7 };
-    OtherValueType expectedCSRValues[] =
-    { 5, 3, 4, 3, 4, 3, 5, 2, 8, 7, 9, 5, 2, 3, 5, 7, 9 };
-    const IndexType numRows = 5;
-    const IndexType nJDS = nJDSValues;
-    // Input arrays: initialized directly on testContext
-    HArray<IndexType> JDSJa( nJDSJa, valuesJDSJa, testContext );
-    HArray<ValueType> JDSValues( nJDSValues, valuesJDSValues, testContext );
-    HArray<IndexType> JDSDlg( nJDSDlg, valuesJDSDlg, testContext );
-    HArray<IndexType> JDSIlg( nJDSIlg, valuesJDSIlg, testContext );
-    HArray<IndexType> JDSPerm( nJDSPerm, valuesJDSPerm, testContext );
-    HArray<IndexType> CSRIa( nCSRIa, valuesCSRIa );
-    // Output arrays: no initialization
-    HArray<IndexType> CSRJa;
-    HArray<OtherValueType> CSRValues;
-    {
-        ReadAccess<IndexType> rJDSJa( JDSJa, loc );
-        ReadAccess<ValueType> rJDSValues( JDSValues, loc );
-        ReadAccess<IndexType> rJDSDlg( JDSDlg, loc );
-        ReadAccess<IndexType> rJDSIlg( JDSIlg, loc );
-        ReadAccess<IndexType> rJDSPerm( JDSPerm, loc );
-        ReadAccess<IndexType> rCSRIa( CSRIa, loc );
-        WriteOnlyAccess<IndexType> wCSRJa( CSRJa, loc, nJDS );
-        WriteOnlyAccess<OtherValueType> wCSRValues( CSRValues, loc, nJDS );
-        SCAI_CONTEXT_ACCESS( loc );
-        getCSRValues[loc]( wCSRJa.get(), wCSRValues.get(), rCSRIa.get(), numRows, rJDSPerm.get(), rJDSIlg.get(),
-                           rJDSDlg.get(), rJDSJa.get(), rJDSValues.get() );
-    }
-    ReadAccess<IndexType> rCSRJa( CSRJa );
-    ReadAccess<OtherValueType> rCSRValues( CSRValues );
-
-    for ( IndexType i = 0; i < nJDS; i++ )
-    {
-        BOOST_CHECK_EQUAL( expectedCSRJa[i], rCSRJa.get()[i] );
-        BOOST_CHECK_EQUAL( expectedCSRValues[i], rCSRValues.get()[i] );
-    }
+    BOOST_TEST( hostReadAccess( CSRIa ) == hostReadAccess( newCSRIa ), per_element() );
+    BOOST_TEST( hostReadAccess( CSRJa ) == hostReadAccess( newCSRJa ), per_element() );
+    BOOST_TEST( hostReadAccess( CSRValues ) == hostReadAccess( newCSRValues ), per_element() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -919,8 +805,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
         
         HArray<ValueType> newSolution( testContext );
         
+        bool async = false;
+
         JDSUtils::jacobi( newSolution, omega, oldSolution, rhs, 
-                          jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, testContext );
+                          jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, async, testContext );
         
         HArray<ValueType> expSolution;
         

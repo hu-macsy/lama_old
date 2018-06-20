@@ -37,14 +37,12 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
 #include <scai/sparsekernel/ELLUtils.hpp>
-#include <scai/blaskernel/BLASKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/hmemo.hpp>
@@ -74,12 +72,11 @@ using tasking::SyncToken;
 
 using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
-using utilskernel::SparseKernelTrait;
 using utilskernel::HArrayUtils;
 
 using sparsekernel::ELLKernelTrait;
 using sparsekernel::ELLUtils;
-using sparsekernel::CSRKernelTrait;
+using sparsekernel::CSRUtils;
 
 using namespace tasking;
 using namespace hmemo;
@@ -249,8 +246,8 @@ void ELLStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
     {
         const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
 
-        setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(),
-                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
+        setCSRData( otherCSR.getNumRows(), otherCSR.getNumColumns(),
+                    otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
     }
     else
     {
@@ -263,7 +260,7 @@ void ELLStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
         // just a thought for optimization: use mIA, mJA, mValues instead of csrIA, csrJA, csrValues
         // but does not help much at all as resort of entries requires already temporaries.
 
-        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
+        setCSRData( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
     }
 }
 
@@ -447,147 +444,105 @@ void ELLStorage<ValueType>::clear()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
-void ELLStorage<ValueType>::buildCSR(
-    HArray<IndexType>& ia,
-    HArray<IndexType>* ja,
-    HArray<OtherValueType>* values,
-    const ContextPtr context ) const
+void ELLStorage<ValueType>::buildCSRSizes( hmemo::HArray<IndexType>& csrSizes ) const
 {
-    SCAI_REGION( "Storage.ELL.buildCSR" )
-
-    SCAI_LOG_INFO( logger,
-                   "buildCSR<" << common::getScalarType<OtherValueType>() << ">"
-                   << " from ELL<" << common::getScalarType<ValueType>() << ">"
-                   << " on " << *context << " ( preferred )" )
-
-    check( "ELLStorage::buildCSR" );
-
-    // step 1 : compute IA offsets
-    IndexType numValues = 0;
-    ia.clear();
-    ia.reserve( context, getNumRows() + 1 );  // reserve one more entry
-    HArrayUtils::assign( ia, mIA, context );
-
-    if ( ja == NULL || values == NULL )
-    {
-        return;
-    }
-
-    numValues = HArrayUtils::scan1( ia, context );
-    // step 2 : compute the arrays ja and values
-    static LAMAKernel<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
-    ContextPtr loc = context;
-    getCSRValues.getSupportedContext( loc );
-    ReadAccess<IndexType> ellJA( mJA, loc );
-    ReadAccess<ValueType> ellValues( mValues, loc );
-    ReadAccess<IndexType> csrIA( ia, loc );
-    ReadAccess<IndexType> ellSizes( mIA, loc );
-    WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
-    WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
-    SCAI_CONTEXT_ACCESS( loc )
-    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), getNumRows(), mNumValuesPerRow,
-                       ellSizes.get(), ellJA.get(), ellValues.get() );
+    HArrayUtils::assign<IndexType>( csrSizes, mIA );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
-void ELLStorage<ValueType>::setCSRDataImpl(
-    const IndexType numRows,
-    const IndexType numColumns,
-    const HArray<IndexType>& ia,
-    const HArray<IndexType>& ja,
-    const HArray<OtherValueType>& values )
+void ELLStorage<ValueType>::buildCSRData(
+    HArray<IndexType>& csrIA,
+    HArray<IndexType>& csrJA,
+    _HArray& csrValues ) const
 {
-    SCAI_REGION( "Storage.ELL.setCSR" )
-
-    IndexType numValues = ja.size();
+    SCAI_REGION( "Storage.ELL.buildCSR" )
 
     SCAI_LOG_INFO( logger,
-                   "set CSR data: numRows = " << numRows << ", numColumns = " << numColumns
-                   << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
+                   "buildCSR<" << csrValues.getValueType() << ">"
+                   << " from ELL<" << common::getScalarType<ValueType>() << ">"
+                   << " on " << *getContextPtr() << " ( preferred )" )
 
-    if ( numRows == 0 )
+    if ( csrValues.getValueType() == getValueType() )
     {
-        // just allocate will clear member arrays
-        allocate( numRows, numColumns );
-        return;
-    }
-
-    _MatrixStorage::setDimension( numRows, numColumns );
-    // build array with non-zero values per row
-    std::unique_ptr<HArray<IndexType> > tmpOffsets;
-    const HArray<IndexType>* offsets = &ia;
-
-    if ( ia.size() == numRows + 1 )
-    {
-        ContextPtr loc = getContextPtr();
-        static LAMAKernel<CSRKernelTrait::offsets2sizes > offsets2sizes;
-        offsets2sizes.getSupportedContext( loc );
-        ReadAccess<IndexType> csrIA( ia, loc );
-        WriteOnlyAccess<IndexType> ellSizes( mIA, loc, getNumRows() );
-        SCAI_CONTEXT_ACCESS( loc )
-        offsets2sizes[ loc ]( ellSizes.get(), csrIA.get(), getNumRows() );
-    }
-    else if ( ia.size() == numRows )
-    {
-        HArrayUtils::assign( mIA, ia, getContextPtr() );
-        // as the offset array is also needed
-        tmpOffsets.reset( ia.copy() );
-        IndexType total = HArrayUtils::scan1( *tmpOffsets, getContextPtr() );
-        SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
-        offsets = tmpOffsets.get();
+        auto& castCSRValues = static_cast<HArray<ValueType>&>( csrValues );
+        ELLUtils::convertELL2CSR( csrIA, csrJA, castCSRValues, getNumRows(), getNumColumns(), mIA, mJA, mValues, getContextPtr() );
     }
     else
     {
-        COMMON_THROWEXCEPTION( "ia array has illegal size " << ia.size() << " for #rows = " << numRows )
+        HArray<ValueType> tmpValues;  // use temporary for conversion of values
+        ELLUtils::convertELL2CSR( csrIA, csrJA, tmpValues, getNumRows(), getNumColumns(), mIA, mJA, mValues, getContextPtr() );
+        HArrayUtils::_assign( csrValues, tmpValues );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::setCSRData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const _HArray& csrValues )
+{
+    SCAI_REGION( "Storage.ELL.setCSR" )
+
+    if ( csrIA.size() == numRows )
+    {
+        HArray<IndexType> offsetIA;
+        CSRUtils::sizes2offsets( offsetIA, csrIA, getContextPtr() );
+        setCSRData( numRows, numColumns, offsetIA, csrJA, csrValues );
+        return;
     }
 
-    // determine the maximal number of non-zero in one row
-    mNumValuesPerRow = HArrayUtils::reduce( mIA, common::BinaryOp::MAX, getContextPtr() );
-    SCAI_LOG_DEBUG( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
-    //  Now we know the size of the ja and values arrays for the ELL format
-    const IndexType dataSize = mNumValuesPerRow * getNumRows();
-
-    if ( getNumRows() > 200 && mNumValuesPerRow > 0 )
+    if ( csrValues.getValueType() != getValueType() )
     {
-        // make this check only on larger matrices, dataSize must not be equal 0
-        double fillRate = double( numValues ) / double( dataSize );
+        SCAI_LOG_INFO( logger, "setCSRData<" << csrValues.getValueType() << ">, convert values to " << getValueType() )
 
-        if ( fillRate < 0.5 )
-        {
-            SCAI_LOG_WARN( logger,
-                           *this << ": fill rate = " << fillRate << " ( " << numValues << " non-zero values ), consider using JDS" )
-        }
+        HArray<ValueType> sameTypeCSRValues; 
+        HArrayUtils::_assign( sameTypeCSRValues, csrValues, getContextPtr() );    
+        setCSRData( numRows, numColumns, csrIA, csrJA, sameTypeCSRValues );
+        return;
     }
+    
+    SCAI_LOG_INFO( logger, "setCSRData<" << getValueType() << "> " << numRows << " x " << numColumns << ", nnz = " << csrJA.size() )
 
-    // Get function pointers for needed routines at the LAMA interface
+    _MatrixStorage::setDimension( numRows, numColumns );
 
-    static LAMAKernel<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
+    // csrValues have same type, so we only have to cast
 
-    ContextPtr loc = getContextPtr();
-    setCSRValues.getSupportedContext( loc );
+    const auto& sameTypeCSRValues = static_cast<const HArray<ValueType>&>( csrValues );
+
+    ELLUtils::convertCSR2ELL( mIA, mJA, mValues, numRows, numColumns, csrIA, csrJA, sameTypeCSRValues, getContextPtr() );
+
+    if ( numRows > 0 )
     {
-        // now fill the matrix values and column indexes
-        ReadAccess<IndexType> csrIA( *offsets, loc );
-        ReadAccess<IndexType> csrJA( ja, loc );
-        ReadAccess<OtherValueType> csrValues( values, loc );
-        ReadAccess<IndexType> ellIA( mIA, loc );
-        WriteOnlyAccess<IndexType> ellJA( mJA, loc, dataSize );
-        WriteOnlyAccess<ValueType> ellValues( mValues, loc, dataSize );
-        SCAI_LOG_DEBUG( logger, "convert CSR -> ELL, ellSize = " << dataSize )
-        SCAI_CONTEXT_ACCESS( loc )
-        setCSRValues[loc]( ellJA.get(), ellValues.get(), ellIA.get(),
-                           getNumRows(), mNumValuesPerRow,
-                           csrIA.get(), csrJA.get(), csrValues.get() );
-        SCAI_LOG_DEBUG( logger, " size = " << ellJA.size() )
+        mNumValuesPerRow = mJA.size() / numRows;
+    }
+    else
+    {
+        mNumValuesPerRow = 0;
     }
 
     buildRowIndexes();
 
     SCAI_LOG_INFO( logger, "ELL: set CSR data done, this = " << *this )
+
+    if ( getNumRows() > 200 && mNumValuesPerRow > 0 )
+    {
+        // make this check only on larger matrices, dataSize must not be equal 0
+
+        double fillRate = double( csrJA.size() ) / double( mJA.size() );
+
+        if ( fillRate < 0.5 )
+        {
+            SCAI_LOG_WARN( logger,
+                           *this << ": fill rate = " << fillRate << " ( " << csrJA.size() << " non-zero values, "
+                           << "but allocated " << mJA.size() << " ), consider using JDS" )
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -825,15 +780,9 @@ void ELLStorage<ValueType>::conj()
 template<typename ValueType>
 void ELLStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 {
-    SCAI_LOG_INFO( logger, "scaleRows # values = " << values )
-    static LAMAKernel<ELLKernelTrait::scaleRows<ValueType> > ellScaleRows;
-    ContextPtr loc = this->getContextPtr();
-    ellScaleRows.getSupportedContext( loc );
-    ReadAccess<ValueType> rValues( values, loc );
-    ReadAccess<IndexType> rIa( mIA, loc );
-    WriteAccess<ValueType> wValues( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ellScaleRows[loc]( wValues.get(), getNumRows(), mNumValuesPerRow, rIa.get(), rValues.get() );
+    // (MULT)iply each row with an individual value
+
+    ELLUtils::setRows( mValues, mIA, values, common::BinaryOp::MULT, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -952,22 +901,7 @@ void ELLStorage<ValueType>::setValue( const IndexType i,
 
     SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
 
-    static LAMAKernel<ELLKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = this->getContextPtr();
-    getValuePos.getSupportedContext( loc );
-
-    IndexType pos = invalidIndex;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-
-        ReadAccess<IndexType> rIa( mIA, loc );
-        ReadAccess<IndexType> rJa( mJA, loc );
-
-        pos = getValuePos[loc]( i, j, getNumRows(), mNumValuesPerRow, rIa.get(), rJa.get() );
-
-    }
+    IndexType pos = ELLUtils::getValuePos( i, j, mIA, mJA, getContextPtr() );
 
     if ( pos == invalidIndex )
     {
@@ -1315,7 +1249,9 @@ void ELLStorage<ValueType>::jacobiIterate(
 {
     SCAI_REGION( "Storage.ELL.jacobiIterate" )
 
-    ELLUtils::jacobi( solution, omega, oldSolution, rhs, mIA, mJA, mValues, getContextPtr() );
+    bool async = false;  // no sync token, call will return NULL
+
+    ELLUtils::jacobi( solution, omega, oldSolution, rhs, mIA, mJA, mValues, async, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1328,55 +1264,10 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     const ValueType omega ) const
 {
     SCAI_REGION( "Storage.ELL.jacobiIterateAsync" )
-    static LAMAKernel<ELLKernelTrait::jacobi<ValueType> > jacobi;
-    ContextPtr loc = this->getContextPtr();
-    jacobi.getSupportedContext( loc );
 
-    if ( loc->getType() == common::ContextType::Host )
-    {
-        // used later in OpenMP to generate a TaskSyncToken
-        void ( ELLStorage::*jb )(
-            HArray<ValueType>&,
-            const HArray<ValueType>&,
-            const HArray<ValueType>&,
-            const ValueType omega ) const
-        = &ELLStorage<ValueType>::jacobiIterate;
-        using std::bind;
-        using std::cref;
-        using std::ref;
-        return new tasking::TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
-    }
+    bool async = true;  // call will return valid SyncToken
 
-    // For CUDA a solution using stream synchronization is more efficient than using a task
-    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
-
-    if ( &solution == &oldSolution )
-    {
-        COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
-    }
-
-    // matrix must be square, solution vectors must have right size
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), getNumColumns() )
-    std::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
-    SCAI_ASYNCHRONOUS( *syncToken )
-    // make all needed data available at loc
-    ReadAccess<IndexType> ellSizes( mIA, loc );
-    ReadAccess<IndexType> ellJA( mJA, loc );
-    ReadAccess<ValueType> ellValues( mValues, loc );
-    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
-    ReadAccess<ValueType> rRhs( rhs, loc );
-    WriteOnlyAccess<ValueType> wSolution( solution, loc, getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    jacobi[loc]( wSolution.get(), getNumRows(), mNumValuesPerRow, ellSizes.get(), ellJA.get(), ellValues.get(),
-                 rOldSolution.get(), rRhs.get(), omega );
-    syncToken->pushRoutine( rRhs.releaseDelayed() );
-    syncToken->pushRoutine( rOldSolution.releaseDelayed() );
-    syncToken->pushRoutine( ellValues.releaseDelayed() );
-    syncToken->pushRoutine( ellJA.releaseDelayed() );
-    syncToken->pushRoutine( ellSizes.releaseDelayed() );
-    syncToken->pushRoutine( wSolution.releaseDelayed() );
-    return syncToken.release();
+    return ELLUtils::jacobi( solution, omega, oldSolution, rhs, mIA, mJA, mValues, async, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1741,21 +1632,6 @@ _MatrixStorage* ELLStorage<ValueType>::create()
 /* ========================================================================= */
 
 SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
-
-#define ELL_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                \
-    template void ELLStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                             \
-            const hmemo::HArray<OtherValueType>& );                                                       \
-    template void ELLStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,  \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;              
-
-#define ELL_STORAGE_INST_LVL1( ValueType )                                                                \
-    SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
-
-SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
-
-#undef ELL_STORAGE_INST_LVL2
-#undef ELL_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 
