@@ -143,6 +143,7 @@ public:
      *  @param[in]  numRows is the number of row for the storage
      *  @param[in]  numColumns is the number of columns for the storage
      *  @param[in]  diaOffset are the offsets of the available diagonals
+     *  @param[in]  prefLoc specifies context where operation should be done
      */
     static void getRowPositions(
         hmemo::HArray<IndexType>& indexes,
@@ -151,7 +152,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<OffsetType>& diaOffset,
-        hmemo::ContextPtr loc );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief Get the positions for the matrix columns (:, j ) 
@@ -162,6 +163,7 @@ public:
      *  @param[in]  numRows is the number of row for the storage
      *  @param[in]  numColumns is the number of columns for the storage
      *  @param[in]  diaOffset are the offsets of the available diagonals
+     *  @param[in]  prefLoc specifies context where operation should be done
      */
     static void getColPositions(
         hmemo::HArray<IndexType>& indexes,
@@ -170,7 +172,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<OffsetType>& diaOffset,
-        hmemo::ContextPtr );
+        hmemo::ContextPtr prefLoc );
 
     /**
      *  @brief Jacobi iteration step with DIA storage

@@ -227,6 +227,8 @@ public:
      *  @param[in] a is matrix storage of size m x k
      *  @param[in] b is matrix storage of size k x n
      *  @param[in] alpha scaling factor for matrix product
+     *  @param[in] opB matrix operation for b (normal, transpose)
+     *  @param[in] opA matrix operation for a (normal, transpose)
      *  @param[in] beta scaling factor for matrix c
      *  @param[in] m, n, k stand for the sizes of the matrices
      *  @param[in] prefLoc specifies the context where the operation should be done

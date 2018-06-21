@@ -103,57 +103,6 @@ void FFTUtils::fftcall(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void FFTUtils::fft1D( 
-    HArray<Complex<RealType<ValueType>>>& out, 
-    const HArray<ValueType>& in, 
-    const IndexType n,
-    const ContextPtr context )
-{
-    IndexType n2;
-    IndexType m;
- 
-    pow2( m, n2, n );   // n <= n2 = 2**m
-
-    SCAI_ASSERT_EQ_ERROR( n, n2, "n = " << n << " not power of 2, take n = " << n2 )
-
-    HArrayUtils::assignResized( out, n2, in, context );
-
-    const int direction = 1;   // forward fast fourier transform
-    const IndexType k = 1;     // one single vector
-
-    fftcall<Complex<RealType<ValueType>>>( out, k, n2, m, direction, context );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void FFTUtils::ifft1D(
-    HArray<ValueType>& out,
-    const HArray<Complex<RealType<ValueType>>>& in,
-    const IndexType n,
-    const ContextPtr context )
-{   
-    typedef Complex<RealType<ValueType>> FFTType;
-
-    IndexType n2;
-    IndexType m;
-
-    pow2( m, n2, in.size() ); 
-
-    SCAI_ASSERT_EQ_ERROR( in.size(), n2, "inverse fft, input array size must be power of 2" )
-    
-    const int direction = -1;     // backward fast fourier transform 
-    const IndexType k = 1;        // one single vector
-
-    HArray<FFTType> inCopy( in );
-    fftcall<FFTType>( inCopy, k, n2, m, direction, context );
-
-    HArrayUtils::assignResized( out, n, inCopy, context );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void FFTUtils::fft_many( 
     HArray<Complex<RealType<ValueType>>>& result, 
     const HArray<ValueType>& x, 
@@ -237,16 +186,6 @@ void FFTUtils::fft_many(
 /* --------------------------------------------------------------------------- */
 
 #define FFTUTILS_SPECIFIER( ValueType )                     \
-    template void FFTUtils::fft1D<ValueType>(               \
-        hmemo::HArray<Complex<RealType<ValueType>>>&,       \
-        const hmemo::HArray<ValueType>&,                    \
-        const IndexType,                                    \
-        hmemo::ContextPtr);                                 \
-    template void FFTUtils::ifft1D<ValueType>(              \
-        hmemo::HArray<ValueType>&,                          \
-        const hmemo::HArray<Complex<RealType<ValueType>>>&, \
-        const IndexType,                                    \
-        hmemo::ContextPtr);                                 \
     template void FFTUtils::fftcall<ValueType>(             \
         hmemo::HArray<Complex<RealType<ValueType>>>&,       \
         const IndexType,                                    \

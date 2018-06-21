@@ -60,7 +60,7 @@ public:
      *
      *  @param[in] csrIA array to check
      *  @param[in] numValues is the total number of non-zeros 
-     *  @param[in] prefLoc specfies the context where to execute it
+     *  @param[in] prefLoc specifies the context where to execute it
      */
     static bool validOffsets(
         const hmemo::HArray<IndexType>& csrIA,
@@ -72,7 +72,7 @@ public:
      *
      *  @param[in]  sizes contains number of entries for each row
      *  @param[out] offsets is the offset array, size will be sizes.size()
-     *  @param[in] prefLoc specfies the context where to execute it
+     *  @param[in] prefLoc specifies the context where to execute it
      * 
      *  \code
      *     HArray<IndexType> sizes( { 2, 5, 7 } );
@@ -108,7 +108,7 @@ public:
      *
      *  @param[out] rowIndexes contains the indexes of non-zero rows
      *  @param[in]  csrIA the CSR row offset array
-     *  @param[in]  threshold builds rowIndexes only if #nonZeroRows/#numRows < threshhold
+     *  @param[in]  threshold builds rowIndexes only if \f$nonZeroRows / numRows < threshhold\f$
      *  @param[in]  prefLoc is the context where operation is executed
      *  @returns the number of non-zero rows, will also be the size of rowIndexes if built
      *
@@ -124,7 +124,7 @@ public:
      *
      *  @param[in,out] csrIA, csrJA, csrValues is the CSR data that is compressed
      *  @param[in] eps a value is considered to be zero if abs( value ) <= eps
-     *  @param[in] prefLoc specficies the context where compression should be done
+     *  @param[in] prefLoc specifies the context where compression should be done
      */  
     template<typename ValueType>
     static void compress( 
@@ -162,7 +162,7 @@ public:
      *  @param[in] ja are the column indexes
      *  @param[in] numRows needed for convenience, same as ia.size() - 1
      *  @param[in] numColumns needed for convenience
-     *  @param[prefLoc] specifies the context where the operation should be executed
+     *  @param[in] prefLoc specifies the context where the operation should be executed
      */
     static bool hasSortedRows(
         const IndexType numRows,
@@ -407,6 +407,7 @@ public:
      *  @param[in]     omega is the scaling factor.
      *  @param[in]     csrIA, csrJA, csrValues are the CSR containers
      *  @param[in]     rowIndexes if not empty it contains row indexes of non-empty rows
+     *  @param[in]     prefLoc specifies the context where to execute it
      */
     template<typename ValueType>
     static void jacobiHalo(

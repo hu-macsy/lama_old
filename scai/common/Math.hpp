@@ -220,7 +220,7 @@ struct Math
      */
     static inline bool randomBool( const float trueRatio );
  
-    /** @brief return the exponent p for the smallest power that satisfies $2^p \ge n$ */
+    /** @brief return the exponent p for the smallest power that satisfies \f$2^p \ge n\f$ */
 
     template<typename ValueType>
     static inline CUDA_CALLABLE_MEMBER ValueType nextpow2( ValueType n );

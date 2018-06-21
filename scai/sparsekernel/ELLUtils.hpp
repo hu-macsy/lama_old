@@ -301,6 +301,7 @@ public:
      *  @param[in]     omega is the scaling factor.
      *  @param[in]     ellIA, ellJA, ellValues are the ELL containers
      *  @param[in]     rowIndexes if not empty it contains row indexes of non-empty rows
+     *  @param[in]     prefLoc specifies the context where iteration should be done 
      */
     template<typename ValueType>
     static void jacobiHalo(

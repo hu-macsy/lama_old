@@ -188,7 +188,8 @@ public:
      *
      *  @param[out] offset is the first position, invalidIndex if not found
      *  @param[out] n      is the number of available entries for row i
-     *  @param[in] cooIA   the (sorted) array with the row indexes
+     *  @param[in]  cooIA   the (sorted) array with the row indexes
+     *  @param[in]  i      is the index of row for which entries are queried
      *  @param[in]  prefLoc specifies the context where operation should be executed
      *
      *  As the entries of one row are stored contiguously, here is no need for a position array
@@ -302,14 +303,14 @@ public:
 
     /** Jacobi iteration step using a COO halo storage.
      *
-     *  solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal
+     *  \f[ solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal \f]
      *
      *  @param[in,out] localSolution is the solution vector that is updated
      *  @param[in]     localDiagonal pointer to the diagonal of local storage
      *  @param[in]     oldSolution is the old solution vector of halo part
      *  @param[in]     omega is the scaling factor.
-     *  @param[in]     csrIA, csrJA, csrValues are the CSR containers
-     *  @param[in]     rowIndexes if not empty it contains row indexes of non-empty rows
+     *  @param[in]     cooIA, cooJA, cooValues are the COO containers
+     *  @param[in]     prefLoc is context where the operation should be done
      */
     template<typename ValueType>
     static void jacobiHalo(
