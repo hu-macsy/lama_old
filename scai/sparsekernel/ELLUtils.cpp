@@ -43,7 +43,9 @@
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/tracing.hpp>
+
 #include <scai/common/macros/loop.hpp>
+#include <scai/common/Constants.hpp>
 
 namespace scai
 {
@@ -228,6 +230,8 @@ IndexType ELLUtils::getDiagonalPositions(
     const HArray<IndexType>& ellJA,
     ContextPtr prefLoc )
 {
+    SCAI_LOG_INFO( logger, "getDiagonalPositions for ellStrorage " << numRows << " x " << numColumns << ", size ja = " << ellJA.size() )
+
     SCAI_ASSERT_EQ_ERROR( numRows, ellIA.size(), "illegally sized array ellIA" )
 
     // Deal with case numRows == 0 just here as we divide later by numRows
@@ -522,6 +526,228 @@ void ELLUtils::compress(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+SyncToken* ELLUtils::gemv0(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValuesPerRow,
+    const HArray<IndexType>& ellIA,
+    const HArray<IndexType>& ellJA,
+    const HArray<ValueType>& ellValues,
+    const common::MatrixOp op,
+    const bool async,
+    ContextPtr prefLoc )
+{
+    // determine size of result as target of the linear mapping
+
+    const IndexType nTarget = common::isTranspose( op ) ? numColumns : numRows;
+
+    SCAI_ASSERT_EQ_DEBUG( ellValues.size(), ellJA.size(), "inconsistent sizes: ellJA - ellValues" )
+    SCAI_ASSERT_EQ_DEBUG( numValuesPerRow * numRows, ellJA.size(), "inconsistent ellJA" )
+
+    if ( alpha == common::Constants::ZERO  || numRows == 0 || numColumns == 0 || numValuesPerRow == 0 )
+    {
+        HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), prefLoc );
+
+        return NULL;   // already done
+    }
+
+    ContextPtr loc = prefLoc;
+
+    static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    normalGEMV.getSupportedContext( loc );
+
+    std::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<IndexType> rIA( ellIA, loc );
+    ReadAccess<IndexType> rJA( ellJA, loc );
+    ReadAccess<ValueType> rValues( ellValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+
+    WriteOnlyAccess<ValueType> wResult( result, loc, nTarget );
+
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), ValueType( 0 ), NULL,
+                     numRows, numColumns, numValuesPerRow,
+                     rIA.get(), rJA.get(), rValues.get(), op );
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( rIA.releaseDelayed() );
+        syncToken->pushRoutine( rJA.releaseDelayed() );
+        syncToken->pushRoutine( rValues.releaseDelayed() );
+    }
+
+    return syncToken.release();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* ELLUtils::gemv(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValuesPerRow,
+    const HArray<IndexType>& ellIA,
+    const HArray<IndexType>& ellJA,
+    const HArray<ValueType>& ellValues,
+    const common::MatrixOp op,
+    const bool async,
+    ContextPtr prefLoc )
+{
+    // if beta is 0, call the simpler routine, avoids accesses to y
+
+    if ( beta == common::Constants::ZERO )
+    {
+        return gemv0( result, alpha, x, numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues, op, async, prefLoc );
+    }
+
+    SCAI_ASSERT_EQ_DEBUG( numValuesPerRow * numRows, ellJA.size(), "inconsistent ellJA" )
+    SCAI_ASSERT_EQ_DEBUG( ellValues.size(), ellJA.size(), "inconsistent ellJA - ellValues" )
+
+    if ( alpha == common::Constants::ZERO  || numRows == 0 || numColumns == 0 || numValuesPerRow == 0 )
+    {
+        // result = beta * y, beta != 0
+
+        SCAI_LOG_DEBUG( logger, "zero storage, set result = " << beta << " * y" )
+
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, prefLoc );
+
+        return NULL;
+    }
+
+    SCAI_LOG_INFO( logger, "gemv: result = " << alpha << " * ELL " << op << " * x + " << beta << " * y " )
+
+    SCAI_LOG_DEBUG( logger, "gemv: ELL is " << numRows << " x " << numColumns << ", #values/row = " << numValuesPerRow )
+
+    ContextPtr loc = prefLoc;
+
+    static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    normalGEMV.getSupportedContext( loc );
+
+    std::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIA( ellIA, loc );
+    ReadAccess<IndexType> rJA( ellJA, loc );
+    ReadAccess<ValueType> rValues( ellValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+    ReadAccess<ValueType> rY( y, loc );
+
+    WriteOnlyAccess<ValueType> wResult( result, loc, y.size() );  // okay if alias to y
+
+    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(),
+                     numRows, numColumns, numValuesPerRow,
+                     rIA.get(), rJA.get(), rValues.get(), op );
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( rIA.releaseDelayed() );
+        syncToken->pushRoutine( rJA.releaseDelayed() );
+        syncToken->pushRoutine( rValues.releaseDelayed() );
+    }
+
+    return syncToken.release();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+tasking::SyncToken* ELLUtils::gemvSp(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numValuesPerRow,
+    const HArray<IndexType>& ellIA,
+    const HArray<IndexType>& ellJA,
+    const HArray<ValueType>& ellValues,
+    const common::MatrixOp op,
+    const HArray<IndexType>& nonZeroRowIndexes,
+    bool async,
+    ContextPtr prefLoc )
+{
+    if ( numRows == 0 || numColumns == 0 || alpha == 0 || numValuesPerRow == 0 )
+    {
+        return NULL;
+    }
+
+    static LAMAKernel<ELLKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
+
+    ContextPtr loc = prefLoc;
+
+    sparseGEMV.getSupportedContext( loc );
+
+    std::unique_ptr<tasking::SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
+    const IndexType numNonEmptyRows = nonZeroRowIndexes.size();
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    ReadAccess<IndexType> rIA( ellIA, loc );
+    ReadAccess<IndexType> rJA( ellJA, loc );
+    ReadAccess<ValueType> rValues( ellValues, loc );
+    ReadAccess<IndexType> rIndexes( nonZeroRowIndexes, loc );
+
+    ReadAccess<ValueType> rX( x, loc );
+    WriteAccess<ValueType> wResult( result, loc );
+
+    sparseGEMV[loc]( wResult.get(),
+                     alpha, rX.get(),
+                     numRows, numValuesPerRow, numNonEmptyRows, rIndexes.get(), 
+                     rIA.get(), rJA.get(), rValues.get(), op );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( rIndexes.releaseDelayed() );
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( rIA.releaseDelayed() );
+        syncToken->pushRoutine( rJA.releaseDelayed() );
+        syncToken->pushRoutine( rValues.releaseDelayed() );
+    }
+
+    return syncToken.release();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 tasking::SyncToken* ELLUtils::jacobi(
     HArray<ValueType>& solution,
     const ValueType omega,
@@ -691,94 +917,125 @@ void ELLUtils::setRows(
 
 /* -------------------------------------------------------------------------- */
 
-#define ELLUTILS_SPECIFIER( ValueType )              \
-                                                     \
-    template void ELLUtils::convertELL2CSR(          \
-        HArray<IndexType>&,                          \
-        HArray<IndexType>&,                          \
-        HArray<ValueType>&,                          \
-        const IndexType,                             \
-        const IndexType,                             \
-        const HArray<IndexType>&,                    \
-        const HArray<IndexType>&,                    \
-        const HArray<ValueType>&,                    \
-        ContextPtr );                                \
-                                                     \
-    template void ELLUtils::convertCSR2ELL(          \
-        HArray<IndexType>&,                          \
-        HArray<IndexType>&,                          \
-        HArray<ValueType>&,                          \
-        const IndexType,                             \
-        const IndexType,                             \
-        const HArray<IndexType>&,                    \
-        const HArray<IndexType>&,                    \
-        const HArray<ValueType>&,                    \
-        ContextPtr );                                \
-                                                     \
-    template void ELLUtils::getDiagonal(             \
-            HArray<ValueType>&,                      \
-            const IndexType,                         \
-            const IndexType,                         \
-            const HArray<IndexType>&,                \
-            const HArray<IndexType>&,                \
-            const HArray<ValueType>&,                \
-            ContextPtr );                            \
-                                                     \
-    template void ELLUtils::setDiagonalV(            \
-            HArray<ValueType>&,                      \
-            const HArray<ValueType>&,                \
-            const IndexType,                         \
-            const IndexType,                         \
-            const HArray<IndexType>&,                \
-            const HArray<IndexType>&,                \
-            ContextPtr );                            \
-                                                     \
-    template void ELLUtils::setDiagonal(             \
-            HArray<ValueType>&,                      \
-            const ValueType,                         \
-            const IndexType,                         \
-            const IndexType,                         \
-            const HArray<IndexType>&,                \
-            const HArray<IndexType>&,                \
-            ContextPtr );                            \
-                                                     \
-    template void ELLUtils::compress(                \
-            HArray<IndexType>&,                      \
-            HArray<IndexType>&,                      \
-            HArray<ValueType>&,                      \
-            IndexType&,                              \
-            const RealType<ValueType>,               \
-            ContextPtr );                            \
-                                                     \
-    template SyncToken* ELLUtils::jacobi(            \
-            HArray<ValueType>&,                      \
-            const ValueType,                         \
-            const HArray<ValueType>&,                \
-            const HArray<ValueType>&,                \
-            const HArray<IndexType>&,                \
-            const HArray<IndexType>&,                \
-            const HArray<ValueType>&,                \
-            const bool,                              \
-            ContextPtr );                            \
-                                                     \
-    template void ELLUtils::jacobiHalo(              \
-            HArray<ValueType>&,                      \
-            const ValueType,                         \
-            const HArray<ValueType>&,                \
-            const HArray<ValueType>&,                \
-            const HArray<IndexType>&,                \
-            const HArray<IndexType>&,                \
-            const HArray<ValueType>&,                \
-            const HArray<IndexType>&,                \
-            ContextPtr );                            \
-                                                     \
-    template void ELLUtils::setRows(                 \
-        HArray<ValueType>&,                          \
-        const HArray<IndexType>&,                    \
-        const HArray<ValueType>&,                    \
-        const common::BinaryOp,                      \
-        ContextPtr );                                \
-
+#define ELLUTILS_SPECIFIER( ValueType )                    \
+                                                           \
+    template void ELLUtils::convertELL2CSR(                \
+        HArray<IndexType>&,                                \
+        HArray<IndexType>&,                                \
+        HArray<ValueType>&,                                \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        ContextPtr );                                      \
+                                                           \
+    template void ELLUtils::convertCSR2ELL(                \
+        HArray<IndexType>&,                                \
+        HArray<IndexType>&,                                \
+        HArray<ValueType>&,                                \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        ContextPtr );                                      \
+                                                           \
+    template void ELLUtils::getDiagonal(                   \
+            HArray<ValueType>&,                            \
+            const IndexType,                               \
+            const IndexType,                               \
+            const HArray<IndexType>&,                      \
+            const HArray<IndexType>&,                      \
+            const HArray<ValueType>&,                      \
+            ContextPtr );                                  \
+                                                           \
+    template void ELLUtils::setDiagonalV(                  \
+            HArray<ValueType>&,                            \
+            const HArray<ValueType>&,                      \
+            const IndexType,                               \
+            const IndexType,                               \
+            const HArray<IndexType>&,                      \
+            const HArray<IndexType>&,                      \
+            ContextPtr );                                  \
+                                                           \
+    template void ELLUtils::setDiagonal(                   \
+            HArray<ValueType>&,                            \
+            const ValueType,                               \
+            const IndexType,                               \
+            const IndexType,                               \
+            const HArray<IndexType>&,                      \
+            const HArray<IndexType>&,                      \
+            ContextPtr );                                  \
+                                                           \
+    template void ELLUtils::compress(                      \
+            HArray<IndexType>&,                            \
+            HArray<IndexType>&,                            \
+            HArray<ValueType>&,                            \
+            IndexType&,                                    \
+            const RealType<ValueType>,                     \
+            ContextPtr );                                  \
+                                                           \
+    template tasking::SyncToken* ELLUtils::gemv(           \
+        HArray<ValueType>&,                                \
+        const ValueType,                                   \
+        const HArray<ValueType>&,                          \
+        const ValueType,                                   \
+        const HArray<ValueType>&,                          \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const common::MatrixOp,                            \
+        const bool,                                        \
+        ContextPtr );                                      \
+                                                           \
+    template tasking::SyncToken* ELLUtils::gemvSp(         \
+        HArray<ValueType>&,                                \
+        const ValueType,                                   \
+        const HArray<ValueType>&,                          \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const common::MatrixOp,                            \
+        const HArray<IndexType>&,                          \
+        const bool,                                        \
+        ContextPtr );                                      \
+                                                           \
+    template SyncToken* ELLUtils::jacobi(                  \
+        HArray<ValueType>&,                                \
+        const ValueType,                                   \
+        const HArray<ValueType>&,                          \
+        const HArray<ValueType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const bool,                                        \
+        ContextPtr );                                      \
+                                                           \
+    template void ELLUtils::jacobiHalo(                    \
+        HArray<ValueType>&,                                \
+        const ValueType,                                   \
+        const HArray<ValueType>&,                          \
+        const HArray<ValueType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const HArray<IndexType>&,                          \
+        ContextPtr );                                      \
+                                                           \
+    template void ELLUtils::setRows(                       \
+        HArray<ValueType>&,                                \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const common::BinaryOp,                            \
+        ContextPtr );                                      \
+      
 
 SCAI_COMMON_LOOP( ELLUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 

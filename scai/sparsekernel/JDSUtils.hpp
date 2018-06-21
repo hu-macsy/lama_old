@@ -177,6 +177,36 @@ public:
         const IndexType j,
         hmemo::ContextPtr prefLoc );
 
+    /**
+     *  @brief Identify all entries of a given row in the JDS data
+     *
+     *  @param[out] positions contains the positions of the entries in the arrays jdsJA, jdsValues
+     *  @param[in] jdsILG, jdsDLG, jdsPerm are the corresponding arrays of the JDS format
+     *  @param[in] i the row for which entries are needed
+     *  @param[in] prefLoc specifies the context where operation should be executed.
+     *
+     *  The following code shows how to get sparse arrays for a row i of the JDS storage.
+     *
+     *  \code
+     *      HArray<IndexType> pos;   // positions of row entries
+     *
+     *      JDSUtils::getRowPositions( pos, jdsIlg, jdsDlg, jdsPerm, i, getContextPtr() );
+     *
+     *      HArray<IndexType> jA;      // available column indexes for row i
+     *      HArray<IndexType> values;  // corresponding values of row i
+     *
+     *      HArrayUtils::gather( jA, jdsJA, pos, BinaryOp::COPY, loc );
+     *      HArrayUtils::gather( values, jdsValues, pos, BinaryOp::COPY, loc );
+     *  \endcode
+     */
+    static void getRowPositions(
+        hmemo::HArray<IndexType>& positions,
+        const hmemo::HArray<IndexType>& jdsILG,
+        const hmemo::HArray<IndexType>& jdsDLG,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const IndexType i,
+        hmemo::ContextPtr prefLoc );
+
     /** 
      *  @brief Compute the dlg array by the ilg array for the JDS format.
      *  
@@ -188,6 +218,30 @@ public:
     static IndexType ilg2dlg(
         hmemo::HArray<IndexType>& jdsDLG,
         const hmemo::HArray<IndexType>& jdsILG,
+        hmemo::ContextPtr prefLoc );
+
+    template<typename ValueType>
+    static void getRow(
+        hmemo::HArray<ValueType>& row,
+        const IndexType numColumns,
+        const IndexType i,
+        const hmemo::HArray<IndexType>& jdsIlg,
+        const hmemo::HArray<IndexType>& jdsDlg,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const hmemo::HArray<ValueType>& jdsValues,
+        hmemo::ContextPtr prefLoc );
+
+    template<typename ValueType>
+    static void setRow(
+        hmemo::HArray<ValueType>& jdsValues,
+        const IndexType i,
+        const hmemo::HArray<ValueType>& row,
+        const hmemo::HArray<IndexType>& jdsIlg,
+        const hmemo::HArray<IndexType>& jdsDlg,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
 
     template<typename ValueType>

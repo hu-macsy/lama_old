@@ -37,14 +37,10 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/sparsekernel/COOUtils.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
-
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/NoSyncToken.hpp>
@@ -72,11 +68,8 @@ namespace scai
 
 using tasking::SyncToken;
 
-using utilskernel::UtilKernelTrait;
-using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
 
-using sparsekernel::COOKernelTrait;
 using sparsekernel::COOUtils;
 using sparsekernel::CSRUtils;
 

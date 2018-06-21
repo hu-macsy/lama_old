@@ -37,13 +37,10 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // local scai libraries
-#include <scai/sparsekernel/JDSKernelTrait.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/sparsekernel/JDSUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -65,11 +62,8 @@ using std::shared_ptr;
 namespace scai
 {
 
-using utilskernel::LAMAKernel;
-using utilskernel::UtilKernelTrait;
 using utilskernel::HArrayUtils;
 
-using sparsekernel::JDSKernelTrait;
 using sparsekernel::JDSUtils;
 using sparsekernel::CSRUtils;
 
@@ -402,18 +396,9 @@ void JDSStorage<ValueType>::getRow( HArray<ValueType>& row, const IndexType i ) 
     SCAI_REGION( "Storage.JDS.getRow" )
 
     SCAI_LOG_INFO( logger, "getRow with i = " << i )
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
-    static LAMAKernel<JDSKernelTrait::getRow<ValueType> > getRow;
-    ContextPtr loc = this->getContextPtr();
-    getRow.getSupportedContext( loc );
-    ReadAccess<IndexType> dlg( mDlg, loc );
-    ReadAccess<IndexType> ilg( mIlg, loc );
-    ReadAccess<IndexType> perm( mPerm, loc );
-    ReadAccess<IndexType> ja( mJA, loc );
-    ReadAccess<ValueType> values( mValues, loc );
-    WriteOnlyAccess<ValueType> wRow( row, loc, getNumColumns() );
-    SCAI_CONTEXT_ACCESS( loc )
-    getRow[loc]( wRow.get(), i, getNumColumns(), getNumRows(), perm.get(), ilg.get(), dlg.get(), ja.get(), values.get() );
+
+    JDSUtils::getRow( row, getNumColumns(), i,
+                      mIlg, mDlg, mPerm, mJA, mValues, getContextPtr() ); 
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -427,35 +412,14 @@ void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::H
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
 
-    static LAMAKernel<JDSKernelTrait::getRowPositions> getRowPositions;
-
-    ContextPtr loc = this->getContextPtr();
-
-    getRowPositions.getSupportedContext( loc );
-
     HArray<IndexType> pos;  // positions in the array mJA, mValues
 
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-
-        // start with maximal possible size, is number of columns, resize later
-
-        WriteOnlyAccess<IndexType> wPos( pos, loc, getNumColumns() );  
-
-        ReadAccess<IndexType> rIlg( mIlg, loc );
-        ReadAccess<IndexType> rDlg( mDlg, loc );
-        ReadAccess<IndexType> rPerm( mPerm, loc );
-
-        IndexType cnt = getRowPositions[loc]( wPos.get(), i, getNumRows(),
-                                              rIlg.get(), rDlg.get(), rPerm.get() );
-
-        wPos.resize( cnt );
-    }
+    JDSUtils::getRowPositions( pos, mIlg, mDlg, mPerm, i, getContextPtr() );
 
     // with entries in pos we can gather the column indexes and the values from jdsJA, jdsValues
  
-    HArrayUtils::gather( jA, mJA, pos, BinaryOp::COPY, loc );
-    HArrayUtils::gather( values, mValues, pos, BinaryOp::COPY, loc );
+    HArrayUtils::gather( jA, mJA, pos, BinaryOp::COPY, getContextPtr() );
+    HArrayUtils::gather( values, mValues, pos, BinaryOp::COPY, getContextPtr() );
 
     SCAI_LOG_DEBUG( logger, "getSparseRow( " << i << " ) : jA = " << jA << ", values = " << values )
 }
@@ -501,23 +465,9 @@ void JDSStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexTyp
     SCAI_REGION( "Storage.JDS.setRow" )
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
-    SCAI_ASSERT_GE_DEBUG( row.size(), getNumColumns(), "row array to small for set" )
+    SCAI_ASSERT_EQ_DEBUG( row.size(), getNumColumns(), "row array to small for set" )
 
-    SCAI_LOG_INFO( logger, "setRowImpl( i = " << i << " )" )
-
-    static LAMAKernel<JDSKernelTrait::setRow<ValueType> > setRow;
-
-    ContextPtr loc = this->getContextPtr();
-    setRow.getSupportedContext( loc );
-
-    ReadAccess<IndexType> dlg( mDlg, loc );
-    ReadAccess<IndexType> ilg( mIlg, loc );
-    ReadAccess<IndexType> perm( mPerm, loc );
-    ReadAccess<IndexType> ja( mJA, loc );
-    WriteAccess<ValueType> values( mValues, loc );
-    ReadAccess<ValueType> rRow( row, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    setRow[loc]( values.get(), i, getNumColumns(), getNumRows(), perm.get(), ilg.get(), dlg.get(), ja.get(), rRow.get(), op );
+    JDSUtils::setRow( mValues, i, row, mIlg, mDlg, mPerm, mJA, op, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -599,61 +549,42 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     SCAI_ASSERT_EQUAL_ERROR( mValues.size(), mJA.size() )
 
     IndexType numValues    = mValues.size();
-    IndexType numDiagonals = mDlg.size();
 
     // check column indexes in JA
+
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mJA, getNumColumns(), getContextPtr() ),
+                       this << " @ " << msg << ": illegal column indexes in JA"  );
+
+    if  ( numRows > 0 )
     {
-        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
-        ContextPtr loc = this->getContextPtr();
-        validIndexes.getSupportedContext( loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_ERROR( validIndexes[ loc ]( rJA.get(), numValues, getNumColumns() ),
-                           *this << " @ " << msg << ": illegel indexes in JA" )
+         IndexType maxValuesPerRow = mIlg[0];
+         SCAI_ASSERT_EQ_ERROR( maxValuesPerRow, mDlg.size(), "serious inconsistency" )
     }
-    // ToDo: check ILG[0] == numDiagonals, be careful about size of ILG
+
     // check descending values in ILG, DLG
-    {
-        static LAMAKernel<UtilKernelTrait::isSorted<IndexType> > isSorted;
-        ContextPtr loc = this->getContextPtr();
-        isSorted.getSupportedContext( loc );
-        ReadAccess<IndexType> rIlg( mIlg, loc );
-        ReadAccess<IndexType> rDlg( mDlg, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( rIlg.get(), numRows, common::CompareOp::GE ),
-                           *this << " @ " << msg << ": not decreasing values in ILG" )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( rDlg.get(), numDiagonals, common::CompareOp::GE ),
-                           *this << " @ " << msg << ": not decreasing values in DLG" )
-    }
-    // both, ILG and DLG, must sum up to num values
-    {
-        static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-        ContextPtr loc = this->getContextPtr();
-        reduce.getSupportedContext( loc );
-        ReadAccess<IndexType> rIlg( mIlg, loc );
-        ReadAccess<IndexType> rDlg( mDlg, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rIlg.get(), getNumRows(), 0, BinaryOp::ADD ), mValues.size() )
-        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rDlg.get(), numDiagonals, 0, BinaryOp::ADD ), mValues.size() )
-    }
+
+    SCAI_ASSERT_ERROR( HArrayUtils::isSorted( mIlg, common::CompareOp::GE, getContextPtr() ),
+                       *this << " @ " << msg << ": not decreasing values in ILG" )
+
+    SCAI_ASSERT_ERROR( HArrayUtils::isSorted( mDlg, common::CompareOp::GE, getContextPtr() ),
+                       *this << " @ " << msg << ": not decreasing values in DLG" )
+
+    IndexType sumILG = HArrayUtils::reduce( mIlg, BinaryOp::ADD, getContextPtr() );
+    IndexType sumDLG = HArrayUtils::reduce( mDlg, BinaryOp::ADD, getContextPtr() );
+
+    SCAI_ASSERT_EQ_ERROR( sumILG, numValues, "inconsistent entries in jds ILG" )
+    SCAI_ASSERT_EQ_ERROR( sumDLG, numValues, "inconsistent entries in jds DLG" )
 
     // check index values in Perm for out of range
 
-    if ( getNumRows() > 0 )
+    if ( numRows > 0 )
     {
-        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
-        ContextPtr loc = this->getContextPtr();
-        validIndexes.getSupportedContext( loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-        ReadAccess<IndexType> rPerm( mPerm, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_ERROR( validIndexes[loc]( rPerm.get(), getNumRows(), getNumRows() ),
-                           *this << " @ " << msg << ": illegel indexes in Perm" )
+        SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mPerm, getNumRows(), getContextPtr() ), "perm contains illegal indexes" )
     }
 
     // check perm: no values out of range, but make sure that it is permutation, e.g. [ 0, 0] is illegal
 
-    if ( getNumRows() > 0 ) // very important as maxval would not work
+    if ( numRows > 0 ) // very important as maxval would not work
     {
         ContextPtr loc = getContextPtr();
 

@@ -48,12 +48,8 @@
 
 // internal scai libraries
 #include <scai/sparsekernel/CSRUtils.hpp>
-#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -74,10 +70,6 @@ using namespace dmemo;
 
 using tasking::SyncToken;
 using tasking::TaskSyncToken;
-
-using utilskernel::LAMAKernel;
-using utilskernel::UtilKernelTrait;
-using utilskernel::OpenMPUtils;
 
 using sparsekernel::CSRUtils;
 

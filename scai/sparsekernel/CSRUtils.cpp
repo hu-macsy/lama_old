@@ -605,7 +605,7 @@ RealType<ValueType> CSRUtils::absMaxDiffVal(
 {
     if ( numRows == 0 || numColumns == 0 )
     {
-        return true;
+        return static_cast<RealType<ValueType>>( 0 );
     }
 
     LAMAKernel<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
@@ -1296,9 +1296,7 @@ void CSRUtils::reduce(
 
     IndexType resSize = dim == 0 ? numRows : numColumns;
 
-    ValueType zero = common::zeroBinary<ValueType>( reduceOp );
-
-    HArrayUtils::setSameValue( result, resSize, zero, loc );
+    SCAI_ASSERT_EQ_ERROR( result.size(), resSize, "illegal size of result array" )
 
     ReadAccess<IndexType> rIA( csrIA, loc );
     ReadAccess<IndexType> rJA( csrJA, loc );

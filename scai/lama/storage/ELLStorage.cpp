@@ -610,6 +610,8 @@ IndexType ELLStorage<ValueType>::getNumValuesPerRow() const
 template<typename ValueType>
 void ELLStorage<ValueType>::setDiagonal( const ValueType value )
 {
+    SCAI_LOG_INFO( logger, "setDiagonal for " << *this << ": diagonal value = " << value )
+
     ELLUtils::setDiagonal( mValues, value, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
 }
 
@@ -618,6 +620,8 @@ void ELLStorage<ValueType>::setDiagonal( const ValueType value )
 template<typename ValueType>
 void ELLStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
+    SCAI_LOG_INFO( logger, "setDiagonalV for " << *this << ": diagonal = " << diagonal )
+
     SCAI_ASSERT_EQ_ERROR( diagonal.size(), getDiagonalSize(), "diagonal has illegal size" )
     ELLUtils::setDiagonalV( mValues, diagonal, getNumRows(), getNumColumns(), mIA, mJA, getContextPtr() );
 }
@@ -755,7 +759,9 @@ void ELLStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 template<typename ValueType>
 void ELLStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 {
+    SCAI_LOG_INFO( logger, "getDiagonal for " << *this )
     ELLUtils::getDiagonal( diagonal, getNumRows(), getNumColumns(), mIA, mJA, mValues, getContextPtr() );
+    SCAI_ASSERT_EQ_DEBUG( diagonal.size(), getDiagonalSize(), "serious mismatch" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1047,195 +1053,34 @@ SyncToken* ELLStorage<ValueType>::gemv(
                    << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
-    if ( alpha == common::Constants::ZERO || ( mNumValuesPerRow == 0 ) )
-    {
-        // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
+    MatrixStorage<ValueType>::gemvCheck( alpha, x, beta, y, op );  // checks for correct sizes
 
-        if ( async )
-        {
-            return new tasking::NoSyncToken();
-        }
-        else
-        {
-            return NULL;
-        }
-    }
-
-    // check for correct sizes of x
-
-#if !defined( SCAI_ASSERT_LEVEL_OFF )
-    IndexType nSource = common::isTranspose( op ) ? getNumRows() : getNumColumns();
-    IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
-#endif
-
-    SCAI_ASSERT_EQ_ERROR( x.size(), nSource, "gemv: A * x, x has illegal size" )
+    SyncToken* token = NULL;
 
     if ( beta == common::Constants::ZERO )
     {
         // take version that does not access y at all (can be undefined or aliased to result)
-        return normalGEMV( result, alpha, x, op, async );
+
+        token = ELLUtils::gemv0( result, alpha, x,
+                                 getNumRows(), getNumColumns(), mNumValuesPerRow, mIA, mJA, mValues,
+                                 op, async, getContextPtr() );
     }
-
-    // y is relevant, so it must have correct size
-
-    SCAI_ASSERT_EQ_ERROR( y.size(), nTarget, "gemv: A * x + y, y has illegal size" )
-
-    if ( &result == &y && ( beta == common::Constants::ONE ) && ( mRowIndexes.size() > 0 ) )
+    else if ( &result == &y && ( beta == common::Constants::ONE ) && ( mRowIndexes.size() > 0 ) )
     {
         // y += A * x,  where only some rows in A are filled, uses more efficient routine
-        return sparseGEMV( result, alpha, x, op, async );
+
+        token = ELLUtils::gemvSp( result, alpha, x, getNumRows(), getNumColumns(), mNumValuesPerRow,
+                                  mIA, mJA, mValues, op, mRowIndexes, async, getContextPtr() );
     }
     else
     {
-        return normalGEMV( result, alpha, x, beta, y, op, async );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* ELLStorage<ValueType>::normalGEMV(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const ValueType beta,
-    const HArray<ValueType>& y,
-    const common::MatrixOp op,
-    bool async ) const
-{
-    static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
-    ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
-    if ( loc != this->getContextPtr() )
-    {
-        SCAI_LOG_INFO( logger, "normalGEMV not on " << *this->getContextPtr() << " but on " << *loc )
-    }
-    unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
+        token = ELLUtils::gemv( result, alpha, x, beta, y,
+                                getNumRows(), getNumColumns(), mNumValuesPerRow, 
+                                mIA, mJA, mValues,
+                                op, async, getContextPtr() );
     }
 
-    const IndexType nResult = common::isTranspose( op ) ? getNumColumns() : getNumRows();
-
-    SCAI_CONTEXT_ACCESS( loc )
-    SCAI_ASYNCHRONOUS( syncToken.get() )
-    // Note: alias &result == &y possible
-    //       ReadAccess on y before WriteOnlyAccess on result guarantees valid data
-    ReadAccess<IndexType> ellIA( mIA, loc );
-    ReadAccess<IndexType> ellJA( mJA, loc );
-    ReadAccess<ValueType> ellValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    ReadAccess<ValueType> rY( y, loc );
-    WriteOnlyAccess<ValueType> wResult( result, loc, nResult );
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), 
-                     getNumRows(), getNumColumns(), mNumValuesPerRow,
-                     ellIA.get(), ellJA.get(), ellValues.get(), op );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rY.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( ellIA.releaseDelayed() );
-        syncToken->pushRoutine( ellJA.releaseDelayed() );
-        syncToken->pushRoutine( ellValues.releaseDelayed() );
-    }
-
-    return syncToken.release();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* ELLStorage<ValueType>::normalGEMV(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const common::MatrixOp op,
-    bool async ) const
-{
-    static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
-    ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
-    unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    const IndexType nResult = common::isTranspose( op ) ? getNumColumns() : getNumRows();
-
-    SCAI_ASYNCHRONOUS( syncToken.get() )
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> ellIA( mIA, loc );
-    ReadAccess<IndexType> ellJA( mJA, loc );
-    ReadAccess<ValueType> ellValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    WriteOnlyAccess<ValueType> wResult( result, loc, nResult );
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), 0, NULL, 
-                     getNumRows(), getNumColumns(), mNumValuesPerRow,
-                     ellIA.get(), ellJA.get(), ellValues.get(), op );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( ellIA.releaseDelayed() );
-        syncToken->pushRoutine( ellJA.releaseDelayed() );
-        syncToken->pushRoutine( ellValues.releaseDelayed() );
-    }
-
-    return syncToken.release();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* ELLStorage<ValueType>::sparseGEMV(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const common::MatrixOp op,
-    bool async ) const
-{
-    static LAMAKernel<ELLKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
-    ContextPtr loc = this->getContextPtr();
-    sparseGEMV.getSupportedContext( loc );
-    unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() )
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> ellIA( mIA, loc );
-    ReadAccess<IndexType> ellJA( mJA, loc );
-    ReadAccess<ValueType> ellValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    WriteAccess<ValueType> wResult( result, loc );
-    // result += alpha * thisMatrix * x, can take advantage of row indexes
-    IndexType numNonZeroRows = mRowIndexes.size();
-    ReadAccess<IndexType> rRowIndexes( mRowIndexes, loc );
-    sparseGEMV[loc]( wResult.get(), alpha, rX.get(), getNumRows(), mNumValuesPerRow, numNonZeroRows,
-                     rRowIndexes.get(), ellIA.get(), ellJA.get(), ellValues.get(), op );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( rRowIndexes.releaseDelayed() );
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( ellIA.releaseDelayed() );
-        syncToken->pushRoutine( ellJA.releaseDelayed() );
-        syncToken->pushRoutine( ellValues.releaseDelayed() );
-    }
-
-    return syncToken.release();
+    return token;
 }
 
 /* --------------------------------------------------------------------------- */

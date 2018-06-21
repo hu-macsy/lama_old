@@ -1205,13 +1205,6 @@ BOOST_AUTO_TEST_CASE( getColumnPositionsTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-    ContextPtr loc         = testContext;
-
-    static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    normalGEMV.getSupportedContext( loc );
-    BOOST_WARN_EQUAL( loc, testContext );
 
     HArray<IndexType> ellIA( testContext );
     HArray<IndexType> ellJA( testContext );
@@ -1227,17 +1220,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( ellJA.size(), numRows * numValuesPerRow, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( ellValues.size(), numRows * numValuesPerRow, "size mismatch" )
 
-    const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
-    const ValueType x_values[]   = { 3, -3, 2, -2 };
+    HArray<ValueType> x( { 3, -3, 2, -2 },  testContext );
+    HArray<ValueType> y( { 1, -1, 2, -2, 1, 1, -1 }, testContext );
 
-    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
-    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
-
-    HArray<ValueType> x( numColumns, x_values, testContext );
-    HArray<ValueType> y( numRows, y_values, testContext );
+    SCAI_ASSERT_EQ_ERROR( numColumns, x.size(), "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, y.size(), "size mismatch" );
 
     const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
     const ValueType beta_values[]  = { -2, 0, 1 };
@@ -1252,24 +1239,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 
         HArray<ValueType> res( testContext );
 
-        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * ELL * x + " << beta << " * y "
+        SCAI_LOG_DEBUG( logger, "compute res = " << alpha << " * ELL * x + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y
                        << ", ELL: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
-        {
-            SCAI_CONTEXT_ACCESS( loc );
 
-            ReadAccess<IndexType> rIA( ellIA, loc );
-            ReadAccess<IndexType> rJA( ellJA, loc );
-            ReadAccess<ValueType> rValues( ellValues, loc );
+        common::MatrixOp op = common::MatrixOp::NORMAL;
 
-            ReadAccess<ValueType> rX( x, loc );
-            ReadAccess<ValueType> rY( y, loc );
-            WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
-
-            normalGEMV[loc]( wResult.get(),
-                             alpha, rX.get(), beta, rY.get(),
-                             numRows, numColumns, numValuesPerRow, rIA.get(), rJA.get(), rValues.get(), common::MatrixOp::NORMAL );
-        }
+        ELLUtils::gemv( res, alpha, x, beta, y, 
+                        numRows, numColumns, numValuesPerRow, 
+                        ellIA, ellJA, ellValues,
+                        op, false, testContext );
 
         HArray<ValueType> expectedRes = data1::getGEMVNormalResult( alpha, x, beta, y );
 
@@ -1305,17 +1284,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( ellJA.size(), numValuesPerRow * numRows, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( ellValues.size(), numValuesPerRow * numRows, "size mismatch" )
 
-    const ValueType y_values[]   = { 1, -1, 2, -2 };
-    const ValueType x_values[]   = { 3, -2, -2, 3, 1, 0, 1 };
+    HArray<ValueType> x( { 3, -2, -2, 3, 1, 0, 1 },  testContext );
+    HArray<ValueType> y( { 1, -1, 2, -2 }, testContext );
 
-    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
-    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-
-    SCAI_ASSERT_EQ_ERROR( numRows, n_x, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_y, "size mismatch" );
-
-    HArray<ValueType> x( numRows, x_values, testContext );
-    HArray<ValueType> y( numColumns, y_values, testContext );
+    SCAI_ASSERT_EQ_ERROR( numRows, x.size(), "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numColumns, y.size(), "size mismatch" );
 
     const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
     const ValueType beta_values[]  = { -2, 0, 1 };
@@ -1333,21 +1306,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * ELL + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y
                        << ", ELL: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
-        {
-            SCAI_CONTEXT_ACCESS( loc );
 
-            ReadAccess<IndexType> rIA( ellIA, loc );
-            ReadAccess<IndexType> rJA( ellJA, loc );
-            ReadAccess<ValueType> rValues( ellValues, loc );
+        common::MatrixOp op = common::MatrixOp::TRANSPOSE;
 
-            ReadAccess<ValueType> rX( x, loc );
-            ReadAccess<ValueType> rY( y, loc );
-            WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
-
-            normalGEMV[loc]( wResult.get(),
-                             alpha, rX.get(), beta, rY.get(),
-                             numRows, numColumns, numValuesPerRow, rIA.get(), rJA.get(), rValues.get(), common::MatrixOp::TRANSPOSE );
-        }
+        ELLUtils::gemv( res, alpha, x, beta, y, 
+                        numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues,
+                        op, false, testContext );
 
         HArray<ValueType> expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, y );
 
@@ -1360,15 +1324,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<ELLKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
-
-    ContextPtr loc = testContext;
-
-    sparseGEMV.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     HArray<IndexType> ellIA( testContext );
     HArray<IndexType> ellJA( testContext );
@@ -1381,22 +1336,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
     data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
 
     data1::getRowIndexes( rowIndexes );
-    IndexType numNonEmptyRows = rowIndexes.size();
 
     SCAI_ASSERT_EQ_ERROR( numRows, ellIA.size(), "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( numRows * numValuesPerRow, ellJA.size(), "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( ellJA.size(), ellValues.size(), "size mismatch" )
 
-    const ValueType res_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
-    const ValueType x_values[]     = { 3, -3, 2, -2 };
+    HArray<ValueType> x( { 3, -3, 2, -2 },  testContext );
+    HArray<ValueType> y( { 1, -1, 2, -2, 1, 1, -1 }, testContext );
 
-    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
-    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
-
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
-
-    HArray<ValueType> x( numColumns, x_values, testContext );
+    SCAI_ASSERT_EQ_ERROR( numColumns, x.size(), "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, y.size(), "size mismatch" );
 
     // use different alpha and beta values as kernels might be optimized for it
 
@@ -1408,30 +1357,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
     {
         ValueType alpha = alpha_values[icase];
 
-        HArray<ValueType> res( numRows, res_values, testContext );
+        HArray<ValueType> res( y );
 
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
                        << ", with x = " << x
                        << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
-        {
-            SCAI_CONTEXT_ACCESS( loc );
 
-            ReadAccess<IndexType> rIA( ellIA, loc );
-            ReadAccess<IndexType> rJA( ellJA, loc );
-            ReadAccess<ValueType> rValues( ellValues, loc );
-            ReadAccess<IndexType> rIndexes( rowIndexes, loc );
 
-            ReadAccess<ValueType> rX( x, loc );
-            WriteAccess<ValueType> wResult( res, loc );
+        auto op = common::MatrixOp::NORMAL;
 
-            sparseGEMV[loc]( wResult.get(),
-                             alpha, rX.get(),
-                             numRows, numValuesPerRow,
-                             numNonEmptyRows, rIndexes.get(),
-                             rIA.get(), rJA.get(), rValues.get(), common::MatrixOp::NORMAL );
-        }
+        bool async = false;
 
-        HArray<ValueType> expectedRes( numRows, res_values );
+        ELLUtils::gemvSp(  res, alpha, x, 
+                           numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues,
+                           op, rowIndexes, async, testContext );
+
+        HArray<ValueType> expectedRes( y );
 
         ValueType beta = 1;  // res = alpha * A * x + 1 * res <-> res += alpha * A * x
 
@@ -1446,15 +1387,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<ELLKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
-
-    ContextPtr loc = testContext;
-
-    sparseGEMV.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     HArray<IndexType> ellIA( testContext );
     HArray<IndexType> ellJA( testContext );
@@ -1467,7 +1399,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
     data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
 
     data1::getRowIndexes( rowIndexes );
-    IndexType numNonEmptyRows = rowIndexes.size();
 
     SCAI_ASSERT_EQ_ERROR( ellIA.size(), numRows, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( ellJA.size(), numRows * numValuesPerRow, "size mismatch" )
@@ -1494,22 +1425,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
                        << ", with x = " << x
                        << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
-        {
-            SCAI_CONTEXT_ACCESS( loc );
 
-            ReadAccess<IndexType> rIA( ellIA, loc );
-            ReadAccess<IndexType> rJA( ellJA, loc );
-            ReadAccess<ValueType> rValues( ellValues, loc );
-            ReadAccess<IndexType> rIndexes( rowIndexes, loc );
+        auto op = common::MatrixOp::TRANSPOSE;
+        bool async = false;
 
-            ReadAccess<ValueType> rX( x, loc );
-            WriteAccess<ValueType> wResult( res, loc );
-
-            sparseGEMV[loc]( wResult.get(), alpha, rX.get(),
-                             numRows, numValuesPerRow,
-                             numNonEmptyRows, rIndexes.get(),
-                             rIA.get(), rJA.get(), rValues.get(), common::MatrixOp::TRANSPOSE );
-        }
+        ELLUtils::gemvSp(  res, alpha, x, numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues,
+                           op, rowIndexes, async, testContext );
 
         ValueType beta = 1;  // res = alpha * x * A + 1 * res <-> res += alpha * x * A
 

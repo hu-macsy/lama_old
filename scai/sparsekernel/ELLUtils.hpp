@@ -43,6 +43,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -214,6 +215,66 @@ public:
         hmemo::ContextPtr prefLoc );
 
     /**
+     *  @brief matrix-vector multiplication, result = alpha * ELLstorage * x + beta * y
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemv(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValuesPerRow,
+        const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
+        const hmemo::HArray<ValueType>& ellValues,
+        const common::MatrixOp op,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief matrix-vector multiplication, result = alpha * ELLstorage * x
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemv0(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValuesPerRow,
+        const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
+        const hmemo::HArray<ValueType>& ellValues,
+        const common::MatrixOp op,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+    /**
+     *  @brief Computes result += alpha * ELLStorage * x
+     *
+     *  This operation touches only elements of result, for which entries are available.
+     *  This routine can be optimized if the array with number of nonZeroRowIndexes is
+     *  also availabe.
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemvSp(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numValuesPerRow,
+        const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
+        const hmemo::HArray<ValueType>& ellValues,
+        const common::MatrixOp op,
+        const hmemo::HArray<IndexType>& nonZeroRowIndexes,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+
+    /**
      *  @brief Jacobi iteration step with ELL storage
      *
      *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
@@ -238,7 +299,7 @@ public:
      *  @param[in]     localDiagonal pointer to the diagonal of local storage
      *  @param[in]     oldSolution is the old solution vector of halo part
      *  @param[in]     omega is the scaling factor.
-     *  @param[in]     ellIA, ellJA, ellValues are the CSR containers
+     *  @param[in]     ellIA, ellJA, ellValues are the ELL containers
      *  @param[in]     rowIndexes if not empty it contains row indexes of non-empty rows
      */
     template<typename ValueType>

@@ -464,7 +464,7 @@ void DIAStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 template<typename ValueType>
 void DIAStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 {
-    IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
+    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
 
     if ( numDiagonalElements == 0 )
     {
@@ -497,7 +497,7 @@ void DIAStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
+    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
 
     SCAI_ASSERT_EQ_ERROR( diagonal.size(), numDiagonalElements, "serious mismtach for diagonal" )
 
@@ -546,7 +546,12 @@ IndexType DIAStorage<ValueType>::getMainIndex() const
 template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
+    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
+
+    if ( numDiagonalElements == 0 )
+    {
+        return;     // there will be no diagonals available at all
+    }
 
     // find the index for the main diagonal in array mOffsets
 

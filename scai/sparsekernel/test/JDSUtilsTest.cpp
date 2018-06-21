@@ -37,9 +37,7 @@
 
 // others
 #include <scai/kregistry.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel.hpp>
-#include <scai/sparsekernel/JDSKernelTrait.hpp>
 #include <scai/sparsekernel/JDSUtils.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/sparsekernel/test/TestMacros.hpp>
@@ -77,49 +75,23 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr loc         = testContext;
 
-    LAMAKernel<JDSKernelTrait::getRow<ValueType> > getRow;
-    getRow.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-
-    ValueType valuesValues[] =
-    { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
-    const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
-    IndexType valuesJa[] =
-    { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 };
-    const IndexType nJa = sizeof( valuesJa ) / sizeof( IndexType );
-    IndexType valuesDlg[] =
-    { 3, 3, 3, 3, 2, 1 };
-    const IndexType nDlg = sizeof( valuesDlg ) / sizeof( IndexType );
-    IndexType valuesIlg[] =
-    { 6, 5, 4 };
-    const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-    IndexType valuesPerm[] =
-    { 1, 2, 0 };
-    const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
     const IndexType i = 2;
+
     const IndexType numColumns = 16;
-    const IndexType numRows = 3;
-    HArray<ValueType> values( nValues, valuesValues, testContext );
-    HArray<IndexType> ja( nJa, valuesJa, testContext );
-    HArray<IndexType> dlg( nDlg, valuesDlg, testContext );
-    HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
-    HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+
+    HArray<ValueType> values( { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 }, testContext );
+    HArray<IndexType> ja(  { 0, 1, 5, 2, 3, 7, 4, 5, 12, 6, 7, 15, 8, 9, 10 }, testContext );
+    HArray<IndexType> dlg( { 3, 3, 3, 3, 2, 1 }, testContext );
+    HArray<IndexType> ilg( { 6, 5, 4 }, testContext );
+    HArray<IndexType> perm( { 1, 2, 0 }, testContext );
+
     HArray<ValueType> row;
-    ReadAccess<ValueType> rValues( values, loc );
-    ReadAccess<IndexType> rJa( ja, loc );
-    ReadAccess<IndexType> rDlg( dlg, loc );
-    ReadAccess<IndexType> rIlg( ilg, loc );
-    ReadAccess<IndexType> rPerm( perm, loc );
-    {
-        WriteOnlyAccess<ValueType> wRow( row, loc, numColumns );
-        SCAI_CONTEXT_ACCESS( loc );
-        getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), rValues.get() );
-    }
+
+    JDSUtils::getRow( row, numColumns, i, ilg, dlg, perm, ja, values, testContext );
 
     std::vector<ValueType> expectedValues( { 0, 7, 0, 8, 0, 9, 0, 10, 0, 11, 0, 0, 0, 0, 0, 0 } );
+
     BOOST_TEST( hostReadAccess( row ) == expectedValues, per_element() );
 }
 
@@ -127,15 +99,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE( getRowPositionsTest )
 {
-    typedef DefaultReal ValueType;
-
     ContextPtr testContext = ContextFix::testContext;
 
-    LAMAKernel<JDSKernelTrait::getRowPositions> getRowPositions;
-
-    ContextPtr loc = testContext;
-
-    getRowPositions.getSupportedContext( loc );
+    typedef DefaultReal ValueType;
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -151,18 +117,13 @@ BOOST_AUTO_TEST_CASE( getRowPositionsTest )
 
     HArray<IndexType> pos;
 
-    ReadAccess<IndexType> rDlg( jdsDLG, loc );
-    ReadAccess<IndexType> rIlg( jdsILG, loc );
-    ReadAccess<IndexType> rPerm( jdsPerm, loc );
-    WriteOnlyAccess<IndexType> wPos( pos, loc, numColumns );
-
-    SCAI_CONTEXT_ACCESS( loc );
-
     IndexType n = 0;    // count number of entries
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        n += getRowPositions[loc]( wPos.get(), i, numRows, rIlg.get(), rDlg.get(), rPerm.get() );
+        JDSUtils::getRowPositions( pos, jdsILG, jdsDLG, jdsPerm, i, testContext );
+
+        n += pos.size();
     }
 
     BOOST_CHECK_EQUAL( jdsJA.size(), n );
@@ -173,12 +134,6 @@ BOOST_AUTO_TEST_CASE( getRowPositionsTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-
-    LAMAKernel<JDSKernelTrait::setRow<ValueType> > setRow;
-    LAMAKernel<JDSKernelTrait::getRow<ValueType> > getRow;
-
-    ContextPtr loc = testContext;
-    getRow.getSupportedContext( loc, setRow );
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -194,22 +149,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
     HArray<ValueType> row;
 
+    auto op = common::BinaryOp::SUB;
+
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        WriteAccess<ValueType> wValues( jdsValues, loc );
-        ReadAccess<IndexType> rJa( jdsJA, loc );
-        ReadAccess<IndexType> rDlg( jdsDLG, loc );
-        ReadAccess<IndexType> rIlg( jdsILG, loc );
-        ReadAccess<IndexType> rPerm( jdsPerm, loc );
-
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteOnlyAccess<ValueType> wRow( row, loc, numColumns );
-
-        common::BinaryOp op = common::BinaryOp::SUB;
-
-        getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wValues.get() );
-        setRow[loc]( wValues.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wRow.get(), op );
+        JDSUtils::getRow( row, numColumns, i, jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, testContext );
+        JDSUtils::setRow( jdsValues, i, row, jdsILG, jdsDLG, jdsPerm, jdsJA, op, testContext );
     }
 
     // Now all values should be zero
@@ -513,15 +458,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertCSRTest, ValueType, scai_numeric_test_type
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    ContextPtr loc = testContext;
-
-    normalGEMV.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -540,17 +476,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( jdsDLG.size(), numDiagonals, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( jdsJA.size(), jdsValues.size(), "size mismatch" )
 
-    const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
-    const ValueType x_values[]   = { 3, -3, 2, -2 };
+    HArray<ValueType> x( { 3, -3, 2, -2 }, testContext );
+    HArray<ValueType> y( { 1, -1, 2, -2, 1, 1, -1 }, testContext );
 
-    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
-    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
-
-    HArray<ValueType> x( numColumns, x_values, testContext );
-    HArray<ValueType> y( numRows, y_values, testContext );
+    SCAI_ASSERT_EQ_ERROR( numColumns, x.size(), "illegal array x for gemv" );
+    SCAI_ASSERT_EQ_ERROR( numRows, y.size(), "illegal array y for gemv" );
 
     // use different alpha and beta values as kernels might be optimized for it
 
@@ -570,29 +500,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * JDS * x + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y
                        << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
-        {
-            std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
-            SCAI_ASYNCHRONOUS( syncToken.get() );
+        bool async = false;
 
-            SCAI_CONTEXT_ACCESS( loc );
+        auto op = common::MatrixOp::NORMAL;
 
-            ReadAccess<IndexType> rPerm( jdsPerm, loc );
-            ReadAccess<IndexType> rDLG( jdsDLG, loc );
-            ReadAccess<IndexType> rILG( jdsILG, loc );
-            ReadAccess<IndexType> rJA( jdsJA, loc );
-            ReadAccess<ValueType> rValues( jdsValues, loc );
-
-            ReadAccess<ValueType> rX( x, loc );
-            ReadAccess<ValueType> rY( y, loc );
-            WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
-
-            auto op = common::MatrixOp::NORMAL;
-
-            normalGEMV[loc]( wResult.get(),
-                             alpha, rX.get(), beta, rY.get(),
-                             numRows, numColumns, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get(), op );
-        }
+        JDSUtils::gemv( res, alpha, x, beta, y, numRows, numColumns, 
+                        jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, op, async, testContext );
 
         // compare against mv product of dense matrix
 
@@ -609,15 +523,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
     // JDS has no own sparse routine, also done with normalGEMV, beta = 1, y = res
 
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    ContextPtr loc = testContext;
-
-    normalGEMV.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -658,24 +563,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * JDS * x + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y
                        << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
-        {
-            SCAI_CONTEXT_ACCESS( loc );
 
-            ReadAccess<IndexType> rPerm( jdsPerm, loc );
-            ReadAccess<IndexType> rDLG( jdsDLG, loc );
-            ReadAccess<IndexType> rILG( jdsILG, loc );
-            ReadAccess<IndexType> rJA( jdsJA, loc );
-            ReadAccess<ValueType> rValues( jdsValues, loc );
+        bool async = false;
 
-            ReadAccess<ValueType> rX( x, loc );
-            WriteAccess<ValueType> wResult( res, loc, numRows );
+        auto op = common::MatrixOp::NORMAL;
 
-            auto op = common::MatrixOp::NORMAL;
-
-            normalGEMV[loc]( wResult.get(),
-                             alpha, rX.get(), beta, wResult.get(),
-                             numRows, numColumns, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get(), op );
-        }
+        JDSUtils::gemv( res, alpha, x, beta, y, numRows, numColumns, 
+                        jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, op, async, testContext );
 
         // compare against mv product of dense matrix
 
@@ -690,15 +584,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTransposeTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
-    ContextPtr hostContext = Context::getHostPtr();
-
-    static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    ContextPtr loc = testContext;
-
-    normalGEMV.getSupportedContext( loc );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
     HArray<IndexType> jdsPerm( testContext );
     HArray<IndexType> jdsILG( testContext );
@@ -739,30 +624,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTransposeTest, ValueType, scai_numeric_test_t
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * JDS + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y
                        << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
-        {
-            std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
-            SCAI_ASYNCHRONOUS( syncToken.get() );
 
-            SCAI_CONTEXT_ACCESS( loc );
+        bool async = false;
 
-            ReadAccess<IndexType> rPerm( jdsPerm, loc );
-            ReadAccess<IndexType> rDLG( jdsDLG, loc );
-            ReadAccess<IndexType> rILG( jdsILG, loc );
-            ReadAccess<IndexType> rJA( jdsJA, loc );
-            ReadAccess<ValueType> rValues( jdsValues, loc );
+        auto op = common::MatrixOp::TRANSPOSE;
 
-            ReadAccess<ValueType> rX( x, loc );
-            ReadAccess<ValueType> rY( y, loc );
-            WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
-
-            auto op = common::MatrixOp::TRANSPOSE;
-
-            normalGEMV[loc]( wResult.get(),
-                             alpha, rX.get(), beta, rY.get(),
-                             numRows, numColumns, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get(), op );
-
-            // implicit synchronizsation at end of this scope
-        }
+        JDSUtils::gemv( res, alpha, x, beta, y, numRows, numColumns, 
+                        jdsILG, jdsDLG, jdsPerm, jdsJA, jdsValues, op, async, testContext );
 
         // compare against gevm product of dense matrix
 
@@ -823,6 +691,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
         if ( maxDiff >= eps )
         {   
             // compare the individual values to see what went wrong
+
             BOOST_TEST( hostReadAccess( expSolution ) == hostReadAccess( newSolution ), per_element() );
         }
     }

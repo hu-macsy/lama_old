@@ -38,9 +38,7 @@
 // others
 #include <scai/hmemo.hpp>
 #include <scai/kregistry/KernelContextFunction.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel.hpp>
-#include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>

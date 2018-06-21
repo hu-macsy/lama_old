@@ -262,31 +262,23 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( getNumRows() + 1, mIA.size() )
     SCAI_ASSERT_EQ_ERROR( mJA.size(), mValues.size(), "serious mistmach for sizes of csrJa and csrValues" )
+
     // check ascending values in offset array mIA
-    {
-        static LAMAKernel<UtilKernelTrait::isSorted<IndexType> > isSorted;
-        static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
-        ContextPtr loc = this->getContextPtr();
-        isSorted.getSupportedContext( loc, getValue );
-        ReadAccess<IndexType> csrIA( mIA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        IndexType numValues = getValue[ loc ]( csrIA.get(), getNumRows() );
-        SCAI_ASSERT_EQ_ERROR( numValues, mJA.size(),
-                              "ia[" << getNumRows() << "] = " << numValues << ", msg = " << msg )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( csrIA.get(), getNumRows() + 1, CompareOp::LE ),
-                           *this << " @ " << msg << ": IA is illegal offset array" )
-    }
+
+    IndexType numRows = getNumRows();
+    IndexType numValues = mIA[ numRows ];
+    SCAI_ASSERT_EQ_ERROR( numValues, mJA.size(), "mIA[" << numRows) << "] = " << numValues << ", msg = " << msg )
+
+    // check ascending values in offset array mIA
+
+    bool isSorted = HArrayUtils::isSorted( mIA, CompareOp::LE, getContextPtr() );
+    SCAI_ASSERT_ERROR( isSorted, "IA is illegal offset array, not ascending weakly" )
+
     // check column indexes in JA
-    {
-        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
-        ContextPtr loc = this->getContextPtr();
-        validIndexes.getSupportedContext( loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_ERROR( validIndexes[loc]( rJA.get(), mJA.size(), getNumColumns() ),
-                           *this << " @ " << msg << ": illegel indexes in JA" )
-    }
+
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mJA, getNumColumns() ), "mJA contains illegal indexes" )
 }
+
 #endif
 
 /* --------------------------------------------------------------------------- */

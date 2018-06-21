@@ -925,7 +925,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
 
     for ( IndexType dim = 0; dim < 2; ++dim )
     {
-        HArray<ValueType> computedRes( testContext );
+        // IMPORTANT: result array must already be set before
+
+        IndexType nSize = dim == 0 ? numRows : numColumns ;
+
+        HArray<ValueType> computedRes( nSize, ValueType( 0 ), testContext );
 
         CSRUtils::reduce( computedRes, numRows, numColumns, csrIA, csrJA, csrValues,
                           dim, common::BinaryOp::ADD, common::UnaryOp::COPY, testContext );

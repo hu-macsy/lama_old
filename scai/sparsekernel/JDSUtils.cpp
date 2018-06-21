@@ -114,7 +114,7 @@ void JDSUtils::convertJDS2CSR(
     HArray<IndexType> jdsInvPerm; 
     HArrayUtils::inversePerm( jdsInvPerm, jdsPerm, prefLoc);
 
-    static LAMAKernel<JDSKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
+    static LAMAKernel<JDSKernelTrait::getCSRValues<ValueType>> getCSRValues;
 
     ContextPtr loc = prefLoc;
 
@@ -173,7 +173,7 @@ void JDSUtils::convertCSR2JDS(
 
     IndexType numDiagonals = jdsDlg.size();
 
-    static LAMAKernel<JDSKernelTrait::setCSRValues<ValueType, ValueType> > setCSRValues;
+    static LAMAKernel<JDSKernelTrait::setCSRValues<ValueType>> setCSRValues;
 
     ContextPtr loc = prefLoc;
     setCSRValues.getSupportedContext( loc );
@@ -370,6 +370,125 @@ void JDSUtils::getColumnPositions(
 
     wRowIndexes.resize( cnt );
     wValuePos.resize( cnt );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void JDSUtils::getRowPositions(
+    HArray<IndexType>& positions,
+    const HArray<IndexType>& jdsILG,
+    const HArray<IndexType>& jdsDLG,
+    const HArray<IndexType>& jdsPerm,
+    const IndexType i,
+    const ContextPtr prefLoc )
+{
+    SCAI_REGION( "Sparse.JDS.getColPos" )
+
+    SCAI_ASSERT_EQ_DEBUG( jdsILG.size(), jdsPerm.size(), "jds ilg and perm have inconsistent sizes" )
+
+    const IndexType numRows = jdsILG.size();
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, numRows, "row index out of range" )
+
+    const IndexType numDiagonals = jdsDLG.size();  // maximal entries in one row
+
+    static LAMAKernel<JDSKernelTrait::getRowPositions> getRowPositions;
+
+    ContextPtr loc = prefLoc;
+
+    getRowPositions.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteOnlyAccess<IndexType> wPositions( positions, loc, numDiagonals );
+
+    ReadAccess<IndexType> rIlg( jdsILG, loc );
+    ReadAccess<IndexType> rDlg( jdsDLG, loc );
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+
+    IndexType cnt = getRowPositions[loc]( wPositions.get(), i, numRows,
+                                          rIlg.get(), rDlg.get(), rPerm.get() );
+
+    SCAI_ASSERT_LE_DEBUG( cnt, numDiagonals, "serious error: inconsistent JDS" )
+
+    wPositions.resize( cnt );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void JDSUtils::setRow(
+    HArray<ValueType>& jdsValues,
+    const IndexType i,
+    const HArray<ValueType>& row,
+    const HArray<IndexType>& jdsIlg,
+    const HArray<IndexType>& jdsDlg,
+    const HArray<IndexType>& jdsPerm,
+    const HArray<IndexType>& jdsJA,
+    const common::BinaryOp op,
+    ContextPtr prefLoc )
+{
+    const IndexType numColumns = row.size();
+    const IndexType numRows = jdsIlg.size();
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, numRows, "row index out of range" )
+
+    SCAI_LOG_INFO( logger, "setRowImpl( i = " << i << " )" )
+
+    static LAMAKernel<JDSKernelTrait::setRow<ValueType> > setRow;
+
+    ContextPtr loc = prefLoc;
+
+    setRow.getSupportedContext( loc );
+
+    ReadAccess<IndexType> rIlg( jdsIlg, loc );
+    ReadAccess<IndexType> rDlg( jdsDlg, loc );
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+    ReadAccess<IndexType> rJA( jdsJA, loc );
+    WriteAccess<ValueType> wValues( jdsValues, loc );
+    ReadAccess<ValueType> rRow( row, loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    setRow[loc]( wValues.get(), i, numColumns, numRows, 
+                 rPerm.get(), rIlg.get(), rDlg.get(), rJA.get(), rRow.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void JDSUtils::getRow(
+    HArray<ValueType>& row,
+    const IndexType numColumns,
+    const IndexType i,
+    const HArray<IndexType>& jdsIlg,
+    const HArray<IndexType>& jdsDlg,
+    const HArray<IndexType>& jdsPerm,
+    const HArray<IndexType>& jdsJA,
+    const HArray<ValueType>& jdsValues,
+    ContextPtr prefLoc )
+{   
+    const IndexType numRows = jdsIlg.size();
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, numRows, "row index out of range" )
+    
+    SCAI_LOG_INFO( logger, "setRowImpl( i = " << i << " )" )
+    
+    static LAMAKernel<JDSKernelTrait::getRow<ValueType> > getRow;
+    
+    ContextPtr loc = prefLoc;
+
+    getRow.getSupportedContext( loc );
+    
+    ReadAccess<IndexType> rIlg( jdsIlg, loc );
+    ReadAccess<IndexType> rDlg( jdsDlg, loc );
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+    ReadAccess<IndexType> rJA( jdsJA, loc );
+    ReadAccess<ValueType> rValues( jdsValues, loc );
+
+    WriteOnlyAccess<ValueType> wRow( row, loc, numColumns );
+
+    SCAI_CONTEXT_ACCESS( loc ) 
+
+    getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJA.get(), rValues.get() );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -736,6 +855,28 @@ void JDSUtils::setRows(
         const HArray<IndexType>&,                    \
         const HArray<IndexType>&,                    \
         const HArray<ValueType>&,                    \
+        ContextPtr );                                \
+                                                     \
+    template void JDSUtils::getRow(                  \
+        HArray<ValueType>&,                          \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<ValueType>&,                    \
+        ContextPtr );                                \
+                                                     \
+    template void JDSUtils::setRow(                  \
+        HArray<ValueType>&,                          \
+        const IndexType,                             \
+        const HArray<ValueType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const common::BinaryOp,                      \
         ContextPtr );                                \
                                                      \
     template tasking::SyncToken* JDSUtils::gemv(     \
