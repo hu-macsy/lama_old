@@ -267,7 +267,7 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 
     IndexType numRows = getNumRows();
     IndexType numValues = mIA[ numRows ];
-    SCAI_ASSERT_EQ_ERROR( numValues, mJA.size(), "mIA[" << numRows) << "] = " << numValues << ", msg = " << msg )
+    SCAI_ASSERT_EQ_ERROR( numValues, mJA.size(), "mIA[" << numRows << "] = " << numValues << ", msg = " << msg )
 
     // check ascending values in offset array mIA
 

@@ -923,13 +923,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
 
     data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 
+    ValueType initVal = 5;
+
     for ( IndexType dim = 0; dim < 2; ++dim )
     {
         // IMPORTANT: result array must already be set before
 
         IndexType nSize = dim == 0 ? numRows : numColumns ;
 
-        HArray<ValueType> computedRes( nSize, ValueType( 0 ), testContext );
+        HArray<ValueType> computedRes( nSize, initVal, testContext );
+
+        // be careful, reduce updates its target array
 
         CSRUtils::reduce( computedRes, numRows, numColumns, csrIA, csrJA, csrValues,
                           dim, common::BinaryOp::ADD, common::UnaryOp::COPY, testContext );
@@ -937,6 +941,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> expectedRes;
 
         data1::getReduceResult( expectedRes, dim );  // assumes ADD, SQR
+
+        HArrayUtils::compute( expectedRes, expectedRes, common::BinaryOp::ADD, initVal );
     
         BOOST_TEST( hostReadAccess( computedRes ) == hostReadAccess( expectedRes ), per_element() );
     }
