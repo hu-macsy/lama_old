@@ -1112,7 +1112,16 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
 
     bool async = true;  // call will return valid SyncToken
 
-    return ELLUtils::jacobi( solution, omega, oldSolution, rhs, mIA, mJA, mValues, async, getContextPtr() );
+    SyncToken* token = ELLUtils::jacobi( solution, omega, oldSolution, rhs, mIA, mJA, mValues, async, getContextPtr() );
+
+    if ( token == NULL )
+    {
+        // there was no asynchronous execution at all
+
+        token = new NoSyncToken();
+    }
+ 
+    return token;
 }
 
 /* --------------------------------------------------------------------------- */

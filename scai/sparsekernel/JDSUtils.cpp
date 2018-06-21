@@ -76,7 +76,7 @@ void JDSUtils::buildRowSizes(
 
     rowSizes.resize( numRows );             // no initialization required
 
-    HArrayUtils::setSameValue( rowSizes, numRows, 0, prefLoc );
+    HArrayUtils::setSameValue<IndexType>( rowSizes, numRows, 0, prefLoc );
 
     HArrayUtils::scatter( rowSizes, jdsPerm, true, jdsIlg, common::BinaryOp::COPY, prefLoc );
 }
