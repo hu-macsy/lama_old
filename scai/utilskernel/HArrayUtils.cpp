@@ -766,13 +766,19 @@ ValueType HArrayUtils::reduce(
     const BinaryOp redOp,
     const ContextPtr prefLoc )
 {
+    ValueType zero = common::zeroBinary<ValueType>( redOp );
+
+    if ( array.size() == 0 )
+    {
+        return zero;    // avoid overhead
+    }
+
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
     // preferred location: where valid values of the array are available
     ContextPtr loc = array.getValidContext( prefLoc );
     reduce.getSupportedContext( loc );
     ReadAccess<ValueType> readArray( array, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType zero = common::zeroBinary<ValueType>( redOp );
     ValueType redVal = reduce[loc]( readArray.get(), readArray.size(), zero, redOp );
     return redVal;
 }

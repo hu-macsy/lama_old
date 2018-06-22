@@ -51,28 +51,6 @@ public:
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-/** Compute the discrete fourier transform of an array using the FFT algorithm
- *
- *  @param[out] result is the result array
- *  @param[in]  x  is the input array
- *  @param[in]  n  padding length (n > x.size()) or truncate length , optional
- *  @param[in]  direction must be either 1 (forward) or -1 (backward, inverse)
- *  @param[in]  ctx preferred context for execution   
- */
-template<typename ValueType>
-static void fft1D( 
-    hmemo::HArray<common::Complex<RealType<ValueType>>>& out, 
-    const hmemo::HArray<ValueType>& in,
-    const IndexType n,
-    const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
-
-template<typename ValueType>
-static void ifft1D( 
-    hmemo::HArray<ValueType>& out, 
-    const hmemo::HArray<common::Complex<RealType<ValueType>>>& in, 
-    const IndexType n,
-    const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
-
 /** Compute the discrete fourier transform multiple vectors using the FFT algorithm
  *
  *  @param[out] result is the result array, size will be many * n

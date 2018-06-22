@@ -45,6 +45,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/MatrixOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 #include <utility>
@@ -151,15 +152,16 @@ private:
         const IndexType ellJA[],
         const IndexType numValuesPerRow );
 
-    /** Implementation for ELLKernelTrait::scaleRows */
+    /** Implementation for ELLKernelTrait::setRows */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType ellValues[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
-        const ValueType values[] );
+        const ValueType values[],
+        const common::BinaryOp op );
 
     /** Implementation for ELLKernelTrait::compressIA */
 
@@ -189,16 +191,16 @@ private:
 
     /** Implementation for ELLKernelTrait::getCSRValues */
 
-    template<typename ELLValueType, typename CSRValueType>
+    template<typename ValueType>
     static void getCSRValues(
         IndexType csrJA[],
-        CSRValueType csrValues[],
+        ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
         const IndexType ellJA[],
-        const ELLValueType ellValues[] );
+        const ValueType ellValues[] );
 
     template<typename ValueType>
     static void fillELLValues(
@@ -210,16 +212,16 @@ private:
 
     /** Implementation for ELLKernelTrait::setCSRValues */
 
-    template<typename ELLValueType, typename CSRValueType>
+    template<typename ValueType>
     static void setCSRValues(
         IndexType ellJA[],
-        ELLValueType ellValues[],
+        ValueType ellValues[],
         const IndexType ellSizes[],
         const IndexType numRows,
         const IndexType numValuesPerRow,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const CSRValueType csrValues[] );
+        const ValueType csrValues[] );
 
     /** Implementation for ELLKernelTrait::matrixMultiplySizes */
 
@@ -374,18 +376,6 @@ private:
 
     template<typename ValueType>
     struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
     {
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };

@@ -46,6 +46,7 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/MatrixOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 #include <cuda_runtime_api.h>
 
@@ -103,14 +104,15 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::Mult::scaleRows  */
+    /** Implementation for CSRKernelTrait::setRows  */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const ValueType values[] );
+        const ValueType values[], 
+        common::BinaryOp op );
 
     /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
 

@@ -359,6 +359,23 @@ DistObjType distribute( const GlobalObjType& input, dmemo::DistributionPtr dist,
     return obj;
 }
 
+/**
+ *  @brief Resize is nearly the same as distribute but here the new distributon might have a different global size
+ *
+ *  Note: The input vector might be either truncated or filled up with zero.
+ */
+template<typename DistObjType, typename GlobalObjType>
+DistObjType resize( 
+    const GlobalObjType& input, 
+    dmemo::DistributionPtr dist, 
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DistObjType obj( ctx );
+    obj.assign( input );
+    obj.resize( dist );
+    return obj;
+}
+
 /** 
  *  @brief Function that (re-)distributes a global matrix/storage 
  * 
@@ -400,6 +417,25 @@ DistObjType distribute(
     return obj;
 }
 
+/**
+ *  @brief Make a copy of an existing storage/matrix and resize it with new distributions.
+ */
+template<typename DistObjType, typename GlobalObjType>
+DistObjType resize( 
+    const GlobalObjType& input, 
+    dmemo::DistributionPtr rowDist, 
+    dmemo::DistributionPtr colDist, 
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DistObjType obj( ctx );
+    obj.assign( input );
+    obj.resize( rowDist, colDist );
+    return obj;
+}
+
+/** 
+ *  @brief Function that returns a matrix where only the diagonal is set.
+ */
 template<typename MatrixType, typename ArrayType>
 MatrixType diagonal(
     const ArrayType& diag,

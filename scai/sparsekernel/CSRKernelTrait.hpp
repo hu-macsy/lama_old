@@ -616,7 +616,7 @@ struct CSRKernelTrait
     /** Define structure for multiplication routines.  */
 
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
         /** This operation multiplies each row with an own value.
          *
@@ -624,6 +624,7 @@ struct CSRKernelTrait
          *  @param[in]     csrIA offset array to identify which elements of csrValues belong to which row
          *  @param[in]     numRows number of rows in matrix and also size of values
          *  @param[in]     values array with element for each row used for scaling
+         *  @param[in]     op specfies how each element is updated with row value
          *
          *  csr[i,j] *= values[i], for i = 0, ..., numRows-1
          *
@@ -632,11 +633,12 @@ struct CSRKernelTrait
             ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
-            const ValueType values[] );
+            const ValueType values[],
+            common::BinaryOp op );
 
         static const char* getId()
         {
-            return "CSR.scaleRows";
+            return "CSR.setRows";
         }
     };
 
@@ -654,7 +656,7 @@ struct CSRKernelTrait
          *  @returns maximal value of absolute difference between two matrix elements
          */
 
-        typedef ValueType ( *FuncType ) (
+        typedef RealType<ValueType> ( *FuncType ) (
             IndexType numRows,
             bool sortedRows,
             const IndexType csrIA1[],
@@ -784,14 +786,12 @@ struct CSRKernelTrait
     {
         /**  This method computes result = alpha * CSR * x + beta * y  with dense result, x, y
          *
-         *   @param[out] result  has size m x n
+         *   @param[out] result  has size numRows x k
          *   @param[in]  alpha scaling factor
-         *   @param[in]  x has size p x n
+         *   @param[in]  x has size numColumns x k 
          *   @param[in]  beta scaling factor
-         *   @param[in]  y has size m x n
-         *   @param[in]  csrIA offset array of CSR matrix, has size m + 1
-         *   @param[in]  csrJA has size csrIA[m], values between 0 and p-1
-         *   @param[in]  csrVaues is value array of CSR matrix
+         *   @param[in]  y has size numRows x k
+         *   @param[in]  csrIA, csrJA, csrValues are sparse matrix storage of numRows x numColumns
          */
 
         typedef void ( *FuncType ) (
@@ -800,12 +800,13 @@ struct CSRKernelTrait
             const ValueType x[],
             const ValueType beta,
             const ValueType y[],
-            const IndexType m,
-            const IndexType n,
-            const IndexType p,
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType k,
             const IndexType csrIA[],
             const IndexType csrJA[],
-            const ValueType csrValues[] );
+            const ValueType csrValues[],
+            const common::MatrixOp op );
 
         static const char* getId()
         {

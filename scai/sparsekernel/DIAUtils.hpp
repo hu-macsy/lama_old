@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Utility functions for dense storage data
+ * @brief Utility functions for the DIAGONAL storage format.
  * @author Thomas Brandes
  * @date 28.05.2018
  */
@@ -39,8 +39,11 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -52,13 +55,23 @@ namespace sparsekernel
 
 typedef IndexType OffsetType;
 
+/**
+ *  This class provides a lot of utility functions regarding the DIA storage format
+ *  that contains the following arrays:
+ *
+ *   - array offset contains the offsets for the stored diagonals, its size stands for 
+ *     the number of diagonals.
+ *   - array values contains the entries for the stored diagonals. Therefore it is a
+ *     two-dimensional array, the diagonals are stored column-wise.
+ *
+ *   An entry values( i, d )  stands for entry ( i, i + offsets[d] ) in the matrix.
+ */
 class COMMON_DLL_IMPORTEXPORT DIAUtils
 {
 public:
 
     /** 
      *  @brief Conversion of DIA storage data to the CSR storage format.
-     *
      */
     template<typename ValueType>
     static void convertDIA2CSR( 
@@ -71,6 +84,9 @@ public:
         const hmemo::HArray<ValueType>& diaValues,
         hmemo::ContextPtr loc );
 
+    /** 
+     *  @brief Get the number of non-zero entries for each row
+     */
     template<typename ValueType>
     static void getCSRSizes( 
         hmemo::HArray<IndexType>& csrIA, 
@@ -106,6 +122,113 @@ public:
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::HArray<ValueType>& csrValues,
         hmemo::ContextPtr );
+
+    /**
+     *  @brief Get the position for the matrix entry (i, j) in the values array.
+     */
+    static IndexType getValuePos(
+        const IndexType i,
+        const IndexType j,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<OffsetType>& diaOffset,
+        hmemo::ContextPtr );
+
+    /**
+     *  @brief Get the positions for the matrix row (i, : ) 
+     * 
+     *  @param[out] indexes contains all column indexes j where entry (i, j ) is available
+     *  @param[out] positions contains the positions in values array where to find the matrix value
+     *  @param[in]  i is the index of the row for which positions are required
+     *  @param[in]  numRows is the number of row for the storage
+     *  @param[in]  numColumns is the number of columns for the storage
+     *  @param[in]  diaOffset are the offsets of the available diagonals
+     *  @param[in]  prefLoc specifies context where operation should be done
+     */
+    static void getRowPositions(
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::HArray<IndexType>& positions,
+        const IndexType i,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<OffsetType>& diaOffset,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Get the positions for the matrix columns (:, j ) 
+     * 
+     *  @param[out] indexes contains all row indexes i where entry (i, j ) is available
+     *  @param[out] positions contains the positions in values array where to find the matrix value
+     *  @param[in]  j is the index of the columns for which positions are required
+     *  @param[in]  numRows is the number of row for the storage
+     *  @param[in]  numColumns is the number of columns for the storage
+     *  @param[in]  diaOffset are the offsets of the available diagonals
+     *  @param[in]  prefLoc specifies context where operation should be done
+     */
+    static void getColPositions(
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::HArray<IndexType>& positions,
+        const IndexType j,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<OffsetType>& diaOffset,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Jacobi iteration step with DIA storage
+     *
+     *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+     */
+    template<typename ValueType>
+    static void jacobi(
+        hmemo::HArray<ValueType>& solution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const IndexType n,
+        const hmemo::HArray<OffsetType>& diaOffset,
+        const hmemo::HArray<ValueType>& diaValues,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Jacobi halo iteration step with DIA storage
+     *
+     *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+     */
+    template<typename ValueType>
+    static void jacobiHalo(
+        hmemo::HArray<ValueType>& solution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& diagonal,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<OffsetType>& diaOffset,
+        const hmemo::HArray<ValueType>& diaValues,
+        hmemo::ContextPtr prefLoc );
+
+    template<typename ValueType>
+    static RealType<ValueType> maxNorm(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<OffsetType>& diaOffset,
+        const hmemo::HArray<ValueType>& diaValues,
+        hmemo::ContextPtr prefLoc );
+
+    template<typename ValueType>
+    static tasking::SyncToken* gemv(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<OffsetType>& diaOffset,
+        const hmemo::HArray<ValueType>& diaValues,
+        const common::MatrixOp op,
+        bool async,
+        hmemo::ContextPtr prefLoc );
 
 private:
 

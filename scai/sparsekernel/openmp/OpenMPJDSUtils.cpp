@@ -335,15 +335,16 @@ IndexType OpenMPJDSUtils::getRowPositions(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void OpenMPJDSUtils::scaleRows(
+void OpenMPJDSUtils::setRows(
     ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    const ValueType rowValues[] )
+    const ValueType rowValues[],
+    const common::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "scaleRows with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "setRows with numRows = " << numRows )
 
     // Due to false sharing, use of OpenMP is not recommended here
 
@@ -355,7 +356,7 @@ void OpenMPJDSUtils::scaleRows(
 
         for ( IndexType jj = 0; jj < ilg[i]; jj++ )
         {
-            jdsValues[offset] *= rowScale;
+            jdsValues[offset] = common::applyBinary( jdsValues[offset], op, rowScale );
             offset += dlg[jj];
         }
     }
@@ -416,20 +417,20 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename JDSValueType, typename CSRValueType>
+template<typename ValueType>
 void OpenMPJDSUtils::getCSRValues(
     IndexType csrJA[],
-    CSRValueType csrValues[],
+    ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType jdsInversePerm[],
     const IndexType jdsILG[],
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const JDSValueType jdsValues[] )
+    const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "get CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.getCSR" )
@@ -445,7 +446,7 @@ void OpenMPJDSUtils::getCSRValues(
             for ( IndexType jj = 0; jj < numValuesInRow; jj++ )
             {
                 csrJA[offset + jj] = jdsJA[jdsOffset];
-                csrValues[offset + jj] = static_cast<CSRValueType>( jdsValues[jdsOffset] );
+                csrValues[offset + jj] = jdsValues[jdsOffset];
                 jdsOffset += jdsDLG[jj];
             }
         }
@@ -454,10 +455,10 @@ void OpenMPJDSUtils::getCSRValues(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename JDSValueType, typename CSRValueType>
+template<typename ValueType>
 void OpenMPJDSUtils::setCSRValues(
     IndexType jdsJA[],
-    JDSValueType jdsValues[],
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
@@ -465,11 +466,13 @@ void OpenMPJDSUtils::setCSRValues(
     const IndexType jdsDLG[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const CSRValueType csrValues[] )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "set CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+
     // parallelization possible as offset array csrIA is available
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.setCSR" )
@@ -483,7 +486,7 @@ void OpenMPJDSUtils::setCSRValues(
             for ( IndexType jdsJJ = 0, csrJJ = csrIA[i]; jdsJJ < jdsILG[ii]; jdsJJ++, csrJJ++ )
             {
                 jdsJA[offset] = csrJA[csrJJ];
-                jdsValues[offset] = static_cast<JDSValueType>( csrValues[csrJJ] );
+                jdsValues[offset] = csrValues[csrJJ];
                 offset += jdsDLG[jdsJJ]; // index for next value of the row
             }
         }
@@ -603,7 +606,7 @@ void OpenMPJDSUtils::jacobi(
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
-    const IndexType SCAI_UNUSED( jdsNumDiagonals ),
+    const IndexType jdsNumDiagonals,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
@@ -613,11 +616,18 @@ void OpenMPJDSUtils::jacobi(
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken != NULL )
     {
-        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        // run this method with exactly this arguments by an own thread
+
+        syncToken->run( std::bind( jacobi<ValueType>,
+                                   solution, numRows, 
+                                   jdsPerm, jdsILG, jdsNumDiagonals, jdsDLG,
+                                   jdsJA, jdsValues, oldSolution, rhs, omega ) );
+        return;
     }
 
     #pragma omp parallel
@@ -751,21 +761,10 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType> >( getRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setRow<ValueType> >( setRow, ctx, flag );
-}
-
-template<typename ValueType, typename OtherValueType>
-void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    common::ContextType ctx = common::ContextType::Host;
-
-    SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -779,7 +778,6 @@ OpenMPJDSUtils::OpenMPJDSUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPJDSUtils::~OpenMPJDSUtils()
@@ -789,7 +787,6 @@ OpenMPJDSUtils::~OpenMPJDSUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

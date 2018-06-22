@@ -40,7 +40,10 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+
+#include <scai/common/UnaryOp.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/MatrixOp.hpp>
 
 namespace scai
 {
@@ -57,7 +60,7 @@ public:
      *
      *  @param[in] csrIA array to check
      *  @param[in] numValues is the total number of non-zeros 
-     *  @param[in] prefLoc specfies the context where to execute it
+     *  @param[in] prefLoc specifies the context where to execute it
      */
     static bool validOffsets(
         const hmemo::HArray<IndexType>& csrIA,
@@ -69,7 +72,7 @@ public:
      *
      *  @param[in]  sizes contains number of entries for each row
      *  @param[out] offsets is the offset array, size will be sizes.size()
-     *  @param[in] prefLoc specfies the context where to execute it
+     *  @param[in] prefLoc specifies the context where to execute it
      * 
      *  \code
      *     HArray<IndexType> sizes( { 2, 5, 7 } );
@@ -105,7 +108,7 @@ public:
      *
      *  @param[out] rowIndexes contains the indexes of non-zero rows
      *  @param[in]  csrIA the CSR row offset array
-     *  @param[in]  threshold builds rowIndexes only if #nonZeroRows/#numRows < threshhold
+     *  @param[in]  threshold builds rowIndexes only if \f$nonZeroRows / numRows < threshhold\f$
      *  @param[in]  prefLoc is the context where operation is executed
      *  @returns the number of non-zero rows, will also be the size of rowIndexes if built
      *
@@ -121,7 +124,7 @@ public:
      *
      *  @param[in,out] csrIA, csrJA, csrValues is the CSR data that is compressed
      *  @param[in] eps a value is considered to be zero if abs( value ) <= eps
-     *  @param[in] prefLoc specficies the context where compression should be done
+     *  @param[in] prefLoc specifies the context where compression should be done
      */  
     template<typename ValueType>
     static void compress( 
@@ -159,7 +162,7 @@ public:
      *  @param[in] ja are the column indexes
      *  @param[in] numRows needed for convenience, same as ia.size() - 1
      *  @param[in] numColumns needed for convenience
-     *  @param[prefLoc] specifies the context where the operation should be executed
+     *  @param[in] prefLoc specifies the context where the operation should be executed
      */
     static bool hasSortedRows(
         const IndexType numRows,
@@ -272,6 +275,19 @@ public:
         const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
 
+    template<typename ValueType>
+    static RealType<ValueType> absMaxDiffVal(
+        const hmemo::HArray<IndexType>& aIA,
+        const hmemo::HArray<IndexType>& aJA,
+        const hmemo::HArray<ValueType>& aValues,
+        const hmemo::HArray<IndexType>& bIA,
+        const hmemo::HArray<IndexType>& bJA,
+        const hmemo::HArray<ValueType>& bValues,
+        const IndexType m,
+        const IndexType n,
+        const bool isSorted,
+        hmemo::ContextPtr prefLoc );
+
     /** 
      *  @brief Check if the CSR data has for each diagonal element an entry.
      *
@@ -379,6 +395,178 @@ public:
         const hmemo::HArray<IndexType>& csrIA,
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::HArray<ValueType>& csrValues,
+        hmemo::ContextPtr prefLoc );
+
+    /** Jacobi iteration step using a halo storage.
+     *
+     *  solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal
+     *
+     *  @param[in,out] localSolution is the solution vector that is updated
+     *  @param[in]     localDiagonal pointer to the diagonal of local storage
+     *  @param[in]     oldSolution is the old solution vector of halo part
+     *  @param[in]     omega is the scaling factor.
+     *  @param[in]     csrIA, csrJA, csrValues are the CSR containers
+     *  @param[in]     rowIndexes if not empty it contains row indexes of non-empty rows
+     *  @param[in]     prefLoc specifies the context where to execute it
+     */
+    template<typename ValueType>
+    static void jacobiHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const hmemo::HArray<IndexType>& rowIndexes,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief matrix-vector multiplication, result = alpha * CSRstorage * x + beta * y
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemv(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const common::MatrixOp op,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief matrix-vector multiplication, result = alpha * CSRstorage * x
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemv0(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const common::MatrixOp op,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief Computes result += alpha * CSRStorage * x
+     *
+     *  This operation touches only elements of result, for which entries are available.
+     *  This routine can be optimized if the array with number of nonZeroRowIndexes is
+     *  also availabe.
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemvSp(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const common::MatrixOp op,
+        const hmemo::HArray<IndexType>& nonZeroRowIndexes,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief matrix-dense multiplication, result = alpha * CSRstorage * x + beta * y
+     *
+     *  result, x, y are now dense matrices.
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemm(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType k,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const common::MatrixOp op,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief matrix-dense multiplication, result = alpha * CSRstorage * x
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemm0(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType k,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const common::MatrixOp op,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  @brief direct solving of csrStorage * x = rhs
+     */
+    template<typename ValueType>
+    static void solve(
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& rhs,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        bool isSymmetric,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     *  Apply reduction to rows or columns of a CSR storage.
+     */
+    template<typename ValueType>
+    static void reduce(
+        hmemo::HArray<ValueType>& result,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const IndexType dim,
+        const common::BinaryOp reduceOp,
+        const common::UnaryOp applyOp,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     * @brief Set/update each row in a CSR storage with an individual value
+     *
+     *  \code
+     *      for all i = 0, ..., n-1; j = 0, ..., m-1
+     *      csrValues( i, j ) = csrValues( i, j ) <op> rowValues( i )
+     *  \endcode
+     */
+    template<typename ValueType>
+    static void setRows(
+        hmemo::HArray<ValueType>& csrValues,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& rowValues,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
 
 private:

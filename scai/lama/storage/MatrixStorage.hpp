@@ -712,11 +712,20 @@ protected:
     MatrixStorage& operator=( MatrixStorage<ValueType>&& other ) = delete;
 
     /** Method that provides move semantic for this base class.
-     *
+     
      *  Note: this method only moves member variables of this base class but
      *        not those of the derived classes.
      */
     void moveImpl( MatrixStorage<ValueType>&& other );
+
+    /** Common routine that checks sizes of matrixTimesVector call */
+
+    void gemvCheck(
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        const common::MatrixOp op ) const;
 
 public:
 

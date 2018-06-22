@@ -41,8 +41,6 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
 
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
-
 #include <scai/utilskernel/LAMAKernel.hpp>
 
 #include <scai/common/TypeTraits.hpp>

@@ -54,6 +54,7 @@ using namespace hmemo;
 
 using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
+using tasking::SyncToken;
 
 namespace sparsekernel
 {
@@ -268,6 +269,295 @@ void DIAUtils::convertCSR2DIA(
 
 /* -------------------------------------------------------------------------- */
 
+IndexType DIAUtils::getValuePos(
+    const IndexType i,
+    const IndexType j,
+    const IndexType numRows,
+    const IndexType,
+    const hmemo::HArray<OffsetType>& diaOffset,
+    hmemo::ContextPtr prefLoc )
+{
+    static LAMAKernel<DIAKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = prefLoc;
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rOffset( diaOffset, loc );
+
+    IndexType numDiagonals = diaOffset.size();
+    IndexType pos = getValuePos[loc]( i, j, numRows, rOffset.get(), numDiagonals );
+
+    return pos;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAUtils::jacobi(
+    hmemo::HArray<ValueType>& solution,
+    const ValueType omega,
+    const hmemo::HArray<ValueType>& oldSolution,
+    const hmemo::HArray<ValueType>& rhs,
+    const IndexType n,
+    const hmemo::HArray<OffsetType>& diaOffset,
+    const hmemo::HArray<ValueType>& diaValues,
+    hmemo::ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQ_DEBUG( n, oldSolution.size(), "size mismatch" )
+    SCAI_ASSERT_EQ_DEBUG( n, rhs.size(), "size mismatch" )
+
+    static LAMAKernel<DIAKernelTrait::jacobi<ValueType> > jacobi;
+
+    const IndexType numDiagonals = diaOffset.size();
+
+    ContextPtr loc = prefLoc;
+    jacobi.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<IndexType> rOffset( diaOffset, loc );
+    ReadAccess<ValueType> rValues( diaValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
+    ReadAccess<ValueType> rRhs( rhs, loc );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, n );
+    jacobi[loc]( wSolution.get(), n, numDiagonals, rOffset.get(), rValues.get(),
+                 rOldSolution.get(), rRhs.get(), omega );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void DIAUtils::getRowPositions(
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::HArray<IndexType>& positions,
+    const IndexType i,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<OffsetType>& diaOffset,
+    hmemo::ContextPtr )
+{
+    IndexType numDiagonals = diaOffset.size();
+
+    // numDiagonals is also maximal number of non-zero entries in a row 
+
+    WriteOnlyAccess<IndexType> wIndexes( indexes, numDiagonals );
+    WriteOnlyAccess<IndexType> wPositions( positions, numDiagonals );
+
+    const ReadAccess<OffsetType> rOffset( diaOffset );
+
+    IndexType cnt = 0;  // count the real number of entries, might be lt numDiagonals 
+
+    for ( IndexType d = 0; d < numDiagonals; ++d )
+    {
+        IndexType j = i + rOffset[d];
+
+        if ( common::Utils::validIndex( j, numColumns ) )
+        {
+            wIndexes[cnt] = j;
+            wPositions[cnt] = d * numRows + i;
+            ++cnt;
+        }
+    }
+
+    wIndexes.resize( cnt );
+    wPositions.resize( cnt );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void DIAUtils::getColPositions(
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::HArray<IndexType>& positions,
+    const IndexType j,
+    const IndexType numRows,
+    const IndexType ,
+    const hmemo::HArray<OffsetType>& diaOffset,
+    hmemo::ContextPtr )
+{
+    IndexType numDiagonals = diaOffset.size();
+    IndexType sizeDiagonal = numRows;
+
+    // numDiagonals is also maximal number of non-zero entries in a column
+
+    WriteOnlyAccess<IndexType> wIndexes( indexes, numDiagonals );
+    WriteOnlyAccess<IndexType> wPositions( positions, numDiagonals );
+    
+    const ReadAccess<IndexType> rOffset( diaOffset );
+
+    IndexType cnt = 0;  // count the real number of entries, might be lt numDiagonals 
+
+    for ( IndexType d = 0; d < numDiagonals; ++d )
+    {
+        IndexType i = j - rOffset[d];
+
+        if ( common::Utils::validIndex( i, numRows ) )
+        {
+            wIndexes[cnt] = i;
+            wPositions[cnt] = d * sizeDiagonal + i;
+            ++cnt;
+        }
+    }
+
+    wIndexes.resize( cnt );
+    wPositions.resize( cnt );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAUtils::jacobiHalo(
+    hmemo::HArray<ValueType>& solution,
+    const ValueType omega,
+    const hmemo::HArray<ValueType>& diagonal,
+    const hmemo::HArray<ValueType>& oldSolution,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<OffsetType>& diaOffset,
+    const hmemo::HArray<ValueType>& diaValues,
+    hmemo::ContextPtr prefLoc )
+{
+    static LAMAKernel<DIAKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
+
+    const IndexType numDiagonals = diaOffset.size();
+
+    ContextPtr loc = prefLoc;
+    jacobiHalo.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<IndexType> rOffset( diaOffset, loc );
+    ReadAccess<ValueType> rValues( diaValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
+    ReadAccess<ValueType> rDiagonal( diagonal, loc );
+    WriteOnlyAccess<ValueType> wSolution( solution, loc, numRows );
+
+    jacobiHalo[loc]( wSolution.get(), rDiagonal.get(),
+                     numRows, numColumns, numDiagonals, 
+                     rOffset.get(), rValues.get(),
+                     rOldSolution.get(), omega );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+RealType<ValueType> DIAUtils::maxNorm(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<OffsetType>& diaOffset,
+    const hmemo::HArray<ValueType>& diaValues,
+    hmemo::ContextPtr prefLoc )
+{
+    IndexType numDiagonals = diaOffset.size();
+
+    static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
+
+    ContextPtr loc = prefLoc;
+
+    absMaxVal.getSupportedContext( loc );
+
+    ReadAccess<IndexType> rOffsets( diaOffset, loc );
+    ReadAccess<ValueType> rValues( diaValues, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    RealType<ValueType> maxval = 
+        absMaxVal[loc]( numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get() );
+
+    return maxval;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* DIAUtils::gemv(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<OffsetType>& diaOffset,
+    const HArray<ValueType>& diaValues,
+    const common::MatrixOp op,
+    bool async,
+    ContextPtr prefLoc )
+{
+    SCAI_REGION( "Storage.DIA.gemv" )
+
+    const IndexType nSource = common::isTranspose( op ) ? numRows : numColumns;
+    const IndexType nTarget = common::isTranspose( op ) ? numColumns : numRows;
+
+    IndexType numDiagonals = diaOffset.size();
+
+    SCAI_ASSERT_EQUAL_ERROR( x.size(), nSource )
+
+    static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = prefLoc;
+
+    normalGEMV.getSupportedContext( loc );
+
+    std::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rOffset( diaOffset, loc );
+    ReadAccess<ValueType> rValues( diaValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+
+    if ( beta != ValueType( 0 ) )
+    {
+        SCAI_ASSERT_EQ_ERROR( y.size(), nTarget, "y has illegal size" )
+
+        ReadAccess<ValueType> rY( y, loc );
+        WriteOnlyAccess<ValueType> wResult( result, loc, nTarget );  // result might be aliased to y
+
+        SCAI_LOG_INFO( logger, "call kernel normalGEMV( beta = " << beta << ", y[" << nTarget << "] = " << rY.get() << " ) on " << *loc )
+
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(),
+                         numRows, numColumns, numDiagonals,
+                         rOffset.get(), rValues.get(), op );
+
+        if ( async )
+        {
+            syncToken->pushRoutine( rY.releaseDelayed() );
+            syncToken->pushRoutine( wResult.releaseDelayed() );
+        }
+    }
+    else
+    {
+        // do not access y at all
+
+        WriteOnlyAccess<ValueType> wResult( result, loc, nTarget );
+
+        SCAI_LOG_INFO( logger, "call kernel normalGEMV( beta is 0 ) on " << *loc )
+
+        normalGEMV[loc]( wResult.get(), alpha, rX.get(), ValueType( 0 ), NULL,
+                         numRows, numColumns, numDiagonals,
+                         rOffset.get(), rValues.get(), op );
+
+        if ( async )
+        {
+            syncToken->pushRoutine( wResult.releaseDelayed() );
+        }
+    }
+
+    if ( async )
+    {
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( rValues.releaseDelayed() );
+        syncToken->pushRoutine( rOffset.releaseDelayed() );
+    }
+
+    return syncToken.release();
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define DENSE_UTILS_SPECIFIER( ValueType )           \
                                                      \
     template void DIAUtils::convertDIA2CSR(          \
@@ -290,6 +580,47 @@ void DIAUtils::convertCSR2DIA(
         const HArray<ValueType>&,                    \
         ContextPtr );                                \
                                                      \
+    template void DIAUtils::jacobi(                  \
+        HArray<ValueType>&,                          \
+        const ValueType,                             \
+        const HArray<ValueType>&,                    \
+        const HArray<ValueType>&,                    \
+        const IndexType,                             \
+        const HArray<OffsetType>&,                   \
+        const HArray<ValueType>&,                    \
+        ContextPtr );                                \
+                                                     \
+    template void DIAUtils::jacobiHalo(              \
+        HArray<ValueType>&,                          \
+        const ValueType,                             \
+        const HArray<ValueType>&,                    \
+        const HArray<ValueType>&,                    \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<OffsetType>&,                   \
+        const HArray<ValueType>&,                    \
+        ContextPtr );                                \
+                                                     \
+    template RealType<ValueType> DIAUtils::maxNorm(  \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<OffsetType>&,                   \
+        const HArray<ValueType>&,                    \
+        ContextPtr );                                \
+                                                     \
+    template SyncToken* DIAUtils::gemv(              \
+        HArray<ValueType>&,                          \
+        const ValueType,                             \
+        const HArray<ValueType>&,                    \
+        const ValueType,                             \
+        const HArray<ValueType>&,                    \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<OffsetType>&,                   \
+        const HArray<ValueType>&,                    \
+        const common::MatrixOp op,                   \
+        const bool,                                  \
+        ContextPtr );                                \
 
 SCAI_COMMON_LOOP( DENSE_UTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 

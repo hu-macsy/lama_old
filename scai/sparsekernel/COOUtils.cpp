@@ -52,6 +52,7 @@ namespace scai
 using namespace hmemo;
 
 using utilskernel::LAMAKernel;
+using tasking::SyncToken;
 
 namespace sparsekernel
 {
@@ -627,7 +628,54 @@ void COOUtils::jacobi(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOUtils::gemv(
+void COOUtils::jacobiHalo(
+    HArray<ValueType>& localSolution,
+    const ValueType omega,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& oldHaloSolution,
+    const HArray<IndexType>& cooIA,
+    const HArray<IndexType>& cooJA,
+    const HArray<ValueType>& cooValues,
+    ContextPtr prefLoc )
+{
+    const IndexType numRows = localSolution.size();
+    const IndexType numValues = cooIA.size();
+
+    SCAI_ASSERT_EQ_DEBUG( numValues, cooJA.size(), "inconsistent COO data" )
+    SCAI_ASSERT_EQ_DEBUG( numValues, cooValues.size(), "inconsistent COO data" )
+    SCAI_ASSERT_EQ_DEBUG( numRows, localDiagonal.size(), "diaogonal elements for each row required" )
+
+    if ( numRows == 0 || numValues == 0 )
+    {
+        return;   // avoids overhead of accesses + kernel calls
+    }
+
+    // not needed here: const IndexType numColumns = oldSolution.size();
+
+    static LAMAKernel<COOKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
+
+    ContextPtr loc = prefLoc;
+
+    jacobiHalo.getSupportedContext( loc );
+
+    WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
+    ReadAccess<ValueType> localDiagValues( localDiagonal, loc );
+    ReadAccess<IndexType> haloIA( cooIA, loc );
+    ReadAccess<IndexType> haloJA( cooJA, loc );
+    ReadAccess<ValueType> haloValues( cooValues, loc );
+    ReadAccess<ValueType> rOldSolution( oldHaloSolution, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    jacobiHalo[loc]( wSolution.get(), 
+                     numValues, haloIA.get(), haloJA.get(), haloValues.get(),
+                     localDiagValues.get(), rOldSolution.get(), omega, numRows );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* COOUtils::gemv(
     HArray<ValueType>& result,
     const IndexType numRows,
     const IndexType numColumns,
@@ -639,6 +687,7 @@ void COOUtils::gemv(
     const HArray<ValueType>& x,
     const ValueType beta,
     const HArray<ValueType>& y,
+    bool async,
     ContextPtr prefLoc )
 {
     // SCAI_ASSERT_EQ_ERROR( x.size(), numColumns, "illegally sized array x for gemv" )
@@ -654,6 +703,15 @@ void COOUtils::gemv(
     ContextPtr loc = prefLoc;
     normalGEMV.getSupportedContext( loc );
 
+    std::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
     SCAI_CONTEXT_ACCESS( loc );
 
     ReadAccess<IndexType> rIA( cooIA, loc );
@@ -667,28 +725,44 @@ void COOUtils::gemv(
     normalGEMV[loc]( wResult.get(),
                      alpha, rX.get(), beta, rY.get(),
                      numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get(), op );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( rY.releaseDelayed() );
+        syncToken->pushRoutine( rIA.releaseDelayed() );
+        syncToken->pushRoutine( rJA.releaseDelayed() );
+        syncToken->pushRoutine( rValues.releaseDelayed() );
+    }
+
+    return syncToken.release();
 }
 
 /* -------------------------------------------------------------------------- */
 
 #define COOUTILS_SPECIFIER( ValueType )            \
+                                                   \
     template void COOUtils::normalize(             \
             HArray<IndexType>&,                    \
             HArray<IndexType>&,                    \
             HArray<ValueType>&,                    \
             common::BinaryOp,                      \
             ContextPtr );                          \
+                                                   \
     template void COOUtils::unique(                \
             HArray<IndexType>&,                    \
             HArray<IndexType>&,                    \
             HArray<ValueType>&,                    \
             common::BinaryOp,                      \
             ContextPtr );                          \
+                                                   \
     template void COOUtils::sort(                  \
             HArray<IndexType>&,                    \
             HArray<IndexType>&,                    \
             HArray<ValueType>&,                    \
             ContextPtr );                          \
+                                                   \
     template void COOUtils::getDiagonal(           \
             HArray<ValueType>&,                    \
             const IndexType,                       \
@@ -697,6 +771,7 @@ void COOUtils::gemv(
             const HArray<IndexType>&,              \
             const HArray<ValueType>&,              \
             ContextPtr );                          \
+                                                   \
     template void COOUtils::setDiagonal(           \
             HArray<ValueType>&,                    \
             const ValueType,                       \
@@ -705,6 +780,7 @@ void COOUtils::gemv(
             const HArray<IndexType>&,              \
             const HArray<IndexType>&,              \
             ContextPtr );                          \
+                                                   \
     template void COOUtils::setDiagonalV(          \
             HArray<ValueType>&,                    \
             const HArray<ValueType>&,              \
@@ -713,11 +789,13 @@ void COOUtils::gemv(
             const HArray<IndexType>&,              \
             const HArray<IndexType>&,              \
             ContextPtr );                          \
+                                                   \
     template void COOUtils::scaleRows(             \
             HArray<ValueType>&,                    \
             const HArray<IndexType>&,              \
             const HArray<ValueType>&,              \
             ContextPtr );                          \
+                                                   \
     template void COOUtils::binaryOp(              \
             HArray<IndexType>&,                    \
             HArray<IndexType>&,                    \
@@ -732,6 +810,7 @@ void COOUtils::gemv(
             const IndexType,                       \
             const common::BinaryOp op,             \
             ContextPtr );                          \
+                                                   \
     template void COOUtils::jacobi(                \
             HArray<ValueType>&,                    \
             const ValueType,                       \
@@ -741,7 +820,18 @@ void COOUtils::gemv(
             const HArray<IndexType>&,              \
             const HArray<ValueType>&,              \
             ContextPtr );                          \
-    template void COOUtils::gemv(                  \
+                                                   \
+    template void COOUtils::jacobiHalo(            \
+            HArray<ValueType>&,                    \
+            const ValueType,                       \
+            const HArray<ValueType>&,              \
+            const HArray<ValueType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<ValueType>&,              \
+            ContextPtr );                          \
+                                                   \
+    template SyncToken* COOUtils::gemv(            \
             HArray<ValueType>&,                    \
             const IndexType,                       \
             const IndexType,                       \
@@ -753,6 +843,7 @@ void COOUtils::gemv(
             const HArray<ValueType>&,              \
             const ValueType,                       \
             const HArray<ValueType>&,              \
+            const bool,                            \
             ContextPtr );                          \
 
 // selectComplexPart uses Math::real and Math::imag that is not defined for IndexType

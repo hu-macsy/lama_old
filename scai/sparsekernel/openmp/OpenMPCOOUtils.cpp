@@ -202,6 +202,42 @@ void OpenMPCOOUtils::scaleRows(
 
 /* --------------------------------------------------------------------------- */
 
+static void inline coo_get_my_range( 
+    IndexType& lb, 
+    IndexType& ub, 
+    const IndexType numValues, 
+    const IndexType cooIA[] )
+{
+    // make a first guess by taking the an equal-sized chunk as a block distribution
+
+    omp_get_my_range( lb, ub, numValues );
+
+    //      0   0   0   0   1   1   1   1  2  2   2  3  3   3
+    //                          | lb                    | ub
+
+    if ( lb > 0 )
+    {
+        // move lb up where a new row starts
+
+        while ( lb < numValues && cooIA[lb] == cooIA[lb - 1] )
+        {
+            lb++;
+        }
+    }
+
+    if ( lb < ub )
+    {
+        // move ub up where a new row starts
+
+        while ( ub < numValues && cooIA[ub] == cooIA[ub - 1] )
+        {
+            ub++;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void OpenMPCOOUtils::normalGEMV(
     ValueType result[],
@@ -274,30 +310,7 @@ void OpenMPCOOUtils::normalGEMV(
             IndexType k_lb;
             IndexType k_ub;
 
-            omp_get_my_range( k_lb, k_ub, numValues );
-
-            //      0   0   0   0   1   1   1   1  2  2   2  3  3   3
-            //                          | lb                    | ub
-
-            if ( k_lb > 0 )
-            {
-                // move lb up where a new row starts
-
-                while ( k_lb < numValues && cooIA[k_lb] == cooIA[k_lb - 1] )
-                {
-                    k_lb++;
-                }
-            }
-
-            if ( k_lb < k_ub )
-            {
-                // move ub up where a new row starts
-
-                while ( k_ub < numValues && cooIA[k_ub] == cooIA[k_ub - 1] )
-                {
-                    k_ub++;
-                }
-            }
+            coo_get_my_range( k_lb, k_ub, numValues, cooIA );
 
             for ( IndexType k = k_lb; k < k_ub; ++k )
             {
@@ -344,11 +357,14 @@ void OpenMPCOOUtils::jacobi(
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
+    SCAI_REGION( "OpenMP.COO.jacobi" )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
     {
-        COMMON_THROWEXCEPTION( "asynchronous execution should be done by LAMATask before" )
+        SCAI_LOG_ERROR( logger, "asynchronous execution of jacobi not supported here" )
     }
 
     // solution = omega * ( rhs - B * oldSolution ) * dinv + ( 1 - omega * oldSolution
@@ -387,6 +403,43 @@ void OpenMPCOOUtils::jacobi(
         SCAI_ASSERT_NE_ERROR( diag, ValueType( 0 ), "no diagonal element or zero in row " << i )
 
         solution[i] = omega * vSum / diag + omega1 * oldSolution[i];
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCOOUtils::jacobiHalo(
+    ValueType solution[],
+    const IndexType cooNumValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[],
+    const ValueType localDiagonal[],
+    const ValueType oldSolution[],
+    const ValueType omega,
+    const IndexType )
+{
+    SCAI_LOG_INFO( logger,
+                   "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", #values = " << cooNumValues << ", omega = " << omega )
+
+    SCAI_REGION( "OpenMP.COO.jacobiHalo" )
+
+    #pragma omp parallel 
+    {
+        IndexType k_lb;  
+        IndexType k_ub;
+ 
+        coo_get_my_range( k_lb, k_ub, cooNumValues, cooIA );
+
+        // each thread works on its own set of rows, so no synchronization is required
+
+        for ( IndexType k = k_lb; k < k_ub; ++k )
+        {
+            IndexType i = cooIA[k];
+            IndexType j = cooJA[k];
+            solution[i] -= omega * ( cooValues[k] * oldSolution[ j ] ) / localDiagonal[i];
+        }
     }
 }
 
@@ -611,6 +664,7 @@ void OpenMPCOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<COOKernelTrait::setDiagonalV<ValueType> >( setDiagonalV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<COOKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
 }
 

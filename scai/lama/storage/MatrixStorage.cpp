@@ -48,12 +48,8 @@
 
 // internal scai libraries
 #include <scai/sparsekernel/CSRUtils.hpp>
-#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -75,11 +71,7 @@ using namespace dmemo;
 using tasking::SyncToken;
 using tasking::TaskSyncToken;
 
-using utilskernel::LAMAKernel;
-using utilskernel::UtilKernelTrait;
-using utilskernel::OpenMPUtils;
-
-using sparsekernel::OpenMPCSRUtils;
+using sparsekernel::CSRUtils;
 
 using common::BinaryOp;
 
@@ -319,13 +311,11 @@ void MatrixStorage<ValueType>::joinRows(
         }
     }
     // generate offset array for insertion
+
     HArray<IndexType> IA;
-    {
-        WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
-        ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, BinaryOp::COPY );
-        OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
-    }
+ 
+    CSRUtils::sizes2offsets( IA, outSizes, Context::getHostPtr() );
+
     WriteAccess<IndexType> tmpIA( IA );
     WriteAccess<IndexType> ja( outJA );
     WriteAccess<ValueType> values( outValues );
@@ -656,58 +646,42 @@ void MatrixStorage<ValueType>::reduce(
     const common::BinaryOp reduceOp,
     const common::UnaryOp elemOp )
 {
+    SCAI_ASSERT_VALID_INDEX_ERROR( dim, IndexType( 2 ), "Illegal dimension, only 0 (rows) or 1 (columns)" )
+
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
     buildCSRData( csrIA, csrJA, csrValues );
 
-    hmemo::ReadAccess<ValueType> values( csrValues );
-    hmemo::ReadAccess<IndexType> ia( csrIA );
-    hmemo::ReadAccess<IndexType> ja( csrJA );
+    CSRUtils::reduce( array, getNumRows(), getNumColumns(), 
+                      csrIA, csrJA, csrValues, 
+                      dim, reduceOp, elemOp, getContextPtr() );
+}
 
-    hmemo::WriteAccess<ValueType> a( array );
+/* ------------------------------------------------------------------------- */
 
-    OpenMPCSRUtils::reduce( a.get(), ia.get(), ja.get(), values.get(), getNumRows(), dim, reduceOp, elemOp );
+template<typename ValueType>
+void MatrixStorage<ValueType>::gemvCheck(
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y,
+    const common::MatrixOp op ) const
+{
+    const IndexType nSource = common::isTranspose( op ) ? getNumRows() : getNumColumns();
+    const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
 
-    /*
-    if ( dim == 0 )
+    if ( alpha != common::Constants::ZERO )
     {
-        SCAI_ASSERT_EQ_ERROR( array.size(), getNumRows(), "size mismatch" );
-
-        for ( IndexType i = 0; i < getNumRows(); ++i )
-        {
-            // a[i] = 0;
-
-            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
-            {
-                ValueType v = values[jj];
-                v = applyUnaryOp( elemOp, v );
-                a[i] += v;
-            }
-        }
+        SCAI_ASSERT_EQUAL( x.size(), nSource, "vector x in A * x has illegal size" )
     }
-    else if ( dim == 1 )
+
+    if ( beta != common::Constants::ZERO )
     {
-        SCAI_ASSERT_EQ_ERROR( array.size(), getNumColumns(), "size mismatch" );
-
-        // for ( IndexType j = 0; j < getNumColumns(); ++j )
-        // {
-            // a[j] = 0;
-        // }
-
-        for ( IndexType i = 0; i < getNumRows(); ++i )
-        {
-            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
-            {
-                IndexType j = ja[jj];
-                ValueType v = values[jj];
-                v = applyUnaryOp( elemOp, v );
-                a[j] += v;
-            }
-        }
+        SCAI_ASSERT_EQUAL( y.size(), nTarget, "result = " << alpha << " * A * x + " << beta 
+                                              << " * y, y has illegal size, matrix storage = " << *this )
     }
-    */
 }
 
 /* ------------------------------------------------------------------------- */

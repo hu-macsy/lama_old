@@ -588,19 +588,30 @@ bool OpenMPCSRUtils::setDiagonalV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPCSRUtils::scaleRows(
+void OpenMPCSRUtils::setRows(
     ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const ValueType values[] )
+    const ValueType values[],
+    const common::BinaryOp op )
 {
     #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType j = csrIA[i]; j < csrIA[i + 1]; ++j )
+        if ( op == common::BinaryOp::MULT )
         {
-            csrValues[j] *= values[i];
+            for ( IndexType j = csrIA[i]; j < csrIA[i + 1]; ++j )
+            {
+                csrValues[j] *= values[i];
+            }
+        }
+        else
+        {
+            for ( IndexType j = csrIA[i]; j < csrIA[i + 1]; ++j )
+            {
+                csrValues[j] = common::applyBinary( csrValues[j], op, values[i] );
+            }
         }
     }
 }
@@ -1116,16 +1127,23 @@ void OpenMPCSRUtils::gemm(
     const ValueType x[],
     const ValueType beta,
     const ValueType y[],
-    const IndexType m,
-    const IndexType n,
-    const IndexType p,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType nv,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const ValueType csrValues[] )
+    const ValueType csrValues[],
+    const common::MatrixOp op )
 {
-    SCAI_LOG_INFO( logger,
-                   "gemm<" << TypeTraits<ValueType>::id() << ">, " << " result " << m << " x " << n << " CSR " << m << " x " << p )
+    SCAI_LOG_INFO( logger, "gemm<" << TypeTraits<ValueType>::id() << ">, " 
+                           << " result " << numRows << " x " << nv << " CSR " << numRows << " x " << numColumns )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( op != common::MatrixOp::NORMAL )
+    {
+        COMMON_THROWEXCEPTION( "gemm only supported for matrix op = NORMAL" )
+    }
 
     if ( syncToken )
     {
@@ -1134,21 +1152,28 @@ void OpenMPCSRUtils::gemm(
 
     #pragma omp parallel for 
 
-    for ( IndexType i = 0; i < m; ++i )
+    for ( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType k = 0; k < n; ++k )
+        for ( IndexType k = 0; k < nv; ++k )
         {
-            ValueType temp = static_cast<ValueType>( 0.0 );
+            ValueType temp = 0;
 
             for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
             {
                 IndexType j = csrJA[jj];
                 // SCAI_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
                 // csrValues[jj] stands for CSR( i, j )
-                temp += csrValues[jj] * x[j * n + k]; // x(j,k)
+                temp += csrValues[jj] * x[j * nv + k]; // x(j,k)
             }
 
-            result[i * n + k] = alpha * temp + beta * y[i * n + k];
+            if ( y == NULL )
+            {
+                result[i * nv + k] = alpha * temp;
+            }
+            else
+            {
+                result[i * nv + k] = alpha * temp + beta * y[i * nv + k];
+            }
         }
     }
 }
@@ -1718,7 +1743,7 @@ static IndexType findCol( const IndexType columns[], const IndexType n, const In
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
+RealType<ValueType> OpenMPCSRUtils::absMaxDiffRowUnsorted(
     const IndexType n1,
     const IndexType csrJA1[],
     const ValueType csrValues1[],
@@ -1781,7 +1806,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
+RealType<ValueType> OpenMPCSRUtils::absMaxDiffRowSorted(
     const IndexType n1,
     const IndexType csrJA1[],
     const ValueType csrValues1[],
@@ -1791,9 +1816,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
 {
     // Note: the implementation assumes that rows are sorted according to column indexes
 
-    typedef typename common::TypeTraits<ValueType>::RealType RealType;
-
-    RealType val = 0;
+    RealType<ValueType> val = 0;
 
     IndexType i2 = 0;
     IndexType i1 = 0;
@@ -1846,7 +1869,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
             }
         }
 
-        RealType absDiff = common::Math::abs( diff );
+        auto absDiff = common::Math::abs( diff );
 
         if ( absDiff > val )
         {
@@ -1860,7 +1883,7 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPCSRUtils::absMaxDiffVal(
+RealType<ValueType> OpenMPCSRUtils::absMaxDiffVal(
     IndexType numRows,
     bool sortedRows,
     const IndexType csrIA1[],
@@ -1870,11 +1893,9 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     const IndexType csrJA2[],
     const ValueType csrValues2[] )
 {
-    typedef typename common::TypeTraits<ValueType>::RealType RealType;
-
     SCAI_LOG_INFO( logger,
                    "absMaxDiffVal<" << TypeTraits<ValueType>::id() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
-    ValueType ( *absMaxDiffRow )(
+    RealType<ValueType> ( *absMaxDiffRow )(
         const IndexType,
         const IndexType[],
         const ValueType[],
@@ -1891,11 +1912,11 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
         absMaxDiffRow = OpenMPCSRUtils::absMaxDiffRowUnsorted<ValueType>;
     }
 
-    RealType val = 0;
+    RealType<ValueType> val = 0;
 
     #pragma omp parallel
     {
-        RealType threadVal = 0;
+        RealType<ValueType> threadVal = 0;
 
         #pragma omp for 
 
@@ -1906,7 +1927,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
             IndexType n1 = csrIA1[i + 1] - offs1;
             IndexType n2 = csrIA2[i + 1] - offs2;
 
-            RealType maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
+            RealType<ValueType> maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
 
             if ( maxRow > threadVal )
             {
@@ -1977,7 +1998,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

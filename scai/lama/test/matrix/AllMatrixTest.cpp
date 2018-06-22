@@ -52,7 +52,6 @@
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/sparsekernel/COOUtils.hpp>
@@ -540,11 +539,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_numeric_test_types 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
         Matrix<ValueType>& matrix = *allMatrices[s];
-
-        if ( matrix.getFormat() == Format::DIA )
-        {
-            continue;  // DIA has problems with diagonal property
-        }
 
         matrix.setCommunicationKind( SyncKind::SYNCHRONOUS );
 

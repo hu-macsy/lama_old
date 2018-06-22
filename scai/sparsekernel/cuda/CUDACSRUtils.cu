@@ -763,16 +763,17 @@ void sparse_gemv_kernel(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  scaleRows                                                         */
+/*                                                  setRows                                                           */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 __global__
-void scaleRowsKernel(
+void setRowsKernel(
     ValueType* values,
     const IndexType* ia,
     const IndexType numRows,
-    const ValueType* diagonal )
+    const ValueType* diagonal,
+    const common::BinaryOp op )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -780,9 +781,9 @@ void scaleRowsKernel(
     {
         ValueType tmp = diagonal[i];
 
-        for ( IndexType j = ia[i]; j < ia[i + 1]; ++j )
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            values[j] *= tmp;
+            values[jj] = common::applyBinary( values[jj], op, tmp );
         }
     }
 }
@@ -790,21 +791,22 @@ void scaleRowsKernel(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDACSRUtils::scaleRows(
+void CUDACSRUtils::setRows(
     ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
-    const ValueType values[] )
+    const ValueType values[],
+    const common::BinaryOp op  )
 {
-    SCAI_REGION( "CUDA.CSRUtils.scaleRows" )
-    SCAI_LOG_INFO( logger, "scaleRows<" << TypeTraits<ValueType>::id() << ">"
+    SCAI_REGION( "CUDA.CSRUtils.setRows" )
+    SCAI_LOG_INFO( logger, "setRows<" << TypeTraits<ValueType>::id() << ">"
                    << ", numrows= " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    scaleRowsKernel <<< dimGrid, dimBlock>>>( csrValues, csrIA, numRows, values );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "CSRUtils:scaleRowsKernel FAILED" )
+    setRowsKernel <<< dimGrid, dimBlock>>>( csrValues, csrIA, numRows, values, op );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "CSRUtils:setRowsKernel FAILED" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2901,7 +2903,7 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

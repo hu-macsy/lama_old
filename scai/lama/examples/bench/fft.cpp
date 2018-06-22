@@ -57,8 +57,8 @@ int main( int argc, const char* argv[] )
 
     // default values for M and N
 
-    IndexType M = 2048;
-    IndexType N = 2048;
+    IndexType M = 3852;
+    IndexType N = 4031;
 
     if ( argc > 1 )
     {
@@ -95,13 +95,13 @@ int main( int argc, const char* argv[] )
 
     // convert to complex matrix, fill it up and distribute it
 
-    DenseMatrix<FFTType> y;
-    y = cast<FFTType>( input );
-    y.resize( rowDist, colDist );   // fill up and distribute
+    auto y = resize<DenseMatrix<FFTType>>( input, rowDist, colDist );
 
     double setupTime = common::Walltime::get() - time;
 
     SCAI_REGION_END( "main.setup" )
+
+    std::cout << "Setup: " << setupTime << " seconds" << std::endl;
 
     time = common::Walltime::get();
 
@@ -114,19 +114,19 @@ int main( int argc, const char* argv[] )
 
     double fftTime = common::Walltime::get() - time;
 
+    std::cout << "FFT:   " << fftTime << " seconds" << std::endl;
+
     SCAI_REGION_START( "main.check" )
 
     time = common::Walltime::get();
 
-    y *= ValueType( 1 ) / ValueType( M2 * N2 );
-
     // resize back to original data
 
-    y.resize( input.getRowDistributionPtr(), input.getColDistributionPtr() );
+    auto output = resize<DenseMatrix<ValueType>>( y, input.getRowDistributionPtr(), input.getColDistributionPtr() );
 
     // divide by M * N after fft - ifft to get the original result
 
-    auto output = convert<DenseMatrix<ValueType>>( y );
+    output *= ValueType( 1 ) / ValueType( M2 * N2 );
 
     auto maxDiff = input.maxDiffNorm( output );
 

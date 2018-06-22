@@ -415,6 +415,107 @@ BOOST_AUTO_TEST_CASE( inverseTestRandom1 )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( matrixTimesVectorZeroTest )
+{
+    // res = alpha * A * x + beta * y, where A is a zero matrix 
+
+    hmemo::ContextPtr testContext = hmemo::Context::getContextPtr();
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    HArray<ValueType> x( { 3, 1, 2 }, testContext );
+    HArray<ValueType> y( { 1, 2, 3, 4 }, testContext );
+
+    HArray<ValueType> z( { }, testContext );
+
+    ValueType alpha = 1;
+    ValueType beta = 1;
+ 
+    const IndexType numRows    = 4;
+    const IndexType numColumns = 3;
+
+    HArray<ValueType> result;
+
+    TypedStorages<ValueType> allMatrixStorages( testContext );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+        storage.allocate( numRows, numColumns );
+
+        storage.matrixTimesVector( result, alpha, x, beta, y, common::MatrixOp::NORMAL );
+        BOOST_TEST( hostReadAccess( result ) == hostReadAccess( y ), per_element() );
+
+        storage.matrixTimesVector( result, alpha, y, beta, x, common::MatrixOp::TRANSPOSE );
+        BOOST_TEST( hostReadAccess( result ) == hostReadAccess( x ), per_element() );
+
+        storage.allocate( numRows, 0 );
+
+        storage.matrixTimesVector( result, alpha, z, beta, y, common::MatrixOp::NORMAL );
+        BOOST_TEST( hostReadAccess( result ) == hostReadAccess( y ), per_element() );
+
+        storage.allocate( 0, numColumns );
+
+        storage.matrixTimesVector( result, alpha, z, beta, x, common::MatrixOp::TRANSPOSE );
+        BOOST_TEST( hostReadAccess( result ) == hostReadAccess( x ), per_element() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( matrixTimesVectorFailTest )
+{
+    // res = alpha * A * x + beta * y, where A is a zero matrix 
+
+    hmemo::ContextPtr testContext = hmemo::Context::getContextPtr();
+
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    HArray<ValueType> x( { 3, 1, 2 }, testContext );
+    HArray<ValueType> y( { 1, 2, 3, 4 }, testContext );
+    ValueType alpha = 1;
+    ValueType beta = 1;
+ 
+    const IndexType numRows    = 4;
+    const IndexType numColumns = 3;
+
+    HArray<ValueType> denseData( { 1, 2, 0, 0, 2, 1, 1, 0, 1, 1, 0, 0 } );
+
+    HArray<ValueType> expResult1( { 6, 6, 8, 7 } );
+    HArray<ValueType> expResult2( { 11, 7, 7 } );
+
+    HArray<ValueType> result;
+
+    TypedStorages<ValueType> allMatrixStorages( testContext );    // storage for each storage format
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        storage.assign( DenseStorage<ValueType>( numRows, numColumns, denseData ) );
+
+        storage.matrixTimesVector( result, alpha, x, beta, y, common::MatrixOp::NORMAL );
+
+        BOOST_TEST( hostReadAccess( result ) == hostReadAccess( expResult1 ), per_element() );
+
+        storage.matrixTimesVector( result, alpha, y, beta, x, common::MatrixOp::TRANSPOSE );
+
+        BOOST_TEST( hostReadAccess( result ) == hostReadAccess( expResult2 ), per_element() );
+
+        BOOST_CHECK_THROW(
+        {
+            storage.matrixTimesVector( result, alpha, x, beta, y, common::MatrixOp::TRANSPOSE );
+        }, common::Exception );
+
+        BOOST_CHECK_THROW(
+        {
+            storage.matrixTimesVector( result, alpha, y, beta, x, common::MatrixOp::NORMAL );
+        }, common::Exception );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
@@ -437,11 +538,9 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
     HArray<ValueType> denseResult1;
     HArray<ValueType> denseResult2;
     HArray<ValueType> denseResult3( y );
-    HArray<ValueType> denseResult4;
     denseStorage.matrixTimesVector( denseResult1, alpha, x, beta, y, common::MatrixOp::NORMAL );
     denseStorage.matrixTimesVector( denseResult2, alpha, x, 0, yDummy, common::MatrixOp::NORMAL );
     denseStorage.matrixTimesVector( denseResult3, alpha, x, 1, denseResult3, common::MatrixOp::NORMAL );
-    utilskernel::HArrayUtils::compute( denseResult4, beta, common::BinaryOp::MULT, y, context );
     SCAI_LOG_INFO( logger, "matrixTimesVectorTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
     TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
 
@@ -455,11 +554,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
         HArray<ValueType> result2( context );
         HArray<ValueType> result3;
         HArrayUtils::assign( result3, y, context );
-        // wrong sized y, should throw exception in any case
-        BOOST_CHECK_THROW(
-        {
-            storage.matrixTimesVector( result1, alpha, x, beta, yDummy, common::MatrixOp::NORMAL );
-        }, common::AssertException );
+
         storage.matrixTimesVector( result1, alpha, x, beta, y, common::MatrixOp::NORMAL );
         storage.matrixTimesVector( result2, alpha, x, 0, yDummy, common::MatrixOp::NORMAL );
         storage.matrixTimesVector( result3, alpha, x, 1, result3, common::MatrixOp::NORMAL );
@@ -468,16 +563,6 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
         BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult1, result1 ) < eps );
         BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult2, result2 ) < eps );
         BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult3, result3 ) < eps );
-        HArray<ValueType> result4( context );
-        storage.allocate( y.size(), x.size() );  // numRows x numCols, all zero
-        // test multiplication with zero matrix
-        storage.matrixTimesVector( result4, alpha, x, beta, y, common::MatrixOp::NORMAL );
-        BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult4, result4 ) < eps );
-        // result5 = 0 * storage * x + beta * y, storage can be anything as not used at all
-        HArray<ValueType> result5( context );
-        storage.clear();  // with alpha == 0, storage is not used at all
-        storage.matrixTimesVector( result5, ValueType( 0 ), x, beta, y, common::MatrixOp::NORMAL );
-        BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult4, result5 ) < eps );
     }
 }
 
@@ -559,7 +644,6 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixTest )
         HArray<ValueType> result2( context );
         HArray<ValueType> result3;
         HArrayUtils::assign( result3, y, context );
-        HArray<ValueType> result4( context );
         storage.matrixTimesVector( result1, alpha, x, beta, y, common::MatrixOp::TRANSPOSE );
         storage.matrixTimesVector( result2, alpha, x, 0, yDummy, common::MatrixOp::TRANSPOSE );
         storage.matrixTimesVector( result3, alpha, x, 1, result3, common::MatrixOp::TRANSPOSE );
@@ -569,9 +653,6 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixTest )
         BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult2, result2 ) < eps );
         BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult3, result3 ) < eps );
         storage.allocate( x.size(), y.size() );  // numRows x numCols, all zero
-        // test multiplication with zero matrix
-        storage.matrixTimesVector( result4, alpha, x, beta, y, common::MatrixOp::TRANSPOSE );
-        BOOST_CHECK( HArrayUtils::maxDiffNorm( denseResult4, result4 ) < eps );
     }
 }
 
@@ -848,11 +929,6 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
 
-        if ( storage.getFormat() == Format::DIA )
-        {
-            continue;   // DIA  has still bug for diagonal property
-        }
-
         setDenseHalo( storage );
         std::unique_ptr<MatrixStorage<ValueType> > local( storage.newMatrixStorage() );
         setDenseSquareData( *local );
@@ -878,28 +954,21 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
             const ValueType alpha = -omega;
             const ValueType beta  = 1;
             storage1->matrixTimesVector( solution2, alpha, oldSolution, beta , solution2, common::MatrixOp::NORMAL );
-            // now solution1 and solution2 must be the same
-            /* for debug
-            std::cout << "Solution1 :";
-            for ( IndexType i = 0; i < storage.getNumRows(); ++i )
-            {
-                std::cout << " ";
-                std::cout << solution1[i];
-            }
-            std::cout << std::endl;
 
-            std::cout << "Solution2 :";
-            for ( IndexType i = 0; i < storage.getNumRows(); ++i )
-            {
-                std::cout << " ";
-                std::cout << solution2[i];
-            }
-            std::cout << std::endl;
-            std::cout << "max diff norm = " << solution1.maxDiffNorm( solution2 );
-            std::cout << ", small = " << common::TypeTraits<ValueType>::small() << std::endl;
-            */
+            auto maxDiff = HArrayUtils::maxDiffNorm( solution1, solution2 );
+            auto eps     = common::TypeTraits<ValueType>::small();
 
-            BOOST_CHECK( HArrayUtils::maxDiffNorm( solution1, solution2 ) < common::TypeTraits<ValueType>::small() );
+            if ( maxDiff >= eps )
+            {
+                SCAI_LOG_ERROR( logger, "jacobiHalo fails for storage: " << storage 
+                                        << ", omega = " << omega << ", maxDiff = " << maxDiff  )
+
+                BOOST_TEST( hostReadAccess( solution1 ) == hostReadAccess( solution2 ), per_element() );
+            }
+            else
+            {
+                BOOST_CHECK( maxDiff < eps );
+            }
         }
     }
 }

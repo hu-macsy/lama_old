@@ -75,25 +75,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftForwardTest, ValueType, scai_fft_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
-    // Init Arrays
-
-    HArray<ValueType> in( { 0.2, 0.16 } );
-
     typedef common::Complex<RealType<ValueType>> ComplexType;
 
-    HArray<ComplexType> out;
+    // Init Arrays
 
-    IndexType npad = 8;
+    HArray<ComplexType> data( { 0.2, 0.16, 0, 0, 0, 0, 0, 0 } );
 
-    FFTUtils::fft1D( out, in, npad, loc );
+    IndexType n = 8;
+
+    FFTUtils::fftcall<ValueType>( data, 1, n, 3, 1, loc );
 
     RealType<ValueType> eps = 0.00001;
 
     {
-        ReadAccess<ComplexType> rOut( out );
+        ReadAccess<ComplexType> rOut( data );
 
         BOOST_CHECK( common::Math::abs( rOut[0] - ComplexType( 0.2 + 0.16 ) ) < eps );
-        BOOST_CHECK( common::Math::abs( rOut[npad-2] - ComplexType( 0.2, 0.16 ) ) < eps );
+        BOOST_CHECK( common::Math::abs( rOut[n-2] - ComplexType( 0.2, 0.16 ) ) < eps );
     }
 }
 
@@ -107,22 +105,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftBackwardTest, ValueType, scai_fft_test_types )
 
     typedef common::Complex<RealType<ValueType>> ComplexType;
 
-    HArray<ComplexType> in( { 0.2, 0.16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  } );
+    HArray<ComplexType> data( { 0.2, 0.16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  } );
 
-    SCAI_LOG_ERROR( logger, "in = " << common::Wrapper<hmemo::HostReadAccess<ComplexType>>( hmemo::hostReadAccess( in ) ) )
+    SCAI_LOG_DEBUG( logger, "in = " << common::Wrapper<hmemo::HostReadAccess<ComplexType>>( hmemo::hostReadAccess( data ) ) )
 
-    HArray<ComplexType> out;
+    IndexType n = data.size();
 
-    IndexType n = in.size();
+    FFTUtils::fftcall<ValueType>( data, 1, n, 3, -1, loc );
 
-    FFTUtils::ifft1D( out, in, n, loc );
-
-    SCAI_LOG_ERROR( logger, "out = " << common::Wrapper<hmemo::HostReadAccess<ComplexType>>( hmemo::hostReadAccess( out ) ) )
+    SCAI_LOG_DEBUG( logger, "out = " << common::Wrapper<hmemo::HostReadAccess<ComplexType>>( hmemo::hostReadAccess( data ) ) )
 
     RealType<ValueType> eps = 0.00001;
 
     {
-        ReadAccess<ComplexType> rOut( out );
+        ReadAccess<ComplexType> rOut( data );
 
         BOOST_CHECK( common::Math::abs( rOut[0] - ComplexType( 0.2 + 0.16 ) ) < eps );
         BOOST_CHECK( common::Math::abs( rOut[n-2] - ComplexType( 0.2, -0.16 ) ) < eps );

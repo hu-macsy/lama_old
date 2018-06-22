@@ -93,16 +93,6 @@ public:
         const ValueType denseValues[],
         const RealType<ValueType> eps );
 
-    /** OpenMP implementation for DenseKernelTrait::set */
-
-    template<typename DenseValueType1, typename DenseValueType2>
-    static void set(
-        DenseValueType1 newValues[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const DenseValueType2 oldValues[],
-        const common::BinaryOp op );
-
     /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
     template<typename ValueType>
@@ -127,11 +117,35 @@ public:
     /** OpenMP implementation for DenseKernelTrait::scaleRows */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType denseValues[],
         const IndexType numRows,
         const IndexType numColumns,
-        const ValueType rowValues[] );
+        const ValueType rowValues[],
+        const common::BinaryOp op );
+
+    /** Implementation for DenseKernelTrait::jacobi  */
+
+    template<typename ValueType>
+    static void jacobi(
+        ValueType solution[],
+        const IndexType n,
+        const ValueType denseValues[],
+        const ValueType oldSolution[],
+        const ValueType rhs[],
+        const ValueType omega );
+
+    /** Implementation for DenseKernelTrait::jacobiHalo  */
+
+    template<typename ValueType>
+    static void jacobiHalo(
+        ValueType solution[],
+        const ValueType diagonal[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const ValueType denseValues[],
+        const ValueType oldSolution[],
+        const ValueType omega );
 
 private:
 
@@ -154,18 +168,6 @@ private:
 
     template<typename ValueType>
     struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
     {
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };

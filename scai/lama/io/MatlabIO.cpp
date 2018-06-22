@@ -35,7 +35,6 @@
 #include <scai/lama/io/MatlabIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>

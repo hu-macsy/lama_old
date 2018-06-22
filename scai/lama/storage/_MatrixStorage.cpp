@@ -38,13 +38,9 @@
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
-
-#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 namespace scai
 {
@@ -54,12 +50,8 @@ using namespace dmemo;
 
 using common::BinaryOp;
 
-using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
 using utilskernel::OpenMPUtils;
-
-using sparsekernel::CSRKernelTrait;
-using sparsekernel::OpenMPCSRUtils;
 
 namespace lama
 {

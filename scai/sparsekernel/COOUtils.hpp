@@ -39,6 +39,8 @@
 // internal scai libraries
 #include <scai/hmemo.hpp>
 
+#include <scai/tasking/SyncToken.hpp>
+
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
 #include <scai/common/MatrixOp.hpp>
@@ -186,7 +188,8 @@ public:
      *
      *  @param[out] offset is the first position, invalidIndex if not found
      *  @param[out] n      is the number of available entries for row i
-     *  @param[in] cooIA   the (sorted) array with the row indexes
+     *  @param[in]  cooIA   the (sorted) array with the row indexes
+     *  @param[in]  i      is the index of row for which entries are queried
      *  @param[in]  prefLoc specifies the context where operation should be executed
      *
      *  As the entries of one row are stored contiguously, here is no need for a position array
@@ -298,11 +301,33 @@ public:
         const hmemo::HArray<ValueType>& cooValues,
         hmemo::ContextPtr prefLoc );
 
+    /** Jacobi iteration step using a COO halo storage.
+     *
+     *  \f[ solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal \f]
+     *
+     *  @param[in,out] localSolution is the solution vector that is updated
+     *  @param[in]     localDiagonal pointer to the diagonal of local storage
+     *  @param[in]     oldSolution is the old solution vector of halo part
+     *  @param[in]     omega is the scaling factor.
+     *  @param[in]     cooIA, cooJA, cooValues are the COO containers
+     *  @param[in]     prefLoc is context where the operation should be done
+     */
+    template<typename ValueType>
+    static void jacobiHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const ValueType omega,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<IndexType>& cooIA,
+        const hmemo::HArray<IndexType>& cooJA,
+        const hmemo::HArray<ValueType>& cooValues,
+        hmemo::ContextPtr prefLoc );
+
     /**
      *  @brief matrix-vector multiplication 
      */
     template<typename ValueType>
-    static void gemv(
+    static tasking::SyncToken* gemv(
         hmemo::HArray<ValueType>& result,
         const IndexType numRows,
         const IndexType numColumns,
@@ -314,6 +339,7 @@ public:
         const hmemo::HArray<ValueType>& x,
         const ValueType beta,
         const hmemo::HArray<ValueType>& y,
+        bool async,
         hmemo::ContextPtr prefLoc );
 
 };

@@ -77,15 +77,16 @@ SCAI_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void OpenMPELLUtils::scaleRows(
+void OpenMPELLUtils::setRows(
     ValueType ellValues[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const IndexType ellSizes[],
-    const ValueType values[] )
+    const ValueType values[],
+    const common::BinaryOp op )
 {
     SCAI_LOG_INFO( logger,
-                   "scaleRows<" << TypeTraits<ValueType>::id() << ">" << ", #numRows = " << numRows )
+                   "setRows<" << TypeTraits<ValueType>::id() << ">" << ", #numRows = " << numRows )
     #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; i++ ) //rows
@@ -93,7 +94,7 @@ void OpenMPELLUtils::scaleRows(
         for ( IndexType jj = 0; jj < ellSizes[i]; jj++ ) //elements in row
         {
             IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
-            ellValues[pos] *= values[i];
+            ellValues[pos] = common::applyBinary( ellValues[pos], op, values[i] );
         }
     }
 }
@@ -319,19 +320,19 @@ IndexType OpenMPELLUtils::getColumnPositions(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ELLValueType, typename CSRValueType>
+template<typename ValueType>
 void OpenMPELLUtils::getCSRValues(
     IndexType csrJA[],
-    CSRValueType csrValues[],
+    ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const IndexType ellSizes[],
     const IndexType ellJA[],
-    const ELLValueType ellValues[] )
+    const ValueType ellValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows )
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
@@ -349,7 +350,7 @@ void OpenMPELLUtils::getCSRValues(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 csrJA[offset + jj] = ellJA[pos];
-                csrValues[offset + jj] = static_cast<CSRValueType>( ellValues[pos] );
+                csrValues[offset + jj] = ellValues[pos];
             }
         }
     }
@@ -357,23 +358,27 @@ void OpenMPELLUtils::getCSRValues(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ELLValueType, typename CSRValueType>
+template<typename ValueType>
 void OpenMPELLUtils::setCSRValues(
     IndexType ellJA[],
-    ELLValueType ellValues[],
+    ValueType ellValues[],
     const IndexType ellSizes[],
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const CSRValueType csrValues[] )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                   "set CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " 
+                   << numRows << ", #values/row = " << numValuesPerRow )
+
     // parallelization possible as offset array csrIA is available
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.setCSR" )
+
         #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -387,7 +392,7 @@ void OpenMPELLUtils::setCSRValues(
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 j = csrJA[offset + jj];
                 ellJA[pos] = j;
-                ellValues[pos] = static_cast<ELLValueType>( csrValues[offset + jj] );
+                ellValues[pos] = csrValues[offset + jj];
             }
 
             // fill up the remaining entries with something useful
@@ -396,7 +401,7 @@ void OpenMPELLUtils::setCSRValues(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 ellJA[pos] = j; // last used column index
-                ellValues[pos] = static_cast<ELLValueType>( 0.0 ); // zero entry
+                ellValues[pos] = ValueType( 0 ); 
             }
         }
     }
@@ -956,11 +961,17 @@ void OpenMPELLUtils::jacobi(
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken != NULL )
     {
-        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        // run this method with same arguments by another thread
+
+        syncToken->run( std::bind( jacobi<ValueType>,
+                                   solution, numRows, ellNumValuesPerRow,
+                                   ellSizes, ellJA, ellValues, oldSolution, rhs, omega ) );
+        return;
     }
 
     #pragma omp parallel
@@ -1275,18 +1286,9 @@ void OpenMPELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
-}
-
-template<typename ValueType, typename OtherValueType>
-void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    common::ContextType ctx = common::ContextType::Host;
-    SCAI_LOG_DEBUG( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1300,7 +1302,6 @@ OpenMPELLUtils::OpenMPELLUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPELLUtils::~OpenMPELLUtils()
@@ -1310,7 +1311,6 @@ OpenMPELLUtils::~OpenMPELLUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

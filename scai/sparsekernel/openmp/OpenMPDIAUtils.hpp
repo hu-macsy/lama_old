@@ -112,14 +112,27 @@ public:
     template<typename ValueType>
     static void jacobi(
         ValueType solution[],
-        const IndexType numColumns,
+        const IndexType n,
         const IndexType numDiagonals,
         const IndexType diaOffset[],
         const ValueType diaValues[],
         const ValueType oldSolution[],
         const ValueType rhs[],
-        const ValueType omega,
-        const IndexType numRows );
+        const ValueType omega );
+
+    /** Implementation for DIAKernelTrait::jacobiHalo  */
+
+    template<typename ValueType>
+    static void jacobiHalo(
+        ValueType solution[],
+        const ValueType diagonal[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const IndexType diaOffset[],
+        const ValueType diaValues[],
+        const ValueType oldSolution[],
+        const ValueType omega );
 
     /** Implemenatation for DIAKernelTrait::Reductions::absMaxVal */
 

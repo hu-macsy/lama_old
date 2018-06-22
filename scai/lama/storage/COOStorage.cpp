@@ -37,16 +37,10 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/COOKernelTrait.hpp>
 #include <scai/sparsekernel/COOUtils.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
-
-#include <scai/blaskernel/BLASKernelTrait.hpp>
-
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/NoSyncToken.hpp>
@@ -74,11 +68,8 @@ namespace scai
 
 using tasking::SyncToken;
 
-using utilskernel::UtilKernelTrait;
-using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
 
-using sparsekernel::COOKernelTrait;
 using sparsekernel::COOUtils;
 using sparsekernel::CSRUtils;
 
@@ -664,39 +655,10 @@ SyncToken* COOStorage<ValueType>::incGEMV(
 {
     SCAI_LOG_INFO( logger, "incGEMV ( async = " << async << " ) , result += " << alpha << " * storage * x" )
 
-    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
-    ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
-    std::unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> cooIA( mIA, loc );
-    ReadAccess<IndexType> cooJA( mJA, loc );
-    ReadAccess<ValueType> cooValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    WriteAccess<ValueType> wResult( result, loc );
-    // use general kernel, might change
-    ValueType beta = 1;
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, wResult.get(),
-                     getNumRows(), getNumColumns(), mIA.size(),
-                     cooIA.get(), cooJA.get(), cooValues.get(), op );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( cooValues.releaseDelayed() );
-        syncToken->pushRoutine( cooIA.releaseDelayed() );
-        syncToken->pushRoutine( cooJA.releaseDelayed() );
-    }
-
-    return syncToken.release();
+    return COOUtils::gemv( result, 
+                           getNumRows(), getNumColumns(), mIA, mJA, mValues, op, 
+                           alpha, x, ValueType( 1 ), result, 
+                           async, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1018,19 +980,29 @@ void COOStorage<ValueType>::jacobiIterate(
     SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), oldSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), rhs.size() )
     SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), getNumColumns() )              // matrix must be square
-    static LAMAKernel<COOKernelTrait::jacobi<ValueType> > jacobi;
-    ContextPtr loc = this->getContextPtr();
-    jacobi.getSupportedContext( loc );
-    ReadAccess<IndexType> cooIA( mIA, loc );
-    ReadAccess<IndexType> cooJA( mJA, loc );
-    ReadAccess<ValueType> cooValues( mValues, loc );
-    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
-    ReadAccess<ValueType> rRhs( rhs, loc );
-    WriteOnlyAccess<ValueType> wSolution( solution, loc, getNumRows() );
-    // Due to diagonal property there is no advantage by taking row indexes
-    SCAI_CONTEXT_ACCESS( loc )
-    jacobi[loc]( wSolution.get(), getNumValues(), cooIA.get(), cooJA.get(), cooValues.get(),
-                 rOldSolution.get(), rRhs.get(), omega, getNumRows() );
+
+    COOUtils::jacobi( solution, omega, oldSolution, rhs,
+                      mIA, mJA, mValues, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::jacobiIterateHalo(
+    HArray<ValueType>& localSolution,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& oldHaloSolution,
+    const ValueType omega ) const
+{
+    SCAI_REGION( "Storage.COO.jacobiIterateHalo" )
+
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for halo matrix data." )
+
+    SCAI_ASSERT_EQ_ERROR( getNumRows(), localSolution.size(), "array localSolution has illegal size" )
+    SCAI_ASSERT_EQ_ERROR( getNumColumns(), oldHaloSolution.size(), "array old halo solution has illegal size" )
+
+    COOUtils::jacobiHalo( localSolution, omega, localDiagonal, oldHaloSolution,
+                          mIA, mJA, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

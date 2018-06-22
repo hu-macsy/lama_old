@@ -265,35 +265,12 @@ public:
     /*  set / get CSR data                                                  */
     /* ==================================================================== */
 
-    /** Implementation of _MatrixStorage::setCSRData for this class.  */
-
     void setCSRData(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values )
-    {
-        mepr::StorageWrapper<ELLStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
-    }
-
-    /**
-     * @brief template (non-virtual) version of setCSRData with explicit other value type.
-     *
-     * @param[in] numRows    number of rows
-     * @param[in] numColumns number of columns
-     * @param[in] ia         row pointer of the input csr sparse matrix
-     * @param[in] ja         column indexes of the input csr sparse matrix
-     * @param[in] values     the data values of the input csr sparse matrix
-     */
-    template<typename OtherValueType>
-    void setCSRDataImpl(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const hmemo::HArray<IndexType>& ia,
-        const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values );
+        const hmemo::_HArray& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -301,35 +278,11 @@ public:
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
-    {
-        hmemo::HArray<IndexType>* ja = NULL;
-        hmemo::HArray<ValueType>* values = NULL;
-        buildCSR( ia, ja, values, this->getContextPtr() );
-    }
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const;
 
     /** Implementation for _MatrixStorage::buildCSRData */
 
-    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
-    {
-        mepr::StorageWrapper<ELLStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );
-    }
-
-    /** 
-     *  @brief Template (non-virtual) version of building CSR data
-     *
-     *  @param[out] ia is the CSR offset array
-     *  @param[out] ja is the array with the column indexes (optional)
-     *  @param[out] values is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
-     */
-    template<typename OtherValueType>
-    void buildCSR(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>* ja,
-        hmemo::HArray<OtherValueType>* values,
-        const hmemo::ContextPtr loc ) const;
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const;
 
     void setELLData(
         const IndexType numRows,
@@ -606,32 +559,6 @@ private:
     void matrixTimesMatrixELL( const ValueType alpha,
                                const ELLStorage<ValueType>& a,
                                const ELLStorage<ValueType>& b );
-
-    /** result += alpha (*this) * x, where this storage has sparse rows */
-
-    tasking::SyncToken* sparseGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
-    /** result = alpha * (*this) * x  */
-
-    tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
-    /** result = alpha * (*this) * x + beta * y */
-
-    tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const ValueType beta,
-                                    const hmemo::HArray<ValueType>& y,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
 
     /** matrixTimesVector for synchronous and asynchronous execution */
 

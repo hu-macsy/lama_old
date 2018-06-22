@@ -192,16 +192,16 @@ void OpenMPDIAUtils::getCSRValues(
         {
             IndexType offset = csrIA[i];
 
-            for ( IndexType ii = 0; ii < numDiagonals; ii++ )
+            for ( IndexType d = 0; d < numDiagonals; d++ )
             {
-                IndexType j = i + diaOffsets[ii];
+                IndexType j = i + diaOffsets[d];
 
                 if ( !common::Utils::validIndex( j, numColumns ) )
                 {
                     continue;
                 }
 
-                const ValueType value = diaValues[i + ii * numRows];
+                const ValueType value = diaValues[i + d * numRows];
 
                 if ( value == ZERO )
                 {
@@ -243,16 +243,16 @@ void OpenMPDIAUtils::getCSRSizes(
     {
         IndexType count = 0;
 
-        for ( IndexType ii = 0; ii < numDiagonals; ii++ )
+        for ( IndexType d = 0; d < numDiagonals; d++ )
         {
-            IndexType j = i + diaOffsets[ii]; // column index
+            IndexType j = i + diaOffsets[d]; // column index
 
             if ( !common::Utils::validIndex( j, numColumns ) )
             {
                 continue;
             }
 
-            if ( diaValues[i + ii * numRows] != ZERO )
+            if ( diaValues[i + d * numRows] != ZERO )
             {
                 count++;
             }
@@ -321,13 +321,13 @@ void OpenMPDIAUtils::normalGEMV(
             {
                 ValueType accu = 0;
 
-                for ( IndexType ii = 0; ii < numDiagonals; ++ii )
+                for ( IndexType d = 0; d < numDiagonals; ++d )
                 {
-                    const IndexType i = j - diaOffsets[ii];
+                    const IndexType i = j - diaOffsets[d];
 
                     if ( common::Utils::validIndex( i, numRows ) )
                     {
-                        accu += diaValues[ii * numRows + i] * x[i];
+                        accu += diaValues[d * numRows + i] * x[i];
                     }
                 }
      
@@ -354,13 +354,13 @@ void OpenMPDIAUtils::normalGEMV(
             {
                 ValueType accu = 0;
     
-                for ( IndexType ii = 0; ii < numDiagonals; ++ii )
+                for ( IndexType d = 0; d < numDiagonals; ++d )
                 {
-                    const IndexType j = i + diaOffsets[ii];
+                    const IndexType j = i + diaOffsets[d];
     
                     if ( common::Utils::validIndex( j, numColumns ) )
                     {
-                        accu += diaValues[ii * numRows + i] * x[j];
+                        accu += diaValues[d * numRows + i] * x[j];
                     }
                 }
 
@@ -388,20 +388,18 @@ void OpenMPDIAUtils::normalGEMV(
 template<typename ValueType>
 void OpenMPDIAUtils::jacobi(
     ValueType solution[],
-    const IndexType numColumns,
+    const IndexType n,
     const IndexType numDiagonals,
     const IndexType diaOffset[],
     const ValueType diaValues[],
     const ValueType oldSolution[],
     const ValueType rhs[],
-    const ValueType omega,
-    const IndexType numRows )
+    const ValueType omega )
 {
     SCAI_LOG_INFO( logger,
-                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #cols = " << numColumns 
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", " << n << " x " << n
                     << ", #diagonals = " << numDiagonals << ", omega = " << omega )
 
-    // main diagonal must be first
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken != NULL )
@@ -412,34 +410,80 @@ void OpenMPDIAUtils::jacobi(
     ValueType omega1 = 1;
     omega1 -= omega;
 
+    // computations for each element are independent
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.Jacobi" )
         #pragma omp for 
 
-        for ( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             ValueType temp = rhs[i];
             ValueType diag = 0;
 
-            for ( IndexType ii = 0; ii < numDiagonals; ++ii )
+            for ( IndexType d = 0; d < numDiagonals; ++d )
             {
-                if ( diaOffset[ii] == 0 )
+                if ( diaOffset[d] == 0 )
                 {
-                    diag = diaValues[ ii * numRows + i ];
+                    // save the diagonal element for division later
+
+                    diag = diaValues[ d * n + i ];
                 }
                 else
                 {
-                    const IndexType j = i + diaOffset[ii];
+                    const IndexType j = i + diaOffset[d];
 
-                    if ( common::Utils::validIndex( j, numColumns ) )
+                    if ( common::Utils::validIndex( j, n ) )
                     {
-                        temp -= diaValues[ii * numRows + i] * oldSolution[j];
+                        temp -= diaValues[d * n + i] * oldSolution[j];
                     }
                 }
             }
 
             solution[i] = omega * ( temp / diag ) + omega1 * oldSolution[i];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+/*  Jacobi                                                                     */
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPDIAUtils::jacobiHalo(
+    ValueType solution[],
+    const ValueType diagonal[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffset[],
+    const ValueType diaValues[],
+    const ValueType oldSolution[],
+    const ValueType omega )
+{
+    SCAI_LOG_INFO( logger,
+                   "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", " << numRows << " x " << numColumns
+                    << ", #diagonals = " << numDiagonals << ", omega = " << omega )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken != NULL )
+    {
+        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+    }
+
+    for ( IndexType i = 0; i < numRows; i++ )
+    {
+        for ( IndexType d = 0; d < numDiagonals; ++d )
+        {
+            const IndexType j = i + diaOffset[d];
+
+            if ( common::Utils::validIndex( j, numColumns ) )
+            {
+                ValueType temp = diaValues[d * numRows + i] * oldSolution[j];
+                solution[i] -= omega * temp / diagonal[i];
+            }
         }
     }
 }
@@ -469,6 +513,7 @@ void OpenMPDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<DIAKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }
 

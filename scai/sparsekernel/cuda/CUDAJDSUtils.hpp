@@ -44,6 +44,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/MatrixOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -59,16 +60,17 @@ class COMMON_DLL_IMPORTEXPORT CUDAJDSUtils
 {
 public:
 
-    /** CUDA implementation of JDSKernelTrait::scaleRows */
+    /** CUDA implementation of JDSKernelTrait::setRows */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        const ValueType rowValues[] );
+        const ValueType rowValues[],
+        common::BinaryOp op );
 
     /** CUDA implementation of JDSKernelTrait::getRow */
 
@@ -105,24 +107,24 @@ public:
 
     /** Conversion of JDS to CSR as specified in JDSKernelTrait::getCSRValues  */
 
-    template<typename JDSValueType, typename CSRValueType>
+    template<typename ValueType>
     static void getCSRValues(
         IndexType csrJA[],
-        CSRValueType csrValues[],
+        ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
         const IndexType jdsPerm[],
         const IndexType jdsILG[],
         const IndexType jdsDLG[],
         const IndexType jdsJA[],
-        const JDSValueType jdsValues[] );
+        const ValueType jdsValues[] );
 
     /** Conversion of CSR to JDS in CUDA as specified in JDSKernelTrait::getCSRValues  */
 
-    template<typename JDSValueType, typename CSRValueType>
+    template<typename ValueType>
     static void setCSRValues(
         IndexType jdsJA[],
-        JDSValueType jdsValues[],
+        ValueType jdsValues[],
         const IndexType numRows,
         const IndexType jdsPerm[],
         const IndexType jdsILG[],
@@ -130,7 +132,7 @@ public:
         const IndexType jdsDLG[],
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const CSRValueType csrValues[] );
+        const ValueType csrValues[] );
 
     /** Implementation for JDSKernelTrait::jacobi  */
 
@@ -218,18 +220,6 @@ private:
 
     template<typename ValueType>
     struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
     {
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };

@@ -38,7 +38,6 @@
 #include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
 #include <scai/common/Grid.hpp>

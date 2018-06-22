@@ -379,6 +379,22 @@ public:
         const ValueType beta,
         const MatrixStorage<ValueType>& c );
 
+    /** Implementation of MatrixStorage::jacobiIterate for Dense */
+
+    virtual void jacobiIterate(
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const ValueType omega ) const;
+
+    /** Implementation of MatrixStorage::jacobiIterateHalo for Dense */
+
+    virtual void jacobiIterateHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& haloOldSolution,
+        const ValueType omega ) const;
+
     /** Implementation of element-wise binary operation for dense storage */
 
     virtual void binaryOp(

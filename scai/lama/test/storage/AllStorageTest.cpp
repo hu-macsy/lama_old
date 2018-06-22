@@ -283,8 +283,8 @@ BOOST_AUTO_TEST_CASE( conversionTest )
 
             initStorage( storage1 );
 
-            SCAI_LOG_DEBUG( logger, "conversionTest " << s1 << " x " << s2 << " of " << n << " x " << n 
-                                    << ", storage1 = " << storage1 << ", -> storage2  = " << storage2 )
+            SCAI_LOG_INFO( logger, "conversionTest " << s1 << " x " << s2 << " of " << n << " x " << n 
+                                   << ", storage1 = " << storage1 << ", -> storage2  = " << storage2 )
 
 
             storage2 = storage1;   // converts both: type and format

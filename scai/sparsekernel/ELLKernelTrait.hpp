@@ -134,7 +134,7 @@ struct ELLKernelTrait
 
     /** Conversion routines between ELL and CSR storage format. */
 
-    template<typename ELLValueType, typename CSRValueType>
+    template<typename ValueType>
     struct getCSRValues
     {
         /** Conversion from ELL data to CSR data
@@ -149,13 +149,13 @@ struct ELLKernelTrait
          */
         typedef void ( *FuncType ) (
             IndexType csrJA[],
-            CSRValueType csrValues[],
+            ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ELLValueType ellValues[] );
+            const ValueType ellValues[] );
 
         static const char* getId()
         {
@@ -163,20 +163,20 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ELLValueType, typename CSRValueType>
+    template<typename ValueType>
     struct setCSRValues
     {
         /** Conversion from CSR data to ELL data      */
 
         typedef void ( *FuncType ) (
             IndexType ellJA[],
-            ELLValueType ellValues[],
+            ValueType ellValues[],
             const IndexType ellSizes[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType csrIA[],
             const IndexType csrJA[],
-            const CSRValueType csrValues[] );
+            const ValueType csrValues[] );
 
         static const char* getId()
         {
@@ -461,18 +461,28 @@ struct ELLKernelTrait
     };
 
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
+        /** This method updates each row of the matrix with an individual value. 
+         *
+         *  @param[in,out] ellValues  the ELL matrix values that are updated
+         *  @param[in]     ellIA             row sizes
+         *  @param[in]     numRows           number of rows
+         *  @param[in]     numValuesPerRow   maximal number of non-zero values per row
+         *  @param[in]     rowValues         one entry for each row 
+         *  @param[in]     op                specifies how to update the row values
+         */
         typedef void ( *FuncType ) (
             ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
-            const ValueType values[] );
+            const ValueType rowValues[],
+            const common::BinaryOp op );
 
         static const char* getId()
         {
-            return "ELL.scaleRows";
+            return "ELL.setRows";
         }
     };
 

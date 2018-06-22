@@ -133,7 +133,7 @@ struct JDSKernelTrait
         }
     };
 
-    template<typename JDSValueType, typename CSRValueType>
+    template<typename ValueType>
     struct getCSRValues
     {
         /** Conversion of JDS storage data to CSR data
@@ -150,14 +150,14 @@ struct JDSKernelTrait
          */
 
         typedef void ( *FuncType ) ( IndexType csrJA[],
-                                     CSRValueType csrValues[],
+                                     ValueType csrValues[],
                                      const IndexType csrIA[],
                                      const IndexType numRows,
                                      const IndexType jdsPerm[],
                                      const IndexType jdsILG[],
                                      const IndexType jdsDLG[],
                                      const IndexType jdsJA[],
-                                     const JDSValueType jdsValues[] );
+                                     const ValueType jdsValues[] );
 
         static const char* getId()
         {
@@ -165,7 +165,7 @@ struct JDSKernelTrait
         }
     };
 
-    template<typename JDSValueType, typename CSRValueType>
+    template<typename ValueType>
     struct setCSRValues
     {
 
@@ -184,7 +184,7 @@ struct JDSKernelTrait
          */
 
         typedef void( *FuncType ) ( IndexType jdsJA[],
-                                    JDSValueType jdsValues[],
+                                    ValueType jdsValues[],
                                     const IndexType numRows,
                                     const IndexType jdsPerm[],
                                     const IndexType jdsILG[],
@@ -192,7 +192,7 @@ struct JDSKernelTrait
                                     const IndexType jdsDLG[],
                                     const IndexType csrIA[],
                                     const IndexType csrJA[],
-                                    const CSRValueType csrValues[] );
+                                    const ValueType csrValues[] );
 
         static const char* getId()
         {
@@ -373,7 +373,7 @@ struct JDSKernelTrait
     };
 
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
         /** This method scales each row of the matrix with a certain value
          *
@@ -382,18 +382,20 @@ struct JDSKernelTrait
          * @param[in]     ilg        ilg[i] number of entries in row i
          * @param[in]     dlg        diagonals
          * @param[in,out] jdsValues  array containing all non-zero values, are scaled row-wise
-         * @param[in]     rowValues  rowvalues[i] is used to scale row i
+         * @param[in]     rowValues  rowvalues[i] is applied to  row i
+         * @param[in]     op         binary operation specifies how to update
          */
         typedef void ( *FuncType ) ( ValueType jdsValues[],
                                      const IndexType numRows,
                                      const IndexType perm[],
                                      const IndexType ilg[],
                                      const IndexType dlg[],
-                                     const ValueType rowValues[] );
+                                     const ValueType rowValues[],
+                                     const common::BinaryOp op );
 
         static const char* getId()
         {
-            return "JDS.scaleRows";
+            return "JDS.setRows";
         }
     };
 };

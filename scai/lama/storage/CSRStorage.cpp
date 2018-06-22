@@ -38,10 +38,8 @@
 
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/sparsekernel/COOUtils.hpp>
-#include <scai/sparsekernel/DIAKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
 #include <scai/lama/Scalar.hpp>
@@ -50,7 +48,6 @@
 
 
 // internal scai libraries
-#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -86,9 +83,6 @@ using common::TypeTraits;
 using common::BinaryOp;
 using common::CompareOp;
 
-using sparsekernel::CSRKernelTrait;
-using sparsekernel::DIAKernelTrait;
-using sparsekernel::OpenMPCSRUtils;
 using sparsekernel::CSRUtils;
 
 using tasking::SyncToken;
@@ -268,31 +262,23 @@ void CSRStorage<ValueType>::check( const char* msg ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( getNumRows() + 1, mIA.size() )
     SCAI_ASSERT_EQ_ERROR( mJA.size(), mValues.size(), "serious mistmach for sizes of csrJa and csrValues" )
+
     // check ascending values in offset array mIA
-    {
-        static LAMAKernel<UtilKernelTrait::isSorted<IndexType> > isSorted;
-        static LAMAKernel<UtilKernelTrait::getValue<IndexType> > getValue;
-        ContextPtr loc = this->getContextPtr();
-        isSorted.getSupportedContext( loc, getValue );
-        ReadAccess<IndexType> csrIA( mIA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        IndexType numValues = getValue[ loc ]( csrIA.get(), getNumRows() );
-        SCAI_ASSERT_EQ_ERROR( numValues, mJA.size(),
-                              "ia[" << getNumRows() << "] = " << numValues << ", msg = " << msg )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( csrIA.get(), getNumRows() + 1, CompareOp::LE ),
-                           *this << " @ " << msg << ": IA is illegal offset array" )
-    }
+
+    IndexType numRows = getNumRows();
+    IndexType numValues = mIA[ numRows ];
+    SCAI_ASSERT_EQ_ERROR( numValues, mJA.size(), "mIA[" << numRows << "] = " << numValues << ", msg = " << msg )
+
+    // check ascending values in offset array mIA
+
+    bool isSorted = HArrayUtils::isSorted( mIA, CompareOp::LE, getContextPtr() );
+    SCAI_ASSERT_ERROR( isSorted, "IA is illegal offset array, not ascending weakly" )
+
     // check column indexes in JA
-    {
-        static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
-        ContextPtr loc = this->getContextPtr();
-        validIndexes.getSupportedContext( loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_ERROR( validIndexes[loc]( rJA.get(), mJA.size(), getNumColumns() ),
-                           *this << " @ " << msg << ": illegel indexes in JA" )
-    }
+
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mJA, getNumColumns() ), "mJA contains illegal indexes" )
 }
+
 #endif
 
 /* --------------------------------------------------------------------------- */
@@ -951,23 +937,10 @@ void CSRStorage<ValueType>::conj()
 template<typename ValueType>
 void CSRStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
 {
-    IndexType n = std::min( getNumRows(), diagonal.size() );
-    static LAMAKernel<CSRKernelTrait::scaleRows<ValueType> > scaleRows;
-    ContextPtr loc = this->getContextPtr();
-    scaleRows.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    {
-        ReadAccess<ValueType> rDiagonal( diagonal, loc );
-        ReadAccess<IndexType> csrIA( mIA, loc );
-        WriteAccess<ValueType> csrValues( mValues, loc ); // updateAccess
-        scaleRows[loc]( csrValues.get(), csrIA.get(), n, rDiagonal.get() );
-    }
+    SCAI_ASSERT_EQ_ERROR( getNumRows(), diagonal.size(), "not one element for each row" )
 
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        SCAI_LOG_TRACE( logger, "CSR after scale diagonal" )
-        print( std::cout );
-    }
+    CSRUtils::setRows( mValues, getNumRows(), getNumColumns(), mIA, mJA,
+                       diagonal, common::BinaryOp::MULT, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1137,13 +1110,7 @@ void CSRStorage<ValueType>::buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
 {
     // build size array from offset array mIA
 
-    static LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
-    ContextPtr loc = mIA.getValidContext();
-    offsets2sizes.getSupportedContext( loc );
-    ReadAccess<IndexType> offsetIA( mIA, loc );
-    WriteOnlyAccess<IndexType> sizesIA( ia, loc, getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    offsets2sizes[ loc ]( sizesIA.get(), offsetIA.get(), getNumRows() );
+    CSRUtils::offsets2sizes( ia, mIA, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1291,8 +1258,10 @@ void CSRStorage<ValueType>::matrixTimesVector(
     const common::MatrixOp op ) const
 {
     bool async = false; // synchronously execution, no SyncToken required
+
     SyncToken* token = gemv( result, alpha, x, beta, y, op, async );
-    SCAI_ASSERT( token == NULL, "There should be no sync token for synchronous execution" )
+
+    SCAI_ASSERT_DEBUG( token == NULL, "There should be no sync token for synchronous execution" )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1312,173 +1281,16 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), n * getNumColumns() )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), n * getNumRows() )
 
-    if ( ( beta != common::Constants::ZERO ) && ( &result != &y ) )
+    if ( beta != common::Constants::ZERO )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), n * getNumRows() )
     }
 
-    static LAMAKernel<CSRKernelTrait::gemm<ValueType> > gemm;
-    ContextPtr loc = this->getContextPtr();
-    gemm.getSupportedContext( loc );
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVectorN on " << *loc )
-    ReadAccess<IndexType> csrIA( mIA, loc );
-    ReadAccess<IndexType> csrJA( mJA, loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    ReadAccess<ValueType> rY( y, loc );
-    // due to possible alias of result and y, write access must follow read(y)
-    WriteOnlyAccess<ValueType> wResult( result, loc, getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    gemm[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), getNumRows(), n, getNumColumns(),
-               csrIA.get(), csrJA.get(), csrValues.get() );
-}
+    bool async = false;
 
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* CSRStorage<ValueType>::sparseGEMV(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const common::MatrixOp op,
-    bool async ) const
-{
-    static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
-    ContextPtr loc = this->getContextPtr();
-    sparseGEMV.getSupportedContext( loc );
-    unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> csrIA( mIA, loc );
-    ReadAccess<IndexType> csrJA( mJA, loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    WriteAccess<ValueType> wResult( result, loc );
-    // result += alpha * thisMatrix * x, can take advantage of row indexes
-    IndexType numNonZeroRows = mRowIndexes.size();
-    ReadAccess<IndexType> rows( mRowIndexes, loc );
-    sparseGEMV[loc]( wResult.get(), alpha, rX.get(), 
-                     numNonZeroRows, rows.get(), 
-                     csrIA.get(), csrJA.get(), csrValues.get(), op );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( rows.releaseDelayed() );
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( csrIA.releaseDelayed() );
-        syncToken->pushRoutine( csrJA.releaseDelayed() );
-        syncToken->pushRoutine( csrValues.releaseDelayed() );
-    }
-
-    return syncToken.release();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* CSRStorage<ValueType>::normalGEMV(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const ValueType beta,
-    const HArray<ValueType>& y,
-    const common::MatrixOp op,
-    bool async ) const
-{
-    SCAI_LOG_INFO( logger, "normalGEMV<" << getValueType() << ">( op = " << op << ", async = " << async
-                   << ") : result = " << alpha << " * this * x + " << beta << " * y" )
-
-    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
-    unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() );
-    SCAI_CONTEXT_ACCESS( loc )
-    // Note: alias &result == &y possible
-    //       ReadAccess on y before WriteOnlyAccess on result guarantees valid data
-    ReadAccess<IndexType> csrIA( mIA, loc );
-    ReadAccess<IndexType> csrJA( mJA, loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-    ReadAccess<ValueType> rY( y, loc );
-    const IndexType n = common::isTranspose( op ) ? getNumColumns() : getNumRows();
-    WriteOnlyAccess<ValueType> wResult( result, loc, n );
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), getNumRows(), getNumColumns(), mJA.size(), csrIA.get(),
-                     csrJA.get(), csrValues.get(), op );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rY.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( csrIA.releaseDelayed() );
-        syncToken->pushRoutine( csrJA.releaseDelayed() );
-        syncToken->pushRoutine( csrValues.releaseDelayed() );
-    }
-
-    return syncToken.release();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* CSRStorage<ValueType>::normalGEMV(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    const common::MatrixOp op,
-    bool async ) const
-{
-    SCAI_LOG_INFO( logger, "normalGEMV<" << getValueType() << ">( op = " << op << ", async = " << async
-                   << ") : result = " << alpha << " * this * x" )
-
-    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
-    ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
-    unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> csrIA( mIA, loc );
-    ReadAccess<IndexType> csrJA( mJA, loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-
-    const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
-    WriteOnlyAccess<ValueType> wResult( result, loc, nTarget );
-    ValueType beta = 0;
-    normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, NULL, getNumRows(), getNumColumns(), mJA.size(),
-                     csrIA.get(), csrJA.get(), csrValues.get(), op );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( csrIA.releaseDelayed() );
-        syncToken->pushRoutine( csrJA.releaseDelayed() );
-        syncToken->pushRoutine( csrValues.releaseDelayed() );
-    }
-
-    return syncToken.release();
+    CSRUtils::gemm( result, alpha, x, beta, y,
+                    getNumRows(), getNumColumns(), n,
+                    mIA, mJA, mValues, common::MatrixOp::NORMAL, async, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1495,63 +1307,39 @@ SyncToken* CSRStorage<ValueType>::gemv(
 {
     SCAI_REGION( "Storage.CSR.gemv" )
 
-    const IndexType nSource = common::isTranspose( op ) ? getNumRows() : getNumColumns();
-    const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
-
     SCAI_LOG_INFO( logger,
                    "GEMV ( op = " << op << ", async = " << async 
                    << " ), result = " << alpha << " * A * x + " << beta << " * y "
                    << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
-    if ( alpha == common::Constants::ZERO || ( mJA.size() == 0 ) )
-    {
-        // so we just have result = beta * y, will be done synchronously
+    MatrixStorage<ValueType>::gemvCheck( alpha, x, beta, y, op );  // checks for correct sizes
 
-        if ( beta == common::Constants::ZERO )
-        {
-            HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), this->getContextPtr() );
-        }
-        else
-        {
-            HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
-        }
-
-        if ( async )
-        {
-            return new tasking::NoSyncToken();
-        }
-        else
-        {
-            return NULL;
-        }
-    }
-
-    // check for correct sizes of x
-
-    SCAI_ASSERT_EQ_ERROR( x.size(), nSource, "serious size mismatch gemv, op = " << op )
+    SyncToken* token = NULL;
 
     if ( beta == common::Constants::ZERO )
     {
         // take version that does not access y at all (can be undefined or aliased to result)
 
-        return normalGEMV( result, alpha, x, op, async );
+        token = CSRUtils::gemv0( result, alpha, x, 
+                                 getNumRows(), getNumColumns(), mIA, mJA, mValues, 
+                                 op, async, getContextPtr() );
     }
-
-    // y is relevant, so it must have correct size
-
-    SCAI_ASSERT_EQ_ERROR( y.size(), nTarget, "serious size mismatch gemv, op = " << op )
-
-    if ( &result == &y && ( beta == common::Constants::ONE ) && ( mRowIndexes.size() > 0 ) )
+    else if ( &result == &y && ( beta == common::Constants::ONE ) && ( mRowIndexes.size() > 0 ) )
     {
         // y += A * x,  where only some rows in A are filled, uses more efficient routine
 
-        return sparseGEMV( result, alpha, x, op, async );
+        token = CSRUtils::gemvSp( result, alpha, x, getNumRows(), getNumColumns(),
+                                  mIA, mJA, mValues, op, mRowIndexes, async, getContextPtr() );
     }
     else
     {
-        return normalGEMV( result, alpha, x, beta, y, op, async );
+        token = CSRUtils::gemv( result, alpha, x, beta, y,
+                                getNumRows(), getNumColumns(), mIA, mJA, mValues, 
+                                op, async, getContextPtr() );
     }
+
+    return token;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1566,8 +1354,16 @@ SyncToken* CSRStorage<ValueType>::matrixTimesVectorAsync(
     const common::MatrixOp op ) const
 {
     bool async = true;
+
     SyncToken* token = gemv( result, alpha, x, beta, y, op, async );
-    SCAI_ASSERT( token, "NULL token not allowed for asynchronous execution gemv, alpha = " << alpha << ", beta = " << beta )
+
+    if ( token == NULL )
+    {
+        // null pointer not allowed later if async mode is used, cannot call wait
+
+        token  = new tasking::NoSyncToken();
+    }
+
     return token;
 }
 
@@ -1603,33 +1399,10 @@ void CSRStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_EQ_ERROR( getNumRows(), localSolution.size(), "array localSolution has illegal size" )
     SCAI_ASSERT_EQ_ERROR( getNumColumns(), oldHaloSolution.size(), "array old halo solution has illegal size" )
 
-    static LAMAKernel<CSRKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
-    ContextPtr loc = this->getContextPtr();
-    jacobiHalo.getSupportedContext( loc );
-    {
-        WriteAccess<ValueType> wSolution( localSolution, loc ); // will be updated
-        ReadAccess<ValueType> localDiagValues( localDiagonal, loc );
-        ReadAccess<IndexType> haloIA( mIA, loc );
-        ReadAccess<IndexType> haloJA( mJA, loc );
-        ReadAccess<ValueType> haloValues( mValues, loc );
-        ReadAccess<ValueType> rOldHaloSolution( oldHaloSolution, loc );
-        const IndexType numNonEmptyRows = mRowIndexes.size();
-        SCAI_LOG_INFO( logger, "#row indexes = " << numNonEmptyRows )
+    // as it is an update, here we can optimize by traversing only non-empty rows as stated by mRowIndexes
 
-        if ( numNonEmptyRows != 0 )
-        {
-            ReadAccess<IndexType> haloRowIndexes( mRowIndexes, loc );
-            SCAI_CONTEXT_ACCESS( loc )
-            jacobiHalo[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                             haloRowIndexes.get(), rOldHaloSolution.get(), omega, numNonEmptyRows );
-        }
-        else
-        {
-            SCAI_CONTEXT_ACCESS( loc )
-            jacobiHalo[loc]( wSolution.get(), localDiagValues.get(), haloIA.get(), haloJA.get(), haloValues.get(),
-                             NULL, rOldHaloSolution.get(), omega, getNumRows() );
-        }
-    }
+    CSRUtils::jacobiHalo( localSolution, omega, localDiagonal, oldHaloSolution, 
+                          mIA, mJA, mValues, mRowIndexes, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1875,6 +1648,7 @@ template<typename ValueType>
 RealType<ValueType> CSRStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
+
     return HArrayUtils::l1Norm( mValues, this->getContextPtr() );
 }
 
@@ -1884,10 +1658,8 @@ template<typename ValueType>
 RealType<ValueType> CSRStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
-    ContextPtr prefLoc = this->getContextPtr();
-    RealType<ValueType> res = HArrayUtils::dotProduct( mValues, mValues, prefLoc );
-    res = common::Math::sqrt( res );
-    return res;
+
+    return HArrayUtils::l2Norm( mValues, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1895,22 +1667,9 @@ RealType<ValueType> CSRStorage<ValueType>::l2Norm() const
 template<typename ValueType>
 RealType<ValueType> CSRStorage<ValueType>::maxNorm() const
 {
-    // no more checks needed here
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    if ( mValues.size() == 0 )
-    {
-        return 0;
-    }
-
-    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-    ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-    ReadAccess<ValueType> csrValues( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ValueType zero   = 0;
-    ValueType maxval = reduce[loc]( csrValues.get(), mValues.size(), zero, BinaryOp::ABS_MAX );
-    return maxval;
+    return HArrayUtils::maxNorm( mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1942,28 +1701,20 @@ RealType<ValueType> CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<Valu
 template<typename ValueType>
 RealType<ValueType> CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& other ) const
 {
-    // no more checks needed here
+    // checks for matching sizes are already done, we also can rely on consistent CSR data
+
     SCAI_LOG_INFO( logger, *this << ": maxDiffNormImpl( " << other << " )" )
 
     if ( getNumRows() == 0 )
     {
-        return static_cast<ValueType>( 0.0 );
+        return RealType<ValueType>( 0 );
     }
 
     bool sorted = mSortedRows && other.mSortedRows;
-    static LAMAKernel<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
-    ContextPtr loc = this->getContextPtr();
-    absMaxDiffVal.getSupportedContext( loc );
-    ReadAccess<IndexType> csrIA1( mIA, loc );
-    ReadAccess<IndexType> csrJA1( mJA, loc );
-    ReadAccess<ValueType> csrValues1( mValues, loc );
-    ReadAccess<IndexType> csrIA2( other.mIA, loc );
-    ReadAccess<IndexType> csrJA2( other.mJA, loc );
-    ReadAccess<ValueType> csrValues2( other.mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ValueType maxval = absMaxDiffVal[loc] ( getNumRows(), sorted, csrIA1.get(), csrJA1.get(), csrValues1.get(), csrIA2.get(),
-                                            csrJA2.get(), csrValues2.get() );
-    return maxval;
+
+    auto maxVal = CSRUtils::absMaxDiffVal( mIA, mJA, mValues, other.mIA, other.mJA, other.mValues, 
+                                           getNumRows(), getNumColumns(), sorted, getContextPtr() );
+    return maxVal;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1979,10 +1730,7 @@ CSRStorage<ValueType>* CSRStorage<ValueType>::copy() const
 template<typename ValueType>
 void CSRStorage<ValueType>::buildSparseRowSizes( HArray<IndexType>& rowSizes ) const
 {
-    SCAI_LOG_DEBUG( logger, "copy nnz for each row in HArray" );
-    WriteOnlyAccess<IndexType> writeRowSizes( rowSizes, getNumRows() );
-    ReadAccess<IndexType> csrIA( mIA );
-    OpenMPCSRUtils::offsets2sizes( writeRowSizes.get(), csrIA.get(), getNumRows() );
+    CSRUtils::offsets2sizes( rowSizes, mIA, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
