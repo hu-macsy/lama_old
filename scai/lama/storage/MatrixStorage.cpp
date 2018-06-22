@@ -646,7 +646,7 @@ void MatrixStorage<ValueType>::reduce(
     const common::BinaryOp reduceOp,
     const common::UnaryOp elemOp )
 {
-    SCAI_ASSERT_VALID_INDEX_ERROR( dim, 2, "Illegal dimension, only 0 (rows) or 1 (columns)" )
+    SCAI_ASSERT_VALID_INDEX_ERROR( dim, IndexType( 2 ), "Illegal dimension, only 0 (rows) or 1 (columns)" )
 
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
