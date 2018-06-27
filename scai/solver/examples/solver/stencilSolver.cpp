@@ -169,6 +169,8 @@ int main( int argc, const char* argv[] )
 
         stencilSpecification >> nDims >> nPoints >> n1;
 
+        std::cout << "Stencil, ndims = " << nDims << ", nPoints = " << nPoints << ", n1 = " << n1 << std::endl;
+
         MatrixPtr<ValueType> matrixPtr;
 
         switch ( nDims )

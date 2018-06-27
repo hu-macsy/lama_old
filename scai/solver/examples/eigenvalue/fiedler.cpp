@@ -49,6 +49,9 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
+// we use own instrumentation with SCAI_REGION here
+#include <scai/tracing.hpp>
+
 // import common 
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
@@ -74,6 +77,8 @@ using namespace solver;
  */
 void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 {
+    SCAI_REGION( "main.makeLaplacian" )
+
     using namespace hmemo;
     using namespace utilskernel;
 
@@ -125,6 +130,8 @@ void makeLaplacian( CSRSparseMatrix<ValueType>& L )
  */
 int main( int argc, const char* argv[] )
 {
+    SCAI_REGION( "main.Fiedler" )
+
     // relevant SCAI arguments: 
     //   SCAI_CONTEXT = ...    set default context
     //   SCAI_DEVICE  = ...    set default device
@@ -188,6 +195,8 @@ int main( int argc, const char* argv[] )
 
     for ( IndexType k = 0; k < kmax; ++k )
     {
+        SCAI_REGION( "main.iterate" )
+
         // normalize t
 
         t = t / t.l2Norm();

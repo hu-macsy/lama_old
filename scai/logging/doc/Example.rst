@@ -19,21 +19,21 @@ At runtime it can be decided how detailed the logging should be:
 
 The INFO level prints all messages of level INFO, WARN, ERROR, and FATAL:
 
-.. code-block:: c++
+.. code-block:: none
 
     2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::44 ) INFO a message about progress in the program
     2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::47 ) WARN a message with a warning, but execution is still possible
     2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::48 ) ERROR a message for an error, error handling will be invoked
     2015-08-19, 16:14:11 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
 
-.. code-block:: c++
+.. code-block:: bash
 
     export SCAI_LOG=ERROR
     examples/LogLevels.exe
 
 The ERROR level prints all messages of level ERROR and FATAL, all other logging messages are suppressed.
 
-.. code-block:: c++
+.. code-block:: none
 
     2015-08-19, 16:14:25 Demo @ main ( main -> LogLevels.cpp::48 ) ERROR a message for an error, error handling will be invoked
     2015-08-19, 16:14:25 Demo @ main ( main -> LogLevels.cpp::49 ) FATAL a message for a fatal error, execution will stop
@@ -41,12 +41,12 @@ The ERROR level prints all messages of level ERROR and FATAL, all other logging 
 Using a config file (here with the name ``config``) is also possible, it should contain a line that sets the
 level of the logger *Demo*.
 
-.. code-block:: c++
+.. code-block:: none
 
     # config file for logging
     Demo = TRACE
 
-.. code-block:: c++
+.. code-block:: none
 
     export SCAI_LOG=config
     examples/LogLevels.exe

@@ -1,0 +1,29 @@
+Example:fiedler
+---------------
+
+Computes the Fiedler vector of a Laplacian matrix.
+
+fiedler.exe <matrix_filename>
+
+If matrix is a pattern format (Matrix Market), please set environment variable
+
+SCAI_IO_TYPE_DATA=_Pattern
+
+Example:
+
+fiedler.exe ~/Matrices/fiedler/bcspwr09.mtx --SCAI_IO_TYPE_DATA=_Pattern
+Iter 0, lambda = 1.00058, diff = 0.999709
+Iter 1, lambda = 0.015327, diff = 0.0045091
+Iter 2, lambda = 0.00432685, diff = 0.000917312
+Iter 3, lambda = 0.00397695, diff = 0.000546245
+Iter 4, lambda = 0.00361585, diff = 0.00194637
+Iter 5, lambda = 0.00279565, diff = 0.000240391
+Iter 6, lambda = 0.00210558, diff = 0.00130798
+Iter 7, lambda = 0.00189515, diff = 0.000214675
+Iter 8, lambda = 0.00186062, diff = 0.000137948
+Iter 9, lambda = 0.0018566, diff = 2.21572e-05
+Iter 10, lambda = 0.00185621, diff = 1.55032e-05
+Iter 11, lambda = 0.00185618, diff = 9.04267e-06
+
+The result is a vector written in eigenvector.mtx. The partitioning in a bipartite graph is given
+by nodes with a value > 0 and values < 0.

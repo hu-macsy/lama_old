@@ -333,6 +333,11 @@ public:
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
+    virtual void resize( scai::dmemo::DistributionPtr )
+    {
+        COMMON_THROWEXCEPTION( "unsupported" )
+    }
+
     virtual void redistribute( const scai::dmemo::Redistributor& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )

@@ -96,6 +96,8 @@ public:
         const DenseVector<ValueType>* y,
         common::MatrixOp op ) const
     {
+        SCAI_REGION( "Matrix.HLHgemv" )
+
         if ( op != common::MatrixOp::NORMAL )
         {
             COMMON_THROWEXCEPTION( op << " for matrixTimesVector not supported here" )

@@ -320,14 +320,14 @@ for testing and developping. Furthermore, it might be a convenient way to exchan
 data with other applications. Here is an example of how to use this format to
 exchange data with MATLAB applications.
 
-.. code-block:: c++
+.. code-block:: matlab
 
  [i,j,val] = find( matrix )          [i,j,val] = find(matrix)
  data_dump = [i, j, val] A           fid = fopen( 'data.txt', 'w' )
  save -ascii data.txt data_dump      fprintf( fid, "%d %d %f\n", [i,j,val] )
                                      flose( fid )
 
-.. code-block:: c++
+.. code-block:: matlab
 
   data_dump = importdata( 'data.txt' )      load data.txt
   matrix = spconvert( data_dump )           matrix = spconvert( data )

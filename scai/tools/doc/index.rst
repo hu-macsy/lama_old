@@ -16,7 +16,7 @@ Usage
 
 It is recommended to take the bin directory in the path.
 
-.. code-block:: c++
+.. code-block:: bash
 
     export PATH=${SCAI_HOME}/bin:${PATH}
 

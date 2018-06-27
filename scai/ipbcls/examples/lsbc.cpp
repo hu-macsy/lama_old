@@ -38,6 +38,7 @@
 #include <scai/lama/matrix/MatrixWithT.hpp>
 
 #include <scai/common/Settings.hpp>
+#include <scai/common/Walltime.hpp>
 #include <scai/partitioning/Partitioning.hpp>
 
 #include <cstdlib>
@@ -202,7 +203,10 @@ int main( int argc, const char* argv[] )
 
     try
     {
+        double time = common::Walltime::get();
         lsq.solve( x, b, lb, ub );
+        time = common::Walltime::get() - time;
+        std::cout << "Solver took " << time << " seconds." << std::endl;
     }
     catch ( common::Exception& ex )
     {
