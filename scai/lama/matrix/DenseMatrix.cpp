@@ -2352,7 +2352,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrixDense(
     if ( beta != common::Constants::ZERO )
     {
         SCAI_ASSERT_EQ_ERROR( C.getRowDistribution(), getRowDistribution(), "C matrix not conform" )
-        SCAI_ASSERT_EQ_ERROR( C.getColDistribution(), getColDistribution(), "C matrix not conform" )
+        SCAI_ASSERT_EQ_ERROR( C.getColDistribution(), B.getColDistribution(), "C matrix not conform" )
     }
 
     // Note: any alias will be resolved by the matrix storage routine and not here
