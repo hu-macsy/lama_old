@@ -409,9 +409,6 @@ public:
      * @param[in]  betaValue     scaling factor for additional summand
      * @param[in]  denseY        additional summand ( beta = 0 if not available )
      *
-     *  Note: _Matrix::matrixTimesMatrix is implemented in the CRTPMatrix class.
-     *        that requires this method.
-     *
      *  Note: all vectors must have the right distribution.
      */
     void matrixTimesVectorImpl(
@@ -473,6 +470,18 @@ public:
         const Matrix<ValueType>& B,
         const ValueType beta,
         const Matrix<ValueType>& C ) const;
+
+    /** @brief Matrix-multiplication where only dense matrices are involved 
+     *
+     *  This method computes result = alpha * this * B + beta * C
+     *  where result, B, and C are now dense matrices.
+     */
+    void matrixTimesMatrixDense(
+        DenseMatrix<ValueType>& result,
+        const ValueType alpha,
+        const DenseMatrix<ValueType>& B,
+        const ValueType beta,
+        const DenseMatrix<ValueType>& C ) const;
 
     /* Implementation of pure method of class _Matrix. */
 
