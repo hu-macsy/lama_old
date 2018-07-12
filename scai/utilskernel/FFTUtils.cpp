@@ -95,7 +95,9 @@ void FFTUtils::fftcall(
 
     fft.getSupportedContext( loc );
 
-    WriteAccess<Complex<RealType<ValueType>>> wData( data );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<Complex<RealType<ValueType>>> wData( data, loc );
 
     fft[loc]( wData.get(), k, n, m, direction );
 }
