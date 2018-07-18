@@ -79,9 +79,14 @@ void BLAS_BLAS3::gemm(
     const IndexType ldc )
 {
     SCAI_REGION( "BLAS.BLAS3.gemm" )
+
     SCAI_LOG_INFO( logger,
-                   "gemm<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n << ", k = " << k
-                   << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc << ", alpha = " << alpha << ", beta = " << beta )
+                    "gemm<" << TypeTraits<ValueType>::id() << ">: "
+                    << " C = " << alpha << " * A * B + " << beta << " * C"
+                    << ", C is " << m << " x " << n << ", ldc = " << ldc
+                    << ", A is " << m << " x " << k << ", lda = " << lda << ", opA = " << opA
+                    << ", B is " << k << " x " << n << ", ldb = " << ldb << ", opB = " << opB )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -100,10 +105,10 @@ void BLAS_BLAS3::gemm(
     BLASTrait::BLASIndexType b_ldb = static_cast<BLASTrait::BLASIndexType>( ldb );
     BLASTrait::BLASIndexType b_ldc = static_cast<BLASTrait::BLASIndexType>( ldc );
 
-    // BLAS only support column-major format, so we work on the transpose data, so
+    // BLAS only support column-major format, so we work on the transposed data, so
     // we have to switch A and B and m and n.
 
-    BLASWrapper<ValueType>::gemm( b_opA, b_opB, b_n, b_m, b_k,
+    BLASWrapper<ValueType>::gemm( b_opB, b_opA, b_n, b_m, b_k,
                                   alpha, B, b_ldb, A, b_lda, 
                                   beta, C, b_ldc );
 }

@@ -214,11 +214,12 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
             BLASIndexType b_ldb  = static_cast<BLASIndexType>( ldb );                                                       \
             BLASIndexType b_ldc  = static_cast<BLASIndexType>( ldc );                                                       \
             SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( gemm, prefix1 )( handle, transA, transB,                                    \
-                              b_m, b_n, b_k, reinterpret_cast<const CUBLASValueType*>(&alpha),                              \
-                              reinterpret_cast<const CUBLASValueType*>(A), b_lda,                                           \
-                              reinterpret_cast<const CUBLASValueType*>(B), b_ldb,                                           \
-                              reinterpret_cast<const CUBLASValueType*>(&beta),                                              \
-                              reinterpret_cast<CUBLASValueType*>(C), b_ldc),                                                \
+                              b_m, b_n, b_k,                                                                                \
+                              reinterpret_cast<const CUBLASValueType*>( &alpha ),                                           \
+                              reinterpret_cast<const CUBLASValueType*>( A ), b_lda,                                         \
+                              reinterpret_cast<const CUBLASValueType*>( B ), b_ldb,                                         \
+                              reinterpret_cast<const CUBLASValueType*>( &beta ),                                            \
+                              reinterpret_cast<CUBLASValueType*>( C ), b_ldc ),                                             \
                               "CUBLASWrapper::gemm<" #ValueType ">");                                                       \
         }                                                                                                                   \
     };
