@@ -27,12 +27,31 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./utilskernel/test/TestMacros.hpp
+ * @brief Own SCAI test macros used for utilskernel
  * @author Thomas Brandes
- * @date 16.03.2016
+ * @date 12.07.2018
  */
 
 #include <scai/common/test/TestMacros.hpp>
-#include <scai/kregistry/test/TestMacros.hpp>
-#include <scai/hmemo/test/ContextFix.hpp>
+#include <scai/hmemo/HostReadAccess.hpp>
 
+/** This macros checks that all elements of two arrays are the same  */
+
+#define SCAI_CHECK_EQUAL_ARRAY( array1, array2 )                                                \
+{                                                                                               \
+    BOOST_TEST( scai::hmemo::hostReadAccess( array1 ) == scai::hmemo::hostReadAccess( array2 ), \
+                boost::test_tools::per_element() );                                             \
+}  
+
+#define SCAI_CHECK_SMALL_ARRAY_DIFF( array1, array2, eps )                                          \
+{                                                                                                   \
+    BOOST_REQUIRE_EQUAL( array1.size(), array2.size() );                                            \
+                                                                                                    \
+    auto diff = scai::utilskernel::HArrayUtils::maxDiffNorm( array1, array2 );                      \
+                                                                                                    \
+    if ( diff > eps )                                                                               \
+    {                                                                                               \
+        BOOST_TEST( scai::hmemo::hostReadAccess( array1 ) == scai::hmemo::hostReadAccess( array2 ), \
+                    boost::test_tools::per_element() );                                             \
+    }                                                                                               \
+}  

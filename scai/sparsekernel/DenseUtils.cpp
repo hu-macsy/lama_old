@@ -343,9 +343,11 @@ void DenseUtils::gemm(
         return;  // done for trivial cases
     }
 
-    const IndexType lda = n;
-    const IndexType ldb = k;
-    const IndexType ldc = n;
+    // A is m x k if normal or A is k x m if transposed
+
+    const IndexType lda = common::isTranspose( opA ) ? m : k; 
+    const IndexType ldb = common::isTranspose( opB ) ? k : n;  // B is k x n
+    const IndexType ldc = n;  // C is m x n
 
     static LAMAKernel<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
 

@@ -193,20 +193,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
         }
 
         {
-            auto rOut1 = hostReadAccess( outFFT );
-            auto rOut2 = hostReadAccess( outDFT );
-
             RealType<ValueType> eps = common::TypeTraits<ComplexType>::small() * m;
 
-            for ( IndexType i = 0; i < n; ++i )
-            {
-                auto diff = common::Math::abs( rOut1[i] - rOut2[i] );
-    
-                // std::cout << "FFT[ " << i << " ] = " << rOut1[i] << ", DFT[ " << i << " ] = " << rOut2[i] 
-                //          << ", diff = " << diff << ", eps = " << eps << std::endl;
-
-                BOOST_CHECK( diff < eps );
-            }
+            SCAI_CHECK_SMALL_ARRAY_DIFF( outFFT, outDFT, eps )
         }
     }
 }

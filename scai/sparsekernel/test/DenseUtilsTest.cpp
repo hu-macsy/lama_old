@@ -56,6 +56,7 @@ using namespace utilskernel;
 using common::TypeTraits;
 using common::BinaryOp;
 using common::UnaryOp;
+using common::MatrixOp;
 
 using boost::test_tools::per_element;
 
@@ -321,7 +322,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemvNormalTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
@@ -361,6 +362,189 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 
         BOOST_TEST( hostReadAccess( expectedRes ) == hostReadAccess( res ), boost::test_tools::per_element() );
     }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTransposeTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "normalGEMV test @ " << *testContext )
+
+    HArray<ValueType> denseValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+
+    data1::getDenseTestData( numRows, numColumns, denseValues );
+
+    HArray<ValueType> x( { 3, -2, -2, 3, 1, 0, 1 }, testContext );
+    HArray<ValueType> y( { 1, -1, 2, -2 }, testContext );
+
+    SCAI_ASSERT_EQ_ERROR( numRows, x.size(), "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numColumns, y.size(), "size mismatch" );
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
+    {
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
+
+        HArray<ValueType> res( testContext );
+
+        DenseUtils::gemv( res, alpha, x, beta, y,
+                          numRows, numColumns, denseValues,
+                          common::MatrixOp::TRANSPOSE, false, testContext );
+
+        HArray<ValueType> expectedRes = data1::getGEMVTransposeResult( alpha, x, beta, y );
+
+        BOOST_TEST( hostReadAccess( expectedRes ) == hostReadAccess( res ), boost::test_tools::per_element() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+// BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE( gemmTest )
+{
+    typedef double ValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "gemm test @ " << *testContext )
+
+    //       matrix A     *      matrix B              =    matrixC
+    //
+    //    1.0  0.0  2.0       1.0  0.5  0.0  4.0           5.0  0.5   6.0  4.0
+    //    0.5  1.5  0.0       0.0  1.5  0.0  1.5           0.5  2.5   0.0  4.25
+    //    0.0  0.0  3.0       2.0  0.0  3.0  0.0           6.0  0.0   9.0  0.0
+    //    4.0  1.5  0.0                                    4.0  4.25  0.0  18.25
+
+    const IndexType m  = 4;
+    const IndexType k  = 3;
+    const IndexType n  = 4;
+
+    // dense array for matrix a ( 4 x 3 )
+
+    HArray<ValueType> matrixA( { 1.0, 0.0, 2.0, 0.5, 1.5, 0.0, 0.0, 0.0, 3.0, 4.0, 1.5, 0.0 }, testContext );
+    HArray<ValueType> matrixB( { 1.0, 0.5, 0.0, 4.0, 0.0, 1.5, 0.0, 1.5, 2.0, 0.0, 3.0, 0.0 }, testContext );
+
+    HArray<ValueType> expC( { 5.0, 0.5,  6.0,  4.0, 
+                              0.5, 2.5, 0.0,  4.25, 
+                              6.0, 0.0,  9.0,  0.0, 
+                              4.0, 4.25, 0.0, 18.25 } );
+
+    HArray<ValueType> matrixC( testContext );
+    utilskernel::HArrayUtils::setSameValue<ValueType>( matrixC, m * n, 0, testContext );
+
+    ValueType alpha = 1.0;
+    ValueType beta  = 1.0;
+
+    //  C  =  alpha * A * B  + beta * C
+
+    DenseUtils::gemm( matrixC, alpha, matrixA, MatrixOp::NORMAL, matrixB,  MatrixOp::NORMAL,
+                      beta, m, n, k, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expC, matrixC )
+
+    utilskernel::HArrayUtils::setSameValue<ValueType>( matrixC, m * n, 0, testContext );
+
+    DenseUtils::gemm( matrixC, alpha, matrixB, MatrixOp::TRANSPOSE, matrixB,  MatrixOp::NORMAL,
+                      beta, m, n, k, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expC, matrixC )
+
+    utilskernel::HArrayUtils::setSameValue<ValueType>( matrixC, m * n, 0, testContext );
+
+    DenseUtils::gemm( matrixC, alpha, matrixA, MatrixOp::NORMAL, matrixA,  MatrixOp::TRANSPOSE,
+                      beta, m, n, k, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expC, matrixC )
+
+    utilskernel::HArrayUtils::setSameValue<ValueType>( matrixC, m * n, 0, testContext );
+
+    DenseUtils::gemm( matrixC, alpha, matrixB, MatrixOp::TRANSPOSE, matrixA,  MatrixOp::TRANSPOSE,
+                      beta, m, n, k, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expC, matrixC )
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( gemm1Test )
+{
+    typedef DefaultReal ValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "gemm test @ " << *testContext )
+
+    //       matrix A     *      matrix B              =    matrixC
+    //
+    //      1    0    2        1   5   2   3   1             3   9  10  -1   7
+    //      1   -1   -2        2   1  -2   4   0            -3   0  -4   3  -5 
+    //      0    3   -4        1   2   4   -2  3            2   -5  -22  20 -12  
+    //      1    2    3                                     8   13  10  5  10
+
+    const IndexType m  = 4;
+    const IndexType k  = 3;
+    const IndexType n  = 5;
+
+    // dense array for matrix a ( 4 x 3 )
+
+    HArray<ValueType> matrixA( { 1, 0, 2, 
+                                 1, -1, -2, 
+                                 0, 3, -4, 
+                                 1, 2, 3 }, testContext );
+
+    HArray<ValueType> matrixAT( { 1, 1, 0, 1, 
+                                  0, -1, 3, 2, 
+                                  2, -2, -4, 3 }, testContext );
+
+    HArray<ValueType> matrixB( { 1, 5,  2,  3, 1, 
+                                 2, 1, -2,  4, 0, 
+                                 1, 2,  4, -2, 3 }, testContext );
+
+    HArray<ValueType> matrixBT( { 1, 2, 1, 5, 1, 2, 2, -2, 4, 3, 4, -2, 1, 0, 3 }, testContext );
+
+    HArray<ValueType> expC( {   3,   9,  10,  -1,  7,
+                               -3,   0,  -4,   3, -5,
+                                2,  -5, -22,  20, -12, 
+                                8,  13,  10,   5,  10  } );
+
+    HArray<ValueType> matrixC( testContext );
+    utilskernel::HArrayUtils::setSameValue<ValueType>( matrixC, m * n, 1000, testContext );
+
+    ValueType alpha = 1.0;
+    ValueType beta  = 0.0;
+
+    //  C  =  alpha * A * B  + beta * C
+
+    DenseUtils::gemm( matrixC, alpha, matrixA, MatrixOp::NORMAL, matrixB,  MatrixOp::NORMAL,
+                      beta, m, n, k, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expC, matrixC )
+
+    DenseUtils::gemm( matrixC, alpha, matrixAT, MatrixOp::TRANSPOSE, matrixB,  MatrixOp::NORMAL,
+                      beta, m, n, k, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expC, matrixC )
+
+    DenseUtils::gemm( matrixC, alpha, matrixA, MatrixOp::NORMAL, matrixBT,  MatrixOp::TRANSPOSE,
+                      beta, m, n, k, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expC, matrixC )
+
+    DenseUtils::gemm( matrixC, alpha, matrixAT, MatrixOp::TRANSPOSE, matrixBT,  MatrixOp::TRANSPOSE,
+                      beta, m, n, k, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expC, matrixC )
 }
 
 /* ------------------------------------------------------------------------------------- */
