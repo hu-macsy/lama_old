@@ -77,7 +77,10 @@ BOOST_AUTO_TEST_CASE( convert2CSRZeroTest )
 
     const IndexType numRows = 7;
 
-    HArray<IndexType> csrIA;
+    const IndexType dummySize = 13;
+    const IndexType dummyValue = 15;
+
+    HArray<IndexType> csrIA( dummySize, dummyValue );
 
     COOUtils::convertCOO2CSR( csrIA, cooIA, numRows, testContext );
 

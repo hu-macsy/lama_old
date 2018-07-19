@@ -652,7 +652,9 @@ BOOST_AUTO_TEST_CASE( transposeZeroTest )
 
     // CSC <- transpose CSR
 
-    HArray<IndexType> cscIA;
+    IndexType dummyValue = 4019;
+
+    HArray<IndexType> cscIA( numColumns + 5, dummyValue );
     HArray<IndexType> cscJA;
     HArray<ValueType> cscValues;
 
