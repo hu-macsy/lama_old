@@ -319,7 +319,7 @@ void CUDACOOUtils::normalGEMV(
 __global__
 static void offsets2ia_kernel( IndexType* cooIA, const IndexType* csrIA, const IndexType numRows )
 {
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
@@ -355,48 +355,56 @@ void CUDACOOUtils::offsets2ia(
 
 /* --------------------------------------------------------------------------- */
 
+/** Help routine to find row offset in sorted array of row indexes, same as used for OpenMP */
+
+__device__
+static IndexType findFirst( const IndexType indexes[], const IndexType n, const IndexType pos )
+{
+    IndexType first = 0;
+    IndexType last  = n;
+
+    while ( first < last )
+    {
+        IndexType middle = first + ( last - first ) / 2;
+
+        if ( indexes[middle] == pos )
+        {
+            if ( middle == 0 )
+            {
+                return middle;
+            }
+            if ( indexes[ middle - 1] != pos )
+            {
+                return middle;
+            }
+
+            last = middle;
+        }
+        else if ( indexes[middle] > pos )
+        {
+            last = middle;
+        }
+        else
+        {
+            first = middle + 1;
+        }
+    }
+ 
+    return first;
+}
+
 __global__
 static void build_offset_kernel(
-    IndexType* offsets,
-    const IndexType n,
-    const IndexType* ia,
-    const IndexType nz )
+    IndexType csrIA[],
+    const IndexType numRows,
+    const IndexType cooIA[],
+    const IndexType numValues )
 {
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    // Entries in offset filled every time there is a change in values of consecutive elements
-    //   i:     0  1  2  3  4  5
-    //  ia:     0  0  1  1  1  3
-    // nd1:     0  0  1  1  1  3
-    // nd2:     0  1  1  1  3  4
-    //             x        x  x
-    //             |        |  |->                6
-    //             |        |---->          5  5
-    //             |------------->       2
-    // offset:                        0  2  5  5  6
-
-    if ( i < nz )
+    if ( i <= numRows )
     {
-        IndexType nd1 = ia[i];
-        IndexType nd2 = n;
-
-        if ( i + 1 < nz )
-        {
-            nd2 = ia[i + 1];
-        }
-
-        for ( IndexType j = nd1; j < nd2; j++ )
-        {
-            offsets[j + 1] = i + 1;
-        }
-
-        if ( i == 0 )
-        {
-            for ( IndexType i = 0; i <= nd1; i++ )
-            {
-                offsets[i] = 0;
-            }
-        }
+        csrIA[i] = findFirst( cooIA, numValues, i );
     }
 }
 
@@ -411,7 +419,7 @@ void CUDACOOUtils::ia2offsets(
     SCAI_REGION( "CUDA.COO.ia2offsets" )
 
     SCAI_LOG_INFO( logger,
-                   "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues ) << " )" )
+                    "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues ) << " )" )
 
     // Note: the array cooIA is assumed to be sorted
 
@@ -420,7 +428,7 @@ void CUDACOOUtils::ia2offsets(
 
     const int blockSize = CUDASettings::getBlockSize();
     const dim3 dimBlock( blockSize, 1, 1 );
-    const dim3 dimGrid = makeGrid( numValues, dimBlock.x );
+    const dim3 dimGrid = makeGrid( numRows + 1, dimBlock.x );
     build_offset_kernel <<< dimGrid, dimBlock>>>( csrIA, numRows, cooIA, numValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "ia2offsets, stream = " << stream )
@@ -434,6 +442,7 @@ void CUDACOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<COOKernelTrait::offsets2ia>( CUDACOOUtils::offsets2ia, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::ia2offsets>( CUDACOOUtils::ia2offsets, ctx, flag );
 }
 
 template<typename ValueType>
