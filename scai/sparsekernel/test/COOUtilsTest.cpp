@@ -67,6 +67,46 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( convert2CSRZeroTest )
+{
+    // check for a COO storage where all elements are zero that converted csr offset array is correct
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    HArray<IndexType> cooIA( { }, testContext );
+
+    const IndexType numRows = 7;
+
+    HArray<IndexType> csrIA;
+
+    COOUtils::convertCOO2CSR( csrIA, cooIA, numRows, testContext );
+
+    HArray<IndexType> expIA( numRows + 1, IndexType( 0 ) );
+
+    SCAI_CHECK_EQUAL_ARRAY( csrIA, expIA )
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( convert2CSRSingleTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    HArray<IndexType> cooIA( { 3 }, testContext );
+
+    const IndexType numRows = 7;
+
+    HArray<IndexType> csrIA;
+
+    COOUtils::convertCOO2CSR( csrIA, cooIA, numRows, testContext );
+
+    HArray<IndexType> expIA( { 0, 0, 0, 0, 1, 1, 1, 1 } );
+
+    SCAI_CHECK_EQUAL_ARRAY( csrIA, expIA )
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( convert2CSRTest )
 {
     ContextPtr testContext = ContextFix::testContext;
