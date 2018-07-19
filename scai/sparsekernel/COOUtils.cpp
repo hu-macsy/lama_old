@@ -59,6 +59,10 @@ namespace sparsekernel
 
 /* -------------------------------------------------------------------------- */
 
+SCAI_LOG_DEF_LOGGER( COOUtils::logger, "COOUtils" )
+
+/* -------------------------------------------------------------------------- */
+
 void COOUtils::convertCOO2CSR(
     HArray<IndexType>& csrIA,
     const HArray<IndexType>& cooIA,
@@ -77,6 +81,8 @@ void COOUtils::convertCOO2CSR(
     ReadAccess<IndexType> rIA( cooIA, loc );
    
     SCAI_CONTEXT_ACCESS( loc )
+
+    SCAI_LOG_INFO( logger, "ia2offsets, build csrIA[" << numRows << "] from cooIA[" << numValues << "] @ " << *loc )
 
     ia2offsets[loc]( wOffsets.get(), numRows, rIA.get(), numValues );
 }

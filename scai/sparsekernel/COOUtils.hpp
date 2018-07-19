@@ -342,6 +342,10 @@ public:
         bool async,
         hmemo::ContextPtr prefLoc );
 
+private:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
 };
 
 /* -------------------------------------------------------------------------- */
