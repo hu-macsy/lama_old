@@ -236,12 +236,14 @@ void OpenMPCOOUtils::ia2offsets(
     const IndexType cooIA[],
     const IndexType numValues )
 {
+    SCAI_LOG_INFO( logger, "convert cooIA[" << numValues << "] to csrIA[" << numRows << "]" )
+
     #pragma omp parallel
     {
         IndexType lb;
         IndexType ub;
         
-        omp_get_my_range( lb, ub, numRows );
+        omp_get_my_range( lb, ub, numRows + 1 );   // Note: size of csrIA is numRows + 1
 
         if ( lb < ub )
         {
@@ -251,16 +253,14 @@ void OpenMPCOOUtils::ia2offsets(
 
             SCAI_LOG_TRACE( logger, "compute offsets for " << lb << " - " << ub << ", starts at " << offs )
 
-            csrIA[lb] = offs;
-
             for ( IndexType i = lb; i < ub; ++i )
             {
+                csrIA[i] = offs;
+
                 while ( offs < numValues && cooIA[offs] == i )
                 {
                     offs++;
                 }
-        
-                csrIA[i + 1] = offs;
             }
         }
     }

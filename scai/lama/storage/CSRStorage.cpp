@@ -1018,29 +1018,30 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
 
     SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
 
+    // pass HArrays of this storage to build the values in it
+
     if ( &other == this )
     {
         SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose in place" )
-
         HArray<IndexType> tmpIA;
         HArray<IndexType> tmpJA;
         HArray<ValueType> tmpValues;
-
+        // do not change sizes before building CSC data
         other.buildCSCData( tmpIA, tmpJA, tmpValues );
-
-        *this = CSRStorage( other.getNumColumns(), other.getNumRows(), 
-                            std::move( tmpIA ), std::move( tmpJA ), std::move( tmpValues ) );
+        // sizes must be set correctly BEFORE swap
+        _MatrixStorage::_assignTranspose( other );
+        swap( tmpIA, tmpJA, tmpValues );  // sets all other data correctly
     }
     else
-    {   // use the storage arrays of this object directly to build the data
-
+    {
+        _MatrixStorage::_assignTranspose( other );
         SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
-
         other.buildCSCData( mIA, mJA, mValues );
-
-        *this = CSRStorage( other.getNumColumns(), other.getNumRows(), 
-                            std::move( mIA ), std::move( mJA ), std::move( mValues ) );
+        buildRowIndexes();
     }
+
+    // actualize my member variables (class CSRStorage)
+    check( "assignTranspose" );
 }
 
 /* --------------------------------------------------------------------------- */
