@@ -67,10 +67,23 @@ public:
     static void setRows(
         ValueType jdsValues[],
         const IndexType numRows,
-        const IndexType perm[],
-        const IndexType ilg[],
-        const IndexType dlg[],
+        const IndexType jdsPerm[],
+        const IndexType jdsILG[],
+        const IndexType jdsDLG[],
         const ValueType rowValues[],
+        const common::BinaryOp op );
+
+    /** Implementation for JDSKernelTrait::setColumns on Host via OpenMP */
+
+    template<typename ValueType>
+    static void setColumns(
+        ValueType jdsValues[],
+        const IndexType numRows,
+        const IndexType jdsPerm[],
+        const IndexType jdsILG[],
+        const IndexType jdsDLG[],
+        const IndexType jdsJA[],
+        const ValueType columnValues[],
         const common::BinaryOp op );
 
     /** Implementation for JDSKernelTrait::getRow */

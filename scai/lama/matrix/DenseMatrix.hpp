@@ -653,6 +653,8 @@ private:
     mutable hmemo::HArray<ValueType> mSendValues;
     mutable hmemo::HArray<ValueType> mReceiveValues;
 
+    void reserveCommunicationBuffers( const IndexType nValuesPerColumn ) const;
+
     void computeOwners();
 
     /** Special implementation of invert in place for a cyclic distributed matrix. */

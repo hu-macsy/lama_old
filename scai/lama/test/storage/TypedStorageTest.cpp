@@ -45,6 +45,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/hmemo/ReadAccess.hpp>
@@ -342,6 +343,86 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types
         // as get/set column is using same data type, storage must now be completely zero
 
         BOOST_CHECK_EQUAL( storage.maxNorm(), 0 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    TypedStorages<ValueType> allMatrixStorages( context );
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
+
+    HArray<ValueType> denseValues = { 6, 0, 0, 4, 
+                                      7, 0, 0, 0, 
+                                      0, 0, -9, 4, 
+                                      -1, 0, 0, 2, 
+                                      2, 5, 0, 3 };
+
+    HArray<ValueType> rowValues = { -1, 1, 0, -2, 2 };
+
+    HArray<ValueType> expValues = { -6,  0, 0, -4, 
+                                     7,  0, 0,  0, 
+                                     0,  0, 0,  0, 
+                                     2,  0, 0, -4, 
+                                     4, 10, 0,  6 };
+
+    DenseStorage<ValueType> denseStorage( 5, 4, denseValues );
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        storage = denseStorage;
+
+        storage.scaleRows( rowValues );
+
+        auto result = convert<DenseStorage<ValueType>>( storage );
+
+        SCAI_CHECK_EQUAL_ARRAY( expValues, result.getValues() )
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleColumnsTest, ValueType, scai_numeric_test_types )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    TypedStorages<ValueType> allMatrixStorages( context );
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
+
+    HArray<ValueType> denseValues = { 6, 0, 0, 4,
+                                      7, 0, 0, 0,
+                                      0, 0, -9, 4,
+                                      -1, 0, 0, 2,
+                                      2, 5, 0, 3 };
+
+    HArray<ValueType> columnValues = { -1, 1, -2, 2 };
+
+    HArray<ValueType> expValues = { -6,  0,  0,  8,
+                                    -7,  0,  0,  0,
+                                     0,  0, 18,  8,
+                                     1,  0,  0,  4,
+                                    -2,  5,  0,  6 };
+
+    DenseStorage<ValueType> denseStorage( 5, 4, denseValues );
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
+
+        storage = denseStorage;
+
+        storage.scaleColumns( columnValues );
+
+        auto result = convert<DenseStorage<ValueType>>( storage );
+
+        SCAI_CHECK_EQUAL_ARRAY( expValues, result.getValues() )
     }
 }
 

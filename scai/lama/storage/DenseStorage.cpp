@@ -1,36 +1,36 @@
 /**
- * @file DenseStorage.cpp
- *
- * @license
- * Copyright (c) 2009-2017
- * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
- * for Fraunhofer-Gesellschaft
- *
- * This file is part of the SCAI framework LAMA.
- *
- * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
- * @endlicense
- *
- * @brief Instantiation for template class DenseStorage.
- * @author Thomas Brandes, Michael Drost
- * @date 04.06.2011
- */
+* @file DenseStorage.cpp
+*
+* @license
+* Copyright (c) 2009-2017
+* Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+* for Fraunhofer-Gesellschaft
+*
+* This file is part of the SCAI framework LAMA.
+*
+* LAMA is free software: you can redistribute it and/or modify it under the
+* terms of the GNU Affero General Public License as published by the Free
+* Software Foundation, either version 3 of the License, or (at your option)
+* any later version.
+*
+* LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+* more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+*
+* Other Usage
+* Alternatively, this file may be used in accordance with the terms and
+* conditions contained in a signed written agreement between you and
+* Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+* @endlicense
+*
+* @brief Implementation of methods for class DenseStorage
+* @author Thomas Brandes
+* @date 04.06.2011
+*/
 
 // hpp
 #include <scai/lama/storage/DenseStorage.hpp>
@@ -55,12 +55,6 @@
 
 #include <memory>
 #include <cmath>
-
-
-using std::abs;
-// so we can use abs for float and double and own abs for Complex
-
-using std::shared_ptr;
 
 namespace scai
 {
@@ -126,7 +120,7 @@ void DenseStorage<ValueType>::check( const char* /* msg */ ) const
 template<typename ValueType>
 void DenseStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::HArray<ValueType>& values, const IndexType i ) const
 {
-    // ToDo: avoid temporary array row by new version buildSparseArray with offs and inc argument
+// ToDo: avoid temporary array row by new version buildSparseArray with offs and inc argument
 
     HArray<ValueType> row;
     getRow( row, i );
@@ -155,8 +149,8 @@ void DenseStorage<ValueType>::getRow( HArray<ValueType>& row, const IndexType ro
     row.clear();                    // make all data invalid
     row.resize( getNumColumns() );      // resize it
 
-    // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
-    // first = denseindex( rowIndex, 0, numRows, numColumns )
+// inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+// first = denseindex( rowIndex, 0, numRows, numColumns )
 
     const IndexType inc   = 1;
     const IndexType first = rowIndex * getNumColumns();
@@ -170,12 +164,12 @@ void DenseStorage<ValueType>::getRow( HArray<ValueType>& row, const IndexType ro
 
 template<typename ValueType>
 void DenseStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexType rowIndex,
-        const BinaryOp op )
+                                      const BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, getNumRows(), "row index out of range" )
 
-    // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
-    // first = denseindex( i, 0, numRows, numColumns )
+// inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+// first = denseindex( i, 0, numRows, numColumns )
 
     const IndexType inc   = 1;
     const IndexType first = rowIndex * getNumColumns();
@@ -197,8 +191,8 @@ void DenseStorage<ValueType>::getColumn( HArray<ValueType>& column, const IndexT
     column.clear();                 // make all data invalid
     column.resize( getNumRows() );      // resize it
 
-    // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
-    // first = denseindex( 0, j, numRows, numColumns )
+// inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+// first = denseindex( 0, j, numRows, numColumns )
 
     const IndexType inc   = getNumColumns();
     const IndexType first = j;
@@ -217,8 +211,8 @@ void DenseStorage<ValueType>::setColumn( const HArray<ValueType>& column, const 
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
 
-    // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
-    // first = denseindex( 0, j, numRows, numColumns )
+// inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+// first = denseindex( 0, j, numRows, numColumns )
 
     const IndexType inc   = getNumColumns();
     const IndexType first = j;
@@ -240,8 +234,8 @@ void DenseStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
     diagonal.clear();                       // make all data invalid
     diagonal.resize( numDiagonalValues );   // resize it
 
-    // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
-    // first = denseindex( 0, 0, numRows, numColumns )
+// inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+// first = denseindex( 0, 0, numRows, numColumns )
 
     const IndexType inc   = getNumRows() + 1;
     const IndexType first = 0;
@@ -260,9 +254,9 @@ void DenseStorage<ValueType>::setDiagonal( const ValueType value )
 {
     const IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );
 
-    // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
-    // first = denseindex( 0, 0, numRows, numColumns )
-    // dense values are stored row-wise
+// inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+// first = denseindex( 0, 0, numRows, numColumns )
+// dense values are stored row-wise
 
     const IndexType inc   = getNumRows() + 1;
     const IndexType first = 0;
@@ -282,8 +276,8 @@ void DenseStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 
     SCAI_ASSERT_GE_DEBUG( diagonal.size(), numDiagonalValues, "diagonal array has insufficient size" )
 
-    // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
-    // first = denseindex( 0, 0, numRows, numColumns )
+// inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+// first = denseindex( 0, 0, numRows, numColumns )
 
     const IndexType inc   = getNumRows() + 1;
     const IndexType first = 0;
@@ -326,7 +320,7 @@ void DenseStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 template<typename ValueType>
 void DenseStorage<ValueType>::scaleColumns( const HArray<ValueType>& values )
 {
-    SCAI_ASSERT_EQ_ERROR( values.size(), getNumRows(), "not one value for each row" )
+    SCAI_ASSERT_EQ_ERROR( values.size(), getNumColumns(), "not one value for each column" )
 
     DenseUtils::setColumns( mData, getNumRows(), getNumColumns(), values, common::BinaryOp::MULT, getContextPtr() );
 }
@@ -339,7 +333,7 @@ void DenseStorage<ValueType>::transposeImpl()
     SCAI_REGION( "Storage.Dense.transpose" )
 
     HArrayUtils::transpose( mData, getNumColumns(), getNumRows(), mData, false, getContextPtr() );
- 
+
     _MatrixStorage::setDimension( getNumColumns(), getNumRows() );
 };
 
@@ -394,7 +388,7 @@ void DenseStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal 
 template<typename ValueType>
 void DenseStorage<ValueType>::setZero()
 {
-    SCAI_ASSERT_EQ_DEBUG( mData.size(), getNumRows() * getNumColumns(), 
+    SCAI_ASSERT_EQ_DEBUG( mData.size(), getNumRows() * getNumColumns(),
                           "illegal data size for DenseStorage " << getNumRows() << " x " << getNumColumns() )
     ValueType zero = 0;
 
@@ -414,9 +408,9 @@ void DenseStorage<ValueType>::buildCSRSizes( hmemo::HArray<IndexType>& ia ) cons
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorage<ValueType>::buildCSRData( 
-    hmemo::HArray<IndexType>& csrIA, 
-    hmemo::HArray<IndexType>& csrJA, 
+void DenseStorage<ValueType>::buildCSRData(
+    hmemo::HArray<IndexType>& csrIA,
+    hmemo::HArray<IndexType>& csrJA,
     hmemo::_HArray& csrValues ) const
 {
     if ( csrValues.getValueType() == getValueType() )
@@ -430,7 +424,7 @@ void DenseStorage<ValueType>::buildCSRData(
     {
         HArray<ValueType> tmpValues;
 
-        DenseUtils::convertDense2CSR( csrIA, csrJA, tmpValues, 
+        DenseUtils::convertDense2CSR( csrIA, csrJA, tmpValues,
                                       getNumRows(), getNumColumns(), mData, getContextPtr() );
 
         HArrayUtils::_assign( csrValues, tmpValues );
@@ -449,12 +443,12 @@ void DenseStorage<ValueType>::setCSRData(
 {
     if ( values.getValueType() == getValueType() )
     {
-        setCSRDataImpl( numRows, numColumns, ia, ja, 
-		        static_cast<const HArray<ValueType>&>( values ) );
+        setCSRDataImpl( numRows, numColumns, ia, ja,
+                        static_cast<const HArray<ValueType>&>( values ) );
     }
     else
     {
-        setCSRDataImpl( numRows, numColumns, ia, ja, 
+        setCSRDataImpl( numRows, numColumns, ia, ja,
                         utilskernel::convertHArray<ValueType>( values, getContextPtr() ) );
     }
 }
@@ -466,30 +460,30 @@ void DenseStorage<ValueType>::setCSRDataImpl(
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
     const HArray<ValueType>& values )
-{   
+{
     IndexType numValues = ja.size();
 
-    
+
     SCAI_LOG_INFO( logger,
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
-    
+
     _MatrixStorage::setDimension( numRows, numColumns );
-    
+
     if ( ia.size() == numRows )
-    {   
+    {
         HArray<IndexType> tmpOffsets;
         IndexType total = CSRUtils::sizes2offsets( tmpOffsets, ia, getContextPtr() );
         SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
         setCSRDataImpl( numRows, numColumns, tmpOffsets, ja, values );
         return;
     }
-    
+
     SCAI_ASSERT_EQ_ERROR( ia.size(), numRows + 1, "size mismatch of csr IA array" )
     SCAI_ASSERT_ERROR( CSRUtils::validOffsets( ia, numValues, getContextPtr() ), "illegal CSR offset array" );
-    
+
     SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( ja, numColumns, getContextPtr() ),
                        "CSR ja array contains illegal column indexes, #columns = " << numColumns );
-    
+
     DenseUtils::convertCSR2Dense( mData, numRows, numColumns, ia, ja, values, getContextPtr() );
 }
 
@@ -582,7 +576,7 @@ void DenseStorage<ValueType>::binaryOp(
 template<typename ValueType>
 void DenseStorage<ValueType>::binaryOpDense(
     const DenseStorage<ValueType>& a,
-    const common::BinaryOp op, 
+    const common::BinaryOp op,
     const DenseStorage<ValueType>& b )
 {
     SCAI_ASSERT_EQ_ERROR( a.getNumRows(), b.getNumRows(), "serious size mismatch" )
@@ -710,8 +704,8 @@ void DenseStorage<ValueType>::matrixTimesMatrix(
     else
     {
         // all matrices are now dense
-        matrixTimesMatrixDense( alpha, static_cast<const DenseStorage<ValueType>&>( a ), 
-                                       static_cast<const DenseStorage<ValueType>&>( b ),
+        matrixTimesMatrixDense( alpha, static_cast<const DenseStorage<ValueType>&>( a ),
+                                static_cast<const DenseStorage<ValueType>&>( b ),
                                 beta,  static_cast<const DenseStorage<ValueType>&>( c ) );
     }
 }
@@ -757,7 +751,7 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
     IndexType m = a.getNumRows();
     IndexType k = b.getNumRows();
     IndexType n = b.getNumColumns();
- 
+
     _MatrixStorage::setDimension( m, n );
 
     if ( beta == common::Constants::ZERO )
@@ -782,9 +776,9 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
         SCAI_LOG_INFO( logger, "results is aliased with C as required for gemm, beta = " << beta )
     }
 
-    DenseUtils::gemm( mData, alpha, 
-                      a.getValues(), common::MatrixOp::NORMAL, 
-                      b.getValues(), common::MatrixOp::NORMAL, 
+    DenseUtils::gemm( mData, alpha,
+                      a.getValues(), common::MatrixOp::NORMAL,
+                      b.getValues(), common::MatrixOp::NORMAL,
                       beta, m, n, k, getContextPtr() );
 }
 
@@ -927,8 +921,8 @@ void DenseStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& o
 
         setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
 
-        SCAI_LOG_INFO( logger, "DenseStorage: assign " << other << ", built CSR tmp data with ia = " 
-                                << csrIA << ", ja = " << csrJA << ", values = " << csrValues << ", this = " << *this )
+        SCAI_LOG_INFO( logger, "DenseStorage: assign " << other << ", built CSR tmp data with ia = "
+                       << csrIA << ", ja = " << csrJA << ", values = " << csrValues << ", this = " << *this )
 
     }
 }
@@ -939,7 +933,7 @@ template<typename ValueType>
 void DenseStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     SCAI_LOG_INFO( logger, "allocate dense storage of size " << numRows << " x " << numColumns )
-  
+
     _MatrixStorage::setDimension( numRows, numColumns );
 
     mData.resize( getNumRows() * getNumColumns() );
@@ -1030,14 +1024,14 @@ template<typename ValueType>
 DenseStorage<ValueType>::DenseStorage(
     const IndexType numRows,
     const IndexType numColumns,
-    HArray<ValueType> denseData, 
+    HArray<ValueType> denseData,
     ContextPtr ctx ) :
 
     MatrixStorage<ValueType>( numRows, numColumns, ctx ),
     mData( std::move( denseData ) )
 
 {
-    SCAI_ASSERT_EQ_ERROR( mData.size(), numRows * numColumns, 
+    SCAI_ASSERT_EQ_ERROR( mData.size(), numRows * numColumns,
                           "size of array does not fit the shape " << numRows << " x " << numColumns )
 }
 
@@ -1055,10 +1049,10 @@ DenseStorage<ValueType>::DenseStorage( const DenseStorage<ValueType>& other ) :
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( DenseStorage<ValueType>&& other ) :
+DenseStorage<ValueType>::DenseStorage( DenseStorage<ValueType> && other ) :
 
-   MatrixStorage<ValueType>( std::move( other ) ),
-   mData( std::move( other.mData ) )
+    MatrixStorage<ValueType>( std::move( other ) ),
+    mData( std::move( other.mData ) )
 {
 }
 
@@ -1074,13 +1068,13 @@ DenseStorage<ValueType>& DenseStorage<ValueType>::operator=( const DenseStorage<
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>& DenseStorage<ValueType>::operator=( DenseStorage<ValueType>&& other )
+DenseStorage<ValueType>& DenseStorage<ValueType>::operator=( DenseStorage<ValueType> && other )
 {
     // move of all member variables
-    
+
     mData = std::move( other.mData );
 
-    // call of move assignment for base class 
+    // call of move assignment for base class
 
     MatrixStorage<ValueType>::moveImpl( std::move( other ) );
 

@@ -338,9 +338,9 @@ template<typename ValueType>
 void OpenMPJDSUtils::setRows(
     ValueType jdsValues[],
     const IndexType numRows,
-    const IndexType perm[],
-    const IndexType ilg[],
-    const IndexType dlg[],
+    const IndexType jdsPerm[],
+    const IndexType jdsILG[],
+    const IndexType jdsDLG[],
     const ValueType rowValues[],
     const common::BinaryOp op )
 {
@@ -352,12 +352,41 @@ void OpenMPJDSUtils::setRows(
     {
         IndexType offset = i;
 
-        ValueType rowScale = rowValues[perm[i]];
+        ValueType rowScale = rowValues[jdsPerm[i]];
 
-        for ( IndexType jj = 0; jj < ilg[i]; jj++ )
+        for ( IndexType jj = 0; jj < jdsILG[i]; jj++ )
         {
             jdsValues[offset] = common::applyBinary( jdsValues[offset], op, rowScale );
-            offset += dlg[jj];
+            offset += jdsDLG[jj];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPJDSUtils::setColumns(
+    ValueType jdsValues[],
+    const IndexType numRows,
+    const IndexType[],
+    const IndexType jdsILG[],
+    const IndexType jdsDLG[],
+    const IndexType jdsJA[],
+    const ValueType colValues[],
+    const common::BinaryOp op )
+{
+    SCAI_LOG_INFO( logger, "setColumns with numRows = " << numRows )
+
+    // Due to false sharing, use of OpenMP is not recommended here
+
+    for ( IndexType i = 0; i < numRows; i++ )
+    {
+        IndexType offset = i;
+
+        for ( IndexType jj = 0; jj < jdsILG[i]; jj++ )
+        {
+            jdsValues[offset] = common::applyBinary( jdsValues[offset], op, colValues[jdsJA[offset]] );
+            offset += jdsDLG[jj];
         }
     }
 }
@@ -762,6 +791,7 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType> >( getRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setColumns<ValueType> >( setColumns, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setRow<ValueType> >( setRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
