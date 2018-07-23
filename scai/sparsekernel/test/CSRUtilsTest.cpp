@@ -717,8 +717,11 @@ BOOST_AUTO_TEST_CASE( transposeSingleTest )
     SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> zero test for " << *testContext )
 
     HArray<IndexType> csrIA( { 0, 0, 1, 1 }, testContext );
-    HArray<IndexType> csrJA( { 3 }, testContext );
-    HArray<ValueType> csrValues( { 5 }, testContext );
+    HArray<IndexType> csrJA( 1, IndexType( 3 ), testContext );
+
+    // be careful: csrValues( { 5 }, testContext ) might be seen as csrValues( 5, testContext ) by Intel compiler
+
+    HArray<ValueType> csrValues( 1, ValueType( 5 ), testContext );
 
     IndexType numRows     = 3;
     IndexType numColumns  = 5;
@@ -732,7 +735,7 @@ BOOST_AUTO_TEST_CASE( transposeSingleTest )
     CSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, numRows, numColumns, csrIA, csrJA, csrValues, testContext );
 
     HArray<IndexType> expIA( { 0, 0, 0, 0, 1, 1 } );
-    HArray<IndexType> expJA( { 1 } );
+    HArray<IndexType> expJA( 1, IndexType( 1 ) );
 
     SCAI_CHECK_EQUAL_ARRAY( cscValues, csrValues )
     SCAI_CHECK_EQUAL_ARRAY( cscIA, expIA )

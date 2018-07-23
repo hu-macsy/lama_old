@@ -391,13 +391,17 @@ void CSRUtils::convertCSR2CSC(
     const HArray<ValueType>& rowValues,
     const ContextPtr preferredLoc )
 {
+    SCAI_ASSERT_EQ_DEBUG( rowJA.size(), rowValues.size(), "inconsistetne CSR data" )
+
     const IndexType numValues = rowJA.size();
-    SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
+
     static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
     ContextPtr loc = preferredLoc;
     convertCSR2CSC.getSupportedContext( loc );
-    SCAI_LOG_INFO( logger,
-                   "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
+
+    SCAI_LOG_DEBUG( logger,
+                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
+
     SCAI_REGION( "Sparse.CSR.2CSC" )
     WriteOnlyAccess<IndexType> cIA( colIA, loc, numColumns + 1 );
     WriteOnlyAccess<IndexType> cJA( colJA, loc, numValues );
