@@ -1375,6 +1375,29 @@ void SparseMatrix<ValueType>::scaleRows( const DenseVector<ValueType>& scaleY )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::scaleColumns( const DenseVector<ValueType>& scaleY )
+{
+    SCAI_ASSERT_EQUAL( scaleY.getDistribution(), getColDistribution(), "distribution mismatch" )
+
+    const HArray<ValueType>& localValues = scaleY.getLocalValues();
+
+    SCAI_ASSERT_ERROR( scaleY.getDistribution().isReplicated(), "distributed scaling not supported yet" )
+
+    // ToDo: allow non-replicated distributions
+
+    mLocalData->scaleRows( localValues );
+
+    // scale Halo storage only if it is used; otherwise there might be a size mismatch
+
+    if ( mHaloData->getNumRows() )
+    {
+        mHaloData->scaleColumns( localValues );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::scale( const ValueType& alpha )
 {
     mLocalData->scale( alpha );

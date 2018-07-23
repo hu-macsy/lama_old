@@ -487,6 +487,34 @@ struct ELLKernelTrait
     };
 
     template<typename ValueType>
+    struct setColumns
+    {
+        /** This method updates each column of the matrix with an individual value. 
+         *
+         *  @param[in,out] ellValues  the ELL matrix values that are updated
+         *  @param[in]     ellIA             row sizes
+         *  @param[in]     ellJA             column indexes of the non-zero entries
+         *  @param[in]     numRows           number of rows
+         *  @param[in]     numValuesPerRow   maximal number of non-zero values per row
+         *  @param[in]     columnValues      one entry for each column
+         *  @param[in]     op                specifies how to update the values
+         */
+        typedef void ( *FuncType ) (
+            ValueType ellValues[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType columnValues[],
+            const common::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "ELL.setColumns";
+        }
+    };
+
+    template<typename ValueType>
     struct sortRowElements
     {
         /** This method sorts the elements of a row by increasing column indexes.

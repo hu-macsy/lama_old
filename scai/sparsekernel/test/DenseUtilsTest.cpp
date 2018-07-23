@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setRowsTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
@@ -226,7 +226,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
     DenseUtils::setRows( dense, numRows, numColumns, rows, common::BinaryOp::MULT, testContext );
 
-    BOOST_TEST( hostReadAccess( expDense ) == hostReadAccess( dense ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( expDense, dense )
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnsTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "scaleRows test for " << *testContext )
+
+    const IndexType numRows    = 4;
+    const IndexType numColumns = 3;
+
+    HArray<ValueType> cols( { 1, 2, 0 }, testContext );
+
+    HArray<ValueType> dense( { 1, 1, 2,
+                               3, 1, 3,
+                               2, 4, 5,
+                               6, 9, 1 }, testContext );
+
+    HArray<ValueType> expDense( { 1,  2, 0,
+                                  3,  2, 0,
+                                  2,  8, 0,
+                                  6, 18, 0 } );
+
+    DenseUtils::setColumns( dense, numRows, numColumns, cols, common::BinaryOp::MULT, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( expDense, dense )
 }
 
 /* ------------------------------------------------------------------------------------- */

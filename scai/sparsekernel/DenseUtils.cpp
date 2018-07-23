@@ -433,6 +433,31 @@ void DenseUtils::setRows(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseUtils::setColumns(
+    HArray<ValueType>& denseValues,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<ValueType>& columnValues,
+    const common::BinaryOp op,
+    ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQ_ERROR( columnValues.size(), numColumns, "illegal size" )
+
+    static LAMAKernel<DenseKernelTrait::setColumns<ValueType> > setColumns;
+
+    ContextPtr loc = prefLoc;
+    setColumns.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<ValueType> rColumns( columnValues, loc );
+    WriteAccess<ValueType> wValues( denseValues, loc );
+    setColumns[loc]( wValues.get(), numRows, numColumns, rColumns.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 IndexType DenseUtils::getNumValues(
     const HArray<ValueType>& denseValues,
     const IndexType numRows,
@@ -544,6 +569,14 @@ IndexType DenseUtils::getNumValues(
         ContextPtr );                                \
                                                      \
     template void DenseUtils::setRows(               \
+        HArray<ValueType>&,                          \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<ValueType>&,                    \
+        const common::BinaryOp op,                   \
+        ContextPtr );                                \
+                                                     \
+    template void DenseUtils::setColumns(            \
         HArray<ValueType>&,                          \
         const IndexType,                             \
         const IndexType,                             \

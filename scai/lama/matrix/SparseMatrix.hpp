@@ -324,6 +324,10 @@ public:
 
     virtual void scaleRows( const DenseVector<ValueType>& scaleY );
 
+    /* Implementation of pure method Matrix<ValueType>::scaleColumns */
+
+    virtual void scaleColumns( const DenseVector<ValueType>& scaleY );
+
     /* Implementation of pure method of class _Matrix. */
 
     virtual void conj();

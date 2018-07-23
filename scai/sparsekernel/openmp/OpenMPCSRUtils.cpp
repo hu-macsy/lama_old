@@ -618,6 +618,38 @@ void OpenMPCSRUtils::setRows(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void OpenMPCSRUtils::setColumns(
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const IndexType numRows,
+    const ValueType values[],
+    const common::BinaryOp op )
+{
+    #pragma omp parallel for 
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        if ( op == common::BinaryOp::MULT )
+        {
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            {
+                csrValues[jj] *= values[csrJA[jj]];
+            }
+        }
+        else
+        {
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            {
+                csrValues[jj] = common::applyBinary( csrValues[jj], op, values[csrJA[jj]] );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 IndexType OpenMPCSRUtils::getValuePos( const IndexType i, const IndexType j, const IndexType csrIA[], const IndexType csrJA[] )
 {
     IndexType pos = invalidIndex;
@@ -1999,6 +2031,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setColumns<ValueType> >( setColumns, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

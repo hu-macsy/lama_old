@@ -236,6 +236,12 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
+
+    virtual void scaleColumns( const DenseVector<ValueType>& )
+    {
+        COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
+    }
+
     virtual void scale( const ValueType& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )

@@ -398,6 +398,35 @@ struct JDSKernelTrait
             return "JDS.setRows";
         }
     };
+
+    template<typename ValueType>
+    struct setColumns
+    {
+        /** This method scales each row of the matrix with a certain value
+         *
+         * @param[in]     numRows       is the number of rows
+         * @param[in]     perm          perm[i] is the original position of row i
+         * @param[in]     ilg           ilg[i] number of entries in row i
+         * @param[in]     dlg           diagonals
+         * @param[in]     jlg           column posititions of the non-zero entries
+         * @param[in,out] jdsValues     array containing all non-zero values, are scaled row-wise
+         * @param[in]     columnValues  colValues[i] is applied to each val in column j
+         * @param[in]     op            binary operation specifies how to update
+         */
+        typedef void ( *FuncType ) ( ValueType jdsValues[],
+                                     const IndexType numRows,
+                                     const IndexType perm[],
+                                     const IndexType ilg[],
+                                     const IndexType dlg[],
+                                     const IndexType jlg[],
+                                     const ValueType columnValues[],
+                                     const common::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "JDS.setColumns";
+        }
+    };
 };
 
 } /* end namespace sparsekernel */

@@ -611,12 +611,15 @@ void DIAStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
             }
         }
     }
+}
 
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        SCAI_LOG_TRACE( logger, "DIA after scale diagonal" )
-        print();
-    }
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::scaleColumns( const HArray<ValueType>& diagonal )
+{
+    DIAUtils::setColumns( mValues, getNumRows(), getNumColumns(), mOffset,
+                          diagonal, common::BinaryOp::MULT, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

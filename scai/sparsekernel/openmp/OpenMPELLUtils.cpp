@@ -101,6 +101,33 @@ void OpenMPELLUtils::setRows(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+template<typename ValueType>
+void OpenMPELLUtils::setColumns(
+    ValueType ellValues[],
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const IndexType ellSizes[],
+    const IndexType ellJA[],
+    const ValueType values[],
+    const common::BinaryOp op )
+{
+    SCAI_LOG_INFO( logger,
+                   "setColumns<" << TypeTraits<ValueType>::id() << ">" << ", #numRows = " << numRows )
+
+    #pragma omp parallel for 
+
+    for ( IndexType i = 0; i < numRows; i++ ) //rows
+    {
+        for ( IndexType jj = 0; jj < ellSizes[i]; jj++ ) //elements in row
+        {
+            IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
+            ellValues[pos] = common::applyBinary( ellValues[pos], op, values[ellJA[pos]] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void OpenMPELLUtils::check(
     const IndexType numRows,
     const IndexType numValuesPerRow,
@@ -1287,6 +1314,7 @@ void OpenMPELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::setColumns<ValueType> >( setColumns, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }

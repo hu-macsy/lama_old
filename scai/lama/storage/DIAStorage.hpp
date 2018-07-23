@@ -377,9 +377,13 @@ public:
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
 
-    /** Template version used for virtual routine scale with known value type. */
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleRows */
 
     void scaleRows( const hmemo::HArray<ValueType>& values );
+
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleColumns */
+
+    void scaleColumns( const hmemo::HArray<ValueType>& values );
 
     /** Implementation of pure method.  */
 

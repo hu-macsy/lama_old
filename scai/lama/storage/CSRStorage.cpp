@@ -946,6 +946,17 @@ void CSRStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::scaleColumns( const HArray<ValueType>& diagonal )
+{
+    SCAI_ASSERT_EQ_ERROR( getNumColumns(), diagonal.size(), "not one element for each column" )
+
+    CSRUtils::setColumns( mValues, getNumRows(), getNumColumns(), mIA, mJA,
+                          diagonal, common::BinaryOp::MULT, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void CSRStorage<ValueType>::wait() const
 {
     mIA.wait();

@@ -788,7 +788,17 @@ void ELLStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 {
     // (MULT)iply each row with an individual value
 
-    ELLUtils::setRows( mValues, mIA, values, common::BinaryOp::MULT, getContextPtr() );
+    ELLUtils::setRows( mValues, getNumRows(), getNumColumns(), mIA, mJA, values, common::BinaryOp::MULT, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::scaleColumns( const HArray<ValueType>& values )
+{
+    // (MULT)iply each column with an individual value
+
+    ELLUtils::setColumns( mValues, getNumRows(), getNumColumns(), mIA, mJA, values, common::BinaryOp::MULT, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

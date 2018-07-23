@@ -1757,6 +1757,24 @@ void DenseMatrix<ValueType>::scaleRows( const DenseVector<ValueType>& scaleY )
 }
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::scaleColumns( const DenseVector<ValueType>& scaleY )
+{
+    SCAI_ASSERT_EQ_ERROR( getColDistribution(), scaleY.getDistribution(),
+                          "distribution of scale vector does not match" )
+
+    // ToDo : shift parts of scaleY around
+
+    SCAI_ASSERT_ERROR( scaleY.getDistribution().isReplicated(), "distributed column scaling not supported yet" )
+
+    const HArray<ValueType>& localY = scaleY.getLocalValues();
+
+    for ( size_t i = 0; i < mData.size(); ++i )
+    {
+        mData[i]->scaleColumns( localY );
+    }
+}
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::scale( const ValueType& alpha )
 {
     for ( size_t i = 0; i < mData.size(); ++i )

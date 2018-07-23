@@ -252,18 +252,45 @@ public:
         hmemo::ContextPtr prefLoc );
 
     /** 
-     *  @brief Scale each row of a COO storage with an individual values
+     *  @brief Update each row of a COO storage with an individual value
      * 
-     *  @param[in,out] values are the non-zero entries of the storage
-     *  @param[in]     ia are the row indexes of the non-zero entries
-     *  @param[in]     scale are the scaling factors, size is number of rows
+     *  @param[in,out] cooValues are the non-zero entries of the storage
+     *  @param[in]     numRows, numColumns are the extension of the storage
+     *  @param[in]     cooIA, cooJA are the row and column indexes of the non-zero entries
+     *  @param[in]     rowValues are the update elements, size is number of rows
+     *  @param[in]     op specifies the udpate operation, e.g. BinaryOp::MULT   
      *  @param[in]     prefLoc is context where the operation should be done
      */
     template<typename ValueType>
-    static void scaleRows(
-        hmemo::HArray<ValueType>& values,
-        const hmemo::HArray<IndexType>& ia,
-        const hmemo::HArray<ValueType>& scale,
+    static void setRows(
+        hmemo::HArray<ValueType>& cooValues,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& cooIA,
+        const hmemo::HArray<IndexType>& cooJA,
+        const hmemo::HArray<ValueType>& rowValues,
+        const common::BinaryOp op,
+        hmemo::ContextPtr prefLoc );
+
+    /** 
+     *  @brief Update each column of a COO storage with an individual value
+     * 
+     *  @param[in,out] cooValues are the non-zero entries of the storage
+     *  @param[in]     numRows, numColumns are the extension of the storage
+     *  @param[in]     cooIA, cooJA are the row and column indexes of the non-zero entries
+     *  @param[in]     columnValues are the update elements, size is number of columns
+     *  @param[in]     op specifies the udpate operation, e.g. BinaryOp::MULT   
+     *  @param[in]     prefLoc is context where the operation should be done
+     */
+    template<typename ValueType>
+    static void setColumns(
+        hmemo::HArray<ValueType>& cooValues,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& cooIA,
+        const hmemo::HArray<IndexType>& cooJA,
+        const hmemo::HArray<ValueType>& columnValues,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
 
     /**

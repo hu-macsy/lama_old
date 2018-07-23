@@ -190,6 +190,17 @@ public:
         const ValueType values[], 
         common::BinaryOp op );
 
+    /** Implementation for CSRKernelTrait::setColumns  */
+
+    template<typename ValueType>
+    static void setColumns(
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const IndexType numRows,
+        const ValueType values[], 
+        common::BinaryOp op );
+
 
     template<typename ValueType>
     static void reduce(

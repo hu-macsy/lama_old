@@ -192,6 +192,31 @@ struct DenseKernelTrait
         }
     };
 
+    template<typename ValueType>
+    struct setColumns
+    {
+        /** Set/update rows of the matrix individually.
+         *
+         *  @param[in,out] denseValues  data of the dense matrix, size is numRows * numColumns
+         *  @param[in]     numRows      number of rows
+         *  @param[in]     numColumns   number of columns
+         *  @param[in]     columnValues scale values for each column, size is numColumns
+         *  @param[in]     op           binary operation that is applied 
+         */
+
+        typedef void ( *FuncType ) (
+            ValueType denseValues[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const ValueType columnValues[],
+            const common::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "Dense.setColumns";
+        }
+    };
+
     /** Structure with type definitions for solver routines */
 
     template<typename ValueType>

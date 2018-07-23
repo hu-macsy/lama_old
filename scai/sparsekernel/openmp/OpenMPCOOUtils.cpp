@@ -269,18 +269,40 @@ void OpenMPCOOUtils::ia2offsets(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPCOOUtils::scaleRows(
+void OpenMPCOOUtils::setRows(
     ValueType cooValues[],
-    const ValueType rowValues[],
     const IndexType cooIA[],
-    const IndexType numValues )
+    const ValueType rowValues[],
+    const IndexType numValues,
+    const common::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "scaleRows in COO format" )
+    SCAI_LOG_INFO( logger, "setRows in COO format" )
+
     #pragma omp parallel for 
 
-    for ( IndexType i = 0; i < numValues; ++i )
+    for ( IndexType k = 0; k < numValues; ++k )
     {
-        cooValues[i] *= rowValues[cooIA[i]];
+        cooValues[k] = common::applyBinary( cooValues[k], op, rowValues[cooIA[k]] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCOOUtils::setColumns(
+    ValueType cooValues[],
+    const IndexType cooJA[],
+    const ValueType columnValues[],
+    const IndexType numValues, 
+    const common::BinaryOp op )
+{
+    SCAI_LOG_INFO( logger, "setColumns for COO format" )
+
+    #pragma omp parallel for 
+
+    for ( IndexType k = 0; k < numValues; ++k )
+    {
+        cooValues[k] = common::applyBinary( cooValues[k], op, columnValues[cooJA[k]] );
     }
 }
 
@@ -749,7 +771,8 @@ void OpenMPCOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<COOKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setColumns<ValueType> >( setColumns, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

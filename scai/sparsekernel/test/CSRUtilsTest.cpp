@@ -306,11 +306,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_t
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setRowsTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    SCAI_LOG_INFO( logger, "scaleRows test for " << *testContext )
+    SCAI_LOG_INFO( logger, "setRows test for " << *testContext )
 
     HArray<IndexType> csrIA( testContext );
     HArray<IndexType> csrJA( testContext );
@@ -333,7 +333,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
     {
         auto rIA = hostReadAccess( csrIA );
-        auto rJA = hostReadAccess( csrJA );
 
         auto rRows = hostReadAccess( rows );
         auto rSavedValues = hostReadAccess( savedValues );
@@ -347,6 +346,42 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
             }
         }
     }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnsTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "setColumns test for " << *testContext )
+
+    /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                       7  0  0  0         0  -  -    7  -  -
+                       0  0  9  4         2  3  -    9  4  -
+                       2  5  0  3         0  1  3    2  5  3
+                       2  0  0  1         0  3  -    2  1  -
+                       0  0  0  0         -  -  -    -  -  -
+                       0  1  0  2         1  3  -    1  2  -
+     */
+
+    HArray<IndexType> csrIA( { 0,    2, 3,    5,       8,    10, 10,   12 }, testContext );
+    HArray<IndexType> csrJA( { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3,     1, 3 }, testContext );
+    HArray<ValueType> csrValues( { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1,     1, 2 }, testContext );
+
+    const IndexType numRows = 7;
+    const IndexType numColumns = 4;
+
+    HArray<ValueType> columns(  { 2, 1, -1, 3 }, testContext );
+    BOOST_REQUIRE_EQUAL( numColumns, columns.size() );
+
+    CSRUtils::setColumns( csrValues, numRows, numColumns, csrIA, csrJA, columns, common::BinaryOp::MULT, testContext );
+
+    HArray<ValueType> expectedValues( { 6 * 2, 4 * 3, 7 * 2, 9 * -1, 4 * 3, 2 * 2, 5 * 1, 3 * 3, 2 * 2, 1 * 3, 1 * 1, 2 * 3 }, testContext );
+
+    // prove by hand
+
+    SCAI_CHECK_EQUAL_ARRAY( expectedValues, csrValues );
 }
 
 /* ------------------------------------------------------------------------------------- */

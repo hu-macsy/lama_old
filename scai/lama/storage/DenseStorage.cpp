@@ -324,6 +324,16 @@ void DenseStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseStorage<ValueType>::scaleColumns( const HArray<ValueType>& values )
+{
+    SCAI_ASSERT_EQ_ERROR( values.size(), getNumRows(), "not one value for each row" )
+
+    DenseUtils::setColumns( mData, getNumRows(), getNumColumns(), values, common::BinaryOp::MULT, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseStorage<ValueType>::transposeImpl()
 {
     SCAI_REGION( "Storage.Dense.transpose" )

@@ -788,6 +788,7 @@ void JDSUtils::setRows(
     const HArray<IndexType>& jdsILG,
     const HArray<IndexType>& jdsDLG,
     const HArray<IndexType>& jdsPerm,
+    const HArray<IndexType>&,
     const HArray<ValueType>& rowValues,
     const common::BinaryOp op,
     ContextPtr prefLoc )
@@ -814,6 +815,44 @@ void JDSUtils::setRows(
     ReadAccess<ValueType> rRows( rowValues, loc );
 
     setRows[loc]( wValues.get(), numRows, rPerm.get(), rIlg.get(), rDlg.get(), rRows.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void JDSUtils::setColumns(
+    HArray<ValueType>& jdsValues,
+    const HArray<IndexType>& jdsILG,
+    const HArray<IndexType>& jdsDLG,
+    const HArray<IndexType>& jdsPerm,
+    const HArray<IndexType>& jdsJA,
+    const HArray<ValueType>& columnValues,
+    const common::BinaryOp op,
+    ContextPtr prefLoc )
+{
+    const IndexType numRows = jdsILG.size();
+
+    if ( numRows == 0 || jdsValues.size() == 0 )
+    {
+        return;
+    }
+
+    static LAMAKernel<JDSKernelTrait::setColumns<ValueType> > setColumns;
+
+    ContextPtr loc = prefLoc;
+
+    setColumns.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    WriteAccess<ValueType> wValues( jdsValues, loc );
+    ReadAccess<IndexType> rIlg( jdsILG, loc );
+    ReadAccess<IndexType> rDlg( jdsDLG, loc );
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+    ReadAccess<IndexType> rJA( jdsJA, loc );
+    ReadAccess<ValueType> rColumns( columnValues, loc );
+
+    setColumns[loc]( wValues.get(), numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJA.get(), rColumns.get(), op );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -923,6 +962,17 @@ void JDSUtils::setRows(
                                                      \
     template void JDSUtils::setRows(                 \
         HArray<ValueType>&,                          \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<IndexType>&,                    \
+        const HArray<ValueType>&,                    \
+        const common::BinaryOp,                      \
+        ContextPtr );                                \
+                                                     \
+    template void JDSUtils::setColumns(              \
+        HArray<ValueType>&,                          \
+        const HArray<IndexType>&,                    \
         const HArray<IndexType>&,                    \
         const HArray<IndexType>&,                    \
         const HArray<IndexType>&,                    \

@@ -365,9 +365,13 @@ public:
 
     virtual void scale( const ValueType& alpha );
 
-    /* Implementation of pure method Matrix<ValueType>::scale */
+    /* Implementation of pure method Matrix<ValueType>::scaleRows */
 
     virtual void scaleRows( const DenseVector<ValueType>& scaleY );
+
+    /* Implementation of pure method Matrix<ValueType>::scaleColumns */
+
+    virtual void scaleColumns( const DenseVector<ValueType>& scaleY );
 
     /* Implementation of pure method of class _Matrix. */
 

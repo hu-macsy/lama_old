@@ -1381,6 +1381,40 @@ void CSRUtils::setRows(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void CSRUtils::setColumns(
+    hmemo::HArray<ValueType>& csrValues,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<IndexType>& csrIA,
+    const hmemo::HArray<IndexType>& csrJA,
+    const hmemo::HArray<ValueType>& columnValues,
+    const common::BinaryOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    if ( numRows == 0 || numColumns == 0 )
+    {
+        return;
+    }
+
+    static LAMAKernel<CSRKernelTrait::setColumns<ValueType> > setColumns;
+
+    ContextPtr loc = prefLoc;
+
+    setColumns.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    WriteAccess<ValueType> wValues( csrValues, loc );
+    ReadAccess<IndexType> rIA( csrIA, loc );
+    ReadAccess<IndexType> rJA( csrJA, loc );
+    ReadAccess<ValueType> rCols( columnValues, loc );
+
+    setColumns[loc]( wValues.get(), rIA.get(), rJA.get(), numRows, rCols.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define CSRUTILS_SPECIFIER( ValueType )                    \
                                                            \
     template void CSRUtils::sortRows(                      \
@@ -1585,6 +1619,16 @@ void CSRUtils::setRows(
         ContextPtr );                                      \
                                                            \
     template void CSRUtils::setRows(                       \
+        HArray<ValueType>&,                                \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const common::BinaryOp,                            \
+        ContextPtr );                                      \
+                                                           \
+    template void CSRUtils::setColumns(                    \
         HArray<ValueType>&,                                \
         const IndexType,                                   \
         const IndexType,                                   \

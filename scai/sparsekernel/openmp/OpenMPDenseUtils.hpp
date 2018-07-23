@@ -124,6 +124,16 @@ public:
         const ValueType rowValues[],
         const common::BinaryOp op );
 
+    /** OpenMP implementation for DenseKernelTrait::scaleColumns */
+
+    template<typename ValueType>
+    static void setColumns(
+        ValueType denseValues[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const ValueType columnValues[],
+        const common::BinaryOp op );
+
     /** Implementation for DenseKernelTrait::jacobi  */
 
     template<typename ValueType>

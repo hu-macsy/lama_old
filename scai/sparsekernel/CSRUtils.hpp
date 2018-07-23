@@ -569,6 +569,25 @@ public:
         const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
 
+    /**
+     * @brief Set/update each column in a CSR storage with an individual value
+     *
+     *  \code
+     *      for all i = 0, ..., n-1; j = 0, ..., m-1
+     *      csrValues( i, j ) = csrValues( i, j ) <op> columnValues( j )
+     *  \endcode
+     */
+    template<typename ValueType>
+    static void setColumns(
+        hmemo::HArray<ValueType>& csrValues,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& columnValues,
+        const common::BinaryOp op,
+        hmemo::ContextPtr prefLoc );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

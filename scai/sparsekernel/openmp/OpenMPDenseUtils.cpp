@@ -294,7 +294,7 @@ void OpenMPDenseUtils::setRows(
     const ValueType rowValues[],
     common::BinaryOp op )
 {
-    SCAI_REGION( "OpenMP.DenseUtils.scaleRows" )
+    SCAI_REGION( "OpenMP.DenseUtils.setRows" )
 
     #pragma omp parallel for
 
@@ -317,6 +317,42 @@ void OpenMPDenseUtils::setRows(
             {
                 ValueType& updateVal = denseValues[denseindex( i, j, numRows, numColumns )];
                 updateVal = applyBinary( updateVal, op, rowValue ); 
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPDenseUtils::setColumns(
+    ValueType denseValues[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const ValueType columnValues[],
+    common::BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.DenseUtils.setColumns" )
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        if ( common::BinaryOp::MULT == op )
+        {
+            // multiply each row with the column values
+
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                denseValues[denseindex( i, j, numRows, numColumns )] *= columnValues[j];
+            }
+        }
+        else
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                ValueType& updateVal = denseValues[denseindex( i, j, numRows, numColumns )];
+                updateVal = applyBinary( updateVal, op, columnValues[j] );
             }
         }
     }
@@ -429,6 +465,7 @@ void OpenMPDenseUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kern
     KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::setColumns<ValueType> >( setColumns, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );

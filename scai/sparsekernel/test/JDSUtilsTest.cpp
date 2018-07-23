@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
     common::BinaryOp op = common::BinaryOp::MULT;
 
-    JDSUtils::setRows( values, ilg, dlg, perm, diagonal, op, testContext );
+    JDSUtils::setRows( values, ilg, dlg, perm, ilg, diagonal, op, testContext );
 
     HArray<ValueType> expectedValues( { 1, 14, 36, 2, 16, 39, 3, 18, 42, 4, 20, 45, 5, 22, 6 } );
 

@@ -466,6 +466,15 @@ public:
      */
     virtual void scaleRows( const DenseVector<ValueType>& scaleY ) = 0;
 
+    /** @brief This method scales the matrix elements individually for each column.
+     *
+     * @param[in] scaleY  is a vector whose distribution must match the column distribution
+     *
+     * This operation corresponds to $this = this * diagonalMatrix( scaleY )$, i.e.
+     * post-multiplying this matrix with a diagonal marix built by the vector scaleY.
+     */
+    virtual void scaleColumns( const DenseVector<ValueType>& scaleY ) = 0;
+
     /* ======================================================================= */
     /*     set/get of rows/columns of a matrix                                 */
     /* ======================================================================= */
