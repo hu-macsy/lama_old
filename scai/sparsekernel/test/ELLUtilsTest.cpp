@@ -416,27 +416,76 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setRowsTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
 
-    HArray<ValueType> ellValues(       { 1, 2,  3, 4,  5, 2, 2,  2, 2, 2, 4, 2, 0, 1, 3, 0, 0, 0, 0, 3 }, testContext );
-    HArray<ValueType> expectedValues(  { 2, 4, 15, 8, 10, 4, 4, 10, 4, 4, 8, 4, 0, 2, 6, 0, 0, 0, 0, 6 } );
+    /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                       7  0  0  0         0  -  -    7  -  -
+                       0  0  9  4         2  3  -    9  4  -
+                       2  5  0  3         0  1  3    2  5  3
+                       2  0  0  1         0  3  -    2  1  -
+                       0  0  0  0         -  -  -    -  -  -
+                       0  1  0  2         1  3  -    1  2  -
+     */
 
-    const IndexType numRows = 5;
-    const IndexType numValuesPerRow = ellValues.size() / numRows;
+    const IndexType x = 0;
+    const ValueType v = 0;
 
-    BOOST_CHECK_EQUAL( ellValues.size(), numRows * numValuesPerRow );
+    HArray<IndexType> ellIA(     { 2, 1, 2, 3, 2, 0, 2 }, testContext );
+    HArray<IndexType> ellJA(     { 0, 0, 2, 0, 0, x, 1, 3, x, 3, 1, 3, x, 3, x, x, x, 3, x, x, x }, testContext );
+    HArray<ValueType> ellValues( { 6, 7, 9, 2, 2, v, 1, 4, v, 4, 5, 1, v, 2, v, v, v, 3, v, v, v }, testContext );
+    
+    const IndexType numRows         = 7;
+    const IndexType numColumns      = 4;
 
-    HArray<IndexType> ellIA( { 3, 3, 3, 3, 4 }, testContext );
-    HArray<ValueType> diagonal( { 2, 2, 5, 2, 2 }, testContext );
+    HArray<ValueType> diagonal( { -1, 2, 3, -4, -5, -6, 4 }, testContext );
 
-    BOOST_CHECK_EQUAL( ellIA.size(), numRows );
-    BOOST_CHECK_EQUAL( diagonal.size(), numRows );
+    HArray<ValueType> expectedValues( { 6 * -1, 7 * 2, 9 * 3, 2 * -4, 2 * -5, v, 1 * 4, 
+                                        4 * -1, v, 4 * 3, 5 * -4, 1 * -5, v, 2 * 4, 
+                                        v, v, v, 3 * -4, v, v, v }, testContext );
 
     auto op = common::BinaryOp::MULT;
 
-    ELLUtils::setRows( ellValues, ellIA, diagonal, op, testContext );
+    ELLUtils::setRows( ellValues, numRows, numColumns, ellIA, ellJA, diagonal, op, testContext );
+
+    BOOST_TEST( hostReadAccess( expectedValues ) == hostReadAccess( ellValues ), per_element() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnsTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                       7  0  0  0         0  -  -    7  -  -
+                       0  0  9  4         2  3  -    9  4  -
+                       2  5  0  3         0  1  3    2  5  3
+                       2  0  0  1         0  3  -    2  1  -
+                       0  0  0  0         -  -  -    -  -  -
+                       0  1  0  2         1  3  -    1  2  -
+     */
+
+    const IndexType x = 0;
+    const ValueType v = 0;
+
+    HArray<IndexType> ellIA(     { 2, 1, 2, 3, 2, 0, 2 }, testContext );
+    HArray<IndexType> ellJA(     { 0, 0, 2, 0, 0, x, 1, 3, x, 3, 1, 3, x, 3, x, x, x, 3, x, x, x }, testContext );
+    HArray<ValueType> ellValues( { 6, 7, 9, 2, 2, v, 1, 4, v, 4, 5, 1, v, 2, v, v, v, 3, v, v, v }, testContext );
+
+    const IndexType numRows         = 7;
+    const IndexType numColumns      = 4;
+
+    HArray<ValueType> diagonal( { -1, 2, 3, -4 }, testContext );
+
+    HArray<ValueType> expectedValues( { 6 * -1, 7 * -1, 9 * 3, 2 * -1, 2 * -1, v, 1 * 2, 
+                                        4 * -4, v, 4 * -4, 5 * 2, 1 * -4, v, 2 * -4, 
+                                        v, v, v, 3 * -4, v, v, v }, testContext );
+
+    auto op = common::BinaryOp::MULT;
+
+    ELLUtils::setColumns( ellValues, numRows, numColumns, ellIA, ellJA, diagonal, op, testContext );
 
     BOOST_TEST( hostReadAccess( expectedValues ) == hostReadAccess( ellValues ), per_element() );
 }

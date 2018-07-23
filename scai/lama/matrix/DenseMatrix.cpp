@@ -493,6 +493,24 @@ void DenseMatrix<ValueType>::assignTranspose( const _Matrix& other  )
 }
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::reserveCommunicationBuffers( const IndexType n ) const
+{
+    // invalidate any data from previous communication
+
+    mReceiveValues.clear();
+    mSendValues.clear();
+
+    IndexType maxSize = getColDistribution().getMaxLocalSize();
+
+    // send/recv buffers must be large enough to keep largest amout of data from any processor
+
+    ContextPtr contextPtr = Context::getHostPtr();
+
+    mReceiveValues.reserve( contextPtr, n * maxSize );
+    mSendValues.reserve( contextPtr, n * maxSize );
+}
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& matrix )
 {
     SCAI_REGION( "Mat.Dense.transpose" )
@@ -1707,15 +1725,11 @@ void DenseMatrix<ValueType>::reduceImpl(
         // circular shift of local parts and reduce vals from here
 
         const int COMM_DIRECTION = 1;       // circular shifting
+
+        reserveCommunicationBuffers( 1 );
+
         HArray<ValueType>& sendValues = mSendValues;
         HArray<ValueType>& recvValues = mReceiveValues;
-        IndexType maxSize = getColDistribution().getMaxLocalSize();
-
-        // send/recv buffers must be large enough to keep largest amout of data from any processor
-
-        ContextPtr contextPtr = Context::getHostPtr();
-        recvValues.reserve( contextPtr, maxSize );
-        sendValues.reserve( contextPtr, maxSize );
 
         utilskernel::HArrayUtils::assign( sendValues, v.getLocalValues() );
 
@@ -1753,6 +1767,56 @@ void DenseMatrix<ValueType>::scaleRows( const DenseVector<ValueType>& scaleY )
     for ( size_t i = 0; i < mData.size(); ++i )
     {
         mData[i]->scaleRows( localY );
+    }
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::scaleColumns( const DenseVector<ValueType>& scaleY )
+{
+    SCAI_ASSERT_EQ_ERROR( getColDistribution(), scaleY.getDistribution(),
+                          "distribution of scale vector does not match" )
+
+    const Communicator& comm = getColDistribution().getCommunicator();
+
+    IndexType np = comm.getSize();
+    IndexType rank = comm.getRank();
+
+    SCAI_ASSERT_EQ_DEBUG( np, PartitionId( mData.size() ), "serious internal mismatch" )
+
+    SCAI_LOG_DEBUG( logger, comm << ": local scale " << *mData[rank] << " with " << scaleY.getLocalValues() )
+
+    mData[rank]->scaleColumns( scaleY.getLocalValues() );
+
+    if ( np <= 1 )
+    {
+        return;
+    }
+
+    // circular shift of local parts of scaleY and 
+
+    const int COMM_DIRECTION = 1;       // circular shifting
+
+    reserveCommunicationBuffers( 1 );  // one data element for each column entry
+
+    HArray<ValueType>& sendValues = mSendValues;
+    HArray<ValueType>& recvValues = mReceiveValues;
+
+    utilskernel::HArrayUtils::assign( sendValues, scaleY.getLocalValues() );
+
+    for ( PartitionId p = 1; p < np; ++p )
+    {
+        comm.shiftArray( recvValues, sendValues, COMM_DIRECTION );
+
+        // compute the owner of the values that are in the current send buffer
+
+        PartitionId actualPartition = comm.getNeighbor( -p );
+
+        SCAI_LOG_DEBUG( logger, comm << ": scale, p = " << actualPartition << ", values = " << recvValues 
+                                     << ", data = " << *mData[actualPartition] )
+
+        mData[actualPartition]->scaleColumns( recvValues );
+
+        std::swap( sendValues, recvValues );
     }
 }
 
@@ -2085,19 +2149,10 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 
     // reuse member variables of this DenseMatrix, avoids too much reallocation
 
+    reserveCommunicationBuffers( 1 );
+
     HArray<ValueType>& sendValues = mSendValues;
-
     HArray<ValueType>& recvValues = mReceiveValues;
-
-    IndexType maxSize = colDist.getMaxLocalSize();
-
-    // send/recv buffers must be large enough to keep largest amout of data from any processor
-
-    ContextPtr contextPtr = Context::getHostPtr();
-
-    recvValues.reserve( contextPtr, maxSize );
-
-    sendValues.reserve( contextPtr, maxSize );
 
     SCAI_LOG_DEBUG( logger, comm << ": recv buffer = " << recvValues << ", send buffer = " << sendValues );
 

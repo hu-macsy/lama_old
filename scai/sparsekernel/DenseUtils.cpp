@@ -343,9 +343,11 @@ void DenseUtils::gemm(
         return;  // done for trivial cases
     }
 
-    const IndexType lda = n;
-    const IndexType ldb = k;
-    const IndexType ldc = n;
+    // A is m x k if normal or A is k x m if transposed
+
+    const IndexType lda = common::isTranspose( opA ) ? m : k; 
+    const IndexType ldb = common::isTranspose( opB ) ? k : n;  // B is k x n
+    const IndexType ldc = n;  // C is m x n
 
     static LAMAKernel<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
 
@@ -426,6 +428,31 @@ void DenseUtils::setRows(
     ReadAccess<ValueType> rRows( rowValues, loc );
     WriteAccess<ValueType> wValues( denseValues, loc );
     setRows[loc]( wValues.get(), numRows, numColumns, rRows.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseUtils::setColumns(
+    HArray<ValueType>& denseValues,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<ValueType>& columnValues,
+    const common::BinaryOp op,
+    ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQ_ERROR( columnValues.size(), numColumns, "illegal size" )
+
+    static LAMAKernel<DenseKernelTrait::setColumns<ValueType> > setColumns;
+
+    ContextPtr loc = prefLoc;
+    setColumns.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<ValueType> rColumns( columnValues, loc );
+    WriteAccess<ValueType> wValues( denseValues, loc );
+    setColumns[loc]( wValues.get(), numRows, numColumns, rColumns.get(), op );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -542,6 +569,14 @@ IndexType DenseUtils::getNumValues(
         ContextPtr );                                \
                                                      \
     template void DenseUtils::setRows(               \
+        HArray<ValueType>&,                          \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<ValueType>&,                    \
+        const common::BinaryOp op,                   \
+        ContextPtr );                                \
+                                                     \
+    template void DenseUtils::setColumns(            \
         HArray<ValueType>&,                          \
         const IndexType,                             \
         const IndexType,                             \

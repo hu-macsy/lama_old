@@ -42,7 +42,7 @@
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/sparsekernel/test/TestMacros.hpp>
 
 #include <scai/hmemo/test/ContextFix.hpp>
 
@@ -306,11 +306,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_t
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setRowsTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    SCAI_LOG_INFO( logger, "scaleRows test for " << *testContext )
+    SCAI_LOG_INFO( logger, "setRows test for " << *testContext )
 
     HArray<IndexType> csrIA( testContext );
     HArray<IndexType> csrJA( testContext );
@@ -333,7 +333,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
     {
         auto rIA = hostReadAccess( csrIA );
-        auto rJA = hostReadAccess( csrJA );
 
         auto rRows = hostReadAccess( rows );
         auto rSavedValues = hostReadAccess( savedValues );
@@ -347,6 +346,42 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
             }
         }
     }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnsTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "setColumns test for " << *testContext )
+
+    /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                       7  0  0  0         0  -  -    7  -  -
+                       0  0  9  4         2  3  -    9  4  -
+                       2  5  0  3         0  1  3    2  5  3
+                       2  0  0  1         0  3  -    2  1  -
+                       0  0  0  0         -  -  -    -  -  -
+                       0  1  0  2         1  3  -    1  2  -
+     */
+
+    HArray<IndexType> csrIA( { 0,    2, 3,    5,       8,    10, 10,   12 }, testContext );
+    HArray<IndexType> csrJA( { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3,     1, 3 }, testContext );
+    HArray<ValueType> csrValues( { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1,     1, 2 }, testContext );
+
+    const IndexType numRows = 7;
+    const IndexType numColumns = 4;
+
+    HArray<ValueType> columns(  { 2, 1, -1, 3 }, testContext );
+    BOOST_REQUIRE_EQUAL( numColumns, columns.size() );
+
+    CSRUtils::setColumns( csrValues, numRows, numColumns, csrIA, csrJA, columns, common::BinaryOp::MULT, testContext );
+
+    HArray<ValueType> expectedValues( { 6 * 2, 4 * 3, 7 * 2, 9 * -1, 4 * 3, 2 * 2, 5 * 1, 3 * 3, 2 * 2, 1 * 3, 1 * 1, 2 * 3 }, testContext );
+
+    // prove by hand
+
+    SCAI_CHECK_EQUAL_ARRAY( expectedValues, csrValues );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -629,6 +664,82 @@ BOOST_AUTO_TEST_CASE( getColumnPositionsTest )
 
     BOOST_TEST( hostReadAccess( row ) == std::vector<IndexType>( { 0, 2 } ), per_element() );
     BOOST_TEST( hostReadAccess( pos ) == std::vector<IndexType>( { 1, 4 } ), per_element() );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( transposeZeroTest )
+{
+    typedef DefaultReal ValueType;
+
+    // transpose a zero matrix of size 2 x 4
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> zero test for " << *testContext )
+
+    HArray<IndexType> csrIA( { 0, 0, 0 }, testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+
+    IndexType numRows     = 2;
+    IndexType numColumns  = 4;
+
+    // CSC <- transpose CSR
+
+    IndexType dummyValue = 4019;
+
+    HArray<IndexType> cscIA( numColumns + 5, dummyValue );
+    HArray<IndexType> cscJA;
+    HArray<ValueType> cscValues;
+
+    CSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, numRows, numColumns, csrIA, csrJA, csrValues, testContext );
+
+    BOOST_CHECK_EQUAL( cscIA.size(), numColumns + 1 );
+    BOOST_CHECK_EQUAL( cscJA.size(), 0 );
+    BOOST_CHECK_EQUAL( cscValues.size(), 0 );
+
+    HArray<IndexType> expIA( numColumns + 1, IndexType( 0 ), testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( cscIA, expIA )
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( transposeSingleTest )
+{
+    typedef DefaultReal ValueType;
+
+    // transpose a matrix of size 3 x 5 with one entry at ( 1, 3 )
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> zero test for " << *testContext )
+
+    HArray<IndexType> csrIA( { 0, 0, 1, 1 }, testContext );
+    HArray<IndexType> csrJA( 1, IndexType( 3 ), testContext );
+
+    // be careful: csrValues( { 5 }, testContext ) might be seen as csrValues( 5, testContext ) by Intel compiler
+
+    HArray<ValueType> csrValues( 1, ValueType( 5 ), testContext );
+
+    IndexType numRows     = 3;
+    IndexType numColumns  = 5;
+
+    // CSC <- transpose CSR
+
+    HArray<IndexType> cscIA;
+    HArray<IndexType> cscJA;
+    HArray<ValueType> cscValues;
+
+    CSRUtils::convertCSR2CSC( cscIA, cscJA, cscValues, numRows, numColumns, csrIA, csrJA, csrValues, testContext );
+
+    HArray<IndexType> expIA( { 0, 0, 0, 0, 1, 1 } );
+    HArray<IndexType> expJA( 1, IndexType( 1 ) );
+
+    SCAI_CHECK_EQUAL_ARRAY( cscValues, csrValues )
+    SCAI_CHECK_EQUAL_ARRAY( cscIA, expIA )
+    SCAI_CHECK_EQUAL_ARRAY( cscJA, expJA )
 }
 
 /* ------------------------------------------------------------------------------------- */

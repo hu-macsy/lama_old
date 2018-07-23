@@ -391,13 +391,17 @@ void CSRUtils::convertCSR2CSC(
     const HArray<ValueType>& rowValues,
     const ContextPtr preferredLoc )
 {
+    SCAI_ASSERT_EQ_DEBUG( rowJA.size(), rowValues.size(), "inconsistetne CSR data" )
+
     const IndexType numValues = rowJA.size();
-    SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
+
     static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
     ContextPtr loc = preferredLoc;
     convertCSR2CSC.getSupportedContext( loc );
-    SCAI_LOG_INFO( logger,
-                   "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
+
+    SCAI_LOG_DEBUG( logger,
+                    "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
+
     SCAI_REGION( "Sparse.CSR.2CSC" )
     WriteOnlyAccess<IndexType> cIA( colIA, loc, numColumns + 1 );
     WriteOnlyAccess<IndexType> cJA( colJA, loc, numValues );
@@ -1381,6 +1385,40 @@ void CSRUtils::setRows(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void CSRUtils::setColumns(
+    hmemo::HArray<ValueType>& csrValues,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<IndexType>& csrIA,
+    const hmemo::HArray<IndexType>& csrJA,
+    const hmemo::HArray<ValueType>& columnValues,
+    const common::BinaryOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    if ( numRows == 0 || numColumns == 0 )
+    {
+        return;
+    }
+
+    static LAMAKernel<CSRKernelTrait::setColumns<ValueType> > setColumns;
+
+    ContextPtr loc = prefLoc;
+
+    setColumns.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    WriteAccess<ValueType> wValues( csrValues, loc );
+    ReadAccess<IndexType> rIA( csrIA, loc );
+    ReadAccess<IndexType> rJA( csrJA, loc );
+    ReadAccess<ValueType> rCols( columnValues, loc );
+
+    setColumns[loc]( wValues.get(), rIA.get(), rJA.get(), numRows, rCols.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define CSRUTILS_SPECIFIER( ValueType )                    \
                                                            \
     template void CSRUtils::sortRows(                      \
@@ -1585,6 +1623,16 @@ void CSRUtils::setRows(
         ContextPtr );                                      \
                                                            \
     template void CSRUtils::setRows(                       \
+        HArray<ValueType>&,                                \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const common::BinaryOp,                            \
+        ContextPtr );                                      \
+                                                           \
+    template void CSRUtils::setColumns(                    \
         HArray<ValueType>&,                                \
         const IndexType,                                   \
         const IndexType,                                   \

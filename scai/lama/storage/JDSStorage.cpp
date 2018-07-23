@@ -531,7 +531,17 @@ void JDSStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
 
     auto op = common::BinaryOp::MULT;
 
-    JDSUtils::setRows( mValues, mIlg, mDlg, mPerm, diagonal, op, getContextPtr() );
+    JDSUtils::setRows( mValues, mIlg, mDlg, mPerm, mJA, diagonal, op, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void JDSStorage<ValueType>::scaleColumns( const HArray<ValueType>& diagonal )
+{
+    auto op = common::BinaryOp::MULT;
+
+    JDSUtils::setColumns( mValues, mIlg, mDlg, mPerm, mJA, diagonal, op, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

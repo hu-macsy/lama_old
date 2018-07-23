@@ -946,6 +946,17 @@ void CSRStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::scaleColumns( const HArray<ValueType>& diagonal )
+{
+    SCAI_ASSERT_EQ_ERROR( getNumColumns(), diagonal.size(), "not one element for each column" )
+
+    CSRUtils::setColumns( mValues, getNumRows(), getNumColumns(), mIA, mJA,
+                          diagonal, common::BinaryOp::MULT, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void CSRStorage<ValueType>::wait() const
 {
     mIA.wait();
@@ -1018,30 +1029,29 @@ void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& oth
 
     SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
 
-    // pass HArrays of this storage to build the values in it
-
     if ( &other == this )
     {
         SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose in place" )
+
         HArray<IndexType> tmpIA;
         HArray<IndexType> tmpJA;
         HArray<ValueType> tmpValues;
-        // do not change sizes before building CSC data
+
         other.buildCSCData( tmpIA, tmpJA, tmpValues );
-        // sizes must be set correctly BEFORE swap
-        _MatrixStorage::_assignTranspose( other );
-        swap( tmpIA, tmpJA, tmpValues );  // sets all other data correctly
+
+        *this = CSRStorage( other.getNumColumns(), other.getNumRows(), 
+                            std::move( tmpIA ), std::move( tmpJA ), std::move( tmpValues ) );
     }
     else
-    {
-        _MatrixStorage::_assignTranspose( other );
-        SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
-        other.buildCSCData( mIA, mJA, mValues );
-        buildRowIndexes();
-    }
+    {   // use the storage arrays of this object directly to build the data
 
-    // actualize my member variables (class CSRStorage)
-    check( "assignTranspose" );
+        SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
+
+        other.buildCSCData( mIA, mJA, mValues );
+
+        *this = CSRStorage( other.getNumColumns(), other.getNumRows(), 
+                            std::move( mIA ), std::move( mJA ), std::move( mValues ) );
+    }
 }
 
 /* --------------------------------------------------------------------------- */

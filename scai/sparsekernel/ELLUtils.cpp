@@ -886,13 +886,14 @@ void ELLUtils::jacobiHalo(
 template<typename ValueType>
 void ELLUtils::setRows(
     hmemo::HArray<ValueType>& ellValues,
+    const IndexType numRows,
+    const IndexType,
     const hmemo::HArray<IndexType>& ellIA,
+    const hmemo::HArray<IndexType>&,
     const hmemo::HArray<ValueType>& rowValues,
     const common::BinaryOp op,
     hmemo::ContextPtr prefLoc )
 {
-    const IndexType numRows = ellIA.size();
-
     if ( numRows == 0 || ellValues.size() == 0 )
     {
         return;
@@ -913,6 +914,42 @@ void ELLUtils::setRows(
     ReadAccess<ValueType> rRows( rowValues, loc );
 
     setRows[loc]( wValues.get(), numRows, numValuesPerRow, rIA.get(), rRows.get(), op );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLUtils::setColumns(
+    hmemo::HArray<ValueType>& ellValues,
+    const IndexType numRows,
+    const IndexType,
+    const hmemo::HArray<IndexType>& ellIA,
+    const hmemo::HArray<IndexType>& ellJA,
+    const hmemo::HArray<ValueType>& columnValues,
+    const common::BinaryOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    if ( numRows == 0 || ellValues.size() == 0 )
+    {
+        return;
+    }
+
+    const IndexType numValuesPerRow = ellValues.size() / numRows;
+
+    static LAMAKernel<ELLKernelTrait::setColumns<ValueType> > setColumns;
+
+    ContextPtr loc = prefLoc;
+
+    setColumns.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    WriteAccess<ValueType> wValues( ellValues, loc );
+    ReadAccess<IndexType> rIA( ellIA, loc );
+    ReadAccess<IndexType> rJA( ellJA, loc );
+    ReadAccess<ValueType> rCols( columnValues, loc );
+
+    setColumns[loc]( wValues.get(), numRows, numValuesPerRow, rIA.get(), rJA.get(), rCols.get(), op );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1031,6 +1068,19 @@ void ELLUtils::setRows(
                                                            \
     template void ELLUtils::setRows(                       \
         HArray<ValueType>&,                                \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const common::BinaryOp,                            \
+        ContextPtr );                                      \
+                                                           \
+    template void ELLUtils::setColumns(                    \
+        HArray<ValueType>&,                                \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
         const HArray<IndexType>&,                          \
         const HArray<ValueType>&,                          \
         const common::BinaryOp,                            \

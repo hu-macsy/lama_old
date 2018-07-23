@@ -163,6 +163,18 @@ private:
         const ValueType values[],
         const common::BinaryOp op );
 
+    /** Implementation for ELLKernelTrait::setColumns */
+
+    template<typename ValueType>
+    static void setColumns(
+        ValueType ellValues[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const IndexType ellSizes[],
+        const IndexType ellJA[],
+        const ValueType values[],
+        const common::BinaryOp op );
+
     /** Implementation for ELLKernelTrait::compressIA */
 
     template<typename ValueType>

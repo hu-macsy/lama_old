@@ -1375,6 +1375,34 @@ void SparseMatrix<ValueType>::scaleRows( const DenseVector<ValueType>& scaleY )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::scaleColumns( const DenseVector<ValueType>& scaleY )
+{
+    // scaling with distributed vector possible, but must match column distribution
+
+    SCAI_ASSERT_EQUAL( scaleY.getDistribution(), getColDistribution(), "distribution mismatch" )
+
+    const HArray<ValueType>& localValues = scaleY.getLocalValues();
+
+    mLocalData->scaleColumns( localValues );
+
+    // Note: the communication pattern is the same as for matrixTimesVector
+
+    if ( !mHalo.isEmpty() )
+    {
+        HArrayUtils::gather( mTempSendValues, localValues, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
+
+        HArray<ValueType>& haloValues = scaleY.getHaloValues();   // reuse buffer
+
+        const Communicator& comm = getColDistribution().getCommunicator();
+
+        comm.exchangeByPlan( haloValues, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
+        mHaloData->scaleColumns( haloValues );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::scale( const ValueType& alpha )
 {
     mLocalData->scale( alpha );

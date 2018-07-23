@@ -33,9 +33,10 @@
  */
 #pragma once
 
-// for dll_import
 #include <scai/common/config.hpp>
+
 #include <scai/common/MatrixOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -176,7 +177,7 @@ struct COOKernelTrait
     };
 
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
 
         /** This operation multiplies each row with an own value.
@@ -191,13 +192,39 @@ struct COOKernelTrait
 
         typedef void ( *FuncType ) (
             ValueType cooValues[],
-            const ValueType rowValues[],
             const IndexType cooIA[],
-            const IndexType numValues );
+            const ValueType rowValues[],
+            const IndexType numValues,
+            common::BinaryOp op );
 
         static const char* getId()
         {
-            return "COO.scaleRows";
+            return "COO.setRows";
+        }
+    };
+
+    template<typename ValueType>
+    struct setColumns
+    {
+
+        /** This operation updates each entry of the storage with a column-specific values
+         *
+         *  @param[in,out] cooValues matrix data that is scaled
+         *  @param[in]     cooJA are the column indexes
+         *  @param[in]     columnValues array with update value, one for each column
+         *  @param[in]     numValues number of entries in cooValues and cooJA
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType cooValues[],
+            const IndexType cooJA[],
+            const ValueType columnValues[],
+            const IndexType numValues,
+            common::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "COO.setColumns";
         }
     };
 

@@ -36,6 +36,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
+#include <scai/utilskernel/test/TestMacros.hpp>
 
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/test/storage/TestStorages.hpp>
@@ -321,13 +322,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestRow, ValueType, scai_fft_test_types )
     HArray<FFTType> expResult( { 1.5, FFTType( 0.5, -1 ), -0.5, FFTType( 0.5, 1 ),
                                  10, FFTType( -2, 2 ), -2, FFTType( -2, -2 ) } );
 
-    BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( expResult ), boost::test_tools::per_element() );
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    SCAI_CHECK_SMALL_ARRAY_DIFF( matrix.getLocalStorage().getValues(), expResult, eps )
 
     ifft( matrix, 1 );   // inverse fft
  
     matrix *= ValueType( 1 ) / ValueType( numColumns );
 
-    BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( input ), boost::test_tools::per_element() );
+    SCAI_CHECK_SMALL_ARRAY_DIFF( matrix.getLocalStorage().getValues(), input, eps )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -356,13 +359,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTestCol, ValueType, scai_fft_test_types )
                                  -0.5,               -2, 
                                  FFTType( 0.5, 1 ),  FFTType( -2, -2 ) } );
 
-    BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( expResult ), boost::test_tools::per_element() );
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    SCAI_CHECK_SMALL_ARRAY_DIFF( matrix.getLocalStorage().getValues(), expResult, eps )
 
     ifft( matrix, 0 );   // inverse fft
  
     matrix *= ValueType( 1 ) / ValueType( numRows );
 
-    BOOST_TEST( hostReadAccess( matrix.getLocalStorage().getValues() ) == hostReadAccess( input ), boost::test_tools::per_element() );
+    SCAI_CHECK_SMALL_ARRAY_DIFF( matrix.getLocalStorage().getValues(), input, eps )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -414,15 +419,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allFFTTest, ValueType, scai_fft_test_types )
 
     RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
-    if ( false )
-    {
-        // helpful for debugging, but we have only close equality here
-
-        const hmemo::HArray<ValueType>& denseData = x1.getLocalStorage().getValues();
-        BOOST_TEST( hostReadAccess( denseData ) == hostReadAccess( randomValues ), boost::test_tools::per_element() );
-    }
-
-    BOOST_CHECK( x.maxDiffNorm( x1 ) < eps );
+    SCAI_CHECK_SMALL_ARRAY_DIFF( randomValues, x1.getLocalStorage().getValues(), eps )
 }
 
 /* ------------------------------------------------------------------------- */

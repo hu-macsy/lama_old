@@ -31,6 +31,7 @@
  * @author Eric Schricker
  * @date 18.02.2016
  */
+
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/kregistry/test/TestMacros.hpp>
 #include <scai/hmemo/test/ContextFix.hpp>

@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             auto vArray1 = utilskernel::convertHArray<ValueType>( array2 );
             auto vArray2 = utilskernel::convertHArray<ValueType>( *tmp );
 
-            BOOST_TEST( hostReadAccess( vArray1 ) == hostReadAccess( vArray2 ), per_element() );
+            SCAI_CHECK_EQUAL_ARRAY( vArray1, vArray2 )
         }
     }
 }
@@ -672,7 +672,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
 
         // ia3 must be equal to ia1, ia2
 
-        BOOST_TEST( hostReadAccess( ia3 ) == hostReadAccess( ia1 ), per_element() );
+        SCAI_CHECK_EQUAL_ARRAY( ia3, ia1 )
 
         // array3 must be array1 op array2 for all elements
 
@@ -940,7 +940,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scan1Test, ValueType, array_types )
     ValueType total = HArrayUtils::scan1( array );
     ValueType lastVal = array[n];
     BOOST_CHECK_EQUAL( array.size(), n + 1 );
-    BOOST_TEST( hostReadAccess( array ) == hostReadAccess( correct ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( array, correct )
     BOOST_CHECK_EQUAL( total, lastVal );
 }
 
@@ -972,7 +972,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
     ValueType total = HArrayUtils::scan( array, first, exclusive, loc );
 
     BOOST_CHECK_EQUAL( array.size(), n );
-    BOOST_TEST( hostReadAccess( array ) == hostReadAccess( correct ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( array, correct )
     BOOST_CHECK_EQUAL( total, last );
 }
 
@@ -998,7 +998,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
     ValueType returnVal = HArrayUtils::unscan( array );
 
     BOOST_REQUIRE_EQUAL( array.size(), n - 1 );
-    BOOST_TEST( hostReadAccess( array ) == hostReadAccess( correct ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( array, correct )
     BOOST_CHECK_EQUAL( firstVal, returnVal );
 }
 
@@ -1065,7 +1065,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
     HArray<RealValueType> array2;   // = array[perm]
     HArrayUtils::gather( array2, array, perm, BinaryOp::COPY );
 
-    BOOST_TEST( hostReadAccess( array1 ) == hostReadAccess( array2 ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( array1, array2 )
 }
 
 /* --------------------------------------------------------------------- */

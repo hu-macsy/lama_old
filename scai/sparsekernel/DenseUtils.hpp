@@ -177,6 +177,23 @@ public:
         const hmemo::HArray<ValueType>& rowValues,
         const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
+
+    /**
+     * @brief Set/update each column in a 2D dense array with an individual value
+     *
+     *  \code
+     *      for all i = 0, ..., n-1; j = 0, ..., m-1
+     *      denseValues( i, j ) = denseValues( i, j ) <op> columnValues( j )
+     *  \endcode
+     */
+    template<typename ValueType>
+    static void setColumns(
+        hmemo::HArray<ValueType>& denseValues,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<ValueType>& columnValues,
+        const common::BinaryOp op,
+        hmemo::ContextPtr prefLoc );
    
     /**
      * @brief Count the number of non-zero elements in a 2D dense array.

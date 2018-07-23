@@ -329,7 +329,27 @@ public:
         const hmemo::HArray<IndexType>& jdsILG,
         const hmemo::HArray<IndexType>& jdsDLG,
         const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
         const hmemo::HArray<ValueType>& rowValues,
+        const common::BinaryOp op,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     * @brief Set/update each col in a JDS storage with an individual value
+     *
+     *  \code
+     *      for all i = 0, ..., n-1; j = 0, ..., m-1
+     *      jdsValues( i, j ) = jdsValues( i, j ) <op> columnValues( j )
+     *  \endcode
+     */
+    template<typename ValueType>
+    static void setColumns(
+        hmemo::HArray<ValueType>& jdsValues,
+        const hmemo::HArray<IndexType>& jdsILG,
+        const hmemo::HArray<IndexType>& jdsDLG,
+        const hmemo::HArray<IndexType>& jdsPerm,
+        const hmemo::HArray<IndexType>& jdsJA,
+        const hmemo::HArray<ValueType>& columnValues,
         const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
 

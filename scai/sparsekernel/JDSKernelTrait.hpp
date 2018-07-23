@@ -377,25 +377,54 @@ struct JDSKernelTrait
     {
         /** This method scales each row of the matrix with a certain value
          *
-         * @param[in]     numRows    is the number of rows
-         * @param[in]     perm       perm[i] is the original position of row i
-         * @param[in]     ilg        ilg[i] number of entries in row i
-         * @param[in]     dlg        diagonals
          * @param[in,out] jdsValues  array containing all non-zero values, are scaled row-wise
+         * @param[in]     numRows    is the number of rows
+         * @param[in]     jdsPerm    jdspPrm[i] is the original position of row i
+         * @param[in]     jdsILG     jdsILG[i] number of entries in row i
+         * @param[in]     jdsDLG     diagonals
          * @param[in]     rowValues  rowvalues[i] is applied to  row i
          * @param[in]     op         binary operation specifies how to update
          */
         typedef void ( *FuncType ) ( ValueType jdsValues[],
                                      const IndexType numRows,
-                                     const IndexType perm[],
-                                     const IndexType ilg[],
-                                     const IndexType dlg[],
+                                     const IndexType jdsPerm[],
+                                     const IndexType jdsILG[],
+                                     const IndexType jdsDLG[],
                                      const ValueType rowValues[],
                                      const common::BinaryOp op );
 
         static const char* getId()
         {
             return "JDS.setRows";
+        }
+    };
+
+    template<typename ValueType>
+    struct setColumns
+    {
+        /** This method scales each column of the matrix with a certain value
+         *
+         * @param[in,out] jdsValues  array containing all non-zero values, are scaled row-wise
+         * @param[in]     numRows    is the number of rows
+         * @param[in]     jdsPerm    jdspPrm[i] is the original position of row i
+         * @param[in]     jdsILG     ilg[i] number of entries in row i
+         * @param[in]     jdsDLG     diagonals
+         * @param[in]     jdsJA      column positions of the non-zero entries
+         * @param[in]     colValues  colvalues[j] is applied to  column j
+         * @param[in]     op         binary operation specifies how to update
+         */
+        typedef void ( *FuncType ) ( ValueType jdsValues[],
+                                     const IndexType numRows,
+                                     const IndexType jdsPerm[],
+                                     const IndexType jdsILG[],
+                                     const IndexType jdsDLG[],
+                                     const IndexType jdsJA[],
+                                     const ValueType columnValues[],
+                                     const common::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "JDS.setColumns";
         }
     };
 };

@@ -90,9 +90,9 @@ void BLAS_BLAS2::gemv(
         return; // empty X, Y, A
     }
 
-    if ( common::isComplex( TypeTraits<ValueType>::stype ) && opA == common::MatrixOp::CONJ_TRANSPOSE )
+    if ( isConj( opA ) )
     {
-        // this case is not handled by Fortran BLAS, so we call own implementation
+        // this case is not well handled by Fortran BLAS, so we call own implementation
 
         OpenMPBLAS2::gemv( opA, m, n, alpha, a, lda, x, incX, beta, y, incY );
         return;

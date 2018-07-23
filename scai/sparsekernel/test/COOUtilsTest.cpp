@@ -67,6 +67,49 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( convert2CSRZeroTest )
+{
+    // check for a COO storage where all elements are zero that converted csr offset array is correct
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    HArray<IndexType> cooIA( { }, testContext );
+
+    const IndexType numRows = 7;
+
+    const IndexType dummySize = 13;
+    const IndexType dummyValue = 15;
+
+    HArray<IndexType> csrIA( dummySize, dummyValue );
+
+    COOUtils::convertCOO2CSR( csrIA, cooIA, numRows, testContext );
+
+    HArray<IndexType> expIA( numRows + 1, IndexType( 0 ) );
+
+    SCAI_CHECK_EQUAL_ARRAY( csrIA, expIA )
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( convert2CSRSingleTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    HArray<IndexType> cooIA( { 3 }, testContext );
+
+    const IndexType numRows = 7;
+
+    HArray<IndexType> csrIA;
+
+    COOUtils::convertCOO2CSR( csrIA, cooIA, numRows, testContext );
+
+    HArray<IndexType> expIA( { 0, 0, 0, 0, 1, 1, 1, 1 } );
+
+    SCAI_CHECK_EQUAL_ARRAY( csrIA, expIA )
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( convert2CSRTest )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -251,7 +294,7 @@ BOOST_AUTO_TEST_CASE( getRowPositionsTest )
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setRowsTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
@@ -269,27 +312,61 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
     HArray<ValueType> savedValues( cooValues );  // keep a copy for comparison later
 
-    const ValueType row_factors[]   = { 2, 3, 4, 5, 1, 3, 2 };
+    HArray<ValueType> rowValues( { 2, 3, 4, 5, 1, 3, 2 }, testContext );
 
-    const IndexType n_factors = sizeof( row_factors ) / sizeof( ValueType );
-
-    BOOST_REQUIRE_EQUAL( numRows, n_factors );
-
-    HArray<ValueType> rows( n_factors, row_factors, testContext );
-
-    COOUtils::scaleRows( cooValues, cooIA, rows, testContext );
+    COOUtils::setRows( cooValues, numRows, numColumns, cooIA, cooJA, rowValues, common::BinaryOp::MULT, testContext );
 
     // prove by hand on host
 
     {
         auto rIA = hostReadAccess( cooIA );
-        auto rRows = hostReadAccess( rows );
+        auto rRows = hostReadAccess( rowValues );
         auto rValues = hostReadAccess( cooValues );
         auto rSavedValues = hostReadAccess( savedValues );
 
         for ( IndexType k = 0; k < numValues; ++k )
         {
             ValueType f = rRows[ rIA[k] ];
+            BOOST_CHECK_EQUAL( f * rSavedValues[k], rValues[k] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnsTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    SCAI_LOG_INFO( logger, "setColumns test for " << *testContext )
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    HArray<ValueType> savedValues( cooValues );  // keep a copy for comparison later
+
+    HArray<ValueType> colValues( { 2, -3, -4, 5 }, testContext );
+
+    COOUtils::setColumns( cooValues, numRows, numColumns, cooIA, cooJA, colValues, common::BinaryOp::MULT, testContext );
+
+    // prove by hand on host
+
+    {
+        auto rJA = hostReadAccess( cooJA );
+        auto rCols = hostReadAccess( colValues );
+        auto rValues = hostReadAccess( cooValues );
+        auto rSavedValues = hostReadAccess( savedValues );
+
+        for ( IndexType k = 0; k < numValues; ++k )
+        {
+            ValueType f = rCols[ rJA[k] ];
             BOOST_CHECK_EQUAL( f * rSavedValues[k], rValues[k] );
         }
     }

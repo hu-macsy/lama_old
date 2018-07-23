@@ -543,7 +543,17 @@ void COOStorage<ValueType>::conj()
 template<typename ValueType>
 void COOStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 {
-    COOUtils::scaleRows( mValues, mIA, values, getContextPtr() );
+    COOUtils::setRows( mValues, getNumRows(), getNumColumns(), mIA, mJA,
+                       values, common::BinaryOp::MULT, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::scaleColumns( const HArray<ValueType>& values )
+{
+    COOUtils::setColumns( mValues, getNumRows(), getNumColumns(), mIA, mJA,
+                          values, common::BinaryOp::MULT, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

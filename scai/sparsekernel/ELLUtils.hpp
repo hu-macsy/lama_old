@@ -326,8 +326,30 @@ public:
     template<typename ValueType>
     static void setRows(
         hmemo::HArray<ValueType>& ellValues,
+        const IndexType numRows,
+        const IndexType numColumns,
         const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
         const hmemo::HArray<ValueType>& rowValues,
+        const common::BinaryOp op,
+        hmemo::ContextPtr prefLoc );
+
+    /**
+     * @brief Set/update each column in an ELL storage with an individual value
+     *
+     *  \code
+     *      for all i = 0, ..., n-1; j = 0, ..., m-1
+     *      ellValues( i, j ) = ellValues( i, j ) <op> columnValues( j )
+     *  \endcode
+     */
+    template<typename ValueType>
+    static void setColumns(
+        hmemo::HArray<ValueType>& ellValues,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ellIA,
+        const hmemo::HArray<IndexType>& ellJA,
+        const hmemo::HArray<ValueType>& columnValues,
         const common::BinaryOp op,
         hmemo::ContextPtr prefLoc );
 

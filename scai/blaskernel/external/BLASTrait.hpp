@@ -83,6 +83,10 @@ BLASTrait::BLASTrans BLASTrait::castTrans( const common::MatrixOp op )
     {
         castOp = 'C';
     }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Fortran-BLAS does not support op = " << op )
+    }
 
     return castOp;
 }

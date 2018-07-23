@@ -40,6 +40,7 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/cuda/CUDACSRUtils.hpp>
 #include <scai/utilskernel/cuda/CUDASparseUtils.hpp>
+#include <scai/utilskernel/cuda/CUDAUtils.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/UtilKernelTrait.hpp>
@@ -83,11 +84,21 @@ void CUSparseCSRUtils::convertCSR2CSC(
     IndexType numColumns,
     IndexType numValues )
 {
+    if ( numValues == 0 )
+    {
+        // handle this case on its own, caused undeterministic problems
+
+        utilskernel::CUDAUtils::setVal<IndexType>( cscIA, numColumns + 1, 0, common::BinaryOp::COPY );
+
+        return;
+    }
+
     SCAI_REGION( "CUSparse.CSR.convert2CSC" )
 
     SCAI_LOG_INFO( logger,
                    "convertCSR2CSC<" << common::getScalarType<ValueType>() << "> -> cusparseScsr2csc" << ", matrix size = "
                    << numRows << " x " << numColumns << ", nnz = " << numValues )
+
     typedef CUSPARSETrait::BLASIndexType BLASIndexType;
 
     if ( common::TypeTraits<IndexType>::stype

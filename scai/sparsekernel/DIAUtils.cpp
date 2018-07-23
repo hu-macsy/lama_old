@@ -558,6 +558,39 @@ SyncToken* DIAUtils::gemv(
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void DIAUtils::setColumns(
+    HArray<ValueType>& diaValues,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<OffsetType>& offset,
+    const HArray<ValueType>& columnValues,
+    const common::BinaryOp op,
+    ContextPtr )
+{
+    const IndexType numDiagonals = offset.size();
+
+    auto rDiagonal = hostReadAccess( columnValues );
+    auto wValues   = hostWriteAccess( diaValues );
+    auto rOffset   = hostReadAccess( offset );
+
+    for ( IndexType i = 0; i < numRows; i++ )
+    {
+        for ( IndexType ii = 0; ii < numDiagonals; ++ii )
+        {
+            const IndexType j = i + rOffset[ii];
+
+            if ( common::Utils::validIndex( j, numColumns ) )
+            {
+                ValueType& data = wValues[ii * numRows + i];
+                data = common::applyBinary( data, op, rDiagonal[j] );
+            }
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define DENSE_UTILS_SPECIFIER( ValueType )           \
                                                      \
     template void DIAUtils::convertDIA2CSR(          \
@@ -620,6 +653,15 @@ SyncToken* DIAUtils::gemv(
         const HArray<ValueType>&,                    \
         const common::MatrixOp op,                   \
         const bool,                                  \
+        ContextPtr );                                \
+                                                     \
+    template void DIAUtils::setColumns(              \
+        HArray<ValueType>&,                          \
+        const IndexType,                             \
+        const IndexType,                             \
+        const HArray<OffsetType>&,                   \
+        const HArray<ValueType>&,                    \
+        const common::BinaryOp op,                   \
         ContextPtr );                                \
 
 SCAI_COMMON_LOOP( DENSE_UTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )

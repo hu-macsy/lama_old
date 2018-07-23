@@ -338,6 +338,68 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( scaleColumnsTest )
+{
+    typedef DefaultReal ValueType;    // as we test here commmunication patterns, only one ValueType needed
+
+    const IndexType M = 10;
+    const IndexType N = 8;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    Matrices<ValueType> allMatrices( context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for scale" )
+
+    std::srand( 10113 );  // same random numbers on each processor
+
+    auto input = zero<CSRSparseMatrix<ValueType>>( M, N );
+
+    MatrixCreator::fillRandom( input, 0.5f );
+
+    auto scaleY = linearDenseVector<ValueType>( N, 1, 1 );
+
+    CSRSparseMatrix<ValueType> output( input );
+    output.scaleColumns( scaleY );
+
+    TestDistributions rowDist( M );
+    TestDistributions colDist( N );
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix<ValueType>& matrix = *allMatrices[s];
+
+        for ( size_t i = 0; i < rowDist.size(); ++i )
+        {
+            for ( size_t j = 0; j < colDist.size(); ++j )
+            {
+                matrix = input;   // serial matrix
+
+                matrix.redistribute( rowDist[i], colDist[j] );
+                scaleY.redistribute( colDist[j] );
+
+                // now scale with distributed vector
+
+                matrix.scaleColumns( scaleY );
+
+                // verify correct results by replication of matrix
+
+                matrix.redistribute( input.getRowDistributionPtr(), input.getColDistributionPtr() );
+
+                RealType<ValueType> diff = output.maxDiffNorm( matrix );
+
+                SCAI_LOG_DEBUG( logger, "diff = " << diff << ", matrix = " << matrix )
+
+                // there should be no rounding errors, so we check here for exact results
+
+                BOOST_CHECK_EQUAL( diff, 0 );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( transposeTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context

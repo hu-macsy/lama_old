@@ -146,6 +146,13 @@ public:
      */
     virtual void scaleRows( const hmemo::HArray<ValueType>& values ) = 0;
 
+    /**
+     *  @brief Multiply each row with the same array, i.e. scale each column with a separate values.
+     *
+     *  @param[in] values is an array of size getNumColumns()
+     */
+    virtual void scaleColumns( const hmemo::HArray<ValueType>& values ) = 0;
+
     virtual void reduce( 
         hmemo::HArray<ValueType>& array, 
         const IndexType dim, 

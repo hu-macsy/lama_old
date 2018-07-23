@@ -213,9 +213,14 @@ public:
 
     /** _MatrixStorage */
 
- 	virtual void scaleRows(const scai::hmemo::HArray<ValueType>&)
+    virtual void scaleRows( const scai::hmemo::HArray<ValueType>& )
     {
         COMMON_THROWEXCEPTION( "scaleRows cannot be applied for stencil storage" )
+    }
+
+    virtual void scaleColumns( const scai::hmemo::HArray<ValueType>& )
+    {
+        COMMON_THROWEXCEPTION( "scaleColumns cannot be applied for stencil storage" )
     }
 
     /** Implementation of _MatrixStorage::buildCSRSizes */

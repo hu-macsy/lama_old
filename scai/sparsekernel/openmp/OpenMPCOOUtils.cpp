@@ -46,6 +46,7 @@
 #include <scai/tracing.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
+#include <scai/common/Utils.hpp>
 
 #include <functional>
 
@@ -159,44 +160,149 @@ void OpenMPCOOUtils::offsets2ia(
 
 /* --------------------------------------------------------------------------- */
 
+/** Help routine to find row offset in sorted array of row indexes 
+ *
+ *  \code
+ *     cooIA = { 0, 2, 2, 3, 5 }, n = 5
+ *     findFirst( cooIA, n, 0 ) -> 0
+ *     findFirst( cooIA, n, 1 ) -> 1
+ *     findFirst( cooIA, n, 2 ) -> 1   
+ *     findFirst( cooIA, n, 3 ) -> 3  
+ *     findFirst( cooIA, n, 4 ) -> 4
+ *     findFirst( cooIA, n, 5 ) -> 4
+ *     findFirst( cooIA, n, 6 ) -> 5
+ *  \endcode
+ */
+
+static IndexType findFirst( const IndexType indexes[], const IndexType n, const IndexType pos )
+{
+    // binary search to find first entry of pos in indexes
+
+    IndexType first = 0;
+    IndexType last  = n;
+
+    while ( first < last )
+    {
+        IndexType middle = first + ( last - first ) / 2;
+
+        if ( indexes[middle] == pos )
+        {
+            if ( middle == 0 )
+            {
+                // so we have the first entry of pos in any case
+
+                return middle;
+            }
+
+            if ( indexes[ middle - 1] != pos )
+            {
+                // so we have the first entry of pos in any case
+
+                return middle;
+            }
+
+            // there may be several entries of pos, continue search
+
+            last = middle;
+        }
+        else if ( indexes[middle] > pos )
+        {
+            last = middle;
+        }
+        else
+        {
+            first = middle + 1;
+        }
+    }
+  
+    // first is the position where we have the first entry that is greater than pos
+
+    if ( common::Utils::validIndex( first, n ) )
+    {
+        SCAI_ASSERT_LT_ERROR( pos, indexes[first], "serious error" )
+    }
+
+    if ( common::Utils::validIndex( first - 1, n ) )
+    {
+        SCAI_ASSERT_LT_ERROR( indexes[first - 1], pos, "serious error" )
+    }
+
+    return first;
+}
+
 void OpenMPCOOUtils::ia2offsets(
     IndexType csrIA[],
     const IndexType numRows,
     const IndexType cooIA[],
     const IndexType numValues )
 {
-    csrIA[0] = 0;
+    SCAI_LOG_INFO( logger, "convert cooIA[" << numValues << "] to csrIA[" << numRows << "]" )
 
-    // Be careful, this loop is inherent sequential 
-
-    for ( IndexType i = 0; i < numRows; ++i )
+    #pragma omp parallel
     {
-        IndexType offs = csrIA[i];
+        IndexType lb;
+        IndexType ub;
+        
+        omp_get_my_range( lb, ub, numRows + 1 );   // Note: size of csrIA is numRows + 1
 
-        while ( offs < numValues && cooIA[offs] == i )
+        if ( lb < ub )
         {
-            offs++;
-        }
+            // use findFirst only for first owned value as it is still expensive
 
-        csrIA[i + 1] = offs;
+            IndexType offs = findFirst( cooIA, numValues, lb );;
+
+            SCAI_LOG_TRACE( logger, "compute offsets for " << lb << " - " << ub << ", starts at " << offs )
+
+            for ( IndexType i = lb; i < ub; ++i )
+            {
+                csrIA[i] = offs;
+
+                while ( offs < numValues && cooIA[offs] == i )
+                {
+                    offs++;
+                }
+            }
+        }
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPCOOUtils::scaleRows(
+void OpenMPCOOUtils::setRows(
     ValueType cooValues[],
-    const ValueType rowValues[],
     const IndexType cooIA[],
-    const IndexType numValues )
+    const ValueType rowValues[],
+    const IndexType numValues,
+    const common::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "scaleRows in COO format" )
+    SCAI_LOG_INFO( logger, "setRows in COO format" )
+
     #pragma omp parallel for 
 
-    for ( IndexType i = 0; i < numValues; ++i )
+    for ( IndexType k = 0; k < numValues; ++k )
     {
-        cooValues[i] *= rowValues[cooIA[i]];
+        cooValues[k] = common::applyBinary( cooValues[k], op, rowValues[cooIA[k]] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCOOUtils::setColumns(
+    ValueType cooValues[],
+    const IndexType cooJA[],
+    const ValueType columnValues[],
+    const IndexType numValues, 
+    const common::BinaryOp op )
+{
+    SCAI_LOG_INFO( logger, "setColumns for COO format" )
+
+    #pragma omp parallel for 
+
+    for ( IndexType k = 0; k < numValues; ++k )
+    {
+        cooValues[k] = common::applyBinary( cooValues[k], op, columnValues[cooJA[k]] );
     }
 }
 
@@ -665,7 +771,8 @@ void OpenMPCOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<COOKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<COOKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<COOKernelTrait::setColumns<ValueType> >( setColumns, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

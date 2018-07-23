@@ -41,10 +41,12 @@
 
 #include <scai/logging.hpp>
 
+#include <scai/kregistry/mepr/Registrator.hpp>
+
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/kregistry/mepr/Registrator.hpp>
 #include <scai/common/MatrixOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -87,12 +89,25 @@ public:
         const IndexType cooIA[],
         const IndexType numValues );
 
+    /** OpenMP implementation for COOKernelTrait::setRows */
+
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType cooValues[],
-        const ValueType rowValues[],
         const IndexType cooIA[],
-        const IndexType numValues );
+        const ValueType rowValues[],
+        const IndexType numValues,
+        const common::BinaryOp op );
+
+    /** OpenMP implementation for COOKernelTrait::setColumns */
+
+    template<typename ValueType>
+    static void setColumns(
+        ValueType cooValues[],
+        const IndexType cooJA[],
+        const ValueType columnValues[],
+        const IndexType numValues,
+        const common::BinaryOp op );
 
     /** Implementation for COOKernelTrait::normalGEMV  */
 

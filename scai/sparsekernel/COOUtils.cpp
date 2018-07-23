@@ -59,6 +59,10 @@ namespace sparsekernel
 
 /* -------------------------------------------------------------------------- */
 
+SCAI_LOG_DEF_LOGGER( COOUtils::logger, "COOUtils" )
+
+/* -------------------------------------------------------------------------- */
+
 void COOUtils::convertCOO2CSR(
     HArray<IndexType>& csrIA,
     const HArray<IndexType>& cooIA,
@@ -77,6 +81,8 @@ void COOUtils::convertCOO2CSR(
     ReadAccess<IndexType> rIA( cooIA, loc );
    
     SCAI_CONTEXT_ACCESS( loc )
+
+    SCAI_LOG_INFO( logger, "ia2offsets, build csrIA[" << numRows << "] from cooIA[" << numValues << "] @ " << *loc )
 
     ia2offsets[loc]( wOffsets.get(), numRows, rIA.get(), numValues );
 }
@@ -513,24 +519,65 @@ void COOUtils::getRowPositions(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOUtils::scaleRows(
-    HArray<ValueType>& values,
-    const HArray<IndexType>& ia,
-    const HArray<ValueType>& scale,
+void COOUtils::setRows(
+    HArray<ValueType>& cooValues,
+    const IndexType numRows, 
+    const IndexType,
+    const HArray<IndexType>& cooIA,
+    const HArray<IndexType>&,
+    const HArray<ValueType>& rowValues,
+    const common::BinaryOp op,         
     ContextPtr prefLoc )
 {
-    const IndexType numValues = values.size();
+    const IndexType numValues = cooValues.size();
 
-    static LAMAKernel<COOKernelTrait::scaleRows<ValueType>> kScaleRows;
+    // Note: the column indexes of the entries do not matter here at all
+
+    SCAI_ASSERT_EQ_ERROR( numValues, cooIA.size(), "inconsistent COO storage data" )
+    SCAI_ASSERT_EQ_ERROR( numRows, rowValues.size(), "illegal size for array with update values for each row" )
+
+    static LAMAKernel<COOKernelTrait::setRows<ValueType>> setRows;
 
     ContextPtr loc = prefLoc;
 
-    kScaleRows.getSupportedContext( loc );
+    setRows.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> rValues( scale, loc );
-    WriteAccess<ValueType> wValues( values, loc );  // update
-    ReadAccess<IndexType> rIa( ia, loc );
-    kScaleRows[loc]( wValues.get(), rValues.get(), rIa.get(), numValues );
+    ReadAccess<ValueType> rRowValues( rowValues, loc );
+    WriteAccess<ValueType> wValues( cooValues, loc );  // update
+    ReadAccess<IndexType> rIA( cooIA, loc );
+    setRows[loc]( wValues.get(), rIA.get(), rRowValues.get(), numValues, op );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOUtils::setColumns(
+    HArray<ValueType>& cooValues,
+    const IndexType,
+    const IndexType numColumns,
+    const HArray<IndexType>&,
+    const HArray<IndexType>& cooJA,
+    const HArray<ValueType>& columnValues,
+    const common::BinaryOp op,         
+    ContextPtr prefLoc )
+{
+    const IndexType numValues = cooValues.size();
+
+    // Note: the row indexes of the entries do not matter here at all
+
+    SCAI_ASSERT_EQ_ERROR( numValues, cooJA.size(), "inconsistent COO storage data" )
+    SCAI_ASSERT_EQ_ERROR( numColumns, columnValues.size(), "illegal size for array with update values for each column" )
+
+    static LAMAKernel<COOKernelTrait::setColumns<ValueType>> setColumns;
+ 
+    ContextPtr loc = prefLoc;
+
+    setColumns.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<ValueType> rColumnValues( columnValues, loc );
+    WriteAccess<ValueType> wValues( cooValues, loc );  // update
+    ReadAccess<IndexType> rJA( cooJA, loc );
+    setColumns[loc]( wValues.get(), rJA.get(), rColumnValues.get(), numValues, op );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -790,10 +837,24 @@ SyncToken* COOUtils::gemv(
             const HArray<IndexType>&,              \
             ContextPtr );                          \
                                                    \
-    template void COOUtils::scaleRows(             \
+    template void COOUtils::setRows(               \
             HArray<ValueType>&,                    \
+            const IndexType,                       \
+            const IndexType,                       \
+            const HArray<IndexType>&,              \
             const HArray<IndexType>&,              \
             const HArray<ValueType>&,              \
+            const common::BinaryOp op,             \
+            ContextPtr );                          \
+                                                   \
+    template void COOUtils::setColumns(            \
+            HArray<ValueType>&,                    \
+            const IndexType,                       \
+            const IndexType,                       \
+            const HArray<IndexType>&,              \
+            const HArray<IndexType>&,              \
+            const HArray<ValueType>&,              \
+            const common::BinaryOp op,             \
             ContextPtr );                          \
                                                    \
     template void COOUtils::binaryOp(              \

@@ -613,8 +613,6 @@ struct CSRKernelTrait
         }
     };
 
-    /** Define structure for multiplication routines.  */
-
     template<typename ValueType>
     struct setRows
     {
@@ -639,6 +637,35 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.setRows";
+        }
+    };
+
+    template<typename ValueType>
+    struct setColumns
+    {
+        /** This operation applies a binary operation to each element, individually for each column
+         *
+         *  @param[in,out] csrValues matrix data that is scaled
+         *  @param[in]     csrIA offset array to identify which elements of csrValues belong to which row
+         *  @param[in]     csrJA column indexes
+         *  @param[in]     numRows number of rows in matrix
+         *  @param[in]     values array with element for each row used for scaling
+         *  @param[in]     op specfies how each element is updated with row value
+         *
+         *  csr[i,j] op= values[j], for i = 0, ..., numRows-1, j = 0, ..., numColumns-1
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType csrValues[],
+            const IndexType csrIA[], 
+            const IndexType csrJA[], 
+            const IndexType numRows,
+            const ValueType values[],
+            common::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "CSR.setColumns";
         }
     };
 
