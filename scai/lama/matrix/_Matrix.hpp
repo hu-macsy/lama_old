@@ -539,7 +539,7 @@ public:
      * @param[in] rowDistribution   new distribution of the rows
      * @param[in] colDistribution   new distribution of the columns
      */
-    virtual _Matrix* copy( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
+    virtual _Matrix* copyRedistributed( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
 
     /**
      * @brief Queries the keytype to create matrix from factory with same valuetype and storagetype

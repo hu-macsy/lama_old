@@ -295,7 +295,7 @@ void _Matrix::writeToSingleFile(
     {
         DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        std::unique_ptr<_Matrix> repM( copy( rowDist, colDist ) );
+        std::unique_ptr<_Matrix> repM( copyRedistributed( rowDist, colDist ) );
         repM->writeToSingleFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
@@ -321,7 +321,7 @@ void _Matrix::writeToPartitionedFile(
     else
     {
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        std::unique_ptr<_Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
+        std::unique_ptr<_Matrix> repM( copyRedistributed( getRowDistributionPtr(), colDist ) );
         repM->writeToPartitionedFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
@@ -649,7 +649,7 @@ void _Matrix::checkLocalStorageSizes( const _MatrixStorage& localStorage, const 
 
 /* ---------------------------------------------------------------------------------*/
 
-_Matrix* _Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
+_Matrix* _Matrix::copyRedistributed( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
 {
     // simple default implementation that works for each matrix
     std::unique_ptr<_Matrix> rep( copy() );
