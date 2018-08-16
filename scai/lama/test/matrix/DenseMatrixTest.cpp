@@ -2,29 +2,24 @@
  * @file test/matrix/DenseMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test routines for specific methods/constructors of DenseMatrix
@@ -61,6 +56,8 @@
 using namespace scai;
 using namespace lama;
 
+using boost::test_tools::per_element;
+
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( DenseMatrixTest )
@@ -89,6 +86,8 @@ typedef boost::mpl::list < CSRSparseMatrix<ValueType>,
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, MatrixType, SparseMatrixTypes )
 {
+    return;
+
     // Test vector = Matrix * vector, where vector stands for multiple vectors
     // i.e. vector is a dense matrix
     // Note: not yet available for distributed matrix
@@ -297,6 +296,80 @@ BOOST_AUTO_TEST_CASE( resizeTest )
     v1 = matrix1.getValue( 4, n );   // column n has been filled with zero
     BOOST_CHECK_EQUAL( v1, 0 );
 }
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( matrixMultTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;     // value type does not matter for resize
+
+    using namespace hmemo;
+
+    const IndexType m = 5;
+    const IndexType k = 4;
+    const IndexType n = 3;
+
+    HArray<ValueType> dataA( { 1, 2, 3, 4,
+                               0, 1, 0, -2,
+                               2, 1, -1, 1,
+                               -3, 1, -1, 1,
+                               2, 0, 1, -1 } );
+
+    HArray<ValueType> dataB( { 2, 1, 0,
+                               1, 0, -1,
+                               2, 0, 3,
+                               1, 1, 2  } );
+
+    HArray<ValueType> dataC( { 2, 1, 0,
+                               1, 0, -1,
+                               3, 1, 2,
+                               2, 0, 3,
+                               1, 1, 2  } );
+
+    DenseStorage<ValueType> storageA( m, k, dataA );
+    DenseStorage<ValueType> storageB( k, n, dataB );
+    DenseStorage<ValueType> storageC( m, n, dataC );
+
+    ValueType alpha = 2;
+    ValueType beta  = -1;
+
+    // serial computation to compare later with distributed computation
+
+    DenseStorage<ValueType> expected;
+    expected.matrixTimesMatrix( alpha, storageA, storageB, beta, storageC );
+   
+    dmemo::TestDistributions distributions( m );
+
+    for ( size_t id = 0; id < distributions.size(); ++id )
+    {
+        auto distM = distributions[m];
+
+        SCAI_LOG_DEBUG( logger, "matrixTimesMatrixDense: dist for result, a = " << *distM );
+
+        auto repM = std::make_shared<dmemo::NoDistribution>( m );
+        auto repN = std::make_shared<dmemo::NoDistribution>( n );
+        auto repK = std::make_shared<dmemo::NoDistribution>( k );
+
+        auto matrixA = distribute<DenseMatrix<ValueType>>( storageA, distM, repK );
+        auto matrixB = distribute<DenseMatrix<ValueType>>( storageB, repK, repN );
+        auto matrixC = distribute<DenseMatrix<ValueType>>( storageC, distM, repN );
+
+        SCAI_LOG_DEBUG( logger, "matrixTimesMatrixDense: a = " << matrixA << ", b = " << matrixB << ", c = " << matrixC )
+
+        DenseMatrix<ValueType> matrixResult;
+
+        matrixResult = alpha * matrixA * matrixB + beta * matrixC;
+
+        SCAI_LOG_DEBUG( logger, "matrixResult: res = " << matrixResult )
+
+        matrixResult.redistribute( repM, repN );
+
+        BOOST_TEST( hostReadAccess( matrixResult.getLocalStorage().getValues() ) == 
+                    hostReadAccess( expected.getValues() ), per_element() );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
