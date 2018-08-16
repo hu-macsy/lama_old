@@ -2,29 +2,24 @@
  * @file DenseMatrix.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief DenseMatrix.cpp
@@ -2345,62 +2340,101 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
     const ValueType beta,
     const Matrix<ValueType>& C ) const
 {
-    SCAI_ASSERT_ERROR( getRowDistribution().isReplicated(), "this->rows are distributed" )
+    if ( result.getMatrixKind() != MatrixKind::DENSE )
+    {
+        DenseMatrix<ValueType> denseResult;
+
+        if ( beta != common::Constants::ZERO && &result == &C )
+        {
+            denseResult = C;
+            matrixTimesMatrix( denseResult, alpha, B, beta, denseResult );
+        }
+        else
+        {
+            matrixTimesMatrix( denseResult, alpha, B, beta, denseResult );
+        }
+
+        result = denseResult;
+
+        return;
+    }
+
+    if ( B.getMatrixKind() != MatrixKind::DENSE )
+    {
+        auto denseB = convert<DenseMatrix<ValueType>>( B );
+        matrixTimesMatrix( result, alpha, denseB, beta, C );
+        return;
+    }
+
+    if ( beta != common::Constants::ZERO && C.getMatrixKind() != MatrixKind::DENSE )
+    {
+        auto denseC = convert<DenseMatrix<ValueType>>( C );
+        matrixTimesMatrix( result, alpha, B, beta, denseC );
+        return;
+    }
+
+    // all matrices are now dense
+
+    DenseMatrix<ValueType>& denseResult = static_cast<DenseMatrix<ValueType>&>( result );
+    const DenseMatrix<ValueType>& denseB  = static_cast<const DenseMatrix<ValueType>&>( B );
+
+    if ( beta != common::Constants::ZERO )
+    {
+        matrixTimesMatrixDense( denseResult, alpha, denseB, beta,
+                                static_cast<const DenseMatrix<ValueType>&>( C ) );
+    }
+    else
+    {
+        // avoid a static cast of C that might be anything
+        matrixTimesMatrixDense( denseResult, alpha, denseB, beta, denseResult );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::matrixTimesMatrixDense(
+    DenseMatrix<ValueType>& result,
+    const ValueType alpha,
+    const DenseMatrix<ValueType>& B,
+    const ValueType beta,
+    const DenseMatrix<ValueType>& C ) const
+{
     SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), "this->cols are distributed" )
     SCAI_ASSERT_ERROR( B.getRowDistribution().isReplicated(), "B.rows are distributed" )
     SCAI_ASSERT_ERROR( B.getColDistribution().isReplicated(), "B.cols are distributed" )
-    SCAI_ASSERT_ERROR( C.getRowDistribution().isReplicated(), "C.rows are distributed" )
-    SCAI_ASSERT_ERROR( C.getColDistribution().isReplicated(), "C.cols are distributed" )
-// Prefetch values to the ComputeLocation
-    DenseMatrix* res = dynamic_cast<DenseMatrix*>( &result );
 
-    if ( res == NULL )
+    if ( beta != common::Constants::ZERO )
     {
-        COMMON_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
+        SCAI_ASSERT_EQ_ERROR( C.getRowDistribution(), getRowDistribution(), "C matrix not conform" )
+        SCAI_ASSERT_EQ_ERROR( C.getColDistribution(), B.getColDistribution(), "C matrix not conform" )
     }
 
-    const DenseMatrix* Bp = dynamic_cast<const DenseMatrix*>( &B );
+    // Note: any alias will be resolved by the matrix storage routine and not here
+    //       as it might introduce a temporary in any case; but we check for allocation of result
 
-    if ( Bp == NULL )
-    {
-        COMMON_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
-    }
-
-    const DenseMatrix* Cp = dynamic_cast<const DenseMatrix*>( &C );
-
-    if ( Cp == NULL )
-    {
-        COMMON_THROWEXCEPTION( "Only DenseMatrix DenseMatrix Multiplication is supported." )
-    }
-
-    if ( res == this )
+    if ( &result == this )
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with this A matrix" )
     }
-    else if ( res == Bp )
+    else if ( &result == &B )
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with B matrix" )
     }
-    else if ( res == Cp && beta != common::Constants::ZERO )
+    else if ( &result == &C && beta != common::Constants::ZERO )
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with C matrix" )
     }
     else
     {
         SCAI_LOG_DEBUG( logger, "result is not aliased, so allocate it correctly" )
-        res->allocate( getRowDistributionPtr(), B.getColDistributionPtr() );
+        result.allocate( getRowDistributionPtr(), B.getColDistributionPtr() );
     }
 
-    ContextPtr localContext = mData[0]->getContextPtr();
-    res->prefetch( localContext );
-    mData[0]->prefetch();
-    Bp->prefetch( localContext );
-    Cp->prefetch( localContext );
-//We are calculating with a replicated _Matrix. So there is no need for an asyncronous call,
-//because we have to sync in this method anyway (returning void not SyncToken)
-// Note: any alias will be resolved by the matrix storage routine and not here
-//       as it might introduce a temporary in any case
-    res->mData[0]->matrixTimesMatrix( alpha, *mData[0], *Bp->mData[0], beta, *Cp->mData[0] );
+    // We are calculating with a replicated _Matrix. So there is no need for an asyncronous call,
+    // because we have to sync in this method anyway (returning void not SyncToken)
+
+    result.mData[0]->matrixTimesMatrix( alpha, *mData[0], *B.mData[0], beta, *C.mData[0] );
 }
 
 /* -------------------------------------------------------------------------- */

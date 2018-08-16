@@ -11,7 +11,7 @@ These are provided by the library BLASKernel. In addition functions for the conv
 to CSR are needed. These are provided by this library. 
 
 Example
-------
+-------
 
 .. math::
 

@@ -2,29 +2,24 @@
  * @file DenseMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of matrix class for distributed matrixes in Dense format.
@@ -413,9 +408,6 @@ public:
      * @param[in]  betaValue     scaling factor for additional summand
      * @param[in]  denseY        additional summand ( beta = 0 if not available )
      *
-     *  Note: _Matrix::matrixTimesMatrix is implemented in the CRTPMatrix class.
-     *        that requires this method.
-     *
      *  Note: all vectors must have the right distribution.
      */
     void matrixTimesVectorImpl(
@@ -477,6 +469,18 @@ public:
         const Matrix<ValueType>& B,
         const ValueType beta,
         const Matrix<ValueType>& C ) const;
+
+    /** @brief Matrix-multiplication where only dense matrices are involved 
+     *
+     *  This method computes result = alpha * this * B + beta * C
+     *  where result, B, and C are now dense matrices.
+     */
+    void matrixTimesMatrixDense(
+        DenseMatrix<ValueType>& result,
+        const ValueType alpha,
+        const DenseMatrix<ValueType>& B,
+        const ValueType beta,
+        const DenseMatrix<ValueType>& C ) const;
 
     /* Implementation of pure method of class _Matrix. */
 

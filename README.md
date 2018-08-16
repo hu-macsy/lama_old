@@ -13,9 +13,8 @@ Required:
 Recommended:
  * BLAS- and LAPACK-Library (Intel MKL, BLAS)
  * Nvidia GPU: CUDA >= 7.0 (with cuBLAS, cuSPARSE)
- * Intel Xeon Phi: Intel MKL
  * MPI
- * Boost-Library tests (unit-test-framework)
+ * Boost-Library tests (unit-test-framework), Version 1.61 or higher
 
 Optional:
  * Metis/ParMetis

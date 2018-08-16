@@ -27,7 +27,7 @@ Configuration File of a Module
 The best way is to start by creating some directories and by copying some 
 configuration files from an exsiting project, e.g. ``tasking``.
 
-.. code-block:: c++
+.. code-block:: bash
 
    cd ${LAMA_DIR}/scai
 
@@ -74,7 +74,7 @@ of a class should have one test for each method.
 
 The CMake configuration file for the test can be set up as follows:
 
-.. code-block:: c++
+.. code-block:: none
 
    set ( CXX_SOURCES
 
@@ -89,7 +89,7 @@ required libraries. The option ``UNIT_TEST`` links the Boost
 unit test framework, while the option ``RUN`` enables the
 test to be run by CTest.
 
-.. code-block:: c++
+.. code-block:: none
 
     scai_test( EXECUTABLE mymoduleTest 
                FILES      ${CXX_SOURCES}
@@ -98,7 +98,7 @@ test to be run by CTest.
 
 Optionally you can add a script to get your code be tested by a CI (Continuous Integration) system.
 
-.. code-block:: c++
+.. code-block:: none
 
     scai_test_scripts( SCRIPTS       xmltest.sh
                        CODE_COVERAGE ${USE_CODE_COVERAGE} )

@@ -2,29 +2,24 @@
  * @file DIAUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation and instantiation of utility methods for DIA storage.
@@ -159,9 +154,9 @@ void DIAUtils::getDIAOffset(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; jj++ )
+        for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; jj++ )
         {
-            IndexType j = csrJA[jj]; // column used
+            IndexType j = rJA[jj]; // column used
 
             bool& flag = diagonalUsed[ mainDiagonal + ( j - i ) ];
 
@@ -255,11 +250,11 @@ void DIAUtils::convertCSR2DIA(
                 continue;
             }
 
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
             {
-                if ( csrJA[jj] == j )
+                if ( rJA[jj] == j )
                 {
-                    addrValue = static_cast<ValueType>( csrValues[jj] );
+                    addrValue = static_cast<ValueType>( rValues[jj] );
                     break;
                 }
             }

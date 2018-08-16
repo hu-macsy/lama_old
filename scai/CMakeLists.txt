@@ -2,29 +2,24 @@
  # @file scai/CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2017
+ # Copyright (c) 2009-2018
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
  # This file is part of the SCAI framework LAMA.
  #
  # LAMA is free software: you can redistribute it and/or modify it under the
- # terms of the GNU Affero General Public License as published by the Free
+ # terms of the GNU Lesser General Public License as published by the Free
  # Software Foundation, either version 3 of the License, or (at your option)
  # any later version.
  #
  # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  # more details.
  #
- # You should have received a copy of the GNU Affero General Public License
+ # You should have received a copy of the GNU Lesser General Public License
  # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- #
- # Other Usage
- # Alternatively, this file may be used in accordance with the terms and
- # conditions contained in a signed written agreement between you and
- # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
  # @brief CMake main configuration file for SCAI LAMA with all modules.
@@ -212,6 +207,7 @@ install ( FILES ${CMAKE_BINARY_DIR}/SCAIConfig.cmake DESTINATION share/cmake/SCA
 
 file (COPY ${CMAKE_SOURCE_DIR}/doc/LAMA.html DESTINATION ${CMAKE_BINARY_DIR}/doc )
 file (COPY ${CMAKE_SOURCE_DIR}/doc/lama.png  DESTINATION ${CMAKE_BINARY_DIR}/doc )
+file (COPY ${CMAKE_SOURCE_DIR}/doc/lgplv3-147x51.png DESTINATION ${CMAKE_BINARY_DIR}/doc )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 ## depends on user doc of all defined modules ( = used modules + dependent ones)
