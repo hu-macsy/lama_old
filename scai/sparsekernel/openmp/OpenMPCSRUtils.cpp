@@ -1148,7 +1148,7 @@ void OpenMPCSRUtils::sparseGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPCSRUtils::gemm(
+void OpenMPCSRUtils::gemmSD(
     ValueType result[],
     const ValueType alpha,
     const ValueType x[],
@@ -1162,14 +1162,14 @@ void OpenMPCSRUtils::gemm(
     const ValueType csrValues[],
     const common::MatrixOp op )
 {
-    SCAI_LOG_INFO( logger, "gemm<" << TypeTraits<ValueType>::id() << ">, " 
+    SCAI_LOG_INFO( logger, "gemmSD<" << TypeTraits<ValueType>::id() << ">, " 
                            << " result " << numRows << " x " << nv << " CSR " << numRows << " x " << numColumns )
 
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( op != common::MatrixOp::NORMAL )
     {
-        COMMON_THROWEXCEPTION( "gemm only supported for matrix op = NORMAL" )
+        COMMON_THROWEXCEPTION( "gemmSD only supported for matrix op = NORMAL" )
     }
 
     if ( syncToken )
@@ -1200,6 +1200,65 @@ void OpenMPCSRUtils::gemm(
             else
             {
                 result[i * nv + k] = alpha * temp + beta * y[i * nv + k];
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPCSRUtils::gemmDS(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const ValueType beta,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType nv,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const common::MatrixOp op )
+{
+    SCAI_LOG_INFO( logger, "gemmDS<" << TypeTraits<ValueType>::id() << ">, " 
+                           << " result " << nv << " x " << numColumns << " = " << alpha << " * "
+                           << " Dense " << nv << " x " << numRows << ", CSR " << numRows << " x " << numColumns )
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        syncToken->run( std::bind( gemmDS<ValueType>, result, alpha, x, beta, numRows, numColumns, nv,
+                                                      csrIA, csrJA, csrValues, op ) );
+        return;
+    }
+
+    if ( op != common::MatrixOp::NORMAL )
+    {
+        COMMON_THROWEXCEPTION( "gemmDS only supported for matrix op = NORMAL" )
+    }
+
+    if ( syncToken )
+    {
+        SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
+    }
+
+    // matrix multiplicaton scatters results, so result must be set before
+
+    utilskernel::OpenMPUtils::binaryOpScalar( result, result, beta, nv * numColumns, common::BinaryOp::MULT, false );
+
+    #pragma omp parallel for 
+
+    for ( IndexType k = 0; k < nv; ++k )
+    {
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            {
+                IndexType j = csrJA[jj];
+                ValueType v = alpha * csrValues[jj] * x[k * numRows + i];
+                result[k * numColumns + j] += v;
             }
         }
     }
@@ -2015,7 +2074,8 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<CSRKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::gemm<ValueType> >( gemm, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::gemmSD<ValueType> >( gemmSD, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::gemmDS<ValueType> >( gemmDS, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );

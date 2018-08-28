@@ -239,15 +239,31 @@ public:
         const ValueType csrValues[],
         const common::MatrixOp op );
 
-    /** Implementation for CSRKernelTrait::Mult::gemm  */
+    /** Implementation for CSRKernelTrait::Mult::gemmSD  */
 
     template<typename ValueType>
-    static void gemm(
+    static void gemmSD(
         ValueType result[],
         const ValueType alpha,
         const ValueType x[],
         const ValueType beta,
         const ValueType y[],
+        const IndexType m,
+        const IndexType n,
+        const IndexType p,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[], 
+        const common::MatrixOp op );
+
+    /** Implementation for CSRKernelTrait::Mult::gemmDS  */
+
+    template<typename ValueType>
+    static void gemmDS(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
         const IndexType m,
         const IndexType n,
         const IndexType p,

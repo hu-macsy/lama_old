@@ -2359,34 +2359,41 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
         return;
     }
 
+    DenseMatrix<ValueType>& denseResult = static_cast<DenseMatrix<ValueType>&>( result );
+
     if ( B.getMatrixKind() != MatrixKind::DENSE )
     {
-        auto denseB = convert<DenseMatrix<ValueType>>( B );
-        matrixTimesMatrix( result, alpha, denseB, beta, C );
-        return;
+        const SparseMatrix<ValueType>& sparseB  = static_cast<const SparseMatrix<ValueType>&>( B );
+
+        if ( beta != common::Constants::ZERO )
+        {
+            matrixTimesMatrixSparse( denseResult, alpha, sparseB, beta,
+                                     static_cast<const DenseMatrix<ValueType>&>( C ) );
+        }
+        else
+        {
+            // avoid a static cast of C that might be anything
+            matrixTimesMatrixSparse( denseResult, alpha, sparseB, beta, denseResult );
+        }
     }
-
-    if ( beta != common::Constants::ZERO && C.getMatrixKind() != MatrixKind::DENSE )
+    else if ( B.getMatrixKind() == MatrixKind::DENSE )
     {
-        auto denseC = convert<DenseMatrix<ValueType>>( C );
-        matrixTimesMatrix( result, alpha, B, beta, denseC );
-        return;
-    }
+        const DenseMatrix<ValueType>& denseB  = static_cast<const DenseMatrix<ValueType>&>( B );
 
-    // all matrices are now dense
-
-    DenseMatrix<ValueType>& denseResult = static_cast<DenseMatrix<ValueType>&>( result );
-    const DenseMatrix<ValueType>& denseB  = static_cast<const DenseMatrix<ValueType>&>( B );
-
-    if ( beta != common::Constants::ZERO )
-    {
-        matrixTimesMatrixDense( denseResult, alpha, denseB, beta,
-                                static_cast<const DenseMatrix<ValueType>&>( C ) );
+        if ( beta != common::Constants::ZERO )
+        {
+            matrixTimesMatrixDense( denseResult, alpha, denseB, beta,
+                                    static_cast<const DenseMatrix<ValueType>&>( C ) );
+        }
+        else
+        {
+            // avoid a static cast of C that might be anything
+            matrixTimesMatrixDense( denseResult, alpha, denseB, beta, denseResult );
+        }
     }
     else
     {
-        // avoid a static cast of C that might be anything
-        matrixTimesMatrixDense( denseResult, alpha, denseB, beta, denseResult );
+        SCAI_LOG_ERROR( logger, "unsupported matrix format for B in result = alpha * A * B + beta * C" )
     }
 }
 
@@ -2435,6 +2442,51 @@ void DenseMatrix<ValueType>::matrixTimesMatrixDense(
     // because we have to sync in this method anyway (returning void not SyncToken)
 
     result.mData[0]->matrixTimesMatrix( alpha, *mData[0], *B.mData[0], beta, *C.mData[0] );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::matrixTimesMatrixSparse(
+    DenseMatrix<ValueType>& result,
+    const ValueType alpha,
+    const SparseMatrix<ValueType>& B,
+    const ValueType beta,
+    const DenseMatrix<ValueType>& C ) const
+{
+    SCAI_LOG_ERROR( logger, "denseMatrix = " << alpha << " denseMatrix * sparseMatrix + " << beta << " * denseMatrix" )
+
+    SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), "this->cols are distributed" )
+    SCAI_ASSERT_ERROR( B.getRowDistribution().isReplicated(), "B.rows are distributed" )
+    SCAI_ASSERT_ERROR( B.getColDistribution().isReplicated(), "B.cols are distributed" )
+
+    if ( beta != common::Constants::ZERO )
+    {
+        SCAI_ASSERT_EQ_ERROR( C.getRowDistribution(), getRowDistribution(), "C matrix not conform" )
+        SCAI_ASSERT_EQ_ERROR( C.getColDistribution(), B.getColDistribution(), "C matrix not conform" )
+    }
+
+    // Note: any alias will be resolved by the matrix storage routine and not here
+    //       as it might introduce a temporary in any case; but we check for allocation of result
+
+    if ( &result == this )
+    {
+        SCAI_LOG_DEBUG( logger, "result is aliased with this A matrix" )
+    }
+    else if ( &result == &C && beta != common::Constants::ZERO )
+    {
+        SCAI_LOG_DEBUG( logger, "result is aliased with C matrix" )
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, "result is not aliased, so allocate it correctly" )
+        result.allocate( getRowDistributionPtr(), B.getColDistributionPtr() );
+    }
+
+    // We are calculating with a replicated _Matrix. So there is no need for an asyncronous call,
+    // because we have to sync in this method anyway (returning void not SyncToken)
+
+    result.mData[0]->matrixTimesMatrix( alpha, *mData[0], B.getLocalStorage(), beta, *C.mData[0] );
 }
 
 /* -------------------------------------------------------------------------- */

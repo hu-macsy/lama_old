@@ -1125,7 +1125,7 @@ tasking::SyncToken* CSRUtils::gemvSp(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* CSRUtils::gemm0(
+SyncToken* CSRUtils::gemmSD0(
     HArray<ValueType>& result,
     const ValueType alpha,
     const HArray<ValueType>& x,
@@ -1148,15 +1148,15 @@ SyncToken* CSRUtils::gemm0(
         return NULL;   // already done
     }
 
-    SCAI_LOG_INFO( logger, "gemm0: result[ " << numRows << " x " << k << " ] = " << alpha 
+    SCAI_LOG_INFO( logger, "gemmSD0: result[ " << numRows << " x " << k << " ] = " << alpha 
                           << " * csr [ " << numRows << " x " << numColumns << " ] * "
                           << " x [ " << numColumns << " x " << k << " ] " )
 
     ContextPtr loc = prefLoc;
 
-    static LAMAKernel<CSRKernelTrait::gemm<ValueType> > gemm;
+    static LAMAKernel<CSRKernelTrait::gemmSD<ValueType> > gemmSD;
 
-    gemm.getSupportedContext( loc );
+    gemmSD.getSupportedContext( loc );
 
     std::unique_ptr<SyncToken> syncToken;
 
@@ -1176,9 +1176,9 @@ SyncToken* CSRUtils::gemm0(
 
     WriteOnlyAccess<ValueType> wResult( result, loc, nTarget * k );  
 
-    gemm[loc]( wResult.get(), alpha, rX.get(), ValueType( 0 ), NULL, 
-               numRows, numColumns, k, 
-               rIA.get(), rJA.get(), rValues.get(), op ); 
+    gemmSD[loc]( wResult.get(), alpha, rX.get(), ValueType( 0 ), NULL, 
+                 numRows, numColumns, k, 
+                 rIA.get(), rJA.get(), rValues.get(), op ); 
 
     if ( async )
     {
@@ -1195,7 +1195,7 @@ SyncToken* CSRUtils::gemm0(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* CSRUtils::gemm(
+SyncToken* CSRUtils::gemmSD(
     HArray<ValueType>& result,
     const ValueType alpha,
     const HArray<ValueType>& x,
@@ -1215,7 +1215,7 @@ SyncToken* CSRUtils::gemm(
 
     if ( beta == common::Constants::ZERO )
     {
-        return gemm0( result, alpha, x, numRows, numColumns, k, csrIA, csrJA, csrValues, op, async, prefLoc );
+        return gemmSD0( result, alpha, x, numRows, numColumns, k, csrIA, csrJA, csrValues, op, async, prefLoc );
     }
 
     if ( alpha == common::Constants::ZERO  || numRows == 0 || numColumns == 0 )
@@ -1226,16 +1226,16 @@ SyncToken* CSRUtils::gemm(
         return NULL;
     }
 
-    SCAI_LOG_INFO( logger, "gemm: result[ " << numRows << " x " << k << " ] = " << alpha 
+    SCAI_LOG_INFO( logger, "gemmSD: result[ " << numRows << " x " << k << " ] = " << alpha 
                           << " * csr [ " << numRows << " x " << numColumns << " ] * "
                           << " x [ " << numColumns << " x " << k << " ] " 
                           << " + y [ " << numRows << " x " << k << " ] " )
 
     ContextPtr loc = prefLoc;
 
-    static LAMAKernel<CSRKernelTrait::gemm<ValueType> > gemm;
+    static LAMAKernel<CSRKernelTrait::gemmSD<ValueType> > gemmSD;
 
-    gemm.getSupportedContext( loc );
+    gemmSD.getSupportedContext( loc );
 
     std::unique_ptr<SyncToken> syncToken;
 
@@ -1256,14 +1256,77 @@ SyncToken* CSRUtils::gemm(
 
     WriteOnlyAccess<ValueType> wResult( result, loc, y.size() );  // okay if alias to y
 
-    gemm[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), 
-               numRows, numColumns, k, 
-               rIA.get(), rJA.get(), rValues.get(), op ); 
+    gemmSD[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), 
+                 numRows, numColumns, k, 
+                 rIA.get(), rJA.get(), rValues.get(), op ); 
 
     if ( async )
     {
         syncToken->pushRoutine( wResult.releaseDelayed() );
         syncToken->pushRoutine( rY.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
+        syncToken->pushRoutine( rIA.releaseDelayed() );
+        syncToken->pushRoutine( rJA.releaseDelayed() );
+        syncToken->pushRoutine( rValues.releaseDelayed() );
+    }
+
+    return syncToken.release();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* CSRUtils::gemmDS(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType k,
+    const HArray<IndexType>& csrIA,
+    const HArray<IndexType>& csrJA,
+    const HArray<ValueType>& csrValues,
+    const common::MatrixOp op,
+    const bool async,
+    ContextPtr prefLoc )
+{
+    SCAI_LOG_INFO( logger, "gemmDS: result[ " << k << " x " << numColumns << " ] = " << alpha 
+                          << " * dense [ " << k << " x " << numRows << " ] * "
+                          << " csr [ " << numRows << " x " << numColumns << " ] " 
+                          << " + result [ " << k << " x " << numColumns << " ] " )
+
+    ContextPtr loc = prefLoc;
+
+    static LAMAKernel<CSRKernelTrait::gemmDS<ValueType> > gemmDS;
+
+    gemmDS.getSupportedContext( loc );
+
+    std::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIA( csrIA, loc );
+    ReadAccess<IndexType> rJA( csrJA, loc );
+    ReadAccess<ValueType> rValues( csrValues, loc );
+    ReadAccess<ValueType> rX( x, loc );
+
+    WriteAccess<ValueType> wResult( result ); 
+
+    gemmDS[loc]( wResult.get(), alpha, rX.get(), beta, 
+                 numRows, numColumns, k, 
+                 rIA.get(), rJA.get(), rValues.get(), op ); 
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
         syncToken->pushRoutine( rX.releaseDelayed() );
         syncToken->pushRoutine( rIA.releaseDelayed() );
         syncToken->pushRoutine( rJA.releaseDelayed() );
@@ -1589,12 +1652,27 @@ void CSRUtils::setColumns(
         const bool,                                        \
         ContextPtr );                                      \
                                                            \
-    template tasking::SyncToken* CSRUtils::gemm(           \
+    template tasking::SyncToken* CSRUtils::gemmSD(         \
         HArray<ValueType>&,                                \
         const ValueType,                                   \
         const HArray<ValueType>&,                          \
         const ValueType,                                   \
         const HArray<ValueType>&,                          \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const IndexType,                                   \
+        const HArray<IndexType>&,                          \
+        const HArray<IndexType>&,                          \
+        const HArray<ValueType>&,                          \
+        const common::MatrixOp,                            \
+        const bool,                                        \
+        ContextPtr );                                      \
+                                                           \
+    template tasking::SyncToken* CSRUtils::gemmDS(         \
+        HArray<ValueType>&,                                \
+        const ValueType,                                   \
+        const HArray<ValueType>&,                          \
+        const ValueType,                                   \
         const IndexType,                                   \
         const IndexType,                                   \
         const IndexType,                                   \
