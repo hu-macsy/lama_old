@@ -116,6 +116,72 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, MatrixType, SparseMatrixTypes
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemmDSTest, ValueType, scai_numeric_test_types )
+{
+    using hmemo::HArray;
+    using utilskernel::HArrayUtils;
+
+    const IndexType M = 15;
+    const IndexType N = 12;
+    const IndexType K = 18;
+
+    HArray<ValueType> data1( M * K, 0.0 );
+    HArray<ValueType> data2( K * N, 0.0 );
+    HArray<ValueType> data3( M * N, 0.0 );
+
+    float sparseFillRate = 0.05f;
+    float denseFillRate = 1.0f;
+
+    IndexType bound = 1;  // range 0 .. bound for random values
+
+    HArrayUtils::fillRandom( data1, bound, denseFillRate );
+    HArrayUtils::fillRandom( data2, bound, sparseFillRate );
+    HArrayUtils::fillRandom( data3, bound, denseFillRate );
+
+    auto denseM = convert<DenseMatrix<ValueType>>( DenseStorage<ValueType>( M, K, data1 ) );
+
+    auto sparseM2 = convert<CSRSparseMatrix<ValueType>>( DenseStorage<ValueType>( K, N, data2 ) );
+    auto denseM2 = convert<DenseMatrix<ValueType>>( DenseStorage<ValueType>( K, N, data2 ) );
+
+    auto denseAdd = convert<CSRSparseMatrix<ValueType>>( DenseStorage<ValueType>( M, N, data3 ) );
+
+    auto rowDist = std::make_shared<dmemo::BlockDistribution>( M );
+
+    denseM.redistribute( rowDist, std::make_shared<dmemo::NoDistribution>( K ) );
+    denseAdd.redistribute( rowDist, std::make_shared<dmemo::NoDistribution>( N ) );
+
+    DenseMatrix<ValueType> resultDD;
+    DenseMatrix<ValueType> resultDS;
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType i_alpha = 0; i_alpha < n_alpha; ++i_alpha )
+    {
+        for ( IndexType i_beta = 0; i_beta < n_beta; ++i_beta )
+        {
+            ValueType alpha = alpha_values[i_alpha ];
+            ValueType beta  = beta_values[i_beta ];
+
+            SCAI_LOG_DEBUG( logger, "gemmDS<" << common::TypeTraits<ValueType>::id() << "> vs gemmDD"
+                                     << ", alpha = " << alpha << ", beta = " << beta )
+
+            resultDD = alpha * denseM * denseM2 + beta * denseAdd;
+            resultDS = alpha * denseM * sparseM2 + beta * denseAdd;
+
+            auto maxDiff = resultDD.maxDiffNorm( resultDS );
+            auto eps = common::TypeTraits<ValueType>::small();
+
+            BOOST_CHECK( maxDiff < eps );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
 {
     // inverse of a matrix not yet for distributed matrices

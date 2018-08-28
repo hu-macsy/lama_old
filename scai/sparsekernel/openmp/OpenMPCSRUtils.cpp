@@ -622,6 +622,8 @@ void OpenMPCSRUtils::setColumns(
     const ValueType values[],
     const common::BinaryOp op )
 {
+    SCAI_REGION( "OpenMP.CSR.setColumns" )
+
     #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
@@ -1177,29 +1179,33 @@ void OpenMPCSRUtils::gemmSD(
         SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
     }
 
-    #pragma omp parallel for 
-
-    for ( IndexType i = 0; i < numRows; ++i )
+    #pragma omp parallel 
     {
-        for ( IndexType k = 0; k < nv; ++k )
+        SCAI_REGION( "OpenMP.CSR.gemmSD" )
+    
+        #pragma omp for
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            ValueType temp = 0;
+            for ( IndexType k = 0; k < nv; ++k )
+            {
+                ValueType temp = 0;
+    
+                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+                {
+                    IndexType j = csrJA[jj];
+                    // SCAI_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
+                    // csrValues[jj] stands for CSR( i, j )
+                    temp += csrValues[jj] * x[j * nv + k]; // x(j,k)
+                }
 
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
-            {
-                IndexType j = csrJA[jj];
-                // SCAI_ASSERT_DEBUG( j < p , "index j = " << j << " out of range " << p )
-                // csrValues[jj] stands for CSR( i, j )
-                temp += csrValues[jj] * x[j * nv + k]; // x(j,k)
-            }
-
-            if ( y == NULL )
-            {
-                result[i * nv + k] = alpha * temp;
-            }
-            else
-            {
-                result[i * nv + k] = alpha * temp + beta * y[i * nv + k];
+                if ( y == NULL )
+                {
+                    result[i * nv + k] = alpha * temp;
+                }
+                else
+                {
+                    result[i * nv + k] = alpha * temp + beta * y[i * nv + k];
+                }
             }
         }
     }
@@ -1248,17 +1254,21 @@ void OpenMPCSRUtils::gemmDS(
 
     utilskernel::OpenMPUtils::binaryOpScalar( result, result, beta, nv * numColumns, common::BinaryOp::MULT, false );
 
-    #pragma omp parallel for 
-
-    for ( IndexType k = 0; k < nv; ++k )
+    #pragma omp parallel
     {
-        for ( IndexType i = 0; i < numRows; ++i )
+        SCAI_REGION( "OpenMP.CSR.gemmDS" )
+
+        #pragma omp for
+        for ( IndexType k = 0; k < nv; ++k )
         {
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+            for ( IndexType i = 0; i < numRows; ++i )
             {
-                IndexType j = csrJA[jj];
-                ValueType v = alpha * csrValues[jj] * x[k * numRows + i];
-                result[k * numColumns + j] += v;
+                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
+                {
+                    IndexType j = csrJA[jj];
+                    ValueType v = alpha * csrValues[jj] * x[k * numRows + i];
+                    result[k * numColumns + j] += v;
+                }
             }
         }
     }

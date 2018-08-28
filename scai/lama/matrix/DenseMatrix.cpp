@@ -2340,17 +2340,22 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
     const ValueType beta,
     const Matrix<ValueType>& C ) const
 {
+    SCAI_LOG_INFO( logger, "result = " << alpha << " * A * B + " << beta << " * C "
+                    << ", result = " << result << ", A = " << *this << ", B = " << B << ", C = " << C  )
+
     if ( result.getMatrixKind() != MatrixKind::DENSE )
     {
+        // as this matrix A is dense compute a dense result and copy it 
+
         DenseMatrix<ValueType> denseResult;
 
-        if ( beta != common::Constants::ZERO && &result == &C )
+        if ( beta == common::Constants::ZERO || &result == &C )
         {
-            denseResult = C;
             matrixTimesMatrix( denseResult, alpha, B, beta, denseResult );
         }
         else
         {
+            denseResult = C;
             matrixTimesMatrix( denseResult, alpha, B, beta, denseResult );
         }
 
@@ -2359,37 +2364,33 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
         return;
     }
 
+    if ( beta != common::Constants::ZERO && C.getMatrixKind() != MatrixKind::DENSE )
+    {
+        auto denseC = convert<DenseMatrix<ValueType>>( C );
+        matrixTimesMatrix( result, alpha, B, beta, denseC );
+        return;
+    }
+
     DenseMatrix<ValueType>& denseResult = static_cast<DenseMatrix<ValueType>&>( result );
 
-    if ( B.getMatrixKind() != MatrixKind::DENSE )
+    // beta == ZERO : avoid a static cast of C that might be anything 
+
+    const DenseMatrix<ValueType>& denseC =   beta == common::Constants::ZERO
+                                           ? denseResult 
+                                           : static_cast<const DenseMatrix<ValueType>&>( C );
+
+    if ( B.getMatrixKind() == MatrixKind::SPARSE )
     {
         const SparseMatrix<ValueType>& sparseB  = static_cast<const SparseMatrix<ValueType>&>( B );
 
-        if ( beta != common::Constants::ZERO )
-        {
-            matrixTimesMatrixSparse( denseResult, alpha, sparseB, beta,
-                                     static_cast<const DenseMatrix<ValueType>&>( C ) );
-        }
-        else
-        {
-            // avoid a static cast of C that might be anything
-            matrixTimesMatrixSparse( denseResult, alpha, sparseB, beta, denseResult );
-        }
+        matrixTimesMatrixSparse( denseResult, alpha, sparseB, beta, denseC );
+
     }
     else if ( B.getMatrixKind() == MatrixKind::DENSE )
     {
         const DenseMatrix<ValueType>& denseB  = static_cast<const DenseMatrix<ValueType>&>( B );
 
-        if ( beta != common::Constants::ZERO )
-        {
-            matrixTimesMatrixDense( denseResult, alpha, denseB, beta,
-                                    static_cast<const DenseMatrix<ValueType>&>( C ) );
-        }
-        else
-        {
-            // avoid a static cast of C that might be anything
-            matrixTimesMatrixDense( denseResult, alpha, denseB, beta, denseResult );
-        }
+        matrixTimesMatrixDense( denseResult, alpha, denseB, beta, denseC );
     }
     else
     {
@@ -2454,7 +2455,8 @@ void DenseMatrix<ValueType>::matrixTimesMatrixSparse(
     const ValueType beta,
     const DenseMatrix<ValueType>& C ) const
 {
-    SCAI_LOG_ERROR( logger, "denseMatrix = " << alpha << " denseMatrix * sparseMatrix + " << beta << " * denseMatrix" )
+    SCAI_LOG_INFO( logger, "denseResult = " << alpha << " * denseA * sparseB + " << beta << " * denseC"
+                    << ", denseA = " << *this << ", sparseB = " << B << ", denseC = " << C  )
 
     SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), "this->cols are distributed" )
     SCAI_ASSERT_ERROR( B.getRowDistribution().isReplicated(), "B.rows are distributed" )
