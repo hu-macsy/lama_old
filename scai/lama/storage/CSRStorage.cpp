@@ -1293,9 +1293,9 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
 
     bool async = false;
 
-    CSRUtils::gemm( result, alpha, x, beta, y,
-                    getNumRows(), getNumColumns(), n,
-                    mIA, mJA, mValues, common::MatrixOp::NORMAL, async, getContextPtr() );
+    CSRUtils::gemmSD( result, alpha, x, beta, y,
+                      getNumRows(), getNumColumns(), n,
+                      mIA, mJA, mValues, common::MatrixOp::NORMAL, async, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

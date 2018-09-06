@@ -480,7 +480,7 @@ public:
      *  result, x, y are now dense matrices.
      */
     template<typename ValueType>
-    static tasking::SyncToken* gemm(
+    static tasking::SyncToken* gemmSD(
         hmemo::HArray<ValueType>& result,
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,
@@ -497,10 +497,30 @@ public:
         hmemo::ContextPtr prefLoc );
 
     /**
+     *  @brief matrix-dense multiplication, result = alpha * denseX * CSRstorage + beta * result
+     *
+     */
+    template<typename ValueType>
+    static tasking::SyncToken* gemmDS(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType k,
+        const hmemo::HArray<IndexType>& csrIA,
+        const hmemo::HArray<IndexType>& csrJA,
+        const hmemo::HArray<ValueType>& csrValues,
+        const common::MatrixOp op,
+        bool async,
+        hmemo::ContextPtr prefLoc );
+
+    /**
      *  @brief matrix-dense multiplication, result = alpha * CSRstorage * x
      */
     template<typename ValueType>
-    static tasking::SyncToken* gemm0(
+    static tasking::SyncToken* gemmSD0(
         hmemo::HArray<ValueType>& result,
         const ValueType alpha,
         const hmemo::HArray<ValueType>& x,

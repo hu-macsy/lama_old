@@ -1292,7 +1292,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemmSDTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
@@ -1310,7 +1310,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
 
-    // we compare gemm with two individual gemv operations
+    // we compare gemmSD with two individual gemv operations
 
     const IndexType nVectors = 2;  // gemm is optimized for nVectors * gemv
 
@@ -1358,8 +1358,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
 
         auto op = common::MatrixOp::NORMAL;
 
-        CSRUtils::gemm( res,  alpha, x, beta, y,
-                        numRows, numColumns, nVectors, csrIA, csrJA, csrValues, op, async, testContext );
+        CSRUtils::gemmSD( res,  alpha, x, beta, y,
+                          numRows, numColumns, nVectors, csrIA, csrJA, csrValues, op, async, testContext );
 
         HArray<ValueType> expectedRes1 = data1::getGEMVNormalResult( alpha, x1, beta, y1 );
         HArray<ValueType> expectedRes2 = data1::getGEMVNormalResult( alpha, x2, beta, y2 );
@@ -1376,6 +1376,78 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
             }
         }
     }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemmDSTest, ValueType, scai_numeric_test_types )
+{
+    /*   DenseMatrix = alpha * DenseMatrix * SparseMatrix
+   
+           1  -1  2  -2  1  1  -1       6  0  0  4           -3  -11  18   7
+           2  -3  4   1  5  3   2   *   7  0  0  0     =      3    7  36  36 
+           1   1  0  -1  2  1   3       0  0  9  4           15   -2   0   9
+                                        2  5  0  3 
+                                        2  0  0  1  
+                                        0  0  0  0  
+                                        0  1  0  2  
+    */
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    const IndexType numRows = 7;
+    const IndexType numColumns = 4;
+
+    HArray<IndexType> csrIA(     { 0,    2, 3,    5,       8,    10, 10,   12 }, testContext );
+    HArray<IndexType> csrJA(     { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3,     1, 3 }, testContext );
+    HArray<ValueType> csrValues( { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1,     1, 2 }, testContext );
+
+    const IndexType nVector = 3;
+    
+    HArray<ValueType> result( { 0,  0, 0,  0,
+                                0,  0, 0,  0,
+                                0,  0, 0,  0  }, testContext );
+
+    HArray<ValueType> expResult( { -3, -11, 18, 5,
+                                    3, 7, 36, 36,
+                                   15, -2, 0,  9  }, testContext );
+
+    HArray<ValueType> x( { 1, -1, 2, -2, 1, 1, -1 ,
+                           2, -3, 4,  1, 5, 3,  2 ,
+                           1,  1, 0, -1, 2, 1,  3  }, testContext );
+
+    SCAI_ASSERT_EQ_ERROR( nVector * numColumns, result.size(), "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( nVector * numRows, x.size(), "size mismatch" );
+
+    bool async = false;
+
+    auto op = common::MatrixOp::NORMAL;
+
+    ValueType alpha = 1;
+    ValueType beta  = 1;
+
+    CSRUtils::gemmDS( result,  alpha, x, beta,
+                      numRows, numColumns, nVector, csrIA, csrJA, csrValues, op, async, testContext );
+
+    SCAI_CHECK_EQUAL_ARRAY( result, expResult )
+
+    alpha = 2;
+    beta  = -2;
+
+    std::shared_ptr<tasking::SyncToken> token;
+
+    async = true;
+    token.reset( CSRUtils::gemmDS( result,  alpha, x, beta,
+                                   numRows, numColumns, nVector, 
+                                   csrIA, csrJA, csrValues, op, async, testContext ) );
+
+    token->wait();
+
+    // result should be a zero vector
+
+    RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    BOOST_CHECK( HArrayUtils::maxNorm( result ) < eps );
 }
 
 /* ------------------------------------------------------------------------------------- */

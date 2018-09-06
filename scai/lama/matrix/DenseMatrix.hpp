@@ -482,6 +482,13 @@ public:
         const ValueType beta,
         const DenseMatrix<ValueType>& C ) const;
 
+    void matrixTimesMatrixSparse(
+        DenseMatrix<ValueType>& result,
+        const ValueType alpha,
+        const SparseMatrix<ValueType>& B,
+        const ValueType beta,
+        const DenseMatrix<ValueType>& C ) const;
+
     /* Implementation of pure method of class _Matrix. */
 
     virtual void prefetch() const;

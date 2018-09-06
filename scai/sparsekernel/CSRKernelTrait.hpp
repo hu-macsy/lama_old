@@ -804,7 +804,7 @@ struct CSRKernelTrait
     };
 
     template<typename ValueType>
-    struct gemm
+    struct gemmSD
     {
         /**  This method computes result = alpha * CSR * x + beta * y  with dense result, x, y
          *
@@ -832,7 +832,38 @@ struct CSRKernelTrait
 
         static const char* getId()
         {
-            return "CSR.gemm";
+            return "CSR.gemmSD";
+        }
+    };
+
+    template<typename ValueType>
+    struct gemmDS
+    {
+        /**  This method computes result = alpha * x * CSR  + beta * result with dense result, y
+         *
+         *   @param[out] result  has size k * numColumns
+         *   @param[in]  alpha scaling factor
+         *   @param[in]  x has size k * numRows
+         *   @param[in]  beta scaling factor
+         *   @param[in]  csrIA, csrJA, csrValues are sparse matrix storage of numRows x numColumns
+         */
+
+        typedef void ( *FuncType ) (
+            ValueType result[],
+            const ValueType alpha,
+            const ValueType x[],
+            const ValueType beta,
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType k,
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[],
+            const common::MatrixOp op );
+
+        static const char* getId()
+        {
+            return "CSR.gemmDS";
         }
     };
 

@@ -681,10 +681,6 @@ void DenseStorage<ValueType>::matrixTimesMatrix(
     {
         matrixTimesMatrix( alpha, convert<DenseStorage<ValueType>>( a ), b, beta, c );
     }
-    else if ( b.getFormat() != Format::DENSE )
-    {
-        matrixTimesMatrix( alpha, a, convert<DenseStorage<ValueType>>( b ), beta, c );
-    }
     else if ( c.getFormat() != Format::DENSE )
     {
         if ( beta == 0 )
@@ -695,6 +691,20 @@ void DenseStorage<ValueType>::matrixTimesMatrix(
         {
             matrixTimesMatrix( alpha, a, b, beta, convert<DenseStorage<ValueType>>( c )  );
         }
+    }
+    else if ( b.getFormat() == Format::CSR )
+    {
+        matrixTimesMatrixCSR( alpha, static_cast<const DenseStorage<ValueType>&>( a ),
+                              static_cast<const CSRStorage<ValueType>&>( b ),
+                              beta,  static_cast<const DenseStorage<ValueType>&>( c ) );
+    }
+    else if ( b.getFormat() != Format::DENSE )
+    {
+        // convert 'sparse' matrix b into CSR format
+
+        matrixTimesMatrixCSR( alpha, static_cast<const DenseStorage<ValueType>&>( a ), 
+                              convert<CSRStorage<ValueType>>( b ),
+                              beta,  static_cast<const DenseStorage<ValueType>&>( c ) );
     }
     else
     {
@@ -775,6 +785,62 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
                       a.getValues(), common::MatrixOp::NORMAL,
                       b.getValues(), common::MatrixOp::NORMAL,
                       beta, m, n, k, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::matrixTimesMatrixCSR(
+    const ValueType alpha,
+    const DenseStorage<ValueType>& a,
+    const CSRStorage<ValueType>& b,
+    const ValueType beta,
+    const DenseStorage<ValueType>& c )
+{
+    SCAI_LOG_INFO( logger,
+                   "matrixTimesMatrixCSR: " << alpha << " * a * b + " << beta << " * c, with a = " << a << ", b = " << b << ", c = " << c )
+
+    if ( &a == this )
+    {
+        DenseStorage tmpA( a );
+        matrixTimesMatrixCSR( alpha, tmpA, b, beta, c );
+        return;
+    }
+
+    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumRows(), "serious size mismatch for a * b" )
+
+    IndexType m = a.getNumRows();
+    IndexType k = b.getNumRows();
+    IndexType n = b.getNumColumns();
+
+    _MatrixStorage::setDimension( m, n );
+
+    if ( beta == common::Constants::ZERO )
+    {
+        // do not care at all about C as it might be any dummy, or aliased to result
+
+        ValueType zero = 0;
+
+        HArrayUtils::setSameValue( mData, m * n, zero, getContextPtr() );
+    }
+    else if ( this != &c )
+    {
+        // force result = C
+
+        SCAI_ASSERT_EQ_ERROR( m, c.getNumRows(), "serious size mismatch" )
+        SCAI_ASSERT_EQ_ERROR( n, c.getNumColumns(), "serious size mismatch" )
+
+        HArrayUtils::setArray( mData, c.getValues(), common::BinaryOp::COPY, getContextPtr() );
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "results is aliased with C as required for gemm, beta = " << beta )
+    }
+
+    CSRUtils::gemmDS( mData, alpha, a.getValues(), beta, 
+                      k, n, m, b.getIA(), b.getJA(), b.getValues(),
+                      common::MatrixOp::NORMAL, false,
+                      getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

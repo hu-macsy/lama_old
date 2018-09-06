@@ -523,6 +523,14 @@ private:
                                  const ValueType beta,
                                  const DenseStorage<ValueType>& c );
 
+    /** Implementation of matrix times matrix for dense * sparse */
+
+    void matrixTimesMatrixCSR( const ValueType alpha,
+                               const DenseStorage<ValueType>& a,
+                               const CSRStorage<ValueType>& b,
+                               const ValueType beta,
+                               const DenseStorage<ValueType>& c );
+
     /** Implementation of elementwise binary operation for dense matrices. */
 
     void binaryOpDense(
