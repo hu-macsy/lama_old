@@ -2092,6 +2092,10 @@ void SparseMatrix<ValueType>::haloOperationAsyncLocal(
         comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
         SCAI_LOG_DEBUG( logger, "Exchange halo done." )
     }
+    else
+    {
+        haloX.clear();   // very important to set size of X back to 0
+    }
 
     // start now transfer of the halo values of X to halo context where it is needed
 
