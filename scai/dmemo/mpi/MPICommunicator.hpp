@@ -302,9 +302,9 @@ inline MPI_Datatype MPICommunicator::getMPIType( const common::ScalarType stype 
             return MPI_LONG_DOUBLE;
 #ifdef SCAI_COMPLEX_SUPPORTED
         case common::ScalarType::COMPLEX             :
-            return MPI_COMPLEX;
+            return MPI_C_COMPLEX;
         case common::ScalarType::DOUBLE_COMPLEX      :
-            return MPI_DOUBLE_COMPLEX;
+            return MPI_C_DOUBLE_COMPLEX;
         case common::ScalarType::LONG_DOUBLE_COMPLEX :
             return mComplexLongDoubleType;
 #endif
