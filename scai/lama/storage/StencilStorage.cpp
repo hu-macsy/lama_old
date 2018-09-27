@@ -468,6 +468,10 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
     const HArray<ValueType>& x,
     bool async ) const
 {
+    SCAI_REGION( "Storage.Stencil.incGEMV" )
+
+    static LAMAKernel<sparsekernel::StencilKernelTrait::stencilGEMV<ValueType> > stencilGEMV;
+
     LAMAKernel<sparsekernel::StencilKernelTrait::stencilGEMV<ValueType> > stencilGEMV;
 
     ContextPtr loc = this->getContextPtr();

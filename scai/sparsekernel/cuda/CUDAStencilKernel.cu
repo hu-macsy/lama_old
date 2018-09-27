@@ -643,22 +643,26 @@ void CUDAStencilKernel::stencilGEMV(
     thrust::device_vector<ValueType> dStencilVal( nPoints );
     thrust::device_vector<int> dStencilOffset( nPoints + nDims * nPoints );
 
-    // copy stencil data to GPU, stencilOffsetD = [ stencilNodes, stencilOffset ]
+    {
+        SCAI_REGION( "CUDA.Stencil.upload" )
 
-    thrust::copy( stencilNodes, stencilNodes + nDims * nPoints, dStencilOffset.begin() );
-    thrust::copy( stencilVal, stencilVal + nPoints, dStencilVal.begin() );
-    thrust::copy( stencilOffset, stencilOffset + nPoints, dStencilOffset.begin() + nDims * nPoints );
+        // copy stencil data to GPU, stencilOffsetD = [ stencilNodes, stencilOffset ]
 
-    // copy grid data to GPU, constant memory
+        thrust::copy( stencilNodes, stencilNodes + nDims * nPoints, dStencilOffset.begin() );
+        thrust::copy( stencilVal, stencilVal + nPoints, dStencilVal.begin() );
+        thrust::copy( stencilOffset, stencilOffset + nPoints, dStencilOffset.begin() + nDims * nPoints );
 
-    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridDistancesD, gridDistances, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
-                       "copy2Device failed" );
-    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridSizesD, gridSizes, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
-                       "copy2Device failed" );
-    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridWidthD, width, 2 * nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
-                       "copy2Device failed" );
-    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridBordersD, gridBorders, 2 * nDims * sizeof( common::Grid::BorderType ), 0, cudaMemcpyHostToDevice ),
-                       "copy2Device failed" );
+        // copy grid data to GPU, constant memory
+
+        SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridDistancesD, gridDistances, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
+                           "copy2Device failed" );
+        SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridSizesD, gridSizes, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
+                           "copy2Device failed" );
+        SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridWidthD, width, 2 * nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
+                           "copy2Device failed" );
+        SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridBordersD, gridBorders, 2 * nDims * sizeof( common::Grid::BorderType ), 0, cudaMemcpyHostToDevice ),
+                           "copy2Device failed" );
+    }
 
     const int* dStencilOffsetPtr = dStencilOffset.data().get();
     const ValueType* dStencilValPtr = dStencilVal.data().get();

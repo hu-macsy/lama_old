@@ -192,8 +192,6 @@ void setKernelPow( ValueType* out, const SourceValueType* in, const IndexType n 
 template<typename ValueType, typename SourceValueType>
 void CUDASparseUtils::set( ValueType out[], const SourceValueType in[], const IndexType n, const BinaryOp op )
 {   
-    SCAI_REGION( "CUDA.Utils.set" )
-    
     SCAI_LOG_INFO( logger,
                    "set<" << TypeTraits<ValueType>::id() << "," << TypeTraits<SourceValueType>::id() << ">( ..., n = " << n << ")" )
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
@@ -211,30 +209,50 @@ void CUDASparseUtils::set( ValueType out[], const SourceValueType in[], const In
     switch ( op )
     {   
         case BinaryOp::COPY :
-            setKernelCopy <<< dimGrid, dimBlock>>>( out, in, n );
+            {
+                SCAI_REGION( "CUDA.Utils.set_copy" )
+                setKernelCopy <<< dimGrid, dimBlock>>>( out, in, n );
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setKernelCopy" );
+            }
             break;
+
         
         case BinaryOp::ADD :
-            setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
+            {
+                SCAI_REGION( "CUDA.Utils.set_add" )
+                setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setKernelAdd" );
+            }
             break;
         
         case BinaryOp::SUB :
-            setKernelSub <<< dimGrid, dimBlock>>>( out, in, n );
+            {
+                SCAI_REGION( "CUDA.Utils.set_sub" )
+                setKernelSub <<< dimGrid, dimBlock>>>( out, in, n );
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setKernelSub" );
+            }
             break;
         
         case BinaryOp::MULT :
-            setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
+            {
+                SCAI_REGION( "CUDA.Utils.set_mult" )
+                setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setKernelMult" );
+            }
             break;
         
         case BinaryOp::DIVIDE :
-            setKernelDivide <<< dimGrid, dimBlock>>>( out, in, n );
+            {
+                SCAI_REGION( "CUDA.Utils.set_div" )
+                setKernelDivide <<< dimGrid, dimBlock>>>( out, in, n );
+                SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setKernelDiv" );
+            }
             break;
         
         default:
             COMMON_THROWEXCEPTION( "Unsupported binary op " << op )
     }
     
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setKernel<Op>" );
 }
 
 
