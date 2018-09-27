@@ -472,8 +472,6 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     static LAMAKernel<sparsekernel::StencilKernelTrait::stencilGEMV<ValueType> > stencilGEMV;
 
-    LAMAKernel<sparsekernel::StencilKernelTrait::stencilGEMV<ValueType> > stencilGEMV;
-
     ContextPtr loc = this->getContextPtr();
 
     stencilGEMV.getSupportedContext( loc );
