@@ -1719,7 +1719,7 @@ void OpenMPStencilKernel::normalGEMV(
     {
         SCAI_REGION( "OpenMP.StencilGEMVAsync" )
 
-        SCAI_LOG_ERROR( logger, "stencilGEMV<" << common::TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
+        SCAI_LOG_INFO( logger, "stencilGEMV<" << common::TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
 
         syncToken->run( std::bind( normalGEMV<ValueType>,
                                    result, alpha, x, beta, y, 

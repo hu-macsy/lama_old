@@ -593,12 +593,6 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
 
     ContextPtr loc = this->getContextPtr();
 
-    HArray<IndexType> gridInfo;
-    HArray<int> stencilInfo;
-    HArray<ValueType> stencilValues;
-
-    StencilUtils::setup( gridInfo, stencilInfo, stencilValues, mGrid, mStencil );
-
     IndexType gridSize = mGrid.size();
     IndexType nDims = mGrid.nDims();
     IndexType nPoints = mStencil.nPoints();
@@ -606,7 +600,8 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
     bool async = true;
 
     SyncToken* token = StencilUtils::gemv( result, alpha, x, beta, y, 
-                                           gridSize, nDims, mGrid.sizes(), nPoints, gridInfo, stencilInfo, stencilValues, async, loc );
+                                           gridSize, nDims, mGrid.sizes(), 
+                                           nPoints, mGridInfo, mStencilInfo, mStencilValues, async, loc );
 
     return token;
 }
