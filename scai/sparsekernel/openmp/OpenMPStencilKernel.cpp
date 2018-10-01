@@ -34,6 +34,7 @@
 #include <scai/common/Grid.hpp>
 #include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
 #include <scai/sparsekernel/StencilKernelTrait.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 
 namespace scai
 {
@@ -1699,6 +1700,23 @@ void OpenMPStencilKernel::stencilGEMV(
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
+    using tasking::TaskSyncToken;
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_REGION( "OpenMP.StencilGEMVAsync" )
+
+        SCAI_LOG_ERROR( logger, "stencilGEMV<" << common::TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
+
+        syncToken->run( std::bind( stencilGEMV<ValueType>,
+                                   result, alpha, x,
+                                   nDims, gridSizes, width, gridDistances, gridBorders, 
+                                   nPoints, stencilNodes, stencilVal, stencilOffset ) );
+        return;
+    }
+
     // prepare array with gridBounds for the recursive traverser routine
 
     IndexType gridBounds[ 2 * SCAI_GRID_MAX_DIMENSION ];
