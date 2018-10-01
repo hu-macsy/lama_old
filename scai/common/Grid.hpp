@@ -173,6 +173,15 @@ public:
         const BorderType borders[], 
         const IndexType nDims );
 
+    /** Version with border type coded as IndexType */
+
+    static bool getOffsetPos( 
+        IndexType pos[], 
+        const int offsets[],
+        const IndexType sizes[], 
+        const IndexType borders[], 
+        const IndexType nDims );
+
     /** This method determines a neighbored position of a point in the grid.
      *
      *  @param[in,out] pos contains the position as input and will contain the new position

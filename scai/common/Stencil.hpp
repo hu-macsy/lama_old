@@ -37,6 +37,7 @@
 #include <scai/common/Constants.hpp>
 
 #include <memory>
+#include <vector>
 
 namespace scai
 {
