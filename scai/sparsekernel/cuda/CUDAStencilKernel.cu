@@ -378,28 +378,60 @@ void gemv3Kernel(
     const IndexType gridBorders[],
     const IndexType gridStencilWidth[] )
 {
+    __shared__ IndexType smGridInfo[18];
+
+    __shared__ int smStencilOffset[64];
+    __shared__ ValueType smStencilVal[64];
+
+    IndexType* smGridSize = smGridInfo;
+    IndexType* smGridDistance = smGridInfo + 3;
+    IndexType* smGridBorders  = smGridInfo + 6;
+    IndexType* smGridStencilWidth = smGridInfo + 12;
+
+    IndexType tid = threadIdx.x;
+
+    if ( tid < 3 )
+    {
+        smGridSize[tid] = gridSizes[tid];
+        smGridDistance[tid] = gridDistances[tid];
+    }
+
+    if ( tid < 6 )
+    {
+        smGridBorders[tid] = gridBorders[tid];
+        smGridStencilWidth[tid] = gridStencilWidth[tid];
+    }
+
+    if ( tid < nPoints )
+    {
+        smStencilOffset[tid] = stencilOffset[tid];
+        smStencilVal[tid] = stencilVal[tid];
+    }
+
+    __syncthreads();
+
     const IndexType k = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType j = blockIdx.y * blockDim.y + threadIdx.y;
     const IndexType i = blockIdx.z * blockDim.z + threadIdx.z;
 
-    if ( j >= gridSizes[1]  || k >= gridSizes[2] || i >= gridSizes[0] )
+    if ( j >= smGridSize[1]  || k >= smGridSize[2] || i >= smGridSize[0] )
     {
         return;
     }
 
-    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2];
+    IndexType gridPos = i * smGridDistance[0] + j * smGridDistance[1] + k * smGridDistance[2];
 
     ValueType v = 0;
 
-    if (    ( i >= gridStencilWidth[0] ) && ( i < gridSizes[0] - gridStencilWidth[1] ) 
-         && ( j >= gridStencilWidth[2] ) && ( j < gridSizes[1] - gridStencilWidth[3] ) 
-         && ( k >= gridStencilWidth[4] ) && ( k < gridSizes[2] - gridStencilWidth[5] ) )
+    if (    ( i >= smGridStencilWidth[0] ) && ( i < smGridSize[0] - smGridStencilWidth[1] ) 
+         && ( j >= smGridStencilWidth[2] ) && ( j < smGridSize[1] - smGridStencilWidth[3] ) 
+         && ( k >= smGridStencilWidth[4] ) && ( k < smGridSize[2] - smGridStencilWidth[5] ) )
     {
         // gridPoint ( i, j, k ) is inner point, we have not to check for valid stencil points
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
-            v += stencilVal[ p ] * x[ gridPos + stencilOffset[ p ] ];
+            v += smStencilVal[ p ] * x[ gridPos + smStencilOffset[ p ] ];
         }
     }
     else 
@@ -410,15 +442,15 @@ void gemv3Kernel(
         {
             IndexType pos[] = { i, j, k };
 
-            bool valid = getOffsetPos( pos, stencilPositions, p, 3, gridSizes, gridBorders );
+            bool valid = getOffsetPos( pos, stencilPositions, p, 3, smGridSize, smGridBorders );
 
             if ( !valid )
             {
                 continue;
             }
 
-            IndexType stencilLinearPos =   pos[0] * gridDistances[0] + pos[1] * gridDistances[1] 
-                                         + pos[2] * gridDistances[2];
+            IndexType stencilLinearPos =   pos[0] * smGridDistance[0] + pos[1] * smGridDistance[1] 
+                                         + pos[2] * smGridDistance[2];
 
             v += stencilVal[ p ] * x[ stencilLinearPos ];
         }
