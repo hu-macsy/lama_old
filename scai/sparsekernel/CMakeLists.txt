@@ -50,12 +50,13 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        CSRUtils
         COOUtils
+        CSRUtils
+        DenseUtils
+        DIAUtils
         ELLUtils
         JDSUtils
-        DIAUtils
-        DenseUtils
+        StencilUtils
 
     HEADERS                  # .hpp only
 
