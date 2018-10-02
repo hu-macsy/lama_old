@@ -50,7 +50,7 @@
 
 #include <functional>
 
-#define CUDA_MAX_STENCIL_POINTS 32
+#define CUDA_MAX_STENCIL_POINTS 128
 
 namespace scai
 {
@@ -268,6 +268,8 @@ void CUDAStencilKernel::stencilGEMV1(
 {
     SCAI_REGION( "CUDA.Stencil.GEMV1" )
 
+    SCAI_ASSERT_LE_ERROR( nPoints, CUDA_MAX_STENCIL_POINTS, "too many stencil points, increase CUDA_MAX_STENCIL_POINTS" )
+
     IndexType n0 = hostGridSizes[0];
 
     SCAI_LOG_INFO( logger,  "stencilGEMV1<" << common::TypeTraits<ValueType>::id() << "> on " << n0 << " grid" )
@@ -315,16 +317,16 @@ void gemv2Kernel(
     const IndexType gridBorders[],
     const IndexType gridStencilWidth[] )
 {
-    __shared__ IndexType smGridInfo[12];
+    __shared__ IndexType smGridInfo[6 * 2];
     __shared__ int smStencilOffset[CUDA_MAX_STENCIL_POINTS];
     __shared__ ValueType smStencilVal[CUDA_MAX_STENCIL_POINTS];
 
     IndexType* smGridSize = smGridInfo;
-    IndexType* smGridDistance = smGridInfo + 2;
-    IndexType* smGridBorders  = smGridInfo + 4;
-    IndexType* smGridStencilWidth = smGridInfo + 8;
+    IndexType* smGridDistance = smGridSize + 2;
+    IndexType* smGridBorders  = smGridDistance + 2;
+    IndexType* smGridStencilWidth = smGridBorders + 2 * 2;
 
-    IndexType tid = threadIdx.x;
+    IndexType tid = threadIdx.x + threadIdx.y * blockDim.x;
 
     if ( tid < 2 )
     {
@@ -418,6 +420,8 @@ void CUDAStencilKernel::stencilGEMV2(
 {
     SCAI_REGION( "CUDA.Stencil.GEMV2" )
 
+    SCAI_ASSERT_LE_ERROR( nPoints, CUDA_MAX_STENCIL_POINTS, "too many stencil points, increase CUDA_MAX_STENCIL_POINTS" )
+
     IndexType n0 = hostGridSizes[0];
     IndexType n1 = hostGridSizes[1];
 
@@ -478,7 +482,7 @@ void gemv3Kernel(
     IndexType* smGridBorders  = smGridInfo + 6;
     IndexType* smGridStencilWidth = smGridInfo + 12;
 
-    IndexType tid = threadIdx.x;
+    IndexType tid = threadIdx.x + threadIdx.y * blockDim.x + threadIdx.z * blockDim.x * blockDim.y;
 
     if ( tid < 3 )
     {
@@ -640,7 +644,7 @@ void gemv4Kernel(
     IndexType* smGridBorders  = smGridInfo + 8;
     IndexType* smGridStencilWidth = smGridInfo + 16;
 
-    IndexType tid = threadIdx.x;
+    IndexType tid = threadIdx.x + threadIdx.y * blockDim.x + threadIdx.z * blockDim.x * blockDim.y;
 
     if ( tid < 4 )
     {
@@ -741,6 +745,8 @@ void CUDAStencilKernel::stencilGEMV4(
     const IndexType gridStencilWidth[] )
 {
     SCAI_REGION( "CUDA.Stencil.GEMV4" )
+
+    SCAI_ASSERT_LE_ERROR( nPoints, CUDA_MAX_STENCIL_POINTS, "too many stencil points, increase CUDA_MAX_STENCIL_POINTS" )
 
     IndexType n0 = hostGridSizes[0];
     IndexType n1 = hostGridSizes[1];
