@@ -50,6 +50,8 @@
 
 #include <functional>
 
+#define CUDA_MAX_STENCIL_POINTS 32
+
 namespace scai
 {
 
@@ -165,24 +167,55 @@ void gemv1Kernel(
     const IndexType gridBorders[],
     const IndexType gridStencilWidth[] )
 {
+    __shared__ IndexType smGridInfo[6];
+    __shared__ int smStencilOffset[CUDA_MAX_STENCIL_POINTS];
+    __shared__ ValueType smStencilVal[CUDA_MAX_STENCIL_POINTS];
+
+    IndexType* smGridSize = smGridInfo;
+    IndexType* smGridDistance = smGridInfo + 1;
+    IndexType* smGridBorders  = smGridInfo + 2;
+    IndexType* smGridStencilWidth = smGridInfo + 4;
+
+    IndexType tid = threadIdx.x;
+
+    if ( tid < 1 )
+    {
+        smGridSize[tid] = gridSizes[tid];
+        smGridDistance[tid] = gridDistances[tid];
+    }
+
+    if ( tid < 2 )
+    {
+        smGridBorders[tid] = gridBorders[tid];
+        smGridStencilWidth[tid] = gridStencilWidth[tid];
+    }
+
+    if ( tid < nPoints )
+    {
+        smStencilOffset[tid] = stencilOffset[tid];
+        smStencilVal[tid] = stencilVal[tid];
+    }
+
+    __syncthreads();
+
     const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if ( i >= gridSizes[0] )
+    if ( i >= smGridSize[0] )
     {
         return;   // might happen if gridSizes[0] is not multiple of blockDim.x
     }
 
-    IndexType gridPos = i * gridDistances[0];
+    IndexType gridPos = i * smGridDistance[0];
 
     ValueType v = 0;
 
-    if ( ( i >= gridStencilWidth[0] ) && ( i < gridSizes[0] - gridStencilWidth[1] ) )
+    if ( ( i >= smGridStencilWidth[0] ) && ( i < smGridSize[0] - smGridStencilWidth[1] ) )
     {
         // gridPoint ( i ) is inner point, we have not to check for valid stencil points
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
-            v += stencilVal[ p ] * x[ gridPos + stencilOffset[ p ] ];
+            v += smStencilVal[ p ] * x[ gridPos + smStencilOffset[ p ] ];
         }
     }
     else 
@@ -193,16 +226,16 @@ void gemv1Kernel(
         {
             IndexType pos[] = { i };
 
-            bool valid = getOffsetPos( pos, stencilPositions, p, 1, gridSizes, gridBorders );
+            bool valid = getOffsetPos( pos, stencilPositions, p, 1, smGridSize, smGridBorders );
 
             if ( !valid )
             {
                 continue;
             }
 
-            IndexType stencilLinearPos = pos[0] * gridDistances[0];
+            IndexType stencilLinearPos = pos[0] * smGridDistance[0];
 
-            v += stencilVal[ p ] * x[ stencilLinearPos ];
+            v += smStencilVal[ p ] * x[ stencilLinearPos ];
         }
     }
 
@@ -243,11 +276,24 @@ void CUDAStencilKernel::stencilGEMV1(
 
     dim3 numBlocks( ( n0 + threadsPerBlock.x - 1 ) / threadsPerBlock.x );
 
-    gemv1Kernel<ValueType><<< numBlocks, threadsPerBlock>>>( 
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    tasking::CUDAStreamSyncToken* syncToken = tasking::CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        // asynchronous execution takes other stream and will not synchronize later
+        stream = syncToken->getCUDAStream();
+    }
+
+    gemv1Kernel<ValueType><<< numBlocks, threadsPerBlock, 0, stream>>>(
         result, alpha, x, beta, y, nPoints, stencilPositions, stencilVal, stencilOffset,
         gridSizes, gridDistances, gridBorders, gridStencilWidth );
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "gemv1Kernel failed" ) ;
+    
+    if ( !syncToken )
+    {
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "gemv1Kernel failed" ) ;
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -269,26 +315,57 @@ void gemv2Kernel(
     const IndexType gridBorders[],
     const IndexType gridStencilWidth[] )
 {
+    __shared__ IndexType smGridInfo[12];
+    __shared__ int smStencilOffset[CUDA_MAX_STENCIL_POINTS];
+    __shared__ ValueType smStencilVal[CUDA_MAX_STENCIL_POINTS];
+
+    IndexType* smGridSize = smGridInfo;
+    IndexType* smGridDistance = smGridInfo + 2;
+    IndexType* smGridBorders  = smGridInfo + 4;
+    IndexType* smGridStencilWidth = smGridInfo + 8;
+
+    IndexType tid = threadIdx.x;
+
+    if ( tid < 2 )
+    {
+        smGridSize[tid] = gridSizes[tid];
+        smGridDistance[tid] = gridDistances[tid];
+    }
+
+    if ( tid < 4 )
+    {
+        smGridBorders[tid] = gridBorders[tid];
+        smGridStencilWidth[tid] = gridStencilWidth[tid];
+    }
+
+    if ( tid < nPoints )
+    {
+        smStencilOffset[tid] = stencilOffset[tid];
+        smStencilVal[tid] = stencilVal[tid];
+    }
+
+    __syncthreads();
+
     const IndexType j = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType i = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if ( j >= gridSizes[1]  || i >= gridSizes[0] )
+    if ( j >= smGridSize[1]  || i >= smGridSize[0] )
     {
         return;
     }
 
-    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1];
+    IndexType gridPos = i * smGridDistance[0] + j * smGridDistance[1];
 
     ValueType v = 0;
 
-    if (    ( i >= gridStencilWidth[0] ) && ( i < gridSizes[0] - gridStencilWidth[1] ) 
-         && ( j >= gridStencilWidth[2] ) && ( j < gridSizes[1] - gridStencilWidth[3] ) )
+    if (    ( i >= smGridStencilWidth[0] ) && ( i < smGridSize[0] - smGridStencilWidth[1] ) 
+         && ( j >= smGridStencilWidth[2] ) && ( j < smGridSize[1] - smGridStencilWidth[3] ) )
     {
         // gridPoint(i,j) is inner point, all stencil points can be applied
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
-            v += stencilVal[ p ] * x[ gridPos + stencilOffset[ p ] ];
+            v += smStencilVal[ p ] * x[ gridPos + smStencilOffset[ p ] ];
         }
     }
     else 
@@ -299,16 +376,16 @@ void gemv2Kernel(
         {
             IndexType pos[] = { i, j };
 
-            bool valid = getOffsetPos( pos, stencilPositions, p, 2, gridSizes, gridBorders );
+            bool valid = getOffsetPos( pos, stencilPositions, p, 2, smGridSize, smGridBorders );
 
             if ( !valid )
             {
                 continue;
             }
 
-            IndexType stencilLinearPos = pos[0] * gridDistances[0] + pos[1] * gridDistances[1];
+            IndexType stencilLinearPos = pos[0] * smGridDistance[0] + pos[1] * smGridDistance[1];
 
-            v += stencilVal[ p ] * x[ stencilLinearPos ];
+            v += smStencilVal[ p ] * x[ stencilLinearPos ];
         }
     }
 
@@ -352,11 +429,25 @@ void CUDAStencilKernel::stencilGEMV2(
     dim3 numBlocks( ( n1 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
                     ( n0 + threadsPerBlock.y - 1 ) / threadsPerBlock.y );
 
-    gemv2Kernel<ValueType><<< numBlocks, threadsPerBlock>>>( 
+
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    tasking::CUDAStreamSyncToken* syncToken = tasking::CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        // asynchronous execution takes other stream and will not synchronize later
+        stream = syncToken->getCUDAStream();
+    }
+
+    gemv2Kernel<ValueType><<< numBlocks, threadsPerBlock, 0, stream>>>(
         result, alpha, x, beta, y, nPoints, stencilPositions, stencilVal, stencilOffset,
         gridSizes, gridDistances, gridBorders, gridStencilWidth );
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "gemv3Kernel failed" ) ;
+    
+    if ( !syncToken )
+    {
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "gemv2Kernel failed" ) ;
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -379,9 +470,8 @@ void gemv3Kernel(
     const IndexType gridStencilWidth[] )
 {
     __shared__ IndexType smGridInfo[18];
-
-    __shared__ int smStencilOffset[64];
-    __shared__ ValueType smStencilVal[64];
+    __shared__ int smStencilOffset[CUDA_MAX_STENCIL_POINTS];
+    __shared__ ValueType smStencilVal[CUDA_MAX_STENCIL_POINTS];
 
     IndexType* smGridSize = smGridInfo;
     IndexType* smGridDistance = smGridInfo + 3;
@@ -452,7 +542,7 @@ void gemv3Kernel(
             IndexType stencilLinearPos =   pos[0] * smGridDistance[0] + pos[1] * smGridDistance[1] 
                                          + pos[2] * smGridDistance[2];
 
-            v += stencilVal[ p ] * x[ stencilLinearPos ];
+            v += smStencilVal[ p ] * x[ stencilLinearPos ];
         }
     }
 
@@ -484,6 +574,8 @@ void CUDAStencilKernel::stencilGEMV3(
     const IndexType gridStencilWidth[] )
 {
     SCAI_REGION( "CUDA.Stencil.GEMV3" )
+
+    SCAI_ASSERT_LE_ERROR( nPoints, CUDA_MAX_STENCIL_POINTS, "too many stencil points, increase CUDA_MAX_STENCIL_POINTS" )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -539,33 +631,64 @@ void gemv4Kernel(
     const IndexType gridBorders[],
     const IndexType gridStencilWidth[] )
 {
+    __shared__ IndexType smGridInfo[24];
+    __shared__ int smStencilOffset[CUDA_MAX_STENCIL_POINTS];
+    __shared__ ValueType smStencilVal[CUDA_MAX_STENCIL_POINTS];
+
+    IndexType* smGridSize = smGridInfo;
+    IndexType* smGridDistance = smGridInfo + 4;
+    IndexType* smGridBorders  = smGridInfo + 8;
+    IndexType* smGridStencilWidth = smGridInfo + 16;
+
+    IndexType tid = threadIdx.x;
+
+    if ( tid < 4 )
+    {
+        smGridSize[tid] = gridSizes[tid];
+        smGridDistance[tid] = gridDistances[tid];
+    }
+
+    if ( tid < 8 )
+    {
+        smGridBorders[tid] = gridBorders[tid];
+        smGridStencilWidth[tid] = gridStencilWidth[tid];
+    }
+
+    if ( tid < nPoints )
+    {
+        smStencilOffset[tid] = stencilOffset[tid];
+        smStencilVal[tid] = stencilVal[tid];
+    }
+
+    __syncthreads();
+
     const IndexType m = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType k = blockIdx.y * blockDim.y + threadIdx.y;
     const IndexType ij = ( blockIdx.z * blockDim.z ) + threadIdx.z;
-    const IndexType i  = ij / gridSizes[1];
-    const IndexType j  = ij - i * gridSizes[1];
+    const IndexType i  = ij / smGridSize[1];
+    const IndexType j  = ij - i * smGridSize[1];
 
     // as grid sizes are not always multiple of the corresponding threads, check for valid grid point
 
-    if ( m >= gridSizes[3]  || k >= gridSizes[2] || j >= gridSizes[1] || i >= gridSizes[0] )
+    if ( m >= smGridSize[3]  || k >= smGridSize[2] || j >= smGridSize[1] || i >= smGridSize[0] )
     {
         return;
     }
 
-    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
+    IndexType gridPos = i * smGridDistance[0] + j * smGridDistance[1] + k * smGridDistance[2] + m * smGridDistance[3];
 
     ValueType v = 0;
 
-    if (    ( i >= gridStencilWidth[0] ) && ( i < gridSizes[0] - gridStencilWidth[1] ) 
-         && ( j >= gridStencilWidth[2] ) && ( j < gridSizes[1] - gridStencilWidth[3] ) 
-         && ( k >= gridStencilWidth[4] ) && ( k < gridSizes[2] - gridStencilWidth[5] ) 
-         && ( m >= gridStencilWidth[6] ) && ( m < gridSizes[3] - gridStencilWidth[7] ) )
+    if (    ( i >= smGridStencilWidth[0] ) && ( i < smGridSize[0] - smGridStencilWidth[1] ) 
+         && ( j >= smGridStencilWidth[2] ) && ( j < smGridSize[1] - smGridStencilWidth[3] ) 
+         && ( k >= smGridStencilWidth[4] ) && ( k < smGridSize[2] - smGridStencilWidth[5] ) 
+         && ( m >= smGridStencilWidth[6] ) && ( m < smGridSize[3] - smGridStencilWidth[7] ) )
     {
         // gridPoint(i, j, k, m) is inner point, we have not to check for valid stencil points
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
-            v += stencilVal[ p ] * x[ gridPos + stencilOffset[ p ] ];
+            v += smStencilVal[ p ] * x[ gridPos + smStencilOffset[ p ] ];
         }
     }
     else 
@@ -576,17 +699,17 @@ void gemv4Kernel(
         {
             IndexType pos[] = { i, j, k, m };
 
-            bool valid = getOffsetPos( pos, stencilPositions, p, 4, gridSizes, gridBorders );
+            bool valid = getOffsetPos( pos, stencilPositions, p, 4, smGridSize, smGridBorders );
 
             if ( !valid )
             {
                 continue;
             }
 
-            IndexType stencilLinearPos =   pos[0] * gridDistances[0] + pos[1] * gridDistances[1] 
-                                         + pos[2] * gridDistances[2] + pos[3] * gridDistances[3];
+            IndexType stencilLinearPos =   pos[0] * smGridDistance[0] + pos[1] * smGridDistance[1] 
+                                         + pos[2] * smGridDistance[2] + pos[3] * smGridDistance[3];
 
-            v += stencilVal[ p ] * x[ stencilLinearPos ];
+            v += smStencilVal[ p ] * x[ stencilLinearPos ];
         }
     }
 
@@ -633,11 +756,24 @@ void CUDAStencilKernel::stencilGEMV4(
                     ( n2 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
                     ( n1 * n0 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
 
-    gemv4Kernel<ValueType><<< numBlocks, threadsPerBlock>>>( 
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    tasking::CUDAStreamSyncToken* syncToken = tasking::CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        // asynchronous execution takes other stream and will not synchronize later
+        stream = syncToken->getCUDAStream();
+    }
+
+    gemv4Kernel<ValueType><<< numBlocks, threadsPerBlock, 0, stream>>>(
         result, alpha, x, beta, y, nPoints, stencilPositions, stencilVal, stencilOffset,
         gridSizes, gridDistances, gridBorders, gridStencilWidth );
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "gemv4Kernel failed" ) ;
+    if ( !syncToken )
+    {
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "gemv4Kernel failed" ) ;
+    }
 }
 
 /* --------------------------------------------------------------------------- */
