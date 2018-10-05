@@ -73,50 +73,78 @@ SCAI_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, bool useTexture>
-__global__ void cooGemvKernel(
-    ValueType* result,
-    const ValueType alpha,
-    const ValueType* x,
-    const IndexType numValues,
-    const IndexType* cooIA,
-    const IndexType* cooJA,
-    const ValueType* cooValues )
+static __device__ IndexType findFirst( const IndexType indexes[], const IndexType n, const IndexType pos )
 {
-    const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    // binary search to find first entry of pos in indexes
 
-    if ( k < numValues )
+    IndexType first = 0;
+    IndexType last  = n;
+
+    while ( first < last )
     {
-        IndexType i = cooIA[k];
-        IndexType j = cooJA[k];
-        // we must use atomic updates as different threads might update same row i
-        const ValueType resultUpdate = alpha * cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
-        // atomic add required, solution above
-        common::CUDAUtils::atomicAdd( &result[i], resultUpdate );
+        IndexType middle = first + ( last - first ) / 2;
+
+        if ( indexes[middle] == pos )
+        {
+            if ( middle == 0 )
+            {
+                // so we have the first entry of pos in any case
+
+                return middle;
+            }
+
+            if ( indexes[ middle - 1] != pos )
+            {
+                // so we have the first entry of pos in any case
+
+                return middle;
+            }
+
+            // there may be several entries of pos, continue search
+
+            last = middle;
+        }
+        else if ( indexes[middle] > pos )
+        {
+            last = middle;
+        }
+        else
+        {
+            first = middle + 1;
+        }
     }
+
+    return first;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType, bool useTexture>
-__global__ void cooGemvKernel_alpha_one(
+__global__ void cooGemvKernel(
     ValueType* result,
+    const ValueType alpha,
     const ValueType* x,
+    const IndexType numRows,
     const IndexType numValues,
     const IndexType* cooIA,
     const IndexType* cooJA,
     const ValueType* cooValues )
 {
-    const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( k < numValues )
+    if ( i < numRows )
     {
-        IndexType i = cooIA[k];
-        IndexType j = cooJA[k];
-        // we must use atomic updates as different threads might update same row i
-        const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
-        // atomic add required, solution above
-        common::CUDAUtils::atomicAdd( &result[i], resultUpdate );
+        IndexType k = findFirst( cooIA, numValues, i );  // first index k with cooIA[k] == i
+
+        ValueType val = 0;
+
+        while ( k >= 0 &&  k < numValues && cooIA[k] == i )
+        {
+            val += cooValues[k] * x[cooJA[k]];
+            k++;
+        }
+
+        result[i] += alpha * val;
     }
 }
 
@@ -148,34 +176,11 @@ __global__ void cooGevmKernel(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType, bool useTexture>
-__global__ void cooGevmKernel_alpha_one(
-    ValueType* result,
-    const ValueType* x,
-    const IndexType numValues,
-    const IndexType* cooIA,
-    const IndexType* cooJA,
-    const ValueType* cooValues )
-{
-    const int k = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( k < numValues )
-    {
-        IndexType i = cooIA[k];
-        IndexType j = cooJA[k];
-        // we must use atomic updates as different threads might update same row i
-        const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, i );
-        // atomic add required, solution above
-        common::CUDAUtils::atomicAdd( &result[j], resultUpdate );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture>
 static inline void launchGEMV(
     ValueType result[],
     const ValueType alpha,
     const ValueType x[],
+    const IndexType numRows,
     const IndexType numValues,
     const IndexType cooIA[],
     const IndexType cooJA[],
@@ -185,33 +190,18 @@ static inline void launchGEMV(
 {
     IndexType blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numValues, dimBlock.x );
 
-    if ( alpha == common::Constants::ONE )
+    if ( common::isTranspose( op ) )
     {
-        if ( common::isTranspose( op ) )
-        {
-            cooGevmKernel_alpha_one<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
-            ( result, x, numValues, cooIA, cooJA, cooValues );
-        }
-        else
-        {
-            cooGemvKernel_alpha_one<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
-            ( result, x, numValues, cooIA, cooJA, cooValues );
-        }
+        dim3 dimGrid = makeGrid( numValues, dimBlock.x );
+        cooGevmKernel<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
+        ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
     }
     else
     {
-        if ( common::isTranspose( op ) )
-        {
-            cooGevmKernel<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
-        }
-        else
-        {
-            cooGemvKernel<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
-            ( result, alpha, x, numValues, cooIA, cooJA, cooValues );
-        }
+        dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+        cooGemvKernel<ValueType, useTexture> <<< dimGrid, dimBlock, 0, stream>>>
+        ( result, alpha, x, numRows, numValues, cooIA, cooJA, cooValues );
     }
 }
 
@@ -281,11 +271,11 @@ void CUDACOOUtils::normalGEMV(
     {
         vectorBindTexture( x );
 
-        launchGEMV<ValueType, true>( result, alpha, x, numValues, cooIA, cooJA, cooValues, op, stream );
+        launchGEMV<ValueType, true>( result, alpha, x, numRows, numValues, cooIA, cooJA, cooValues, op, stream );
     }
     else
     {
-        launchGEMV<ValueType, false>( result, alpha, x, numValues, cooIA, cooJA, cooValues, op, stream );
+        launchGEMV<ValueType, false>( result, alpha, x, numRows, numValues, cooIA, cooJA, cooValues, op, stream );
     }
 
     if ( !syncToken )
@@ -351,42 +341,6 @@ void CUDACOOUtils::offsets2ia(
 /* --------------------------------------------------------------------------- */
 
 /** Help routine to find row offset in sorted array of row indexes, same as used for OpenMP */
-
-__device__
-static IndexType findFirst( const IndexType indexes[], const IndexType n, const IndexType pos )
-{
-    IndexType first = 0;
-    IndexType last  = n;
-
-    while ( first < last )
-    {
-        IndexType middle = first + ( last - first ) / 2;
-
-        if ( indexes[middle] == pos )
-        {
-            if ( middle == 0 )
-            {
-                return middle;
-            }
-            if ( indexes[ middle - 1] != pos )
-            {
-                return middle;
-            }
-
-            last = middle;
-        }
-        else if ( indexes[middle] > pos )
-        {
-            last = middle;
-        }
-        else
-        {
-            first = middle + 1;
-        }
-    }
- 
-    return first;
-}
 
 __global__
 static void build_offset_kernel(
