@@ -38,6 +38,7 @@
 #include <scai/hmemo/HostWriteAccess.hpp>
 #include <scai/hmemo/HostReadAccess.hpp>
 
+#include <scai/tracing.hpp>
 #include <scai/common/macros/loop.hpp>
 #include <algorithm>
 
@@ -153,6 +154,8 @@ void COOUtils::sort(
     HArray<ValueType>& values,
     ContextPtr )
 {
+    SCAI_REGION( "Sparse.COO.sort" )
+
     using namespace utilskernel;
 
     const IndexType nnz = values.size();
@@ -219,6 +222,8 @@ void COOUtils::unique(
     ContextPtr )
 
 {
+    SCAI_REGION( "Sparse.COO.unique" )
+
     const IndexType nnz = values.size();
 
     SCAI_ASSERT_EQ_ERROR( ia.size(), nnz, "serious mismatch for COO data" )
@@ -732,6 +737,8 @@ SyncToken* COOUtils::gemv(
     bool async,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.COO.gemv" )
+
     // SCAI_ASSERT_EQ_ERROR( x.size(), numColumns, "illegally sized array x for gemv" )
     // SCAI_ASSERT_EQ_ERROR( y.size(), numRows, "illegally sized array y for gemv" )
 

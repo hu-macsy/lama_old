@@ -943,7 +943,7 @@ SyncToken* CSRUtils::gemv0(
         return NULL;   // already done
     }
 
-    SCAI_REGION( "Sparse.csr.gemv0" )
+    SCAI_REGION( "Sparse.CSR.gemv0" )
 
     ContextPtr loc = prefLoc;
 
@@ -1018,7 +1018,7 @@ SyncToken* CSRUtils::gemv(
         return NULL;
     }
 
-    SCAI_REGION( "Sparse.csr.gemv" )
+    SCAI_REGION( "Sparse.CSR.gemv" )
 
     ContextPtr loc = prefLoc;
 
@@ -1083,7 +1083,7 @@ tasking::SyncToken* CSRUtils::gemvSp(
         return NULL;
     }
 
-    SCAI_REGION( "Sparse.csr.gemvSp" )
+    SCAI_REGION( "Sparse.CSR.gemvSp" )
 
     static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
 
