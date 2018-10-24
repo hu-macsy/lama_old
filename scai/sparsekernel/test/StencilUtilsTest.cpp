@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE( clearSetupTest )
 
     hmemo::HArray<IndexType> expGridInfo( { 0, 1, 0, 0, 0, 0 } );
     hmemo::HArray<int> expStencilInfo( { 0, 0 } );
-    hmemo::HArray<ValueType> expStencilValues( { 0 } );
+    hmemo::HArray<ValueType> expStencilValues( 1, ValueType( 0 ) );
 
     SCAI_CHECK_EQUAL_ARRAY( gridInfo, expGridInfo );
     SCAI_CHECK_EQUAL_ARRAY( stencilInfo, expStencilInfo );
