@@ -228,13 +228,15 @@ IndexType Stencil<ValueType>::nDims() const
 template<typename ValueType>
 const int* Stencil<ValueType>::positions() const
 {
-    return &mPositions[0];
+    // Note: return &mPositions[0] causes problems for null pointer if sanitize is enabled
+
+    return mPositions.data();
 }
 
 template<typename ValueType>
 const ValueType* Stencil<ValueType>::values() const
 {
-    return &mValues[0];
+    return mValues.data();
 }
 
 /* ------------------------------------------------------------------------------------ */
