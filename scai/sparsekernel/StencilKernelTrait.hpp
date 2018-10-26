@@ -151,17 +151,20 @@ struct StencilKernelTrait
     };
 
     template<typename ValueType>
-    struct stencilGEMV
+    struct normalGEMV
     {
-        /** function that computes result += alpha * A * x where A is a stencil matrix.
+        /** function that computes result = alpha * StencilMatrix * x + beta * y 
          *
-         *  @param[in,out] result contains values for updated grid points
+         *  @param[out] result contains values for updated grid points
          *  @param[in] alpha is an additional scaling factor
          *  @param[in] x is the vector which one element for each grid point
+         *  @param[in] beta is the scaling factor of y
+         *  @param[in] y is additional input vector to add (might be aliased with result)
          *  @param[in] nDims specifies the dimension of the grid
-         *  @param[in] gridSizes contains the dimensions of the grid 
-         *  @param[in] width contains maximal left/rights distance for each dimension given by stencil
+         *  @param[in] gridSizes contains the sizes of the grid for each dimension
          *  @param[in] gridDistances contains the distance between two neighbored points for each dim
+         *  @param[in] gridBorders contains for each dim left and right type of border
+         *  @param[in] gridStencilWidth contains maximal left/rights distance for each dimension given by stencil
          *  @param[in] nPoints number of stencil points
          *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
          *  @param[in] stencilVal contains the scale value for each stencil point
@@ -176,19 +179,22 @@ struct StencilKernelTrait
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
+            const ValueType beta,
+            const ValueType y[],
             const IndexType nDims,
+            const IndexType hostGridSizes[],
             const IndexType gridSizes[],
-            const IndexType width[],
             const IndexType gridDistances[],
-            const common::Grid::BorderType gridBorders[],
+            const IndexType gridBorders[],
+            const IndexType gridStencilWidth[],
             const IndexType nPoints,
-            const int stencilNodes[],
+            const int stencilPositions[],
             const ValueType stencilVal[],
             const int stencilOffset[] );
 
         static const char* getId()
         {
-            return "Stencil.GEMV";
+            return "Stencil.normalGEMV";
         }
     };
 };

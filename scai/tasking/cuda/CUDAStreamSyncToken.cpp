@@ -163,6 +163,15 @@ CUDAStreamSyncToken* CUDAStreamSyncToken::getCurrentSyncToken()
     return cudaStreamSyncToken;
 }
 
+void CUDAStreamSyncToken::writeAt( std::ostream& stream ) const
+{
+    stream << "CUDAStreamSyncToken( ";
+
+    stream << ", mStream = " << mStream;
+
+    stream << ", synchronized = " << isSynchronized() << ")";
+}
+
 } /* end namespace tasking */
 
 } /* end namespace scai */

@@ -192,6 +192,7 @@ void StencilMatrix<ValueType>::define( dmemo::DistributionPtr dist, const Stenci
 
     SCAI_LOG_DEBUG( logger, "halo = " << mHalo )
 
+    haloStorage->setCompressThreshold( 0.5 );
     haloStorage->allocate( haloIA.size() - 1, haloNumColumns );
     haloStorage->swap( haloIA, haloJA, haloValues );
 }

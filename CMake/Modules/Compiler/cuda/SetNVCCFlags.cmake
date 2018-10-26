@@ -72,8 +72,8 @@ if    ( CUDA_FOUND AND USE_CUDA )
         # Note: -Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
 
         if    ( CXX_SUPPORTS_C11 )
-            if ( CUDA_VERSION STRLESS "7.0" )
-                message ( FATAL_ERROR "CUDA version ${CUDA_VERSION} does not support -std=c++11, please call cmake with -DCXX_SUPPORTS_C11=0" )
+            if ( CUDA_VERSION_MAJOR LESS 7 )
+                message ( FATAL_ERROR "CUDA version ${CUDA_VERSION} does not support -std=c++11, upgrade to CUDA 7.0 or higher" )
             else ()
                 list ( APPEND SCAI_NVCC_FLAGS "-std=c++11" )
                 if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
