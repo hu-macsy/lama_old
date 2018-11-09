@@ -104,12 +104,12 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
     if ( initialized )
     {
-        mExternInitialization = true;
+        mKind = MPICommKind::EXTERNAL;
         SCAI_LOG_WARN( logger, "MPI_Init: MPI has already been initialized." )
     }
     else
     {
-        mExternInitialization = false;
+        mKind = MPICommKind::INTERNAL;
         std::string threadSafetyEnvironment;
         const char* envConfig = getenv( "LAMA_MPICOMM_THREAD_SAFETY" );
 
@@ -189,10 +189,9 @@ void MPICommunicator::initialize( int& argc, char** & argv )
     }
 
 #endif
-    mCommWorld = MPI_COMM_WORLD;
-    MPI_Comm_dup( mCommWorld, &mComm );
+
+    MPI_Comm_dup( MPI_COMM_WORLD, &mComm );
     MPI_Comm_set_errhandler( mComm, MPI_ERRORS_RETURN );
-    MPI_Comm_dup( mCommWorld, &mCommTask );
     SCAI_LOG_INFO( logger, "MPI_Init" )
 
     {
@@ -271,7 +270,7 @@ MPICommunicator::~MPICommunicator()
 
     if ( !finalized )
     {
-        if ( !mExternInitialization )
+        if ( mKind == MPICommKind::INTERNAL )
         {
 #ifdef SCAI_COMPLEX_SUPPORTED
             MPI_Type_free( &mComplexLongDoubleType );
@@ -280,19 +279,18 @@ MPICommunicator::~MPICommunicator()
 
             SCAI_LOG_INFO( logger, "call MPI_Finalize" )
 
-            int status = MPI_Finalize();
+            SCAI_MPICALL_NOTHROW( logger, MPI_Finalize(), "~MPICommunicator" )
 
-            if ( status != MPI_SUCCESS )
-            {
-                char mpiErrorString[MPI_MAX_ERROR_STRING];
-                int resultlen = MPI_MAX_ERROR_STRING;
-                MPI_Error_string( status, mpiErrorString, &resultlen );
-                SCAI_LOG_ERROR( logger, "MPI_Finalize: error, status = " << status << ", " << mpiErrorString )
-            }
+        }
+        else if ( mKind == MPICommKind::EXTERNAL )
+        {
+            SCAI_LOG_INFO( logger, "ATTENTION: no call MPI_Finalize, was externally initialized" )
         }
         else
         {
-            SCAI_LOG_INFO( logger, "ATTENTION: no call MPI_Finalize, was externally initialized" )
+            // free the communicator
+
+            SCAI_MPICALL_NOTHROW( logger, MPI_Comm_free( &mComm ), "~MPICommunicator" )
         }
     }
     else
@@ -334,7 +332,7 @@ MPI_Request MPICommunicator::startrecv( void* buffer, int count, int source, com
 
     MPI_Datatype commType = getMPIType( stype );
 
-    SCAI_MPICALL( logger, MPI_Irecv( buffer, count, commType, source, defaultTag, selectMPIComm(), &request ),
+    SCAI_MPICALL( logger, MPI_Irecv( buffer, count, commType, source, defaultTag, mComm, &request ),
                   "MPI_Irecv<" << stype << ">" )
 
     return request;
@@ -349,7 +347,7 @@ MPI_Request MPICommunicator::startsend( const void* buffer, int count, int targe
     void* sBuffer = const_cast<void*>( buffer );  // MPI is not const aware
 
     SCAI_MPICALL( logger,
-                  MPI_Isend( sBuffer, count, commType, target, defaultTag, selectMPIComm(), &request ),
+                  MPI_Isend( sBuffer, count, commType, target, defaultTag, mComm, &request ),
                   "MPI_Isend<" << stype << ">" )
 
     return request;
@@ -367,7 +365,7 @@ void MPICommunicator::send( const void* buffer, int count, int target, common::S
 {
     MPI_Datatype commType = getMPIType( stype );
     SCAI_MPICALL( logger,
-                  MPI_Send( const_cast<void*>( buffer ), count, commType, target, defaultTag, selectMPIComm() ),
+                  MPI_Send( const_cast<void*>( buffer ), count, commType, target, defaultTag, mComm ),
                   "MPI_Send<" << stype << ">" )
 }
 
@@ -385,7 +383,7 @@ void MPICommunicator::all2allImpl( void* recvValues, const void* sendValues, com
     // MPI is not const-aware so we have to use a const_cast on sendValues
 
     SCAI_MPICALL( logger,
-                  MPI_Alltoall( const_cast<void*>( sendValues ), 1, commType, recvValues, 1, commType, selectMPIComm() ),
+                  MPI_Alltoall( const_cast<void*>( sendValues ), 1, commType, recvValues, 1, commType, mComm ),
                   "MPI_Alltoall" )
 }
 
@@ -563,27 +561,6 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
 }
 
 /* ---------------------------------------------------------------------------------- */
-
-inline MPI_Comm MPICommunicator::selectMPIComm() const
-{
-    if ( mThreadSafetyLevel != Multiple )
-    {
-        return mComm;
-    }
-
-    const std::thread::id self = std::this_thread::get_id();
-
-    if ( self == mMainThread )
-    {
-        return mComm;
-    }
-    else
-    {
-        return mCommTask;
-    }
-}
-
-/* ---------------------------------------------------------------------------------- */
 /*              bcast                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
@@ -591,7 +568,7 @@ void MPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
 {
     SCAI_REGION( "Communicator.MPI.bcast" )
     MPI_Datatype commType = getMPIType( stype );
-    SCAI_MPICALL( logger, MPI_Bcast( val, n, commType, root, selectMPIComm() ), "MPI_Bcast<" << stype << ">" )
+    SCAI_MPICALL( logger, MPI_Bcast( val, n, commType, root, mComm ), "MPI_Bcast<" << stype << ">" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -653,7 +630,7 @@ IndexType MPICommunicator::shiftImpl(
 
     SCAI_MPICALL( logger,
                   MPI_Sendrecv( const_cast<void*>( sendVals ), sendSize, commType, dest, 4711, recvVals, recvSize,
-                                commType, source, 4711, selectMPIComm(), &mpiStatus ),
+                                commType, source, 4711, mComm, &mpiStatus ),
                   "MPI_Sendrecv" )
 
     // extract number of read values from status
@@ -712,12 +689,12 @@ void MPICommunicator::scanImpl( void* outValues, const void* inValues, const Ind
     if ( inValues == outValues )
     {
         SCAI_MPICALL( logger, MPI_Scan( MPI_IN_PLACE, outValues, 1, commType, opType,
-                                        selectMPIComm() ), "MPI_Scan" )
+                                        mComm ), "MPI_Scan" )
     }
     else
     {
         SCAI_MPICALL( logger, MPI_Scan( const_cast<void*>( inValues ), outValues, n, commType, opType,
-                                        selectMPIComm() ), "MPI_Scan" )
+                                        mComm ), "MPI_Scan" )
     }
 }
 
@@ -735,12 +712,12 @@ void MPICommunicator::sumImpl( void* outValues, const void* inValues, const Inde
     if ( inValues == outValues )
     {
         SCAI_MPICALL( logger, MPI_Allreduce( MPI_IN_PLACE, outValues, n, commType, opType,
-                                             selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
     }
     else
     {
         SCAI_MPICALL( logger, MPI_Allreduce( const_cast<void*>( inValues ), outValues, n, commType, opType,
-                                             selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
     }
 }
 
@@ -758,12 +735,12 @@ void MPICommunicator::minImpl( void* outValues, const void* inValues, const Inde
     if ( inValues == outValues )
     {
         SCAI_MPICALL( logger, MPI_Allreduce( MPI_IN_PLACE, outValues, n, commType, opType,
-                                             selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
     }
     else
     {
         SCAI_MPICALL( logger, MPI_Allreduce( const_cast<void*>( inValues ), outValues, n, commType, opType,
-                                             selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
     }
 }
 
@@ -781,19 +758,19 @@ void MPICommunicator::maxImpl( void* outValues, const void* inValues, const Inde
     if ( inValues == outValues )
     {
         SCAI_MPICALL( logger, MPI_Allreduce( MPI_IN_PLACE, outValues, n, commType, opType,
-                                             selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
     }
     else
     {
         SCAI_MPICALL( logger, MPI_Allreduce( const_cast<void*>( inValues ), outValues, n, commType, opType,
-                                             selectMPIComm() ), "MPI_Allreduce(MPI_SUM)" )
+                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
     }
 }
 
 void MPICommunicator::synchronize() const
 {
     SCAI_REGION( "Communicator.MPI.sync" )
-    SCAI_MPICALL( logger, MPI_Barrier( selectMPIComm() ), "MPI_Barrier()" )
+    SCAI_MPICALL( logger, MPI_Barrier( mComm ), "MPI_Barrier()" )
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -819,7 +796,7 @@ void MPICommunicator::scatterImpl(
 
     SCAI_MPICALL( logger,
                   MPI_Scatter( const_cast<void*>( allVals ), n, commType, myVals, n, commType, root,
-                               selectMPIComm() ),
+                               mComm ),
                   "MPI_Scatter<" << stype << ">" )
 }
 
@@ -857,8 +834,7 @@ void MPICommunicator::scatterVImpl(
         SCAI_LOG_DEBUG( logger,
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
         SCAI_MPICALL( logger,
-                      MPI_Scatterv( sendbuf, counts.get(), displs.get(), commType, myVals, n, commType, root,
-                                    selectMPIComm() ),
+                      MPI_Scatterv( sendbuf, counts.get(), displs.get(), commType, myVals, n, commType, root, mComm ),
                       "MPI_Scatterv" )
     }
     else
@@ -874,7 +850,7 @@ void MPICommunicator::scatterVImpl(
 
         SCAI_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
         SCAI_MPICALL( logger,
-                      MPI_Scatterv( NULL, counts.get(), NULL, commType, myVals, n, commType, root, selectMPIComm() ),
+                      MPI_Scatterv( NULL, counts.get(), NULL, commType, myVals, n, commType, root, mComm ),
                       "MPI_Scatterv" )
     }
 }
@@ -901,7 +877,7 @@ void MPICommunicator::gatherImpl(
     void* sendbuf = const_cast<void*>( myVals );  // MPI interface is not const aware
 
     SCAI_MPICALL( logger,
-                  MPI_Gather( sendbuf, n, commType, allVals, n, commType, root, selectMPIComm() ),
+                  MPI_Gather( sendbuf, n, commType, allVals, n, commType, root, mComm ),
                   "MPI_Gather<" << stype << ">" )
 }
 
@@ -939,8 +915,7 @@ void MPICommunicator::gatherVImpl(
         SCAI_LOG_DEBUG( logger,
                         *this << ": scatter of " << displacement << " elements, I receive " << n << " elements" )
         SCAI_MPICALL( logger,
-                      MPI_Gatherv( sendbuf, n, commType, allVals, counts.get(), displs.get(), commType, root,
-                                   selectMPIComm() ),
+                      MPI_Gatherv( sendbuf, n, commType, allVals, counts.get(), displs.get(), commType, root, mComm ),
                       "MPI_Gatherv<" << stype << ">" )
     }
     else
@@ -959,7 +934,7 @@ void MPICommunicator::gatherVImpl(
         SCAI_LOG_DEBUG( logger, *this << ": root = " << root << " scatters " << n << " elements to me" )
 
         SCAI_MPICALL( logger,
-                      MPI_Gatherv( sendbuf, n, commType, NULL, counts.get(), NULL, commType, root, selectMPIComm() ),
+                      MPI_Gatherv( sendbuf, n, commType, NULL, counts.get(), NULL, commType, root, mComm ),
                       "MPI_Gatherv<" << stype << ">" )
     }
 }
@@ -991,7 +966,7 @@ void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId ro
     std::unique_ptr<char[]> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
-    MPI_Reduce( tmp.get(), val, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
+    MPI_Reduce( tmp.get(), val, 1, commType, MPI_MAXLOC, root, mComm );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -1021,7 +996,7 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
     std::unique_ptr<char[]> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
-    MPI_Reduce( tmp.get(), val, 1, commType, MPI_MINLOC, root, selectMPIComm() );
+    MPI_Reduce( tmp.get(), val, 1, commType, MPI_MINLOC, root, mComm );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -1076,7 +1051,7 @@ void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
 
     SCAI_MPICALL( logger,
                   MPI_Sendrecv( tmp.get(), n, commType, partner, defaultTag, val, n, commType, partner, defaultTag,
-                                selectMPIComm(), &mpiStatus ),
+                                mComm, &mpiStatus ),
                   "MPI_Sendrecv<" << stype << "> for swap" )
 
     IndexType nPartner = getCount( mpiStatus, stype );
@@ -1113,6 +1088,38 @@ void MPICommunicator::writeAt( std::ostream& stream ) const
 {
     // Info about rank and size of the communicator is very useful
     stream << "MPI(" << getRank() << ":" << getSize() << ")";
+}
+
+/* --------------------------------------------------------------- */
+
+MPICommunicator::MPICommunicator( const MPICommunicator& comm, int color, int key ) :
+
+    Communicator( MPI ),
+    mKind( MPICommKind::CREATED ),
+    mThreadSafetyLevel( comm.mThreadSafetyLevel )
+
+{
+    SCAI_LOG_INFO( logger, *this << ": split ( color = " << color << ", key = " << key << " )" )
+    SCAI_MPICALL( logger, MPI_Comm_split( comm.mComm, color, key, &mComm ), "comm split" );
+    
+    {
+        // temporary variables required as PartitionId can be different from int
+
+        int mpiRank;
+        int mpiSize;
+
+        SCAI_MPICALL( logger, MPI_Comm_size( mComm, &mpiSize ), "MPI_Comm_size" )
+        SCAI_MPICALL( logger, MPI_Comm_rank( mComm, &mpiRank ), "MPI_Comm_rank" )
+
+        setSizeAndRank( static_cast<PartitionId>( mpiSize ), static_cast<PartitionId>( mpiRank ) );
+    }
+}
+
+/* --------------------------------------------------------------- */
+
+MPICommunicator* MPICommunicator::splitIt( PartitionId color, PartitionId key ) const
+{
+    return new MPICommunicator( *this, color, key );
 }
 
 /* --------------------------------------------------------------- */

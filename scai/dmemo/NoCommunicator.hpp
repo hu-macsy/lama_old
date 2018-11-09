@@ -187,6 +187,10 @@ public:
 
 protected:
 
+    /** Implementation of pure method NoCommunicator::splitIt */
+
+    virtual NoCommunicator* splitIt( PartitionId color, PartitionId key ) const;
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
