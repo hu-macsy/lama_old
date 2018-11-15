@@ -30,6 +30,7 @@
 
 #include <scai/dmemo/GridDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CommunicatorStack.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -110,9 +111,16 @@ int main( int argc, const char* argv[] )
     {
         SCAI_REGION( "main.problem" )
 
-        auto dist = std::make_shared<dmemo::BlockDistribution>( NV, intraProblem );
-        auto v = linearDenseVector<double>( dist, double(i), double(i) / NV );
-        sum += v.sum();  
+        SCAI_DMEMO_TASK( intraProblem )
+
+        auto dist = std::make_shared<dmemo::BlockDistribution>( NV );
+        auto v = linearDenseVector<double>( dist, double(i), double(1) / NV );
+        std::ostringstream out;
+        out << "out_" << i << "_.mtx";
+        v.writeToFile( out.str() );
+        auto v1 = read<SparseVector<double>>( out.str() );
+        v1.redistribute( dist );
+        sum += v1.sum();  
     }
  
     double allSum = interProblem->sum( sum );

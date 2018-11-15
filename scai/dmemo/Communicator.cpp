@@ -29,6 +29,7 @@
 
 // hpp
 #include <scai/dmemo/Communicator.hpp>
+#include <scai/dmemo/CommunicatorStack.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/Halo.hpp>
@@ -96,6 +97,11 @@ CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
 
 CommunicatorPtr Communicator::getCommunicatorPtr()
 {
+    if ( !CommunicatorStack::empty() )
+    {
+        return CommunicatorStack::top();
+    }
+
     std::string comm;
     std::locale loc;
 
@@ -693,12 +699,29 @@ void Communicator::computeOwners(
     computeOwners( wOwners.get(), distribution, rIndexes.get(), numIndexes );
 }
 
+/* -------------------------------------------------------------------------- */
+
 void Communicator::computeOwners(
     PartitionId owners[],
     const Distribution& distribution,
     const IndexType requiredIndexes[],
     const IndexType numIndexes ) const
 {
+    if ( distribution.isReplicated() )
+    {
+        // there might be multiple owners but we take the only the first one
+
+        const IndexType size = distribution.getGlobalSize();
+
+        for ( IndexType i = 0; i < numIndexes; ++i )
+        { 
+            SCAI_ASSERT_VALID_INDEX_ERROR( requiredIndexes[i], size, "required index out of range" )
+            owners[i] = 0;
+        }
+
+        return;
+    }
+
     // Note: this routine is only supported on Host, may change in future releases
 
     PartitionId rank = getRank();
@@ -706,10 +729,7 @@ void Communicator::computeOwners(
 
     SCAI_LOG_INFO( logger, "need owners for " << numIndexes << " global indexes" )
 
-    if ( distribution.getCommunicator() != *this )
-    {
-        COMMON_THROWEXCEPTION( "The distribution has a different Communicator." )
-    }
+    SCAI_ASSERT_EQ_ERROR( *this, distribution.getTargetCommunicator(), "illegal communicator for computeOwners" )
 
     IndexType nonLocal = 0;
 

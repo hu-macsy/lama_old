@@ -163,7 +163,7 @@ void BlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndex
 {
     const IndexType nLocal  = getLocalSize();
 
-    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
+    SCAI_LOG_INFO( logger, getTargetCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
 
     WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
 

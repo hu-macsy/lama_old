@@ -51,6 +51,7 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         Communicator
+        CommunicatorStack
         NoCommunicator
         Distributed
         CommunicationPlan

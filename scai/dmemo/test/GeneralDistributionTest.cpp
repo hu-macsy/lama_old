@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE( redistConstructorTest )
     {
         const Distribution& dist = *allDist[i];
 
-        if ( dist.getCommunicator() != *comm )
+        if ( dist.getReduceCommunicator() != *comm )
         {
             // dist is NoDistribution, cannot be redistributed
 

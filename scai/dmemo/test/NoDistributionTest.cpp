@@ -74,8 +74,8 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 {
     const IndexType n = 20;
 
-    DistributionPtr nodist( new NoDistribution( n ) );
-    BOOST_CHECK_EQUAL( nodist->getCommunicatorPtr()->getType(), Communicator::NO );
+    DistributionPtr nodist( new NoDistribution( n, Communicator::getCommunicatorPtr( Communicator::NO ) ) );
+    BOOST_CHECK_EQUAL( nodist->getTargetCommunicatorPtr()->getType(), Communicator::NO );
     BOOST_CHECK_EQUAL( nodist->getGlobalSize(), n );
     BOOST_CHECK_EQUAL( nodist->getLocalSize(), n );
 }

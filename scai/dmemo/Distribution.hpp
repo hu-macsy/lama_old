@@ -152,12 +152,6 @@ public:
      */
     Distribution( const IndexType globalSize, const CommunicatorPtr communicator );
 
-    /** Same as Distribution( globalSize, NoCommunicator() )
-     *
-     * @param[in] globalSize is the number of elements to distribute
-     */
-    Distribution( const IndexType globalSize );
-
     /** Distributions should never be copied. */
 
     Distribution( const Distribution& other ) = delete;
@@ -172,20 +166,22 @@ public:
 
     /** Getter routine for the communicator of the distribution. */
 
-    const Communicator& getCommunicator() const;
+    const Communicator& getTargetCommunicator() const;
+
+    const Communicator& getReduceCommunicator() const;
 
     /** Getter routine for the communicator as shared pointer. */
 
-    CommunicatorPtr getCommunicatorPtr() const;
+    CommunicatorPtr getTargetCommunicatorPtr() const;
 
-    /** Query for the number of processors/partitions onto which the distribution is done. */
-
-    PartitionId getNumPartitions() const;
-
-    /** Query whether the distribution is a replication, i.e. each processor is owner of all data
+    /** Query for the number of processors/partitions onto which the distribution is done.
      *
-     *  same as getNumPartitions() == 1, always true for NoDistribution, always true when running
-     *  an application on a single processor.
+     *  @returns 1 for replicated distribution and comm->size() for distributed data
+     */
+    inline PartitionId getNumPartitions() const;
+
+    /** Query whether the distribution is a replication, i.e. each processor (of the communicator)
+     *  is owner of all data. 
      */
     inline bool isReplicated() const;
 
@@ -216,7 +212,7 @@ public:
      * This method can be used to allocate data with the right size for any communication
      * that uses circular shifting for partition data.
      *
-     * Default implementation: getCommunicator().max( getLocalSize() )
+     * Default implementation: getReduceCommunicator().max( getLocalSize() )
      */
     virtual IndexType getMaxLocalSize() const;
 
@@ -505,7 +501,19 @@ IndexType Distribution::getGlobalSize() const
     return mGlobalSize;
 }
 
-inline bool Distribution::isReplicated() const
+PartitionId Distribution::getNumPartitions() const
+{
+    if ( strcmp( getKind(), "NO" ) == 0 )
+    {
+        return 1;
+    }
+    else
+    { 
+        return getTargetCommunicator().getSize();
+    }
+}
+
+bool Distribution::isReplicated() const
 {
     return getNumPartitions() == 1;
 }

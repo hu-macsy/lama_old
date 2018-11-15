@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
 
         SCAI_LOG_INFO( logger, "DistributionSingleIO: dist[" << i <<  "] = " << *dist )
 
-        CommunicatorPtr comm = dist->getCommunicatorPtr();
+        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
         const std::string distFileName = uniquePathSharedAmongNodes(
                                             GlobalTempDir::getPath(),
                                             *comm,
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
-        CommunicatorPtr comm = dist->getCommunicatorPtr();
+        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
 
         const std::string fileName = uniquePathSharedAmongNodes(
                                         GlobalTempDir::getPath(),
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
-        CommunicatorPtr comm = dist->getCommunicatorPtr();
+        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
 
         SCAI_LOG_DEBUG( logger, "Test case " << i << " of " << testDists.size() << ": VectorSingleIO with dist = " << *dist )
 
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
-        CommunicatorPtr comm = dist->getCommunicatorPtr();
+        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
 
         DenseVector<ValueType> vector;
 
@@ -370,13 +370,15 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
-        CommunicatorPtr comm = dist->getCommunicatorPtr();
+        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
 
         SparseVector<ValueType> vector;
 
         float fillRate = 0.2;
 
         vector.setSparseRandom( dist, 0, fillRate, 1 );
+
+        // find out it we have also to write a distribution file 
 
         bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
@@ -451,7 +453,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr rowDist = testDists[i];
-        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
+        const Communicator& comm = rowDist->getReduceCommunicator();
 
         auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 
@@ -479,13 +481,13 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         BOOST_CHECK_EQUAL( local.maxDiffNorm( readLocal ), 0 );
 
-        int rc = PartitionIO::removeFile( matrixFileName, *comm );
+        int rc = PartitionIO::removeFile( matrixFileName, comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, *comm ) );
+        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, comm ) );
 
-        rc = PartitionIO::removeFile( distFileName, *comm );
+        rc = PartitionIO::removeFile( distFileName, comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+        BOOST_CHECK( !PartitionIO::fileExists( distFileName, comm ) );
     }
 }
 
@@ -509,7 +511,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr rowDist = testDists[i];
-        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
+        CommunicatorPtr comm = rowDist->getTargetCommunicatorPtr();
 
         auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 

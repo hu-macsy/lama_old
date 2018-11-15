@@ -47,8 +47,9 @@ SCAI_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
 
 /* ---------------------------------------------------------------------- */
 
-NoDistribution::NoDistribution( const IndexType globalSize )
-    : Distribution( globalSize )
+NoDistribution::NoDistribution( const IndexType globalSize, CommunicatorPtr comm ) : 
+
+    Distribution( globalSize, comm )
 {
 }
 
@@ -145,7 +146,7 @@ bool NoDistribution::isEqual( const Distribution& other ) const
 void NoDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "NoDistribution( size = " << mGlobalSize << " )";
+    stream << "NoDistribution( size = " << mGlobalSize << ", comm = " << getTargetCommunicator() << " )";
 }
 
 /* ---------------------------------------------------------------------- */
@@ -165,6 +166,12 @@ Distribution* NoDistribution::create( const DistributionArguments arg )
     // Note: weight argument is not used here
     //       same is true for matrix, commonunicationPtr
     return new NoDistribution( arg.globalSize );
+}
+
+const char* NoDistribution::getId()
+{
+    static const char id[] = "NO";
+    return id;
 }
 
 } /* end namespace dmemo */

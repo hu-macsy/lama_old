@@ -32,6 +32,7 @@
 
 // local library
 #include <scai/dmemo/Distributed.hpp>
+#include <scai/dmemo/NoCommunicator.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -59,16 +60,11 @@ SCAI_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
 
 /* ------  Constructor  ------------------------------------------------- */
 
-Distribution::Distribution( const IndexType globalSize )
-    : mGlobalSize( globalSize ), mCommunicator( Communicator::getCommunicatorPtr( Communicator::NO ) )
-{
-    SCAI_LOG_INFO( logger, "Distribution(" << mGlobalSize << ") onto NoCommunicator" )
-}
+Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr communicator ) : 
+ 
+    mGlobalSize( globalSize ), 
+    mCommunicator( communicator )
 
-/* ------  Constructor  ------------------------------------------------- */
-
-Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr communicator )
-    : mGlobalSize( globalSize ), mCommunicator( communicator )
 {
     if ( !mCommunicator )
     {
@@ -110,7 +106,7 @@ bool Distribution::proveEquality( bool& isSame, const Distribution& other ) cons
         isSame = true;
         SCAI_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )
     }
-    else if ( other.getCommunicator() != getCommunicator() )
+    else if ( other.getTargetCommunicator() != getTargetCommunicator() )
     {
         isSame = false;
         SCAI_LOG_DEBUG( logger, *this << " != " << other << ": different communicators" )
@@ -142,36 +138,37 @@ bool Distribution::operator!=( const Distribution& other ) const
 
 /* ---------------------------------------------------------------------- */
 
-const Communicator& Distribution::getCommunicator() const
+const Communicator& Distribution::getTargetCommunicator() const
 {
     SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
 
     return *mCommunicator;
 }
 
+const Communicator& Distribution::getReduceCommunicator() const
+{
+    static NoCommunicator noComm;
+
+    if ( isReplicated() )
+    {
+        return noComm;
+    }
+    
+    return *mCommunicator;
+}
+
 /* ---------------------------------------------------------------------- */
 
-CommunicatorPtr Distribution::getCommunicatorPtr() const
+CommunicatorPtr Distribution::getTargetCommunicatorPtr() const
 {
     return mCommunicator;
 }
 
 /* ---------------------------------------------------------------------- */
 
-PartitionId Distribution::getNumPartitions() const
-{
-    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
-
-    return mCommunicator->getSize();
-}
-
-/* ---------------------------------------------------------------------- */
-
 IndexType Distribution::getMaxLocalSize() const
 {
-    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
-
-    return mCommunicator->max( getLocalSize() );
+    return getReduceCommunicator().max( getLocalSize() );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -197,13 +194,15 @@ void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<Inde
     ReadAccess<IndexType> rIndexes( indexes, ctx );
     WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
 
-    mCommunicator->computeOwners( wOwners, *this, rIndexes, n );
+    getReduceCommunicator().computeOwners( wOwners, *this, rIndexes, n );
 }
 
 /* ---------------------------------------------------------------------- */
 
 PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
 {
+    const Communicator& comm = getReduceCommunicator();
+
     // sum reduction required for owner as other processors do not know it
 
     IndexType owner = 0;
@@ -215,12 +214,12 @@ PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
         SCAI_LOG_INFO( logger,
                        *this << ": owner of " << globalIndex << ", local index = " << localIndex )
 
-        owner = mCommunicator->getRank() + 1;
+        owner = comm.getRank() + 1;
     }
 
-    owner = mCommunicator->sum( owner ) - 1;
+    owner = comm.sum( owner ) - 1;
 
-    SCAI_LOG_INFO( logger, *mCommunicator << ": owner of " << globalIndex << " = " << owner )
+    SCAI_LOG_INFO( logger, comm << ": owner of " << globalIndex << " = " << owner )
 
     return owner;
 }
@@ -231,7 +230,7 @@ void Distribution::allOwners( HArray<PartitionId>& owners, PartitionId root ) co
 {
     HArray<IndexType> indexes;
 
-    if ( getCommunicator().getRank()  == root )
+    if ( getReduceCommunicator().getRank() == root )
     {
         // we need the owners only on the host processor
         // indexes = 0, 1, 2, ..., globalSize - 1
@@ -253,7 +252,7 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
     const IndexType nLocal  = getLocalSize();
     const IndexType nGlobal = mGlobalSize;
 
-    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << nGlobal )
+    SCAI_LOG_INFO( logger, getTargetCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << nGlobal )
 
     WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
 
@@ -310,7 +309,7 @@ void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexT
         }
     }
 
-    utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, mCommunicator->getSize() );
+    utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, getReduceCommunicator().getSize() );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -328,7 +327,7 @@ template<typename T1, typename T2>
 void Distribution::replicate( T1* allValues, const T2* localValues ) const
 {
     SCAI_REGION( "Distribution.replicate" )
-    const Communicator& comm = getCommunicator();
+    const Communicator& comm = getReduceCommunicator();
     IndexType currentSize = getLocalSize();
     // Implemenation via cyclic shifting of the vector data and distribution
     IndexType maxLocalSize = comm.max( currentSize );
@@ -409,7 +408,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 {
     SCAI_REGION( "Distribution.replicateN" )
 
-    const Communicator& comm = getCommunicator();
+    const Communicator& comm = getReduceCommunicator();
 
     // Implemenation via cyclic shifting of the vector data and distribution
     // maximal number of elements needed to allocate sufficient receive buffer but also to avoid reallocations
@@ -546,7 +545,7 @@ void Distribution::replicateRagged(
     const IndexType allOffsets[] ) const
 {
     IndexType currentElemSize = getLocalSize();
-    const Communicator& comm = getCommunicator();
+    const Communicator& comm = getReduceCommunicator();
     // we need the offsets for allValues to store directly the values
     IndexType maxLocalSize = comm.max( currentElemSize );
     HArray<IndexType> indexesSend;

@@ -62,9 +62,12 @@ class COMMON_DLL_IMPORTEXPORT NoDistribution:
 {
 public:
 
-    /** Constructor of NoDistribution requires only the global size */
-
-    NoDistribution( const IndexType globalSize );
+    /** Constructor of NoDistribution 
+     *
+     *  @param[in] globalSize is the global size of the distributed object
+     *  @param[in] comm       specifies the set of processors that have an incarnation 
+     */
+    NoDistribution( const IndexType globalSize, CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
     virtual ~NoDistribution();
 
@@ -96,7 +99,7 @@ public:
 
     virtual inline const char* getKind() const;
 
-    static inline const char* getId();
+    static const char* getId();
 
     /** Implementation of pure method Distribution::hasAnyAddressing */
     virtual bool hasAnyAddressing() const;
@@ -141,11 +144,6 @@ const char* NoDistribution::getKind() const
 std::string NoDistribution::createValue()
 {
     return getId();
-}
-
-const char* NoDistribution::getId()
-{
-    return "NO";
 }
 
 } /* end namespace dmemo */

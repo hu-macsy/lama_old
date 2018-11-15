@@ -55,6 +55,7 @@
 // std
 #include <memory>
 #include <vector>
+#include <stack>
 
 //#include <cmath>
 
@@ -1089,3 +1090,21 @@ Communicator::CommunicatorKind Communicator::getType() const
 } /* end namespace dmemo */
 
 } /* end namespace scai */
+
+/* -------------------------------------------------------------------------- */
+
+/** Macro that defines a new current communicator for the actual scope
+ *
+ *  \code
+ *      auto comm = Communicator::getCommunicatorPtr();
+ *      PartitionId color = ...;
+ *      auto commTask = comm->split( color );
+ *      {
+ *          SCAI_DMEMO_TASK( commTask )
+ *          auto dist = std::make_shared<BlockDistribution>( n );  // distributes onto commTask
+ *          ...
+ *      }
+ *  \endcode
+ */
+#define SCAI_DMEMO_TASK( comm ) scai::dmemo::ScopedCommunicatorRecord SCAI_Comm_( comm );
+

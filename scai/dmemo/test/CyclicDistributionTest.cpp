@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE( cyclicTest )
             // printf("Test cyclic distribution of %d elements in chunks of size %d\n", globalSize, chunkSize);
             CyclicDistribution cyclicDist( globalSize, chunkSize, comm );
             // test the routines getNumChunks + getNumTotalChunks
-            IndexType sumLocalChunks = cyclicDist.getCommunicator().sum( cyclicDist.getNumLocalChunks() );
+            IndexType sumLocalChunks = cyclicDist.getTargetCommunicator().sum( cyclicDist.getNumLocalChunks() );
             BOOST_CHECK_EQUAL( cyclicDist.getNumTotalChunks(), sumLocalChunks );
         }
     }

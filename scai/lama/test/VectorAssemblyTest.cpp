@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( buildLocalTest )
     {
         dmemo::DistributionPtr dist = dists[j];
 
-        if ( dist->getCommunicator() != assembly.getCommunicator() )
+        if ( dist->getTargetCommunicator() != assembly.getCommunicator() )
         {
             continue;
         }

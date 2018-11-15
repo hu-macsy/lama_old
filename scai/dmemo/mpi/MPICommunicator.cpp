@@ -1087,7 +1087,19 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray
 void MPICommunicator::writeAt( std::ostream& stream ) const
 {
     // Info about rank and size of the communicator is very useful
-    stream << "MPI(" << getRank() << ":" << getSize() << ")";
+
+    if ( mKind == MPICommKind::CREATED )
+    {
+        stream << "MPI_created(" << getRank() << ":" << getSize() << ")";
+    }
+    else if ( mKind == MPICommKind::INTERNAL )
+    {
+        stream << "MPI(" << getRank() << ":" << getSize() << ")";
+    }
+    else if ( mKind == MPICommKind::EXTERNAL )
+    {
+        stream << "_MPI(" << getRank() << ":" << getSize() << ")";
+    }
 }
 
 /* --------------------------------------------------------------- */

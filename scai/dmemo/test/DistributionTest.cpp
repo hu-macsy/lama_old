@@ -57,13 +57,13 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const Communicator& comm = dist->getCommunicator();
+        const Communicator& comm = dist->getTargetCommunicator();
 
         SCAI_LOG_INFO( logger, comm << ": localSizeTest, dist = " << *dist )
 
         // Do not use comm for reductions as NoDistribution has NoCommunicator
 
-        IndexType sumLocalSizes = dist->getCommunicator().sum( dist->getLocalSize() );
+        IndexType sumLocalSizes = dist->getReduceCommunicator().sum( dist->getLocalSize() );
 
         BOOST_CHECK_EQUAL( dist->getGlobalSize(), sumLocalSizes );
     }
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( maxLocalSizeTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const Communicator& comm = dist->getCommunicator();
+        const Communicator& comm = dist->getReduceCommunicator();
 
         SCAI_LOG_INFO( logger, comm << ": maxLocalSizeTest, dist = " << *dist )
 
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const Communicator& comm = dist->getCommunicator();
+        const Communicator& comm = dist->getTargetCommunicator();
 
         SCAI_LOG_INFO( logger, comm << ": global2LocalTest, dist = " << *dist )
 
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE( global2LocalVTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const Communicator& comm = dist->getCommunicator();
+        const Communicator& comm = dist->getTargetCommunicator();
 
         SCAI_LOG_INFO( logger, comm << ": global2LocalTest, dist = " << *dist )
 
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
         dist->enableAnyAddressing();
 
         IndexType nGlobal = dist->getGlobalSize();
-        IndexType nP      = dist->getCommunicator().getSize();
+        IndexType nP      = dist->getReduceCommunicator().getSize();
 
         // own counter array to check for good local indexes on each partition
 
@@ -305,8 +305,8 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const PartitionId rank = dist->getCommunicator().getRank();
-        const PartitionId root = dist->getCommunicator().getSize() / 2;
+        const PartitionId rank = dist->getReduceCommunicator().getRank();
+        const PartitionId root = dist->getReduceCommunicator().getSize() / 2;
 
         IndexType nGlobal = dist->getGlobalSize();
 
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
 
                 if ( i != rAllValues[ repN * i + k ] )
                 {
-                    SCAI_LOG_ERROR( logger, dist->getCommunicator() << ": dist = " << *dist <<
+                    SCAI_LOG_ERROR( logger, dist->getTargetCommunicator() << ": dist = " << *dist <<
                                     ", wrong at i = " << i << " of " << globalN <<
                                     ", k = " << k << " of repN = " << repN <<
                                     ", rAllValues [ " << repN * i + k << " ] = " << rAllValues[ repN * i + k ] )

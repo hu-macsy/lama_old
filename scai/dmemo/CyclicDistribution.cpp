@@ -233,7 +233,7 @@ void CyclicDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
 {
     const IndexType nLocal  = getLocalSize();
 
-    const Communicator& comm = getCommunicator();
+    const Communicator& comm = getTargetCommunicator();
 
     const PartitionId rank = comm.getRank();
     const PartitionId size = comm.getSize();
@@ -266,7 +266,7 @@ void CyclicDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
 
 IndexType CyclicDistribution::getBlockDistributionSize() const
 {
-    const PartitionId numPartitions = getCommunicator().getSize();
+    const PartitionId numPartitions = getTargetCommunicator().getSize();
 
     if ( numPartitions == 1 )
     {

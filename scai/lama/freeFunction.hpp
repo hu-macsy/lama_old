@@ -250,6 +250,16 @@ ObjectType read( const std::string& fileName, hmemo::ContextPtr ctx = hmemo::Con
     return obj;
 }
 
+template<typename ObjectType>
+ObjectType read( const std::string& fileName, 
+                 dmemo::CommunicatorPtr comm,
+                 hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    ObjectType obj( ctx );
+    obj.readFromFile( fileName, comm );
+    return obj;
+}
+
 /** 
  *  @brief Function that returns a vector of a given size initialized with the same value.
  * 

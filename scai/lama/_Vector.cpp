@@ -116,9 +116,9 @@ _Vector::~_Vector()
 /*    Reading vector from a file, only host reads                                         */
 /* ---------------------------------------------------------------------------------------*/
 
-void _Vector::readFromSingleFile( const std::string& fileName )
+void _Vector::readFromSingleFile( const std::string& fileName, CommunicatorPtr comm )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    SCAI_LOG_INFO( logger, "read vector from single file " << fileName << ", comm = " << *comm )
 
     const PartitionId MASTER = 0;
     const PartitionId myRank = comm->getRank();
@@ -196,7 +196,7 @@ void _Vector::readFromSingleFile( const std::string& fileName, const Distributio
         error = true;
     }
 
-    error = distribution->getCommunicator().any( error );
+    error = distribution->getTargetCommunicator().any( error );
 
     if ( error )
     {
@@ -298,20 +298,15 @@ void _Vector::readFromFile( const std::string& vectorFileName, const std::string
 
 void _Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
 {
+    SCAI_ASSERT_ERROR( distribution.get(), "NULL distribution" )
+
     SCAI_LOG_INFO( logger, *this << ": readFromFile( " << fileName << " )" )
 
     std::string newFileName = fileName;
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // take default
-
-    if ( distribution.get() )
-    {
-        comm = distribution->getCommunicatorPtr();
-    }
-
     bool isPartitioned;
 
-    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, distribution->getTargetCommunicator() );
 
     if ( !isPartitioned )
     {
@@ -321,6 +316,19 @@ void _Vector::readFromFile( const std::string& fileName, DistributionPtr distrib
     {
         readFromPartitionedFile( newFileName, distribution );
     }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void _Vector::readFromFile( const std::string& fileName, CommunicatorPtr comm )
+{
+    SCAI_LOG_INFO( logger, *this << ": readFromFile( " << fileName << " )" )
+
+    std::string newFileName = fileName;
+
+    PartitionIO::getSingleFileName( newFileName );   // ignore any rank
+
+    readFromSingleFile( newFileName, comm );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -364,13 +372,15 @@ void _Vector::writeToSingleFile(
     const FileIO::FileMode fileMode
 ) const
 {
+    SCAI_LOG_INFO( logger, "write vector to single file: " << fileName << ", " << *this )
+
     if ( getDistribution().isReplicated() )
     {
         // make sure that only one processor writes to file
 
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+        const Communicator& comm = getDistribution().getTargetCommunicator();
 
-        if ( comm->getRank() == 0 )
+        if ( comm.getRank() == 0 )
         {
             writeLocalToFile( fileName, fileType, dataType, fileMode );
         }
@@ -378,7 +388,7 @@ void _Vector::writeToSingleFile(
         // synchronization to avoid that other processors start with
         // something that might depend on the finally written file
 
-        comm->synchronize();
+        comm.synchronize();
     }
     else
     {
@@ -399,7 +409,9 @@ void _Vector::replicate()
         return;
     }
 
-    redistribute( DistributionPtr( new NoDistribution( size() ) ) );
+    CommunicatorPtr comm = getDistribution().getTargetCommunicatorPtr();
+
+    redistribute( std::make_shared<NoDistribution>( size(), comm ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -421,7 +433,7 @@ void _Vector::writeToPartitionedFile(
         errorFlag = true;
     }
 
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getDistribution().getTargetCommunicator();
 
     errorFlag = comm.any( errorFlag );
 
@@ -447,7 +459,7 @@ void _Vector::writeToFile(
 
     bool writePartitions;
 
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getDistribution().getReduceCommunicator();
 
     PartitionIO::getPartitionFileName( newFileName, writePartitions, comm );
 

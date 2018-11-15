@@ -240,7 +240,7 @@ void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 
     // Note: data is already allocated, so we just set it
 
-    const Communicator& comm = dist->getCommunicator();
+    const Communicator& comm = dist->getReduceCommunicator();
     IndexType rank = comm.getRank();
     IndexType size = comm.getSize();
     SCAI_ASSERT_EQUAL_DEBUG( size, static_cast<IndexType>( mData.size() ) )
@@ -269,7 +269,7 @@ void DenseMatrix<ValueType>::assignDiagonal( const Vector<ValueType>& diagonal )
     computeOwners();  
     allocateData( getContextPtr() );   // initialized with zero
 
-    const Communicator& comm = dist->getCommunicator();
+    const Communicator& comm = dist->getReduceCommunicator();
     IndexType rank = comm.getRank();
     IndexType size = comm.getSize();
     SCAI_ASSERT_EQUAL_DEBUG( size, static_cast<IndexType>( mData.size() ) )
@@ -325,7 +325,6 @@ template<typename ValueType>
 bool DenseMatrix<ValueType>::isConsistent() const
 {
     IndexType consistencyErrors = 0;
-    // ToDo: this implementation should use a corresponding predicate of MatrixStorage
     const IndexType numLocalRows = getRowDistribution().getLocalSize();
 
     try
@@ -344,7 +343,8 @@ bool DenseMatrix<ValueType>::isConsistent() const
     }
 
     // use communicator for global reduction to make sure that all processors return same value.
-    consistencyErrors = getRowDistribution().getCommunicator().sum( consistencyErrors );
+
+    consistencyErrors = Communicator::getCommunicatorPtr()->sum( consistencyErrors );
     return 0 == consistencyErrors;
 }
 
@@ -533,9 +533,10 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
     }
     else
     {
-        SCAI_ASSERT_EQ_ERROR( rowDist->getCommunicator(), colDist->getCommunicator(), "transpose only on same set of processors" )
+        SCAI_ASSERT_EQ_ERROR( rowDist->getTargetCommunicator(), colDist->getTargetCommunicator(), "transpose only on same set of processors" )
+        SCAI_ASSERT_EQ_ERROR( rowDist->getReduceCommunicator(), colDist->getReduceCommunicator(), "transpose only on same set of processors" )
 
-        const Communicator& comm = rowDist->getCommunicator();
+        const Communicator& comm = rowDist->getReduceCommunicator();
 
         const IndexType size = comm.getSize();
 
@@ -934,7 +935,7 @@ void DenseMatrix<ValueType>::allocateData( ContextPtr ctx )
 
     SCAI_ASSERT_EQUAL_DEBUG( getNumColumns(), colDist.getGlobalSize() )
 
-    const PartitionId numChunks = colDist.getCommunicator().getSize();
+    const PartitionId numChunks = colDist.getReduceCommunicator().getSize();
 
     mData.resize( numChunks );
 
@@ -1128,7 +1129,7 @@ void DenseMatrix<ValueType>::resize( DistributionPtr rowDistributionPtr, Distrib
 {
     // disassemble this matrix, take processor set from row distribution 
 
-    MatrixAssembly<ValueType> assembly( getRowDistribution().getCommunicatorPtr() );
+    MatrixAssembly<ValueType> assembly( getRowDistribution().getTargetCommunicatorPtr() );
 
     this->disassemble( assembly );
 
@@ -1203,6 +1204,9 @@ static void replicate(
 template<typename ValueType>
 void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
 {
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution().getTargetCommunicator(), rowDistribution->getTargetCommunicator(),
+                          "redistribute row only possible within same communicator" )
+
     IndexType nCols = getNumColumns(); //  only global column size used here
 
     if ( *rowDistribution == getRowDistribution() )
@@ -1211,14 +1215,14 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
         return;
     }
 
-    if ( rowDistribution->getNumPartitions() == 1 && getRowDistribution().getNumPartitions() == 1 )
+    if ( rowDistribution->isReplicated() && getRowDistribution().isReplicated() )
     {
         SCAI_LOG_INFO( logger, "replace row distribtion, all on one processor" )
         this->setDistributionPtr( rowDistribution );
         return;
     }
 
-    if ( getRowDistribution().getNumPartitions() == 1 )
+    if ( getRowDistribution().isReplicated() )
     {
         DenseStorage<ValueType>& oldLocalData = *mData[0];
 // current dense matrix is replicated, we have only to assign the local part
@@ -1341,7 +1345,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
         // each processor has all data, just pick up my local part
 
-        const Communicator& comm = getColDistribution().getCommunicator();
+        const Communicator& comm = getColDistribution().getReduceCommunicator();
 
         PartitionId colRank = comm.getRank();
 
@@ -1352,7 +1356,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
         return;
     }
 
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
 
     // Note: for the row distribution any owner might not be enabled
 
@@ -1363,7 +1367,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
     PartitionId np = getColDistribution().getNumPartitions();
 
-    if ( np == 1 )
+    if ( getColDistribution().isReplicated() )
     {
         SCAI_LOG_DEBUG( logger, "getRow with replicated col distribution, row owner = " << rowOwner )
 
@@ -1375,7 +1379,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
             mData[0]->getRow( values, localRowIndex );
         }
 
-        getRowDistribution().getCommunicator().bcastArray( values, rowOwner );
+        getRowDistribution().getReduceCommunicator().bcastArray( values, rowOwner );
 
         return;
     }
@@ -1693,11 +1697,11 @@ void DenseMatrix<ValueType>::reduceImpl(
 
         v = ValueType( 0 );   // initialize v with neutral element
 
-        if ( getRowDistribution().getCommunicator().getSize() == 1 )
+        if ( getRowDistribution().getReduceCommunicator().getSize() == 1 )
         {
             // full matrix is replicated, the columns might have any distribution
 
-            PartitionId rank = getColDistribution().getCommunicator().getRank();
+            PartitionId rank = getColDistribution().getReduceCommunicator().getRank();
 
             mData[rank]->reduce( v.getLocalValues(), 1, reduceOp, elemOp );
 
@@ -1706,14 +1710,14 @@ void DenseMatrix<ValueType>::reduceImpl(
 
         // rows are distributed
 
-        IndexType np = getColDistribution().getCommunicator().getSize();
+        IndexType np = getColDistribution().getReduceCommunicator().getSize();
 
         if ( np == 1 )
         {
              SCAI_ASSERT_EQ_ERROR( reduceOp, common::BinaryOp::ADD, "only add supported" )
 
              mData[0]->reduce( v.getLocalValues(), 1, reduceOp, elemOp );
-             getRowDistribution().getCommunicator().sumArray( v.getLocalValues() );
+             getRowDistribution().getReduceCommunicator().sumArray( v.getLocalValues() );
              return;
         }
 
@@ -1728,7 +1732,7 @@ void DenseMatrix<ValueType>::reduceImpl(
 
         utilskernel::HArrayUtils::assign( sendValues, v.getLocalValues() );
 
-        const Communicator& comm = getColDistribution().getCommunicator();
+        const Communicator& comm = getColDistribution().getReduceCommunicator();
 
         for ( PartitionId p = 0; p < np; ++p )
         {
@@ -1771,7 +1775,7 @@ void DenseMatrix<ValueType>::scaleColumns( const DenseVector<ValueType>& scaleY 
     SCAI_ASSERT_EQ_ERROR( getColDistribution(), scaleY.getDistribution(),
                           "distribution of scale vector does not match" )
 
-    const Communicator& comm = getColDistribution().getCommunicator();
+    const Communicator& comm = getColDistribution().getReduceCommunicator();
 
     IndexType np = comm.getSize();
     IndexType rank = comm.getRank();
@@ -1839,7 +1843,7 @@ ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     ValueType myValue = 0;
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getRowDistribution();
-    const Communicator& commRow = rowDist.getCommunicator();
+    const Communicator& commRow = rowDist.getReduceCommunicator();
 
     if ( getRowDistribution().isLocal( i ) )
     {
@@ -1939,7 +1943,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorDense(
     {
         COMMON_THROWEXCEPTION( op << " not supported yet for matrix * vector" )
     }
-    else if ( this->getColDistribution().getCommunicator().getSize() == 1 )
+    else if ( this->getColDistribution().getReduceCommunicator().getSize() == 1 )
     {
         // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
         // use routine provided by this CRTP
@@ -1968,7 +1972,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     const HArray<ValueType>& localY = denseY == nullptr ? localResult : denseY->getLocalValues();
     ContextPtr localContext = mData[0]->getContextPtr();
     const Distribution& colDist = getColDistribution();
-    const Communicator& comm = colDist.getCommunicator();
+    const Communicator& comm = colDist.getReduceCommunicator();
     PartitionId rank = comm.getRank();
     PartitionId n = colDist.getNumPartitions();
     mData[0]->prefetch();
@@ -2120,7 +2124,7 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getRowDistribution();
 
-    const Communicator& comm = colDist.getCommunicator();
+    const Communicator& comm = colDist.getReduceCommunicator();
 
     const HArray<ValueType>& localX = denseX.getLocalValues();
 
@@ -2537,7 +2541,7 @@ RealType<ValueType> DenseMatrix<ValueType>::maxNorm() const
         }
     }
 
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
 
     return comm.max( myMaxDiff );
 }
@@ -2547,7 +2551,7 @@ RealType<ValueType> DenseMatrix<ValueType>::maxNorm() const
 template<typename ValueType>
 RealType<ValueType> DenseMatrix<ValueType>::l1Norm() const
 {
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
 
     RealType<ValueType> mySum = 0;
     IndexType n = mData.size();
@@ -2565,7 +2569,7 @@ RealType<ValueType> DenseMatrix<ValueType>::l1Norm() const
 template<typename ValueType>
 RealType<ValueType> DenseMatrix<ValueType>::l2Norm() const
 {
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
     ValueType mySum = static_cast<ValueType>( 0.0 );
     ValueType tmp;
     IndexType n = mData.size();
@@ -2628,7 +2632,7 @@ ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>&
         }
     }
 
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
 
     return comm.max( myMaxDiff );
 }
@@ -2674,7 +2678,7 @@ const DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage() const
 
     // take the column data chunk that is owned by this processor regarding col dist
 
-    const PartitionId myRank = getColDistribution().getCommunicator().getRank();
+    const PartitionId myRank = getColDistribution().getReduceCommunicator().getRank();
     return *mData[myRank];
 }
 
@@ -2690,7 +2694,7 @@ DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage()
 
     // take the column data chunk that is owned by this processor regarding col dist
 
-    const PartitionId myRank = getColDistribution().getCommunicator().getRank();
+    const PartitionId myRank = getColDistribution().getReduceCommunicator().getRank();
     return *mData[myRank];
 }
 
@@ -2725,7 +2729,7 @@ IndexType DenseMatrix<ValueType>::getNumValues() const
         myNumValues += mData[k]->getNumValues();
     }
 
-    return getRowDistribution().getCommunicator().sum( myNumValues );
+    return getRowDistribution().getReduceCommunicator().sum( myNumValues );
 }
 
 template<typename ValueType>
@@ -2746,7 +2750,7 @@ size_t DenseMatrix<ValueType>::getMemoryUsage() const
         memoryUsage += mData[i]->getMemoryUsage();
     }
 
-    return getRowDistribution().getCommunicator().sum( memoryUsage );
+    return getRowDistribution().getReduceCommunicator().sum( memoryUsage );
 }
 
 /* ------------------------------------------------------------------------- */

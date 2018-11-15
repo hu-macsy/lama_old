@@ -184,7 +184,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 {
     return true;
 
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = *Communicator::getCommunicatorPtr();
 
     SCAI_LOG_INFO( logger, comm << ": check for consistency: " << *this )
 
@@ -210,7 +210,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 
     // use communicator for global reduction to make sure that all processors return same value.
 
-    consistencyErrors = getRowDistribution().getCommunicator().sum( consistencyErrors );
+    consistencyErrors = comm.sum( consistencyErrors );
 
     return 0 == consistencyErrors;
 }
@@ -385,7 +385,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         const Halo& matrixHalo = matrix.getHalo();
         SCAI_ASSERT_EQUAL_DEBUG( sendSizes.size(), matrix.getHaloStorage().getNumColumns() )
         // send all other processors the number of columns
-        const Communicator& comm = getRowDistribution().getCommunicator();
+        const Communicator& comm = getRowDistribution().getReduceCommunicator();
         // Use communication plans of halo in inverse manner to send col sizes
         const CommunicationPlan& sendSizesPlan = matrixHalo.getRequiredPlan();
         const CommunicationPlan& recvSizesPlan = matrixHalo.getProvidesPlan();
@@ -522,7 +522,7 @@ void SparseMatrix<ValueType>::assignDistribute( const _MatrixStorage& storage, D
     }
 
     _Matrix::setDistributedMatrix( rowDist, colDist );
-    const Communicator& comm = rowDist->getCommunicator();
+    const Communicator& comm = rowDist->getReduceCommunicator();
     bool isLocal = storage.getNumRows() == rowDist->getLocalSize();
     bool isGlobal = storage.getNumRows() == rowDist->getGlobalSize();
     bool allLocal = comm.all( isLocal ); // local storage on all processors
@@ -842,7 +842,7 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
     SCAI_REGION( "Mat.Sp.getRow" )
 
     const Distribution& dist = getRowDistribution();
-    const Communicator& comm = dist.getCommunicator();
+    const Communicator& comm = dist.getReduceCommunicator();
 
     // if v is not a sparse vector, use a temporary sparse vector
 
@@ -1312,17 +1312,17 @@ void SparseMatrix<ValueType>::reduceImpl(
 
         mLocalData->reduce( v.getLocalValues(), 1, reduceOp, elemOp );
 
-        if ( getRowDistribution().getCommunicator().getSize() == 1 )
+        if ( getRowDistribution().getReduceCommunicator().getSize() == 1 )
         {
             return;   // matrix is replicated, compute just my values
         }
 
         // rows are distributed
 
-        if ( getColDistribution().getCommunicator().getSize() == 1 )
+        if ( getColDistribution().getReduceCommunicator().getSize() == 1 )
         {
              SCAI_ASSERT_EQ_ERROR( reduceOp, common::BinaryOp::ADD, "only add supported" )
-             getRowDistribution().getCommunicator().sumArray( v.getLocalValues() );
+             getRowDistribution().getReduceCommunicator().sumArray( v.getLocalValues() );
              return;
         }
         
@@ -1330,7 +1330,7 @@ void SparseMatrix<ValueType>::reduceImpl(
 
         if ( !mHalo.isEmpty() )
         {
-            const Communicator& comm = getColDistribution().getCommunicator();
+            const Communicator& comm = getColDistribution().getReduceCommunicator();
             HArray<ValueType> haloData;
             haloData.setSameValue( mHaloData->getNumColumns(), ValueType( 0 ) );
             mHaloData->reduce( haloData, 1, reduceOp, elemOp );
@@ -1388,7 +1388,7 @@ void SparseMatrix<ValueType>::scaleColumns( const DenseVector<ValueType>& scaleY
 
         HArray<ValueType>& haloValues = scaleY.getHaloValues();   // reuse buffer
 
-        const Communicator& comm = getColDistribution().getCommunicator();
+        const Communicator& comm = getColDistribution().getReduceCommunicator();
 
         comm.exchangeByPlan( haloValues, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
         mHaloData->scaleColumns( haloValues );
@@ -1819,7 +1819,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     {
         CSRStorage<ValueType> haloB; // take CSR format, avoids additional conversions
         // get all needed rows of B, communication plan given by halo schedule of A
-        haloB.exchangeHalo( A.getHalo(), B.getLocalStorage(), A.getRowDistribution().getCommunicator() );
+        haloB.exchangeHalo( A.getHalo(), B.getLocalStorage(), A.getRowDistribution().getReduceCommunicator() );
         // local = alpha * A_local * B_local + alpha * A_halo * B_halo + C_local
         mLocalData->matrixTimesMatrix( alpha, *A.mHaloData, haloB, static_cast<ValueType>( 1.0 ), *mLocalData );
     }
@@ -1848,7 +1848,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF ) const
 {
-    const Communicator& comm = getColDistribution().getCommunicator();
+    const Communicator& comm = getColDistribution().getReduceCommunicator();
 
     if ( !mHalo.isEmpty() )
     {
@@ -1921,7 +1921,7 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF ) const
 {
-    if ( getRowDistribution().getCommunicator().getSize() == 1 )
+    if ( getRowDistribution().getReduceCommunicator().getSize() == 1 )
     {
         // the full matrix is replicated, the result is distributed, compute just its part
 
@@ -1930,7 +1930,7 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
         return;
     }
 
-    const Communicator& comm = getColDistribution().getCommunicator();
+    const Communicator& comm = getColDistribution().getReduceCommunicator();
 
     HArray<ValueType> haloResult;  // compute the values for other processors
 
@@ -1987,7 +1987,7 @@ void SparseMatrix<ValueType>::haloOperationAsyncComm(
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF ) const
 {
-    const Communicator& comm = getColDistribution().getCommunicator();
+    const Communicator& comm = getColDistribution().getReduceCommunicator();
 
     std::unique_ptr<tasking::SyncToken> token;
 
@@ -2058,7 +2058,7 @@ void SparseMatrix<ValueType>::haloOperationAsyncLocal(
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF ) const
 {
-    const Communicator& comm = getColDistribution().getCommunicator();
+    const Communicator& comm = getColDistribution().getReduceCommunicator();
 
     // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
 
@@ -2140,7 +2140,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorDense(
     {
         COMMON_THROWEXCEPTION( op << " not supported yet for matrix * vector" )
     }
-    else if ( this->getColDistribution().getCommunicator().getSize() == 1 )
+    else if ( this->getColDistribution().getReduceCommunicator().getSize() == 1 )
     {
         // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
         // use routine provided by this CRTP
@@ -2343,7 +2343,7 @@ RealType<ValueType> SparseMatrix<ValueType>::l1Norm() const
     SCAI_REGION( "Mat.Sp.l1Norm" )
     RealType<ValueType> myValue = mLocalData->l1Norm();
     myValue += static_cast<RealType<ValueType>>( mHaloData->l1Norm() );
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
     RealType<ValueType> allValue = comm.sum( myValue );
     SCAI_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
     return allValue;
@@ -2359,7 +2359,7 @@ RealType<ValueType> SparseMatrix<ValueType>::l2Norm() const
     RealType<ValueType> myValue = tmp * tmp;
     tmp = mHaloData->l2Norm();
     myValue += tmp * tmp;
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
     RealType<ValueType> allValue = comm.sum( myValue );
     // allValue = ::sqrt( allValue );
     allValue = common::Math::sqrt( allValue );
@@ -2380,7 +2380,7 @@ RealType<ValueType> SparseMatrix<ValueType>::maxNorm() const
         myMax = myMaxHalo;
     }
 
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
 
     RealType<ValueType> allMax = comm.max( myMax );
 
@@ -2456,7 +2456,7 @@ RealType<ValueType> SparseMatrix<ValueType>::maxDiffNormImpl( const SparseMatrix
 
     RealType<ValueType> myMaxDiff = myLocalStorage->maxDiffNorm( *otherLocalStorage );
 
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
     RealType<ValueType> allMaxDiff = comm.max( myMaxDiff );
 
     SCAI_LOG_INFO( logger, "max diff norm: local max = " << myMaxDiff << ", global max = " << allMaxDiff )
@@ -2493,7 +2493,7 @@ IndexType SparseMatrix<ValueType>::getLocalNumColumns() const
 template<typename ValueType>
 IndexType SparseMatrix<ValueType>::getNumValues() const
 {
-    return getRowDistribution().getCommunicator().sum( getPartitialNumValues() );
+    return getRowDistribution().getReduceCommunicator().sum( getPartitialNumValues() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2543,7 +2543,7 @@ ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     }
 
     SCAI_LOG_TRACE( logger, "myValue = " << myValue )
-    myValue = distributionRow.getCommunicator().sum( myValue );
+    myValue = distributionRow.getReduceCommunicator().sum( myValue );
 
     return myValue; 
 }
@@ -2701,7 +2701,7 @@ template<typename ValueType>
 size_t SparseMatrix<ValueType>::getMemoryUsage() const
 {
     size_t memoryUsage = mLocalData->getMemoryUsage() + mHaloData->getMemoryUsage();
-    return getRowDistribution().getCommunicator().sum( memoryUsage );
+    return getRowDistribution().getReduceCommunicator().sum( memoryUsage );
 }
 
 /* ------------------------------------------------------------------------- */

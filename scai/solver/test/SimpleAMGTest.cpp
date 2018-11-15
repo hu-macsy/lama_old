@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
     scai::lama::CSRSparseMatrix<ValueType> coefficients;
     scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
 
-    const dmemo::Communicator& comm = coefficients.getRowDistribution().getCommunicator();
+    const dmemo::Communicator& comm = coefficients.getRowDistribution().getReduceCommunicator();
 
     SCAI_LOG_INFO( logger, "Solve matrix: " << coefficients )
 

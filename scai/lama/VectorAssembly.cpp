@@ -115,7 +115,7 @@ void VectorAssembly<ValueType>::exchangeCOO(
 
     SCAI_LOG_DEBUG( logger, "owners = " << owners )
 
-    const dmemo::Communicator& comm = dist.getCommunicator();
+    const dmemo::Communicator& comm = dist.getReduceCommunicator();
     PartitionId np = comm.getSize();
 
     HArray<IndexType> perm;
@@ -172,22 +172,32 @@ void VectorAssembly<ValueType>::buildLocalData(
     hmemo::HArray<ValueType>& values,
     const dmemo::Distribution& dist ) const
 {
-    SCAI_ASSERT_EQ_ERROR( dist.getCommunicator(), *mComm, "VectorAssembly collected for comm = " << *mComm 
-                          << ", cannot be used to distribute onto " << dist.getCommunicator() )
+    SCAI_ASSERT_EQ_ERROR( dist.getTargetCommunicator(), *mComm, "VectorAssembly collected for comm = " << *mComm 
+                          << ", cannot be used to distribute onto " << dist.getReduceCommunicator() )
 
     checkLegalIndexes( dist.getGlobalSize() );
 
-    const HArrayRef<IndexType> localIA( mIA );
-    const HArrayRef<ValueType> localValues( mValues );
+    if ( dist.isReplicated() )
+    {
+        const HArrayRef<IndexType> localIA( mIA );
+        const HArrayRef<ValueType> localValues( mValues );
 
-    // These arrays will keep the matrix items owned by this processor
+        ia = localIA;
+        values = localValues;
+    }
+    else
+    {
+        const HArrayRef<IndexType> localIA( mIA );
+        const HArrayRef<ValueType> localValues( mValues );
 
-    ia.clear();
-    values.clear();
+        // These arrays will keep the matrix items owned by this processor
 
-    exchangeCOO( ia, values, localIA, localValues, dist );
+        ia.clear();
+        values.clear();
 
-    dist.global2localV( ia, ia );   // translates global indexes to local ones
+        exchangeCOO( ia, values, localIA, localValues, dist );
+        dist.global2localV( ia, ia );   // translates global indexes to local ones
+    }
 }
 
 /* -------------------------------------------------------------------------- */

@@ -104,6 +104,18 @@ void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, c
 
 /* --------------------------------------------------------------------------------- */
 
+void PartitionIO::getSingleFileName( string& fileName )
+{
+    size_t pos = fileName.find( "%r" );
+
+    if ( pos != string::npos )
+    {
+        fileName.replace( pos, 2, "" );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
 bool PartitionIO::isPartitionFileName( const string& fileName )
 {
     size_t pos = fileName.find( "%r" );
@@ -353,9 +365,9 @@ void PartitionIO::write( const Distribution& distribution, const string& fileNam
 
     bool writePartitions;
 
-    getPartitionFileName( distFileName, writePartitions, distribution.getCommunicator() );
+    getPartitionFileName( distFileName, writePartitions, distribution.getReduceCommunicator() );
 
-    SCAI_LOG_INFO( logger, distribution.getCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
+    SCAI_LOG_INFO( logger, distribution.getReduceCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
 
     if ( writePartitions )
     {
@@ -373,7 +385,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 {
     using namespace hmemo;
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    CommunicatorPtr comm = distribution.getTargetCommunicatorPtr();
 
     PartitionId rank = comm->getRank();
 
@@ -428,7 +440,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 
 void PartitionIO::writePDistribution( const Distribution& distribution, const string& fileName )
 {
-    SCAI_LOG_INFO( logger, distribution.getCommunicator() << ": write distribution to partition file " << fileName )
+    SCAI_LOG_INFO( logger, distribution.getTargetCommunicator() << ": write distribution to partition file " << fileName )
 
     // each processor writes a file with its global indexes
 
@@ -451,7 +463,7 @@ void PartitionIO::writePDistribution( const Distribution& distribution, const st
 
     // in case of error: all processors should throw an exception
 
-    const Communicator& comm = distribution.getCommunicator();
+    const Communicator& comm = distribution.getTargetCommunicator();
 
     errorFlag = comm.any( errorFlag );
 

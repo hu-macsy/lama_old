@@ -143,7 +143,7 @@ void StorageMethods<ValueType>::replicateCSR(
     SCAI_LOG_INFO( logger,
                    "replicateCSR (#rows = local:" << localNumRows << ", global: " << globalNumRows << ", #values(local) = " << localJA.size() << ", rowDist = " << rowDist )
     // gather distributed matrix storage into one global storage replicated on all processors
-    const Communicator& comm = rowDist.getCommunicator();
+    const Communicator& comm = rowDist.getReduceCommunicator();
     // In a first step we need sizes of all rows, so build it locally before
     HArray<IndexType> localSizes;
     ReadAccess<IndexType> rLocalIA( localIA );

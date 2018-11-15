@@ -329,7 +329,7 @@ template<typename ValueType>
 void Redistributor::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const
 {
     SCAI_REGION( "Redistributor.exchangeHalo" )
-    const Communicator& comm = mSourceDistribution->getCommunicator();
+    const Communicator& comm = mSourceDistribution->getReduceCommunicator();
     // use asynchronous communication to avoid deadlocks
     std::unique_ptr<tasking::SyncToken> token (
         comm.exchangeByPlanAsync( targetHalo, mExchangeReceivePlan, sourceHalo, mExchangeSendPlan ) );
@@ -346,7 +346,7 @@ void Redistributor::exchangeHaloN(
     const IndexType n ) const
 {
     SCAI_REGION( "Redistributor.exchangeHaloN" )
-    const Communicator& comm = mSourceDistribution->getCommunicator();
+    const Communicator& comm = mSourceDistribution->getReduceCommunicator();
     // Communication plans are built by multiplication with n
     CommunicationPlan requiredN( mExchangeReceivePlan );
     requiredN.multiplyConst( n );
@@ -365,7 +365,7 @@ template<typename ValueType>
 void Redistributor::exchangeVHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const
 {
     SCAI_REGION( "Redistributor.exchangeVHalo" )
-    const Communicator& comm = mSourceDistribution->getCommunicator();
+    const Communicator& comm = mSourceDistribution->getReduceCommunicator();
     SCAI_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" )
     delete comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
 }

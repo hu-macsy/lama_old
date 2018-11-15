@@ -244,7 +244,7 @@ bool DenseVector<ValueType>::isConsistent() const
 
     // use communicator for global reduction to make sure that all processors return same value.
 
-    consistencyErrors = dist.getCommunicator().sum( consistencyErrors );
+    consistencyErrors = dist.getReduceCommunicator().sum( consistencyErrors );
 
     return 0 == consistencyErrors;
 }
@@ -312,7 +312,7 @@ template<typename ValueType>
 bool DenseVector<ValueType>::isSorted( bool ascending ) const
 {
     const dmemo::Distribution& distribution = getDistribution();
-    const dmemo::Communicator& comm         = distribution.getCommunicator();
+    const dmemo::Communicator& comm         = distribution.getReduceCommunicator();
 
     PartitionId rank = comm.getRank();
     PartitionId size = comm.getSize();
@@ -437,7 +437,7 @@ void DenseVector<ValueType>::sortImpl(
 {
     const dmemo::Distribution& distribution = in.getDistribution();
 
-    const dmemo::Communicator& comm = distribution.getCommunicator();
+    const dmemo::Communicator& comm = distribution.getReduceCommunicator();
 
     IndexType blockSize = distribution.getBlockDistributionSize();
 
@@ -600,7 +600,7 @@ void DenseVector<ValueType>::sortImpl(
 
     // Create the new general block distribution
 
-    DistributionPtr newDist( new dmemo::GenBlockDistribution( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() ) );
+    auto newDist = std::make_shared<dmemo::GenBlockDistribution>( distribution.getGlobalSize(), newLocalSize, distribution.getTargetCommunicatorPtr() );
 
     if ( out )
     {
@@ -647,7 +647,7 @@ void DenseVector<ValueType>::scan()
     SCAI_ASSERT_NE_ERROR( getDistribution().getBlockDistributionSize(), invalidIndex,
                           "scan only supported for block distribution" )
 
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getDistribution().getReduceCommunicator();
  
     HArray<ValueType> prefixValues;
     
@@ -755,7 +755,7 @@ ValueType DenseVector<ValueType>::getValue( IndexType globalIndex ) const
         myValue = mLocalValues[localIndex];
     }
 
-    ValueType allValue = getDistribution().getCommunicator().sum( myValue );
+    ValueType allValue = getDistribution().getReduceCommunicator().sum( myValue );
 
     // works also fine for replicated distributions with NoCommunicator
 
@@ -789,7 +789,7 @@ template<typename ValueType>
 ValueType DenseVector<ValueType>::min() const
 {
     ValueType localMin = HArrayUtils::min( mLocalValues );
-    return getDistribution().getCommunicator().min( localMin );
+    return getDistribution().getReduceCommunicator().min( localMin );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -799,7 +799,7 @@ ValueType DenseVector<ValueType>::max() const
 {
     // Note: max returns the minimal representation value on zero-sized vectors
     ValueType localMax = HArrayUtils::max( mLocalValues );
-    return getDistribution().getCommunicator().max( localMax );
+    return getDistribution().getReduceCommunicator().max( localMax );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -808,7 +808,7 @@ template<typename ValueType>
 RealType<ValueType> DenseVector<ValueType>::l1Norm() const
 {
     auto localL1Norm = HArrayUtils::l1Norm( mLocalValues );
-    return getDistribution().getCommunicator().sum( localL1Norm );
+    return getDistribution().getReduceCommunicator().sum( localL1Norm );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -816,7 +816,7 @@ template<typename ValueType>
 ValueType DenseVector<ValueType>::sum() const
 {
     auto localsum = HArrayUtils::sum( mLocalValues );
-    return getDistribution().getCommunicator().sum( localsum );
+    return getDistribution().getReduceCommunicator().sum( localsum );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -826,7 +826,7 @@ RealType<ValueType> DenseVector<ValueType>::l2Norm() const
 {
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
     RealType<ValueType> localDotProduct = HArrayUtils::dotProduct( mLocalValues, mLocalValues );
-    RealType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    RealType<ValueType> globalDotProduct = getDistribution().getReduceCommunicator().sum( localDotProduct );
     return common::Math::sqrt( globalDotProduct );
 }
 
@@ -836,7 +836,7 @@ IndexType DenseVector<IndexType>::l2Norm() const
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
 
     double localDotProduct = static_cast<double>( HArrayUtils::dotProduct( mLocalValues, mLocalValues ) );
-    double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    double globalDotProduct = getDistribution().getReduceCommunicator().sum( localDotProduct );
     return IndexType( common::Math::sqrt( globalDotProduct ) );
 }
 
@@ -846,7 +846,7 @@ template<typename ValueType>
 RealType<ValueType> DenseVector<ValueType>::maxNorm() const
 {
     RealType<ValueType> localMaxNorm = HArrayUtils::maxNorm( mLocalValues );
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getDistribution().getReduceCommunicator();
     RealType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
@@ -886,7 +886,7 @@ RealType<ValueType> DenseVector<ValueType>::maxDiffNorm( const Vector<ValueType>
 
     RealType<ValueType> localMaxNorm = HArrayUtils::maxDiffNorm( mLocalValues, denseOther.getLocalValues() );
 
-    const Communicator& comm = getDistribution().getCommunicator();
+    const Communicator& comm = getDistribution().getReduceCommunicator();
 
     RealType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
 
@@ -904,7 +904,7 @@ bool DenseVector<ValueType>::all( const common::CompareOp op, const ValueType va
 {
     bool localAll = HArrayUtils::allScalar( getLocalValues(), op, value );
 
-    bool globalAll = getDistribution().getCommunicator().all( localAll );
+    bool globalAll = getDistribution().getReduceCommunicator().all( localAll );
 
     return globalAll;
 }
@@ -930,7 +930,7 @@ bool DenseVector<ValueType>::all( const common::CompareOp op, const Vector<Value
         localAll = HArrayUtils::all( getLocalValues(), op, otherLocalValues );
     }
 
-    bool globalAll = getDistribution().getCommunicator().all( localAll );
+    bool globalAll = getDistribution().getReduceCommunicator().all( localAll );
 
     return globalAll;
 }
@@ -1276,7 +1276,7 @@ void DenseVector<ValueType>::gather(
         return;
     }
 
-    const Communicator& comm = sourceDistribution.getCommunicator();
+    const Communicator& comm = sourceDistribution.getReduceCommunicator();
 
     // otherwise we have to set up a communication plan
 
@@ -1379,7 +1379,7 @@ void DenseVector<ValueType>::scatter(
         return;
     }
 
-    const Communicator& comm = targetDistribution.getCommunicator();
+    const Communicator& comm = targetDistribution.getReduceCommunicator();
 
     HArray<PartitionId> owners;
 
@@ -1475,7 +1475,7 @@ ValueType DenseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) c
     }
 
     SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
-    ValueType dotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    ValueType dotProduct = getDistribution().getReduceCommunicator().sum( localDotProduct );
     SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
     return dotProduct;
@@ -1729,7 +1729,7 @@ size_t DenseVector<ValueType>::getMemoryUsage() const
 
     // Note: do sum with IndexType, as size_t is not yet handled by TypeTraits
 
-    IndexType globalSize = getDistribution().getCommunicator().sum( localSize );
+    IndexType globalSize = getDistribution().getReduceCommunicator().sum( localSize );
 
     return sizeof( ValueType ) * globalSize;
 }
@@ -1765,6 +1765,9 @@ template<typename ValueType>
 void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
     SCAI_LOG_INFO( logger, "redistribute " << *this << ", new dist = " << *distribution )
+
+    SCAI_ASSERT_EQ_ERROR( distribution->getTargetCommunicator(), getDistribution().getTargetCommunicator(),
+                          "redistribute only within same communicator / processor set" )
 
     SCAI_ASSERT_EQ_ERROR( size(), distribution->getGlobalSize(), "global size mismatch between old/new distribution" )
 

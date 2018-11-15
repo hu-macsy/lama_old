@@ -307,7 +307,7 @@ void GenBlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIn
 {
     const IndexType nLocal = getLocalSize();
 
-    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
+    SCAI_LOG_INFO( logger, getTargetCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
 
     const IndexType one = 1;   // avoids cast in argument list of setSequence
 

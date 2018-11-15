@@ -337,7 +337,7 @@ void _Matrix::writeToFile(
 
     bool isPartitioned;
 
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = getRowDistribution().getReduceCommunicator();
 
     PartitionIO::getPartitionFileName( newFileName, isPartitioned, comm );
 
@@ -434,7 +434,7 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
         error = true;
     }
 
-    error = distribution->getCommunicator().any( error );
+    error = distribution->getTargetCommunicator().any( error );
 
     if ( error )
     {
@@ -565,7 +565,7 @@ void _Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist
 
     if ( rowDist.get() )
     {
-        comm = rowDist->getCommunicatorPtr();
+        comm = rowDist->getTargetCommunicatorPtr();
     }
 
     bool isPartitioned;
@@ -614,7 +614,7 @@ void _Matrix::checkLocalStorageSizes( const _MatrixStorage& localStorage, const 
 {
     // make some 'global' checks to verify correct sizes on all processors
 
-    const Communicator& comm = rowDist.getCommunicator();
+    const Communicator& comm = rowDist.getReduceCommunicator();
 
     IndexType maxColumns = comm.max( localStorage.getNumColumns() );
 

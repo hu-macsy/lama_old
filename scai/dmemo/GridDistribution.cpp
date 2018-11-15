@@ -436,7 +436,7 @@ void GridDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexe
 {
     const IndexType nLocal  = getLocalSize();
 
-    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
+    SCAI_LOG_INFO( logger, getTargetCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
 
     WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
 
@@ -452,6 +452,8 @@ bool GridDistribution::hasAnyAddressing() const
 {
     return true;
 }
+
+/* ---------------------------------------------------------------------- */
 
 void GridDistribution::enableAnyAddressing() const
 {
