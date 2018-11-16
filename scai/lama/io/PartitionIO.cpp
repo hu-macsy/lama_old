@@ -385,7 +385,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 {
     using namespace hmemo;
 
-    CommunicatorPtr comm = distribution.getTargetCommunicatorPtr();
+    CommunicatorPtr comm = distribution.getCommunicatorPtr();
 
     PartitionId rank = comm->getRank();
 
@@ -440,7 +440,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 
 void PartitionIO::writePDistribution( const Distribution& distribution, const string& fileName )
 {
-    SCAI_LOG_INFO( logger, distribution.getTargetCommunicator() << ": write distribution to partition file " << fileName )
+    SCAI_LOG_INFO( logger, distribution.getCommunicator() << ": write distribution to partition file " << fileName )
 
     // each processor writes a file with its global indexes
 
@@ -463,7 +463,7 @@ void PartitionIO::writePDistribution( const Distribution& distribution, const st
 
     // in case of error: all processors should throw an exception
 
-    const Communicator& comm = distribution.getTargetCommunicator();
+    const Communicator& comm = distribution.getCommunicator();
 
     errorFlag = comm.any( errorFlag );
 

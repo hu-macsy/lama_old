@@ -533,7 +533,7 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
     }
     else
     {
-        SCAI_ASSERT_EQ_ERROR( rowDist->getTargetCommunicator(), colDist->getTargetCommunicator(), "transpose only on same set of processors" )
+        SCAI_ASSERT_EQ_ERROR( rowDist->getCommunicator(), colDist->getCommunicator(), "transpose only on same set of processors" )
         SCAI_ASSERT_EQ_ERROR( rowDist->getReduceCommunicator(), colDist->getReduceCommunicator(), "transpose only on same set of processors" )
 
         const Communicator& comm = rowDist->getReduceCommunicator();
@@ -1129,7 +1129,7 @@ void DenseMatrix<ValueType>::resize( DistributionPtr rowDistributionPtr, Distrib
 {
     // disassemble this matrix, take processor set from row distribution 
 
-    MatrixAssembly<ValueType> assembly( getRowDistribution().getTargetCommunicatorPtr() );
+    MatrixAssembly<ValueType> assembly( getRowDistribution().getCommunicatorPtr() );
 
     this->disassemble( assembly );
 
@@ -1204,7 +1204,7 @@ static void replicate(
 template<typename ValueType>
 void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
 {
-    SCAI_ASSERT_EQ_ERROR( getRowDistribution().getTargetCommunicator(), rowDistribution->getTargetCommunicator(),
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution().getCommunicator(), rowDistribution->getCommunicator(),
                           "redistribute row only possible within same communicator" )
 
     IndexType nCols = getNumColumns(); //  only global column size used here

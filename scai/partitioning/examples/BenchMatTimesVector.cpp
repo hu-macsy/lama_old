@@ -66,7 +66,7 @@ static void bench( CSRSparseMatrix<ValueType>& mat )
 
     mat.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
-    CommunicatorPtr comm = mat.getRowDistribution().getTargetCommunicatorPtr();
+    CommunicatorPtr comm = mat.getRowDistribution().getCommunicatorPtr();
 
     double time = Walltime::get();
 
@@ -152,7 +152,7 @@ int main( int argc, const char* argv[] )
         thePartitioning->rectangularRedistribute( m, 1.0 );
     }
 
-    CommunicatorPtr comm = m.getRowDistribution().getTargetCommunicatorPtr();
+    CommunicatorPtr comm = m.getRowDistribution().getCommunicatorPtr();
 
     std::cout << *comm << ": matrix = " << m << std::endl;
 

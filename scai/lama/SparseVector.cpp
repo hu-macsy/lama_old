@@ -1535,7 +1535,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
     SCAI_LOG_INFO( logger, *this << ", redistribute to dist = " << *distribution )
 
-    SCAI_ASSERT_EQ_ERROR( distribution->getTargetCommunicator(), getDistribution().getTargetCommunicator(),
+    SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
                           "redistribute only supported within same communicator" )
 
     SCAI_ASSERT_EQ_ERROR( size(), distribution->getGlobalSize(), "global size mismatch between old/new distribution" )
@@ -1634,7 +1634,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
         SCAI_LOG_INFO( logger, *this << " will be redistributed to " << *distribution << " in two steps: replicate/localize" )
 
         DistributionPtr repDist ( new NoDistribution( getDistribution().getGlobalSize(),
-                                                      getDistribution().getTargetCommunicatorPtr() ) );
+                                                      getDistribution().getCommunicatorPtr() ) );
 
         redistribute( repDist );
         redistribute( distribution );

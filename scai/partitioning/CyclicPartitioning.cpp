@@ -164,7 +164,7 @@ void CyclicPartitioning::rectangularRedistribute( _Matrix& matrix, const float )
         return;
     }
 
-    CommunicatorPtr comm = matrix.getRowDistribution().getTargetCommunicatorPtr();
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 
     IndexType np = comm->getSize();
 

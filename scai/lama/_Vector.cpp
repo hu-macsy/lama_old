@@ -196,7 +196,7 @@ void _Vector::readFromSingleFile( const std::string& fileName, const Distributio
         error = true;
     }
 
-    error = distribution->getTargetCommunicator().any( error );
+    error = distribution->getCommunicator().any( error );
 
     if ( error )
     {
@@ -306,7 +306,7 @@ void _Vector::readFromFile( const std::string& fileName, DistributionPtr distrib
 
     bool isPartitioned;
 
-    PartitionIO::getPartitionFileName( newFileName, isPartitioned, distribution->getTargetCommunicator() );
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, distribution->getCommunicator() );
 
     if ( !isPartitioned )
     {
@@ -378,7 +378,7 @@ void _Vector::writeToSingleFile(
     {
         // make sure that only one processor writes to file
 
-        const Communicator& comm = getDistribution().getTargetCommunicator();
+        const Communicator& comm = getDistribution().getCommunicator();
 
         if ( comm.getRank() == 0 )
         {
@@ -409,7 +409,7 @@ void _Vector::replicate()
         return;
     }
 
-    CommunicatorPtr comm = getDistribution().getTargetCommunicatorPtr();
+    CommunicatorPtr comm = getDistribution().getCommunicatorPtr();
 
     redistribute( std::make_shared<NoDistribution>( size(), comm ) );
 }
@@ -433,7 +433,7 @@ void _Vector::writeToPartitionedFile(
         errorFlag = true;
     }
 
-    const Communicator& comm = getDistribution().getTargetCommunicator();
+    const Communicator& comm = getDistribution().getCommunicator();
 
     errorFlag = comm.any( errorFlag );
 

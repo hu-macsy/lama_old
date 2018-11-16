@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
 
         SCAI_LOG_INFO( logger, "DistributionSingleIO: dist[" << i <<  "] = " << *dist )
 
-        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
+        CommunicatorPtr comm = dist->getCommunicatorPtr();
         const std::string distFileName = uniquePathSharedAmongNodes(
                                             GlobalTempDir::getPath(),
                                             *comm,
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
-        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
+        CommunicatorPtr comm = dist->getCommunicatorPtr();
 
         const std::string fileName = uniquePathSharedAmongNodes(
                                         GlobalTempDir::getPath(),
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
-        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
+        CommunicatorPtr comm = dist->getCommunicatorPtr();
 
         SCAI_LOG_DEBUG( logger, "Test case " << i << " of " << testDists.size() << ": VectorSingleIO with dist = " << *dist )
 
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
-        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
+        CommunicatorPtr comm = dist->getCommunicatorPtr();
 
         DenseVector<ValueType> vector;
 
@@ -370,7 +370,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr dist = testDists[i];
-        CommunicatorPtr comm = dist->getTargetCommunicatorPtr();
+        CommunicatorPtr comm = dist->getCommunicatorPtr();
 
         SparseVector<ValueType> vector;
 
@@ -511,7 +511,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr rowDist = testDists[i];
-        CommunicatorPtr comm = rowDist->getTargetCommunicatorPtr();
+        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
 
         auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 

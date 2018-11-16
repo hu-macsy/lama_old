@@ -149,7 +149,7 @@ void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float we
         return;
     }
 
-    CommunicatorPtr comm = matrix.getRowDistribution().getTargetCommunicatorPtr();
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 
     IndexType numRows    = matrix.getRowDistribution().getGlobalSize();
     IndexType numColumns = matrix.getColDistribution().getGlobalSize();

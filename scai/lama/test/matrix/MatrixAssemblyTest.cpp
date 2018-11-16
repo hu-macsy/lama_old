@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( simpleTest )
     {
         dmemo::DistributionPtr rowDist = rowDists[j];
 
-        if ( rowDist->getTargetCommunicator() != assembly.getCommunicator() )
+        if ( rowDist->getCommunicator() != assembly.getCommunicator() )
         {
             continue;
         }
@@ -230,9 +230,9 @@ BOOST_AUTO_TEST_CASE( failTest )
 
     auto noDist = std::make_shared<dmemo::NoDistribution>( numRows );
 
-    if ( noDist->getTargetCommunicator() != assembly.getCommunicator() )
+    if ( noDist->getCommunicator() != assembly.getCommunicator() )
     {
-        SCAI_LOG_INFO( logger, "noDist::comm = " << noDist->getTargetCommunicator() <<
+        SCAI_LOG_INFO( logger, "noDist::comm = " << noDist->getCommunicator() <<
                                " != assembly::comm = " << assembly.getCommunicator() )
         BOOST_CHECK_THROW( {
             localStorage = assembly.buildLocalCOO( *noDist, numColumns, common::BinaryOp::COPY );

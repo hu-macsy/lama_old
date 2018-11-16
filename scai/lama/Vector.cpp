@@ -473,7 +473,7 @@ void Vector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vec
 
     // use an assembly to collect local values from any distribution
 
-    VectorAssembly<ValueType> assembly( dist->getTargetCommunicatorPtr() );
+    VectorAssembly<ValueType> assembly( dist->getCommunicatorPtr() );
 
     IndexType offset = 0;
 
@@ -507,7 +507,7 @@ void Vector<ValueType>::cat( const Vector<ValueType>& v1, const Vector<ValueType
     vectors.push_back( &v1 );
     vectors.push_back( &v2 );
 
-    dmemo::CommunicatorPtr comm = v1.getDistribution().getTargetCommunicatorPtr();
+    dmemo::CommunicatorPtr comm = v1.getDistribution().getCommunicatorPtr();
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
 

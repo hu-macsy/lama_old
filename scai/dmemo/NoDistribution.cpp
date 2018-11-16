@@ -146,7 +146,7 @@ bool NoDistribution::isEqual( const Distribution& other ) const
 void NoDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "NoDistribution( size = " << mGlobalSize << ", comm = " << getTargetCommunicator() << " )";
+    stream << "NoDistribution( size = " << mGlobalSize << ", comm = " << getCommunicator() << " )";
 }
 
 /* ---------------------------------------------------------------------- */

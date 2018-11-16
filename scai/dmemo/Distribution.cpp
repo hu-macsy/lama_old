@@ -106,7 +106,7 @@ bool Distribution::proveEquality( bool& isSame, const Distribution& other ) cons
         isSame = true;
         SCAI_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )
     }
-    else if ( other.getTargetCommunicator() != getTargetCommunicator() )
+    else if ( other.getCommunicator() != getCommunicator() )
     {
         isSame = false;
         SCAI_LOG_DEBUG( logger, *this << " != " << other << ": different communicators" )
@@ -138,7 +138,7 @@ bool Distribution::operator!=( const Distribution& other ) const
 
 /* ---------------------------------------------------------------------- */
 
-const Communicator& Distribution::getTargetCommunicator() const
+const Communicator& Distribution::getCommunicator() const
 {
     SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
 
@@ -159,7 +159,7 @@ const Communicator& Distribution::getReduceCommunicator() const
 
 /* ---------------------------------------------------------------------- */
 
-CommunicatorPtr Distribution::getTargetCommunicatorPtr() const
+CommunicatorPtr Distribution::getCommunicatorPtr() const
 {
     return mCommunicator;
 }
@@ -252,7 +252,7 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
     const IndexType nLocal  = getLocalSize();
     const IndexType nGlobal = mGlobalSize;
 
-    SCAI_LOG_INFO( logger, getTargetCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << nGlobal )
+    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << nGlobal )
 
     WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
 

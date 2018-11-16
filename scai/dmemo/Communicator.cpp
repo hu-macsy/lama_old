@@ -729,7 +729,7 @@ void Communicator::computeOwners(
 
     SCAI_LOG_INFO( logger, "need owners for " << numIndexes << " global indexes" )
 
-    SCAI_ASSERT_EQ_ERROR( *this, distribution.getTargetCommunicator(), "illegal communicator for computeOwners" )
+    SCAI_ASSERT_EQ_ERROR( *this, distribution.getCommunicator(), "illegal communicator for computeOwners" )
 
     IndexType nonLocal = 0;
 

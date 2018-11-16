@@ -18,6 +18,7 @@ routines for data structures using heterogeneous arrays.
   vectors that involve communication, e.g. redistributions or halo exchange. Furthermore, they exploit
   C++ features like overloading and templates and by using the SCAI heterogeneous arrays they are aware 
   of valid instantions of the data to be communicated.
+* Building subgroups of processors that execute different tasks on disjoint processor subsets is supported.
 
 ********
 Contents

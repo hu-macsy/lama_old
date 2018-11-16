@@ -166,13 +166,13 @@ public:
 
     /** Getter routine for the communicator of the distribution. */
 
-    const Communicator& getTargetCommunicator() const;
+    const Communicator& getCommunicator() const;
 
     const Communicator& getReduceCommunicator() const;
 
     /** Getter routine for the communicator as shared pointer. */
 
-    CommunicatorPtr getTargetCommunicatorPtr() const;
+    CommunicatorPtr getCommunicatorPtr() const;
 
     /** Query for the number of processors/partitions onto which the distribution is done.
      *
@@ -509,7 +509,7 @@ PartitionId Distribution::getNumPartitions() const
     }
     else
     { 
-        return getTargetCommunicator().getSize();
+        return getCommunicator().getSize();
     }
 }
 

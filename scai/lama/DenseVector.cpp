@@ -600,7 +600,7 @@ void DenseVector<ValueType>::sortImpl(
 
     // Create the new general block distribution
 
-    auto newDist = std::make_shared<dmemo::GenBlockDistribution>( distribution.getGlobalSize(), newLocalSize, distribution.getTargetCommunicatorPtr() );
+    auto newDist = std::make_shared<dmemo::GenBlockDistribution>( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() );
 
     if ( out )
     {
@@ -1766,7 +1766,7 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
     SCAI_LOG_INFO( logger, "redistribute " << *this << ", new dist = " << *distribution )
 
-    SCAI_ASSERT_EQ_ERROR( distribution->getTargetCommunicator(), getDistribution().getTargetCommunicator(),
+    SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
                           "redistribute only within same communicator / processor set" )
 
     SCAI_ASSERT_EQ_ERROR( size(), distribution->getGlobalSize(), "global size mismatch between old/new distribution" )

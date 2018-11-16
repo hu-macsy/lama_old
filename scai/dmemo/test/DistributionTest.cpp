@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const Communicator& comm = dist->getTargetCommunicator();
+        const Communicator& comm = dist->getCommunicator();
 
         SCAI_LOG_INFO( logger, comm << ": localSizeTest, dist = " << *dist )
 
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const Communicator& comm = dist->getTargetCommunicator();
+        const Communicator& comm = dist->getCommunicator();
 
         SCAI_LOG_INFO( logger, comm << ": global2LocalTest, dist = " << *dist )
 
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE( global2LocalVTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const Communicator& comm = dist->getTargetCommunicator();
+        const Communicator& comm = dist->getCommunicator();
 
         SCAI_LOG_INFO( logger, comm << ": global2LocalTest, dist = " << *dist )
 
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
 
                 if ( i != rAllValues[ repN * i + k ] )
                 {
-                    SCAI_LOG_ERROR( logger, dist->getTargetCommunicator() << ": dist = " << *dist <<
+                    SCAI_LOG_ERROR( logger, dist->getCommunicator() << ": dist = " << *dist <<
                                     ", wrong at i = " << i << " of " << globalN <<
                                     ", k = " << k << " of repN = " << repN <<
                                     ", rAllValues [ " << repN * i + k << " ] = " << rAllValues[ repN * i + k ] )

@@ -137,12 +137,12 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" )
     SCAI_ASSERT_ERROR( targetDistribution, "target distribution is not allowed to be null" )
-    SCAI_ASSERT_EQ_ERROR( sourceDistribution->getTargetCommunicator(), targetDistribution->getTargetCommunicator(),
+    SCAI_ASSERT_EQ_ERROR( sourceDistribution->getCommunicator(), targetDistribution->getCommunicator(),
                           "source and target distributions must have the same communicator" );
 
     HArray<PartitionId> targetOwners;
 
-    const auto commSize = sourceDistribution->getTargetCommunicator().getSize();
+    const auto commSize = sourceDistribution->getCommunicator().getSize();
 
     if ( targetDistribution->hasAnyAddressing() || commSize <= 2 )
     {
@@ -165,7 +165,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
         // results to show its efficacy. The code below is loosely based on his original code.
 
         const auto globalSize = sourceDistribution->getGlobalSize();
-        const auto comm = sourceDistribution->getTargetCommunicatorPtr();
+        const auto comm = sourceDistribution->getCommunicatorPtr();
         const auto rank = comm->getRank();
         const auto intermediateDist = std::make_shared<BlockDistribution>( globalSize, comm );
 
@@ -214,7 +214,7 @@ Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwner
     const auto targetGlobalIndexes = initializeFromNewOwners( newOwnersOfLocalElements, *sourceDistribution );
     mTargetDistribution = DistributionPtr ( new GeneralDistribution( sourceDistribution->getGlobalSize(),
                                             targetGlobalIndexes,
-                                            sourceDistribution->getTargetCommunicatorPtr() ) );
+                                            sourceDistribution->getCommunicatorPtr() ) );
 }
 
 // Note: returns global target indexes
@@ -236,7 +236,7 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
     // most elements are kept (present both in source and target dist). This means that the Halo is working
     // with the index set given by our exchange indexes rather than local indexes of the source distribution
     Halo exchangeHalo;
-    HaloBuilder::buildFromProvidedOwners( sourceDist.getTargetCommunicator(), globalProvidedIndexes, newOwnersOfProvided, exchangeHalo );
+    HaloBuilder::buildFromProvidedOwners( sourceDist.getCommunicator(), globalProvidedIndexes, newOwnersOfProvided, exchangeHalo );
     mExchangeReceivePlan = exchangeHalo.getRequiredPlan();
     mExchangeSendPlan = exchangeHalo.getProvidesPlan();
 

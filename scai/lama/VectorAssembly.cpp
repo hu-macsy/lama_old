@@ -172,7 +172,7 @@ void VectorAssembly<ValueType>::buildLocalData(
     hmemo::HArray<ValueType>& values,
     const dmemo::Distribution& dist ) const
 {
-    SCAI_ASSERT_EQ_ERROR( dist.getTargetCommunicator(), *mComm, "VectorAssembly collected for comm = " << *mComm 
+    SCAI_ASSERT_EQ_ERROR( dist.getCommunicator(), *mComm, "VectorAssembly collected for comm = " << *mComm 
                           << ", cannot be used to distribute onto " << dist.getReduceCommunicator() )
 
     checkLegalIndexes( dist.getGlobalSize() );

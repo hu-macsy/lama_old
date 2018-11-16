@@ -434,7 +434,7 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
         error = true;
     }
 
-    error = distribution->getTargetCommunicator().any( error );
+    error = distribution->getCommunicator().any( error );
 
     if ( error )
     {
@@ -565,7 +565,7 @@ void _Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist
 
     if ( rowDist.get() )
     {
-        comm = rowDist->getTargetCommunicatorPtr();
+        comm = rowDist->getCommunicatorPtr();
     }
 
     bool isPartitioned;

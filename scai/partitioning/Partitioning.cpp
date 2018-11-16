@@ -116,7 +116,7 @@ void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float w
         return;
     }
 
-    CommunicatorPtr comm = matrix.getRowDistribution().getTargetCommunicatorPtr();
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 
     hmemo::HArray<PartitionId> rowOwners;
     hmemo::HArray<PartitionId> colOwners;

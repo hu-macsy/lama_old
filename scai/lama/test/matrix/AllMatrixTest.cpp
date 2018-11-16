@@ -1060,7 +1060,7 @@ BOOST_AUTO_TEST_CASE( disassembleTest )
 
                 SCAI_LOG_DEBUG( logger, "Disassemble this matrix: " << matrix )
 
-                MatrixAssembly<ValueType> assembly( rowDist->getTargetCommunicatorPtr() );
+                MatrixAssembly<ValueType> assembly( rowDist->getCommunicatorPtr() );
 
                 matrix.disassemble( assembly );
 

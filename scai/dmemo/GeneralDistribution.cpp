@@ -206,7 +206,7 @@ GeneralDistribution::GeneralDistribution(
     const Distribution& other,
     const HArray<PartitionId>& owners ) :
 
-    Distribution( other.getGlobalSize(), other.getTargetCommunicatorPtr() )
+    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
 
 {
     SCAI_LOG_INFO( logger, "GeneralDistribution( dist = " << other << ", new local owners =  " << owners )
@@ -399,7 +399,7 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
         }
     }
 
-    CommunicatorPtr comm = getTargetCommunicatorPtr();
+    CommunicatorPtr comm = getCommunicatorPtr();
 
     isBlocked = comm->all( isBlocked );
 
@@ -519,9 +519,9 @@ void GeneralDistribution::setBlockDistributedOwners()
 
     // get my range for block distribution of size
 
-    BlockDistribution blockDist( getGlobalSize(), getTargetCommunicatorPtr() );
+    BlockDistribution blockDist( getGlobalSize(), getCommunicatorPtr() );
 
-    const Communicator& comm = getTargetCommunicator();
+    const Communicator& comm = getCommunicator();
     const PartitionId   np   = comm.getSize();
 
     hmemo::ContextPtr hostCtx = hmemo::Context::getHostPtr();
@@ -598,9 +598,9 @@ void GeneralDistribution::computeOwners(
 
     HArrayUtils::setSameValue( owners, indexes.size(), invalidPartition, Context::getHostPtr() );
 
-    BlockDistribution blockDist( getGlobalSize(), getTargetCommunicatorPtr() );
+    BlockDistribution blockDist( getGlobalSize(), getCommunicatorPtr() );
 
-    const Communicator& comm = getTargetCommunicator();
+    const Communicator& comm = getCommunicator();
     const PartitionId   np   = comm.getSize();
 
     HArray<PartitionId> blockIndexOwners;
@@ -760,7 +760,7 @@ void GeneralDistribution::enableAnyAddressing() const
         // already computed, but just verify correct sizes
 
         SCAI_ASSERT_EQ_DEBUG( mAllOwners.size(), getGlobalSize(), "serious mismatch" )
-        SCAI_ASSERT_EQ_DEBUG( mAllLocalOffsets.size(), getTargetCommunicator().getSize() + 1, "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( mAllLocalOffsets.size(), getCommunicator().getSize() + 1, "serious mismatch" )
         SCAI_ASSERT_EQ_DEBUG( mAllLocal2Global.size(), getGlobalSize(), "serious mismatch" )
         SCAI_ASSERT_EQ_DEBUG( mAllGlobal2Local.size(), getGlobalSize(), "serious mismatch" )
 

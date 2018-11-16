@@ -65,7 +65,7 @@ using common::Walltime;
 template<typename ValueType>
 DenseVector<ValueType> computeGlobalPrefixSum( const DenseVector<ValueType>& input )
 {
-    scai::dmemo::CommunicatorPtr comm = input.getDistributionPtr()->getTargetCommunicatorPtr();
+    scai::dmemo::CommunicatorPtr comm = input.getDistributionPtr()->getCommunicatorPtr();
 
     const IndexType p = comm->getSize();
 
