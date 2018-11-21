@@ -151,7 +151,7 @@ void Partitioning::squarePartitioning(
     const lama::_Matrix& matrix,
     const float weight ) const
 {
-    const Communicator& comm = matrix.getRowDistribution().getReduceCommunicator();
+    const Communicator& comm = matrix.getRowDistribution().getCommunicator();
 
     hmemo::HArray<float> processorWeights;
 

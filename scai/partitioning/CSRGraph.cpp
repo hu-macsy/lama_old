@@ -145,7 +145,7 @@ void CSRGraph<IdxType>::buildByCSRSparseMatrix( const CSRSparseMatrix<ValueType>
                           "Not a square matrix with same row/col distribution: " << matrix )
 
     const Distribution& dist = matrix.getRowDistribution();
-    const Communicator& comm = dist.getReduceCommunicator();
+    const Communicator& comm = dist.getCommunicator();
 
     const lama::CSRStorage<ValueType>& localStorage = matrix.getLocalStorage();
     const lama::CSRStorage<ValueType>& haloStorage = matrix.getHaloStorage();
@@ -290,7 +290,7 @@ CSRGraph<IdxType>::CSRGraph( const lama::_Matrix& matrix, bool isSingle )
 template<typename IdxType>
 void CSRGraph<IdxType>::getDistributionOffsets( hmemo::HArray<IdxType>& offsets, const dmemo::Distribution& dist )
 {
-    const dmemo::Communicator& comm = dist.getReduceCommunicator();
+    const dmemo::Communicator& comm = dist.getCommunicator();
 
     const PartitionId numPartitions = comm.getSize();
     const PartitionId MASTER = 0;

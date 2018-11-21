@@ -222,7 +222,7 @@ void Partitioning::gatherAll( ValueType values[], const ValueType value, const d
 template<typename IdxType>
 void Partitioning::getDistributionOffsets( hmemo::HArray<IdxType>& offsets, const dmemo::Distribution& dist )
 {
-    const dmemo::Communicator& comm = dist.getReduceCommunicator();
+    const dmemo::Communicator& comm = dist.getCommunicator();
 
     const IndexType np = comm.getSize();
 
@@ -231,7 +231,7 @@ void Partitioning::getDistributionOffsets( hmemo::HArray<IdxType>& offsets, cons
     {
         hmemo::WriteOnlyAccess<IdxType> wOffsets( offsets, np + 1 );
         wOffsets.resize( np );
-        Partitioning::gatherAll( wOffsets.get(), mySize, dist.getReduceCommunicator() );
+        Partitioning::gatherAll( wOffsets.get(), mySize, dist.getCommunicator() );
     }
 
     utilskernel::HArrayUtils::scan1( offsets );
