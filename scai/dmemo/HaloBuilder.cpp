@@ -56,7 +56,7 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     SCAI_REGION( "HaloBuilder.build" )
     halo.clear();
 
-    const Communicator& communicator = distribution.getReduceCommunicator();
+    const Communicator& communicator = distribution.getCommunicator();
     const PartitionId noPartitions = communicator.getSize();
     SCAI_LOG_INFO( logger,
                    communicator << ": building halo for " << noPartitions << " partitions, # requiredIndexes = " << requiredIndexes.size() )

@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
 
         // Do not use comm for reductions as NoDistribution has NoCommunicator
 
-        IndexType sumLocalSizes = dist->getReduceCommunicator().sum( dist->getLocalSize() );
+        IndexType sumLocalSizes = dist->getCommunicator().sum( dist->getLocalSize() );
 
         BOOST_CHECK_EQUAL( dist->getGlobalSize(), sumLocalSizes );
     }
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( maxLocalSizeTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const Communicator& comm = dist->getReduceCommunicator();
+        const Communicator& comm = dist->getCommunicator();
 
         SCAI_LOG_INFO( logger, comm << ": maxLocalSizeTest, dist = " << *dist )
 
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
         dist->enableAnyAddressing();
 
         IndexType nGlobal = dist->getGlobalSize();
-        IndexType nP      = dist->getReduceCommunicator().getSize();
+        IndexType nP      = dist->getCommunicator().getSize();
 
         // own counter array to check for good local indexes on each partition
 
@@ -305,8 +305,8 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
     {
         DistributionPtr dist = allDist[i];
 
-        const PartitionId rank = dist->getReduceCommunicator().getRank();
-        const PartitionId root = dist->getReduceCommunicator().getSize() / 2;
+        const PartitionId rank = dist->getCommunicator().getRank();
+        const PartitionId root = dist->getCommunicator().getSize() / 2;
 
         IndexType nGlobal = dist->getGlobalSize();
 

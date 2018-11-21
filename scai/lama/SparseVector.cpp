@@ -362,7 +362,7 @@ bool SparseVector<ValueType>::isConsistent() const
 
     // use communicator for global reduction to make sure that all processors return same value.
 
-    consistencyErrors = dist.getReduceCommunicator().sum( consistencyErrors );
+    consistencyErrors = dist.getCommunicator().sum( consistencyErrors );
 
     return 0 == consistencyErrors;
 }
@@ -652,7 +652,7 @@ ValueType SparseVector<ValueType>::getValue( IndexType globalIndex ) const
         }
     }
 
-    ValueType allValue = getDistribution().getReduceCommunicator().sum( myValue );
+    ValueType allValue = getDistribution().getCommunicator().sum( myValue );
 
     // works also fine for replicated distributions with NoCommunicator
 
@@ -713,7 +713,7 @@ ValueType SparseVector<ValueType>::min() const
         localMin = Math::min( localMin, mZeroValue );
     }
 
-    return getDistribution().getReduceCommunicator().min( localMin );
+    return getDistribution().getCommunicator().min( localMin );
 }
 
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -752,7 +752,7 @@ ValueType SparseVector<ValueType>::max() const
         localMax = Math::max( localMax, mZeroValue );
     }
 
-    return getDistribution().getReduceCommunicator().max( localMax );
+    return getDistribution().getCommunicator().max( localMax );
 }
 
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -794,7 +794,7 @@ RealType<ValueType> SparseVector<ValueType>::l1Norm() const
         localL1Norm += zeroNorm * RealType<ValueType>( nZero );
     }
 
-    return getDistribution().getReduceCommunicator().sum( localL1Norm );
+    return getDistribution().getCommunicator().sum( localL1Norm );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -811,7 +811,7 @@ ValueType SparseVector<ValueType>::sum() const
         localSum += mZeroValue * ValueType( nZero );
     }
 
-    return getDistribution().getReduceCommunicator().sum( localSum );
+    return getDistribution().getCommunicator().sum( localSum );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -833,7 +833,7 @@ RealType<ValueType> SparseVector<ValueType>::l2Norm() const
         localDotProduct += zeroNorm;
     }
  
-    RealType<ValueType> globalDotProduct = getDistribution().getReduceCommunicator().sum( localDotProduct );
+    RealType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
     return Math::sqrt( globalDotProduct );
 }
@@ -848,7 +848,7 @@ IndexType SparseVector<IndexType>::l2Norm() const
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
     double localDotProduct = static_cast<double>( HArrayUtils::dotProduct( mNonZeroValues, mNonZeroValues ) );
-    double globalDotProduct = getDistribution().getReduceCommunicator().sum( localDotProduct );
+    double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     return static_cast<IndexType>( Math::sqrt( globalDotProduct ) );
 }
 
@@ -871,7 +871,7 @@ RealType<ValueType> SparseVector<ValueType>::maxNorm() const
         localMaxNorm = Math::max( Math::abs( localMaxNorm ), Math::abs( mZeroValue ) );
     }
 
-    const Communicator& comm = getDistribution().getReduceCommunicator();
+    const Communicator& comm = getDistribution().getCommunicator();
 
     RealType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
 
@@ -911,7 +911,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const ValueType v
         localAll = localAll && common::compare( mZeroValue, op, value );
     }
 
-    bool globalAll = getDistribution().getReduceCommunicator().all( localAll );
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
 
     return globalAll;
 }
@@ -956,7 +956,7 @@ bool SparseVector<ValueType>::all( const common::CompareOp op, const Vector<Valu
         localAll = localAll && common::compare( mZeroValue, op, otherZero );
     }
 
-    bool globalAll = getDistribution().getReduceCommunicator().all( localAll );
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
 
     return globalAll;
 }
@@ -1324,7 +1324,7 @@ ValueType SparseVector<ValueType>::dotProduct( const Vector<ValueType>& other ) 
 
     SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 
-    ValueType dotProduct = getDistribution().getReduceCommunicator().sum( localDotProduct );
+    ValueType dotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
     SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
@@ -1521,7 +1521,7 @@ size_t SparseVector<ValueType>::getMemoryUsage() const
 
     // Note: do sum with IndexType, as size_t is not yet handled by TypeTraits
 
-    IndexType globalSize = getDistribution().getReduceCommunicator().sum( localSize );
+    IndexType globalSize = getDistribution().getCommunicator().sum( localSize );
 
     // for each non zero value we have one index and one value
 
@@ -1534,9 +1534,6 @@ template<typename ValueType>
 void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
     SCAI_LOG_INFO( logger, *this << ", redistribute to dist = " << *distribution )
-
-    SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
-                          "redistribute only supported within same communicator" )
 
     SCAI_ASSERT_EQ_ERROR( size(), distribution->getGlobalSize(), "global size mismatch between old/new distribution" )
 
@@ -1615,8 +1612,8 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
         HArray<IndexType> allNonZeroIndexes;
         HArray<ValueType> allNonZeroValues;
 
-        getDistribution().getReduceCommunicator().joinArray( allNonZeroIndexes, mNonZeroIndexes );
-        getDistribution().getReduceCommunicator().joinArray( allNonZeroValues, mNonZeroValues );
+        getDistribution().getCommunicator().joinArray( allNonZeroIndexes, mNonZeroIndexes );
+        getDistribution().getCommunicator().joinArray( allNonZeroValues, mNonZeroValues );
 
         // sort the non-zero indexes ascending
 
@@ -1631,10 +1628,12 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else
     {
+        SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
+                              "redistribute only supported within same communicator" )
+
         SCAI_LOG_INFO( logger, *this << " will be redistributed to " << *distribution << " in two steps: replicate/localize" )
 
-        DistributionPtr repDist ( new NoDistribution( getDistribution().getGlobalSize(),
-                                                      getDistribution().getCommunicatorPtr() ) );
+        auto repDist = std::make_shared<NoDistribution>( getDistribution().getGlobalSize() );
 
         redistribute( repDist );
         redistribute( distribution );

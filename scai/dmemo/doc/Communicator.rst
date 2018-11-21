@@ -37,3 +37,42 @@ Communicator Factory
 
    CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( Communicator::MPI );
 
+Communicator Splitting
+^^^^^^^^^^^^^^^^^^^^^^
+
+Most applications might work well with the default communicator that uses
+all available processors. In some situations it might be useful to work only on
+a subset of processors.
+Therefore it is possible to split up a communicator into sub-communicators by a
+color argument.
+
+.. code-block:: c++
+
+   CommunicatorPtr commWorld = Communicator::getCommunicatorPtr();
+   PartitionId color = commWorld->getRank() % 2; 
+   CommunicatorPtr commTask = commWorld->split( color );
+
+All processors with the same color will build a new communicator. 
+
+.. figure:: _images/splitting.svg
+    :width: 500px
+    :align: center
+    :alt: CommunicatorSplit
+
+    Splitting a communicator into sub-communicators.
+
+After the processors are divided up into subgroups with a new communicator,
+the macro ``SCAI_DMEMO_TASK`` should be used to set this communicator as
+the actual communicator within the actual scope.
+
+.. code-block:: c++
+
+    {
+        // commTask becomes new default communicator
+
+        SCAI_DMEMO_TASK( commTask )
+
+        auto dist = std::make_shared<BlockDistribution>( N ); 
+        ...
+    }
+

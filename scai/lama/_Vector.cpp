@@ -77,7 +77,7 @@ _Vector* _Vector::getVector( const VectorKind kind, const common::ScalarType typ
 
 _Vector::_Vector( const IndexType size, hmemo::ContextPtr context ) :
 
-    Distributed( DistributionPtr( new NoDistribution( size ) ) ),
+    Distributed( std::make_shared<NoDistribution>( size ) ),
     mContext( context )
 {
     if ( !mContext )
@@ -411,7 +411,7 @@ void _Vector::replicate()
 
     CommunicatorPtr comm = getDistribution().getCommunicatorPtr();
 
-    redistribute( std::make_shared<NoDistribution>( size(), comm ) );
+    redistribute( std::make_shared<NoDistribution>( size() ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -459,7 +459,7 @@ void _Vector::writeToFile(
 
     bool writePartitions;
 
-    const Communicator& comm = getDistribution().getReduceCommunicator();
+    const Communicator& comm = getDistribution().getCommunicator();
 
     PartitionIO::getPartitionFileName( newFileName, writePartitions, comm );
 

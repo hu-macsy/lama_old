@@ -133,7 +133,7 @@ void MatrixAssembly<ValueType>::exchangeCOO(
 
     dist.computeOwners( owners, inIA );
 
-    const dmemo::Communicator& comm = dist.getReduceCommunicator();
+    const dmemo::Communicator& comm = dist.getCommunicator();
 
     SCAI_LOG_DEBUG( logger, comm << ": owners = " << owners )
 
@@ -206,7 +206,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
     const IndexType numColumns,
     common::BinaryOp op ) const
 {
-    SCAI_ASSERT_EQ_ERROR( dist.getReduceCommunicator(), *mComm, "dist has illegal communicator" )
+    SCAI_ASSERT_EQ_ERROR( dist.getCommunicator(), *mComm, "dist has illegal communicator" )
 
     checkLegalIndexes( dist.getGlobalSize(), numColumns );
 
@@ -410,7 +410,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildCOO(
 
         return buildOwnedCOO( dist, numColumns, op );
     }
-    else if ( dist.getReduceCommunicator() == *mComm )
+    else if ( dist.getCommunicator() == *mComm )
     {
         SCAI_LOG_INFO( logger, "build COO from assembly, same processor set" )
 
@@ -418,7 +418,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildCOO(
 
         return buildLocalCOO( dist, numColumns, op );
     }
-    else if ( dist.getReduceCommunicator().getType() == dmemo::Communicator::NO )
+    else if ( dist.getCommunicator().getType() == dmemo::Communicator::NO )
     {
         // distributed assembly -> replicated matrix 
 

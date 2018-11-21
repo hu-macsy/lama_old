@@ -75,8 +75,8 @@ static void partitionSourceIndexes( HArray<IndexType> & keepLocalIndexes,
                                     const Distribution& sourceDist )
 {
     SCAI_ASSERT_EQ_DEBUG( newOwnersOfLocalElements.size(), sourceDist.getLocalSize(), "sourceDist and newOwners must have same size" );
-    const auto rank = sourceDist.getReduceCommunicator().getRank();
-    const auto numPartitions = sourceDist.getReduceCommunicator().getSize();
+    const auto rank = sourceDist.getCommunicator().getRank();
+    const auto numPartitions = sourceDist.getCommunicator().getSize();
     const auto sourceNumLocal = sourceDist.getLocalSize();
 
     const auto rNewOwners = hostReadAccess( newOwnersOfLocalElements );

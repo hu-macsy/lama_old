@@ -434,7 +434,7 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
     SCAI_ASSERT_ERROR( colDist.isReplicated(), "here only replicated column distribution" );
 
     const Distribution& rowDist = this->getRowDistribution();
-    const Communicator& comm = rowDist.getReduceCommunicator();
+    const Communicator& comm = rowDist.getCommunicator();
 
     const MatrixStorage<ValueType>& localData = this->getLocalStorage();
 
@@ -798,7 +798,7 @@ void Matrix<ValueType>::hcat( const Matrix<ValueType>& m1, const Matrix<ValueTyp
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     auto rowDist = std::make_shared<BlockDistribution>( m1.getNumRows() + m2.getNumRows(), comm );
-    auto colDist = std::make_shared<NoDistribution>( m1.getNumColumns(), comm );
+    auto colDist = std::make_shared<NoDistribution>( m1.getNumColumns() );
 
     std::vector<const Matrix<ValueType>*> matrices;
 

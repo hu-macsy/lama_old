@@ -581,7 +581,7 @@ public:
     virtual void resize( dmemo::DistributionPtr distribution ) = 0;
 
     /** 
-     * @brief Replicate this vector, i.e. redistribute with NoDistribution( size(), comm )
+     * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )
      */
     void replicate();
 

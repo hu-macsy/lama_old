@@ -337,7 +337,7 @@ void _Matrix::writeToFile(
 
     bool isPartitioned;
 
-    const Communicator& comm = getRowDistribution().getReduceCommunicator();
+    const Communicator& comm = getRowDistribution().getCommunicator();
 
     PartitionIO::getPartitionFileName( newFileName, isPartitioned, comm );
 
@@ -614,7 +614,7 @@ void _Matrix::checkLocalStorageSizes( const _MatrixStorage& localStorage, const 
 {
     // make some 'global' checks to verify correct sizes on all processors
 
-    const Communicator& comm = rowDist.getReduceCommunicator();
+    const Communicator& comm = rowDist.getCommunicator();
 
     IndexType maxColumns = comm.max( localStorage.getNumColumns() );
 

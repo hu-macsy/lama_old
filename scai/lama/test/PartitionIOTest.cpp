@@ -453,7 +453,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr rowDist = testDists[i];
-        const Communicator& comm = rowDist->getReduceCommunicator();
+        const Communicator& comm = rowDist->getCommunicator();
 
         auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 

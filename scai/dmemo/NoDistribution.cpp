@@ -29,6 +29,7 @@
 
 // hpp
 #include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/NoCommunicator.hpp>
 
 // std
 #include <fstream>
@@ -47,9 +48,9 @@ SCAI_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
 
 /* ---------------------------------------------------------------------- */
 
-NoDistribution::NoDistribution( const IndexType globalSize, CommunicatorPtr comm ) : 
+NoDistribution::NoDistribution( const IndexType globalSize ):
 
-    Distribution( globalSize, comm )
+    Distribution( globalSize, Communicator::getCommunicatorPtr( Communicator::NO ) )
 {
 }
 

@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
     MatrixCreator::buildReplicatedDiag( matrix, storage, repN );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getReduceCommunicator() << ": buildReplicatedDiag: " << matrix
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix
                    << " from rep = " << repN << " x " << storage )
 
     const IndexType nRows = storage.getNumRows();
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
 
     MatrixCreator::buildReplicated( matrix, storage, repRow, repCol );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getReduceCommunicator() << ": buildReplicated " << matrix )
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicated " << matrix )
 
     // first check for correct sizes
 

@@ -50,8 +50,8 @@ namespace dmemo
  *  processor.
  *
  *  Usually, methods should take care of consistency among
- *  all processors, i.e. writes and update operations must be
- *  done on all partitions. But a replicated object can also be used
+ *  all processors of the current communicator, i.e. writes and update operations must be
+ *  done on all processes. But a non-distributed object can also be used
  *  like a private incarnation on each processor.
  */
 class COMMON_DLL_IMPORTEXPORT NoDistribution:
@@ -65,9 +65,8 @@ public:
     /** Constructor of NoDistribution 
      *
      *  @param[in] globalSize is the global size of the distributed object
-     *  @param[in] comm       specifies the set of processors that have an incarnation 
      */
-    NoDistribution( const IndexType globalSize, CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+    NoDistribution( const IndexType globalSize );
 
     virtual ~NoDistribution();
 

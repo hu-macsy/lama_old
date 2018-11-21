@@ -168,8 +168,6 @@ public:
 
     const Communicator& getCommunicator() const;
 
-    const Communicator& getReduceCommunicator() const;
-
     /** Getter routine for the communicator as shared pointer. */
 
     CommunicatorPtr getCommunicatorPtr() const;
@@ -212,7 +210,7 @@ public:
      * This method can be used to allocate data with the right size for any communication
      * that uses circular shifting for partition data.
      *
-     * Default implementation: getReduceCommunicator().max( getLocalSize() )
+     * Default implementation: getCommunicator().max( getLocalSize() )
      */
     virtual IndexType getMaxLocalSize() const;
 

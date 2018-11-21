@@ -388,7 +388,7 @@ void Vector<ValueType>::fillFromAssembly( const VectorAssembly<ValueType>& assem
     hmemo::HArray<ValueType> nonZeroValues;
  
     const dmemo::Distribution& dist = getDistribution();
-    const dmemo::Communicator& comm = dist.getReduceCommunicator();
+    const dmemo::Communicator& comm = dist.getCommunicator();
 
     if ( comm == assembly.getCommunicator() )
     {
@@ -415,7 +415,7 @@ template<typename ValueType>
 void Vector<ValueType>::disassemble( VectorAssembly<ValueType>& assembly, const IndexType offset ) const
 {
     const dmemo::Distribution& dist = getDistribution();
-    const dmemo::Communicator& comm = dist.getReduceCommunicator();
+    const dmemo::Communicator& comm = dist.getCommunicator();
 
     if ( comm == assembly.getCommunicator() )
     {

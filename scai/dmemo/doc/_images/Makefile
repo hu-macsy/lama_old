@@ -3,7 +3,7 @@ IMAGES = splitting block_distribution cyclic2_distribution genblock_distribution
 
 IMAGES_SVG = $(IMAGES:=.svg)
 
-all: $(IMAGES)
+all: $(IMAGES_SVG)
 
 clean:
 	rm -rf $(IMAGES_SVG) *.bak

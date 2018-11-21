@@ -115,7 +115,7 @@ void VectorAssembly<ValueType>::exchangeCOO(
 
     SCAI_LOG_DEBUG( logger, "owners = " << owners )
 
-    const dmemo::Communicator& comm = dist.getReduceCommunicator();
+    const dmemo::Communicator& comm = dist.getCommunicator();
     PartitionId np = comm.getSize();
 
     HArray<IndexType> perm;
@@ -173,7 +173,7 @@ void VectorAssembly<ValueType>::buildLocalData(
     const dmemo::Distribution& dist ) const
 {
     SCAI_ASSERT_EQ_ERROR( dist.getCommunicator(), *mComm, "VectorAssembly collected for comm = " << *mComm 
-                          << ", cannot be used to distribute onto " << dist.getReduceCommunicator() )
+                          << ", cannot be used to distribute onto " << dist.getCommunicator() )
 
     checkLegalIndexes( dist.getGlobalSize() );
 

@@ -145,18 +145,6 @@ const Communicator& Distribution::getCommunicator() const
     return *mCommunicator;
 }
 
-const Communicator& Distribution::getReduceCommunicator() const
-{
-    static NoCommunicator noComm;
-
-    if ( isReplicated() )
-    {
-        return noComm;
-    }
-    
-    return *mCommunicator;
-}
-
 /* ---------------------------------------------------------------------- */
 
 CommunicatorPtr Distribution::getCommunicatorPtr() const
@@ -168,7 +156,7 @@ CommunicatorPtr Distribution::getCommunicatorPtr() const
 
 IndexType Distribution::getMaxLocalSize() const
 {
-    return getReduceCommunicator().max( getLocalSize() );
+    return getCommunicator().max( getLocalSize() );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -194,14 +182,14 @@ void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<Inde
     ReadAccess<IndexType> rIndexes( indexes, ctx );
     WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
 
-    getReduceCommunicator().computeOwners( wOwners, *this, rIndexes, n );
+    getCommunicator().computeOwners( wOwners, *this, rIndexes, n );
 }
 
 /* ---------------------------------------------------------------------- */
 
 PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
 {
-    const Communicator& comm = getReduceCommunicator();
+    const Communicator& comm = getCommunicator();
 
     // sum reduction required for owner as other processors do not know it
 
@@ -230,7 +218,7 @@ void Distribution::allOwners( HArray<PartitionId>& owners, PartitionId root ) co
 {
     HArray<IndexType> indexes;
 
-    if ( getReduceCommunicator().getRank() == root )
+    if ( getCommunicator().getRank() == root )
     {
         // we need the owners only on the host processor
         // indexes = 0, 1, 2, ..., globalSize - 1
@@ -309,7 +297,7 @@ void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexT
         }
     }
 
-    utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, getReduceCommunicator().getSize() );
+    utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, getCommunicator().getSize() );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -327,7 +315,7 @@ template<typename T1, typename T2>
 void Distribution::replicate( T1* allValues, const T2* localValues ) const
 {
     SCAI_REGION( "Distribution.replicate" )
-    const Communicator& comm = getReduceCommunicator();
+    const Communicator& comm = getCommunicator();
     IndexType currentSize = getLocalSize();
     // Implemenation via cyclic shifting of the vector data and distribution
     IndexType maxLocalSize = comm.max( currentSize );
@@ -408,7 +396,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 {
     SCAI_REGION( "Distribution.replicateN" )
 
-    const Communicator& comm = getReduceCommunicator();
+    const Communicator& comm = getCommunicator();
 
     // Implemenation via cyclic shifting of the vector data and distribution
     // maximal number of elements needed to allocate sufficient receive buffer but also to avoid reallocations
@@ -545,7 +533,7 @@ void Distribution::replicateRagged(
     const IndexType allOffsets[] ) const
 {
     IndexType currentElemSize = getLocalSize();
-    const Communicator& comm = getReduceCommunicator();
+    const Communicator& comm = getCommunicator();
     // we need the offsets for allValues to store directly the values
     IndexType maxLocalSize = comm.max( currentElemSize );
     HArray<IndexType> indexesSend;

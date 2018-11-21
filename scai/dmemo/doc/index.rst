@@ -11,14 +11,16 @@ Description
 DMemo stands for **Distributed Memory** and is a library that provides distribution and communication
 routines for data structures using heterogeneous arrays.
 
-* A distribution defines a mapping of data (e.g. vectors, arrays) to the processors of the distributed-memory
-  platform.
+* A communicator is an object that stands for a group of processes that might run on arbitrary nodes
+  of the distributged memory platform. Methods are provided for data exchange between theses processes.
+* A distribution defines a mapping of data (e.g. vectors, arrays) to the processes of a communicator.
 * In contrary to the communication primitives provided by MPI, the
   communication routines provided here are more high-level routines that provide operations on arrays or
   vectors that involve communication, e.g. redistributions or halo exchange. Furthermore, they exploit
   C++ features like overloading and templates and by using the SCAI heterogeneous arrays they are aware 
   of valid instantions of the data to be communicated.
-* Building subgroups of processors that execute different tasks on disjoint processor subsets is supported.
+* Building subgroups of processors that execute different tasks on disjoint processor subsets is supported
+  (splitting communicators).
 
 ********
 Contents
@@ -53,16 +55,15 @@ Here is a short example:
 
 .. code-block:: c++
 
-    #include <scai/dmemo/Distribution.hpp>
+    #include <scai/dmemo/BlockDistribution.hpp>
 
-    using namespace scai::dmemo;
+    using namespace scai;
 
     // use the default communicator
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     IndexType size = 71;
-    float weight = 1.0;
-    DistributionPtr dist ( Distribution::getDistributionPtr( "CYCLIC", comm, size, weight ) );
+    dmemo::DistributionPtr dist ( new dmemo::BlockDistribution( size, comm ) );
 
 *********************
 Environment Variables
@@ -71,7 +72,7 @@ Environment Variables
 The default communicator is usually that communication library that has been
 used for the installation. If both are supported, it can be chosen:
 
-* ``SCAI_COMMUNICATOR`` ("MPI" or "NO" for no distributed communication)
+* ``SCAI_COMMUNICATOR`` ("MPI" for MPI parallelism or "NO" for serial execution without MPI)
 
 If a CUDA-Aware MPI installation is available, the following environment
 variable should be set:

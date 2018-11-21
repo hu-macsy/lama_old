@@ -365,9 +365,9 @@ void PartitionIO::write( const Distribution& distribution, const string& fileNam
 
     bool writePartitions;
 
-    getPartitionFileName( distFileName, writePartitions, distribution.getReduceCommunicator() );
+    getPartitionFileName( distFileName, writePartitions, distribution.getCommunicator() );
 
-    SCAI_LOG_INFO( logger, distribution.getReduceCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
+    SCAI_LOG_INFO( logger, distribution.getCommunicator() << ": write ( partitioned = " << writePartitions << " ) to " << distFileName )
 
     if ( writePartitions )
     {
