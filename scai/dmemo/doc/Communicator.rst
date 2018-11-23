@@ -30,12 +30,23 @@ Derived Classes
 * NoCommunicator is a dummy class for a single processor.
 * MPICommunicator uses MPI for the implementation of the communication routines.
 
-Communicator Factory
-^^^^^^^^^^^^^^^^^^^^
+The Communicator provides a factory that returns for each supported communicator type
+a corresponding object.
 
 .. code-block:: c++
 
    CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( Communicator::MPI );
+   CommunicatorPtr noComm = Communicator::getCommunicatorPtr( Communicator::NO );
+
+In many methods the communicator object is an optional argument. If it is omitted,
+the current communicator is taken.
+
+.. code-block:: c++
+
+   CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+The  communicator is either the default communicator or it might be 
+any other communicator that has been set as current communicator.
 
 Communicator Splitting
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -63,16 +74,23 @@ All processors with the same color will build a new communicator.
 
 After the processors are divided up into subgroups with a new communicator,
 the macro ``SCAI_DMEMO_TASK`` should be used to set this communicator as
-the actual communicator within the actual scope.
+the current communicator within the actual scope.
 
 .. code-block:: c++
 
+    CommunicatorPtr commWorld = Communicator::getCommunicatorPtr();
+
     {
-        // commTask becomes new default communicator
+        // commTask becomes new current communicator
 
         SCAI_DMEMO_TASK( commTask )
+
+        // define a block distribution, uses current communicator commTask
 
         auto dist = std::make_shared<BlockDistribution>( N ); 
         ...
     }
 
+    // this distribution now uses the original communicator commWorld
+
+    auto dist = std::make_shared<BlockDistribution>( N );

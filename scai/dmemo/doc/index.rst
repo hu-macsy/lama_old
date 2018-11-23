@@ -12,10 +12,10 @@ DMemo stands for **Distributed Memory** and is a library that provides distribut
 routines for data structures using heterogeneous arrays.
 
 * A communicator is an object that stands for a group of processes that might run on arbitrary nodes
-  of the distributged memory platform. Methods are provided for data exchange between theses processes.
+  of the distributed memory platform. Methods are provided for data exchange between theses processes.
 * A distribution defines a mapping of data (e.g. vectors, arrays) to the processes of a communicator.
 * In contrary to the communication primitives provided by MPI, the
-  communication routines provided here are more high-level routines that provide operations on arrays or
+  methods provided by a communicator are more high-level routines that provide operations on arrays or
   vectors that involve communication, e.g. redistributions or halo exchange. Furthermore, they exploit
   C++ features like overloading and templates and by using the SCAI heterogeneous arrays they are aware 
   of valid instantions of the data to be communicated.
@@ -65,6 +65,11 @@ Here is a short example:
     IndexType size = 71;
     dmemo::DistributionPtr dist ( new dmemo::BlockDistribution( size, comm ) );
 
+Please note that objects of the classes Distribution and Communicator should
+always be created as shared pointers as these objects have typically multiple owners,
+e.g. a distribution can be used for multiple vectors, and a communicator for different
+distributions.
+
 *********************
 Environment Variables
 *********************
@@ -73,6 +78,12 @@ The default communicator is usually that communication library that has been
 used for the installation. If both are supported, it can be chosen:
 
 * ``SCAI_COMMUNICATOR`` ("MPI" for MPI parallelism or "NO" for serial execution without MPI)
+
+When using processor arrays (2D, 3D) a default topology can be specified that
+is used to split up the available processes. The total number of processors must
+match the number of processors used in the default communicator.
+
+* ``SCAI_NP`` ("2x4", "2x2x2")
 
 If a CUDA-Aware MPI installation is available, the following environment
 variable should be set:
