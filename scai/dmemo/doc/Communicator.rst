@@ -20,7 +20,21 @@ between neighbored processors.
    comm->shiftArray( recvArray, sendArray, direction );
 
 * The method is a template method for different value types of the array.
-* The method must be called by all processors (SPMD mode).
+* The method must be called by all processors of the communicator (SPMD mode) 
+
+.. figure:: _images/shift.svg
+    :width: 500px
+    :align: center
+    :alt: ShiftArray
+
+    Shifting a heterogeneous array within a communicator.
+
+Per default, communication takes only place between host memory, i.e. read access
+for the send array and write access for the received array use both the Host context.
+If the send array has only a valid copy in CUDA memory, the data is copied from the
+GPU device to the host memory implicitly by the communication routine.
+If the communicator supports CUDA memory (e.g. for CUDA-aware MPI) or any other
+memory, the read and write access might also use the corresponding data directly.
 
 For a complete list of available routines we refer to the Doxygen system documentation.
 

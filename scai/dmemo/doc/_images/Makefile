@@ -1,5 +1,5 @@
 
-IMAGES = splitting block_distribution cyclic2_distribution genblock_distribution general_distribution grid_distribution
+IMAGES = splitting block_distribution cyclic2_distribution genblock_distribution general_distribution grid_distribution shift
 
 IMAGES_SVG = $(IMAGES:=.svg)
 
