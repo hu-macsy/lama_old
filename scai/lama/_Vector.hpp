@@ -650,7 +650,8 @@ private:
      *  @param[in] fileName is the name of the input file containing the full vector data
      *  @param[in] comm     specifies the tartet communicator for the single distribution
      */
-    void readFromSingleFile( const std::string& fileName, dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
+    void readFromSingleFile( const std::string& fileName, 
+                             dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     /** Read only the local part from a file, no communication here.
      *
@@ -685,6 +686,13 @@ private:
      *  must contain exactly the owned data. 
      */
     void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
+
+    /** Read a block 'partitioned' vector from multiple files. Each processor reads
+     *  its corresponding part (specified by its rank) from one file. The vector gets
+     *  a corresponding general block distribution.
+     */
+    void readFromPartitionedFile( const std::string& myPartitionFileName, 
+                                  dmemo::CommunicatorPtr comm = dmemo::CommunicatorPtr() );
 };
 
 /* ========================================================================= */

@@ -307,6 +307,8 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
             PartitionIO::write( *dist, distFileName );
         }
 
+        SCAI_LOG_INFO( logger, *comm << ": write vector to file " << vectorFileName << ": " << vector )
+
         vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
 
         DenseVector<ValueType> readVector;
@@ -315,14 +317,14 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         {
             readVector.readFromFile( vectorFileName, distFileName );
 
-            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName
+            SCAI_LOG_INFO( logger, *comm << ": read vector ( " << vectorFileName
                            << " ) with dist ( " << distFileName << " ): " << readVector )
         }
         else
         {
             readVector.readFromFile( vectorFileName );
 
-            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName << " ): " << readVector )
+            SCAI_LOG_INFO( logger, *comm << ": read vector ( " << vectorFileName << " ): " << readVector )
         }
 
         // we replicate now the vector, proves same distribution and same values

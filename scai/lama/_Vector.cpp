@@ -208,10 +208,8 @@ void _Vector::readFromSingleFile( const std::string& fileName, const Distributio
 
 /* ---------------------------------------------------------------------------------*/
 
-void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
+void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, CommunicatorPtr comm )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     bool errorFlag = false;
 
     IndexType localSize = 0;
@@ -219,13 +217,6 @@ void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, D
     try
     {
         localSize = readLocalFromFile( myPartitionFileName );
-
-        if ( dist.get() )
-        {
-            // size of storage must match the local size of distribution
-
-            SCAI_ASSERT_EQUAL( dist->getLocalSize(), localSize, "serious mismatch: local matrix in " << myPartitionFileName << " has illegal local size" )
-        }
     }
     catch ( common::Exception& e )
     {
@@ -240,18 +231,50 @@ void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, D
         COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
     }
 
-    DistributionPtr vectorDist = dist;
+    // we have no distribution so assume a general block distribution
 
-    if ( !vectorDist.get() )
-    {
-        // we have no distribution so assume a general block distribution
+    IndexType globalSize = comm->sum( localSize );
 
-        IndexType globalSize = comm->sum( localSize );
-
-        vectorDist.reset( new GenBlockDistribution( globalSize, localSize, comm ) );
-    }
+    auto vectorDist = std::make_shared<GenBlockDistribution>( globalSize, localSize, comm );
 
     setDistributionPtr( vectorDist );   // distribution matches size of local part
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
+{
+    SCAI_ASSERT_ERROR( dist.get(), "NULL pointer for distribution" )
+
+    const Communicator& comm = dist->getCommunicator();
+
+    bool errorFlag = false;
+
+    IndexType localFileSize = 0;
+
+    try
+    {
+        localFileSize = readLocalFromFile( myPartitionFileName );
+
+        // size of storage must match the local size of distribution
+
+        SCAI_ASSERT_EQ_ERROR( dist->getLocalSize(), localFileSize, 
+                              "serious mismatch: local matrix in " << myPartitionFileName << " has illegal local size" )
+    }
+    catch ( common::Exception& e )
+    {
+        SCAI_LOG_ERROR( logger, comm << ": failed to read " << myPartitionFileName << ": " << e.what() )
+        errorFlag = true;
+    }
+
+    errorFlag = comm.any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
+    }
+
+    setDistributionPtr( dist ); 
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -326,9 +349,18 @@ void _Vector::readFromFile( const std::string& fileName, CommunicatorPtr comm )
 
     std::string newFileName = fileName;
 
-    PartitionIO::getSingleFileName( newFileName );   // ignore any rank
+    bool isPartitioned;
 
-    readFromSingleFile( newFileName, comm );
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+
+    if ( !isPartitioned )
+    {
+        readFromSingleFile( newFileName, comm );
+    }
+    else
+    {
+        readFromPartitionedFile( newFileName, comm );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/
