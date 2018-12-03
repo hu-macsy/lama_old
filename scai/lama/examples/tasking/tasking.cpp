@@ -55,7 +55,7 @@ int main( int argc, const char* argv[] )
         common::Settings::parseArgs( argc, argv );
     }
 
-    IndexType NP = 1000;       // (default) number of problems
+    IndexType NP = 10;       // (default) number of problems
     IndexType NV = 1000000;    // (default) size of each problem
 
     if ( argc >= 2 )
@@ -105,6 +105,8 @@ int main( int argc, const char* argv[] )
                        << ", intraProblem = " << *intraProblem << ", interProblem = " << *interProblem << std::endl;
     double sum = 0;
 
+    auto result = fill<DenseVector<double>>( blockDistribution( 100, intraProblem ), 0.0 );
+
     // now loop over my assigned problems that is first dimension of distributed grid
 
     for ( IndexType i = dist->localLB()[0]; i < dist->localUB()[0]; ++i ) 
@@ -113,7 +115,7 @@ int main( int argc, const char* argv[] )
 
         SCAI_DMEMO_TASK( intraProblem )
 
-        auto dist = std::make_shared<dmemo::BlockDistribution>( NV );
+        auto dist = blockDistribution( NV );  // uses now default communicator intraProblem
         auto v = linearDenseVector<double>( dist, double(i), double(1) / NV );
         std::ostringstream out;
         out << "out_" << i << "_.mtx";
@@ -121,9 +123,11 @@ int main( int argc, const char* argv[] )
         auto v1 = read<SparseVector<double>>( out.str() );
         v1.redistribute( dist );
         sum += v1.sum();  
+        result += 1.0;
     }
  
     double allSum = interProblem->sum( sum );
+    interProblem->sumArray( result.getLocalValues() );
 
     std::cout << *commWorld << ": local sum = " << sum << ", all = " << allSum << std::endl;
 }

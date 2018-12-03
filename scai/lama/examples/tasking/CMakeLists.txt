@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file examples/image/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2018
@@ -22,16 +22,18 @@
  # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
- # @author Jan Ecker
- # @date 02.12.2015
+ # @brief CMake configuration file for example of image processing
+ # @author Thomas Brandes
+ # @date 04.05.2017
 ###
 
 include ( scai_macro/scai_add_example )
 include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 
-foreach ( executable blas1 matrix matrix1 simple vector vector_exp vector_op )
+set ( EXAMPLES tasking tasking2 )
+
+foreach ( executable ${EXAMPLES} )
 
     scai_add_example( EXECUTABLE ${executable}.exe
                       FILES      ${executable}.cpp )
@@ -49,9 +51,4 @@ scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 install ( FILES       ${EXAMPLE_FILES}
           DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-## install the 'stand-alone' CMakeLists.txt
-
-install ( FILES       CMakeLists_install.txt
-          RENAME      CMakeLists.txt
-          DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
