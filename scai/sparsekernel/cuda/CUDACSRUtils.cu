@@ -436,7 +436,7 @@ void CUDACSRUtils::convertCSR2CSC(
     IndexType numValues )
 {
     SCAI_REGION( "CUDA.CSRUtils.CSR2CSC" )
-    SCAI_LOG_ERROR( logger, "convertCSR2CSC of " << numRows << " x " << numColumns << ", nnz = " << numValues )
+    SCAI_LOG_INFO( logger, "convertCSR2CSC of " << numRows << " x " << numColumns << ", nnz = " << numValues )
     // Sort the csrJA ( same as cooJA ), apply it to cooIA and cooValues
     IndexType* cooIA;
     SCAI_CUDA_RT_CALL( cudaMalloc( &cooIA, sizeof( IndexType ) * numValues ),

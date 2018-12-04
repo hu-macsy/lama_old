@@ -199,6 +199,25 @@ int main( int argc, const char* argv[] )
                 matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
                 break;
             }
+ 
+            case 4:  
+            {
+                common::Stencil4D<DefaultReal> stencil( nPoints );
+                IndexType n2 = n1;
+                stencilSpecification >> n2;
+                IndexType n3 = n2;
+                stencilSpecification >> n3;
+                IndexType n4 = n3;
+                stencilSpecification >> n4;
+                common::Grid4D grid( n1, n2, n3, n4 );
+                matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
+                break;
+            }
+ 
+            default:
+            {
+                COMMON_THROWEXCEPTION( "illegal stencil dimension, nDims = " << nDims )
+            }
         }
 
         std::cout << "Stencil matrix = " << *matrixPtr << std::endl;

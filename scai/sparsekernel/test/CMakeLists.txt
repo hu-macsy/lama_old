@@ -37,6 +37,7 @@ set ( CXX_SOURCES
       ELLUtilsTest
       JDSUtilsTest
       StencilKernelTest
+      StencilUtilsTest
 ) 
 
 scai_test ( EXECUTABLE sparsekernelTest FILES ${CXX_SOURCES} UNIT_TEST RUN )

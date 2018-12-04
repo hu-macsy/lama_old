@@ -30,6 +30,7 @@
 // hpp
 #include "StencilStorage.hpp"
 #include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
+#include <scai/sparsekernel/StencilUtils.hpp>
 
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
@@ -70,6 +71,8 @@ using namespace dmemo;
 using namespace utilskernel;
 using namespace tasking;
 
+using sparsekernel::StencilUtils;
+
 using std::unique_ptr;
 using std::shared_ptr;
 using common::TypeTraits;
@@ -86,6 +89,7 @@ StencilStorage<ValueType>::StencilStorage() :
     mGrid( common::Grid1D( 0 ) ),
     mStencil( common::Stencil1D<ValueType>() )
 {
+    StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
 template<typename ValueType>
@@ -98,6 +102,8 @@ StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const commo
     // #dimension of grid and stencil must be equal
 
     SCAI_ASSERT_EQ_ERROR( grid.nDims(), stencil.nDims(), "dimensions of grid an stencil must be equal" )
+
+    StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
 template<typename ValueType>
@@ -462,63 +468,6 @@ ValueType StencilStorage<ValueType>::getValue( const IndexType i, const IndexTyp
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SyncToken* StencilStorage<ValueType>::incGEMV(
-    HArray<ValueType>& result,
-    const ValueType alpha,
-    const HArray<ValueType>& x,
-    bool async ) const
-{
-    LAMAKernel<sparsekernel::StencilKernelTrait::stencilGEMV<ValueType> > stencilGEMV;
-
-    ContextPtr loc = this->getContextPtr();
-
-    stencilGEMV.getSupportedContext( loc );
-
-    unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
-
-    IndexType width[2 * SCAI_GRID_MAX_DIMENSION];
-
-    mGrid.getDistances( gridDistances );
-
-    mStencil.getWidth( width );
-
-    std::unique_ptr<int[]> stencilOffsets( new int[ mStencil.nPoints() ] );
-
-    mStencil.getLinearOffsets( stencilOffsets.get(), gridDistances );
-
-    SCAI_LOG_INFO ( logger, "incGEMV, grid = " << mGrid << ", stencil = " << mStencil << ", done at " << *loc )
-
-    ReadAccess<ValueType> rX( x, loc );
-    WriteAccess<ValueType> wResult( result, loc );
-
-    stencilGEMV[loc]( wResult.get(), alpha, rX.get(), 
-                      mGrid.nDims(), mGrid.sizes(), width, gridDistances, mGrid.borders(),
-                      mStencil.nPoints(), mStencil.positions(), mStencil.values(),
-                      stencilOffsets.get() );
-
-    if ( async )
-    {
-        syncToken->pushRoutine( wResult.releaseDelayed() );
-        syncToken->pushRoutine( rX.releaseDelayed() );
-    }
-
-    return syncToken.release();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void StencilStorage<ValueType>::jacobiIterate(
     HArray<ValueType>& solution,
     const HArray<ValueType>& oldSolution,
@@ -550,9 +499,9 @@ void StencilStorage<ValueType>::jacobiIterate(
 
     HArrayUtils::arrayPlusArray( solution, alpha, rhs, ValueType( 1 ) - omega, oldSolution, getContextPtr() );
 
-    const bool async = false;
+    // incGEMV( solution, -alpha, oldSolution, async );
 
-    incGEMV( solution, -alpha, oldSolution, async );
+    matrixTimesVector( solution, -alpha, oldSolution, ValueType( 1 ), solution, common::MatrixOp::NORMAL );
 
     *diagonalPtr = diagonalValue;
 }
@@ -594,25 +543,15 @@ void StencilStorage<ValueType>::matrixTimesVector(
 
     ContextPtr loc = this->getContextPtr();
 
-    // GEMV only implemented as y += A * x, so split
-
-    // Step 1: result = beta * y
-
-    if ( beta == common::Constants::ZERO )
-    {
-        result.clear();
-        result.resize( getNumRows() );
-        HArrayUtils::setScalar( result, ValueType( 0 ), BinaryOp::COPY, loc );
-    }
-    else
-    {
-        SCAI_ASSERT_EQUAL( y.size(), getNumRows(), "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
-    }
-
     bool async = false;
 
-    SyncToken* token = incGEMV( result, alpha, x, async );
+    IndexType gridSize = mGrid.size();
+    IndexType nDims = mGrid.nDims();
+    IndexType nPoints = mStencil.nPoints();
+
+    SyncToken* token = StencilUtils::gemv( result, alpha, x, beta, y, 
+                                           gridSize, nDims, mGrid.sizes(), nPoints, 
+                                           mGridInfo, mStencilInfo, mStencilValues, async, loc );
 
     SCAI_ASSERT( token == NULL, "syncrhonous execution cannot have token" )
 }
@@ -654,25 +593,15 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
 
     ContextPtr loc = this->getContextPtr();
 
-    // GEMV only implemented as y += A * x, so split
-
-    // Step 1: result = beta * y
-
-    if ( beta == common::Constants::ZERO )
-    {
-        result.clear();
-        result.resize( getNumRows() );
-        HArrayUtils::setScalar( result, ValueType( 0 ), BinaryOp::COPY, loc );
-    }
-    else
-    {
-        SCAI_ASSERT_EQUAL( y.size(), getNumRows(), "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
-    }
+    IndexType gridSize = mGrid.size();
+    IndexType nDims = mGrid.nDims();
+    IndexType nPoints = mStencil.nPoints();
 
     bool async = true;
 
-    SyncToken* token = incGEMV( result, alpha, x, async );
+    SyncToken* token = StencilUtils::gemv( result, alpha, x, beta, y, 
+                                           gridSize, nDims, mGrid.sizes(), 
+                                           nPoints, mGridInfo, mStencilInfo, mStencilValues, async, loc );
 
     return token;
 }
@@ -695,6 +624,8 @@ void StencilStorage<ValueType>::assign( const _MatrixStorage& other )
     mGrid = otherStencilStorage.mGrid;
 
     mStencil = otherStencilStorage.mStencil;
+
+    StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -719,6 +650,8 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
     }
 
     mStencil.transpose( otherStencilStorage.mStencil );
+
+    StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -728,6 +661,8 @@ void StencilStorage<ValueType>::clear()
 {
     mGrid = common::Grid1D( 0 );
     mStencil = common::Stencil1D<ValueType>( 1 );
+
+    StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
 /* --------------------------------------------------------------------------- */

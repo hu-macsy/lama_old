@@ -215,6 +215,51 @@ BOOST_AUTO_TEST_CASE( stencil4Test )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( stencil4DConstructorTest )
+{
+    typedef double ValueType;
+
+    Stencil4D<ValueType> stencil4a( 81 );
+
+    BOOST_CHECK_THROW(
+    {
+        Stencil4D<ValueType> stencil4b( 80 );
+    }, common::Exception );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( stencilEqualTest )
+{
+    typedef double ValueType;
+
+    Stencil2D<ValueType> stencilA;
+    Stencil2D<ValueType> stencilB;
+
+    stencilA.addPoint( 0, 0, 2 );
+    stencilA.addPoint( -1, 0, -1 );
+    stencilA.addPoint( 0, 1, -1 );
+
+    stencilB.addPoint( -1, 0, -1 );
+    stencilB.addPoint( 0, 1, -1 );
+    stencilB.addPoint( 0, 0, 2 );
+
+    // two stencils should be equal even if elements have been added in different order
+
+    BOOST_CHECK_EQUAL( stencilA, stencilB );
+
+    Stencil3D<ValueType> stencil3A;        // zero matrix
+    Stencil3D<ValueType> stencil3B( 1 );   // diagonal matrix with zero
+    Stencil3D<ValueType> stencil3C( 7 );
+
+    // compare with empty stencils should not cause problems
+
+    BOOST_CHECK_EQUAL( stencil3A, stencil3B );   // value in 1-point stencil is zero
+    BOOST_CHECK( stencil3A != stencil3C );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( validPointTest )
 {
     typedef double ValueType;

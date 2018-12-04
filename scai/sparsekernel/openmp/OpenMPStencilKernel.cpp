@@ -27,6 +27,11 @@
  * @date 28.04.2017
  */
 
+#include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
+#include <scai/sparsekernel/StencilKernelTrait.hpp>
+
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
+
 #include <scai/hmemo/HArray.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/tracing.hpp>
@@ -34,6 +39,7 @@
 #include <scai/common/Grid.hpp>
 #include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
 #include <scai/sparsekernel/StencilKernelTrait.hpp>
+#include <scai/tasking/TaskSyncToken.hpp>
 
 namespace scai
 {
@@ -52,7 +58,7 @@ void OpenMPStencilKernel::stencilLocalSizes1(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     #pragma omp parallel for
 
@@ -66,7 +72,7 @@ void OpenMPStencilKernel::stencilLocalSizes1(
         {
             IndexType pos[] = { i };
 
-            bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[p], gridSizes, gridBorders, 1 );
+            bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[p], gridSizes, gridBorders, 1 );
 
             if ( valid )
             {
@@ -88,7 +94,7 @@ void OpenMPStencilKernel::stencilLocalSizes2(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     #pragma omp parallel for
     for ( IndexType i = 0; i < gridSizes[0]; ++i )
@@ -103,7 +109,7 @@ void OpenMPStencilKernel::stencilLocalSizes2(
             {
                 IndexType pos[] = { i, j };
 
-                bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[2 * p], gridSizes, gridBorders, 2 );
+                bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[2 * p], gridSizes, gridBorders, 2 );
 
                 if ( valid )
                 {
@@ -124,7 +130,7 @@ void OpenMPStencilKernel::stencilLocalSizes3(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     #pragma omp parallel for
 
@@ -142,7 +148,7 @@ void OpenMPStencilKernel::stencilLocalSizes3(
                 {
                     IndexType pos[] = { i, j, k };
 
-                    bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[3 * p], gridSizes, gridBorders, 3 );
+                    bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[3 * p], gridSizes, gridBorders, 3 );
 
                     if ( valid )
                     {
@@ -164,7 +170,7 @@ void OpenMPStencilKernel::stencilLocalSizes4(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     #pragma omp parallel for
 
@@ -184,7 +190,7 @@ void OpenMPStencilKernel::stencilLocalSizes4(
                     {
                         IndexType pos[] = { i, j, k, m};
 
-                        bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[4 * p], gridSizes, gridBorders, 4 );
+                        bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[4 * p], gridSizes, gridBorders, 4 );
 
                         if ( valid )
                         {
@@ -208,23 +214,23 @@ void OpenMPStencilKernel::stencilLocalSizes(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     SCAI_REGION( "OpenMP.Stencil.LocalSizes" )
 
 
     switch ( nDims ) 
     {
-        case 1 : stencilLocalSizes1( sizes, gridSizes, gridDistances, gridBorders, nPoints, stencilNodes );
+        case 1 : stencilLocalSizes1( sizes, gridSizes, gridDistances, gridBorders, nPoints, stencilPositions );
                  break;
 
-        case 2 : stencilLocalSizes2( sizes, gridSizes, gridDistances, gridBorders, nPoints, stencilNodes );
+        case 2 : stencilLocalSizes2( sizes, gridSizes, gridDistances, gridBorders, nPoints, stencilPositions );
                  break;
 
-        case 3 : stencilLocalSizes3( sizes, gridSizes, gridDistances, gridBorders, nPoints, stencilNodes );
+        case 3 : stencilLocalSizes3( sizes, gridSizes, gridDistances, gridBorders, nPoints, stencilPositions );
                  break;
 
-        case 4 : stencilLocalSizes4( sizes, gridSizes, gridDistances, gridBorders, nPoints, stencilNodes );
+        case 4 : stencilLocalSizes4( sizes, gridSizes, gridDistances, gridBorders, nPoints, stencilPositions );
                  break;
 
         default: COMMON_THROWEXCEPTION( "stencilLocalSizes for nDims = " << nDims << " not supported yet" )
@@ -242,7 +248,7 @@ void OpenMPStencilKernel::stencilLocalCSR1(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int /* stencilOffset */ []  )
 {
@@ -258,7 +264,7 @@ void OpenMPStencilKernel::stencilLocalCSR1(
         {
             IndexType pos[] = { i };
 
-            bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[p], gridSizes, gridBorders, 1 );
+            bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[p], gridSizes, gridBorders, 1 );
 
             if ( !valid )
             {   
@@ -286,7 +292,7 @@ void OpenMPStencilKernel::stencilLocalCSR2(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] /* stencilOffset[] */ )
 {
@@ -304,7 +310,7 @@ void OpenMPStencilKernel::stencilLocalCSR2(
             {
                 IndexType pos[] = { i, j };
     
-                bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[2 * p], gridSizes, gridBorders, 2 );
+                bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[2 * p], gridSizes, gridBorders, 2 );
 
                 if ( !valid )
                 {   
@@ -333,7 +339,7 @@ void OpenMPStencilKernel::stencilLocalCSR3(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -353,7 +359,7 @@ void OpenMPStencilKernel::stencilLocalCSR3(
                 {
                     IndexType pos[] = { i, j, k };
     
-                    bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[3 * p], gridSizes, gridBorders, 3 );
+                    bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[3 * p], gridSizes, gridBorders, 3 );
 
                     if ( !valid )
                     {   
@@ -383,7 +389,7 @@ void OpenMPStencilKernel::stencilLocalCSR4(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -405,7 +411,7 @@ void OpenMPStencilKernel::stencilLocalCSR4(
                     {
                         IndexType pos[] = { i, j, k, m };
     
-                        bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[4 * p], gridSizes, gridBorders, 4 );
+                        bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[4 * p], gridSizes, gridBorders, 4 );
      
                         if ( !valid )
                         {   
@@ -437,7 +443,7 @@ void OpenMPStencilKernel::stencilLocalCSR(
     const IndexType gridDistances[],
     const common::Grid::BorderType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
@@ -446,19 +452,19 @@ void OpenMPStencilKernel::stencilLocalCSR(
     switch ( nDims ) 
     {
         case 1 : stencilLocalCSR1( csrJA, csrValues, csrIA, gridSizes, gridDistances, gridBorders,
-                                   nPoints, stencilNodes, stencilVal, stencilOffset );
+                                   nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 2 : stencilLocalCSR2( csrJA, csrValues, csrIA, gridSizes, gridDistances, gridBorders,
-                                   nPoints, stencilNodes, stencilVal, stencilOffset );
+                                   nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 3 : stencilLocalCSR3( csrJA, csrValues, csrIA, gridSizes, gridDistances, gridBorders,
-                                   nPoints, stencilNodes, stencilVal, stencilOffset );
+                                   nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 4 : stencilLocalCSR4( csrJA, csrValues, csrIA, gridSizes, gridDistances, gridBorders,
-                                   nPoints, stencilNodes, stencilVal, stencilOffset );
+                                   nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         default: COMMON_THROWEXCEPTION( "stencilLocalCSR for nDims = " << nDims << " not supported yet" )
@@ -500,7 +506,7 @@ void OpenMPStencilKernel::stencilHaloSizes1(
     const IndexType globalGridSizes[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     const IndexType nDims = 1;
 
@@ -525,7 +531,7 @@ void OpenMPStencilKernel::stencilHaloSizes1(
         {
             IndexType globalPos[] = { iGlobal };
 
-            bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
+            bool valid = common::Grid::getOffsetPos( globalPos, &stencilPositions[nDims * p], globalGridSizes, globalGridBorders, nDims );
 
             if ( !valid )
             {
@@ -554,7 +560,7 @@ void OpenMPStencilKernel::stencilHaloSizes2(
     const IndexType globalGridSizes[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     const IndexType nDims = 2;
 
@@ -577,7 +583,7 @@ void OpenMPStencilKernel::stencilHaloSizes2(
             {
                 IndexType globalPos[] = { iGlobal, jGlobal };
 
-                bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
+                bool valid = common::Grid::getOffsetPos( globalPos, &stencilPositions[nDims * p], globalGridSizes, globalGridBorders, nDims );
 
                 if ( !valid )
                 {
@@ -607,7 +613,7 @@ void OpenMPStencilKernel::stencilHaloSizes3(
     const IndexType globalGridSizes[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     const IndexType nDims = 3;
 
@@ -634,7 +640,7 @@ void OpenMPStencilKernel::stencilHaloSizes3(
                 {
                     IndexType globalPos[] = { iGlobal, jGlobal, kGlobal };
                 
-                    bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
+                    bool valid = common::Grid::getOffsetPos( globalPos, &stencilPositions[nDims * p], globalGridSizes, globalGridBorders, nDims );
                 
                     if ( !valid )
                     {   
@@ -665,7 +671,7 @@ void OpenMPStencilKernel::stencilHaloSizes4(
     const IndexType globalGridSizes[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     const IndexType nDims = 4;
 
@@ -694,7 +700,7 @@ void OpenMPStencilKernel::stencilHaloSizes4(
                     {
                         IndexType globalPos[] = { iGlobal, jGlobal, kGlobal, mGlobal };
                     
-                        bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
+                        bool valid = common::Grid::getOffsetPos( globalPos, &stencilPositions[nDims * p], globalGridSizes, globalGridBorders, nDims );
                     
                         if ( !valid )
                         {   
@@ -727,26 +733,26 @@ void OpenMPStencilKernel::stencilHaloSizes(
     const IndexType globalGridSizes[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[] )
+    const int stencilPositions[] )
 {
     SCAI_REGION( "OpenMP.Stencil.HaloSizes" )
 
     switch ( nDims ) 
     {
         case 1 : stencilHaloSizes1( sizes, localGridSizes, localGridDistances, 
-                                    localLB, globalGridSizes, globalGridBorders, nPoints, stencilNodes );
+                                    localLB, globalGridSizes, globalGridBorders, nPoints, stencilPositions );
                  break;
 
         case 2 : stencilHaloSizes2( sizes, localGridSizes, localGridDistances, 
-                                    localLB, globalGridSizes, globalGridBorders, nPoints, stencilNodes );
+                                    localLB, globalGridSizes, globalGridBorders, nPoints, stencilPositions );
                  break;
 
         case 3 : stencilHaloSizes3( sizes, localGridSizes, localGridDistances, 
-                                    localLB, globalGridSizes, globalGridBorders, nPoints, stencilNodes );
+                                    localLB, globalGridSizes, globalGridBorders, nPoints, stencilPositions );
                  break;
 
         case 4 : stencilHaloSizes4( sizes, localGridSizes, localGridDistances, 
-                                    localLB, globalGridSizes, globalGridBorders, nPoints, stencilNodes );
+                                    localLB, globalGridSizes, globalGridBorders, nPoints, stencilPositions );
                  break;
 
         default: COMMON_THROWEXCEPTION( "stencilHaloSizes for nDims = " << nDims << " not supported yet" )
@@ -767,7 +773,7 @@ void OpenMPStencilKernel::stencilHaloCSR1(
     const IndexType globalGridDistances[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -796,7 +802,7 @@ void OpenMPStencilKernel::stencilHaloCSR1(
         {
             IndexType globalPos[] = { iGlobal };
 
-            bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
+            bool valid = common::Grid::getOffsetPos( globalPos, &stencilPositions[nDims * p], globalGridSizes, globalGridBorders, nDims );
 
             if ( !valid )
             {
@@ -831,7 +837,7 @@ void OpenMPStencilKernel::stencilHaloCSR2(
     const IndexType globalGridDistances[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -860,7 +866,7 @@ void OpenMPStencilKernel::stencilHaloCSR2(
             {
                 IndexType globalPos[] = { iGlobal, jGlobal };
 
-                bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
+                bool valid = common::Grid::getOffsetPos( globalPos, &stencilPositions[nDims * p], globalGridSizes, globalGridBorders, nDims );
 
                 if ( !valid )
                 {
@@ -896,7 +902,7 @@ void OpenMPStencilKernel::stencilHaloCSR3(
     const IndexType globalGridDistances[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -931,7 +937,7 @@ void OpenMPStencilKernel::stencilHaloCSR3(
                 {
                     IndexType globalPos[] = { iGlobal, jGlobal, kGlobal };
                 
-                    bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
+                    bool valid = common::Grid::getOffsetPos( globalPos, &stencilPositions[nDims * p], globalGridSizes, globalGridBorders, nDims );
                 
                     if ( !valid )
                     {   
@@ -969,7 +975,7 @@ void OpenMPStencilKernel::stencilHaloCSR4(
     const IndexType globalGridDistances[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -1005,7 +1011,7 @@ void OpenMPStencilKernel::stencilHaloCSR4(
                     {
                         IndexType globalPos[] = { iGlobal, jGlobal, kGlobal, mGlobal };
                     
-                        bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
+                        bool valid = common::Grid::getOffsetPos( globalPos, &stencilPositions[nDims * p], globalGridSizes, globalGridBorders, nDims );
                     
                         if ( !valid )
                         {   
@@ -1045,7 +1051,7 @@ void OpenMPStencilKernel::stencilHaloCSR(
     const IndexType globalGridDistances[],
     const common::Grid::BorderType globalGridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
@@ -1055,22 +1061,22 @@ void OpenMPStencilKernel::stencilHaloCSR(
     {
         case 1 : stencilHaloCSR1( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
                                   globalGridSizes, globalGridDistances, globalGridBorders,
-                                  nPoints, stencilNodes, stencilVal, stencilOffset );
+                                  nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 2 : stencilHaloCSR2( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
                                   globalGridSizes, globalGridDistances, globalGridBorders,
-                                  nPoints, stencilNodes, stencilVal, stencilOffset );
+                                  nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 3 : stencilHaloCSR3( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
                                   globalGridSizes, globalGridDistances, globalGridBorders,
-                                  nPoints, stencilNodes, stencilVal, stencilOffset );
+                                  nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 4 : stencilHaloCSR4( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
                                   globalGridSizes, globalGridDistances, globalGridBorders,
-                                  nPoints, stencilNodes, stencilVal, stencilOffset );
+                                  nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         default: COMMON_THROWEXCEPTION( "stencilHaloCSR for nDims = " << nDims << " not supported yet" )
@@ -1182,7 +1188,7 @@ void OpenMPStencilKernel::stencilGEMV3Inner(
     const IndexType k0 = gridBounds[4];
     const IndexType k1 = gridBounds[5];
 
-    SCAI_LOG_INFO( logger,  "stencilGEMV3Inner on " << i0 << " - " << i1 
+    SCAI_LOG_DEBUG( logger,  "stencilGEMV3Inner on " << i0 << " - " << i1 
                              << " x " << j0 << " - " << j1 
                              << " x " << k0 << " - " << k1  )
 
@@ -1314,9 +1320,9 @@ void OpenMPStencilKernel::stencilGEMV1Border(
     const IndexType gridSizes[],
     const IndexType gridBounds[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const IndexType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -1340,7 +1346,7 @@ void OpenMPStencilKernel::stencilGEMV1Border(
         {
             IndexType pos[] = { i };
 
-            bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[nDims * p], gridSizes, gridBorders, nDims );
+            bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[nDims * p], gridSizes, gridBorders, nDims );
 
             if ( !valid )
             {
@@ -1366,9 +1372,9 @@ void OpenMPStencilKernel::stencilGEMV2Border(
     const IndexType gridSizes[],
     const IndexType gridBounds[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const IndexType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -1402,7 +1408,7 @@ void OpenMPStencilKernel::stencilGEMV2Border(
             {
                 IndexType pos[] = { i, j };
 
-                bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[nDims * p], gridSizes, gridBorders, nDims );
+                bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[nDims * p], gridSizes, gridBorders, nDims );
 
                 if ( !valid )
                 {
@@ -1429,9 +1435,9 @@ void OpenMPStencilKernel::stencilGEMV3Border(
     const IndexType gridSizes[],
     const IndexType gridBounds[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const IndexType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -1446,7 +1452,7 @@ void OpenMPStencilKernel::stencilGEMV3Border(
     const IndexType k0 = gridBounds[4];
     const IndexType k1 = gridBounds[5];
 
-    SCAI_LOG_INFO( logger,  "stencilGEMV3Border on " << i0 << " - " << i1 
+    SCAI_LOG_DEBUG( logger,  "stencilGEMV3Border on " << i0 << " - " << i1 
                              << " x " << j0 << " - " << j1 
                              << " x " << k0 << " - " << k1  )
 
@@ -1470,7 +1476,7 @@ void OpenMPStencilKernel::stencilGEMV3Border(
                 {
                     IndexType pos[] = { i, j, k };
 
-                    bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[nDims * p], gridSizes, gridBorders, nDims );
+                    bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[nDims * p], gridSizes, gridBorders, nDims );
 
                     if ( !valid )
                     {
@@ -1499,9 +1505,9 @@ void OpenMPStencilKernel::stencilGEMV4Border(
     const IndexType gridSizes[],
     const IndexType gridBounds[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const IndexType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int[] )
 {
@@ -1547,7 +1553,7 @@ void OpenMPStencilKernel::stencilGEMV4Border(
                     {
                         IndexType pos[] = { i, j, k, m };
 
-                        bool valid = common::Grid::getOffsetPos( pos, &stencilNodes[nDims * p], gridSizes, gridBorders, nDims );
+                        bool valid = common::Grid::getOffsetPos( pos, &stencilPositions[nDims * p], gridSizes, gridBorders, nDims );
     
                         if ( !valid )
                         {
@@ -1578,28 +1584,28 @@ void OpenMPStencilKernel::stencilGEMVBorder(
     const IndexType gridSizes[],
     const IndexType gridBounds[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const IndexType gridBorders[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
     switch ( nDims ) 
     {
         case 1 : stencilGEMV1Border( result, alpha, x, gridSizes, gridBounds, gridDistances, gridBorders,
-                                     nPoints, stencilNodes, stencilVal, stencilOffset );
+                                     nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 2 : stencilGEMV2Border( result, alpha, x, gridSizes, gridBounds, gridDistances, gridBorders,
-                                     nPoints, stencilNodes, stencilVal, stencilOffset );
+                                     nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 3 : stencilGEMV3Border( result, alpha, x, gridSizes, gridBounds, gridDistances, gridBorders,
-                                     nPoints, stencilNodes, stencilVal, stencilOffset );
+                                     nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         case 4 : stencilGEMV4Border( result, alpha, x, gridSizes, gridBounds, gridDistances, gridBorders,
-                                     nPoints, stencilNodes, stencilVal, stencilOffset );
+                                     nPoints, stencilPositions, stencilVal, stencilOffset );
                  break;
 
         default: COMMON_THROWEXCEPTION( "stencilGEMVBorder for nDims = " << nDims << " not supported yet" )
@@ -1616,40 +1622,43 @@ void OpenMPStencilKernel::stencilGEMVCaller(
     const ValueType x[],
     const IndexType nDims,
     const IndexType gridSizes[],
-    const IndexType width[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const IndexType gridBorders[],
+    const IndexType gridStencilWidth[],
     const IndexType currentDim,
     const IndexType nPoints,
-    const int stencilNodes[], 
+    const int stencilPositions[], 
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( currentDim, nDims, "illegal current dimension" )
 
-    if ( gridSizes[currentDim] <= width[2 * currentDim] + width[2 * currentDim + 1] )
+    SCAI_LOG_DEBUG( logger, "GEMV caller, current dim = " << currentDim << ", width = " 
+                             << gridStencilWidth[ 2 * currentDim ] << " - " << gridStencilWidth[ 2 * currentDim + 1 ] )
+
+    if ( gridSizes[currentDim] <= gridStencilWidth[2 * currentDim] + gridStencilWidth[2 * currentDim + 1] )
     {
         // no inner part in current dimension, call boundary routine, afterwards all is done
 
-        stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, gridBorders, nPoints, stencilNodes, stencilVal, stencilOffset );
+        stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, gridBorders, nPoints, stencilPositions, stencilVal, stencilOffset );
  
         return;
     }
 
     // if left boundary, handle it
 
-    if ( width[2 * currentDim] > 0 )
+    if ( gridStencilWidth[2 * currentDim] > 0 )
     {
         gridBounds[2 * currentDim] = 0;
-        gridBounds[2 * currentDim + 1] = width[2 * currentDim];
+        gridBounds[2 * currentDim + 1] = gridStencilWidth[2 * currentDim];
 
-        stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, gridBorders, nPoints, stencilNodes, stencilVal, stencilOffset );
+        stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, gridBorders, nPoints, stencilPositions, stencilVal, stencilOffset );
     }
 
     // set inner boundaries,
 
-    gridBounds[2 * currentDim] = width[2 * currentDim];
-    gridBounds[2 * currentDim + 1] = gridSizes[currentDim] - width[2 * currentDim + 1];
+    gridBounds[2 * currentDim] = gridStencilWidth[2 * currentDim];
+    gridBounds[2 * currentDim + 1] = gridSizes[currentDim] - gridStencilWidth[2 * currentDim + 1];
 
     if ( currentDim + 1 == nDims )
     {
@@ -1661,19 +1670,19 @@ void OpenMPStencilKernel::stencilGEMVCaller(
     { 
         // recursive call to set grid bounds for the next dimension 
 
-        stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, width, gridDistances, gridBorders, currentDim + 1, 
-                           nPoints, stencilNodes, stencilVal, stencilOffset );
+        stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, gridDistances, gridBorders, gridStencilWidth, currentDim + 1, 
+                           nPoints, stencilPositions, stencilVal, stencilOffset );
     }
 
-    // if right boundary, travere it
+    // if right boundary, traverse it
 
-    if ( width[2 * currentDim + 1] > 0 )
+    if ( gridStencilWidth[2 * currentDim + 1] > 0 )
     {
-        gridBounds[2 * currentDim] = gridSizes[currentDim] - width[2 * currentDim + 1];
+        gridBounds[2 * currentDim] = gridSizes[currentDim] - gridStencilWidth[2 * currentDim + 1];
         gridBounds[2 * currentDim + 1] = gridSizes[currentDim];
 
         stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, gridBorders,
-                           nPoints, stencilNodes, stencilVal, stencilOffset );
+                           nPoints, stencilPositions, stencilVal, stencilOffset );
     }
 
     // reset the boundaries
@@ -1685,34 +1694,61 @@ void OpenMPStencilKernel::stencilGEMVCaller(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPStencilKernel::stencilGEMV( 
+void OpenMPStencilKernel::normalGEMV( 
     ValueType result[], 
     const ValueType alpha,  
     const ValueType x[],
+    const ValueType beta,  
+    const ValueType y[],
     const IndexType nDims, 
+    const IndexType hostGridSizes[],
     const IndexType gridSizes[],
-    const IndexType width[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const IndexType gridBorders[],
+    const IndexType gridStencilWidth[],
     const IndexType nPoints,
-    const int stencilNodes[],
+    const int stencilPositions[],
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
+    using tasking::TaskSyncToken;
+
+    TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        SCAI_REGION( "OpenMP.StencilGEMVAsync" )
+
+        SCAI_LOG_INFO( logger, "stencilGEMV<" << common::TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
+
+        syncToken->run( std::bind( normalGEMV<ValueType>,
+                                   result, alpha, x, beta, y, 
+                                   nDims, hostGridSizes, gridSizes, gridDistances, gridBorders, gridStencilWidth,
+                                   nPoints, stencilPositions, stencilVal, stencilOffset ) );
+        return;
+    }
+
     // prepare array with gridBounds for the recursive traverser routine
 
     IndexType gridBounds[ 2 * SCAI_GRID_MAX_DIMENSION ];
+
+    IndexType nValues = 1;   // count total number of elements
 
     for ( IndexType i = 0; i < nDims; ++i )
     {
         gridBounds[2 * i] = 0;
         gridBounds[2 * i + 1] = gridSizes[i];
+        nValues *= gridSizes[i];
     }
+
+    // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
+
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, nValues, common::BinaryOp::MULT, false );
 
     IndexType currentDim = 0;
 
-    stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, width, gridDistances, gridBorders, currentDim,
-                       nPoints, stencilNodes, stencilVal, stencilOffset );
+    stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, gridDistances, gridBorders, gridStencilWidth, currentDim,
+                       nPoints, stencilPositions, stencilVal, stencilOffset );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1743,7 +1779,7 @@ void OpenMPStencilKernel::RegistratorV<ValueType>::registerKernels( kregistry::K
 
     KernelRegistry::set<StencilKernelTrait::stencilLocalCSR<ValueType> >( stencilLocalCSR, ctx, flag );
     KernelRegistry::set<StencilKernelTrait::stencilHaloCSR<ValueType> >( stencilHaloCSR, ctx, flag );
-    KernelRegistry::set<StencilKernelTrait::stencilGEMV<ValueType> >( stencilGEMV, ctx, flag );
+    KernelRegistry::set<StencilKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
