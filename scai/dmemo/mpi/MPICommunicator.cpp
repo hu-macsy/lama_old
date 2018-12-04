@@ -1104,7 +1104,7 @@ void MPICommunicator::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------- */
 
-MPICommunicator::MPICommunicator( const MPICommunicator& comm, int color, int key ) :
+MPICommunicator::MPICommunicator( const MPICommunicator& comm, PartitionId color, PartitionId key ) :
 
     Communicator( MPI ),
     mKind( MPICommKind::CREATED ),
@@ -1112,7 +1112,7 @@ MPICommunicator::MPICommunicator( const MPICommunicator& comm, int color, int ke
 
 {
     SCAI_LOG_INFO( logger, *this << ": split ( color = " << color << ", key = " << key << " )" )
-    SCAI_MPICALL( logger, MPI_Comm_split( comm.mComm, color, key, &mComm ), "comm split" );
+    SCAI_MPICALL( logger, MPI_Comm_split( comm.mComm, static_cast<int>( color ), static_cast<int>( key ), &mComm ), "comm split" );
     
     {
         // temporary variables required as PartitionId can be different from int

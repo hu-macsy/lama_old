@@ -145,6 +145,13 @@ std::string NoDistribution::createValue()
     return getId();
 }
 
+/** Inline function for convenience */
+
+inline DistributionPtr noDistribution( const IndexType globalSize )
+{
+    return std::make_shared<NoDistribution>( globalSize );
+}
+
 } /* end namespace dmemo */
 
 } /* end namespace scai */
