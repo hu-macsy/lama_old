@@ -325,7 +325,6 @@ template<typename ValueType>
 bool DenseMatrix<ValueType>::isConsistent() const
 {
     IndexType consistencyErrors = 0;
-    // ToDo: this implementation should use a corresponding predicate of MatrixStorage
     const IndexType numLocalRows = getRowDistribution().getLocalSize();
 
     try
@@ -344,7 +343,8 @@ bool DenseMatrix<ValueType>::isConsistent() const
     }
 
     // use communicator for global reduction to make sure that all processors return same value.
-    consistencyErrors = getRowDistribution().getCommunicator().sum( consistencyErrors );
+
+    consistencyErrors = Communicator::getCommunicatorPtr()->sum( consistencyErrors );
     return 0 == consistencyErrors;
 }
 
@@ -533,6 +533,7 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
     }
     else
     {
+        SCAI_ASSERT_EQ_ERROR( rowDist->getCommunicator(), colDist->getCommunicator(), "transpose only on same set of processors" )
         SCAI_ASSERT_EQ_ERROR( rowDist->getCommunicator(), colDist->getCommunicator(), "transpose only on same set of processors" )
 
         const Communicator& comm = rowDist->getCommunicator();
@@ -1211,14 +1212,14 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
         return;
     }
 
-    if ( rowDistribution->getNumPartitions() == 1 && getRowDistribution().getNumPartitions() == 1 )
+    if ( rowDistribution->isReplicated() && getRowDistribution().isReplicated() )
     {
         SCAI_LOG_INFO( logger, "replace row distribtion, all on one processor" )
         this->setDistributionPtr( rowDistribution );
         return;
     }
 
-    if ( getRowDistribution().getNumPartitions() == 1 )
+    if ( getRowDistribution().isReplicated() )
     {
         DenseStorage<ValueType>& oldLocalData = *mData[0];
 // current dense matrix is replicated, we have only to assign the local part
@@ -1363,7 +1364,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
     PartitionId np = getColDistribution().getNumPartitions();
 
-    if ( np == 1 )
+    if ( getColDistribution().isReplicated() )
     {
         SCAI_LOG_DEBUG( logger, "getRow with replicated col distribution, row owner = " << rowOwner )
 

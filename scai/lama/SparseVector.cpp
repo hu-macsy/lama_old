@@ -1628,9 +1628,12 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else
     {
+        SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
+                              "redistribute only supported within same communicator" )
+
         SCAI_LOG_INFO( logger, *this << " will be redistributed to " << *distribution << " in two steps: replicate/localize" )
 
-        DistributionPtr repDist ( new NoDistribution( getDistribution().getGlobalSize() ) );
+        auto repDist = std::make_shared<NoDistribution>( getDistribution().getGlobalSize() );
 
         redistribute( repDist );
         redistribute( distribution );

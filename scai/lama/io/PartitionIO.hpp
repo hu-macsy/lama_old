@@ -96,6 +96,8 @@ public:
 
     static void getPartitionFileName( std::string& fileName, bool& isPartitioned, const PartitionId rank, const PartitionId size );
 
+    static void getSingleFileName( std::string& fileName );
+
     /** Counterpart to FileIO::removeFile with partitioned file names.
      *
      *  @param[in] fileName file to delete

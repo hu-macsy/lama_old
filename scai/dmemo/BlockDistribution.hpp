@@ -178,6 +178,14 @@ IndexType BlockDistribution::ub() const
     return mUB;
 }
 
+/** Inline function for convenience */
+
+inline DistributionPtr blockDistribution( const IndexType globalSize,
+                                          const CommunicatorPtr comm = Communicator::getCommunicatorPtr() )
+{
+    return std::make_shared<BlockDistribution>( globalSize, comm );
+}
+
 } /* end namespace dmemo */
 
 } /* end namespace scai */

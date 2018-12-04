@@ -129,9 +129,10 @@ static HArray<IndexType> local2global( const HArray<IndexType> & localIndexes, c
     return globalIndexes;
 }
 
-Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution )
+Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution ) : 
 
-    : mSourceDistribution( sourceDistribution ), mTargetDistribution( targetDistribution )
+    mSourceDistribution( sourceDistribution ), 
+    mTargetDistribution( targetDistribution )
 
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" )

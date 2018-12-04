@@ -61,49 +61,18 @@ class COMMON_DLL_IMPORTEXPORT GenBlockDistribution:
 {
 public:
 
-
-    /** Construct a general block distribution by a vector of localSizes.
+    /** Construct a general block distribution by an offset array with the sizes
      *
-     *  @param[in] globalSize is the number of elements to distribute
-     *  @param[in] localSizes contains the sizes for each partition
-     *  @param[in] communicator specifies the communicator used for this distribution
+     *  @param[in] offsets is the offset array, must have comm->getSize() + 1 entries
+     *  @param[in] comm specifies the communicator used for this distribution
      *
-     *  Note: All partitions must call this constructor with the 'same' arguments.
-     */
-
-    GenBlockDistribution(
-        const IndexType globalSize,
-        const std::vector<IndexType>& localSizes,
-        const CommunicatorPtr communicator );
-
-    /** Construct a general block distribution by an interval.
+     *  Note: All processors must call this constructor with the 'same' values.
      *
-     *  @param[in] globalSize is the number of elements to distribute
-     *  @param[in] firstGlobalIdx is the smallest global index in partition
-     *  @param[in] lastGlobalIdx is the largest global index in partition
-     *  @param[in] dummy bool value
-     *  @param[in] communicator specifies the communicator used for this distribution
-     *
-     */
-
-    GenBlockDistribution(
-        const IndexType globalSize,
-        const IndexType firstGlobalIdx,
-        const IndexType lastGlobalIdx,
-        bool  dummy,
-        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
-
-    /** Construct a general block distribution by individual localSize
-     *
-     *  @param[in] globalSize is the number of elements to distribute
-     *  @param[in] localSize is the number of elements for this partition
-     *  @param[in] communicator specifies the communicator used for this distribution
-     *
+     *  The global size is given by the entry offsets[size].
      */
     GenBlockDistribution(
-        const IndexType globalSize,
-        const IndexType localSize,
-        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
+        std::unique_ptr<IndexType[]>&& offsets,
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
     /** Construct a general block distribution by a weight so that each partition
      *  will have a size corresponding to its weight.
@@ -239,6 +208,26 @@ const char* GenBlockDistribution::getId()
     return "GEN_BLOCK";
 }
 
+/** Construct a general block distribution by individual local sizes
+ *
+ *  @param[in] localSize is the number of elements owned by this processor
+ *  @param[in] comm specifies the communicator used for this distribution
+ *
+ */
+std::shared_ptr<GenBlockDistribution> genBlockDistribution( const IndexType localSize,
+                                                            CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/** Construct a general block distribution by a vector of localSizes.
+ *
+ *  @param[in] localSizes contains the sizes for each partition
+ *  @param[in] communicator specifies the communicator used for this distribution
+ *
+ *  Note: All partitions must call this constructor with the 'same' arguments.
+ *
+ *  This constructor does not involve any global communication.
+ */
+std::shared_ptr<GenBlockDistribution> genBlockDistribution( const std::vector<IndexType>& localSizes,
+                                                            CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
 } /* end namespace dmemo */
 

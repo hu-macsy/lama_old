@@ -50,9 +50,89 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( GenBlockDistribution::logger, "Distribution.GenBlockDistribution" )
 
+/* ---------------------------------------------------------------------- */
+
 GenBlockDistribution::~GenBlockDistribution()
 {
     SCAI_LOG_INFO( logger, "~GenBlockDistribution" )
+}
+
+/* ---------------------------------------------------------------------- */
+
+GenBlockDistribution::GenBlockDistribution( std::unique_ptr<IndexType[]>&& offsets, CommunicatorPtr comm ) :
+  
+    Distribution( offsets[comm->getSize()], comm ),
+    mOffsets( std::move( offsets ) )
+{
+    PartitionId rank = comm->getRank();
+    mLB = mOffsets[ rank ];
+    mUB = mOffsets[ rank + 1 ];
+}
+
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<GenBlockDistribution> genBlockDistribution( const IndexType localSize, CommunicatorPtr comm )
+{
+    SCAI_ASSERT_DEBUG( comm, "Null pointer for commmunicator" )
+
+    PartitionId size = comm->getSize();
+    PartitionId rank = comm->getRank();
+
+    std::unique_ptr<IndexType[]> offsets( new IndexType[ size + 1 ] );
+
+    offsets[0] = 0;  // local sizes will be added after this entry
+
+    IndexType* allLocalSizes = offsets.get() + 1;
+
+    comm->gather( allLocalSizes, 1, 0, &localSize );
+    comm->bcast( allLocalSizes, size, 0 );
+
+    SCAI_ASSERT_EQ_DEBUG( allLocalSizes[rank], localSize, "wrongly gathered values" )
+
+    // sizes to offsets, e.g.  0  5  3  4  1  ->  0  5  8  12 13
+
+    for ( PartitionId p = 0; p < size; ++p )
+    {
+        offsets[ p + 1 ] += offsets[p];
+    }
+
+    return std::make_shared<GenBlockDistribution>( std::move( offsets ), comm );
+}
+
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<GenBlockDistribution> genBlockDistribution( const std::vector<IndexType>& localSizes,
+                                                            CommunicatorPtr comm )
+{
+    SCAI_ASSERT_DEBUG( comm, "Null pointer for commmunicator" )
+
+    PartitionId size = comm->getSize();
+
+    SCAI_ASSERT_EQ_DEBUG( static_cast<PartitionId>( localSizes.size() ), size, "illegal vector for local sizes" )
+
+    std::unique_ptr<IndexType[]> offsets( new IndexType[ size + 1 ] );
+
+    offsets[0] = 0;  // local sizes will be added after this entry
+
+    IndexType* allLocalSizes = offsets.get() + 1;
+
+    for ( PartitionId p = 0; p < size; ++p )
+    {
+        allLocalSizes[p] = localSizes[p];
+    }
+
+    // sizes to offsets, e.g.  0  5  3  4  1  ->  0  5  8  12 13
+
+    for ( PartitionId p = 0; p < size; ++p )
+    {
+        offsets[ p + 1 ] += offsets[p];
+    }
+
+    // we make some simple test to verify that all processors have used the same array
+
+    SCAI_ASSERT_EQ_ERROR( comm->max( offsets[size] ), offsets[size], "different global sizes" )
+
+    return std::make_shared<GenBlockDistribution>( std::move( offsets ), comm );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -93,60 +173,6 @@ void GenBlockDistribution::setOffsets( const PartitionId rank, const PartitionId
     mCommunicator->bcast( localSizes.get(), numPartitions, 0 );
     SCAI_ASSERT_EQ_DEBUG( localSizes[rank], mySize, "wrongly gathered values" )
     setOffsets( rank, numPartitions, localSizes.get() );
-}
-
-/* ---------------------------------------------------------------------- */
-
-GenBlockDistribution::GenBlockDistribution(
-    const IndexType globalSize,
-    const std::vector<IndexType>& localSizes,
-    const CommunicatorPtr communicator ) :
-
-    Distribution( globalSize, communicator )
-{
-    PartitionId size = mCommunicator->getSize();
-    PartitionId rank = mCommunicator->getRank();
-    SCAI_LOG_INFO( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" )
-    SCAI_ASSERT_EQ_ERROR( size, static_cast<PartitionId>( localSizes.size() ), "size mismatch" )
-    setOffsets( rank, size, &localSizes[0] );
-    SCAI_LOG_INFO( logger, *this << ": constructed by local sizes" )
-}
-
-/* ---------------------------------------------------------------------- */
-
-GenBlockDistribution::GenBlockDistribution(
-    const IndexType globalSize,
-    const IndexType firstGlobalIdx,
-    const IndexType lastGlobalIdx,
-    bool,
-    const CommunicatorPtr communicator ) :
-
-    Distribution( globalSize, communicator )
-
-{
-    SCAI_ASSERT_LE_ERROR( firstGlobalIdx, lastGlobalIdx, "illegal local range" )
-
-    PartitionId size = mCommunicator->getSize();
-    PartitionId rank = mCommunicator->getRank();
-    setOffsets( rank, size, lastGlobalIdx - firstGlobalIdx );
-    SCAI_ASSERT_EQUAL( mLB, firstGlobalIdx, "serious mismatch in index range" )
-    SCAI_ASSERT_EQUAL( mUB, lastGlobalIdx, "serious mismatch in index range" )
-    SCAI_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx )
-}
-
-/* ---------------------------------------------------------------------- */
-
-GenBlockDistribution::GenBlockDistribution(
-    const IndexType globalSize,
-    const IndexType localSize,
-    const CommunicatorPtr communicator ) :
-
-    Distribution( globalSize, communicator )
-
-{
-    int size = mCommunicator->getSize();
-    int rank = mCommunicator->getRank();
-    setOffsets( rank, size, localSize );
 }
 
 /* ---------------------------------------------------------------------- */

@@ -56,8 +56,26 @@
         }                                                                           \
     }
 
+#define SCAI_MPICALL_NOTHROW( logger, exp, msg)                                     \
+    {                                                                               \
+        SCAI_LOG_TRACE( logger, "MPI call " << msg );                               \
+        int status = exp;                                                           \
+        SCAI_LOG_TRACE( logger, "MPI call " << msg  << ", status = " << status );   \
+        if ( status != MPI_SUCCESS )                                                \
+        {                                                                           \
+            std::ostringstream errorStr;                                            \
+            errorStr << "MPI error in line " << __LINE__ ;                          \
+            errorStr << " of file " << __FILE__ << ": ";                            \
+            errorStr << msg<< "\n";                                                 \
+            common::Exception::addCallStack( errorStr );                            \
+            SCAI_LOG_ERROR( logger, errorStr.str() << ", status = " << status )     \
+        }                                                                           \
+    }
+
 #else
 
 #define SCAI_MPICALL( logger, exp, msg) exp;
+
+#define SCAI_MPICALL_NOTHROW( logger, exp, msg) exp;
 
 #endif // SCAI_CHECK_ASSERTS

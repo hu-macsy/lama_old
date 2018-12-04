@@ -207,17 +207,29 @@ public:
      * This method sets a matrix by reading its values from one or multiple files.
      *
      * @param[in] fileName      the filename to read from
-     * @param[in] rowDist       optional, if set it is the distribution of the matrix
+     * @param[in] rowDist       distribution of the matrix
      *
      *   \code
      *      CSRSparseMatrix<double> matrix;
-     *      matrix.readFromFile( "matrix.mtx" )                    ! matrix only on processor 0
-     *      matrix.readFromFile( "matrix_%r.mtx" )                 ! general block distributed matrix, each processor reads it own file
      *      matrix.readFromFile( "matrix.mtx", rowDist )           ! each processor gets its local part of the matrix in one file
      *      matrix.readFromFile( "matrix_%r.mtx", rowDist )        ! read a partitioned matrix with the given distribution
      *   \endcode
      */
-    void readFromFile( const std::string& fileName, dmemo::DistributionPtr rowDist = dmemo::DistributionPtr() );
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr rowDist );
+
+    /**
+     * This method sets a matrix by reading its values from one or multiple files.
+     *
+     * @param[in] fileName      the filename to read from
+     * @param[in] comm          specifies the involved processes
+     *
+     *   \code
+     *      CSRSparseMatrix<double> matrix;
+     *      matrix.readFromFile( "matrix.mtx" )       ! read matrix only on processor 0, gets a SingleDistribution
+     *      matrix.readFromFile( "matrix_%r.mtx" )    ! general block distributed matrix, each processor reads it own file
+     *   \endcode
+     */
+    void readFromFile( const std::string& fileName, dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     /**
      *  This method sets a matrix a reading its values from one or multiple files and also the distribution from a file
@@ -695,11 +707,13 @@ protected:
      */
     _Matrix& operator=( _Matrix&& other ) = delete;
 
-    void readFromSingleFile( const std::string& fileName );
+    void readFromSingleFile( const std::string& fileName, 
+                             dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr()  );
 
     void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr distribution );
 
-    void readFromPartitionedFile( const std::string& fileName );
+    void readFromPartitionedFile( const std::string& fileName, 
+                                  dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     void resetRowDistribution( dmemo::DistributionPtr distribution );
 

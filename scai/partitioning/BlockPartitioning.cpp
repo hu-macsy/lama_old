@@ -143,13 +143,13 @@ void BlockPartitioning::squarePartitioning(
 
 void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float weight ) const
 {
-    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
-
-    if ( comm->getSize() < 2 )
+    if ( matrix.getRowDistribution().isReplicated() )
     {
         // no repartitioning for a single processor
         return;
     }
+
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 
     IndexType numRows    = matrix.getRowDistribution().getGlobalSize();
     IndexType numColumns = matrix.getColDistribution().getGlobalSize();
@@ -157,8 +157,8 @@ void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float we
     // Block partitioning : just create a 'general' block distribution
     // Note: this does not take the connections into account 
 
-    DistributionPtr rowDist( new GenBlockDistribution( numRows, weight, comm ) );
-    DistributionPtr colDist( new GenBlockDistribution( numColumns, weight, comm ) );
+    auto rowDist = std::make_shared<GenBlockDistribution>( numRows, weight, comm );
+    auto colDist = std::make_shared<GenBlockDistribution>( numColumns, weight, comm );
 
     matrix.redistribute( rowDist, colDist );
 }

@@ -158,15 +158,15 @@ void CyclicPartitioning::squarePartitioning(
 
 void CyclicPartitioning::rectangularRedistribute( _Matrix& matrix, const float ) const
 {
-    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
-
-    IndexType np = comm->getSize();
-
-    if ( np < 2 )
+    if ( matrix.getRowDistribution().isReplicated() )
     {
         // no repartitioning for a single processor
         return;
     }
+
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
+
+    IndexType np = comm->getSize();
 
     IndexType numRows    = matrix.getRowDistribution().getGlobalSize();
     IndexType numColumns = matrix.getColDistribution().getGlobalSize();

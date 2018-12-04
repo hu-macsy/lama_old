@@ -77,7 +77,7 @@ _Vector* _Vector::getVector( const VectorKind kind, const common::ScalarType typ
 
 _Vector::_Vector( const IndexType size, hmemo::ContextPtr context ) :
 
-    Distributed( DistributionPtr( new NoDistribution( size ) ) ),
+    Distributed( std::make_shared<NoDistribution>( size ) ),
     mContext( context )
 {
     if ( !mContext )
@@ -116,9 +116,9 @@ _Vector::~_Vector()
 /*    Reading vector from a file, only host reads                                         */
 /* ---------------------------------------------------------------------------------------*/
 
-void _Vector::readFromSingleFile( const std::string& fileName )
+void _Vector::readFromSingleFile( const std::string& fileName, CommunicatorPtr comm )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    SCAI_LOG_INFO( logger, "read vector from single file " << fileName << ", comm = " << *comm )
 
     const PartitionId MASTER = 0;
     const PartitionId myRank = comm->getRank();
@@ -208,10 +208,8 @@ void _Vector::readFromSingleFile( const std::string& fileName, const Distributio
 
 /* ---------------------------------------------------------------------------------*/
 
-void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
+void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, CommunicatorPtr comm )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     bool errorFlag = false;
 
     IndexType localSize = 0;
@@ -219,13 +217,6 @@ void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, D
     try
     {
         localSize = readLocalFromFile( myPartitionFileName );
-
-        if ( dist.get() )
-        {
-            // size of storage must match the local size of distribution
-
-            SCAI_ASSERT_EQUAL( dist->getLocalSize(), localSize, "serious mismatch: local matrix in " << myPartitionFileName << " has illegal local size" )
-        }
     }
     catch ( common::Exception& e )
     {
@@ -240,18 +231,48 @@ void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, D
         COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
     }
 
-    DistributionPtr vectorDist = dist;
+    // we have no distribution so assume a general block distribution
 
-    if ( !vectorDist.get() )
-    {
-        // we have no distribution so assume a general block distribution
-
-        IndexType globalSize = comm->sum( localSize );
-
-        vectorDist.reset( new GenBlockDistribution( globalSize, localSize, comm ) );
-    }
+    auto vectorDist = dmemo::genBlockDistribution( localSize, comm );
 
     setDistributionPtr( vectorDist );   // distribution matches size of local part
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
+{
+    SCAI_ASSERT_ERROR( dist.get(), "NULL pointer for distribution" )
+
+    const Communicator& comm = dist->getCommunicator();
+
+    bool errorFlag = false;
+
+    IndexType localFileSize = 0;
+
+    try
+    {
+        localFileSize = readLocalFromFile( myPartitionFileName );
+
+        // size of storage must match the local size of distribution
+
+        SCAI_ASSERT_EQ_ERROR( dist->getLocalSize(), localFileSize, 
+                              "serious mismatch: local matrix in " << myPartitionFileName << " has illegal local size" )
+    }
+    catch ( common::Exception& e )
+    {
+        SCAI_LOG_ERROR( logger, comm << ": failed to read " << myPartitionFileName << ": " << e.what() )
+        errorFlag = true;
+    }
+
+    errorFlag = comm.any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
+    }
+
+    setDistributionPtr( dist ); 
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -281,7 +302,7 @@ void _Vector::readFromFile( const std::string& vectorFileName, const std::string
 
             comm->bcast( &numRows, 1, root );
 
-            distribution.reset( new BlockDistribution( numRows, comm ) );
+            distribution = dmemo::blockDistribution( numRows, comm );
         }
 
         // for a partitioned file general block distribution is default
@@ -298,20 +319,15 @@ void _Vector::readFromFile( const std::string& vectorFileName, const std::string
 
 void _Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
 {
+    SCAI_ASSERT_ERROR( distribution.get(), "NULL distribution" )
+
     SCAI_LOG_INFO( logger, *this << ": readFromFile( " << fileName << " )" )
 
     std::string newFileName = fileName;
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // take default
-
-    if ( distribution.get() )
-    {
-        comm = distribution->getCommunicatorPtr();
-    }
-
     bool isPartitioned;
 
-    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, distribution->getCommunicator() );
 
     if ( !isPartitioned )
     {
@@ -320,6 +336,28 @@ void _Vector::readFromFile( const std::string& fileName, DistributionPtr distrib
     else
     {
         readFromPartitionedFile( newFileName, distribution );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void _Vector::readFromFile( const std::string& fileName, CommunicatorPtr comm )
+{
+    SCAI_LOG_INFO( logger, *this << ": readFromFile( " << fileName << " )" )
+
+    std::string newFileName = fileName;
+
+    bool isPartitioned;
+
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+
+    if ( !isPartitioned )
+    {
+        readFromSingleFile( newFileName, comm );
+    }
+    else
+    {
+        readFromPartitionedFile( newFileName, comm );
     }
 }
 
@@ -364,13 +402,15 @@ void _Vector::writeToSingleFile(
     const FileIO::FileMode fileMode
 ) const
 {
+    SCAI_LOG_INFO( logger, "write vector to single file: " << fileName << ", " << *this )
+
     if ( getDistribution().isReplicated() )
     {
         // make sure that only one processor writes to file
 
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+        const Communicator& comm = *Communicator::getCommunicatorPtr();
 
-        if ( comm->getRank() == 0 )
+        if ( comm.getRank() == 0 )
         {
             writeLocalToFile( fileName, fileType, dataType, fileMode );
         }
@@ -378,7 +418,7 @@ void _Vector::writeToSingleFile(
         // synchronization to avoid that other processors start with
         // something that might depend on the finally written file
 
-        comm->synchronize();
+        comm.synchronize();
     }
     else
     {
@@ -399,7 +439,7 @@ void _Vector::replicate()
         return;
     }
 
-    redistribute( DistributionPtr( new NoDistribution( size() ) ) );
+    redistribute( dmemo::noDistribution( size() ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/

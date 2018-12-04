@@ -207,6 +207,15 @@ IndexType CyclicDistribution::chunkSize() const
     return mChunkSize;
 }
 
+/** Inline function for convenience */
+
+inline DistributionPtr cyclicDistribution( const IndexType globalSize,
+                                           const IndexType chunkSize,
+                                           const CommunicatorPtr comm = Communicator::getCommunicatorPtr() )
+{
+    return std::make_shared<CyclicDistribution>( globalSize, chunkSize, comm );
+}
+
 } /* end namespace dmemo */
 
 } /* end namespace scai */

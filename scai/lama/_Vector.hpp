@@ -311,7 +311,9 @@ public:
      *      vector.readFromFile( "vector_%r.mtx", rowDist )        ! read a partitioned vector with the given distribution
      *   \endcode
      */
-    void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution = dmemo::DistributionPtr() );
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution );
+
+    void readFromFile( const std::string& fileName, dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     /**
      *  This method sets a vector a reading its values from one or multiple files and also the distribution from a file
@@ -642,7 +644,14 @@ private:
         const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
-    void readFromSingleFile( const std::string& fileName );
+    /** Read a vector from a single file, only first processor reads it. The distribution of the
+     *  vector is a SingleDistribution.
+     *
+     *  @param[in] fileName is the name of the input file containing the full vector data
+     *  @param[in] comm     specifies the tartet communicator for the single distribution
+     */
+    void readFromSingleFile( const std::string& fileName, 
+                             dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     /** Read only the local part from a file, no communication here.
      *
@@ -658,11 +667,32 @@ private:
      */
     virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex ) = 0;
 
-    /** In this version each processor reads from input file its local part. */
-
+    /** Read a vector with a certain distribution from a single file.
+     *
+     *  @param[in] fileName is the name of the input file containing the full vector data
+     *  @param[in] dist     will be the final distribution of the vector
+     *
+     *  Note: As the size of the vector in the file must match the global size of the vector, 
+     *        it might be necessary to read in the size of the vector from the file before.
+     *
+     *  If the format of the input file supports parallel reading, i.e. multiple processors
+     *  read individual parts of the vector, this method should take advantage of it. As fallback
+     *  the master process reads the whole file and sends afterwards the data to the owners.
+     */     
     void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr dist );
 
+    /** Read a vector with a certain distribution from multiple files. Each processor reads
+     *  its corresponding part (specified by its rank) from one file. The file read by a processor
+     *  must contain exactly the owned data. 
+     */
     void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
+
+    /** Read a block 'partitioned' vector from multiple files. Each processor reads
+     *  its corresponding part (specified by its rank) from one file. The vector gets
+     *  a corresponding general block distribution.
+     */
+    void readFromPartitionedFile( const std::string& myPartitionFileName, 
+                                  dmemo::CommunicatorPtr comm = dmemo::CommunicatorPtr() );
 };
 
 /* ========================================================================= */

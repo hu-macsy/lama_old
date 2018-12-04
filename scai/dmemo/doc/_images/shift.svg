@@ -1,0 +1,166 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
+<!-- CreationDate: Mon Nov 26 09:07:43 2018 -->
+<!-- Magnification: 1.000 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="6.0in" height="1.5in" viewBox="738 6588 7224 1824">
+<g style="stroke-width:.025in; stroke:black; fill:none">
+<!-- Line -->
+<polyline points="4059,7189
+4569,7635
+" style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 4059 7189 - 4670 7723-->
+<polygon points="4547 7655
+4658 7712
+4587 7610
+4547 7655
+
+" style="stroke:#000000;stroke-width:7;
+fill:#000000;"/>
+<!-- Line -->
+<polyline points="5868,7178
+6378,7624
+" style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 5868 7178 - 6479 7712-->
+<polygon points="6356 7644
+6467 7701
+6396 7599
+6356 7644
+
+" style="stroke:#000000;stroke-width:7;
+fill:#000000;"/>
+<!-- Line: box -->
+<rect x="900" y="6750" width="1500" height="1650" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="2700" y="6750" width="1500" height="1650" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Line: box -->
+<rect x="4500" y="6750" width="1500" height="1650" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ff0000;
+"/>
+<!-- Line: box -->
+<rect x="6300" y="6750" width="1500" height="1650" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Line -->
+<polyline points="7650,7200
+7950,7200
+7950,6600
+750,6600
+750,7725
+930,7725
+" style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 750 7725 - 1065 7725-->
+<polygon points="929 7755
+1049 7725
+929 7695
+929 7755
+
+" style="stroke:#000000;stroke-width:7;
+fill:#000000;"/>
+<!-- Text -->
+<text xml:space="preserve" x="1500" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P0</text>
+<!-- Text -->
+<text xml:space="preserve" x="3300" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
+<!-- Text -->
+<text xml:space="preserve" x="5100" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P2</text>
+<!-- Text -->
+<text xml:space="preserve" x="6900" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P3</text>
+<!-- Line: box -->
+<rect x="1050" y="6975" width="1200" height="450" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line: box -->
+<rect x="1050" y="7500" width="1200" height="450" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line: box -->
+<rect x="2850" y="6975" width="1200" height="450" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line: box -->
+<rect x="2850" y="7500" width="1200" height="450" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line: box -->
+<rect x="4650" y="6975" width="1200" height="450" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line: box -->
+<rect x="4650" y="7500" width="1200" height="450" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line: box -->
+<rect x="6450" y="6975" width="1200" height="450" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line: box -->
+<rect x="6450" y="7500" width="1200" height="450" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffffff;
+"/>
+<!-- Line -->
+<polyline points="2250,7200
+2760,7646
+" style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 2250 7200 - 2861 7734-->
+<polygon points="2738 7666
+2849 7723
+2778 7621
+2738 7666
+
+" style="stroke:#000000;stroke-width:7;
+fill:#000000;"/>
+<!-- Text -->
+<text xml:space="preserve" x="1155" y="7260" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="168" text-anchor="start">sendArray</text>
+<!-- Text -->
+<text xml:space="preserve" x="1170" y="7785" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="168" text-anchor="start">recvArray</text>
+<!-- Text -->
+<text xml:space="preserve" x="2955" y="7260" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="168" text-anchor="start">sendArray</text>
+<!-- Text -->
+<text xml:space="preserve" x="2970" y="7785" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="168" text-anchor="start">recvArray</text>
+<!-- Text -->
+<text xml:space="preserve" x="4755" y="7260" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="168" text-anchor="start">sendArray</text>
+<!-- Text -->
+<text xml:space="preserve" x="4770" y="7785" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="168" text-anchor="start">recvArray</text>
+<!-- Text -->
+<text xml:space="preserve" x="6555" y="7260" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="168" text-anchor="start">sendArray</text>
+<!-- Text -->
+<text xml:space="preserve" x="6570" y="7785" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="168" text-anchor="start">recvArray</text>
+</g>
+</svg>

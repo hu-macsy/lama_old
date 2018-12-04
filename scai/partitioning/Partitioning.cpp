@@ -109,13 +109,14 @@ void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float w
 {
     SCAI_REGION( "partitioning.rect" )
 
-    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
-
-    if ( comm->getSize() < 2 )
+    if ( matrix.getRowDistribution().isReplicated() )
     {
         // no repartitioning for a single processor
+
         return;
     }
+
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 
     hmemo::HArray<PartitionId> rowOwners;
     hmemo::HArray<PartitionId> colOwners;

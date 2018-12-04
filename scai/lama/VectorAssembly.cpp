@@ -177,17 +177,27 @@ void VectorAssembly<ValueType>::buildLocalData(
 
     checkLegalIndexes( dist.getGlobalSize() );
 
-    const HArrayRef<IndexType> localIA( mIA );
-    const HArrayRef<ValueType> localValues( mValues );
+    if ( dist.isReplicated() )
+    {
+        const HArrayRef<IndexType> localIA( mIA );
+        const HArrayRef<ValueType> localValues( mValues );
 
-    // These arrays will keep the matrix items owned by this processor
+        ia = localIA;
+        values = localValues;
+    }
+    else
+    {
+        const HArrayRef<IndexType> localIA( mIA );
+        const HArrayRef<ValueType> localValues( mValues );
 
-    ia.clear();
-    values.clear();
+        // These arrays will keep the matrix items owned by this processor
 
-    exchangeCOO( ia, values, localIA, localValues, dist );
+        ia.clear();
+        values.clear();
 
-    dist.global2localV( ia, ia );   // translates global indexes to local ones
+        exchangeCOO( ia, values, localIA, localValues, dist );
+        dist.global2localV( ia, ia );   // translates global indexes to local ones
+    }
 }
 
 /* -------------------------------------------------------------------------- */
