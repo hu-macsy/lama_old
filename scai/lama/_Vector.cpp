@@ -233,9 +233,7 @@ void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, C
 
     // we have no distribution so assume a general block distribution
 
-    IndexType globalSize = comm->sum( localSize );
-
-    auto vectorDist = std::make_shared<GenBlockDistribution>( globalSize, localSize, comm );
+    auto vectorDist = dmemo::genBlockDistribution( localSize, comm );
 
     setDistributionPtr( vectorDist );   // distribution matches size of local part
 }
@@ -304,7 +302,7 @@ void _Vector::readFromFile( const std::string& vectorFileName, const std::string
 
             comm->bcast( &numRows, 1, root );
 
-            distribution.reset( new BlockDistribution( numRows, comm ) );
+            distribution = dmemo::blockDistribution( numRows, comm );
         }
 
         // for a partitioned file general block distribution is default
@@ -410,7 +408,7 @@ void _Vector::writeToSingleFile(
     {
         // make sure that only one processor writes to file
 
-        const Communicator& comm = getDistribution().getCommunicator();
+        const Communicator& comm = *Communicator::getCommunicatorPtr();
 
         if ( comm.getRank() == 0 )
         {
@@ -441,9 +439,7 @@ void _Vector::replicate()
         return;
     }
 
-    CommunicatorPtr comm = getDistribution().getCommunicatorPtr();
-
-    redistribute( std::make_shared<NoDistribution>( size() ) );
+    redistribute( dmemo::noDistribution( size() ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
