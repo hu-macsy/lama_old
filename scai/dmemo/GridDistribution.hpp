@@ -198,6 +198,18 @@ public:
         return mLB;
     }
 
+    /** Return pointer to array with upper bound pos of the local grid in global grid */
+
+    const IndexType* localUB() const
+    {
+        return mUB;
+    }
+
+    const common::Grid& getProcGrid() const
+    {
+        return mProcGrid;
+    }
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

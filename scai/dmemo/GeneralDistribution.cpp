@@ -760,7 +760,7 @@ void GeneralDistribution::enableAnyAddressing() const
         // already computed, but just verify correct sizes
 
         SCAI_ASSERT_EQ_DEBUG( mAllOwners.size(), getGlobalSize(), "serious mismatch" )
-        SCAI_ASSERT_EQ_DEBUG( mAllLocalOffsets.size(), getNumPartitions() + 1, "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( mAllLocalOffsets.size(), getCommunicator().getSize() + 1, "serious mismatch" )
         SCAI_ASSERT_EQ_DEBUG( mAllLocal2Global.size(), getGlobalSize(), "serious mismatch" )
         SCAI_ASSERT_EQ_DEBUG( mAllGlobal2Local.size(), getGlobalSize(), "serious mismatch" )
 

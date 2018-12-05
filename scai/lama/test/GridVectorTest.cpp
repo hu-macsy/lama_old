@@ -95,10 +95,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
     const auto comm = scai::dmemo::Communicator::getCommunicatorPtr();
     const auto fileName = uniquePathSharedAmongNodes(GlobalTempDir::getPath(), *comm, "tmpGrid") + ".mat";
 
-    GridVector<DefaultReal> gv1( common::Grid4D( n1, n2, n3, n4 ) );
+    GridVector<ValueType> gv1( common::Grid4D( n1, n2, n3, n4 ) );
 
     {
-        GridWriteAccess<DefaultReal> wGV1( gv1 );
+        GridWriteAccess<ValueType> wGV1( gv1 );
 
         for ( IndexType i1 = 0; i1 < n1; ++i1 )
         {
@@ -109,22 +109,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
                     for ( IndexType i4 = 0; i4 < n4; ++i4 )
                     { 
                         wGV1( i1, i2, i3, i4 ) = 
-                            static_cast<DefaultReal>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
+                            static_cast<ValueType>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
                     }
                 }
             }
         }
     }
 
+    // write the grid vector to a file, might be done by first processor only
+
     gv1.writeToFile( fileName );
 
-    GridVector<DefaultReal> gv2( fileName );
+    // read the grid vector from a file
+
+    GridVector<ValueType> gv2( fileName );
+
+    SCAI_LOG_INFO( logger, "gv2( " << fileName << " ) = " << gv2 )
 
     BOOST_CHECK_EQUAL( gv1.globalGrid(), gv2.globalGrid() );
 
     {
-        GridReadAccess<DefaultReal> rGV1( gv1 );
-        GridReadAccess<DefaultReal> rGV2( gv2 );
+        GridReadAccess<ValueType> rGV1( gv1 );
+        GridReadAccess<ValueType> rGV2( gv2 );
 
         for ( IndexType i = 0; i < gv1.size(); ++i )
         {

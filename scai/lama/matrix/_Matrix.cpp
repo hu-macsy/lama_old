@@ -353,10 +353,8 @@ void _Matrix::writeToFile(
 
 /* ---------------------------------------------------------------------------------*/
 
-void _Matrix::readFromSingleFile( const std::string& fileName )
+void _Matrix::readFromSingleFile( const std::string& fileName, CommunicatorPtr comm )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     const PartitionId MASTER = 0;
     const PartitionId myRank = comm->getRank();
 
@@ -396,11 +394,7 @@ void _Matrix::readFromSingleFile( const std::string& fileName )
 
 void _Matrix::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
 {
-    if ( distribution.get() == NULL )
-    {
-        readFromSingleFile( fileName );
-        return;
-    }
+    SCAI_ASSERT_ERROR( distribution.get(), "NULL pointer for distribution" )
 
     // dist must be block distributed, not checked again here
 
@@ -448,10 +442,8 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
 
 /* ---------------------------------------------------------------------------------*/
 
-void _Matrix::readFromPartitionedFile( const std::string& myPartitionFileName )
+void _Matrix::readFromPartitionedFile( const std::string& myPartitionFileName, CommunicatorPtr comm )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     // this is a bit tricky stuff, but it avoids an additional copy from storage -> matrix
 
     _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
@@ -556,17 +548,14 @@ void _Matrix::readFromFile( const std::string& matrixFileName, const std::string
 
 void _Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist )
 {
+    SCAI_ASSERT_ERROR( rowDist.get(), "NULL pointer for distribution" )
+
     SCAI_LOG_INFO( logger,
-                   *this << ": readFromFile( " << fileName << " )" )
+                   *this << ": readFromFile( " << fileName << " ), dist = " << rowDist )
 
     std::string newFileName = fileName;
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // take default
-
-    if ( rowDist.get() )
-    {
-        comm = rowDist->getCommunicatorPtr();
-    }
+    CommunicatorPtr comm = rowDist->getCommunicatorPtr();
 
     bool isPartitioned;
 
@@ -582,11 +571,35 @@ void _Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist
     else
     {
         readFromPartitionedFile( newFileName );
+        resetRowDistribution( rowDist );
+    }
+}
 
-        if ( rowDist.get() )
-        {
-            resetRowDistribution( rowDist );
-        }
+/* ---------------------------------------------------------------------------------*/
+
+void _Matrix::readFromFile( const std::string& fileName, CommunicatorPtr comm )
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": readFromFile( " << fileName << " )" )
+
+    std::string newFileName = fileName;
+
+    bool isPartitioned;
+
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+
+    SCAI_LOG_INFO( logger, *comm << ": _Matrix.readFromFile ( " << fileName << " ) -> read "
+                   << newFileName << ", partitioned = " << isPartitioned );
+
+    if ( !isPartitioned )
+    {
+        readFromSingleFile( newFileName, comm );
+    }
+    else
+    {
+        // read it in with a 'general block' distribution 
+
+        readFromPartitionedFile( newFileName, comm );
     }
 }
 

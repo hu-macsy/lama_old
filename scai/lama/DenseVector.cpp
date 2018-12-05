@@ -600,7 +600,7 @@ void DenseVector<ValueType>::sortImpl(
 
     // Create the new general block distribution
 
-    DistributionPtr newDist( new dmemo::GenBlockDistribution( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() ) );
+    auto newDist = std::make_shared<dmemo::GenBlockDistribution>( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() );
 
     if ( out )
     {
@@ -1801,7 +1801,12 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else
     {
+        // each element has exactly one old and one new owner, here we use a Redistributor
+
         SCAI_LOG_DEBUG( logger, *this << " will be redistributed to " << *distribution )
+
+        SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
+                              "redistribute only within same communicator / processor set" )
 
         // so we have now really a redistibution, build a Redistributor
 

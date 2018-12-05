@@ -324,6 +324,13 @@ void NoCommunicator::synchronize() const
 
 /* --------------------------------------------------------------- */
 
+NoCommunicator* NoCommunicator::splitIt( PartitionId, PartitionId ) const
+{
+    return new NoCommunicator();
+}
+
+/* --------------------------------------------------------------- */
+
 void NoCommunicator::writeAt( std::ostream& stream ) const
 {
     stream << "NoComm";

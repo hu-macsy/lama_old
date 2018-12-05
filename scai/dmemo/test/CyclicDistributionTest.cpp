@@ -148,10 +148,8 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
 BOOST_AUTO_TEST_CASE( cyclicTest )
 {
     // Test cyclic distribution for different global sizes and chunk sizes
-    IndexType globalSizes[] =
-    { 1, 50, 200 };
-    IndexType chunkSizes[] =
-    { 1, 3, 5, 19 };
+    IndexType globalSizes[] = { 1, 50, 200 };
+    IndexType chunkSizes[] = { 1, 3, 5, 19 };
 
     //BOOST_FOREACH(IndexType globalSize, globalSizes)
     for ( IndexType i = 0; i < 3; ++i )
@@ -162,9 +160,12 @@ BOOST_AUTO_TEST_CASE( cyclicTest )
         for ( IndexType j = 0; j < 4; ++j )
         {
             IndexType chunkSize = chunkSizes[i];
-            // printf("Test cyclic distribution of %d elements in chunks of size %d\n", globalSize, chunkSize);
             CyclicDistribution cyclicDist( globalSize, chunkSize, comm );
-            // test the routines getNumChunks + getNumTotalChunks
+ 
+            SCAI_LOG_DEBUG( logger, "Test cylic distribution: " << cyclicDist )
+
+            // test the routines getNumLocalChunks and getNumTotalChunks
+
             IndexType sumLocalChunks = cyclicDist.getCommunicator().sum( cyclicDist.getNumLocalChunks() );
             BOOST_CHECK_EQUAL( cyclicDist.getNumTotalChunks(), sumLocalChunks );
         }
@@ -175,14 +176,16 @@ BOOST_AUTO_TEST_CASE( cyclicTest )
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    DistributionPtr cyclicdist1( new CyclicDistribution( 1, comm->getSize(), comm ) );
-    DistributionPtr cyclicdist2( cyclicdist1 );
-    DistributionPtr cyclicdist3( new CyclicDistribution( 1, comm->getSize(), comm ) );
-    DistributionPtr cyclicdist4( new CyclicDistribution( 3, comm->getSize(), comm ) );
-    BOOST_CHECK( ( *cyclicdist1 ).isEqual( *cyclicdist2 ) );
-    BOOST_CHECK( ( *cyclicdist1 ).isEqual( *cyclicdist3 ) );
-    BOOST_CHECK( !( *cyclicdist1 ).isEqual( *cyclicdist4 ) );
+    auto cyclicdist1 = cyclicDistribution( 5, 1 );
+    auto cyclicdist2 = cyclicdist1;
+    auto cyclicdist3 = cyclicDistribution( 5, 1 );
+    auto cyclicdist4 = cyclicDistribution( 3, 1 );
+
+    BOOST_CHECK( *cyclicdist1 == *cyclicdist2 );    // pointer equality
+    BOOST_CHECK( *cyclicdist1 == *cyclicdist3 );    // same sizes
+    BOOST_CHECK( *cyclicdist1 != *cyclicdist4 );   // different global sizes
 }
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

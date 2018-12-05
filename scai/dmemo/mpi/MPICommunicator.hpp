@@ -54,6 +54,13 @@ namespace scai
 namespace dmemo
 {
 
+enum class MPICommKind
+{
+    EXTERNAL,   //!<  communicator was already initialized 
+    INTERNAL,   //!<  comm world created
+    CREATED     //!<  comm created
+};
+
 /** Communicator class that implements communication and data exchange via MPI.
  *
  *  MPI_Init is called in the constructor, MPI_Finalize is called in the destructor.
@@ -230,17 +237,21 @@ private:
 
 protected:
 
+    /** Implementation of pure method Communicator::splitIt */
+
+    virtual MPICommunicator* splitIt( PartitionId color, PartitionId key ) const;
+
     MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type );
 
     MPICommunicator();
 
+    MPICommunicator( const MPICommunicator& comm, const PartitionId color, const PartitionId key );
+
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
-    bool mExternInitialization;
+    MPICommKind mKind;    // kind of communicator needed for destructor
 
-    MPI_Comm mCommWorld;
     MPI_Comm mComm;
-    MPI_Comm mCommTask;
 
 #ifdef SCAI_COMPLEX_SUPPORTED
     static MPI_Op mSumComplexLongDouble;
@@ -254,7 +265,7 @@ protected:
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 
-    bool isCUDAAware;// if true data on CUDA context can be communicated
+    bool isCUDAAware;   // if true data on CUDA context can be communicated
 
 public:
 

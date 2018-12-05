@@ -61,7 +61,7 @@ struct GenBlockDistributionTestConfig
             }
         }
 
-        dist = DistributionPtr( new GenBlockDistribution( globalSize, localSizes, comm ) );
+        dist = genBlockDistribution( 2 * ( rank + 1 ), comm );
     }
 
     ~GenBlockDistributionTestConfig()
@@ -120,17 +120,21 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
     }
 
     IndexType globalSize = size * ( size + 1 );
-    GenBlockDistribution dist1( globalSize, mlocalSizes, comm );
-    BOOST_CHECK( dist1.getLocalSize() == static_cast<IndexType>( 2 * ( rank + 1 ) ) );
+
+    auto dist1 = genBlockDistribution( mlocalSizes, comm );
+    auto dist2 = genBlockDistribution( static_cast<IndexType>( 2 * ( rank + 1 ) ), comm );
+
+    BOOST_CHECK_EQUAL( dist1->getGlobalSize(), globalSize );
+    BOOST_CHECK_EQUAL( dist2->getGlobalSize(), globalSize );
+    BOOST_CHECK_EQUAL( dist1->getLocalSize(), static_cast<IndexType>( 2 * ( rank + 1 ) ) );
+    BOOST_CHECK_EQUAL( dist1->getLocalSize(), dist2->getLocalSize() );
+
     IndexType lb1, ub1;
-    dist1.getLocalRange( lb1, ub1 );
-    GenBlockDistribution dist2( globalSize, static_cast<IndexType>( 2 * ( rank + 1 ) ), comm );
+    dist1->getLocalRange( lb1, ub1 );
     IndexType lb2, ub2;
-    dist1.getLocalRange( lb2, ub2 );
-    BOOST_CHECK( lb1 == lb2 );
-    BOOST_CHECK( ub1 == ub2 );
-    SCAI_LOG_INFO( logger, "lb = " << lb1 << ", ub = " << ub1 << ", global = " << globalSize )
-    GenBlockDistribution dist3( globalSize, lb1, ub1, true, comm );
+    dist2->getLocalRange( lb2, ub2 );
+    BOOST_CHECK_EQUAL( lb1, lb2 );
+    BOOST_CHECK_EQUAL( ub1, ub2 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -148,6 +152,7 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );
 }
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

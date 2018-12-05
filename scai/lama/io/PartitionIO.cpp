@@ -104,6 +104,18 @@ void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, c
 
 /* --------------------------------------------------------------------------------- */
 
+void PartitionIO::getSingleFileName( string& fileName )
+{
+    size_t pos = fileName.find( "%r" );
+
+    if ( pos != string::npos )
+    {
+        fileName.replace( pos, 2, "" );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
 bool PartitionIO::isPartitionFileName( const string& fileName )
 {
     size_t pos = fileName.find( "%r" );
@@ -373,7 +385,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 {
     using namespace hmemo;
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    CommunicatorPtr comm = distribution.getCommunicatorPtr();
 
     PartitionId rank = comm->getRank();
 

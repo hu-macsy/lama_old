@@ -307,6 +307,8 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
             PartitionIO::write( *dist, distFileName );
         }
 
+        SCAI_LOG_INFO( logger, *comm << ": write vector to file " << vectorFileName << ": " << vector )
+
         vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
 
         DenseVector<ValueType> readVector;
@@ -315,14 +317,14 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         {
             readVector.readFromFile( vectorFileName, distFileName );
 
-            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName
+            SCAI_LOG_INFO( logger, *comm << ": read vector ( " << vectorFileName
                            << " ) with dist ( " << distFileName << " ): " << readVector )
         }
         else
         {
             readVector.readFromFile( vectorFileName );
 
-            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName << " ): " << readVector )
+            SCAI_LOG_INFO( logger, *comm << ": read vector ( " << vectorFileName << " ): " << readVector )
         }
 
         // we replicate now the vector, proves same distribution and same values
@@ -377,6 +379,8 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
         float fillRate = 0.2;
 
         vector.setSparseRandom( dist, 0, fillRate, 1 );
+
+        // find out it we have also to write a distribution file 
 
         bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
@@ -451,7 +455,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr rowDist = testDists[i];
-        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
+        const Communicator& comm = rowDist->getCommunicator();
 
         auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 
@@ -479,13 +483,13 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         BOOST_CHECK_EQUAL( local.maxDiffNorm( readLocal ), 0 );
 
-        int rc = PartitionIO::removeFile( matrixFileName, *comm );
+        int rc = PartitionIO::removeFile( matrixFileName, comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, *comm ) );
+        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, comm ) );
 
-        rc = PartitionIO::removeFile( distFileName, *comm );
+        rc = PartitionIO::removeFile( distFileName, comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+        BOOST_CHECK( !PartitionIO::fileExists( distFileName, comm ) );
     }
 }
 

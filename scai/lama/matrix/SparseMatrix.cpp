@@ -184,7 +184,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 {
     return true;
 
-    const Communicator& comm = getRowDistribution().getCommunicator();
+    const Communicator& comm = *Communicator::getCommunicatorPtr();
 
     SCAI_LOG_INFO( logger, comm << ": check for consistency: " << *this )
 
@@ -210,7 +210,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 
     // use communicator for global reduction to make sure that all processors return same value.
 
-    consistencyErrors = getRowDistribution().getCommunicator().sum( consistencyErrors );
+    consistencyErrors = comm.sum( consistencyErrors );
 
     return 0 == consistencyErrors;
 }

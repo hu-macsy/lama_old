@@ -40,8 +40,11 @@ namespace scai
 namespace dmemo
 {
 
-/** The class NoCommunicator stands for objects that are replicated on each
- *  partition or processor.
+/** 
+ *  The class NoCommunicator stands for a communicator that contains just this single processor.
+ *
+ *  It is used a fallback communicator if no MPI is supported, but is also used in cases
+ *  where trivial communication is required.
  */
 
 class COMMON_DLL_IMPORTEXPORT NoCommunicator:
@@ -186,6 +189,10 @@ public:
     static CommunicatorKind createValue();
 
 protected:
+
+    /** Implementation of pure method NoCommunicator::splitIt */
+
+    virtual NoCommunicator* splitIt( PartitionId color, PartitionId key ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

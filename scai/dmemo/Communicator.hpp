@@ -55,6 +55,7 @@
 // std
 #include <memory>
 #include <vector>
+#include <stack>
 
 //#include <cmath>
 
@@ -270,6 +271,24 @@ public:
      *  Virtual routines provided by derived class for each supported TypeID              *
      *                                                                                    *
      *************************************************************************************/
+
+    /** Create new communicators based on colors and keys 
+     *
+     *  @param[in] color processors with the same color will be in the same communicator
+     *  @param[in] key   used to rank processor in new communicator
+     *  @return pointer to a new created communicator
+     */
+    virtual Communicator* splitIt( PartitionId color, PartitionId key ) const = 0;
+
+    CommunicatorPtr split( PartitionId color ) const
+    {
+        return CommunicatorPtr( splitIt( color, getRank() ) );
+    }
+
+    CommunicatorPtr split( PartitionId color, PartitionId key ) const
+    {
+        return CommunicatorPtr( splitIt( color, key ) );
+    }
 
     /* @brief Exchange of data between all processors by communication plans.
      *
@@ -1071,3 +1090,21 @@ Communicator::CommunicatorKind Communicator::getType() const
 } /* end namespace dmemo */
 
 } /* end namespace scai */
+
+/* -------------------------------------------------------------------------- */
+
+/** Macro that defines a new current communicator for the actual scope
+ *
+ *  \code
+ *      auto comm = Communicator::getCommunicatorPtr();
+ *      PartitionId color = ...;
+ *      auto commTask = comm->split( color );
+ *      {
+ *          SCAI_DMEMO_TASK( commTask )
+ *          auto dist = std::make_shared<BlockDistribution>( n );  // distributes onto commTask
+ *          ...
+ *      }
+ *  \endcode
+ */
+#define SCAI_DMEMO_TASK( comm ) scai::dmemo::ScopedCommunicatorRecord SCAI_Comm_( comm );
+

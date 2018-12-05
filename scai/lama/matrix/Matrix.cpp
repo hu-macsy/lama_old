@@ -431,7 +431,7 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 
     // this routine is only for non-replicated columns, i.e. mHaloData is empty
 
-    SCAI_ASSERT( 1, colDist.getNumPartitions() );
+    SCAI_ASSERT_ERROR( colDist.isReplicated(), "here only replicated column distribution" );
 
     const Distribution& rowDist = this->getRowDistribution();
     const Communicator& comm = rowDist.getCommunicator();
@@ -791,12 +791,14 @@ void Matrix<ValueType>::vcat( const Matrix<ValueType>& m1, const Matrix<ValueTyp
 template<typename ValueType>
 void Matrix<ValueType>::hcat( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 )
 {
-    SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cut possible due to different column sizes" )
+    SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cat possible due to different column sizes" )
+
+    // ToDo: verify that m1, m2 are distributed onto processor subsets of current communicator
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    DistributionPtr rowDist( new BlockDistribution( m1.getNumRows() + m2.getNumRows(), comm ) );
-    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() ) );
+    auto rowDist = std::make_shared<BlockDistribution>( m1.getNumRows() + m2.getNumRows(), comm );
+    auto colDist = std::make_shared<NoDistribution>( m1.getNumColumns() );
 
     std::vector<const Matrix<ValueType>*> matrices;
 
