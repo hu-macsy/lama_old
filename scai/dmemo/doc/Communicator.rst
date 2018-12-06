@@ -22,7 +22,7 @@ between neighbored processors.
 * The method is a template method for different value types of the array.
 * The method must be called by all processors of the communicator (SPMD mode) 
 
-.. figure:: _images/shift.svg
+.. figure:: _images/shift.*
     :width: 500px
     :align: center
     :alt: ShiftArray
@@ -79,7 +79,7 @@ color argument.
 
 All processors with the same color will build a new communicator. 
 
-.. figure:: _images/splitting.svg
+.. figure:: _images/splitting.*
     :width: 500px
     :align: center
     :alt: CommunicatorSplit

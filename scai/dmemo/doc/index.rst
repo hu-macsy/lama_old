@@ -41,11 +41,11 @@ Class                    Description
 .. toctree::
    :hidden:
 
-   Distribution
    Communicator
-   CommunicationPlan
    NoCommunicator
    MPICommunicator
+   Distribution
+   CommunicationPlan
 
 *******
 Example
