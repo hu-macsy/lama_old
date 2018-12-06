@@ -31,6 +31,7 @@
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CommunicationPlan.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
@@ -258,7 +259,7 @@ GeneralDistribution::GeneralDistribution(
     // make communication plans for sending data and receiving to exchange
 
     auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), numPartitions );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
 
@@ -548,7 +549,7 @@ void GeneralDistribution::setBlockDistributedOwners()
     HArrayUtils::gather( sendIndexes, mLocal2Global, perm, common::BinaryOp::COPY );
 
     auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": query owners send plan: " << sendPlan )
     SCAI_LOG_DEBUG( logger, comm << ": query owners recv plan: " << recvPlan )
@@ -630,7 +631,7 @@ void GeneralDistribution::computeOwners(
     }
 
     auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
     SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )

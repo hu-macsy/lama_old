@@ -155,7 +155,7 @@ void MatrixAssembly<ValueType>::exchangeCOO(
     HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
 
     auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
     SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )

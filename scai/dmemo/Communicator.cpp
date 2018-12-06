@@ -129,6 +129,11 @@ CommunicatorPtr Communicator::getCommunicatorPtr()
     return getDefaultCommunicatorPtr();
 }
 
+const Communicator& Communicator::getCurrent()
+{
+    return *getCommunicatorPtr();
+}
+
 /* -----------------------------------------------------------------------------*/
 
 Communicator::Communicator( const CommunicatorKind& type ) :
@@ -616,10 +621,8 @@ void Communicator::updateHalo(
     SCAI_REGION( "Communicator.updateHalo" )
     SCAI_LOG_INFO( logger, *this << ": update halo" )
     const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
-    SCAI_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
     SCAI_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
-    SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
     SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
 
     // Before we exchange by plan, we have to pack local values to send
@@ -653,10 +656,8 @@ SyncToken* Communicator::updateHaloAsync(
     SCAI_REGION( "Communicator.updateHaloAsync" )
     SCAI_LOG_INFO( logger, *this << ": asynchronous update halo" )
     const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
-    SCAI_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
     SCAI_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
-    SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
     SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
 
     // Before we exchange by plan, we have to pack local values to send
@@ -1127,6 +1128,34 @@ void Communicator::minloc( ValueType& val, IndexType& location, const PartitionI
     {
         minlocDefault( val, location, root );
     }
+}
+
+/* -------------------------------------------------------------------------- */
+
+CommunicationPlan Communicator::transpose( const CommunicationPlan& plan ) const
+{
+    const PartitionId np = getSize();
+
+    // plan might be compressed, so build values again
+
+    std::vector<IndexType> sendSizes( np, 0 );
+
+    for ( PartitionId i = 0; i < plan.size(); ++i )
+    {
+        const CommunicationPlan::Entry& entry = plan[i];
+        sendSizes[entry.partitionId] = entry.quantity;
+    }
+
+    std::vector<IndexType> recvSizes( np, 0 );
+
+    // send each processor the number of indexes I require
+    // and receive the number of indexes that I have to provide
+
+    all2all( &recvSizes[0], &sendSizes[0] );
+
+    // now we can construct it by quantities
+
+    return CommunicationPlan( recvSizes.data(), np );
 }
 
 /* -------------------------------------------------------------------------- */

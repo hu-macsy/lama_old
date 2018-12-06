@@ -1393,7 +1393,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
         HArray<ValueType> recvBuffer;
 
         CommunicationPlan sendPlan;
-        auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );  // nothing to receive
+        auto recvPlan = CommunicationPlan::buildByQuantities( nullptr, 0 );  // nothing to receive
 
         for ( PartitionId p = 0; p < comm.getSize(); ++p )
         {
@@ -1409,7 +1409,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
              
                 if ( sendBuffer.size() )
                 {
-                    sendPlan.singleEntry( p, sendBuffer.size() );
+                    sendPlan.defineBySingleEntry( sendBuffer.size(), p );
                     comm.exchangeByPlan( recvBuffer, recvPlan, sendBuffer, sendPlan );
                 }
             }
@@ -1423,10 +1423,10 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
         IndexType size = getColDistribution().getLocalSize();
 
-        auto sendPlan = CommunicationPlan::buildBySizes( NULL, 0 );
-        auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );
+        CommunicationPlan sendPlan;     // zero plan
+        CommunicationPlan recvPlan;     // becomes singe entry plan
 
-        recvPlan.singleEntry( rowOwner, size );
+        recvPlan.defineBySingleEntry( size, rowOwner ); // single entry plan
 
         SCAI_LOG_DEBUG( logger, comm << ": getRow, recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
 

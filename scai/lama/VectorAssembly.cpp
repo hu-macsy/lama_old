@@ -132,7 +132,7 @@ void VectorAssembly<ValueType>::exchangeCOO(
     HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
 
     auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, "recv plan: " << recvPlan )
 

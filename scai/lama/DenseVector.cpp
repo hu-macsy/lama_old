@@ -533,8 +533,8 @@ void DenseVector<ValueType>::sortImpl(
 
     // make communication plans for sending data and receiving data
 
-    auto sendPlan = dmemo::CommunicationPlan::buildBySizes( quantities.get(), numPartitions );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto sendPlan = dmemo::CommunicationPlan::buildByQuantities( quantities.get(), numPartitions );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
 
@@ -1304,7 +1304,7 @@ void DenseVector<ValueType>::gather(
     // exchange communication plans
 
     auto recvPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), size );
-    auto sendPlan = recvPlan.transpose( comm );
+    auto sendPlan = comm.transpose( recvPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
 
@@ -1409,7 +1409,7 @@ void DenseVector<ValueType>::scatter(
     // exchange communication plans
 
     auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), size );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": sendPlan = " << sendPlan << ", recvPlan = " << recvPlan )
 

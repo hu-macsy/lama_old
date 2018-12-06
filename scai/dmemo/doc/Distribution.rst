@@ -28,7 +28,7 @@ Block Distribution
 The *BlockDistribution* creates continuous blocks of the same size (except from the last block), which are successively
 assigned to the processes.
 
-.. figure:: _images/block_distribution.svg
+.. figure:: _images/block_distribution.*
     :width: 500px
     :align: center
   
@@ -47,7 +47,7 @@ Cyclic Distribution
 
 The *CyclicDistribution* creates stripes of the given chunk size and assigns them consistently.
 
-.. figure:: _images/cyclic2_distribution.svg 
+.. figure:: _images/cyclic2_distribution.* 
     :width: 500px
     :align: center
     :alt: CyclicDistribution
@@ -74,7 +74,7 @@ The following example creates with three parts of size 1, 3 and 2 rows/columns:
    HArray<IndexType> sizes( 3, raw_sizes );
    DistributionPtr genBlock( new GenBlockDistribution( N, rawSizes, comm ) );
 
-.. figure:: _images/genblock_distribution.svg 
+.. figure:: _images/genblock_distribution.* 
     :width: 500px
     :align: center
     :alt: GenBlockDistribution
@@ -119,7 +119,7 @@ For the latter constructor the number of locally owned indexes must sum up to th
 each global index must appear exactly once in the local array ``myIndexes`` on a processor. It is not possible
 that one element is owned by multiple processors.
 
-.. figure:: _images/general_distribution.svg 
+.. figure:: _images/general_distribution.* 
     :width: 500px
     :align: center
     :alt: GeneralDistribution
@@ -147,7 +147,7 @@ Actually, this defines a mapping from the indexes 0 to N1 * N2 - 1 to four proce
 grid are assumed to be stored in a row-major order, i.e. ( x, y+1 ) follows directly ( x, y ) and 
 there are N2 elements between ( x + 1, y ) and ( x, y ).
 
-.. figure:: _images/grid_distribution.svg 
+.. figure:: _images/grid_distribution.* 
     :width: 700px
     :align: center
     :alt: GridDistribution

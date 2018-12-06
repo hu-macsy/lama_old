@@ -87,13 +87,10 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 
     setQuantities( reqQuantities, *comm );
 
-    bool compressFlag = false;
-
-    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size(), compressFlag );
-
-    BOOST_CHECK( !requiredPlan.compressed() );
+    CommunicationPlan requiredPlan( reqQuantities );
 
     // verify that requiredPlan is correctly set up
+
     IndexType offsetCheck = 0;
 
     for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
@@ -139,13 +136,9 @@ BOOST_AUTO_TEST_CASE( allocatePlanByOffsetTest )
 
     BOOST_REQUIRE_EQUAL( offsets.size(), quantities.size() + 1 );
 
-    bool compressFlag = true;
-
     CommunicationPlan requiredPlan;
 
-    requiredPlan.allocateByOffsets( &offsets[0], quantities.size(), compressFlag );
-
-    BOOST_CHECK( requiredPlan.compressed() );
+    requiredPlan.defineByOffsets( &offsets[0], quantities.size() );
 
     // verify that requiredPlan is correctly set up
 
@@ -185,15 +178,11 @@ BOOST_AUTO_TEST_CASE( constructorTest )
         }
     }
 
-    const IndexType* reqQuantitiesBegin = reqQuantities.size() > 0 ? &reqQuantities[0] : NULL;
-
-    const IndexType* reqOwnersBegin = reqOwners.size() > 0 ? &reqOwners[0] : NULL;
-
-    CommunicationPlan requiredPlan2( comm->getSize(), reqOwnersBegin, static_cast<IndexType>( reqOwners.size() ) );
+    auto requiredPlan2 = CommunicationPlan::buildByOwners( comm->getSize(), reqOwners.data(), static_cast<IndexType>( reqOwners.size() ) );
 
     BOOST_CHECK_EQUAL( requiredPlan2.totalQuantity(), static_cast<IndexType>( reqOwners.size() ) );
 
-    auto requiredPlan1 = CommunicationPlan::buildBySizes( reqQuantitiesBegin, reqQuantities.size() );
+    CommunicationPlan requiredPlan1( reqQuantities.data(), static_cast<PartitionId>( reqQuantities.size() ) );
 
     // verify that both plans are same
 
@@ -210,7 +199,7 @@ BOOST_AUTO_TEST_CASE( writeTest )
 
     setQuantities( reqQuantities, *comm );
 
-    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size() );
+    CommunicationPlan requiredPlan( reqQuantities );
 
     std::ostringstream out;
 
@@ -231,17 +220,12 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     setQuantities( reqQuantities, *comm );
 
-    bool compressed = true;
-
-    auto tmpPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size(), compressed );
+    CommunicationPlan tmpPlan( reqQuantities );
 
     const IndexType nMult = 2;
 
     CommunicationPlan requiredPlan( tmpPlan );
     requiredPlan.multiplyConst( nMult );
-
-    BOOST_CHECK( requiredPlan.allocated() );
-    BOOST_CHECK( requiredPlan.compressed() );
 
     // verify that requiredPlan is correctly set up
 
@@ -276,8 +260,8 @@ BOOST_AUTO_TEST_CASE( allocateTransposeTest )
 
     setQuantities( reqQuantities, *comm );
 
-    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size() );
-    auto providesPlan = requiredPlan.transpose( *comm );
+    CommunicationPlan requiredPlan( reqQuantities );
+    auto providesPlan = comm->transpose( requiredPlan );
 
     IndexType offsetCheck = 0;
 
@@ -302,12 +286,12 @@ BOOST_AUTO_TEST_CASE( singleEntryTest )
 
     const IndexType quantities[] = { 3, 0, 5, 2 };
 
-    auto plan = CommunicationPlan::buildBySizes( quantities, 4, true );
+    CommunicationPlan plan( quantities, 4 );
    
     BOOST_CHECK_EQUAL( plan.size(), 3 );
     BOOST_CHECK_EQUAL( plan.maxQuantity(), 5 );
 
-    plan.singleEntry( 2, 4 );
+    plan.defineBySingleEntry( 4, 2 );
 
     BOOST_CHECK_EQUAL( plan.size(), 1 );
 
@@ -328,9 +312,7 @@ BOOST_AUTO_TEST_CASE( getInfoTest )
 
     setQuantities( reqQuantities, *comm );
 
-    bool compressFlag = true;  // make sure that p in getInfo is not same as entry pos
-
-    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size(), compressFlag );
+    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
 
     IndexType expectedOffset = 0;
 
@@ -366,9 +348,7 @@ BOOST_AUTO_TEST_CASE( extractPlanTest )
 
     setQuantities( reqQuantities, *comm );
 
-    bool compressFlag = true;  // make sure that p in getInfo is not same as entry pos
-
-    auto requiredPlan = CommunicationPlan::buildBySizes( reqQuantities.data(), reqQuantities.size(), compressFlag );
+    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
 
     CommunicationPlan singlePlan;
 

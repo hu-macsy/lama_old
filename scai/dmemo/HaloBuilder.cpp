@@ -39,12 +39,12 @@
 
 #include <vector>
 
-using namespace scai::hmemo;
-
 using scai::utilskernel::HArrayUtils;
 
 namespace scai
 {
+
+using namespace hmemo;
 
 namespace dmemo
 {
@@ -85,8 +85,8 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     //allocate Required plan with the nodes, where we get data from
 
     {
-        ReadAccess<PartitionId> rOwners( owners );
-        requiredPlan.allocateByOwners( noPartitions, rOwners.get(), owners.size() );
+        auto rOwners = hmemo::hostReadAccess( owners );
+        requiredPlan = CommunicationPlan::buildByOwners( noPartitions, rOwners.get(), owners.size() );
     }
 
     SCAI_LOG_INFO( logger,
@@ -128,7 +128,7 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     requiredIndexesByOwner.release();
     // requiredPlan is ready, now we build the provides plan
     CommunicationPlan& providesPlan = halo.mProvidesPlan;
-    providesPlan = requiredPlan.transpose( communicator );
+    providesPlan = communicator.transpose( requiredPlan );
     SCAI_LOG_DEBUG( logger, communicator << ": providesPlan = " << providesPlan )
     SCAI_LOG_TRACE( logger, "requiredPlan: " << requiredPlan )
     SCAI_LOG_TRACE( logger, "providesPlan: " << providesPlan )
@@ -216,10 +216,10 @@ void HaloBuilder::buildFromProvidedOwners( const Communicator& comm,
 
     {
         const auto rOffsets = hostReadAccess( offsets );
-        providedPlan.allocateByOffsets( rOffsets.get(), numPartitions );
+        providedPlan.defineByOffsets( rOffsets.get(), numPartitions );
     }
 
-    requiredPlan = providedPlan.transpose( comm );
+    requiredPlan = comm.transpose( providedPlan );
     requiredIndexes.resize( requiredPlan.totalQuantity() );
 
     const auto globalProvidedIndexes = globalizeProvidedIndexes( providedIndexes, halo2global );

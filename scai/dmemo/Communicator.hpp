@@ -31,12 +31,12 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+#include <scai/dmemo/CommunicationPlan.hpp>
+
 // base classes
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/Factory.hpp>
 #include <scai/common/Printable.hpp>
-
-#include <scai/dmemo/CommunicationPlan.hpp>
 
 // internal scai libraris
 #include <scai/hmemo.hpp>
@@ -79,6 +79,8 @@ class Distribution;
 class Halo;
 
 class Communicator;
+
+class CommunicationPlan;
 
 typedef std::shared_ptr<const Communicator> CommunicatorPtr;
 
@@ -146,6 +148,10 @@ public:
      */
 
     static CommunicatorPtr getCommunicatorPtr();
+
+    /** Get the current/actual communicator. */
+
+    static const Communicator& getCurrent();
 
     /** Get a default communicator from the factory.
      *
@@ -289,6 +295,14 @@ public:
     {
         return CommunicatorPtr( splitIt( color, key ) );
     }
+
+    /** Build a new communication plan that is the inverse of plan
+     *
+     *  processor[p].plan->entry[q].quantity  = processor[q].entry[p].quantity
+     *
+     *  Note: this is just an all to all communication
+     */
+    CommunicationPlan transpose( const CommunicationPlan& plan ) const; 
 
     /* @brief Exchange of data between all processors by communication plans.
      *

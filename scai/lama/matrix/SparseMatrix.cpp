@@ -909,7 +909,7 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
         // communicate halo row to other processors corresponding schedule
         // is inverse halo exchange
 
-        const auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );  // empty, nothing to receive
+        const auto recvPlan = CommunicationPlan::buildByQuantities( nullptr, 0 );  // empty, nothing to receive
         const CommunicationPlan& sendPlan = mHalo.getRequiredPlan();  // only this matters here
 
         SCAI_LOG_DEBUG( logger, comm << ": owner recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
@@ -931,7 +931,7 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
 
         CommunicationPlan recvPlan;
         recvPlan.extractPlan( mHalo.getProvidesPlan(), owner );
-        auto sendPlan = CommunicationPlan::buildBySizes( NULL, 0 );                    // empty, nothing to send
+        auto sendPlan = CommunicationPlan::buildByQuantities( nullptr, 0 );                    // empty, nothing to send
 
         SCAI_LOG_DEBUG( logger, comm << ": not owner recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
 

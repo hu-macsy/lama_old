@@ -81,7 +81,7 @@ public:
         IndexType offset; //!< running sum for quantities of all entries
     };
 
-    /** @brief Default constructor creates an empty plan with allocated() returns false
+    /** @brief Default constructor creates an empty plan
      */
     CommunicationPlan();
 
@@ -105,7 +105,7 @@ public:
 
     ~CommunicationPlan();
 
-    /** Clear an existing object for communication plan. */
+    /** Reset to a zero communication plan. */
 
     void clear();
 
@@ -113,27 +113,32 @@ public:
 
     void purge();
 
-    /** Construct a communication plan by array of owners; quantity
-     *  is computed by counting values for each partition.
+    /** Construct a communication plan by the number of entries either required or provided for each processor.
      *
-     *  @param[in] nPartitions  number of partitions that exist
-     *  @param[in] owners        array of owners, each owner must be a value from 0 to nPartitions - 1
-     *  @param[in] nOwners       number of entries in owners
-     *  @param[in] compressFlag  will compress the computed plan
-     *
-     *  Each partition id that appears in owners will be counted to get the number of entries to send or receive.
+     *  @param[in] quantities   array of sizes for each processor
+     *  @param[in] size         number of processors
      *
      *  \code
-     *  PartitionId owners[] = { 2, 1, 2, 1, 2, 1, 2 };
-     *  PartitionId nOwners = sizeof( owners ) / sizeof ( PartitionId );
-     *  CommunicationPlan plan( 3, owners, nOwner );
+     *  IndexType quantities[] = { 3, 1, 0, 1 };
+     *  PartitionId size = 4;
+     *  CommunicationPlan plan( sizes, 4 );
      *  \endcode
      */
-    CommunicationPlan(
-        const PartitionId nPartitions,
-        const PartitionId owners[],
-        const IndexType nOwners,
-        bool compressFlag = true );
+    CommunicationPlan( const IndexType quantities[], const PartitionId size );
+
+    /** Construct a communication plan by iterating over an object with quantities 
+     *
+     *  @param object must have an iterable range with for quantities
+     */
+    template<typename T>
+    CommunicationPlan( const T& object );
+
+    /** Define this communication plan by iterating over an object with quantities 
+     *
+     *  @param object must have an iterable range with for quantities
+     */
+    template<typename T>
+    void defineByQuantities( const T& object );
 
     /** @brief Build a communication plan from this one where each entry is multiplied by same factor.
      *
@@ -152,60 +157,39 @@ public:
      */
     void multiplyRagged( const IndexType quantities[] );
 
-    /** Allocate a communication plan by sizes for each partition
+    /** Define a communication plan by sizes for each partition
      *
      *  @param quantities array of non-negative values, size is number of partitions
      *  @param nPartitions number of entries to take from quantities
-     *  @param compressFlag if true zero-entries are removed.
      *
      *  \code
      *  CommunicationPlan plan;
      *  IndexType quantities[] = { 0, 3, 4 };
      *  PartitionId nPartitions = sizeof( quantities ) / sizeof ( IndexType );
-     *  plan.allocateBySizes( quantities, nPartitions );
+     *  plan.defineByQuantities( quantities, nPartitions );
      *  \endcode
      */
-    void allocateBySizes( const IndexType quantities[], const PartitionId nPartitions, bool compressFlag = true );
+    void defineByQuantities( const IndexType quantities[], const PartitionId nPartitions );
 
     /** Allocate a communication plan by offsets instead of quantities for each partition.
+     *
+     *  Note: quantities[i] is given by offsets[i+1] - offsets[i]
      */
-    void allocateByOffsets( const IndexType offsets[], const PartitionId nPartitions, bool compressFlag = true );
+    void defineByOffsets( const IndexType offsets[], const PartitionId size );
 
-    /** @brief Allocate communication plan by an array of owners.
+    /** Define a communication plan by one quantity for one other processor.
      *
-     *  @param[in] nPartitions  number of partitions that exist
-     *  @param[in] owners        array of owners, each owner must be a value from 0 to nPartitions - 1
-     *  @param[in] nOwners       number of entries in owners
-     *  @param[in] compressFlag  will compress the computed plan
-     *
-     *  Each partition id that appears in owners will be counted to get the number of entries to send or receive.
+     *  @param[in] quantity  number of entries for exchange with processor rank
+     *  @param[in] partner   rank of the processor with which data is exchanged.
      *
      *  \code
-     *  CommunicationPlan plan;
-     *  PartitionId owners[] = { 2, 1, 2, 1, 2, 1, 2 };
-     *  PartitionId nOwners = sizeof( owners ) / sizeof ( PartitionId );
-     *  plan.allocateByOwners( 3, owners, nOwner );
+     *    PartitionId partner = 1;
+     *    IndexType N = 125;
+     *    CommunicationPlan plan;
+     *    plan.defineBySingleEntry( N, partner );
      *  \endcode
      */
-    void allocateByOwners( const PartitionId nPartitions, const PartitionId owners[], IndexType nOwners, bool compressFlag = true );
-
-    /** Build a new communication plan that is the inverse of this plan 
-     *
-     *  processor[p].plan->entry[q].quantity  = processor[q].entry[p].quantity
-     */
-    CommunicationPlan transpose( const Communicator& comm ) const;
-
-    /** @brief Query whether this communication plan has already been allocated */
-
-    bool allocated() const;
-
-    /** Compress a communication plan to remove all entries where quantity is zero. */
-
-    void compress();
-
-    /** Predicate to ask whether a communication plan is already compressed. */
-
-    bool compressed() const;
+    void defineBySingleEntry( const IndexType quantity, const PartitionId partner );
 
     /** Query the number of entries.
      *
@@ -255,33 +239,40 @@ public:
 
     void extractPlan( const CommunicationPlan& oldPlan, const PartitionId p );
 
-    /** @brief build a communication plan with a single entry only */
-
-    void singleEntry( const PartitionId p, const IndexType quantity );
-
     /** Build a communication plan by sizes for each partition
      *
-     *  @param sizes array of non-negative values, size is nPartitions
-     *  @param nPartitions number of entries for quantities
-     *  @param compressFlag if true zero-entries are removed.
+     *  @param quantities array of non-negative values, has size entries
+     *  @param size number of entries for quantities
      *
      *  \code
      *  IndexType quantities[] = { 0, 3, 4 };
-     *  PartitionId nPartitions = sizeof( quantities ) / sizeof ( IndexType );
-     *  auto plan = CommunicationPlan::buildBySizes( quantities, nPartitions );
+     *  PartitionId np = sizeof( quantities ) / sizeof ( IndexType );
+     *  auto plan = CommunicationPlan::buildByQuantities( quantities, np );
      *  \endcode
      */
-    static CommunicationPlan buildBySizes( const IndexType sizes[], const PartitionId nPartitions, bool compressFlag = true );
+    static CommunicationPlan buildByQuantities( const IndexType quantities[], const PartitionId size );
 
     /** Build a new communication plan by offset array. */
  
-    static CommunicationPlan buildByOffsets( const IndexType offsets[], const PartitionId nPartitions, bool compressFlag = true );
+    static CommunicationPlan buildByOffsets( const IndexType offsets[], const PartitionId size );
+
+    /** @brief Build communication plan by an array of owners.
+     *
+     *  @param[in] size    number of processors that might be owners
+     *  @param[in] owners  array of owners, each owner must be a value from 0 to size - 1
+     *  @param[in] N        number of entries in owners
+     *
+     *  Each partition id that appears in owners will be counted to get the number of entries to send or receive.
+     *
+     *  \code
+     *    PartitionId owners[] = { 2, 1, 2, 1, 2, 1, 2 };
+     *    IndexType nOwners = sizeof( owners ) / sizeof ( PartitionId );
+     *    CommunicationPlan plan = buildByOwners( 3, owners, nOwners );
+     *  \endcode
+     */
+    static CommunicationPlan buildByOwners( const PartitionId size, const PartitionId owners[], const IndexType N );
 
 private:
-
-    bool mAllocated; //!< true, if plan has been allocated
-
-    bool mCompressed; //!< true, if no entry has quantity 0
 
     std::vector<Entry> mEntries; //!< vector of entries
 
@@ -291,6 +282,48 @@ private:
 };
 
 /* ----------------------------------------------------------------------*/
+
+template<typename T>
+CommunicationPlan::CommunicationPlan( const T& object )
+{
+    defineByQuantities( object );
+}
+
+template<typename T>
+void CommunicationPlan::defineByQuantities( const T& object )
+{
+    IndexType countEntries = 0;
+
+    for ( typename T::const_iterator iter = object.begin(); iter != object.end(); ++iter )
+    {
+        if ( *iter > 0 )
+        {
+            countEntries++;
+        }
+    }
+
+    mEntries.resize( countEntries );
+
+    mQuantity = 0; // counts total quantity
+
+    countEntries = 0;  // reset 
+
+    PartitionId p = 0;
+
+    for ( typename T::const_iterator iter = object.begin(); iter != object.end(); iter++ )
+    {
+        if ( *iter > 0 )
+        {
+            Entry& entry = mEntries[countEntries];
+            entry.quantity = static_cast<IndexType>( *iter );
+            entry.offset = mQuantity;
+            entry.partitionId = p;
+            mQuantity += entry.quantity;
+            countEntries++;
+        }
+        ++p;
+    }
+}
 
 PartitionId CommunicationPlan::size() const
 {

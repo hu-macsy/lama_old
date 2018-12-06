@@ -34,6 +34,8 @@
 #include <scai/dmemo/mpi/MPISyncToken.hpp>
 #include <scai/dmemo/mpi/MPIUtils.hpp>
 
+#include <scai/dmemo/CommunicationPlan.hpp>
+
 // internal scai libraries
 #include <scai/tracing.hpp>
 
@@ -423,9 +425,6 @@ void MPICommunicator::exchangeByPlanImpl(
 {
     SCAI_REGION( "Communicator.MPI.exchangeByPlan" )
 
-    SCAI_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
-    SCAI_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
-
     SCAI_LOG_INFO( logger,
                    *this << ": exchange for values of type " << stype
                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
@@ -501,8 +500,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
     const common::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.exchangeByPlanAsync" )
-    SCAI_ASSERT_ERROR( sendPlan.allocated(), "sendPlan not allocated" )
-    SCAI_ASSERT_ERROR( recvPlan.allocated(), "recvPlan not allocated" )
+
     SCAI_LOG_INFO( logger,
                    *this << ": exchange for values of type " << stype
                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
