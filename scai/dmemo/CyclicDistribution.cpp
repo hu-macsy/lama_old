@@ -367,14 +367,14 @@ std::string CyclicDistribution::createValue()
     return getId();
 }
 
-Distribution* CyclicDistribution::create( const DistributionArguments arg )
+DistributionPtr CyclicDistribution::create( const DistributionArguments arg )
 {
     if ( arg.matrix != NULL )
     {
         SCAI_LOG_WARN( logger, "matrix argument ignored to create CYCLIC distribution" )
     }
 
-    return new CyclicDistribution( arg.globalSize, 1, arg.communicator );
+    return std::make_shared<CyclicDistribution>( arg.globalSize, 1, arg.communicator );
 }
 
 } /* end namespace dmemo */

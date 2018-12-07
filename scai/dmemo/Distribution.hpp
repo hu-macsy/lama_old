@@ -90,7 +90,7 @@ struct DistributionArguments
  */
 class COMMON_DLL_IMPORTEXPORT Distribution:
 
-    public common::Factory1<std::string, DistributionArguments, Distribution*>,
+    public common::Factory1<std::string, DistributionArguments, DistributionPtr>,
     public common::Printable
 {
 
@@ -104,23 +104,16 @@ public:
      * @param[in] globalSize is the number of elements to distribute
      * @param[in] weight is an individual weight for each partition of the communicator
      *
-     * @returns pointer to a new distribution of the specified kind, NULL if kind is not supported
+     * @returns (shared) pointer to a new distribution of the specified kind, NULL if kind is not supported
      *
      *  /code
-     *  // Using a MetisDistribution requires its availabilty
-     *  Distribution* dist = MetisDistribution( comm, size, weight )
-     *  // code using the factory does not require the availability
-     *  Distribution* dist = Distribution::getDistributionPtr( "METIS", comm, size, weight )
-     *  if ( dist == NULL )
-     *  {
      *      dist = Distribution::getDistributionPtr( "GEN_BLOCK", comm, size, weight )
-     *  }
      *  /endcode
      *
      *  Note: Internally, this routine requires that all derived classes implement a corresponding
      *        create method that will be registered during static initialization.
      */
-    static Distribution* getDistributionPtr(
+    static DistributionPtr getDistributionPtr(
         const std::string& kind,
         const CommunicatorPtr comm,
         const IndexType globalSize,
@@ -138,7 +131,7 @@ public:
      *
      * Note: the current distribution of matrix does not matter.
      */
-    static Distribution* getDistributionPtr(
+    static DistributionPtr getDistributionPtr(
         const std::string& kind,
         const CommunicatorPtr comm,
         const Distributed& matrix,

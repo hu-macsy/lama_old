@@ -280,11 +280,11 @@ std::string BlockDistribution::createValue()
     return getId();
 }
 
-Distribution* BlockDistribution::create( const DistributionArguments arg )
+DistributionPtr BlockDistribution::create( const DistributionArguments arg )
 {
     SCAI_LOG_INFO( logger, "create" )
     // Note: weight argument is not used here
-    return new BlockDistribution( arg.globalSize, arg.communicator );
+    return blockDistribution( arg.globalSize, arg.communicator );
 }
 
 } /* end namespace dmemo */

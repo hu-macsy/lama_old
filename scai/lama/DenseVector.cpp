@@ -600,7 +600,7 @@ void DenseVector<ValueType>::sortImpl(
 
     // Create the new general block distribution
 
-    auto newDist = std::make_shared<dmemo::GenBlockDistribution>( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() );
+    auto newDist = dmemo::genBlockDistribution( newLocalSize, distribution.getCommunicatorPtr() );
 
     if ( out )
     {
@@ -1288,22 +1288,22 @@ void DenseVector<ValueType>::gather(
 
     const PartitionId size = comm.getSize();
 
-    HArray<IndexType> offsets;  // used to allocate the communication plan
+    HArray<IndexType> sizes;    // used to build the communication plan
 
     HArray<IndexType> perm;     // used to sort required indexes and to scatter the gathered values
 
-    HArrayUtils::bucketSort( offsets, perm, owners, size );
+    HArrayUtils::bucketSortSizes( sizes, perm, owners, size );
 
-    SCAI_ASSERT_EQ_DEBUG( offsets.size(), size + 1, "wrong offsets" )
+    SCAI_ASSERT_EQ_DEBUG( sizes.size(), size, "wrong sizes" )
     SCAI_ASSERT_EQ_DEBUG( perm.size(), owners.size(), "illegal perm" )
 
     HArray<IndexType> requiredIndexes;  // local index values sorted by owner
 
     HArrayUtils::gather( requiredIndexes, index.getLocalValues(), perm, BinaryOp::COPY );
 
-    // exchange communication plans
+    // build communication plans send/recv for exchange
 
-    auto recvPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), size );
+    CommunicationPlan recvPlan( hostReadAccess( sizes ) );
     auto sendPlan = comm.transpose( recvPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
@@ -1389,13 +1389,12 @@ void DenseVector<ValueType>::scatter(
 
     const PartitionId size = comm.getSize();
 
-    HArray<IndexType> offsets;  // used to allocate the communication plan
-
+    HArray<IndexType> sizes;    // used to allocate the communication plan
     HArray<IndexType> perm;     // used to sort required indexes and to scatter the gathered values
 
-    HArrayUtils::bucketSort( offsets, perm, owners, size );
+    HArrayUtils::bucketSortSizes( sizes, perm, owners, size );
 
-    SCAI_ASSERT_EQ_DEBUG( offsets.size(), size + 1, "Internal error: wrong offsets" )
+    SCAI_ASSERT_EQ_DEBUG( sizes.size(), size + 1, "Internal error: wrong sizes" )
     SCAI_ASSERT_EQ_ERROR( perm.size(), owners.size(), "Illegal size for permutation, most likely due to out-of-range index values" )
 
     HArray<IndexType> sendIndexes;  // local index values sorted by owner
@@ -1408,7 +1407,7 @@ void DenseVector<ValueType>::scatter(
 
     // exchange communication plans
 
-    auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), size );
+    CommunicationPlan sendPlan( hostReadAccess( sizes ) );
     auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": sendPlan = " << sendPlan << ", recvPlan = " << recvPlan )

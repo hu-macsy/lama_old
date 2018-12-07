@@ -561,6 +561,38 @@ void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, cons
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void Communicator::scatterVArray( 
+    HArray<ValueType>& recvArray,
+    const PartitionId root, 
+    const HArray<ValueType>& sendArray, 
+    const HArray<IndexType>& sendSizes ) const
+{
+    // scatter the send sizes so that each processor knows the size of its part to allocate it
+
+    IndexType recvSize;
+    ValueType dummy;
+
+    // avoid NULL pointers on non-root processors, caused problems with some MPI implementations
+
+    const IndexType* sizesPtr = &recvSize;
+    const ValueType* allValuesPtr = &dummy;
+
+    if ( getRank() == root )
+    {
+        sizesPtr = hostReadAccess( sendSizes ).get();
+        allValuesPtr = hostReadAccess( sendArray ).get();
+    }
+
+    scatter( &recvSize, 1, root, sizesPtr );
+
+    auto wMyValues = hostWriteOnlyAccess( recvArray, recvSize );
+
+    scatterV( wMyValues.get(), recvSize, root, allValuesPtr, sizesPtr );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void Communicator::bcastArray( HArray<ValueType>& array, const PartitionId root ) const
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( root, getSize(), "illegal root for bcast specified" )
@@ -1341,6 +1373,13 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
     void Communicator::joinArray(                                   \
             HArray<_type>& globalArray,                             \
             const HArray<_type>& localArray ) const;                \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::scatterVArray(                               \
+            HArray<_type>& recvArray,                               \
+            const PartitionId root,                                 \
+            const HArray<_type>& sendArray,                         \
+            const HArray<IndexType>& sendSizes ) const;             \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \

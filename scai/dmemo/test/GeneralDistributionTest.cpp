@@ -203,4 +203,105 @@ BOOST_AUTO_TEST_CASE( redistConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( buildByOwnersTest )
+{
+    auto comm = Communicator::getCommunicatorPtr();
+
+    const IndexType N = 15;
+
+    auto size = comm->getSize();
+    auto rank = comm->getRank();
+
+    hmemo::HArray<PartitionId> owners;
+
+    decltype( rank ) root = 0;
+
+    if ( rank == root )
+    {
+        // define cylcic(1) ownership
+
+        auto wOwners = hostWriteOnlyAccess( owners, N );  
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            wOwners[i] = i % size;
+        }
+    }
+
+    auto dist = generalDistributionByOwners( owners, root, comm );
+
+    // now prove that each processor has the right local values
+
+    hmemo::HArray<IndexType> myIndexes;
+
+    dist->getOwnedIndexes( myIndexes );
+
+    for ( auto myIndex : hostReadAccess( myIndexes ) )
+    {
+        BOOST_CHECK_EQUAL( static_cast<decltype( rank )>( myIndex % size ), rank );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( buildTest )
+{
+    using namespace hmemo;
+
+    auto comm = Communicator::getCommunicatorPtr();
+ 
+    auto size = comm->getSize();
+
+    DistributionPtr dist;
+
+    if ( size < 2 )
+    {
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3 } ), comm );
+        }, common::Exception );
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3, 2 } ), comm );
+        }, common::Exception );
+
+        dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3, 1 } ), comm );
+
+        return;
+    }
+
+    const IndexType N = 8;
+
+    if ( rank == 0 )
+    {
+        dist = generalDistribution( N, HArray<IndexType>( { 1, 3, 7, 4 } ), comm );
+    }
+    else if ( rank == 1 )
+    {
+        dist = generalDistribution( N, HArray<IndexType>( { 6, 5, 0, 2 } ), comm );
+    }
+    else 
+    {
+        dist = generalDistribution( N, HArray<IndexType>( {} ), comm );
+    }
+    
+    // now prove that each processor has the right local values
+
+    hmemo::HArray<PartitionId> owners;
+
+    PartitionId root = size - 1;  // last processor
+
+    dist->allOwners( owners, root );
+
+    hmemo::HArray<PartitionId> expOwners( { 1, 0, 1, 0, 0, 1, 1, 0 } );
+
+    if ( rank == root )
+    {
+        BOOST_TEST( hostReadAccess( owners ) == hostReadAccess( expOwners ), boost::test_tools::per_element() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

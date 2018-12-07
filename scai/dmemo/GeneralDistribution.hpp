@@ -63,26 +63,15 @@ public:
     /** Constructor of a general distribution where each processor knows it indexes.
      *
      *  \param globalSize is the size of the distributed range
-     *  \param myGlobalIndexes contains all indexes of range owned by this partition
-     *  \param communicator partitions on which the range is distributed.
+     *  \param myGlobalIndexes contains all indexes of range owned by this processor
+     *  \param communicator specifies the set on processors for the distribution
      *
      *  Important: each global index from 0 to globalSize-1 must appear exactly once in
      *  the vector myGlobalIndexes on one partition.
      */
     GeneralDistribution(
         const IndexType globalSize,
-        const hmemo::HArray<IndexType>& myGlobalIndexes,
-        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
-
-    /** This constructor creates a general distribution by an array containing the owner for each element
-     *
-     *  @param[in] owners array with ower for each element, 0 <= owners[i] < communicator->size()
-     *  @param[in] communicator that specifies the processor array for distribution
-     *
-     *  // Note: owners must only be valid on host processor
-     */
-    GeneralDistribution(
-        const hmemo::HArray<PartitionId>& owners,
+        hmemo::HArray<IndexType> myGlobalIndexes,
         const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
 
     /** This constructor creates a general distribution from an existing distribution and an
@@ -228,7 +217,27 @@ private:
     void setBlockDistributedOwners();
 };
 
-typedef std::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
+/** Constructor of a general distribution here as a function for convenience
+ *
+ *  @param[in] globalSize is the size of the distributed range
+ *  @param[in] myGlobalIndexes contains all indexes of range owned by this processor
+ *  @param[in] communicator specifies the set on processors for the distribution
+ */
+std::shared_ptr<GeneralDistribution> generalDistribution( 
+    const IndexType globalSize,
+    hmemo::HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
+
+/** This function creates a general distribution by an array containing the owner for each element
+ *
+ *  @param[in] owners array with ower for each element, 0 <= owners[i] < communicator->size()
+ *  @param[in] root is the processor that has the valid copy of owners, must be same value on all processors
+ *  @param[in] communicator that specifies the processors used for the distribution
+ */
+std::shared_ptr<GeneralDistribution> generalDistributionByOwners( 
+    const hmemo::HArray<PartitionId>& owners, 
+    const PartitionId root, 
+    CommunicatorPtr comm );
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */

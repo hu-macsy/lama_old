@@ -90,7 +90,7 @@ public:
 
     /** Static method required for create to use in Distribution::Register */
 
-    static Distribution* create( const DistributionArguments args );
+    static DistributionPtr create( const DistributionArguments args );
 
     /** Static method required for Distribution::Register */
 

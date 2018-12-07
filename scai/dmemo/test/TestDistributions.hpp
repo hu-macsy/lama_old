@@ -105,13 +105,15 @@ public:
             }
         }
 
-        push_back( std::make_shared<GeneralDistribution>( owners, comm ) );
+        PartitionId root = 0;
+
+        push_back( generalDistributionByOwners( owners, root, comm ) );
 
         // Create a general block distribution with different weights on each processor
 
         float weight = static_cast<float>( comm->getRank() + 1 );
 
-        push_back( std::make_shared<GenBlockDistribution>( globalSize, weight, comm ) );
+        push_back( genBlockDistributionByWeight( globalSize, weight, comm ) );
 
         // Create a single distributon, not on first processor
         //  1 -> 0, 2 ->1, 3 -> 1, 4 -> 2

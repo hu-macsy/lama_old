@@ -297,7 +297,7 @@ void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexT
         }
     }
 
-    utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, getCommunicator().getSize() );
+    utilskernel::HArrayUtils::bucketSortOffsets( offsets, local2global, owners, getCommunicator().getSize() );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -618,7 +618,7 @@ void Distribution::replicateRagged(
 
 /* ---------------------------------------------------------------------- */
 
-Distribution* Distribution::getDistributionPtr(
+DistributionPtr Distribution::getDistributionPtr(
     const std::string& kind,
     CommunicatorPtr comm,
     const IndexType globalSize,
@@ -627,7 +627,7 @@ Distribution* Distribution::getDistributionPtr(
     return Distribution::create( kind, DistributionArguments( comm, globalSize, NULL, weight ) );
 }
 
-Distribution* Distribution::getDistributionPtr(
+DistributionPtr Distribution::getDistributionPtr(
     const std::string& kind,
     CommunicatorPtr comm,
     const Distributed& matrix,

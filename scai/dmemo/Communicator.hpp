@@ -382,13 +382,26 @@ public:
     /* @brief Scatter of an array of values from root to all other processors.
      *
      *  @param[out]   myVals values that I receive
-     *  @param[in]    n      number of elements in vector val
+     *  @param[in]    n      number of elements in vector myVals
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    allVals values for all processors (size must be sum(sizes) )
      *  @param[in]    sizes   number of total values for all processors
      */
     template<typename ValueType>
     void scatterV( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[], const IndexType sizes[] ) const;
+
+    /* @brief Scatter of an array of values from root to all other processors.
+     *
+     *  @param[out]   myVals values that I receive
+     *  @param[in]    root   processor that has values for all processors
+     *  @param[in]    allVals values for all processors ( only root )
+     *  @param[in]    sizes   number of values for each processor ( only root )
+     */
+    template<typename ValueType>
+    void scatterVArray( hmemo::HArray<ValueType>& myVals, 
+                        const PartitionId root, 
+                        const hmemo::HArray<ValueType>& allVals, 
+                        const hmemo::HArray<IndexType>& sizes ) const;
 
     virtual void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
                                const void* allVals, const IndexType sizes[], const common::ScalarType stype ) const = 0;

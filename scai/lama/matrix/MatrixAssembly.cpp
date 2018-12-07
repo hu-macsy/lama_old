@@ -140,11 +140,11 @@ void MatrixAssembly<ValueType>::exchangeCOO(
     PartitionId np = comm.getSize();
 
     HArray<IndexType> perm;
-    HArray<IndexType> offsets;
+    HArray<IndexType> sizes;
 
-    HArrayUtils::bucketSort( offsets, perm, owners, np );
+    HArrayUtils::bucketSortSizes( sizes, perm, owners, np );
 
-    SCAI_LOG_DEBUG( logger, comm << ": sorted, perm = " << perm << ", offsets = " << offsets )
+    SCAI_LOG_DEBUG( logger, comm << ": sorted, perm = " << perm << ", sizes = " << sizes )
 
     HArray<IndexType> sendIA;
     HArray<IndexType> sendJA;
@@ -154,7 +154,7 @@ void MatrixAssembly<ValueType>::exchangeCOO(
     HArrayUtils::gather( sendJA, inJA, perm, common::BinaryOp::COPY );
     HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
 
-    auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
+    dmemo::CommunicationPlan sendPlan( hostReadAccess( sizes ) );
     auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )

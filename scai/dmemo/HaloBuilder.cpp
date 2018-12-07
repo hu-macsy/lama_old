@@ -209,17 +209,15 @@ void HaloBuilder::buildFromProvidedOwners( const Communicator& comm,
     auto& requiredIndexes = halo.mRequiredIndexes;
     auto& providedIndexes = halo.mProvidesIndexes;
 
-    hmemo::HArray<IndexType> offsets( numPartitions + 1, contextPtr );
+    hmemo::HArray<IndexType> sizes;
+
     providedIndexes.resize( ownersOfProvided.size() );
 
-    HArrayUtils::bucketSort( offsets, providedIndexes, ownersOfProvided, numPartitions, contextPtr );
+    HArrayUtils::bucketSortSizes( sizes, providedIndexes, ownersOfProvided, numPartitions, contextPtr );
 
-    {
-        const auto rOffsets = hostReadAccess( offsets );
-        providedPlan.defineByOffsets( rOffsets.get(), numPartitions );
-    }
-
+    providedPlan = CommunicationPlan( hostReadAccess( sizes ) );
     requiredPlan = comm.transpose( providedPlan );
+
     requiredIndexes.resize( requiredPlan.totalQuantity() );
 
     const auto globalProvidedIndexes = globalizeProvidedIndexes( providedIndexes, halo2global );

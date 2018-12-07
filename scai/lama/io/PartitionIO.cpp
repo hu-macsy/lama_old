@@ -287,13 +287,14 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
         IndexType localSize;
         hmemo::ReadAccess<IndexType> rSizes( localSizes );
         comm->scatter( &localSize, 1, MASTER, rSizes.get() );
-        dist.reset( new GenBlockDistribution ( globalSize, localSize, comm ) );
+        dist = genBlockDistribution ( localSize, comm );
+        SCAI_ASSERT_EQ_ERROR( globalSize, dist->getGlobalSize(), "serious mismatch" )
     }
     else
     {
         // general distribution can be
 
-        dist.reset( new GeneralDistribution( owners, comm ) );
+        dist = generalDistributionByOwners( owners, MASTER, comm );
     }
 
     return dist;

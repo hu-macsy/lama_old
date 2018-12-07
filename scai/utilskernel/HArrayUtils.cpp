@@ -1715,7 +1715,7 @@ void HArrayUtils::sortSparseEntries(
 /* --------------------------------------------------------------------------- */
 
 template<typename BucketType>
-void HArrayUtils::bucketSort(
+void HArrayUtils::bucketSortOffsets(
     HArray<IndexType>& offsets,
     HArray<IndexType>& perm,
     const HArray<BucketType>& array,
@@ -1760,6 +1760,27 @@ void HArrayUtils::bucketSort(
 
     WriteOnlyAccess<IndexType> wPerm( perm, loc, total );
     sortInBuckets[loc]( wPerm, sizes, nb, bucketMap, n );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename BucketType>
+void HArrayUtils::bucketSortSizes(
+    HArray<IndexType>& sizes,
+    HArray<IndexType>& perm,
+    const HArray<BucketType>& array,
+    const BucketType nb,
+    ContextPtr prefLoc )
+{
+    bucketSortOffsets( sizes, perm, array, nb, prefLoc );
+
+    auto wSizes = hostWriteAccess( sizes );
+
+    for ( IndexType i = 0; i < sizes.size(); i++ )
+    {
+        wSizes[i] = wSizes[i + 1] - wSizes[i];
+    }
+    wSizes.resize( static_cast<IndexType>( nb ) );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2951,7 +2972,14 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 
-template void HArrayUtils::bucketSort(
+template void HArrayUtils::bucketSortOffsets(
+    hmemo::HArray<IndexType>& offsets,
+    hmemo::HArray<IndexType>& perm,
+    const hmemo::HArray<IndexType>& array,
+    const IndexType nb,
+    hmemo::ContextPtr prefLoc );
+
+template void HArrayUtils::bucketSortSizes(
     hmemo::HArray<IndexType>& offsets,
     hmemo::HArray<IndexType>& perm,
     const hmemo::HArray<IndexType>& array,

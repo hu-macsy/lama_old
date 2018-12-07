@@ -74,21 +74,6 @@ public:
         std::unique_ptr<IndexType[]>&& offsets,
         CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
-    /** Construct a general block distribution by a weight so that each partition
-     *  will have a size corresponding to its weight.
-     *
-     *  @param globalSize is the number of elements to distribute
-     *  @param weight is the weight of this partition (must be positive)
-     *  @param communicator specifies the communicator used for this distribution
-     *
-     *  Note: GenBlockDistribution( globalSize, localSize, comm) is the same
-     *        as GenBlockDistribution( globalSize, (float) localSize, comm )
-     */
-    GenBlockDistribution(
-        const IndexType globalSize,
-        const float weight,
-        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
-
     virtual ~GenBlockDistribution();
 
     /** Get the local range of the calling partition.
@@ -164,7 +149,7 @@ public:
 
     /** Static method required for create to use in Distribution::Register */
 
-    static Distribution* create( const DistributionArguments args );
+    static DistributionPtr create( const DistributionArguments args );
 
     /** Static method required for Distribution::Register */
 
@@ -183,10 +168,6 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
-
-    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType localSizes[] );
-
-    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize );
 
     GenBlockDistribution(); // disable default destructor
 
@@ -219,7 +200,7 @@ std::shared_ptr<GenBlockDistribution> genBlockDistribution( const IndexType loca
 
 /** Construct a general block distribution by a vector of localSizes.
  *
- *  @param[in] localSizes contains the sizes for each partition
+ *  @param[in] localSizes contains the sizes for each partition, must be same for all processors
  *  @param[in] communicator specifies the communicator used for this distribution
  *
  *  Note: All partitions must call this constructor with the 'same' arguments.
@@ -228,6 +209,17 @@ std::shared_ptr<GenBlockDistribution> genBlockDistribution( const IndexType loca
  */
 std::shared_ptr<GenBlockDistribution> genBlockDistribution( const std::vector<IndexType>& localSizes,
                                                             CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/** Generate a general block distribution by a weight so that each partition
+ *  will have a size corresponding to its weight.
+ *
+ *  @param globalSize is the number of elements to distribute, must be same for all processors
+ *  @param weight is the weight of this partition (must not be negative)
+ *  @param comm specifies the communicator used for this distribution
+ */
+std::shared_ptr<GenBlockDistribution> genBlockDistributionByWeight( const IndexType globalSize,
+                                                                    const float weight,
+                                                                    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
 } /* end namespace dmemo */
 

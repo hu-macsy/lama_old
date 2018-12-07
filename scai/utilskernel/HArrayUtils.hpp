@@ -688,8 +688,16 @@ public:
      */
 
     template<typename BucketType>
-    static void bucketSort(
+    static void bucketSortOffsets(
         hmemo::HArray<IndexType>& offsets,
+        hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<BucketType>& array,
+        const BucketType nb,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename BucketType>
+    static void bucketSortSizes(
+        hmemo::HArray<IndexType>& sizes,
         hmemo::HArray<IndexType>& perm,
         const hmemo::HArray<BucketType>& array,
         const BucketType nb,

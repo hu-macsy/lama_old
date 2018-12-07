@@ -137,8 +137,11 @@ void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float w
 
     {
         SCAI_REGION( "partitioning.rect_redist" )
-        DistributionPtr rowDist( new GeneralDistribution( rowOwners, comm ) );
-        DistributionPtr colDist( new GeneralDistribution( colOwners, comm ) );
+
+        const PartitionId root = 0;
+
+        auto rowDist = generalDistributionByOwners( rowOwners, root, comm );
+        auto colDist = generalDistributionByOwners( colOwners, root, comm );
 
         matrix.redistribute( rowDist, colDist );
     }

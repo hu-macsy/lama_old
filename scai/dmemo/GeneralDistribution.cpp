@@ -67,26 +67,23 @@ const char GeneralDistribution::theCreateValue[] = "GENERAL";
 
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
-    const HArray<IndexType>& myIndexes,
-    const CommunicatorPtr communicator ) :
+    HArray<IndexType> myIndexes,
+    const CommunicatorPtr comm ) :
 
-    Distribution( globalSize, communicator )
+    Distribution( globalSize, comm ),
+    mLocal2Global( std::move( myIndexes ) )
 
 {
     SCAI_LOG_INFO( logger, "GeneralDistribution( size = " << globalSize
-                   << ", myIndexes = " << myIndexes.size() << ", comm = " << *communicator )
+                   << ", myIndexes = " << myIndexes.size() << ", comm = " << *comm )
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
-    // make a copy of the indexes and sort them ascending = true, perm not needed
-
-    HArrayUtils::sort( NULL, &mLocal2Global, myIndexes, true );
-
     // Note: the constructor is completely local, but make some consistency check now
 
-    IndexType nLocal = myIndexes.size();
+    IndexType nLocal = mLocal2Global.size();
 
-    SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
+    SCAI_ASSERT_EQ_ERROR( mGlobalSize, comm->sum( nLocal ), "illegal general distribution" )
 
     fillIndexMap();
     setBlockDistributedOwners();
@@ -94,111 +91,50 @@ GeneralDistribution::GeneralDistribution(
 
 /* ---------------------------------------------------------------------- */
 
-GeneralDistribution::GeneralDistribution(
-    const HArray<PartitionId>& owners,
-    const CommunicatorPtr communicator ) :
-
-    Distribution( 0, communicator )
-
+std::shared_ptr<GeneralDistribution> generalDistribution( 
+    const IndexType globalSize,
+    HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr comm )
 {
-    using namespace hmemo;
+    // here we could sort the global indexes in place
 
-    ContextPtr ctx = Context::getHostPtr();
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), comm );
+}
 
-    PartitionId rank = mCommunicator->getRank();
-    PartitionId size = mCommunicator->getSize();
+/* ---------------------------------------------------------------------- */
 
-    if ( rank == MASTER )
+std::shared_ptr<GeneralDistribution> generalDistributionByOwners(
+    const HArray<PartitionId>& owners,
+    const PartitionId root,
+    CommunicatorPtr comm ) 
+{
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( root, size, "illegal root processor specified" )
+
+    IndexType globalSize;
+
+    if ( rank == root )
     {
-        mGlobalSize = owners.size();
+        globalSize = owners.size();
     }
 
-    mCommunicator->bcast( &mGlobalSize, 1, MASTER );
+    comm->bcast( &globalSize, 1, root );
 
-    SCAI_LOG_DEBUG( logger, *mCommunicator << ": global size = " << mGlobalSize )
+    HArray<IndexType> localSizes;         // only defined by root
+    HArray<IndexType> sortedIndexes;      // only defined by root
 
-    HArray<IndexType> localSizes;
-    HArray<IndexType> localOffsets;
-
-    // count in localSizes for each partition the owners
-    // owners = [ 0, 1, 2, 1, 2, 1, 0 ] -> sizes = [2, 3, 2 ]
-    // sizes.sum() == owners.size()
-
-    if ( rank == MASTER )
+    if ( rank == root )
     {
-        HArrayUtils::bucketCount( localSizes, owners, size );
-        IndexType lsum = HArrayUtils::sum( localSizes );
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
-    }
-    else
-    {
-        // all other procs intialize localSizes with a dummy value to avoid read access of uninitialized array
-        HArrayUtils::setOrder( localSizes, 1 );
+        HArrayUtils::bucketSortSizes( localSizes, sortedIndexes, owners, size );
     }
 
-    IndexType localSize;
+    HArray<IndexType> myGlobalIndexes;
 
-    // scatter partition sizes
+    comm->scatterVArray( myGlobalIndexes, root, sortedIndexes, localSizes );
 
-    {
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": before scatter, localSizes = " << localSizes )
-        ReadAccess<IndexType> rSizes( localSizes );
-        mCommunicator->scatter( &localSize, 1, MASTER, rSizes.get() );
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatter, localSize = " << localSize )
-    }
-
-    SCAI_LOG_DEBUG( logger, *mCommunicator << ": owns " << localSize << " of " << mGlobalSize << " elements" )
-
-    if ( rank == MASTER )
-    {
-        localOffsets.reserve( ctx, size + 1 );
-        localOffsets = localSizes;
-        HArrayUtils::scan1( localOffsets );
-        SCAI_LOG_DEBUG( logger, "scan done, sum = " << localOffsets[ size ] )
-    }
-
-    // Now resort 0, ..., n - 1 according to the owners
-
-    HArray<IndexType> sortedIndexes;
-
-    if ( rank == MASTER )
-    {
-        SCAI_LOG_DEBUG( logger, "reorder for indexes" )
-
-        ContextPtr loc = Context::getHostPtr();
-
-        static LAMAKernel<UtilKernelTrait::sortInBuckets<PartitionId> > sortInBuckets;
-
-        sortInBuckets.getSupportedContext( loc );
-
-        WriteOnlyAccess<IndexType> wIndexes( sortedIndexes, loc, mGlobalSize );
-        WriteAccess<IndexType> wOffsets( localOffsets, loc );
-        ReadAccess<PartitionId> rOwners( owners, loc );
-
-        sortInBuckets[loc]( wIndexes, wOffsets, size, rOwners, mGlobalSize );
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": initialize sortedIndexes " )
-
-        // all other procs intialize sortedIndexes with a dummy value to avoid read access of uninitialized array
-        HArrayUtils::setOrder( sortedIndexes, 1 );
-    }
-
-    WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, localSize );
-
-    {
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": before scatterV, sortedIndexes = " << sortedIndexes  )
-        ReadAccess<IndexType> rIndexes( sortedIndexes );
-        ReadAccess<IndexType> rSizes( localSizes );
-        mCommunicator->scatterV( wLocal2Global.get(), localSize, MASTER, rIndexes.get(), rSizes.get() );
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatterV, sortedIndexes = " << sortedIndexes )
-    }
-
-    wLocal2Global.release();
-
-    fillIndexMap();
-    setBlockDistributedOwners();
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), comm );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -239,7 +175,7 @@ GeneralDistribution::GeneralDistribution(
     HArray<IndexType> offsets;    // number of elements for each bucket/partition
     HArray<IndexType> perm;       // permutation to resort in buckets
 
-    HArrayUtils::bucketSort( offsets, perm, owners, mCommunicator->getSize() );
+    HArrayUtils::bucketSortOffsets( offsets, perm, owners, mCommunicator->getSize() );
 
     HArray<IndexType> sortedIndexes;    // current indexes resorted according the buckets
 
@@ -321,7 +257,7 @@ void GeneralDistribution::fillIndexMap()
 
     SCAI_LOG_INFO( logger, "fillHashMap, #local indexes = " << nLocal )
 
-    // add local indexes into unordered_map
+    // add my owned global indexes into unordered_map, [globalIndex : localIndex] 
 
     auto rIndexes = hostReadAccess( mLocal2Global );
 
@@ -411,12 +347,12 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
 
     // Each processor has a contiguous part, but verify that it is in the same order
 
-    GenBlockDistribution genBlock( mGlobalSize, localSize, comm );
+    auto genBlock = genBlockDistribution( localSize, comm );
 
     IndexType lb;
     IndexType ub;
 
-    genBlock.getLocalRange( lb, ub );
+    genBlock->getLocalRange( lb, ub );
 
     isBlocked = true;
 
@@ -542,7 +478,7 @@ void GeneralDistribution::setBlockDistributedOwners()
     HArray<IndexType> perm;
     HArray<IndexType> offsets;
 
-    HArrayUtils::bucketSort( offsets, perm, blockOwners, np );
+    HArrayUtils::bucketSortOffsets( offsets, perm, blockOwners, np );
 
     HArray<IndexType> sendIndexes;
 
@@ -613,9 +549,9 @@ void GeneralDistribution::computeOwners(
     // bucketSort of the owners
 
     HArray<IndexType> perm;
-    HArray<IndexType> offsets;
+    HArray<IndexType> sizes;
 
-    HArrayUtils::bucketSort( offsets, perm, blockIndexOwners, np );
+    HArrayUtils::bucketSortSizes( sizes, perm, blockIndexOwners, np );
 
     HArray<IndexType> sendIndexes;
 
@@ -630,7 +566,7 @@ void GeneralDistribution::computeOwners(
         }
     }
 
-    auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
+    CommunicationPlan sendPlan( hostReadAccess( sizes ) );
     auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
@@ -778,7 +714,7 @@ void GeneralDistribution::enableAnyAddressing() const
 
     // bucket sort the owners, gives offsets and permutation to block values according to owners
 
-    HArrayUtils::bucketSort( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
+    HArrayUtils::bucketSortOffsets( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
     HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2local
 }
 

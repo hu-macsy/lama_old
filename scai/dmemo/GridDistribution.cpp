@@ -575,7 +575,7 @@ std::string GridDistribution::createValue()
     return getId();
 }
 
-Distribution* GridDistribution::create( const DistributionArguments arg )
+DistributionPtr GridDistribution::create( const DistributionArguments arg )
 {
     SCAI_LOG_INFO( logger, "create" )
 
@@ -610,11 +610,11 @@ Distribution* GridDistribution::create( const DistributionArguments arg )
 
     if ( size1 == 1 )
     {
-        return new GridDistribution( Grid1D( globalSize ), arg.communicator );
+        return std::make_shared<GridDistribution>( Grid1D( globalSize ), arg.communicator );
     }
     else
     {
-        return new GridDistribution( Grid2D( size1, size2 ), arg.communicator );
+        return std::make_shared<GridDistribution>( Grid2D( size1, size2 ), arg.communicator );
     }
 }
 

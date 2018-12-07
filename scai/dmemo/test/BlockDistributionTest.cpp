@@ -94,9 +94,9 @@ BOOST_AUTO_TEST_CASE( createTest )
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     const IndexType globalSize = 5;
 
-    DistributionPtr bdist ( BlockDistribution::create( DistributionArguments( comm, globalSize, NULL, 1.0 ) ) );
+    DistributionPtr bdist = BlockDistribution::create( DistributionArguments( comm, globalSize, NULL, 1.0 ) );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
-    bdist.reset( Distribution::getDistributionPtr( "BLOCK", comm, globalSize ) );
+    bdist = Distribution::getDistributionPtr( "BLOCK", comm, globalSize );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
 }
 
