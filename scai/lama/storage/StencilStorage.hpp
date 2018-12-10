@@ -438,12 +438,18 @@ public:
     using _MatrixStorage::prefetch;
     using _MatrixStorage::getContextPtr;
 
-protected:
+private:
+
+    // member variables that define the stencil
 
     common::Grid mGrid;                    //! grid for which this matrix storage stands
     common::Stencil<ValueType> mStencil;   //! stencil that specifies the linear mapping  with involved neighbors
 
-private:
+    // member variables that are computed by constructor to optimize gemv
+
+    hmemo::HArray<IndexType> mGridInfo;   
+    hmemo::HArray<int> mStencilInfo;   
+    hmemo::HArray<ValueType> mStencilValues;   
 
     static std::string initTypeName();
 

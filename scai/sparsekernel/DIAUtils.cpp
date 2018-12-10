@@ -586,7 +586,7 @@ void DIAUtils::setColumns(
 
 /* -------------------------------------------------------------------------- */
 
-#define DENSE_UTILS_SPECIFIER( ValueType )           \
+#define DIA_UTILS_SPECIFIER( ValueType )             \
                                                      \
     template void DIAUtils::convertDIA2CSR(          \
         HArray<IndexType>&,                          \
@@ -659,9 +659,9 @@ void DIAUtils::setColumns(
         const common::BinaryOp op,                   \
         ContextPtr );                                \
 
-SCAI_COMMON_LOOP( DENSE_UTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_LOOP( DIA_UTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 
-#undef DENSE_UTILS_SPECIFIER
+#undef DIA_UTILS_SPECIFIER
 
 } /* end namespace utilskernel */
 

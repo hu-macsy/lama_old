@@ -2109,7 +2109,10 @@ void SparseMatrix<ValueType>::haloOperationAsyncLocal(
     {
         SCAI_REGION( "Mat.Sp.WaitLocal" )
         // we must wait for local computation as halo computation updates localResult
-        localComputation->wait();
+        if ( localComputation.get() )
+        {
+            localComputation->wait();
+        }
         SCAI_LOG_INFO( logger, comm << ": local computation ready." )
     }
 

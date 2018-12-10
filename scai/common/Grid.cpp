@@ -292,6 +292,38 @@ bool Grid::getOffsetPos( IndexType pos[],
     return valid;
 }
 
+bool Grid::getOffsetPos( IndexType pos[],
+                         const int offsets[],
+                         const IndexType sizes[],
+                         const IndexType borders[],
+                         const IndexType nDims )
+{
+    bool valid = true;
+
+    for ( IndexType iDim = 0; iDim < nDims; ++iDim )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos[iDim], sizes[iDim], "pos out of grid @ dim = " << iDim )
+
+        if ( offsets[iDim] < 0 )
+        {
+            valid = getBorderPosL( pos[iDim], static_cast<IndexType>( -offsets[iDim] ), sizes[iDim], static_cast<BorderType>( borders[2 * iDim] ) );
+        }
+        else if ( offsets[iDim] > 0 )
+        {
+            valid = getBorderPosR( pos[iDim], static_cast<IndexType>( offsets[iDim] ), sizes[iDim], static_cast<BorderType>( borders[ 2 * iDim + 1] ) );
+        }
+
+        if ( !valid )
+        {
+            break;
+        }
+
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos[iDim], sizes[iDim], "new pos out of grid @ dim = " << iDim )
+    }
+
+    return valid;
+}
+
 bool Grid::getOffsetPos( IndexType pos[], const int offsets[] ) const
 {
     // call the static method with my member variables

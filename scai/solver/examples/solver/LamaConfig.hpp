@@ -39,6 +39,7 @@
 #include <scai/solver/logger/LogLevel.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 #include <cstring>
 #include <sstream>
@@ -522,6 +523,7 @@ static std::string getLoggers()
     std::ostringstream loggerNames;
 
     std::vector<std::string> vals;
+    scai::solver::Solver<scai::DefaultReal>::getCreateValues( vals );
 
     for ( size_t i = 0; i < vals.size(); ++i )
     {

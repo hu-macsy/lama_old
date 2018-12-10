@@ -1316,7 +1316,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
                    "GEMV ( op = " << op << ", async = " << async 
                    << " ), result = " << alpha << " * A * x + " << beta << " * y "
                    << ", result = " << result << ", x = " << x << ", y = " << y
-                   << ", A (this) = " << *this );
+                   << ", A (this) = " << *this << ", #nonZeroRows = " << mRowIndexes.size() );
 
     MatrixStorage<ValueType>::gemvCheck( alpha, x, beta, y, op );  // checks for correct sizes
 

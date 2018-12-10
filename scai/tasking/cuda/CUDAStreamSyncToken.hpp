@@ -100,6 +100,10 @@ public:
 
     static CUDAStreamSyncToken* getCurrentSyncToken();
 
+    /** Override SyncToken::writeAt */
+
+    virtual void writeAt( std::ostream& stream ) const;
+
 private:
 
     const common::CUDACtx& mCUDA;   // needed for synchronization
