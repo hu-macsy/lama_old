@@ -29,6 +29,26 @@ between neighbored processors.
 
     Shifting a heterogeneous array within a communicator.
 
+The following example is a more complicated one where arbitrary data might
+be exchanged between processors. For each value of an array the new owner is 
+specified.
+
+.. code-block:: c++
+
+   HArray<ValueType> sendArray( ... );  // values to be exchanged
+   HArray<PartitionId> onwers( ... );   // tell for each send element where to go
+
+   hmemo::HArray<ValueType> recvArray;  // colllects the values from other processors
+
+   dmemo::globalExchange( recvArray, sendArray, owners, comm );
+
+.. figure:: _images/global_exchange.*
+    :width: 700px
+    :align: center
+    :alt: Global exchange.
+
+    Exchanging arbitrary values between processors.
+
 Per default, communication takes only place between host memory, i.e. read access
 for the send array and write access for the received array use both the Host context.
 If the send array has only a valid copy in CUDA memory, the data is copied from the

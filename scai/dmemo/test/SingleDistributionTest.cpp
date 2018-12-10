@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( createTest )
 
     DistributionPtr sdist ( SingleDistribution::create( DistributionArguments( comm, globalSize, NULL, 1.0 ) ) );
     BOOST_CHECK_EQUAL( sdist->getGlobalSize(), globalSize );
-    sdist.reset( Distribution::getDistributionPtr( "SINGLE", comm, globalSize ) );
+    sdist = Distribution::getDistributionPtr( "SINGLE", comm, globalSize );
     BOOST_CHECK_EQUAL( sdist->getGlobalSize(), globalSize );
 }
 

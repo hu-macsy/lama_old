@@ -157,8 +157,8 @@ void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float we
     // Block partitioning : just create a 'general' block distribution
     // Note: this does not take the connections into account 
 
-    auto rowDist = std::make_shared<GenBlockDistribution>( numRows, weight, comm );
-    auto colDist = std::make_shared<GenBlockDistribution>( numColumns, weight, comm );
+    auto rowDist = genBlockDistributionByWeight( numRows, weight, comm );
+    auto colDist = genBlockDistributionByWeight( numColumns, weight, comm );
 
     matrix.redistribute( rowDist, colDist );
 }

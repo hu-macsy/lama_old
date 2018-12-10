@@ -46,8 +46,15 @@ class COMMON_DLL_IMPORTEXPORT HaloBuilder
 {
 public:
 
-    // TODO: Rename to buildFromRequired
-    static void build( const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes, Halo& halo );
+    /** Build a halo by an array of required indexes 
+     *
+     *  @param[out] halo is the Halo object that contains (sorted) required and provides indexes and exchange plans
+     *  @param[in]  distribution stands for the mapping of the global indexes
+     *  @param[in]  requiredIndexes are global indexes for required values from other processors
+     *
+     *  Note: requiredIndexes should not contain local indexes and there should be no double values in it
+     */
+    static void buildFromRequired( Halo& halo, const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes );
 
     /**
      * Build a Halo data structure from prior knowledge about the owners of provided indexes.

@@ -51,126 +51,6 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( HaloBuilder::logger, "Halo.Builder" )
 
-void HaloBuilder::build( const Distribution& distribution, const HArray<IndexType>& requiredIndexes, Halo& halo )
-{
-    SCAI_REGION( "HaloBuilder.build" )
-    halo.clear();
-
-    const Communicator& communicator = distribution.getCommunicator();
-    const PartitionId noPartitions = communicator.getSize();
-    SCAI_LOG_INFO( logger,
-                   communicator << ": building halo for " << noPartitions << " partitions, # requiredIndexes = " << requiredIndexes.size() )
-    IndexType numIndexes = requiredIndexes.size();
-    HArray<PartitionId> owners;
-
-    {
-        SCAI_REGION( "HaloBuilder.computeOwners" )
-        distribution.computeOwners( owners, requiredIndexes );
-    }
-
-#ifdef SCAI_LOG_TRACE
-    {
-        ReadAccess<IndexType> rIndexes( requiredIndexes );
-        ReadAccess<PartitionId> rOwners( owners );
-
-        for ( IndexType i = 0; i < numIndexes; ++i )
-        {
-            SCAI_LOG_TRACE( logger, "Index " << rIndexes[i] << " belongs to " << rOwners[i] )
-        }
-    }
-#endif
-
-    CommunicationPlan& requiredPlan = halo.mRequiredPlan;
-
-    //allocate Required plan with the nodes, where we get data from
-
-    {
-        auto rOwners = hmemo::hostReadAccess( owners );
-        requiredPlan = CommunicationPlan::buildByOwners( noPartitions, rOwners.get(), owners.size() );
-    }
-
-    SCAI_LOG_INFO( logger,
-                   communicator << ": allocated required plan for " << noPartitions << " partitions, size = " << requiredPlan.size() << ", total quantity = " << requiredPlan.totalQuantity() )
-
-    // sort required indexes by the owner and define global->local mapping
-
-    std::vector<IndexType> counts( noPartitions, invalidIndex );  // initialize with illegal index
-
-    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
-    {
-        SCAI_LOG_TRACE( logger,
-                        "requiredPlan[ " << p << "]: offset = " << requiredPlan[p].offset << ", pid = " << requiredPlan[p].partitionId << ", quantity = " << requiredPlan[p].quantity )
-        counts[requiredPlan[p].partitionId] = requiredPlan[p].offset;
-    }
-
-    ContextPtr contextPtr = Context::getHostPtr();
-    // allocate array for the required indexes sorted by owner
-    WriteAccess<IndexType> requiredIndexesByOwner( halo.mRequiredIndexes, contextPtr );
-    ReadAccess<PartitionId> rOwners( owners, contextPtr );
-    ReadAccess<IndexType> rIndexes( requiredIndexes, contextPtr );
-    requiredIndexesByOwner.resize( requiredPlan.totalQuantity() );
-
-    // Note: size of requiredIndexesByOwner == requiredPlan.totalQuanitity()
-
-    for ( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
-    {
-        PartitionId owner = rOwners[jj];
-        SCAI_ASSERT( owner != invalidPartition, "No owner for required Index " << rIndexes[jj] )
-        //The offset for the owner
-        IndexType haloIndex = counts[owner];
-        SCAI_ASSERT( haloIndex != invalidIndex, "No offset for owner " << owner << " of required Index " << rIndexes[jj] )
-        requiredIndexesByOwner[haloIndex] = rIndexes[jj];
-        // define the corresponding global->local mapping
-        halo.setGlobal2Halo( rIndexes[jj], haloIndex );
-        ++counts[owner];
-    }
-
-    requiredIndexesByOwner.release();
-    // requiredPlan is ready, now we build the provides plan
-    CommunicationPlan& providesPlan = halo.mProvidesPlan;
-    providesPlan = communicator.transpose( requiredPlan );
-    SCAI_LOG_DEBUG( logger, communicator << ": providesPlan = " << providesPlan )
-    SCAI_LOG_TRACE( logger, "requiredPlan: " << requiredPlan )
-    SCAI_LOG_TRACE( logger, "providesPlan: " << providesPlan )
-    // communicate required indexes to other processors to get provideIndexes
-    communicator.exchangeByPlan( halo.mProvidesIndexes, providesPlan, halo.mRequiredIndexes, requiredPlan );
-    SCAI_LOG_INFO( logger, "exchanged plan indexes" )
-#ifdef SCAI_LOG_TRACE
-    {
-        ReadAccess<IndexType> provide( halo.mProvidesIndexes, contextPtr );
-        ReadAccess<IndexType> required( halo.mRequiredIndexes, contextPtr );
-
-        for ( IndexType i = 0; i < provide.size(); ++i )
-        {
-            SCAI_LOG_TRACE( logger, "halo.mProvidesIndexes[" << i << "] " << provide[i] )
-        }
-
-        for ( IndexType i = 0; i < required.size(); ++i )
-        {
-            SCAI_LOG_TRACE( logger, "halo.mRequiredIndexes[" << i << "] " << required[i] )
-        }
-    }
-#endif
-    // localize the provides indexes that are still global from other processors
-    WriteAccess<IndexType> providesIndexes( halo.mProvidesIndexes, contextPtr );
-
-    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
-    {
-        IndexType n = providesPlan[p].quantity;
-        SCAI_LOG_TRACE( logger,
-                        "Partition " << providesPlan[p].partitionId << " needs " << n << " entries from me(Partition: " << communicator.getRank() << "), offset = " << providesPlan[p].offset )
-        IndexType* partitionumIndexes = providesIndexes.get() + providesPlan[p].offset;
-
-        for ( IndexType i = 0; i < n; i++ )
-        {
-            IndexType localIndex = distribution.global2local( partitionumIndexes[i] );
-            SCAI_ASSERT( localIndex != invalidIndex,
-                         "global index " << partitionumIndexes[i] << " is not local on Rank " << communicator.getRank() )
-            partitionumIndexes[i] = localIndex;
-        }
-    }
-}
-
 static void createRequiredGlobal2HaloMapping( std::map<IndexType, IndexType> & map, const HArray<IndexType> & requiredIndexes )
 {
     ReadAccess<IndexType> rRequiredIndexes( requiredIndexes );
@@ -181,6 +61,57 @@ static void createRequiredGlobal2HaloMapping( std::map<IndexType, IndexType> & m
         const auto haloIndex = i;
         map[globalIndex] = haloIndex;
     }
+}
+
+void HaloBuilder::buildFromRequired( Halo& halo, const Distribution& distribution, const HArray<IndexType>& requiredIndexes )
+{
+    SCAI_REGION( "HaloBuilder.build" )
+    halo.clear();
+
+    const Communicator& communicator = distribution.getCommunicator();
+    const PartitionId NP = communicator.getSize();
+
+    SCAI_LOG_INFO( logger,
+                   communicator << ": building halo for " << NP << " processors, # requiredIndexes = " << requiredIndexes.size() )
+
+    HArray<PartitionId> owners;
+
+    {
+        SCAI_REGION( "HaloBuilder.computeOwners" )
+        distribution.computeOwners( owners, requiredIndexes );
+    }
+
+    // global exchange of required indexes similiar to globalExchange, but here we keep the communication plans
+
+    // sort the required indexes by the owners via bucket sort, bucket sizes will be used for communication plan
+
+    hmemo::HArray<IndexType> perm;
+    hmemo::HArray<IndexType> sizes;
+
+    utilskernel::HArrayUtils::bucketSortSizes( sizes, perm, owners, NP );
+
+    // bucket sorted required indexes become part of the halo
+
+    utilskernel::HArrayUtils::gather( halo.mRequiredIndexes, requiredIndexes, perm, common::BinaryOp::COPY );
+
+    // global indexes -> halo indexes mapping is also essential for building halo
+
+    createRequiredGlobal2HaloMapping( halo.mGlobal2Halo, halo.mRequiredIndexes );
+
+    halo.mRequiredPlan = CommunicationPlan( hostReadAccess( sizes ) );
+
+    // requiredPlan is ready, now we build the provides plan
+    halo.mProvidesPlan = communicator.transpose( halo.mRequiredPlan );
+
+    // exchange required indexes (sorted in buckets for each processor)  with other processors to get provideIndexes
+
+    communicator.exchangeByPlan( halo.mProvidesIndexes, halo.mProvidesPlan, halo.mRequiredIndexes, halo.mRequiredPlan );
+
+    SCAI_LOG_INFO( logger, "exchanged non-local indexes" )
+
+    // localize the provides indexes that are still global from other processors
+
+    distribution.global2localV( halo.mProvidesIndexes, halo.mProvidesIndexes );
 }
 
 static HArray<IndexType> globalizeProvidedIndexes( const HArray<IndexType> & haloProvidedIndexes,

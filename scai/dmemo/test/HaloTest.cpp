@@ -76,7 +76,7 @@ struct HaloTestConfig
 
         {
             HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-            HaloBuilder::build( *dist, arrRequiredIndexes, halo );
+            HaloBuilder::buildFromRequired( halo, *dist, arrRequiredIndexes );
         }
     }
 
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
     Halo halo;
     {
         HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-        HaloBuilder::build( distribution, arrRequiredIndexes, halo );
+        HaloBuilder::buildFromRequired( halo, distribution, arrRequiredIndexes );
     }
 
     SCAI_LOG_INFO( logger, "halo is now available: " << halo );
@@ -513,7 +513,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
 
     {
         HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-        HaloBuilder::build( distribution, arrRequiredIndexes, halo );
+        HaloBuilder::buildFromRequired( halo, distribution, arrRequiredIndexes );
     }
 
     {

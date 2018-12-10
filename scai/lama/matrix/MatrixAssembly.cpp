@@ -31,7 +31,7 @@
 
 #include <scai/lama/matrix/MatrixAssembly.hpp>
 
-#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/dmemo/GlobalCommunication.hpp>
 #include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
@@ -118,56 +118,6 @@ IndexType MatrixAssembly<ValueType>::getNumValues() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixAssembly<ValueType>::exchangeCOO( 
-    HArray<IndexType>& outIA,
-    HArray<IndexType>& outJA,
-    HArray<ValueType>& outValues,
-    const HArray<IndexType> inIA,
-    const HArray<IndexType> inJA,
-    const HArray<ValueType> inValues,
-    const dmemo::Distribution& dist ) const
-{
-    using namespace utilskernel;
-
-    HArray<PartitionId> owners;
-
-    dist.computeOwners( owners, inIA );
-
-    const dmemo::Communicator& comm = dist.getCommunicator();
-
-    SCAI_LOG_DEBUG( logger, comm << ": owners = " << owners )
-
-    PartitionId np = comm.getSize();
-
-    HArray<IndexType> perm;
-    HArray<IndexType> sizes;
-
-    HArrayUtils::bucketSortSizes( sizes, perm, owners, np );
-
-    SCAI_LOG_DEBUG( logger, comm << ": sorted, perm = " << perm << ", sizes = " << sizes )
-
-    HArray<IndexType> sendIA;
-    HArray<IndexType> sendJA;
-    HArray<ValueType> sendValues;
-
-    HArrayUtils::gather( sendIA, inIA, perm, common::BinaryOp::COPY );
-    HArrayUtils::gather( sendJA, inJA, perm, common::BinaryOp::COPY );
-    HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
-
-    dmemo::CommunicationPlan sendPlan( hostReadAccess( sizes ) );
-    auto recvPlan = comm.transpose( sendPlan );
-
-    SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
-    SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )
-
-    comm.exchangeByPlan( outIA, recvPlan, sendIA, sendPlan );
-    comm.exchangeByPlan( outJA, recvPlan, sendJA, sendPlan );
-    comm.exchangeByPlan( outValues, recvPlan, sendValues, sendPlan );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MatrixAssembly<ValueType>::checkLegalIndexes( const IndexType numRows, const IndexType numColumns ) const
 {
     using namespace utilskernel;
@@ -220,7 +170,13 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
     HArray<IndexType> ownedJA;
     HArray<ValueType> ownedValues;
 
-    exchangeCOO( ownedIA, ownedJA, ownedValues, ia, ja, values, dist );
+    HArray<PartitionId> owners;
+
+    dist.computeOwners( owners, ia );
+ 
+    // send the COO data to their owners and receive it
+
+    dmemo::globalExchange( ownedIA, ownedJA, ownedValues, ia, ja, values, owners, dist.getCommunicator() );
 
     dist.global2localV( ownedIA, ownedIA );   // translates global row indexes to local ones
 

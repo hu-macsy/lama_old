@@ -32,6 +32,7 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CommunicationPlan.hpp>
+#include <scai/dmemo/GlobalCommunication.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
@@ -84,6 +85,10 @@ GeneralDistribution::GeneralDistribution(
     IndexType nLocal = mLocal2Global.size();
 
     SCAI_ASSERT_EQ_ERROR( mGlobalSize, comm->sum( nLocal ), "illegal general distribution" )
+
+    // sort the array ascending, should be very fast if already sorted
+
+    HArrayUtils::sort( NULL, &mLocal2Global, mLocal2Global, true );
 
     fillIndexMap();
     setBlockDistributedOwners();
@@ -139,85 +144,35 @@ std::shared_ptr<GeneralDistribution> generalDistributionByOwners(
 
 /* ---------------------------------------------------------------------- */
 
-GeneralDistribution::GeneralDistribution(
-    const Distribution& other,
-    const HArray<PartitionId>& owners ) :
-
-    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
-
+std::shared_ptr<GeneralDistribution> generalDistributionNew(
+    const Distribution& dist,
+    const hmemo::HArray<PartitionId>& newOwners )
 {
-    SCAI_LOG_INFO( logger, "GeneralDistribution( dist = " << other << ", new local owners =  " << owners )
+    const IndexType globalSize = dist.getGlobalSize();
 
-    SCAI_ASSERT_EQ_DEBUG( other.getLocalSize(), owners.size(), "serious size mismatch" )
+    CommunicatorPtr comm = dist.getCommunicatorPtr();
 
-    const IndexType nLocal = owners.size();
+    const IndexType NP = comm->getSize();
 
-    const Communicator& comm = *mCommunicator;
+    SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( newOwners, NP ), "illegal owners, #processors = " << NP )
 
-    const PartitionId numPartitions = comm.getSize();
+    HArray<IndexType> myNewGlobalIndexes;  // new global indexes for this processor
 
-    if ( numPartitions == 1 )
+    if ( NP == 1 )
     {
-        // owners[i] == 0 for al i, mLocal2Global = { 0, 1, ..., globalSize - 1 }
-
-        SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( owners, 1 ), "illegal owners, #partitions = " << numPartitions )
-
-        HArrayUtils::setOrder( mLocal2Global, nLocal );
-
-        fillIndexMap();
-        setBlockDistributedOwners();
-
-        return;
-    }
-
-    // make a bucket sort with owners
-
-    HArray<IndexType> offsets;    // number of elements for each bucket/partition
-    HArray<IndexType> perm;       // permutation to resort in buckets
-
-    HArrayUtils::bucketSortOffsets( offsets, perm, owners, mCommunicator->getSize() );
-
-    HArray<IndexType> sortedIndexes;    // current indexes resorted according the buckets
-
-    if ( other.getKind() == GeneralDistribution::theCreateValue )
-    {
-        SCAI_ASSERT_DEBUG( dynamic_cast<const GeneralDistribution*>( &other ), "no general dist" )
-        const GeneralDistribution& otherGen = reinterpret_cast<const GeneralDistribution&>( other );
-        HArrayUtils::gather( sortedIndexes, otherGen.getMyIndexes(), perm, common::BinaryOp::COPY );
+        SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( newOwners, NP ), "illegal owners, #partitions = " << NP )
+        HArrayUtils::setOrder( myNewGlobalIndexes, globalSize );
     }
     else
     {
-        HArray<IndexType> currentIndexes;
-        other.getOwnedIndexes( currentIndexes );
-        HArrayUtils::gather( sortedIndexes, currentIndexes, perm, common::BinaryOp::COPY );
+        // use a global exchange pattern, very common for many operations
+
+        HArray<IndexType> myOldGlobalIndexes;
+        dist.getOwnedIndexes( myOldGlobalIndexes );
+        dmemo::globalExchange( myNewGlobalIndexes, myOldGlobalIndexes, newOwners, *comm );
     }
 
-    // make communication plans for sending data and receiving to exchange
-
-    auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), numPartitions );
-    auto recvPlan = comm.transpose( sendPlan );
-
-    SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
-
-    // we just receive all the values in mLocal2Global
-
-    IndexType newLocalSize = recvPlan.totalQuantity();
-
-    HArray<IndexType> myNewIndexes;
-
-    {
-        WriteOnlyAccess<IndexType> recvVals( myNewIndexes, newLocalSize );
-        ReadAccess<IndexType> sendVals( sortedIndexes );
-        comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
-    }
-
-    // Important: the new local indexes must be sorted
-    // Note: actually it would be sufficient to have a mergesort
-
-    HArrayUtils::sort( NULL, &mLocal2Global, myNewIndexes, true );
-
-    fillIndexMap();
-    setBlockDistributedOwners();
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myNewGlobalIndexes ), comm );
 }
 
 /* ---------------------------------------------------------------------- */

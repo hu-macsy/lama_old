@@ -68,21 +68,13 @@ public:
      *
      *  Important: each global index from 0 to globalSize-1 must appear exactly once in
      *  the vector myGlobalIndexes on one partition.
+     *
+     *  Note: the (large) arrays for enable any addressing are not built by default.
      */
     GeneralDistribution(
         const IndexType globalSize,
         hmemo::HArray<IndexType> myGlobalIndexes,
         const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
-
-    /** This constructor creates a general distribution from an existing distribution and an
-     *  owners array locally for each processor.
-     *
-     *  @param[in] other is the given distribution
-     *  @param[in] owners contains the new owner for each of the local indexes.
-     */
-    GeneralDistribution(
-        const Distribution& other,
-        const hmemo::HArray<PartitionId>& owners );
 
     virtual ~GeneralDistribution();
 
@@ -177,18 +169,23 @@ protected:
 
     hmemo::HArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
 
-    // the following hash map is more efficient than a binary search in mLocal2Global
-
+    /** 
+     * Hash map to find for a global index the local index (if owned by this processor)
+     *
+     * Note: this solution is more efficient than a binary search in mLocal2Global.
+     */
     std::unordered_map<IndexType, IndexType> mGlobal2Local;
 
-    // Block distributed array of owners (used for compute owners and for sanity check)
-
+    /** Block distributed array of owners (used for compute owners and for sanity check)
+     *
+     *  In the global view the array mBlockDistributedOwners[i] contains the owner of index i.
+     */
     hmemo::HArray<PartitionId> mBlockDistributedOwners;
 
     // the following arrays will only be available if enableAnyAddressing has been called
     // Note: if set the array mGlobal2Local is no more needed
 
-    mutable hmemo::HArray<PartitionId> mAllOwners;
+    mutable hmemo::HArray<PartitionId> mAllOwners;         // will have globalSize entries on each processor
     mutable hmemo::HArray<IndexType> mAllLocalOffsets;     // local size on each partition
     mutable hmemo::HArray<IndexType> mAllLocal2Global;     // sorts elements into buckets
     mutable hmemo::HArray<IndexType> mAllGlobal2Local;     // sorts elements into buckets
@@ -221,23 +218,37 @@ private:
  *
  *  @param[in] globalSize is the size of the distributed range
  *  @param[in] myGlobalIndexes contains all indexes of range owned by this processor
- *  @param[in] communicator specifies the set on processors for the distribution
+ *  @param[in] comm specifies the set of processors for the distribution
+ *
+ *  The method must be called by all processors of comm at the same time. 
  */
 std::shared_ptr<GeneralDistribution> generalDistribution( 
     const IndexType globalSize,
     hmemo::HArray<IndexType> myGlobalIndexes,
-    const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
+    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
 /** This function creates a general distribution by an array containing the owner for each element
  *
  *  @param[in] owners array with ower for each element, 0 <= owners[i] < communicator->size()
  *  @param[in] root is the processor that has the valid copy of owners, must be same value on all processors
- *  @param[in] communicator that specifies the processors used for the distribution
+ *  @param[in] comm specifies the processor set used for the distribution
+ *
+ *  The method must be called by all processors of comm at the same time. 
  */
 std::shared_ptr<GeneralDistribution> generalDistributionByOwners( 
     const hmemo::HArray<PartitionId>& owners, 
     const PartitionId root, 
     CommunicatorPtr comm );
+
+/** This function creates a new general distributuion by an existing one and a mapping of the
+ *  local elements to new owners. 
+ *
+ *  @param[in] dist is the actual distribution
+ *  @param[in] newOwners contains the new owner for each of the local indexes.
+ */
+std::shared_ptr<GeneralDistribution> generalDistributionNew( 
+    const Distribution& dist,
+    const hmemo::HArray<PartitionId>& newOwners );
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */

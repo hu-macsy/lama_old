@@ -45,6 +45,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/GlobalCommunication.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
@@ -1385,51 +1386,14 @@ void DenseVector<ValueType>::scatter(
 
     targetDistribution.computeOwners( owners, index.getLocalValues() );
 
-    // set up provided values by sorting the indexes corresponding to the owners via bucketsort
-
-    const PartitionId size = comm.getSize();
-
-    HArray<IndexType> sizes;    // used to allocate the communication plan
-    HArray<IndexType> perm;     // used to sort required indexes and to scatter the gathered values
-
-    HArrayUtils::bucketSortSizes( sizes, perm, owners, size );
-
-    SCAI_ASSERT_EQ_DEBUG( sizes.size(), size + 1, "Internal error: wrong sizes" )
-    SCAI_ASSERT_EQ_ERROR( perm.size(), owners.size(), "Illegal size for permutation, most likely due to out-of-range index values" )
-
-    HArray<IndexType> sendIndexes;  // local index values sorted by owner
-
-    HArray<ValueType> sendValues;   // local source values sorted same as index values
-
-    HArrayUtils::gather( sendIndexes, index.getLocalValues(), perm, BinaryOp::COPY );
-
-    HArrayUtils::gather( sendValues, source.getLocalValues(), perm, BinaryOp::COPY );
-
-    // exchange communication plans
-
-    CommunicationPlan sendPlan( hostReadAccess( sizes ) );
-    auto recvPlan = comm.transpose( sendPlan );
-
-    SCAI_LOG_DEBUG( logger, comm << ": sendPlan = " << sendPlan << ", recvPlan = " << recvPlan )
-
-    HArray<IndexType> recvIndexes;
     HArray<ValueType> recvValues;
+    HArray<IndexType> recvIndexes;
 
-    comm.exchangeByPlan( recvIndexes, recvPlan, sendIndexes, sendPlan );
-    comm.exchangeByPlan( recvValues, recvPlan, sendValues, sendPlan );
+    globalExchange( recvValues, recvIndexes, source.getLocalValues(), index.getLocalValues(), owners, comm );
 
     // translate global recvIndexes to local indexes, all must be local
 
-    {
-        WriteAccess<IndexType> wRecvIndexes( recvIndexes );
-
-        for ( IndexType i = 0; i < recvIndexes.size(); ++i )
-        {
-            IndexType localIndex = targetDistribution.global2local( wRecvIndexes[i] );
-            SCAI_ASSERT_NE_DEBUG( localIndex, invalidIndex, "got required index " << wRecvIndexes[i] << " but I'm not owner" )
-            wRecvIndexes[i] = localIndex;
-        }
-    }
+    targetDistribution.global2localV( recvIndexes, recvIndexes );
 
     // Now scatter all received values
 

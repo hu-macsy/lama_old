@@ -30,6 +30,7 @@
 #include <scai/lama.hpp>
 
 #include <scai/lama/VectorAssembly.hpp>
+#include <scai/dmemo/GlobalCommunication.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
 #include <algorithm>
@@ -192,10 +193,11 @@ void VectorAssembly<ValueType>::buildLocalData(
 
         // These arrays will keep the matrix items owned by this processor
 
-        ia.clear();
-        values.clear();
+        HArray<PartitionId> owners;
 
-        exchangeCOO( ia, values, localIA, localValues, dist );
+        dist.computeOwners( owners, localIA );
+        globalExchange( ia, values, localIA, localValues, owners, dist.getCommunicator() );
+         
         dist.global2localV( ia, ia );   // translates global indexes to local ones
     }
 }

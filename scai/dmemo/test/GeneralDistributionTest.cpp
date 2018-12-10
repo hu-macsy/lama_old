@@ -188,15 +188,14 @@ BOOST_AUTO_TEST_CASE( redistConstructorTest )
 
         SCAI_LOG_DEBUG( logger, "redistribute, dist = " << dist << ", owners = " << owners )
 
-        GeneralDistribution gdist( dist, owners );
+        auto gdist = generalDistributionNew( dist, owners );
+        auto cdist = cyclicDistribution( N, 1, comm );
 
-        CyclicDistribution cyclic( N, 1, comm );
+        BOOST_REQUIRE_EQUAL( gdist->getLocalSize(), cdist->getLocalSize() );
 
-        BOOST_REQUIRE_EQUAL( gdist.getLocalSize(), cyclic.getLocalSize() );
-
-        for ( IndexType i = 0; i < cyclic.getLocalSize(); ++i )
+        for ( IndexType i = 0; i < cdist->getLocalSize(); ++i )
         {
-            BOOST_CHECK_EQUAL( cyclic.local2global( i ), gdist.local2global( i ) );
+            BOOST_CHECK_EQUAL( cdist->local2global( i ), gdist->local2global( i ) );
         }
     }
 }

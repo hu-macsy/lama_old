@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
 
         {
             HArrayRef<IndexType> haloIndexes( requiredIndexes );  // does not copy values
-            HaloBuilder::build( *rowDist, haloIndexes, halo );
+            HaloBuilder::buildFromRequired( halo, *rowDist, haloIndexes );
         }
 
         unique_ptr<MatrixStorage<ValueType> > haloMatrix( matrixStorage.newMatrixStorage() );

@@ -444,7 +444,7 @@ void _StorageMethods::buildHalo(
 
     {
         HArrayRef<IndexType> requiredIndexes( haloIndexes );
-        HaloBuilder::build( colDist, requiredIndexes, halo );
+        HaloBuilder::buildFromRequired( halo, colDist, requiredIndexes );
     }
 
     SCAI_LOG_DEBUG( logger, "Halo = " << halo )

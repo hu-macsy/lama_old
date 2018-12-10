@@ -154,17 +154,6 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Resort COO data according to the ownership of the row indexes */
-
-    void exchangeCOO(                      
-        hmemo::HArray<IndexType>& outIA,
-        hmemo::HArray<IndexType>& outJA,
-        hmemo::HArray<ValueType>& outValues,
-        const hmemo::HArray<IndexType> inIA,
-        const hmemo::HArray<IndexType> inJA,
-        const hmemo::HArray<ValueType> inValues,
-        const dmemo::Distribution& dist ) const;
-
     /** Check for correct indexes of the assembled entries */
 
     void checkLegalIndexes( const IndexType numRows, const IndexType numColumns ) const;

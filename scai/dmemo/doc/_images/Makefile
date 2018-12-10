@@ -2,7 +2,7 @@
 
 IMAGES = splitting block_distribution cyclic2_distribution genblock_distribution \
          general_distribution grid_distribution shift \
-         communication_plan exchange_by_plan 
+         communication_plan exchange_by_plan global_exchange 
 
 IMAGES_SVG = $(IMAGES:=.svg)
 IMAGES_PDF = $(IMAGES:=.pdf)
