@@ -53,7 +53,7 @@ void bucketSort( const IndexType N )
 
     double start = common::Walltime::get();
 
-    HArrayUtils::bucketSort( offsets, perm, values, nBuckets );
+    HArrayUtils::bucketSortOffsets( offsets, perm, values, nBuckets );
 
     HArray<IndexType> sortedValues;
     HArrayUtils::gather( sortedValues, values, perm, common::BinaryOp::COPY );

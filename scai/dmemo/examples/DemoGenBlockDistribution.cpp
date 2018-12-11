@@ -47,7 +47,7 @@ int main()
     common::Settings::setRank( comm->getRank() );
     common::Settings::getEnvironment( weight, "SCAI_WEIGHT" );
 
-    auto dist = std::make_shared<GenBlockDistribution>( N, weight, comm );
+    auto dist = genBlockDistributionByWeight( N, weight, comm );
 
     std::cout << dist->getCommunicator() << " : " << *dist << " by weight " << weight << std::endl;
 }
