@@ -140,18 +140,38 @@ Beside this general sort routine, a more efficient bucket sort routine is provid
     // array contains only values in the range 0, ..., numBuckets-1
     // e.g. numBuckets = 6, array = [ 0, 5, 2, 1, 3, 4, 4, 3, 1, 2, 5, 0 ]
   
-    HArray<IndexType> offsets;   // will be the offsets
-    HArray<IndexType> perm;      // is the permutation 
+    HArray<IndexType> sizes;   // will be the sizes of each bucket
+    HArray<IndexType> perm;    // is the permutation 
 
-    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+    HArrayUtils::bucketSortSizes( sizes, perm, array, numBuckets, loc );
 
-    // offsets = [0,      2,    4,    6,    8,    10,    12 ]
+    // sizes   = [ 2,     2,    2,    2,    2,    2     ]
     // perm    = [ 0, 11, 3, 8, 2, 9, 4, 7, 5, 6, 2, 10 ]
 
 The output array perm contains the indexes how the values have to be sorted.
-The output array offsets will have the size numBuckets + 1, and for an arbirtrary bucket i
-the array perm[offsets[i]], ..., perm[offsets[i+1]-1] contains the indexes of the array values
-belonging to the bucket i.
+The output array sizes contains the number of entries belonging to each bucket,
+i.e. bucket i has sizes[i] entries.
+
+.. figure:: _images/bucket_sort.*
+    :width: 500px
+    :align: center
+    :alt: BucketSort
+
+    Bucket sort of an array: returns permutation and sizes of each bucekt
+
+The permutation array can be used to sort values that belong to the corresponding 
+buckets. In the following example the entries of the input array are sorted
+corresponding their modulus by division with 6 (6 buckets).
+
+.. figure:: _images/gather.*
+    :width: 500px
+    :align: center
+    :alt: Gather
+
+    Indirect gather with a permutation array.
+
+Bucket sort is used very often for exchanging elements between processors where
+array entries are sorted corresponding to their ownership.
 
 Sparse Arrays
 -------------
