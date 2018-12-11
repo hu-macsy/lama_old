@@ -73,7 +73,7 @@ int main()
         }
     }
 
-    DistributionPtr dist ( new GeneralDistribution( owners, comm ) );
+    DistributionPtr dist = generalDistributionByOwners( owners, 0, comm );
 
     std::cout << *comm << ", dist = " << *dist << std::endl;
 }
