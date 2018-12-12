@@ -30,7 +30,7 @@
 #include <scai/lama.hpp>
 
 #include <scai/lama/VectorAssembly.hpp>
-#include <scai/dmemo/GlobalCommunication.hpp>
+#include <scai/dmemo/GlobalExchangePlan.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
 #include <algorithm>

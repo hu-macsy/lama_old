@@ -557,6 +557,8 @@ void HArrayUtils::scatter(
         return;
     }
 
+    SCAI_ASSERT_EQ_ERROR( indexes.size(), source.size(), "serious mismatch for scatter" )
+
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                        "illegal scatter index, target has size " << target.size() )
 

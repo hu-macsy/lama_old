@@ -44,11 +44,6 @@ Halo::Halo()
 {
 }
 
-Halo::Halo( const Halo& other )
-{
-    operator=( other );
-}
-
 Halo::~Halo()
 {
 }
@@ -70,21 +65,6 @@ void Halo::purge()
     mProvidesIndexes.purge();
     // free memory of map by reallocation
     std::map<IndexType, IndexType>().swap( mGlobal2Halo );
-}
-
-Halo& Halo::operator=( const Halo& other )
-{
-    if ( this != &other )
-    {
-        SCAI_LOG_DEBUG( logger, "make deep copy of Halo" )
-        mRequiredPlan = other.mRequiredPlan;
-        mProvidesPlan = other.mProvidesPlan;
-        mRequiredIndexes = other.mRequiredIndexes;
-        mProvidesIndexes = other.mProvidesIndexes;
-        mGlobal2Halo = other.mGlobal2Halo;
-    }
-
-    return *this;
 }
 
 /* ---------------------------------------------------------------------- */

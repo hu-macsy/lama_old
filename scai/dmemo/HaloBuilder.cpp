@@ -114,49 +114,6 @@ void HaloBuilder::buildFromRequired( Halo& halo, const Distribution& distributio
     distribution.global2localV( halo.mProvidesIndexes, halo.mProvidesIndexes );
 }
 
-static HArray<IndexType> globalizeProvidedIndexes( const HArray<IndexType> & haloProvidedIndexes,
-        const HArray<IndexType> & halo2global )
-{
-    HArray<IndexType> globalProvidedIndexes;
-    HArrayUtils::gather( globalProvidedIndexes, halo2global, haloProvidedIndexes, common::BinaryOp::COPY );
-    return globalProvidedIndexes;
-}
-
-void HaloBuilder::buildFromProvidedOwners( const Communicator& comm,
-        const HArray<IndexType>& halo2global,
-        const HArray<PartitionId>& ownersOfProvided,
-        Halo& halo )
-{
-    SCAI_ASSERT_EQUAL_ERROR( halo2global.size(), ownersOfProvided.size() );
-    SCAI_REGION( "HaloBuilder.buildFromProvidedOwners" )
-    halo.clear();
-
-    // TODO: Make context an argument (with default to Host/default context)
-    const auto contextPtr = Context::getContextPtr();
-    const auto numPartitions = comm.getSize();
-
-    auto& requiredPlan = halo.mRequiredPlan;
-    auto& providedPlan = halo.mProvidesPlan;
-    auto& requiredIndexes = halo.mRequiredIndexes;
-    auto& providedIndexes = halo.mProvidesIndexes;
-
-    hmemo::HArray<IndexType> sizes;
-
-    providedIndexes.resize( ownersOfProvided.size() );
-
-    HArrayUtils::bucketSortSizes( sizes, providedIndexes, ownersOfProvided, numPartitions, contextPtr );
-
-    providedPlan = CommunicationPlan( hostReadAccess( sizes ) );
-    requiredPlan = comm.transpose( providedPlan );
-
-    requiredIndexes.resize( requiredPlan.totalQuantity() );
-
-    const auto globalProvidedIndexes = globalizeProvidedIndexes( providedIndexes, halo2global );
-    comm.exchangeByPlan( requiredIndexes, requiredPlan, globalProvidedIndexes, providedPlan );
-
-    createRequiredGlobal2HaloMapping( halo.mGlobal2Halo, requiredIndexes );
-}
-
 } /* end namespace dmemo */
 
 } /* end namespace scai */

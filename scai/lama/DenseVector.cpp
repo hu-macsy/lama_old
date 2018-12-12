@@ -45,7 +45,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/GlobalCommunication.hpp>
+#include <scai/dmemo/GlobalExchangePlan.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 

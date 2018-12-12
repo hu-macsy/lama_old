@@ -72,7 +72,8 @@ public:
 
     /** Copy constructor. */
 
-    Halo( const Halo& halo );
+    Halo( const Halo& halo ) = default;
+    Halo( Halo&& halo ) = default;
 
     virtual ~Halo();
 
@@ -82,7 +83,8 @@ public:
 
     void purge();
 
-    Halo& operator=( const Halo& other );
+    Halo& operator=( const Halo& other ) = default;
+    Halo& operator=( Halo&& other ) = default;
 
     inline const CommunicationPlan& getRequiredPlan() const;
 

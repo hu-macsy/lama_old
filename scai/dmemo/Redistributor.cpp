@@ -106,7 +106,7 @@ static void partitionSourceIndexes( HArray<IndexType> & keepLocalIndexes,
 }
 
 template <typename ValueType>
-static HArray<ValueType> selectIndexes( const HArray<ValueType> & source, const HArray<IndexType> & indexes )
+static HArray<ValueType> gather( const HArray<ValueType> & source, const HArray<IndexType> & indexes )
 {
     HArray<ValueType> result;
     HArrayUtils::gather( result, source, indexes, common::BinaryOp::COPY );
@@ -230,19 +230,32 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
 
     const auto globalKeepIndexes = local2global ( mKeepSourceIndexes, sourceDist );
     const auto globalProvidedIndexes = local2global( providedSourceIndexes, sourceDist );
-    const auto newOwnersOfProvided = selectIndexes( newOwnersOfLocalElements, providedSourceIndexes );
+    const auto newOwnersOfProvided = gather( newOwnersOfLocalElements, providedSourceIndexes );
 
     // We only put the exchange indexes into the Halo, as this might work considerably better when
     // most elements are kept (present both in source and target dist). This means that the Halo is working
     // with the index set given by our exchange indexes rather than local indexes of the source distribution
-    Halo exchangeHalo;
-    HaloBuilder::buildFromProvidedOwners( sourceDist.getCommunicator(), globalProvidedIndexes, newOwnersOfProvided, exchangeHalo );
-    mExchangeReceivePlan = exchangeHalo.getRequiredPlan();
-    mExchangeSendPlan = exchangeHalo.getProvidesPlan();
+
+    HArray<IndexType> sizes;
+    HArray<IndexType> perm;
+
+    const Communicator& comm = sourceDist.getCommunicator();
+    HArrayUtils::bucketSortSizes( sizes, perm, newOwnersOfProvided, comm.getSize() );
+
+    mExchangeSendPlan = CommunicationPlan( hostReadAccess( sizes ) );
+    mExchangeReceivePlan = comm.transpose( mExchangeSendPlan );
+
+    SCAI_LOG_INFO( logger, "Redistributor with new owners, send plan = " << mExchangeSendPlan )
+
+    HArray<IndexType> sortedGlobalProvidedIndexes;
+    HArrayUtils::gather( sortedGlobalProvidedIndexes, globalProvidedIndexes, perm, common::BinaryOp::COPY );
+
+    HArray<IndexType> requiredIndexes;
+    comm.exchangeByPlan( requiredIndexes, mExchangeReceivePlan, sortedGlobalProvidedIndexes, mExchangeSendPlan );
 
     HArray<IndexType> sortedRequiredIndexes;
     HArray<IndexType> sortPermutation;
-    HArrayUtils::sort( &sortPermutation, &sortedRequiredIndexes, exchangeHalo.getRequiredIndexes(), true );
+    HArrayUtils::sort( &sortPermutation, &sortedRequiredIndexes, requiredIndexes, true );
 
     HArray<IndexType> targetGlobalIndexes;
     HArray<IndexType> mapFromExchangeToTarget;
@@ -251,8 +264,8 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
     // Repurpose the storage of sortedRequiredIndexes (same size and type as inversePerm) to further additional memory allocation
     auto inversePerm = std::move( sortedRequiredIndexes );
     HArrayUtils::inversePerm( inversePerm, sortPermutation );
-    mExchangeSourceIndexes = selectIndexes( providedSourceIndexes, exchangeHalo.getProvidesIndexes() );
-    mExchangeTargetIndexes = selectIndexes( mapFromExchangeToTarget, inversePerm );
+    mExchangeSourceIndexes = gather( providedSourceIndexes, perm );
+    mExchangeTargetIndexes = gather( mapFromExchangeToTarget, inversePerm );
 
     return targetGlobalIndexes;
 }

@@ -56,6 +56,8 @@ scai_project (
         Distributed
         CommunicationPlan
 
+        GlobalExchangePlan
+
         BlockDistribution
         CyclicDistribution
         Distribution

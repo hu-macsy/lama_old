@@ -207,11 +207,18 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
+    /** Help routine that computes the map from global indexes to local indexes */
+
     void fillIndexMap();
 
     /** Determine block-distributed ownership, i.e. mBlockDistributedOwners */
  
     void setBlockDistributedOwners();
+
+    static void computeBlockDistributedOwners( hmemo::HArray<IndexType>& blockDistributedOwners,
+                                               const IndexType globalSize,
+                                               const hmemo::HArray<IndexType>& ownedIndexes,
+                                               CommunicatorPtr comm );
 };
 
 /** Constructor of a general distribution here as a function for convenience

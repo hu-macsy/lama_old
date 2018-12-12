@@ -31,7 +31,7 @@
 
 #include <scai/lama/matrix/MatrixAssembly.hpp>
 
-#include <scai/dmemo/GlobalCommunication.hpp>
+#include <scai/dmemo/GlobalExchangePlan.hpp>
 #include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
