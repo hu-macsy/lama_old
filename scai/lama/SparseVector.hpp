@@ -37,7 +37,6 @@
 
 // internal scai libraries
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>

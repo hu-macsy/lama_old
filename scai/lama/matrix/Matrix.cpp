@@ -361,7 +361,7 @@ void Matrix<ValueType>::setRow(
 
     // owner sets the row, maybe each processor for replicated row distribution
 
-    IndexType localRowIndex = this->getRowDistribution().global2local( globalRowIndex );
+    IndexType localRowIndex = this->getRowDistribution().global2Local( globalRowIndex );
 
     if ( localRowIndex != invalidIndex )
     {

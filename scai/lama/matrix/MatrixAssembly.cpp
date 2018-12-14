@@ -178,7 +178,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
 
     dmemo::globalExchange( ownedIA, ownedJA, ownedValues, ia, ja, values, owners, dist.getCommunicator() );
 
-    dist.global2localV( ownedIA, ownedIA );   // translates global row indexes to local ones
+    dist.global2LocalV( ownedIA, ownedIA );   // translates global row indexes to local ones
 
     sparsekernel::COOUtils::normalize( ownedIA, ownedJA, ownedValues, op, Context::getHostPtr() );
 
@@ -202,7 +202,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildOwnedCOO(
 
     if ( dist.isReplicated() )
     {
-        // all entries are used, we can save overhead for dist.isLocal and dist.global2local
+        // all entries are used, we can save overhead for dist.isLocal and dist.global2Local
 
         IndexType numValues = mIA.size();
 
@@ -241,7 +241,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildOwnedCOO(
 
         for ( size_t k = 0; k < mIA.size(); ++k )
         {
-            const IndexType local = dist.global2local( mIA[k] );
+            const IndexType local = dist.global2Local( mIA[k] );
 
             if ( local != invalidIndex )
             {

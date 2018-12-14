@@ -110,11 +110,11 @@ BOOST_AUTO_TEST_CASE( local2GlobalTest )
         {
             if ( dist->isLocal( i ) )
             {
-                BOOST_CHECK_EQUAL( i, dist->local2global( dist->global2local( i ) ) );
+                BOOST_CHECK_EQUAL( i, dist->local2Global( dist->global2Local( i ) ) );
             }
             else
             {
-                BOOST_CHECK_EQUAL( invalidIndex, dist->global2local( i ) );
+                BOOST_CHECK_EQUAL( invalidIndex, dist->global2Local( i ) );
             }
         }
     }
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
 
         for ( IndexType i = 0; i < dist->getLocalSize(); i++ )
         {
-            BOOST_CHECK_EQUAL( i, dist->global2local( dist->local2global( i ) ) );
+            BOOST_CHECK_EQUAL( i, dist->global2Local( dist->local2Global( i ) ) );
         }
     }
 }
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE( global2LocalVTest )
         utilskernel::HArrayUtils::setOrder( globalIndexes, dist->getGlobalSize() );
 
         hmemo::HArray<IndexType> localIndexes;
-        dist->global2localV( localIndexes, globalIndexes );
+        dist->global2LocalV( localIndexes, globalIndexes );
 
         auto rLocal = hostReadAccess( localIndexes );
 
@@ -423,7 +423,7 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 
             for ( IndexType i = 0; i < localN; ++i )
             {
-                wLocalValues[i] = dist->local2global( i );
+                wLocalValues[i] = dist->local2Global( i );
             }
         }
 
@@ -469,7 +469,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
 
             for ( IndexType i = 0; i < localN; ++i )
             {
-                IndexType val = dist->local2global( i );
+                IndexType val = dist->local2Global( i );
 
                 for ( IndexType k = 0; k < repN; ++k )
                 {
@@ -534,7 +534,7 @@ BOOST_AUTO_TEST_CASE( replicateRaggedTest )
 
             for ( IndexType i = 0; i < localN; ++i )
             {
-                IndexType val = dist->local2global( i );
+                IndexType val = dist->local2Global( i );
 
                 for ( IndexType k = 0; k < repN; ++k )
                 {

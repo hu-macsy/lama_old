@@ -32,7 +32,6 @@
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 // local library
-#include <scai/dmemo/HaloBuilder.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
@@ -123,7 +122,7 @@ static HArray<IndexType> local2global( const HArray<IndexType> & localIndexes, c
     std::transform( rLocal.begin(), rLocal.end(), wGlobal.begin(),
                     [&dist] ( IndexType localIndex )
     {
-        return dist.local2global( localIndex );
+        return dist.local2Global( localIndex );
     } );
 
     return globalIndexes;
@@ -382,22 +381,6 @@ void Redistributor::buildRowPlans(
     SCAI_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
     SCAI_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
 }
-
-/* ========================================================================= */
-/*       Template Instantiations                                             */
-/* ========================================================================= */
-
-/*
- template COMMON_DLL_IMPORTEXPORT
- void Redistributor::redistributeN ( HArray<float>& targetArray,
- const HArray<float>& sourceArray,
- IndexType n ) const;
-
- template COMMON_DLL_IMPORTEXPORT
- void Redistributor::redistributeN ( HArray<double>& targetArray,
- const HArray<double>& sourceArray,
- IndexType n ) const;
- */
 
 } /* end namespace dmemo */
 

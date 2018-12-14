@@ -76,14 +76,14 @@ IndexType NoDistribution::getLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType NoDistribution::local2global( const IndexType localIndex ) const
+IndexType NoDistribution::local2Global( const IndexType localIndex ) const
 {
     return localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType NoDistribution::global2local( const IndexType globalIndex ) const
+IndexType NoDistribution::global2Local( const IndexType globalIndex ) const
 {
     return globalIndex;
 }

@@ -125,9 +125,9 @@ public:
      */
     IndexType getPartitionSize( const PartitionId partition ) const;
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize.
      *
@@ -191,7 +191,7 @@ private:
 
     CyclicDistribution(); // disable default constructor as it has no global size
 
-    IndexType allGlobal2local( const IndexType globalIndex ) const;
+    IndexType allGlobal2Local( const IndexType globalIndex ) const;
 
     /** Help routine to get the number of local chunks and info about rmemaining elements */
 

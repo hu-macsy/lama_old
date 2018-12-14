@@ -177,7 +177,7 @@ void _Vector::readFromSingleFile( const std::string& fileName, const Distributio
 
     if ( n > 0 )
     {
-        first = distribution->local2global( 0 );   // first global index
+        first = distribution->local2Global( 0 );   // first global index
     }
 
     bool error = false;

@@ -86,17 +86,17 @@ public:
 
     virtual IndexType getLocalSize() const;
 
-    /** Implementation of pure method Distribution::local2global */
+    /** Implementation of pure method Distribution::local2Global */
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
 
-    /** Implementation of pure method Distribution::global2local */
+    /** Implementation of pure method Distribution::global2Local */
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
-    /** Override Distribution::global2localV */
+    /** Override Distribution::global2LocalV with a more efficient version */
 
-    virtual void global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
+    virtual void global2LocalV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize.
      *
@@ -194,8 +194,8 @@ protected:
     // index       0    1    2    3   4    5    6    7   8   9   10   11   12
     // mOwners:    0    1    2    0   2    0    1    0   0   1    1    2    2
     // Offsets:    0                       5                 9                    13
-    // perm   :    0    3    5    7   8    1    6    9  10   2    4   11   12     local2global
-    // perm'  :    0    5    9    1  10    2    6    3   4   7    8   11   12     global2local
+    // perm   :    0    3    5    7   8    1    6    9  10   2    4   11   12     local2Global
+    // perm'  :    0    5    9    1  10    2    6    3   4   7    8   11   12     global2Local
     //
     // Note: perm is identity iff we have a block distribution
 

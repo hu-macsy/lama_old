@@ -105,6 +105,8 @@ public:
 
     ~CommunicationPlan();
 
+    void swap( CommunicationPlan& other );
+
     /** Reset to a zero communication plan. */
 
     void clear();
@@ -171,12 +173,6 @@ public:
      */
     void defineByQuantities( const IndexType quantities[], const PartitionId nPartitions );
 
-    /** Allocate a communication plan by offsets instead of quantities for each partition.
-     *
-     *  Note: quantities[i] is given by offsets[i+1] - offsets[i]
-     */
-    void defineByOffsets( const IndexType offsets[], const PartitionId size );
-
     /** Define a communication plan by one quantity for one other processor.
      *
      *  @param[in] quantity  number of entries for exchange with processor rank
@@ -239,6 +235,8 @@ public:
 
     void extractPlan( const CommunicationPlan& oldPlan, const PartitionId p );
 
+    CommunicationPlan constructRagged( const hmemo::HArray<IndexType>& sizes ) const;
+
     /** Build a communication plan by sizes for each partition
      *
      *  @param quantities array of non-negative values, has size entries
@@ -251,26 +249,6 @@ public:
      *  \endcode
      */
     static CommunicationPlan buildByQuantities( const IndexType quantities[], const PartitionId size );
-
-    /** Build a new communication plan by offset array. */
- 
-    static CommunicationPlan buildByOffsets( const IndexType offsets[], const PartitionId size );
-
-    /** @brief Build communication plan by an array of owners.
-     *
-     *  @param[in] size    number of processors that might be owners
-     *  @param[in] owners  array of owners, each owner must be a value from 0 to size - 1
-     *  @param[in] N        number of entries in owners
-     *
-     *  Each partition id that appears in owners will be counted to get the number of entries to send or receive.
-     *
-     *  \code
-     *    PartitionId owners[] = { 2, 1, 2, 1, 2, 1, 2 };
-     *    IndexType nOwners = sizeof( owners ) / sizeof ( PartitionId );
-     *    CommunicationPlan plan = buildByOwners( 3, owners, nOwners );
-     *  \endcode
-     */
-    static CommunicationPlan buildByOwners( const PartitionId size, const PartitionId owners[], const IndexType N );
 
 private:
 

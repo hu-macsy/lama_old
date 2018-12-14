@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE( redistConstructorTest )
             {
                 // choose owner as if it will be a Cyclic(1) distribution
 
-                IndexType globalIndex = dist.local2global( i );
+                IndexType globalIndex = dist.local2Global( i );
                 wOwners[i] = globalIndex % size;
             }
         }
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE( redistConstructorTest )
 
         for ( IndexType i = 0; i < cdist->getLocalSize(); ++i )
         {
-            BOOST_CHECK_EQUAL( cdist->local2global( i ), gdist->local2global( i ) );
+            BOOST_CHECK_EQUAL( cdist->local2Global( i ), gdist->local2Global( i ) );
         }
     }
 }

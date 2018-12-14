@@ -309,7 +309,7 @@ void MatrixCreator::buildPoisson(
     for ( IndexType i = 0; i < localSize; ++i )
     {
         localGrid.gridPos( localGridPos, i );
-        gridDistribution->local2global( globalGridPos, localGridPos );
+        gridDistribution->local2Global( globalGridPos, localGridPos );
 
         const IndexType numNonZeros = getNStencilValues( globalGridPos, globalGrid, length, maxDistance );
 
@@ -347,7 +347,7 @@ void MatrixCreator::buildPoisson(
         for ( IndexType i = 0; i < localSize; ++i )
         {
             localGrid.gridPos( localGridPos, i );
-            gridDistribution->local2global( globalGridPos, localGridPos );
+            gridDistribution->local2Global( globalGridPos, localGridPos );
 
             // get column positions and values of matrix, diagonal element is first
 

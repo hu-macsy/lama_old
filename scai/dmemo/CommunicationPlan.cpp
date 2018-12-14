@@ -32,6 +32,7 @@
 
 // local library
 #include <scai/dmemo/Communicator.hpp>
+#include <scai/hmemo/HArray.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
@@ -85,6 +86,14 @@ void CommunicationPlan::defineBySingleEntry( const IndexType quantity, const Par
     {
         mEntries.clear();
     }
+}
+
+/* ------------------------------------------------------------------------- */
+
+void CommunicationPlan::swap( CommunicationPlan& other )
+{
+    std::swap( mEntries, other.mEntries );
+    std::swap( mQuantity, other.mQuantity );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -196,46 +205,6 @@ void CommunicationPlan::defineByQuantities( const IndexType quantities[], const 
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::defineByOffsets( const IndexType offsets[], const PartitionId size )
-{
-    SCAI_ASSERT_EQ_ERROR( offsets[0], 0, "Illegal offsets array" )
-
-    SCAI_LOG_INFO( logger, "define communication plan for " << size << " processors from array with offsets" )
-
-    IndexType countEntries = 0;
-
-    for ( PartitionId i = 0; i < size; ++i )
-    {
-        if ( offsets[i+1] > offsets[i] )
-        {
-            countEntries++;
-        }
-    }
-
-    mEntries.resize( countEntries );
-
-    mQuantity = 0; // counts total quantity
-
-    countEntries = 0;  // reset 
-
-    for ( PartitionId i = 0; i < size; ++i )
-    {
-        SCAI_ASSERT_LE_DEBUG( offsets[i], offsets[i+1], "Illegal offsets array" )
- 
-        if ( offsets[i+1] > offsets[i] )
-        {   
-            Entry& entry = mEntries[countEntries];
-            entry.quantity = offsets[i+1] - offsets[i];
-            entry.offset = mQuantity;
-            entry.partitionId = i;
-            mQuantity += entry.quantity;
-            countEntries++;
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-
 IndexType CommunicationPlan::maxQuantity() const
 {
     // Get the maximal quantity of another proc
@@ -320,30 +289,13 @@ CommunicationPlan CommunicationPlan::buildByQuantities( const IndexType quantiti
 
 /* ----------------------------------------------------------------------- */
 
-CommunicationPlan CommunicationPlan::buildByOffsets( const IndexType offsets[], const PartitionId size )
+CommunicationPlan CommunicationPlan::constructRagged( const hmemo::HArray<IndexType>& sizes ) const
 {
-    CommunicationPlan plan;
-    plan.defineByOffsets( offsets, size );
-    return plan;
-}
+    SCAI_ASSERT_EQ_ERROR( totalQuantity(), sizes.size(), "serious mismatch" )
 
-/* ----------------------------------------------------------------------- */
-
-CommunicationPlan CommunicationPlan::buildByOwners( 
-    const PartitionId size,
-    const PartitionId owners[],
-    const IndexType N )
-{
-    std::vector<IndexType> quantities( size, 0 );
-
-    for ( IndexType i = 0; i < N; ++i )
-    {
-        const PartitionId owner = owners[i];
-        SCAI_ASSERT_VALID_INDEX_ERROR( owner, size, "Illegal owner value at owners[ " << i << "]" )
-        ++quantities[owner];
-    }
-
-    return CommunicationPlan( quantities.data(), size );
+    CommunicationPlan planV( *this );
+    planV.multiplyRagged( hmemo::hostReadAccess( sizes ).get() );
+    return planV;
 }
 
 } /* end namespace dmemo */

@@ -215,7 +215,7 @@ public:
      * This method must be implemented by all base classes. It should throw
      * an exception if the argument is not in the valid range.
      */
-    virtual IndexType local2global( const IndexType localIndex ) const = 0;
+    virtual IndexType local2Global( const IndexType localIndex ) const = 0;
 
     /** This method translates a global index into a local index.
      *
@@ -225,7 +225,7 @@ public:
      * This method must be implemented by all base classes. It should throw
      * an exception if the argument is not in the valid range.
      */
-    virtual IndexType global2local( const IndexType globalIndex ) const = 0;
+    virtual IndexType global2Local( const IndexType globalIndex ) const = 0;
 
     /** This method translates a whole array of global indexes to local indexes.
      *
@@ -235,13 +235,18 @@ public:
      *  \code
      *  for ( IndexType i = 0; i < globalIndexes.size(); ++i )
      *  {
-     *      localIndexes[i] = global2local( globalIndexes[i] );
+     *      localIndexes[i] = global2Local( globalIndexes[i] );
      *  }
      *  \endcode
      *
      *  Note: alias of localIndexes and globalIndexes is supported
      */
-    virtual void global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
+    virtual void global2LocalV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
+
+    /** 
+     *  @brief This method translates a whole array of local indexes to global indexes.
+     */
+    virtual void local2GlobalV( hmemo::HArray<IndexType>& globalIndexes, const hmemo::HArray<IndexType>& localIndexes ) const;
 
     /** Get the owners for a set of (global) indexes
      *
@@ -327,12 +332,12 @@ public:
      *  (same as bucket sort of array with all owners).
      *
      *  @param[out] offsets local sizes of all partitions as offset array, size is number of partitions + 1
-     *  @param[out] local2global contains all global indexes sorted by the owners, is permutation
+     *  @param[out] local2Global contains all global indexes sorted by the owners, is permutation
      *
      *  With the output arrays, the call of getAnyGlobalIndex can be done directly on heterorgeneous arrays
      *
      *  \code
-     *     getAnyGlobalIndex( localIndex, owner ) == local2global[ offsets[owner] + localIndex]
+     *     getAnyGlobalIndex( localIndex, owner ) == local2Global[ offsets[owner] + localIndex]
      *  \endcode
      *
      *  /code
@@ -341,22 +346,22 @@ public:
      *     for ( IndexType k = offsets[p]; k < offsets[p+1]; ++k )
      *     {
      *         IndexType localIndex = k - offsets[p];
-     *         IndexType globalIndex = local2global[k];
+     *         IndexType globalIndex = local2Global[k];
      *         ....
      *     }
      *  /endcode
      *
      *  Note: If this distribution is a block distribution, the permutation is the identitiy.
      */
-    virtual void getAnyLocal2Global( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& local2global ) const;
+    virtual void getAnyLocal2Global( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& local2Global ) const;
 
     /** This method returns the inverse permutation as called by getAnyLocal2Global.
      *
      *  \code
-     *     getAnyLocalIndex( globalIndex, owner ) == global2local[globalIndex] - offsets[owner]
+     *     getAnyLocalIndex( globalIndex, owner ) == global2Local[globalIndex] - offsets[owner]
      *  \endcode
      */
-    virtual void getAnyGlobal2Local( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& global2local ) const;
+    virtual void getAnyGlobal2Local( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& global2Local ) const;
 
     /**
      * Virtual method to check two distributions for equality.

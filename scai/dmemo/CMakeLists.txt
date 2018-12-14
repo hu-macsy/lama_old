@@ -64,8 +64,7 @@ scai_project (
         GenBlockDistribution
         GeneralDistribution
         GridDistribution
-        Halo
-        HaloBuilder
+        HaloPlan
         NoDistribution
         Redistributor
         SingleDistribution

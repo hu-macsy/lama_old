@@ -1776,13 +1776,18 @@ void HArrayUtils::bucketSortSizes(
 {
     bucketSortOffsets( sizes, perm, array, nb, prefLoc );
 
+    const IndexType numBuckets = nb;
+
+    SCAI_ASSERT_EQ_ERROR( sizes.size(), numBuckets + 1, "serious mismatch" )
+
     auto wSizes = hostWriteAccess( sizes );
 
-    for ( IndexType i = 0; i < sizes.size(); i++ )
+    for ( IndexType i = 0; i < numBuckets; i++ )
     {
         wSizes[i] = wSizes[i + 1] - wSizes[i];
     }
-    wSizes.resize( static_cast<IndexType>( nb ) );
+
+    wSizes.resize( numBuckets );
 }
 
 /* --------------------------------------------------------------------------- */

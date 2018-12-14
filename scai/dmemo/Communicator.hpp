@@ -76,8 +76,6 @@ namespace dmemo
 
 class Distribution;
 
-class Halo;
-
 class Communicator;
 
 class CommunicationPlan;
@@ -773,29 +771,6 @@ public:
         const CommunicationPlan& recvPlan,
         const hmemo::HArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
-
-    /** @brief Update of halo array via Halo object.
-     *
-     *  @tparam     ValueType             arithmetic type of involved arrays
-     *  @param[out] haloValues    will contain the non-local values from other processors
-     *  @param[in]  localValues   is the local part of the array on each processor
-     *  @param[in]  halo is the   Halo object containing all information about exchange
-     *
-     *  This method is not virtual but will use the pure virtual methods of base classes.
-     */
-    template<typename ValueType>
-    void updateHalo(
-        hmemo::HArray<ValueType>& haloValues,
-        const hmemo::HArray<ValueType>& localValues,
-        const Halo& halo ) const;
-
-    /** @brief Asynchronous update of halo array via Halo object. */
-
-    template<typename ValueType>
-    tasking::SyncToken* updateHaloAsync(
-        hmemo::HArray<ValueType>& haloValues,
-        const hmemo::HArray<ValueType>& localValues,
-        const Halo& halo ) const;
 
     /** @brief Shift on LAMA arrays.
      *

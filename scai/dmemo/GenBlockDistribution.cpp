@@ -206,14 +206,14 @@ IndexType GenBlockDistribution::getLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GenBlockDistribution::local2global( const IndexType localIndex ) const
+IndexType GenBlockDistribution::local2Global( const IndexType localIndex ) const
 {
     return mLB + localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) const
+IndexType GenBlockDistribution::global2Local( const IndexType globalIndex ) const
 {
     IndexType localIndex = invalidIndex;   // default value if globalIndex is not local
 

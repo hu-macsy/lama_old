@@ -47,7 +47,7 @@ scai_project (
         DistributionTest
 
         GlobalExchangePlanTest
-        HaloTest
+        HaloPlanTest
 
         NoDistributionTest
         BlockDistributionTest

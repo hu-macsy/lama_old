@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( cyclicGlobal2Local )
             counter += ( size - 1 ) * chunkSize;
         }
 
-        BOOST_CHECK_EQUAL( dist->local2global( i ), counter );
+        BOOST_CHECK_EQUAL( dist->local2Global( i ), counter );
         counter++;
     }
 }

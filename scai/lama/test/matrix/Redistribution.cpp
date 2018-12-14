@@ -30,8 +30,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/dmemo/Halo.hpp>
-#include <scai/dmemo/HaloBuilder.hpp>
+#include <scai/dmemo/HaloPlan.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
@@ -112,14 +111,14 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
         // create matrix storage for local and halo part of same type as storage
         unique_ptr<MatrixStorage<ValueType> > localStorage ( storage.newMatrixStorage() );
         unique_ptr<MatrixStorage<ValueType> > haloStorage ( storage.newMatrixStorage() );
-        Halo halo;
+        HaloPlan haloPlan;
         SCAI_LOG_INFO( logger, *comm << ", split halo : " << storage )
-        storage.splitHalo( *localStorage, *haloStorage, halo, *colDist, NULL );
+        storage.splitHalo( *localStorage, *haloStorage, haloPlan, *colDist, NULL );
         SCAI_LOG_DEBUG( logger, *comm << ": split done, local = " << *localStorage
-                        << ", halo = " << *haloStorage << ", halo exchg = " << halo );
+                        << ", halo = " << *haloStorage << ", halo plan = " << haloPlan );
         BOOST_CHECK_EQUAL( localStorage->getNumRows(), storage.getNumRows() );
         BOOST_CHECK_EQUAL( haloStorage->getNumRows(), storage.getNumRows() );
-        storage.joinHalo( *localStorage, *haloStorage, halo, *colDist );
+        storage.joinHalo( *localStorage, *haloStorage, haloPlan, *colDist );
         SCAI_LOG_DEBUG( logger, *comm << ": join done, result = " << storage );
         BOOST_REQUIRE_EQUAL( storage.getNumRows(), numRows );
         BOOST_REQUIRE_EQUAL( storage.getNumColumns(), numColumns );
@@ -239,7 +238,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
         // create local matrix storage
         matrixStorage.localize( matrixStorage, *rowDist );
         // build a vector of required indexes
-        Halo halo;
+        HaloPlan haloPlan;
         std::vector<IndexType> requiredIndexes;// will keep ALL non-local indexes
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -254,11 +253,11 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
 
         {
             HArrayRef<IndexType> haloIndexes( requiredIndexes );  // does not copy values
-            HaloBuilder::buildFromRequired( halo, *rowDist, haloIndexes );
+            haloPlan = haloPlanByRequiredIndexes( haloIndexes, *rowDist );
         }
 
         unique_ptr<MatrixStorage<ValueType> > haloMatrix( matrixStorage.newMatrixStorage() );
-        haloMatrix->exchangeHalo( halo, matrixStorage, *comm );
+        haloMatrix->exchangeHalo( haloPlan, matrixStorage, *comm );
         SCAI_LOG_INFO( logger, *comm << ": halo matrix = " << *haloMatrix );
         BOOST_REQUIRE_EQUAL( haloMatrix->getNumRows(), static_cast<IndexType>( requiredIndexes.size() ) );
         BOOST_REQUIRE_EQUAL( haloMatrix->getNumColumns(), numColumns );

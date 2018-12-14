@@ -110,14 +110,14 @@ IndexType SingleDistribution::getMaxLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType SingleDistribution::local2global( const IndexType localIndex ) const
+IndexType SingleDistribution::local2Global( const IndexType localIndex ) const
 {
     return localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType SingleDistribution::global2local( const IndexType globalIndex ) const
+IndexType SingleDistribution::global2Local( const IndexType globalIndex ) const
 {
     IndexType localIndex = invalidIndex;
 

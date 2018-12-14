@@ -521,7 +521,7 @@ public:
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        dmemo::Halo& halo,
+        dmemo::HaloPlan& haloPlan,
         const dmemo::Distribution& colDist,
         const dmemo::Distribution* rowDist ) const;
 
@@ -530,7 +530,7 @@ public:
      *
      *  This solution is more efficient as temporary CSR data is completely avoided.
      */ 
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloPlan& haloPlan, const IndexType globalNumColumns );
 
     /**
      *   This routine builds compressed sparse column format data.

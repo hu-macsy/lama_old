@@ -101,9 +101,13 @@ public:
 
     virtual IndexType getLocalSize() const;
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    /** Implementation for pure method Distribution::local2Global */
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
+
+    /** Implementation for pure method Distribution::global2Local */
+
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
 

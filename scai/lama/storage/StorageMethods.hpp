@@ -42,7 +42,7 @@ namespace scai
 namespace dmemo
 {
 class Communicator;
-class Halo;
+class HaloPlan;
 class Distribution;
 class Redistributor;
 }
@@ -55,7 +55,7 @@ class COMMON_DLL_IMPORTEXPORT _StorageMethods
 public:
 
     static void buildHalo(
-        class dmemo::Halo& halo,
+        class dmemo::HaloPlan& haloPlan,
         hmemo::HArray<IndexType>& haloJA,
         IndexType& haloSize,
         const dmemo::Distribution& colDist );
@@ -133,12 +133,10 @@ public:
 
     /** Exchange rows by halo.
      *
-     *  TODO[doxy] Complete Description.
-     *
      *  @param[out]  targetIA, targetJA, targetValues contain the new CSR storage
      *  @param[in]   sourceIA, sourceJA, sourceValues contains the original CSR storage
-     *  @param[in]   halo
-     *  @param[in]   comm
+     *  @param[in]   haloPlan used for data exchange
+     *  @param[in]   comm     specifies the involved processors
      */
 
     static void exchangeHaloCSR(
@@ -148,7 +146,7 @@ public:
         const hmemo::HArray<IndexType>& sourceIA,
         const hmemo::HArray<IndexType>& sourceJA,
         const hmemo::HArray<ValueType>& sourceValues,
-        const dmemo::Halo& halo,
+        const dmemo::HaloPlan& haloPlan,
         const dmemo::Communicator& comm );
 
     /** Splitting CSR storage.

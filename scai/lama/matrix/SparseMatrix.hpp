@@ -39,6 +39,8 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/DenseVector.hpp>
 
+#include <scai/dmemo/HaloPlan.hpp>
+
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
@@ -548,7 +550,7 @@ public:
      *
      * @return   reference to the halo of the distributed matrix
      */
-    const dmemo::Halo& getHalo() const;
+    const dmemo::HaloPlan& getHaloPlan() const;
 
     /* Implementation of method writeAt for sparse matrix. */
 
@@ -649,7 +651,7 @@ protected:
 
     std::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
 
-    dmemo::Halo mHalo; //!< Exchange plans for halo part due to column distribution
+    dmemo::HaloPlan mHaloPlan; //!< Exchange plans for halo part due to column distribution
 
     /**
      * @brief Set this matrix = alpha * A + beta * B

@@ -32,6 +32,7 @@
 #include <boost/test/data/test_case.hpp>
 
 #include <scai/dmemo/GlobalExchangePlan.hpp>
+#include <scai/dmemo/test/TestMacros.hpp>
 
 
 using namespace scai;
@@ -48,36 +49,11 @@ BOOST_AUTO_TEST_SUITE( GlobalExchangePlanTest )
 
 /* --------------------------------------------------------------------- */
 
-#define CHECK_COMMUNICATION_PLANS_EQUAL(plan1, plan2)                       \
-    BOOST_TEST_CONTEXT(" CommunicationPlan instances do not match ")        \
-    {                                                                       \
-        BOOST_TEST(plan1.totalQuantity() == plan2.totalQuantity());         \
-        BOOST_TEST(plan1.size() == plan2.size());                           \
-                                                                            \
-        if (plan1.size() == plan2.size())                                   \
-        {                                                                   \
-            for (PartitionId i = 0; i < plan1.size(); ++i)                  \
-            {                                                               \
-                BOOST_TEST_CONTEXT("mismatch at entry " << i)               \
-                {                                                           \
-                    const auto entry1 = plan1[i];                           \
-                    const auto entry2 = plan2[i];                           \
-                                                                            \
-                    BOOST_TEST(entry1.partitionId == entry2.partitionId);   \
-                    BOOST_TEST(entry1.quantity == entry2.quantity);         \
-                    BOOST_TEST(entry1.offset == entry2.offset);             \
-                }                                                           \
-            }                                                               \
-        }                                                                   \
-        else                                                                \
-        {                                                                   \
-            BOOST_TEST(plan1.size() == plan2.size());                       \
-        }                                                                   \
-    }
-
 BOOST_AUTO_TEST_CASE( buildTest2 )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    // this test runs only for 2 processors
 
     if ( comm->getSize() != 2 )
     {
@@ -127,6 +103,8 @@ BOOST_AUTO_TEST_CASE( buildTest2 )
 BOOST_AUTO_TEST_CASE( buildTest4 )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    // this test runs only for 4 processors
 
     if ( comm->getSize() != 4 )
     {

@@ -119,14 +119,14 @@ IndexType BlockDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType BlockDistribution::local2global( const IndexType localIndex ) const
+IndexType BlockDistribution::local2Global( const IndexType localIndex ) const
 {
     return mLB + localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
+IndexType BlockDistribution::global2Local( const IndexType globalIndex ) const
 {
     IndexType localIndex = invalidIndex;
 
@@ -165,11 +165,11 @@ void BlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndex
 
     SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
 
-    WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+    IndexType i = mLB;
 
-    for ( IndexType i = mLB; i < mUB; ++i )
+    for ( IndexType& globalIndex : hostWriteOnlyAccess( myGlobalIndexes, nLocal ) )
     {
-        wGlobalIndexes[ i - mLB ] = i;
+        globalIndex = i++;
     }
 }
 

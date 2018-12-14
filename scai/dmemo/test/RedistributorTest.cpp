@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE( redistributorConstructorFromNewLocalOwnersTest )
         std::transform( local2global.cbegin(), local2global.cend(), local2global.begin(),
                         [targetDist] ( IndexType localIndex )
         {
-            return targetDist->local2global( localIndex );
+            return targetDist->local2Global( localIndex );
         } );
         BOOST_TEST( local2global == expected.local2global, per_element() );
         BOOST_TEST( targetDist->getGlobalSize() == sourceDist->getGlobalSize() );

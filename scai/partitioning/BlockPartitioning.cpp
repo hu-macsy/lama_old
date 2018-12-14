@@ -92,7 +92,7 @@ void BlockPartitioning::rectangularPartitioning(
 
     for ( IndexType i = 0; i < numLocalRows; ++i )
     {
-        IndexType globalI = rowDist.local2global( i );
+        IndexType globalI = rowDist.local2Global( i );
         wRowMapping[i] = globalI / rowBlockSize;
     }
 
@@ -100,7 +100,7 @@ void BlockPartitioning::rectangularPartitioning(
 
     for ( IndexType j = 0; j < numLocalCols; ++j )
     {
-        IndexType globalJ = colDist.local2global( j );
+        IndexType globalJ = colDist.local2Global( j );
         wColMapping[j] = globalJ / colBlockSize;
     }
 }

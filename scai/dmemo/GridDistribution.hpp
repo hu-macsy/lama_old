@@ -111,17 +111,17 @@ public:
 
     virtual IndexType getMaxLocalSize() const;
 
-    /** Implementation of pure method Distribution::local2global */
+    /** Implementation of pure method Distribution::local2Global */
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
 
-    /** This method does the local2global calculation with the grid positions. */
+    /** This method does the local2Global calculation with the grid positions. */
 
-    void local2global( IndexType globalGridPos[], const IndexType localGridPos[] ) const;
+    void local2Global( IndexType globalGridPos[], const IndexType localGridPos[] ) const;
 
-    /** Implementation of pure method Distribution::global2local */
+    /** Implementation of pure method Distribution::global2Local */
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
     /** This method does the global to local calculation with the grid positions.
      *
@@ -130,7 +130,7 @@ public:
      *  @return     true if the global position is owned by this processor
      */
 
-    bool global2local( IndexType localGridPos[], const IndexType globalGridPos[] ) const;
+    bool global2Local( IndexType localGridPos[], const IndexType globalGridPos[] ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize
      *

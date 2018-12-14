@@ -472,7 +472,7 @@ void DenseVector<ValueType>::sortImpl(
         {
             // due to block distribution we need only global index of first one
 
-            const IndexType globalLow = distribution.local2global( 0 );
+            const IndexType globalLow = distribution.local2Global( 0 );
             HArrayUtils::setScalar( *localPerm, globalLow, common::BinaryOp::ADD );
         }
 
@@ -747,7 +747,7 @@ ValueType DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     ValueType myValue = 0;
 
-    const IndexType localIndex = getDistribution().global2local( globalIndex );
+    const IndexType localIndex = getDistribution().global2Local( globalIndex );
 
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " ) -> local : " << localIndex )
 
@@ -774,7 +774,7 @@ void DenseVector<ValueType>::setValue( const IndexType globalIndex, const ValueT
 
     SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
 
-    const IndexType localIndex = getDistribution().global2local( globalIndex );
+    const IndexType localIndex = getDistribution().global2Local( globalIndex );
 
     SCAI_LOG_TRACE( logger, *this << ": set @g " << globalIndex << " is @l " << localIndex << " : " << value )
 
@@ -1287,44 +1287,15 @@ void DenseVector<ValueType>::gather(
 
     // set up required values by sorting the indexes corresponding to the owners via bucketsort
 
-    const PartitionId size = comm.getSize();
-
-    HArray<IndexType> sizes;    // used to build the communication plan
-
-    HArray<IndexType> perm;     // used to sort required indexes and to scatter the gathered values
-
-    HArrayUtils::bucketSortSizes( sizes, perm, owners, size );
-
-    SCAI_ASSERT_EQ_DEBUG( sizes.size(), size, "wrong sizes" )
-    SCAI_ASSERT_EQ_DEBUG( perm.size(), owners.size(), "illegal perm" )
-
-    HArray<IndexType> requiredIndexes;  // local index values sorted by owner
-
-    HArrayUtils::gather( requiredIndexes, index.getLocalValues(), perm, BinaryOp::COPY );
-
-    // build communication plans send/recv for exchange
-
-    CommunicationPlan recvPlan( hostReadAccess( sizes ) );
-    auto sendPlan = comm.transpose( recvPlan );
-
-    SCAI_LOG_DEBUG( logger, comm << ": recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
+    GlobalExchangePlan plan( owners, comm );
 
     HArray<IndexType> sendIndexes;
 
-    comm.exchangeByPlan( sendIndexes, sendPlan, requiredIndexes, recvPlan );
+    plan.exchange( sendIndexes, index.getLocalValues(), comm );
 
     // translate global sendIndexes to local indexes, all must be local
 
-    {
-        WriteAccess<IndexType> wSendIndexes( sendIndexes );
-
-        for ( IndexType i = 0; i < sendIndexes.size(); ++i )
-        {
-            IndexType localIndex = sourceDistribution.global2local( wSendIndexes[i] );
-            SCAI_ASSERT_NE_DEBUG( localIndex, invalidIndex, "got required index " << wSendIndexes[i] << " but I'm not owner" )
-            wSendIndexes[i] = localIndex;
-        }
-    }
+    sourceDistribution.global2LocalV( sendIndexes, sendIndexes );
 
     // exchange communication plan
 
@@ -1332,22 +1303,16 @@ void DenseVector<ValueType>::gather(
 
     HArrayUtils::gather( sendValues, source.getLocalValues(), sendIndexes, BinaryOp::COPY );
 
-    // send via communication plan
-
-    HArray<ValueType> recvValues;
-
-    comm.exchangeByPlan( recvValues, recvPlan, sendValues, sendPlan );
+    // send back via communication plan
 
     if ( op == BinaryOp::COPY )
     {
-        mLocalValues.resize( perm.size() );
+        mLocalValues.resize( index.size() );
     }
 
-    // required indexes were sorted according to perm, using inverse perm here via scatter
+    // ToDo: plan.exchangeBack( mLocalValues, sendValues, op, comm );
 
-    bool isUnique = false;
-
-    HArrayUtils::scatter( mLocalValues, perm, isUnique, recvValues, op );
+    plan.exchangeBack( mLocalValues, sendValues, comm );
 
     assign( mLocalValues, index.getDistributionPtr() );
 }
@@ -1393,7 +1358,7 @@ void DenseVector<ValueType>::scatter(
 
     // translate global recvIndexes to local indexes, all must be local
 
-    targetDistribution.global2localV( recvIndexes, recvIndexes );
+    targetDistribution.global2LocalV( recvIndexes, recvIndexes );
 
     // Now scatter all received values
 

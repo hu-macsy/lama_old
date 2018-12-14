@@ -224,14 +224,14 @@ void GeneralDistribution::fillIndexMap()
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GeneralDistribution::local2global( const IndexType localIndex ) const
+IndexType GeneralDistribution::local2Global( const IndexType localIndex ) const
 {
     return mLocal2Global[localIndex];
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
+IndexType GeneralDistribution::global2Local( const IndexType globalIndex ) const
 {
     // do a binary search in the array of global indexes for entries owned by this partition
     // return HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
@@ -250,9 +250,9 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 
 /* ---------------------------------------------------------------------- */
 
-void GeneralDistribution::global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
+void GeneralDistribution::global2LocalV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
 {
-    SCAI_REGION( "Distribution.General.global2localV" )
+    SCAI_REGION( "Distribution.General.global2LocalV" )
 
     IndexType nnz = globalIndexes.size();
 
@@ -264,7 +264,7 @@ void GeneralDistribution::global2localV( hmemo::HArray<IndexType>& localIndexes,
     for ( IndexType i = 0; i < nnz; ++i )
     {
         // avoid virtual call by calling method of this class directly
-        wLocal[i] = GeneralDistribution::global2local( rGlobal[i] );
+        wLocal[i] = GeneralDistribution::global2Local( rGlobal[i] );
     }
 
     // do a binary search in the array of global indexes for entries owned by this partition
@@ -605,7 +605,7 @@ void GeneralDistribution::enableAnyAddressing() const
     // bucket sort the owners, gives offsets and permutation to block values according to owners
 
     HArrayUtils::bucketSortOffsets( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
-    HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2local
+    HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2Local
 }
 
 /* ---------------------------------------------------------------------- */

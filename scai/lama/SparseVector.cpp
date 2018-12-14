@@ -632,7 +632,7 @@ ValueType SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     ValueType myValue = 0;
 
-    const IndexType localIndex = getDistribution().global2local( globalIndex );
+    const IndexType localIndex = getDistribution().global2Local( globalIndex );
 
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " ) -> local : " << localIndex )
 
@@ -670,7 +670,7 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Value
 
     SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
 
-    const IndexType localIndex = getDistribution().global2local( globalIndex );
+    const IndexType localIndex = getDistribution().global2Local( globalIndex );
 
     SCAI_LOG_TRACE( logger, *this << ": set @g " << globalIndex << " is @l " << localIndex << " : " << value )
 
@@ -1567,7 +1567,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 
                 if ( distribution->isLocal( globalIndex ) )
                 {
-                    const IndexType localIndex = distribution->global2local( globalIndex );
+                    const IndexType localIndex = distribution->global2Local( globalIndex );
                     wNonZeroIndexes[newSize] = localIndex;
                     wNonZeroValues[newSize] = wNonZeroValues[i];
                     newSize++;
@@ -1595,15 +1595,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         const Distribution& currentDist = getDistribution();
 
-        ContextPtr hostContext = Context::getHostPtr();
-        {
-            WriteAccess<IndexType> wNonZeroIndexes( mNonZeroIndexes, hostContext );
-
-            for ( IndexType i = 0; i < nLocalIndexes; ++i )
-            {
-                wNonZeroIndexes[i] = currentDist.local2global( wNonZeroIndexes[i] );
-            }
-        }
+        currentDist.local2GlobalV( mNonZeroIndexes, mNonZeroIndexes );
 
         SCAI_LOG_DEBUG( logger, "translated " << nLocalIndexes << " local indexes to global indexes" )
 

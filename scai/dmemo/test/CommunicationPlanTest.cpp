@@ -30,6 +30,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
+#include <scai/dmemo/test/TestMacros.hpp>
+
 #include <scai/logging.hpp>
 
 #include <scai/dmemo/Communicator.hpp>
@@ -48,6 +50,41 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CommunicationPlanTest" )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( generalTest )
+{
+    std::vector<IndexType> quantities( { 0, 0, 2, 3, 0, 1 } );
+
+    CommunicationPlan plan( quantities );
+
+    BOOST_REQUIRE_EQUAL( plan.size(), 3 );   // there are exactly 3 non-zero entries
+
+    BOOST_CHECK_EQUAL( plan.maxQuantity(), 3 );
+    BOOST_CHECK_EQUAL( plan.totalQuantity(), 6 );
+
+    // check the second entry, partner = 3, offset = 2
+
+    const CommunicationPlan::Entry& entry = plan[1];
+
+    BOOST_CHECK_EQUAL( entry.partitionId, PartitionId( 3 ) );
+    BOOST_CHECK_EQUAL( entry.offset, 2 );
+
+    const CommunicationPlan::Entry& entry2 = plan[2];
+
+    BOOST_CHECK_EQUAL( entry2.partitionId, PartitionId( 5 ) );
+    BOOST_CHECK_EQUAL( entry2.offset, 5 );
+
+    IndexType size;
+    IndexType offset;
+
+    plan.getInfo( size, offset, 1 );
+    BOOST_CHECK_EQUAL( size, IndexType( 0 ) );
+    plan.getInfo( size, offset, 3 );
+    BOOST_CHECK_EQUAL( size, IndexType( 3 ) );
+    BOOST_CHECK_EQUAL( offset, IndexType( 2 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 // Provide for test a closed formula that delivers required quantities
 
 static IndexType required( const PartitionId rankRequires, const PartitionId rankProvides )
@@ -60,8 +97,29 @@ static IndexType required( const PartitionId rankRequires, const PartitionId ran
     return 2 * rankProvides + rankRequires;
 }
 
-static void setQuantities( std::vector<IndexType>& quantities, const Communicator& comm )
+static std::vector<IndexType> getRequiredSizes( const Communicator& comm )
 {
+    std::vector<IndexType> quantities;
+
+    PartitionId rank = comm.getRank();
+    PartitionId size = comm.getSize();
+
+    quantities.reserve( size );
+
+    for ( PartitionId p = 0; p < size; ++p )
+    {
+        // set number of entries this processor ( rank ) requires from other processor p
+
+        quantities.push_back( required( rank, p ) );
+    }
+
+    return quantities;
+}
+
+static std::vector<IndexType> getProvidesSizes( const Communicator& comm )
+{
+    std::vector<IndexType> quantities;
+
     PartitionId rank = comm.getRank();
     PartitionId size = comm.getSize();
 
@@ -69,10 +127,12 @@ static void setQuantities( std::vector<IndexType>& quantities, const Communicato
 
     for ( PartitionId p = 0; p < size; ++p )
     {
-        // set number of entries this processor ( rank ) requires from other processor p
+        // set number of entries this processor ( rank ) provides to other processor p
 
-        quantities[p] = required( rank, p );
+        quantities[p] = required( p, rank );
     }
+
+    return quantities;
 }
 
 /* --------------------------------------------------------------------- */
@@ -83,11 +143,7 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 
     PartitionId rank = comm->getRank();
 
-    std::vector<IndexType> reqQuantities;
-
-    setQuantities( reqQuantities, *comm );
-
-    CommunicationPlan requiredPlan( reqQuantities );
+    CommunicationPlan requiredPlan( getRequiredSizes( *comm ) );
 
     // verify that requiredPlan is correctly set up
 
@@ -112,94 +168,11 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( allocatePlanByOffsetTest )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    PartitionId rank = comm->getRank();
-
-    std::vector<IndexType> quantities;
-
-    setQuantities( quantities, *comm );
-
-    std::vector<IndexType> offsets;
-
-    IndexType offs = 0;
-
-    offsets.push_back( offs );
-
-    for ( size_t i = 0; i < quantities.size(); ++i )
-    {
-        offs += quantities[i];
-        offsets.push_back( offs );
-    }
-
-    BOOST_REQUIRE_EQUAL( offsets.size(), quantities.size() + 1 );
-
-    CommunicationPlan requiredPlan;
-
-    requiredPlan.defineByOffsets( &offsets[0], quantities.size() );
-
-    // verify that requiredPlan is correctly set up
-
-    IndexType offsetCheck = 0;
-
-    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
-    {
-        IndexType n = requiredPlan[p].quantity;
-        PartitionId partitionId = requiredPlan[p].partitionId;
-        IndexType nExpected = required( rank, partitionId );
-        BOOST_CHECK_EQUAL( n, nExpected );
-        BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
-        offsetCheck += n;
-    }
-
-    BOOST_CHECK_EQUAL( offs, offsetCheck );
-    BOOST_CHECK_EQUAL( offsetCheck, requiredPlan.totalQuantity() );
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( constructorTest )
-{
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    std::vector<IndexType> reqQuantities;
-
-    setQuantities( reqQuantities, *comm );
-
-    std::vector<PartitionId> reqOwners;
-
-    for ( PartitionId owner = 0; owner < static_cast<PartitionId>( reqQuantities.size() ); ++owner )
-    {
-        for ( IndexType k = 0; k < reqQuantities[owner]; ++k )
-        {
-            reqOwners.push_back( owner );
-        }
-    }
-
-    auto requiredPlan2 = CommunicationPlan::buildByOwners( comm->getSize(), reqOwners.data(), static_cast<IndexType>( reqOwners.size() ) );
-
-    BOOST_CHECK_EQUAL( requiredPlan2.totalQuantity(), static_cast<IndexType>( reqOwners.size() ) );
-
-    CommunicationPlan requiredPlan1( reqQuantities.data(), static_cast<PartitionId>( reqQuantities.size() ) );
-
-    // verify that both plans are same
-
-    BOOST_CHECK_EQUAL( requiredPlan2.totalQuantity(), requiredPlan1.totalQuantity() );
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( writeTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    std::vector<IndexType> reqQuantities;
-
-    setQuantities( reqQuantities, *comm );
-
-    CommunicationPlan requiredPlan( reqQuantities );
+    CommunicationPlan requiredPlan( getRequiredSizes( *comm ) );
 
     std::ostringstream out;
 
@@ -214,38 +187,64 @@ BOOST_AUTO_TEST_CASE( copyTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    PartitionId rank = comm->getRank();
+    CommunicationPlan plan1( getRequiredSizes( *comm ) );
+    CommunicationPlan plan2( plan1 );
 
-    std::vector<IndexType> reqQuantities;
+    CHECK_COMMUNICATION_PLANS_EQUAL( plan1, plan2 )
 
-    setQuantities( reqQuantities, *comm );
+    CommunicationPlan plan3;   // zero plan
+    plan3 = plan1;
 
-    CommunicationPlan tmpPlan( reqQuantities );
+    CHECK_COMMUNICATION_PLANS_EQUAL( plan1, plan3 )
+}
 
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( moveTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    std::vector<IndexType> sizes( { 3, 4, 1, 0 } );
+    CommunicationPlan plan1( sizes );
+
+    // we test for correct move by checking for pointer in the allocated data structures
+
+    const CommunicationPlan::Entry& entry1 = plan1[1];
+
+    CommunicationPlan plan2( std::move( plan1 ) );
+    const CommunicationPlan::Entry& entry2 = plan2[1];
+
+    BOOST_CHECK_EQUAL( &entry1, &entry2 );
+
+    CommunicationPlan plan3 = std::move( plan2 );
+    const CommunicationPlan::Entry& entry3 = plan3[1];
+
+    BOOST_CHECK_EQUAL( &entry1, &entry3 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( multiplyTest )
+{
     const IndexType nMult = 2;
 
-    CommunicationPlan requiredPlan( tmpPlan );
-    requiredPlan.multiplyConst( nMult );
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    // verify that requiredPlan is correctly set up
+    std::vector<IndexType> sizes = getRequiredSizes( *comm );
 
-    IndexType offsetCheck = 0;
+    CommunicationPlan plan1 ( sizes );
+    plan1.multiplyConst( nMult );
 
-    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
+    // compare it against the alternative by building it with new sizes
+
+    for ( auto& entry : sizes ) 
     {
-        IndexType n = requiredPlan[p].quantity;
-        PartitionId partitionId = requiredPlan[p].partitionId;
-        IndexType nExpected = required( rank, partitionId );
-        BOOST_CHECK_EQUAL( n, nMult * nExpected );
-        BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
-        offsetCheck += n;
+        entry *= nMult;
     }
 
-    BOOST_CHECK_EQUAL( offsetCheck, requiredPlan.totalQuantity() );
+    CommunicationPlan plan2( sizes );
 
-    requiredPlan.purge();
-
-    BOOST_CHECK_EQUAL( IndexType( 0 ), requiredPlan.size() );
+    CHECK_COMMUNICATION_PLANS_EQUAL( plan1, plan2 )
 }
 
 /* --------------------------------------------------------------------- */
@@ -254,28 +253,13 @@ BOOST_AUTO_TEST_CASE( allocateTransposeTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    PartitionId rank = comm->getRank();
+    CommunicationPlan requiredPlan( getRequiredSizes( *comm ) );
 
-    std::vector<IndexType> reqQuantities;
-
-    setQuantities( reqQuantities, *comm );
-
-    CommunicationPlan requiredPlan( reqQuantities );
     auto providesPlan = comm->transpose( requiredPlan );
 
-    IndexType offsetCheck = 0;
+    CommunicationPlan expectedProvidesPlan( getProvidesSizes( *comm ) );
 
-    for ( PartitionId p = 0; p < providesPlan.size(); ++p )
-    {
-        IndexType n = providesPlan[p].quantity;
-        PartitionId partitionId = providesPlan[p].partitionId;
-        IndexType nExpected = required( partitionId, rank );   // here switched arguments
-        BOOST_CHECK_EQUAL( n, nExpected );
-        BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
-        offsetCheck += n;
-    }
-
-    BOOST_CHECK_EQUAL( offsetCheck, providesPlan.totalQuantity() );
+    CHECK_COMMUNICATION_PLANS_EQUAL( providesPlan, expectedProvidesPlan )
 }
 
 /* --------------------------------------------------------------------- */
@@ -308,11 +292,7 @@ BOOST_AUTO_TEST_CASE( getInfoTest )
 
     PartitionId rank = comm->getRank();
 
-    std::vector<IndexType> reqQuantities;
-
-    setQuantities( reqQuantities, *comm );
-
-    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
+    CommunicationPlan requiredPlan( getRequiredSizes( *comm ) );
 
     IndexType expectedOffset = 0;
 
@@ -344,11 +324,7 @@ BOOST_AUTO_TEST_CASE( extractPlanTest )
 
     PartitionId rank = comm->getRank();
 
-    std::vector<IndexType> reqQuantities;
-
-    setQuantities( reqQuantities, *comm );
-
-    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
+    CommunicationPlan requiredPlan( getRequiredSizes( *comm ) );
 
     CommunicationPlan singlePlan;
 

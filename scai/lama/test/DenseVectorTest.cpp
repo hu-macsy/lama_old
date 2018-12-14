@@ -796,7 +796,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( gatherTest, ValueType, scai_array_test_types )
 
             for ( IndexType i = 0; i < target.size(); ++i )
             {
-                IndexType localIndex = target.getDistribution().global2local( i );
+                IndexType localIndex = target.getDistribution().global2Local( i );
 
                 if ( localIndex != invalidIndex )
                 {
@@ -871,7 +871,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
             for ( IndexType i = 0; i < n; ++i )
             {
-                IndexType localIndex = target.getDistribution().global2local( i );
+                IndexType localIndex = target.getDistribution().global2Local( i );
 
                 if ( localIndex != invalidIndex )
                 {

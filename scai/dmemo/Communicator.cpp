@@ -32,7 +32,6 @@
 #include <scai/dmemo/CommunicatorStack.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Halo.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -640,77 +639,6 @@ SyncToken* Communicator::shiftAsync(
     syncToken->pushRoutine( sendData.releaseDelayed() );
     syncToken->pushRoutine( recvData.releaseDelayed() );
     return syncToken.release();
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void Communicator::updateHalo(
-    HArray<ValueType>& haloValues,
-    const HArray<ValueType>& localValues,
-    const Halo& halo ) const
-{
-    SCAI_REGION( "Communicator.updateHalo" )
-    SCAI_LOG_INFO( logger, *this << ": update halo" )
-    const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
-    SCAI_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
-    const CommunicationPlan& providesPlan = halo.getProvidesPlan();
-    SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
-
-    // Before we exchange by plan, we have to pack local values to send
-    // Note: A previous MPI implementation took advantage of packing the data after
-    //       starting the receives. This is here no more possible. But we might now
-    //       pack the data already on the GPU and can avoid gpu->host transfer of all localValues
-
-    IndexType numSendValues = providesPlan.totalQuantity();
-    HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
-
-    utilskernel::HArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
-
-    exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
-}
-
-/* -------------------------------------------------------------------------- */
-
-static void releaseArray( std::shared_ptr<_HArray> array )
-{
-    array->clear();
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* Communicator::updateHaloAsync(
-    HArray<ValueType>& haloValues,
-    const HArray<ValueType>& localValues,
-    const Halo& halo ) const
-{
-    SCAI_REGION( "Communicator.updateHaloAsync" )
-    SCAI_LOG_INFO( logger, *this << ": asynchronous update halo" )
-    const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
-    SCAI_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
-    const CommunicationPlan& providesPlan = halo.getProvidesPlan();
-    SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
-
-    // Before we exchange by plan, we have to pack local values to send
-    // Note: A previous MPI implementation took advantage of packing the data after
-    //       starting the receives. This is here no more possible. But we might now
-    //       pack the data already on the GPU and can avoid gpu->host transfer of all localValues
-
-    IndexType numSendValues = providesPlan.totalQuantity();
-
-    std::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
-
-    // put together the (send) values to provide for other partitions
-
-    utilskernel::HArrayUtils::gather( *sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
-
-    SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
-
-    // Also push the sendValues array to the token so it will be freed after synchronization
-    // Note: it is guaranteed that access to sendValues is freed before sendValues
-    token->pushRoutine( std::bind( releaseArray, sendValues ) );
-    return token;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1392,12 +1320,6 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
             HArray<_type>& array ) const;                           \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
-    void Communicator::updateHalo(                                  \
-            HArray<_type>& haloValues,                              \
-            const HArray<_type>& localValues,                       \
-            const Halo& halo ) const;                               \
-                                                                    \
-    template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::all2all(                                     \
             _type recvValues[],                                     \
             const _type sendValues[] ) const;                       \
@@ -1422,11 +1344,6 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
             const HArray<_type>& sendArray,                         \
             const CommunicationPlan& sendPlan ) const;              \
                                                                     \
-    template COMMON_DLL_IMPORTEXPORT                                \
-    SyncToken* Communicator::updateHaloAsync(                       \
-            HArray<_type>& haloValues,                              \
-            const HArray<_type>& localValues,                       \
-            const Halo& halo ) const;
 
 // instantiate communicator methods with Harray only for supported array types
 

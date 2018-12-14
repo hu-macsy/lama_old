@@ -1170,7 +1170,7 @@ void DenseMatrix<ValueType>::localize(
 
     for ( IndexType irow = 0; irow < numLocalRows; ++irow )
     {
-        const IndexType globalRow = rowDistribution.local2global( irow );
+        const IndexType globalRow = rowDistribution.local2Global( irow );
         SCAI_LOG_TRACE( logger, "set local row " << irow << " with global row " << globalRow )
 
         for ( IndexType j = 0; j < numColumns; ++j )
@@ -1372,7 +1372,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
         if ( rowOwner == comm.getRank() )
         {
-            IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+            IndexType localRowIndex = getRowDistribution().global2Local( globalRowIndex );
             mData[0]->getRow( values, localRowIndex );
         }
 
@@ -1385,7 +1385,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
     if ( rowOwner == comm.getRank() )
     {
-        IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+        IndexType localRowIndex = getRowDistribution().global2Local( globalRowIndex );
 
         SCAI_ASSERT_EQ_ERROR( static_cast<IndexType>( mData.size() ), np, "illegal column data" )
 
@@ -1844,7 +1844,7 @@ ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 
     if ( getRowDistribution().isLocal( i ) )
     {
-        const IndexType iLocal = getRowDistribution().global2local( i );
+        const IndexType iLocal = getRowDistribution().global2Local( i );
 
         PartitionId owner = 0;
         IndexType  jLocal = invalidIndex;
@@ -1880,7 +1880,7 @@ void DenseMatrix<ValueType>::setValue(
 {
     const Distribution& distributionRow = getRowDistribution();
 
-    const IndexType iLocal = distributionRow.global2local( i );
+    const IndexType iLocal = distributionRow.global2Local( i );
 
     if ( iLocal == invalidIndex )
     {

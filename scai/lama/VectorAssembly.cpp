@@ -198,7 +198,7 @@ void VectorAssembly<ValueType>::buildLocalData(
         dist.computeOwners( owners, localIA );
         globalExchange( ia, values, localIA, localValues, owners, dist.getCommunicator() );
          
-        dist.global2localV( ia, ia );   // translates global indexes to local ones
+        dist.global2LocalV( ia, ia );   // translates global indexes to local ones
     }
 }
 

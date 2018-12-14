@@ -411,7 +411,7 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
 
     if ( n > 0 )
     {
-        first = distribution->local2global( 0 );   // first global index
+        first = distribution->local2Global( 0 );   // first global index
     }
 
     _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );

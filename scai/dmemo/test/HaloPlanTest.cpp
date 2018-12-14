@@ -1,5 +1,5 @@
 /**
- * @file HaloTest.cpp
+ * @file HaloPlanTest.cpp
  *
  * @license
  * Copyright (c) 2009-2018
@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Test routines for the class Halo.
+ * @brief Test routines for the class HaloPlan
  * @author Thomas Brandes, Andreas Longva
  * @date 24.07.2016
  */
@@ -36,10 +36,10 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/dmemo/Halo.hpp>
-#include <scai/dmemo/HaloBuilder.hpp>
+#include <scai/dmemo/HaloPlan.hpp>
 #include <scai/dmemo/Communicator.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/dmemo/test/TestMacros.hpp>
@@ -49,18 +49,19 @@
 
 #include <map>
 
-
 using namespace scai;
 using namespace dmemo;
 using namespace hmemo;
+
+using namespace boost::test_tools;
 
 /* --------------------------------------------------------------------- */
 
 /** Fixture that is called with each test of this test suite. */
 
-struct HaloTestConfig
+struct HaloPlanTestConfig
 {
-    HaloTestConfig()
+    HaloPlanTestConfig()
     {
         comm = Communicator::getCommunicatorPtr();
 
@@ -76,11 +77,11 @@ struct HaloTestConfig
 
         {
             HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-            HaloBuilder::buildFromRequired( halo, *dist, arrRequiredIndexes );
+            haloPlan = haloPlanByRequiredIndexes( arrRequiredIndexes, *dist );
         }
     }
 
-    ~HaloTestConfig()
+    ~HaloPlanTestConfig()
     {
     }
 
@@ -91,7 +92,7 @@ struct HaloTestConfig
     PartitionId rightNeighbor;
     PartitionId rank;
     PartitionId size;
-    Halo halo;
+    HaloPlan haloPlan;
 
     void buildRequiredIndexes()
     {
@@ -111,21 +112,21 @@ struct HaloTestConfig
 
 /* --------------------------------------------------------------------- */
 
-BOOST_FIXTURE_TEST_SUITE( HaloTest, HaloTestConfig )
+BOOST_FIXTURE_TEST_SUITE( HaloPlanTest, HaloPlanTestConfig )
 
 /* --------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.HaloTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.HaloPlanTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( buildHaloTest )
+BOOST_AUTO_TEST_CASE( buildHaloPlanTest )
 {
     const IndexType noReqIndexes = static_cast<IndexType>( requiredIndexes.size() );
 
-    const Halo& haloRef = halo;
-    const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
-    const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
+    const HaloPlan& haloRef = haloPlan;
+    const CommunicationPlan& requiredPlan = haloRef.getHaloCommunicationPlan();
+    const CommunicationPlan& providesPlan = haloRef.getLocalCommunicationPlan();
 
     // check for a correct provide plan
 
@@ -161,27 +162,32 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     // we have a symmetric halo exchange
     BOOST_CHECK_EQUAL( noReqIndexes, providesPlan.totalQuantity() );
 
+    /**
     const ReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
 
     for ( PartitionId p = 0; p < providesPlan.size(); ++p )
     {
+        providesPlan.getInfo( quantity, offset
         const IndexType* indexes = providesIndexes + providesPlan[p].offset;
         IndexType expectedLocalIndex = rank;
         BOOST_CHECK_EQUAL( expectedLocalIndex, dist->local2global( indexes[0] ) );
     }
+    */
 
-    BOOST_CHECK_EQUAL( noReqIndexes, halo.getHaloSize() );
+    BOOST_CHECK_EQUAL( noReqIndexes, haloPlan.getHaloSize() );
     IndexType numIndexes = static_cast<IndexType>( requiredIndexes.size() );
 
     for ( IndexType i = 0; i < numIndexes; ++i )
     {
-        const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
-        BOOST_CHECK( common::Utils::validIndex( haloIndex, halo.getHaloSize() ) );
+        const IndexType haloIndex = haloPlan.global2halo( requiredIndexes[i] );
+        SCAI_LOG_INFO( logger, "check valid halo index = " << haloIndex << " was global " << requiredIndexes[i] 
+                                << " for haloSize = " << haloPlan.getHaloSize() )
+        BOOST_CHECK( common::Utils::validIndex( haloIndex, haloPlan.getHaloSize() ) );
     }
 
     for ( IndexType i = 0; i < 10; ++i )
     {
-        const IndexType haloIndex = halo.global2halo( i );
+        const IndexType haloIndex = haloPlan.global2halo( i );
 
         if ( std::find( requiredIndexes.begin(), requiredIndexes.end(), i ) == requiredIndexes.end() )
         {
@@ -201,16 +207,16 @@ struct HaloExpectedResult
     std::map<IndexType, IndexType> global2halo;
 };
 
-void checkHaloAgainstExpected( const Halo& halo, const HaloExpectedResult& expected )
+void checkHaloAgainstExpected( const HaloPlan& halo, const HaloExpectedResult& expected )
 {
     const auto expectedProvidedPlan = CommunicationPlan( expected.providedQuantities );
     const auto expectedRequiredPlan = CommunicationPlan( expected.requiredQuantities );
 
-    CHECK_COMMUNICATION_PLANS_EQUAL( expectedProvidedPlan, halo.getProvidesPlan() );
-    CHECK_COMMUNICATION_PLANS_EQUAL( expectedRequiredPlan, halo.getRequiredPlan() );
+    CHECK_COMMUNICATION_PLANS_EQUAL( expectedProvidedPlan, halo.getLocalCommunicationPlan() );
+    CHECK_COMMUNICATION_PLANS_EQUAL( expectedRequiredPlan, halo.getHaloCommunicationPlan() );
 
     BOOST_TEST( hostReadAccess( halo.getProvidesIndexes() ) == expected.providedIndexes, boost::test_tools::per_element() );
-    BOOST_TEST( hostReadAccess( halo.getRequiredIndexes() ) == expected.requiredIndexes, boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( halo.getHalo2GlobalIndexes() ) == expected.requiredIndexes, boost::test_tools::per_element() );
 
     BOOST_TEST_CONTEXT( " for global2halo comparison" )
     {
@@ -223,31 +229,15 @@ void checkHaloAgainstExpected( const Halo& halo, const HaloExpectedResult& expec
     }
 };
 
-struct BuildFromProvidedOwnersData
-{
-    HArray<IndexType>   halo2global;
-    HArray<PartitionId> ownersOfProvided;
-    HaloExpectedResult  expected;
-
-    // Name is used to figure out which piece of test data resulted in a failure
-    std::string testCaseName;
-};
-
-std::ostream& operator <<( std::ostream& o, const BuildFromProvidedOwnersData& data )
-{
-    o << data.testCaseName << std::endl;
-    return o;
-}
-
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( copyHaloTest )
+BOOST_AUTO_TEST_CASE( copyHaloPlanTest )
 {
-    const Halo& halo1 = halo;
-    Halo halo2( halo1 );  // COPY constructor
+    const HaloPlan& halo1 = haloPlan;
+    HaloPlan halo2( halo1 );  // COPY constructor
 
-    const CommunicationPlan& providesPlan1 = halo1.getProvidesPlan();
-    const CommunicationPlan& providesPlan2 = halo2.getProvidesPlan();
+    const CommunicationPlan& providesPlan1 = halo1.getLocalCommunicationPlan();
+    const CommunicationPlan& providesPlan2 = halo2.getLocalCommunicationPlan();
 
     BOOST_REQUIRE_EQUAL( providesPlan1.size(), providesPlan2.size() );
     BOOST_REQUIRE_EQUAL( providesPlan1.totalQuantity(), providesPlan2.totalQuantity() );
@@ -283,7 +273,7 @@ BOOST_AUTO_TEST_CASE( copyHaloTest )
 
     // ReadAccesses are released, so clear is safe now
 
-    halo.clear();  // -> halo1.clear()
+    haloPlan.clear();  // -> halo1.clear()
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), halo1.getProvidesIndexes().size() );
     BOOST_CHECK_EQUAL( numIndexes, halo2.getProvidesIndexes().size() );
@@ -295,13 +285,13 @@ BOOST_AUTO_TEST_CASE( copyHaloTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloPlanTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     BOOST_REQUIRE( comm );
     IndexType rank = comm->getRank();
     IndexType size = comm->getSize();
-    SCAI_LOG_INFO( logger, "updateHaloTest<" << common::getScalarType<ValueType>() << ">" );
+    SCAI_LOG_INFO( logger, "updateHaloPlanTest<" << common::getScalarType<ValueType>() << ">" );
     const IndexType factor = 4;
     const IndexType vectorSize = factor * size;
     BlockDistribution distribution( vectorSize, comm );
@@ -321,10 +311,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
 
     SCAI_LOG_INFO( logger, "build the Halo" );
 
-    Halo halo;
+    HaloPlan halo;
     {
         HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-        HaloBuilder::buildFromRequired( halo, distribution, arrRequiredIndexes );
+        halo = haloPlanByRequiredIndexes( arrRequiredIndexes, distribution );
     }
 
     SCAI_LOG_INFO( logger, "halo is now available: " << halo );
@@ -334,12 +324,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
 
         for ( IndexType i = 0; i < localData.size(); ++i )
         {
-            localDataAccess[i] = static_cast<ValueType>( distribution.local2global( i ) );
+            localDataAccess[i] = static_cast<ValueType>( distribution.local2Global( i ) );
         }
     }
     SCAI_LOG_INFO( logger, "update halo data by communicator" );
     HArray<ValueType> haloData;
-    comm->updateHalo( haloData, localData, halo );
+    halo.updateHalo( haloData, localData, *comm );
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
     {
         ReadAccess<ValueType> haloDataAccess( haloData );
@@ -364,11 +354,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
 
     {
         HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-        HaloBuilder::buildFromRequired( halo, distribution, arrRequiredIndexes );
+        haloPlan = haloPlanByRequiredIndexes( arrRequiredIndexes, distribution );
     }
 
     {
-        std::unique_ptr<tasking::SyncToken> token( comm->updateHaloAsync( haloData, localData, halo ) );
+        std::unique_ptr<tasking::SyncToken> token( haloPlan.updateHaloAsync( haloData, localData, *comm ) );
     }
 
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );
@@ -381,6 +371,81 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
             BOOST_CHECK_EQUAL( expectedValue, haloDataAccess[i] );
         }
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( exampleTest )
+{
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+ 
+    if ( comm->getSize() != 3 ) 
+    {
+        return;
+    }
+
+    IndexType localSize = 0;
+
+    HArray<IndexType> requiredIndexes;
+
+    HArray<IndexType> expHalo2GlobalIndexes;
+    HArray<IndexType> expProvidesIndexes;
+
+    HArray<IndexType> expProvidesSizes;
+    HArray<IndexType> expHaloSizes;
+
+    // Communication-Matrix
+    //
+    //           0     1    2
+    //      0    -     2    2        -   3,4  6,7    -  0,1  0,1
+    //      1    1     -    2        0    -   7,9    0    -  1,3
+    //      2    1     2    -        2   3,5   -     2  0,2   - 
+    if ( comm->getRank() == 0 )
+    {
+        localSize = 3;
+        requiredIndexes = HArray<IndexType>( { 3, 6, 4, 7 } );
+
+        expHaloSizes = HArray<IndexType>( { 0, 2, 2  } );
+        expHalo2GlobalIndexes = HArray<IndexType>( { 3, 4, 6, 7 } );
+
+        expProvidesSizes = HArray<IndexType>( { 0, 1, 1  } );
+        expProvidesIndexes = HArray<IndexType>( { 0, 2 } );
+    }
+    else if ( comm->getRank() == 1 )
+    {
+        localSize = 3;
+        requiredIndexes = HArray<IndexType>( { 0, 7, 9 } );
+
+        expHaloSizes = HArray<IndexType>( { 1, 0, 2  } );
+        expHalo2GlobalIndexes = HArray<IndexType>( { 0, 7, 9 } );
+        expProvidesSizes = HArray<IndexType>( { 2, 0, 2 } );
+        expProvidesIndexes = HArray<IndexType>( { 0, 1, 0, 2 } );
+    }
+    else if ( comm->getRank() == 2 )
+    {
+        localSize = 4;
+        requiredIndexes = HArray<IndexType>( { 2, 3, 5 } );
+
+        expHaloSizes = HArray<IndexType>( { 1, 2, 0  } );
+        expHalo2GlobalIndexes = HArray<IndexType>( { 2, 3, 5 } );
+
+        expProvidesSizes = HArray<IndexType>( { 2, 2, 0 } );
+        expProvidesIndexes = HArray<IndexType>( { 0, 1, 1, 3 } );
+    }
+
+    auto blockDist = genBlockDistribution( localSize, comm );
+
+    auto haloPlan = haloPlanByRequiredIndexes( requiredIndexes, *blockDist );
+    
+    BOOST_TEST( hostReadAccess( expHalo2GlobalIndexes ) == hostReadAccess( haloPlan.getHalo2GlobalIndexes()), per_element() );
+    BOOST_TEST( hostReadAccess( expProvidesIndexes ) == hostReadAccess( haloPlan.getProvidesIndexes()), per_element() );
+
+    CommunicationPlan expRequiredPlan( hostReadAccess( expHaloSizes ) );
+    CommunicationPlan expProvidesPlan( hostReadAccess( expProvidesSizes ) );
+
+    CHECK_COMMUNICATION_PLANS_EQUAL( expRequiredPlan, haloPlan.getHaloCommunicationPlan() );
+    CHECK_COMMUNICATION_PLANS_EQUAL( expProvidesPlan, haloPlan.getLocalCommunicationPlan() );
 }
 
 /* --------------------------------------------------------------------- */
