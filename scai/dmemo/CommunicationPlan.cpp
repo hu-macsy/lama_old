@@ -123,7 +123,7 @@ void CommunicationPlan::multiplyRagged( const IndexType quantities[] )
     {
         Entry& entry = mEntries[i];
 
-        SCAI_ASSERT_EQ_ERROR( entry.offset, oldOffset, "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( entry.offset, oldOffset, "serious mismatch, illegal communication plan" )
 
         IndexType newQuantity = 0;
 

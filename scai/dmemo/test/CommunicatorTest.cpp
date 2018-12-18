@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
 
     HArrayUtils::setSequence( localIndexes, first, inc, n );
 
-    GeneralDistribution dist( n * size, localIndexes, comm );
+    GeneralDistribution dist( n * size, localIndexes, false, comm );
 
     HArray<IndexType> nonLocalIndexes;
 

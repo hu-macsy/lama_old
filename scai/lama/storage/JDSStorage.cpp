@@ -35,7 +35,7 @@
 #include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/sparsekernel/JDSUtils.hpp>
 
-#include <scai/dmemo/HaloPlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -949,7 +949,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloPlan& haloPlan, const IndexType globalNumColumns )
+void JDSStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns )
 {   
     haloPlan.halo2GlobalV( mJA, mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );

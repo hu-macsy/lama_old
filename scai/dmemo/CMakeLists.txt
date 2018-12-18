@@ -50,6 +50,8 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
+        AnyAddressing
+
         Communicator
         CommunicatorStack
         NoCommunicator
@@ -64,7 +66,7 @@ scai_project (
         GenBlockDistribution
         GeneralDistribution
         GridDistribution
-        HaloPlan
+        HaloExchangePlan
         NoDistribution
         Redistributor
         SingleDistribution

@@ -141,8 +141,8 @@ BOOST_AUTO_TEST_CASE( redistributorTest )
                         << ", new owners = " << rO[0] << ", " << rO[1] )
     }
 
-    auto sourceDist = std::make_shared<GeneralDistribution>( N, myIndexes1, comm );
-    auto targetDist = std::make_shared<GeneralDistribution>( N, myIndexes2, comm );
+    auto sourceDist = std::make_shared<GeneralDistribution>( N, myIndexes1, true, comm );
+    auto targetDist = std::make_shared<GeneralDistribution>( N, myIndexes2, true, comm );
 
     Redistributor r1( targetDist, sourceDist );
     Redistributor r2( newOwners, sourceDist );

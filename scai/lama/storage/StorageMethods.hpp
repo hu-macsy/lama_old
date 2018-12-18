@@ -42,7 +42,7 @@ namespace scai
 namespace dmemo
 {
 class Communicator;
-class HaloPlan;
+class HaloExchangePlan;
 class Distribution;
 class Redistributor;
 }
@@ -54,10 +54,9 @@ class COMMON_DLL_IMPORTEXPORT _StorageMethods
 {
 public:
 
-    static void buildHalo(
-        class dmemo::HaloPlan& haloPlan,
+    static void buildHaloExchangePlan(
+        class dmemo::HaloExchangePlan& haloPlan,
         hmemo::HArray<IndexType>& haloJA,
-        IndexType& haloSize,
         const dmemo::Distribution& colDist );
 
 protected:
@@ -146,7 +145,7 @@ public:
         const hmemo::HArray<IndexType>& sourceIA,
         const hmemo::HArray<IndexType>& sourceJA,
         const hmemo::HArray<ValueType>& sourceValues,
-        const dmemo::HaloPlan& haloPlan,
+        const dmemo::HaloExchangePlan& haloPlan,
         const dmemo::Communicator& comm );
 
     /** Splitting CSR storage.

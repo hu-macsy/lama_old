@@ -32,7 +32,7 @@
 
 // internal scai libraries
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/HaloPlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
@@ -219,41 +219,34 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     const HArray<IndexType>& sourceIA,
     const HArray<IndexType>& sourceJA,
     const HArray<ValueType>& sourceValues,
-    const HaloPlan& haloPlan,
+    const HaloExchangePlan& haloPlan,
     const Communicator& comm )
 {
     SCAI_REGION( "Storage.exchangeHaloCSR" )
 
     ContextPtr loc = Context::getHostPtr();
 
-    // get the number of rows for the new matrix
+    HArray<IndexType> sourceSizes; 
+    HArray<IndexType> targetSizes;  
 
-    const IndexType numRecvRows = haloPlan.getHaloSize();
+    // prepare the sizes of rows to send
 
-    {
-        // allocate target IA with the right size
-        WriteOnlyAccess<IndexType> tmpIA( targetIA, numRecvRows + 1 );
-    }
+    CSRUtils::gatherSizes( sourceSizes, sourceIA, haloPlan.getLocalIndexes(), loc );
 
-    // send the sizes of the rows I will provide
-    SCAI_LOG_INFO( logger, "exchange sizes of rows" )
-
-    HArray<IndexType> sourceSizes;  // keep the gathered sizes
-
-    haloPlan.updateHalo( targetIA, sourceIA, comm, sourceSizes );
+    haloPlan.updateHaloDirect( targetSizes, sourceSizes, comm );
 
     SCAI_LOG_INFO( logger, "exchanged sizes of rows, build vPlans" )
 
-    // now we build the variable communication plan
+    // now we build the variable communication plan for JA and Values
 
-    auto provideV = haloPlan.getHaloCommunicationPlan().constructRagged( sourceIA );
-    auto requiredV = haloPlan.getLocalCommunicationPlan().constructRagged( targetIA );
+    auto provideV = haloPlan.getLocalCommunicationPlan().constructRagged( sourceSizes );
+    auto requiredV = haloPlan.getHaloCommunicationPlan().constructRagged( targetSizes );
 
     // row sizes of target will now become offsets
 
-    CSRUtils::sizes2offsets( targetIA, targetIA, loc );
+    CSRUtils::sizes2offsets( targetIA, targetSizes, loc );
 
-    const HArray<IndexType>& providesIndexes = haloPlan.getProvidesIndexes();
+    const HArray<IndexType>& localIndexes = haloPlan.getLocalIndexes();
 
     // sendJA, sendValues must already be allocated before calling gatherV
     // as its size cannot be determined by arguments
@@ -261,12 +254,12 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
     const IndexType sendVSize = provideV.totalQuantity();
 
     HArray<IndexType> sendJA( sendVSize );
-    HArray<ValueType> sendValues( sendVSize );
-    utilskernel::TransferUtils::gatherV( sendJA, sourceJA, sourceIA, providesIndexes );
+    utilskernel::TransferUtils::gatherV( sendJA, sourceJA, sourceIA, localIndexes );
     comm.exchangeByPlan( targetJA, requiredV, sendJA, provideV );
-    utilskernel::TransferUtils::gatherV( sendValues, sourceValues, sourceIA, providesIndexes );
+
+    HArray<ValueType> sendValues( sendVSize );
+    utilskernel::TransferUtils::gatherV( sendValues, sourceValues, sourceIA, localIndexes );
     comm.exchangeByPlan( targetValues, requiredV, sendValues, provideV );
-    // thats it !!
 }
 
 /* -------------------------------------------------------------------------- */
@@ -414,38 +407,20 @@ void StorageMethods<ValueType>::splitCSR(
 
 /* -------------------------------------------------------------------------- */
 
-void _StorageMethods::buildHalo(
-    HaloPlan& haloPlan,
+void _StorageMethods::buildHaloExchangePlan(
+    HaloExchangePlan& haloPlan,
     HArray<IndexType>& haloJA,
-    IndexType& haloSize,
     const Distribution& colDist )
 {
     const IndexType haloNumValues = haloJA.size();
+
     SCAI_LOG_INFO( logger, "build halo for " << haloNumValues << " non-local indexes" )
-    // copy the LAMA array values into a std::vector
-    std::vector<IndexType> haloIndexes;
-    haloIndexes.reserve( haloNumValues );
 
-    for ( IndexType j : hostReadAccess( haloJA ) )
-    {
-        haloIndexes.push_back( j );
-    }
+    // double elements in haloJA will get same halo index
 
-    // sort and then eliminate double elements
-    std::sort( haloIndexes.begin(), haloIndexes.end() );
-    std::vector<IndexType>::iterator it = std::unique( haloIndexes.begin(), haloIndexes.end() );
-    haloIndexes.resize( it - haloIndexes.begin() );
-    SCAI_LOG_DEBUG( logger,
-                    "Eliminating multiple global indexes, " << haloNumValues << " are shrinked to " << haloIndexes.size() << " values, is halo size" )
-
-    {
-        HArrayRef<IndexType> requiredIndexes( haloIndexes );
-        haloPlan = haloPlanByRequiredIndexes( requiredIndexes, colDist );
-    }
+    haloPlan = haloExchangePlanByRequiredIndexes( haloJA, colDist );
 
     SCAI_LOG_DEBUG( logger, "Halo plan = " << haloPlan )
-
-    haloSize = static_cast<IndexType>( haloIndexes.size() );
 
     // translate the non-local - global indexes to halo indexes, in-place
 

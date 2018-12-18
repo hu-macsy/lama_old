@@ -149,7 +149,7 @@ void CSRGraph<IdxType>::buildByCSRSparseMatrix( const CSRSparseMatrix<ValueType>
 
     const lama::CSRStorage<ValueType>& localStorage = matrix.getLocalStorage();
     const lama::CSRStorage<ValueType>& haloStorage = matrix.getHaloStorage();
-    const HaloPlan& haloPlan = matrix.getHaloPlan();
+    const HaloExchangePlan& haloPlan = matrix.getHaloExchangePlan();
 
     // local2global for local IA, halo2global for halo JA
 
@@ -203,7 +203,7 @@ void CSRGraph<IdxType>::buildByCSRSparseMatrix( const CSRSparseMatrix<ValueType>
 
     // Make halo exchange 
 
-    HArray<IndexType> providesGlobalIndexes( haloPlan.getProvidesIndexes() );
+    HArray<IndexType> providesGlobalIndexes( haloPlan.getLocalIndexes() );
 
     // add myOffset so the column indexes have the correct numbering
   

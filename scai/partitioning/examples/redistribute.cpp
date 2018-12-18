@@ -65,7 +65,7 @@ int main( int, char** )
 
         for ( IndexType i = 0; i < nLocal; ++i )
         {
-            IndexType globalI = sourceDistribution->local2global( i );
+            IndexType globalI = sourceDistribution->local2Global( i );
             IndexType globalChunk = globalI / 3;
             wMapping[i] = globalChunk % npart;
         }

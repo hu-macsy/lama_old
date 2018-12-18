@@ -211,9 +211,10 @@ Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwner
                           "size of new owners must be equal to local size of distribution" );
 
     const auto targetGlobalIndexes = initializeFromNewOwners( newOwnersOfLocalElements, *sourceDistribution );
-    mTargetDistribution = DistributionPtr ( new GeneralDistribution( sourceDistribution->getGlobalSize(),
-                                            targetGlobalIndexes,
-                                            sourceDistribution->getCommunicatorPtr() ) );
+
+    mTargetDistribution = generalDistributionUnchecked( sourceDistribution->getGlobalSize(),
+                                                        targetGlobalIndexes,
+                                                        sourceDistribution->getCommunicatorPtr() );
 }
 
 // Note: returns global target indexes

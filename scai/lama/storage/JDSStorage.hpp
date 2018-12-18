@@ -327,7 +327,7 @@ public:
      *
      *  This solution is more efficient as we need only update of the column data
      */
-    virtual void globalizeHaloIndexes( const dmemo::HaloPlan& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& halo, const IndexType globalNumColumns );
 
     /* Print relevant information about matrix storage format. */
 

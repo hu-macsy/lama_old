@@ -62,7 +62,7 @@ struct GeneralDistributionTestConfig
 
         utilskernel::HArrayUtils::setSequence( localIndexes, first, inc, elemsPerPartition );
 
-        dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, comm ) );
+        dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, false, comm ) );
     }
 
     ~GeneralDistributionTestConfig()
@@ -89,9 +89,32 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GeneralDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
+std::shared_ptr<GeneralDistribution> buildCyclic( 
+    const IndexType elemsPerProcessor, 
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr() )
+
+{
+    const IndexType rank = comm->getRank();
+    const IndexType NP   = comm->getSize();
+
+    hmemo::HArray<IndexType> localIndexes;
+    utilskernel::HArrayUtils::setSequence( localIndexes, rank, NP, elemsPerProcessor );
+
+    return generalDistributionUnchecked( elemsPerProcessor * NP, std::move( localIndexes ), comm );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( generalSizeTest )
 {
-    BOOST_CHECK( dist->getLocalSize() == elemsPerPartition );
+    const IndexType elemsPerProcessor = 10;
+
+    auto dist = buildCyclic( elemsPerProcessor );
+
+    const Communicator& comm = dist->getCommunicator();
+
+    BOOST_CHECK_EQUAL( dist->getLocalSize(), elemsPerProcessor );
+    BOOST_CHECK_EQUAL( dist->getGlobalSize(), comm.sum( dist->getLocalSize() ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -108,11 +131,13 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     const IndexType first = rank * N;
     const IndexType inc   = 1;
 
+    bool checkFlag = true;   // not really need but for convenience
+
     utilskernel::HArrayUtils::setSequence( localIndexes, first, inc, N );
 
-    GeneralDistribution genDist1( size * N, localIndexes, comm );
+    GeneralDistribution genDist1( size * N, localIndexes, checkFlag, comm );
     const GeneralDistribution& genDist2 = genDist1;
-    GeneralDistribution genDist3( size * N, localIndexes, comm );
+    GeneralDistribution genDist3( size * N, localIndexes, checkFlag, comm );
 
     // general distributions can be compared with each other
 
@@ -243,6 +268,28 @@ BOOST_AUTO_TEST_CASE( buildByOwnersTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( buildByOwnersFailTest )
+{
+    auto comm = Communicator::getCommunicatorPtr();
+
+    auto size = comm->getSize();
+    decltype( size ) root = 0;
+
+    hmemo::HArray<PartitionId> owners;   // default is empty array
+
+    if ( rank == root )
+    {
+        owners = hmemo::HArray<PartitionId>( { 0, 0, size, 0 } );   // out-of-range owner
+    }
+
+    BOOST_CHECK_THROW(
+    {
+        dist = generalDistributionByOwners( owners, root, comm );
+    }, common::Exception );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( buildTest )
 {
     using namespace hmemo;
@@ -255,18 +302,6 @@ BOOST_AUTO_TEST_CASE( buildTest )
 
     if ( size < 2 )
     {
-        BOOST_CHECK_THROW(
-        {
-            dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3 } ), comm );
-        }, common::Exception );
-
-        BOOST_CHECK_THROW(
-        {
-            dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3, 2 } ), comm );
-        }, common::Exception );
-
-        dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3, 1 } ), comm );
-
         return;
     }
 
@@ -298,6 +333,87 @@ BOOST_AUTO_TEST_CASE( buildTest )
     if ( rank == root )
     {
         BOOST_TEST( hostReadAccess( owners ) == hostReadAccess( expOwners ), boost::test_tools::per_element() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( checkTest )
+{
+    using namespace hmemo;
+
+    auto comm = Communicator::getCommunicatorPtr();
+ 
+    auto size = comm->getSize();
+    auto rank = comm->getRank();
+
+    DistributionPtr dist;
+
+    if ( size < 2 )
+    {
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3 } ), comm );
+        }, common::Exception );
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3, 2 } ), comm );
+        }, common::Exception );
+
+        dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3, 1 } ), comm );
+    }
+
+    if ( size == 2 )
+    {
+        HArray<IndexType> myIndexes;
+
+        // generate wrong data where global index 2 has two owners
+        if ( rank == 0 )
+        {
+            myIndexes = HArray<IndexType>( { 0, 1, 2 } );
+        }
+        else
+        {
+            myIndexes = HArray<IndexType>( { 2, 3, 4 } ); 
+        }
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, myIndexes, comm );
+        }, common::Exception );
+
+        // generate wrong data where global index 2 has no owners
+        if ( rank == 0 )
+        {
+            myIndexes = HArray<IndexType>( { 0, 1 } );
+        }
+        else
+        {
+            myIndexes = HArray<IndexType>( { 3, 4 } ); 
+        }
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, myIndexes, comm );
+        }, common::Exception );
+
+        // generate wrong data where global index 2 has two and 3 no owners
+        // but we have at least sum ( myIndexes.size() ) = globalSize
+
+        if ( rank == 0 )
+        {
+            myIndexes = HArray<IndexType>( { 0, 1, 2 } );
+        }
+        else
+        {
+            myIndexes = HArray<IndexType>( { 2, 4 } ); 
+        }
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, myIndexes, comm );
+        }, common::Exception );
     }
 }
 

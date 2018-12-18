@@ -31,7 +31,7 @@
 
 #include <scai/dmemo/Communicator.hpp>
 
-#include <scai/dmemo/HaloPlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>

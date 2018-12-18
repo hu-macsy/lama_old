@@ -69,6 +69,7 @@ const char GeneralDistribution::theCreateValue[] = "GENERAL";
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
     HArray<IndexType> myIndexes,
+    bool checkFlag,
     const CommunicatorPtr comm ) :
 
     Distribution( globalSize, comm ),
@@ -91,7 +92,13 @@ GeneralDistribution::GeneralDistribution(
     HArrayUtils::sort( NULL, &mLocal2Global, mLocal2Global, true );
 
     fillIndexMap();
-    setBlockDistributedOwners();
+
+    if ( checkFlag )
+    {
+        // this method also verifies that each global index appears only once
+
+        enableBlockDistributedOwners();
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -101,9 +108,17 @@ std::shared_ptr<GeneralDistribution> generalDistribution(
     HArray<IndexType> myGlobalIndexes,
     const CommunicatorPtr comm )
 {
-    // here we could sort the global indexes in place
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), true, comm );
+}
 
-    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), comm );
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<GeneralDistribution> generalDistributionUnchecked( 
+    const IndexType globalSize,
+    HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr comm )
+{
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), false, comm );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -139,7 +154,9 @@ std::shared_ptr<GeneralDistribution> generalDistributionByOwners(
 
     comm->scatterVArray( myGlobalIndexes, root, sortedIndexes, localSizes );
 
-    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), comm );
+    bool checkFlag = false;  // no check required
+
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), checkFlag, comm );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -165,14 +182,16 @@ std::shared_ptr<GeneralDistribution> generalDistributionNew(
     }
     else
     {
-        // use a global exchange pattern, very common for many operations
+        // use a global exchange plan, returns exactly the new global indexes (unsorted) on each processor 
 
         HArray<IndexType> myOldGlobalIndexes;
         dist.getOwnedIndexes( myOldGlobalIndexes );
         dmemo::globalExchange( myNewGlobalIndexes, myOldGlobalIndexes, newOwners, *comm );
     }
 
-    return std::make_shared<GeneralDistribution>( globalSize, std::move( myNewGlobalIndexes ), comm );
+    bool checkFlag = false;  // cannot be illegal if new owners has only valid indexes
+
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myNewGlobalIndexes ), checkFlag, comm );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -459,11 +478,17 @@ void GeneralDistribution::computeBlockDistributedOwners( HArray<IndexType>& bloc
 
 /* ---------------------------------------------------------------------- */
 
-void GeneralDistribution::setBlockDistributedOwners()
+void GeneralDistribution::enableBlockDistributedOwners() const
 {
-    SCAI_LOG_INFO( logger, "setBlockDistributedOwners" )
-    computeBlockDistributedOwners( mBlockDistributedOwners, getGlobalSize(), mLocal2Global, getCommunicatorPtr() );
-    SCAI_LOG_DEBUG( logger, "setBlockDistributedOwners done" )
+    SCAI_LOG_INFO( logger, "enableBlockDistributedOwners" )
+
+    if ( mBlockDistributedOwners.get() )
+    {
+        return;
+    }
+
+    mBlockDistributedOwners.reset( new HArray<PartitionId>() );
+    computeBlockDistributedOwners( *mBlockDistributedOwners, getGlobalSize(), mLocal2Global, getCommunicatorPtr() );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -472,6 +497,8 @@ void GeneralDistribution::computeOwners(
     hmemo::HArray<PartitionId>& owners, 
     const hmemo::HArray<IndexType>& indexes ) const
 {
+    enableBlockDistributedOwners();
+
     SCAI_LOG_INFO( logger, "computeOwners for indexes = " << indexes )
 
     SCAI_REGION( "Distribution.General.computeOwners" )
@@ -508,7 +535,7 @@ void GeneralDistribution::computeOwners(
 
     HArray<PartitionId> answerOwners;  // will take the owners of the queried indexes
 
-    HArrayUtils::gather( answerOwners, mBlockDistributedOwners, queriedIndexes, common::BinaryOp::COPY );
+    HArrayUtils::gather( answerOwners, *mBlockDistributedOwners, queriedIndexes, common::BinaryOp::COPY );
 
     SCAI_LOG_DEBUG( logger, "computeOwners: answers = " << answerOwners << ", exchange back" )
 
@@ -577,75 +604,55 @@ void GeneralDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInd
 
 bool GeneralDistribution::hasAnyAddressing() const
 {
-    return mAllOwners.size() > 0;
+    return mAnyAddressing.get() != nullptr;
 }
 
 void GeneralDistribution::enableAnyAddressing() const
 {
-    if ( mAllOwners.size() > 0 )
+    if ( mAnyAddressing.get() ) 
     {
-        // already computed, but just verify correct sizes
-
-        SCAI_ASSERT_EQ_DEBUG( mAllOwners.size(), getGlobalSize(), "serious mismatch" )
-        SCAI_ASSERT_EQ_DEBUG( mAllLocalOffsets.size(), getCommunicator().getSize() + 1, "serious mismatch" )
-        SCAI_ASSERT_EQ_DEBUG( mAllLocal2Global.size(), getGlobalSize(), "serious mismatch" )
-        SCAI_ASSERT_EQ_DEBUG( mAllGlobal2Local.size(), getGlobalSize(), "serious mismatch" )
-
         return;   // already done
     }
 
-    // compute mAllOwners
-
-    HArray<IndexType> indexes;   // will contain all column indexes to get all owners
-
-    HArrayUtils::setOrder( indexes, mGlobalSize );
-
-    Distribution::computeOwners( mAllOwners, indexes );
-
-    // bucket sort the owners, gives offsets and permutation to block values according to owners
-
-    HArrayUtils::bucketSortOffsets( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
-    HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2Local
+    mAnyAddressing.reset( new AnyAddressing( *this ) );
 }
 
 /* ---------------------------------------------------------------------- */
 
 IndexType GeneralDistribution::getAnyLocalSize( const PartitionId rank ) const
 {
-    SCAI_ASSERT( mAllLocalOffsets.size() > 0, "any addressing not enabled" )
+    SCAI_ASSERT( mAnyAddressing.get(), "any addressing not enabled" )
 
-    return mAllLocalOffsets[ rank + 1] - mAllLocalOffsets[rank];
+    return mAnyAddressing->localSize( rank );
 }
 
 /* ---------------------------------------------------------------------- */
 
 PartitionId GeneralDistribution::getAnyOwner( const IndexType globalIndex ) const
 {
-    SCAI_ASSERT( mAllOwners.size() > 0, "any addressing not enabled" )
+    SCAI_ASSERT( mAnyAddressing.get(), "any addressing not enabled" )
 
-    return mAllOwners[ globalIndex ];
+    return mAnyAddressing->owner( globalIndex );
 }
 
 /* ---------------------------------------------------------------------- */
 
 IndexType GeneralDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
 {
-    SCAI_ASSERT( mAllGlobal2Local.size() > 0, "any addressing not enabled" )
+    SCAI_ASSERT( mAnyAddressing.get(), "any addressing not enabled" )
 
-    // here the owner is important as local index  requires size offsets
+    // here the owner is important as local index requires size offsets
 
-    return mAllGlobal2Local[ globalIndex ] - mAllLocalOffsets[ owner ];
+    return mAnyAddressing->localIndex( globalIndex, owner );
 }
 
 /* ---------------------------------------------------------------------- */
 
 IndexType GeneralDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const
 {
-    SCAI_ASSERT( mAllGlobal2Local.size() > 0, "any addressing not enabled" )
+    SCAI_ASSERT( mAnyAddressing.get(), "any addressing not enabled" )
 
-    // here the owner is important as local index  requires size offsets
-
-    return mAllLocal2Global[ localIndex + mAllLocalOffsets[ owner ] ];
+    return mAnyAddressing->globalIndex( localIndex, owner );
 }
 
 } /* end namespace dmemo */

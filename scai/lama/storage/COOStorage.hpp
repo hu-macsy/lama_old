@@ -499,7 +499,7 @@ public:
      *
      *  This solution is more efficient as temporary CSR data is completely avoided.
      */
-    virtual void globalizeHaloIndexes( const dmemo::HaloPlan& haloPlan, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *

@@ -39,7 +39,7 @@
 #include <scai/lama/storage/StorageMethods.hpp>
 
 #include <scai/dmemo/Redistributor.hpp>
-#include <scai/dmemo/HaloPlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 
 
 // internal scai libraries
@@ -1177,7 +1177,7 @@ template<typename ValueType>
 void CSRStorage<ValueType>::splitHalo(
     MatrixStorage<ValueType>& localData,
     MatrixStorage<ValueType>& haloData,
-    dmemo::HaloPlan& haloPlan,
+    dmemo::HaloExchangePlan& haloPlan,
     const dmemo::Distribution& colDist,
     const dmemo::Distribution* rowDist ) const
 {
@@ -1228,9 +1228,9 @@ void CSRStorage<ValueType>::splitHalo(
     SCAI_LOG_INFO( logger,
                    *this << ": split into " << localNumValues << " local non-zeros " " and " << haloNumValues << " halo non-zeros" )
     const IndexType localNumColumns = colDist.getLocalSize();
-    IndexType haloNumColumns; // will be available after remap
     // build the halo by the non-local indexes
-    _StorageMethods::buildHalo( haloPlan, haloJA, haloNumColumns, colDist );
+    _StorageMethods::buildHaloExchangePlan( haloPlan, haloJA, colDist );
+    const IndexType haloNumColumns = haloPlan.getHaloSize();
     SCAI_LOG_INFO( logger, "build halo plan: " << haloPlan )
     localData.setCSRData( numRows, localNumColumns, localIA, localJA, localValues );
     localData.check( "local part after split" );
@@ -1245,7 +1245,7 @@ void CSRStorage<ValueType>::splitHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloPlan& haloPlan, const IndexType globalNumColumns )
+void CSRStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns )
 {
     haloPlan.halo2GlobalV( mJA, mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );

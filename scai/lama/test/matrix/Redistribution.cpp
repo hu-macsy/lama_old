@@ -30,7 +30,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/dmemo/HaloPlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
         // create matrix storage for local and halo part of same type as storage
         unique_ptr<MatrixStorage<ValueType> > localStorage ( storage.newMatrixStorage() );
         unique_ptr<MatrixStorage<ValueType> > haloStorage ( storage.newMatrixStorage() );
-        HaloPlan haloPlan;
+        HaloExchangePlan haloPlan;
         SCAI_LOG_INFO( logger, *comm << ", split halo : " << storage )
         storage.splitHalo( *localStorage, *haloStorage, haloPlan, *colDist, NULL );
         SCAI_LOG_DEBUG( logger, *comm << ": split done, local = " << *localStorage
@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
         // create local matrix storage
         matrixStorage.localize( matrixStorage, *rowDist );
         // build a vector of required indexes
-        HaloPlan haloPlan;
+        HaloExchangePlan haloPlan;
         std::vector<IndexType> requiredIndexes;// will keep ALL non-local indexes
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
 
         {
             HArrayRef<IndexType> haloIndexes( requiredIndexes );  // does not copy values
-            haloPlan = haloPlanByRequiredIndexes( haloIndexes, *rowDist );
+            haloPlan = haloExchangePlanByRequiredIndexes( haloIndexes, *rowDist );
         }
 
         unique_ptr<MatrixStorage<ValueType> > haloMatrix( matrixStorage.newMatrixStorage() );

@@ -33,7 +33,7 @@
 
 // internal scai libraries
 
-#include <scai/dmemo/HaloPlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 #include <scai/sparsekernel/COOUtils.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
 
@@ -1140,7 +1140,7 @@ void COOStorage<ValueType>::matrixPlusMatrixImpl(
 /* ========================================================================= */
 
 template<typename ValueType>
-void COOStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloPlan& haloPlan, const IndexType globalNumColumns )
+void COOStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns )
 {
     haloPlan.halo2GlobalV( mJA, mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );

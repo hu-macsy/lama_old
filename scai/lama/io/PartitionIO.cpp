@@ -333,9 +333,9 @@ DistributionPtr PartitionIO::readPDistribution( const string& inFileName, Commun
 
     IndexType globalSize = comm->sum( myIndexes.size() );
 
-    DistributionPtr dist( new GeneralDistribution( globalSize, myIndexes, comm ) );
+    // use in any case the version of construction with global checks
 
-    return dist;
+    return generalDistribution( globalSize, myIndexes, comm );
 }
 
 /* --------------------------------------------------------------------------------- */
