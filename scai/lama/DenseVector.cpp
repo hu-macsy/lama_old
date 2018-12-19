@@ -46,7 +46,7 @@
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/GlobalExchangePlan.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/tracing.hpp>
@@ -1729,17 +1729,17 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else
     {
-        // each element has exactly one old and one new owner, here we use a Redistributor
+        // each element has exactly one old and one new owner, here we use a RedistributePlan
 
         SCAI_LOG_DEBUG( logger, *this << " will be redistributed to " << *distribution )
 
         SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
                               "redistribute only within same communicator / processor set" )
 
-        // so we have now really a redistibution, build a Redistributor
+        // so we have now really a redistibution, build a RedistributePlan
 
         HArray<ValueType> newLocalValues( distribution->getLocalSize() );
-        Redistributor redistributor( distribution, getDistributionPtr() ); // target, source distributions
+        RedistributePlan redistributor( distribution, getDistributionPtr() ); // target, source distributions
         redistributor.redistribute( newLocalValues, mLocalValues );
         mLocalValues.swap( newLocalValues );
         setDistributionPtr( distribution );
@@ -1781,7 +1781,7 @@ void DenseVector<ValueType>::resize( DistributionPtr distribution )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseVector<ValueType>::redistribute( const Redistributor& redistributor )
+void DenseVector<ValueType>::redistribute( const RedistributePlan& redistributor )
 {
     SCAI_ASSERT_EQ_ERROR( getDistribution(), *redistributor.getSourceDistributionPtr(), 
                           "redistributor does not match to actual distribution of this vector" );

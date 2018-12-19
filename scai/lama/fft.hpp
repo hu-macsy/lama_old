@@ -34,6 +34,8 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/utilskernel/FFTUtils.hpp>
 
+#include <scai/tracing.hpp>
+
 namespace scai
 {
 

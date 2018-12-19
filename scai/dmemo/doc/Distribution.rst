@@ -3,30 +3,38 @@
 Distributions
 =============
 
-LAMA is provided to work on distributed systems from PC clusters to supercomputers. Communication between the processes
-is handled by a given library LAMA is build with ( to now: a given MPI implementation, e.g. openMPI, mvapich, ...; a
-PGAS backend is in progress). Data management for the communication is operated internally. 
+A distribution object is used to map data structures like vectors or matrices to the different processors
+of a distributed system. It stands for a mapping of N elements (range 0 to N-1, also called global indexes)
+ to the processors of a corresponding communicator, so that each processor has a number of local indexes for 
+which it is the owner.
 
-Data distribution is done line-by-line. So one process always holds a full row of a matrix. Additionally a matrix has a
-column distribution which divide the partial matrix of one process in a **local** and **halo** part. Regarding the
-matrix-vector-multiplication with a vector having the column distribution of the matrix, the local part of the matrix
-can be processed without communication of the vector parts on other processes, while the halo part can not be processed
-before communication.
-Internally these two parts are stored autonomous in two storages, so the calculation can be executed independently and
-the communication can be executed asynchronously to the calculation on the local part. 
+The class *Distribution* itself is an abstract base class with many pure methods that must be implemented by
+the derived classes, especially operations to get the local indexes on a processor and to determine the owners
+for a set of global indexes.
+
+Distributons are always created on the heap and managed by shared pointers. Therefore different distributed
+data structure can share the mapping and the lifetime of the distribution ends with the lifetime of the last
+object that uses it.
+
+.. code-block:: c++
+
+   auto dist = blockDistributon( N );
+   DenseVector<double> v1( dist );
+   DenseVector<double> v2( dist );
+   DenseMatrix<double> m( dist, dist );
 
 .. _dmemo-distributions:
 
-Distribution Types
-------------------
+Distribution Classes
+--------------------
 
-Up to now, LAMA provides the following distribution classes.
+LAMA provides the following derived distribution classes.
 
 Block Distribution
 ^^^^^^^^^^^^^^^^^^
 
-The *BlockDistribution* creates continuous blocks of the same size (except from the last block), which are successively
-assigned to the processes.
+The *BlockDistribution* creates contiguous blocks of the same size (except from the last block), which are successively
+assigned to the processors.
 
 .. figure:: _images/block_distribution.*
     :width: 500px
@@ -34,13 +42,14 @@ assigned to the processes.
   
     Block distribution of 11 elements onto 3 processors (block size is 4).
     
-You create a BlockDistribution by just passing the global distribution size and a communicator:
+A BlockDistribution is created by passing the global distribution size and a communicator (optional, 
+default is the current communicator). Beside the constructor a function is provided that creates
+the shared pointer object.
 
 .. code-block:: c++
 
-   CommunicatorPtr comm( Communicator::getCommunicator( scai::lama::communicator::MPI ) );
-   
-   DistributionPtr block( new BlockDistribution( N, comm ) );
+   DistributionPtr dist( new BlockDistribution( N, comm ) );
+   auto dist = blockDistributon( N );
 
 Cyclic Distribution
 ^^^^^^^^^^^^^^^^^^^
@@ -70,9 +79,8 @@ The following example creates with three parts of size 1, 3 and 2 rows/columns:
 
 .. code-block:: c++
 
-   IndexType raw_sizes[] = { 3, 5, 3 };
-   HArray<IndexType> sizes( 3, raw_sizes );
-   DistributionPtr genBlock( new GenBlockDistribution( N, rawSizes, comm ) );
+   HArray<IndexType> sizes( { 3, 5, 3 } );
+   DistributionPtr genBlock( new GenBlockDistribution( N, sizes, comm ) );
 
 .. figure:: _images/genblock_distribution.* 
     :width: 500px
@@ -81,16 +89,21 @@ The following example creates with three parts of size 1, 3 and 2 rows/columns:
 
     General block distribution of 11 elements onto 3 processors with sizes (3, 5, 3)
 
+Beside this constructor it is also possible to create a general block distribution by the local size
+or by a weight.
+
 GeneralDistribution
 ^^^^^^^^^^^^^^^^^^^
 
-With the *GeneralDistribution* a fully free Distribution can be created. Therefore, a vector with the mapping from index to
-partition is given to the distribution. The number of partitions starts by zero. 
+With the *GeneralDistribution* a fully free distribution can be created. 
+Therefore, an array with the owner for each global index must be specified.
+The array must only be available on one processor (root).
 
 .. code-block:: c++
 
-   HArray<PartitionId> mapping( { 1, 2, 0, 1, 0, 0, 2, 2, 1, 1, 1 } );  // 11 entries
-   DistributionPtr gen( new GeneralDistribution( mapping, comm ) );
+   HArray<PartitionId> owners( { 1, 2, 0, 1, 0, 0, 2, 2, 1, 1, 1 } );  // 11 entries
+   PartitionId root = 0;
+   DistributionPtr gen = generalDistributionByOwners( owners, root );
    
 In this example process 0 owns index 2, 4, and 5, process 1 owns 0, 3, 8, 9, and 10 and 
 process 2 owns 1, 6, 7.
@@ -113,7 +126,7 @@ An alternative constructor uses the individual sets of owned indexes on each pro
                  break;
     }
 
-    auto gen2 = std::make_shared<GeneralDistribution>( N, myIndexes, comm );
+    auto gen2 = generalDistribution>( N, myIndexes, comm );
 
 For the latter constructor the number of locally owned indexes must sum up to the global size and
 each global index must appear exactly once in the local array ``myIndexes`` on a processor. It is not possible
@@ -127,8 +140,9 @@ that one element is owned by multiple processors.
     General distribution of 11 elements onto 3 processors.
 
 Compared to the other distributions, general distributions have the big disadvantage that one local processor
-does not know the full mapping, i.e. it cannot determine the owner of an abritrary index. Therefore additional
-communication is required to determine ownership of elements.
+does not know the full mapping, i.e. it cannot determine the owner of an abritrary index without further
+communication. This also implies that each method requiring the computation of ownership must be
+called by all processors.
 
 Grid Distribution
 ^^^^^^^^^^^^^^^^^
@@ -168,6 +182,20 @@ processor owns all the data.
     const PartitionId p = 2;
     DistributionPtr singleDist( new SingleDistribution( p, comm ) );
 
+Joined Distribution
+^^^^^^^^^^^^^^^^^^^
+
+A *JoinedDistribuiton* is the concatenation of two mappings.
+    
+.. code-block:: c++
+
+    auto dist1 = blockDistribution( N1 );
+    auto dist2 = blockDistribution( N2 );
+    auto dist = joinedDistributions( dist1, dist2 );   // mapping for N1 + N2 elements
+
+Even if it stands on its own for a distribution, it becomes especially useful for joined data structures
+where the joined data is not built explicitly and exists only implicitly.
+
 No Distribution
 ^^^^^^^^^^^^^^^
 
@@ -183,8 +211,58 @@ Regarding distributed memory programming you should keep in mind that not distri
 in a private mode where each processor works on individual values or in a global mode, where all processors
 have exactly the same values for their incarnation.
 
+Methods for Distributions
+-------------------------
+
+In the following the most important methods of a distribution are shortly described and explained.
+For a detailed description of the virtual methods of a distribution we refer to the reference documentation.
+
+Computation of Ownership
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+For operations on distributed data structures it might be the case that elements from other processors
+are required, i.e. elements that reside on another processors. One important step for the
+corresponding communications is to compute the owners of these required elements. Therefore each distribution
+implements a method to query the owners for an array of global indexes.
+
+.. code-block:: c++
+
+    HArray<IndexType> requiredIndexes = ...;
+    DistributionPtr dist = ...
+    HArray<PartitionId> owners;
+    dist->computeOwners( owners, requiredIndexes );
+
+The following figure shows a typical example of such a call. Each processor calls this
+method with its individual set of requried indexes to get the owners.
+
+.. figure:: _images/compute_owners.* 
+    :width: 500px
+    :align: center
+    :alt: ComputeOwnersBlock
+
+    Computation of ownership with a block distribution of 40 elements onto 4 processors.
+
+While for most distributions it is a simple operation to compute the ownership, e.g. for a
+block distribution it is just an  integer divide operation, it can be rather complex for
+general distribution where it also involves communication.
+
+One possible solution is to build on each a processor an array that contains the owner for
+each global index. While this is the most efficient solution it has the big disadvantage that
+it might require too much memory, especially for a very large number of processors.
+
+Another less efficient solution is to set up a block distributed array of all owners. Each
+processor asks for its required indexes the corresponding processors for the owners.
+This corresponds a gather operation of a distributed array.
+
+.. figure:: _images/compute_owners_general.* 
+    :width: 700px
+    :align: center
+    :alt: ComputeOwnersGeneral
+
+    Computation of ownership with a general distribution of 40 elements onto 4 processors.
+
 Comparison of Distributions
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Usually, many data structures will be distributed among the available processors, e.g. two vectors might be distributed.
 For the implementation of operations on these distributed data structures, it is important to know whether two data

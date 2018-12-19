@@ -79,6 +79,7 @@ public:
      *  @param[in] localIndexes array of local indexes that have a correspondant halo entry on other processors
      *  @param[in] haloCommPlan  communication plan for exchange of data in the halo array
      *  @param[in] localCommPlan communication plan for exchange of data in the local array
+     *  @param[in] global2HaloMap map of global indexes to halo indexes
      *
      *  - halo2GlobalIndexes.size() == haloCommPlan.totalQuantitity()
      *  - localIndexes.size() == localCommPlan.totalQuantitity()
@@ -86,7 +87,7 @@ public:
      *
      *  Notes: 
      *
-     *  - the halo and halo indexes are sorted by the owners of the global indexes
+     *  - halo2GlobalIndexes must be sorted by the owners of the global indexes
      *  - the local indexes are sorted so that communication for each processor is contiguous
      *  - for halo updates itself the halo-global indexes are not needed.
      *  - the array of local indexes might contain the same index multiple times as 
@@ -248,7 +249,8 @@ public:
 
     /** This method translates global indexes into local indexes 
      *
-     *  @param[in,out] indexes is the array with global indexes that are translated halo indexes
+     *  @param[in] globalIndexes is the array with global indexes that are translated 
+     *  @param[out] haloIndexes is the array with corresponding halo indexes.
      *
      *  The array must only contain required indexes used to build the halo.
      */

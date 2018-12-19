@@ -68,7 +68,7 @@ scai_project (
         GridDistribution
         HaloExchangePlan
         NoDistribution
-        Redistributor
+        RedistributePlan
         SingleDistribution
     )
 

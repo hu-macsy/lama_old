@@ -1,5 +1,5 @@
 /**
- * @file Redistributor.hpp
+ * @file RedistributePlan.hpp
  *
  * @license
  * Copyright (c) 2009-2018
@@ -62,7 +62,7 @@ namespace dmemo
  *  that restrict the redistribution just to the transfer of the corresponding data.
  */
 
-class COMMON_DLL_IMPORTEXPORT Redistributor: public common::Printable
+class COMMON_DLL_IMPORTEXPORT RedistributePlan: public common::Printable
 {
 public:
 
@@ -74,18 +74,18 @@ public:
      *  The global size of both distributions must be the same.
      */
 
-    Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution );
+    RedistributePlan( DistributionPtr targetDistribution, DistributionPtr sourceDistribution );
 
     /**
-     * Build a Redistributor by a source distribution and a list of owners.
+     * Build a RedistributePlan by a source distribution and a list of owners.
      *
      * By supplying the new owners instead of the target distribution, the expensive operation
      * of computing owners for elements can be avoided. The target distribution is instead built
-     * as part of the construction of the Redistributor.
+     * as part of the construction of the RedistributePlan.
      *
      * This is only useful in some cases - for example when integrating with external redistribution software,
      * which might output exactly such a list of new owners. In these cases, the necessary communication required
-     * to create a Redistributor may sometimes be significantly reduced.
+     * to create a RedistributePlan may sometimes be significantly reduced.
      *
      * @param[in] newOwnersOfLocalElements A map from local elements in `sourceDistribution` to the partition indices (with respect to the communicator)
      *                                     of their new owners. In particular, `newOwnersOfLocalElements[i]` corresponds to the new owner of the element
@@ -93,7 +93,7 @@ public:
      *                                     number of partitions in the communicator.
      * @param[in] sourceDistribution       The source distribution from which to redistribute elements.
      */
-    Redistributor( const hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution );
+    RedistributePlan( const hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution );
 
     /** Getter needed for distributions */
 
@@ -171,24 +171,6 @@ public:
 
     void buildVPlans( const IndexType haloSourceSizes[], const IndexType haloTargetSizes[] ) const;
 
-    /** The redistributor can also be used to exchange rows of distributed sparse matrices instead
-     *  of distributed vector elements. This method will build the corresponding exchange schedule.
-     */
-
-    void buildRowPlans( const hmemo::HArray<IndexType>& targetSizes, const hmemo::HArray<IndexType>& sourceSizes ) const;
-
-    IndexType getVHaloSourceSize() const
-    {
-        return mProvidesPlan->totalQuantity();
-    }
-    IndexType getVHaloTargetSize() const
-    {
-        return mRequiredPlan->totalQuantity();
-    }
-
-    template<typename ValueType>
-    void exchangeVHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const;
-
     const hmemo::HArray<IndexType>& getKeepSourceIndexes() const
     {
         return mKeepSourceIndexes;
@@ -210,11 +192,11 @@ public:
     }
     ;
 
-    /** Reverse the Redistributor.
+    /** Reverse the RedistributePlan.
      *
-     * Has the same effect as redistributing with Redistributor( source, target ), except
+     * Has the same effect as redistributing with RedistributePlan( source, target ), except
      * that the reverse operation can be performed significantly cheaper than constructing
-     * a new Redistributor in this way.
+     * a new RedistributePlan in this way.
      */
     void reverse();
 
@@ -248,18 +230,15 @@ private:
     CommunicationPlan mExchangeSendPlan;
     CommunicationPlan mExchangeReceivePlan;
 
-    mutable std::unique_ptr<CommunicationPlan> mProvidesPlan;
-    mutable std::unique_ptr<CommunicationPlan> mRequiredPlan;
-
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Redistributor::redistribute( hmemo::HArray<ValueType>& targetArray, const hmemo::HArray<ValueType>& sourceArray ) const
+void RedistributePlan::redistribute( hmemo::HArray<ValueType>& targetArray, const hmemo::HArray<ValueType>& sourceArray ) const
 {
-    SCAI_REGION( "Redistributor.redistribute" )
+    SCAI_REGION( "RedistributePlan.redistribute" )
     {
         // make sure that target array has sufficient memory
         hmemo::WriteOnlyAccess<ValueType> target( targetArray, getTargetLocalSize() );
@@ -280,12 +259,12 @@ void Redistributor::redistribute( hmemo::HArray<ValueType>& targetArray, const h
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Redistributor::redistributeN(
+void RedistributePlan::redistributeN(
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<ValueType>& sourceArray,
     IndexType n ) const
 {
-    SCAI_REGION( "Redistributor.redistributeN" )
+    SCAI_REGION( "RedistributePlan.redistributeN" )
     hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
     {
         // make sure that target array has sufficient memory
@@ -306,28 +285,38 @@ void Redistributor::redistributeN(
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Redistributor::redistributeV(
+void RedistributePlan::redistributeV(
     hmemo::HArray<ValueType>& targetArray,
     const hmemo::HArray<IndexType>& targetOffsets,
     const hmemo::HArray<ValueType>& sourceArray,
     const hmemo::HArray<IndexType>& sourceOffsets ) const
 {
-    SCAI_REGION( "Redistributor.redistributeV" )
-    // allocate memory for source (provides) and target (required) halo
-    hmemo::HArray<ValueType> sourceHalo( getVHaloSourceSize() );
-    hmemo::HArray<ValueType> targetHalo( getVHaloTargetSize() );
-    utilskernel::TransferUtils::gatherV( sourceHalo, sourceArray, sourceOffsets, getExchangeSourceIndexes() );
-    utilskernel::TransferUtils::copyV( targetArray, targetOffsets, mKeepTargetIndexes, sourceArray, sourceOffsets, mKeepSourceIndexes );
-    exchangeVHalo( targetHalo, sourceHalo );
+    SCAI_REGION( "RedistributePlan.redistributeV" )
+
+    const Communicator& comm = mSourceDistribution->getCommunicator();
+
+    auto sourcePlanV = mExchangeSendPlan.constructV( sourceOffsets );
+    auto targetPlanV = mExchangeReceivePlan.constructV( targetOffsets );
+
+    hmemo::HArray<ValueType> sourceHalo( sourcePlanV.totalQuantity() );
+    hmemo::HArray<ValueType> targetHalo( targetPlanV.totalQuantity() );
+
+    utilskernel::TransferUtils::gatherV( sourceHalo, sourceArray, sourceOffsets, mExchangeSourceIndexes );
+
+    utilskernel::TransferUtils::copyV( targetArray, targetOffsets, mKeepTargetIndexes,
+                                       sourceArray, sourceOffsets, mKeepSourceIndexes );
+
+    comm.exchangeByPlan( targetHalo, targetPlanV, sourceHalo, sourcePlanV );
+
     utilskernel::TransferUtils::scatterV( targetArray, targetOffsets, mExchangeTargetIndexes, targetHalo );
 }
 
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Redistributor::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const
+void RedistributePlan::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const
 {
-    SCAI_REGION( "Redistributor.exchangeHalo" )
+    SCAI_REGION( "RedistributePlan.exchangeHalo" )
     const Communicator& comm = mSourceDistribution->getCommunicator();
     // use asynchronous communication to avoid deadlocks
     std::unique_ptr<tasking::SyncToken> token (
@@ -339,12 +328,12 @@ void Redistributor::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hm
 /* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Redistributor::exchangeHaloN(
+void RedistributePlan::exchangeHaloN(
     hmemo::HArray<ValueType>& targetHalo,
     const hmemo::HArray<ValueType>& sourceHalo,
     const IndexType n ) const
 {
-    SCAI_REGION( "Redistributor.exchangeHaloN" )
+    SCAI_REGION( "RedistributePlan.exchangeHaloN" )
     const Communicator& comm = mSourceDistribution->getCommunicator();
     // Communication plans are built by multiplication with n
     CommunicationPlan requiredN( mExchangeReceivePlan );
@@ -356,17 +345,6 @@ void Redistributor::exchangeHaloN(
     // use asynchronous communication to avoid deadlocks
     comm.exchangeByPlan( targetHalo, requiredN, sourceHalo, providesN );
     // synchronization is done implicitly at the end of this scope
-}
-
-/* ------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void Redistributor::exchangeVHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const
-{
-    SCAI_REGION( "Redistributor.exchangeVHalo" )
-    const Communicator& comm = mSourceDistribution->getCommunicator();
-    SCAI_ASSERT_ERROR( mRequiredPlan.get(), "There was no previous call of buildVPlan" )
-    delete comm.exchangeByPlanAsync( targetHalo, *mRequiredPlan, sourceHalo, *mProvidesPlan );
 }
 
 } /* end namespace dmemo */

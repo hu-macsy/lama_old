@@ -47,7 +47,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/tracing.hpp>
@@ -1637,7 +1637,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void SparseVector<ValueType>::redistribute( const Redistributor& redistributor )
+void SparseVector<ValueType>::redistribute( const RedistributePlan& redistributor )
 {
     // use a temporary dense vector for redistribution
 

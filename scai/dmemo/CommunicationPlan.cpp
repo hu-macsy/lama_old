@@ -146,6 +146,35 @@ void CommunicationPlan::multiplyRagged( const IndexType quantities[] )
 
 /* ------------------------------------------------------------------------- */
 
+void CommunicationPlan::multiplyOffsets( const IndexType offsets[] )
+{
+    SCAI_LOG_INFO( logger, "extend plan with individual multiplicators: " << *this )
+
+    IndexType newOffset = 0;    // new running sum 
+    IndexType oldOffset = 0;    // old running sum 
+
+    for ( size_t i = 0; i < mEntries.size(); i++ )
+    {
+        Entry& entry = mEntries[i];
+
+        SCAI_ASSERT_EQ_DEBUG( entry.offset, oldOffset, "serious mismatch, illegal communication plan" )
+
+        IndexType newQuantity = offsets[entry.offset + entry.quantity] - offsets[entry.offset];
+
+        oldOffset += entry.quantity;
+
+        entry.quantity = newQuantity;
+        entry.offset = newOffset;
+        newOffset += newQuantity;
+    }
+
+    mQuantity = newOffset;
+
+    SCAI_LOG_INFO( logger, "extended quantity plan: " << *this )
+}
+
+/* ------------------------------------------------------------------------- */
+
 CommunicationPlan::~CommunicationPlan()
 {
     SCAI_LOG_DEBUG( logger, "~CommunicationPlan" )
@@ -296,6 +325,22 @@ CommunicationPlan CommunicationPlan::constructRagged( const hmemo::HArray<IndexT
     CommunicationPlan planV( *this );
     planV.multiplyRagged( hmemo::hostReadAccess( sizes ).get() );
     return planV;
+}
+
+CommunicationPlan CommunicationPlan::constructV( const hmemo::HArray<IndexType>& offsets ) const
+{
+    SCAI_ASSERT_EQ_ERROR( totalQuantity() + 1, offsets.size(), "serious mismatch" )
+
+    CommunicationPlan planV( *this );
+    planV.multiplyOffsets( hmemo::hostReadAccess( offsets ).get() );
+    return planV;
+}
+
+CommunicationPlan CommunicationPlan::constructN( const IndexType N ) const
+{
+    CommunicationPlan planN( *this );
+    planN.multiplyConst( N );
+    return planN;
 }
 
 } /* end namespace dmemo */

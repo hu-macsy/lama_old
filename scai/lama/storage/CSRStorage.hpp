@@ -38,10 +38,14 @@
 
 // scai libraries
 #include <scai/hmemo/HArray.hpp>
-#include <scai/dmemo/Redistributor.hpp>
 
 namespace scai
 {
+
+namespace dmemo
+{
+    class RedistributePlan;
+}
 
 namespace lama
 {
@@ -514,7 +518,7 @@ public:
 
     /** Redistribution of CSR avoids unnecessary conversions. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor );
 
     /** Override splitHalo with version that avoids unnecessary conversions. */
 

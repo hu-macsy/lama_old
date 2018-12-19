@@ -44,7 +44,7 @@ namespace dmemo
 class Communicator;
 class HaloExchangePlan;
 class Distribution;
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama
@@ -128,7 +128,7 @@ public:
         const hmemo::HArray<IndexType>& sourceIA,
         const hmemo::HArray<IndexType>& sourceJA,
         const hmemo::HArray<ValueType>& sourceValues,
-        const dmemo::Redistributor& redistributor );
+        const dmemo::RedistributePlan& redistributor );
 
     /** Exchange rows by halo.
      *

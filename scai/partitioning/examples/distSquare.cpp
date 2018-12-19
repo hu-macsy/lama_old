@@ -106,13 +106,13 @@ int main ( int argc, char* argv[] )
 
     FileIO::write( newLocalOwners, filename );
 
-    // Now build a Redistributor that contains permutation and communicaton pattern
+    // Now build a RedistributePlan that contains permutation and communicaton pattern
 
     double time = common::Walltime::get();
 
-    SCAI_REGION_START( "user.buildRedistributor" )
-    dmemo::Redistributor redist( newLocalOwners, dist );
-    SCAI_REGION_END( "user.buildRedistributor" )
+    SCAI_REGION_START( "user.buildRedistributePlan" )
+    dmemo::RedistributePlan redist( newLocalOwners, dist );
+    SCAI_REGION_END( "user.buildRedistributePlan" )
 
     time = common::Walltime::get() - time;
 

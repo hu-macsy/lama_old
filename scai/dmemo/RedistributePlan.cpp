@@ -1,5 +1,5 @@
 /**
- * @file Redistributor.cpp
+ * @file RedistributePlan.cpp
  *
  * @license
  * Copyright (c) 2009-2018
@@ -22,13 +22,13 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Implementation of methods for Redistributor class.
+ * @brief Implementation of methods for RedistributePlan class.
  * @author Thomas Brandes, Andreas Longva
  * @date 08.10.2011
  */
 
 // hpp
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 // local library
@@ -57,7 +57,7 @@ using std::unique_ptr;
 namespace dmemo
 {
 
-SCAI_LOG_DEF_LOGGER( Redistributor::logger, "Redistributor" )
+SCAI_LOG_DEF_LOGGER( RedistributePlan::logger, "RedistributePlan" )
 
 static HArray<IndexType> ownedGlobalIndexesForDist( const Distribution& dist )
 {
@@ -128,7 +128,7 @@ static HArray<IndexType> local2global( const HArray<IndexType> & localIndexes, c
     return globalIndexes;
 }
 
-Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution ) : 
+RedistributePlan::RedistributePlan( DistributionPtr targetDistribution, DistributionPtr sourceDistribution ) : 
 
     mSourceDistribution( sourceDistribution ), 
     mTargetDistribution( targetDistribution )
@@ -152,7 +152,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
     }
     else
     {
-        // Building the necessary data structures for a Redistributor usually relies
+        // Building the necessary data structures for a RedistributePlan usually relies
         // on determining where to send the data. For some distributions, computing owners is cheap,
         // whereas for others (such as general distributions), this is an expensive process.
         // In the case that computing owners directly is expensive, we can recover them in
@@ -168,12 +168,12 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
         const auto rank = comm->getRank();
         const auto intermediateDist = std::make_shared<BlockDistribution>( globalSize, comm );
 
-        SCAI_LOG_INFO( logger, "build Redistributor via intermediate dist = " << *intermediateDist )
+        SCAI_LOG_INFO( logger, "build RedistributePlan via intermediate dist = " << *intermediateDist )
 
-        Redistributor targetToIntermediate( intermediateDist, targetDistribution );
+        RedistributePlan targetToIntermediate( intermediateDist, targetDistribution );
 
         // Note: source to intermediate first, then reverse
-        Redistributor intermediateToSource( intermediateDist, sourceDistribution );
+        RedistributePlan intermediateToSource( intermediateDist, sourceDistribution );
         intermediateToSource.reverse();
 
         // In order to find out what the owners in target of the source global indexes are,
@@ -203,7 +203,7 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
 
 
 
-Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution )
+RedistributePlan::RedistributePlan( const scai::hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution )
     :   mSourceDistribution( sourceDistribution )
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" );
@@ -218,7 +218,7 @@ Redistributor::Redistributor( const scai::hmemo::HArray< PartitionId >& newOwner
 }
 
 // Note: returns global target indexes
-HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<PartitionId> & newOwnersOfLocalElements, const Distribution& sourceDist )
+HArray<IndexType> RedistributePlan::initializeFromNewOwners( const hmemo::HArray<PartitionId> & newOwnersOfLocalElements, const Distribution& sourceDist )
 {
     const auto sourceNumLocal = sourceDist.getLocalSize();
 
@@ -245,7 +245,7 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
     mExchangeSendPlan = CommunicationPlan( hostReadAccess( sizes ) );
     mExchangeReceivePlan = comm.transpose( mExchangeSendPlan );
 
-    SCAI_LOG_INFO( logger, "Redistributor with new owners, send plan = " << mExchangeSendPlan )
+    SCAI_LOG_INFO( logger, "RedistributePlan with new owners, send plan = " << mExchangeSendPlan )
 
     HArray<IndexType> sortedGlobalProvidedIndexes;
     HArrayUtils::gather( sortedGlobalProvidedIndexes, globalProvidedIndexes, perm, common::BinaryOp::COPY );
@@ -272,9 +272,9 @@ HArray<IndexType> Redistributor::initializeFromNewOwners( const hmemo::HArray<Pa
 
 /* -------------------------------------------------------------------------- */
 
-void Redistributor::writeAt( std::ostream& stream ) const
+void RedistributePlan::writeAt( std::ostream& stream ) const
 {
-    stream << "Redistributor( ";
+    stream << "RedistributePlan( ";
     stream << *mSourceDistribution << "->" << *mTargetDistribution;
     stream << ", " << getSourceLocalSize() << "->" << getTargetLocalSize();
     stream << ", local:" << getNumLocalValues();
@@ -285,102 +285,24 @@ void Redistributor::writeAt( std::ostream& stream ) const
 
 /* -------------------------------------------------------------------------- */
 
-DistributionPtr Redistributor::getSourceDistributionPtr() const
+DistributionPtr RedistributePlan::getSourceDistributionPtr() const
 {
     return mSourceDistribution;
 }
 
 /* -------------------------------------------------------------------------- */
 
-DistributionPtr Redistributor::getTargetDistributionPtr() const
+DistributionPtr RedistributePlan::getTargetDistributionPtr() const
 {
     return mTargetDistribution;
 }
 
-void Redistributor::reverse()
+void RedistributePlan::reverse()
 {
     std::swap( mExchangeReceivePlan, mExchangeSendPlan );
     std::swap( mSourceDistribution, mTargetDistribution );
     std::swap( mKeepSourceIndexes, mKeepTargetIndexes );
     std::swap( mExchangeSourceIndexes, mExchangeTargetIndexes );
-    std::swap( mRequiredPlan, mProvidesPlan );
-}
-
-/* -------------------------------------------------------------------------- */
-
-void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexType haloTargetSizes[] ) const
-{
-    const IndexType numProvides = mExchangeSendPlan.totalQuantity();
-    const IndexType numRequired = mExchangeReceivePlan.totalQuantity();
-    // calculate number of provided and required values by summing up the corresponding quantities
-    unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
-    unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
-
-    // For building the new schedule we need the sizes, can be calculated by the offsets
-
-    for ( IndexType i = 0; i < numProvides; i++ )
-    {
-        IndexType size = haloSourceSizes[i];
-        provideQuantities[i] = size;
-        SCAI_LOG_DEBUG( logger, "provides[" << i << "] = " << size )
-    }
-
-    for ( IndexType i = 0; i < numRequired; i++ )
-    {
-        IndexType size = haloTargetSizes[i];
-        requiredQuantities[i] = size;
-        SCAI_LOG_DEBUG( logger, "required[" << i << "] = " << size )
-    }
-
-    mProvidesPlan.reset( new CommunicationPlan( mExchangeSendPlan ) );
-    mProvidesPlan->multiplyRagged( provideQuantities.get() );
-    mRequiredPlan.reset( new CommunicationPlan( mExchangeReceivePlan ) );
-    mRequiredPlan->multiplyRagged( requiredQuantities.get() );
-    SCAI_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
-    SCAI_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
-}
-
-/* -------------------------------------------------------------------------- */
-
-void Redistributor::buildRowPlans(
-    const HArray<IndexType>& targetSizes,
-    const HArray<IndexType>& sourceSizes ) const
-{
-    const IndexType numProvides = mExchangeSendPlan.totalQuantity();
-    const IndexType numRequired = mExchangeReceivePlan.totalQuantity();
-    // calculate number of provided and required values by summing up the corresponding quantities
-    unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
-    unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
-    ContextPtr contextPtr = Context::getHostPtr();
-    // For building the new schedule we need the sizes, can be calculated by the offsets
-    {
-        ReadAccess<IndexType> indexes( mExchangeSourceIndexes, contextPtr );
-        ReadAccess<IndexType> sizes( sourceSizes, contextPtr );
-
-        for ( IndexType i = 0; i < numProvides; i++ )
-        {
-            IndexType size = sizes[indexes[i]];
-            provideQuantities[i] = size;
-            SCAI_LOG_DEBUG( logger, "provides[" << i << "] = " << size )
-        }
-    }
-    {
-        ReadAccess<IndexType> indexes( mExchangeTargetIndexes, contextPtr );
-        ReadAccess<IndexType> sizes( targetSizes, contextPtr );
-
-        for ( IndexType i = 0; i < numRequired; i++ )
-        {
-            IndexType size = sizes[indexes[i]];
-            requiredQuantities[i] = size;
-            SCAI_LOG_DEBUG( logger, "required[" << i << "] = " << size )
-        }
-    }
-    mProvidesPlan.reset( new CommunicationPlan( mExchangeSendPlan ) );
-    mProvidesPlan->multiplyRagged( provideQuantities.get() );
-    mRequiredPlan.reset( new CommunicationPlan( mExchangeReceivePlan ) );
-    mRequiredPlan->multiplyRagged( requiredQuantities.get() );
-    SCAI_LOG_INFO( logger, "providesPlan = " << *mProvidesPlan )
-    SCAI_LOG_INFO( logger, "requiredPlan = " << *mRequiredPlan )
 }
 
 } /* end namespace dmemo */

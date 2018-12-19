@@ -578,7 +578,7 @@ public:
 
     /* Implementation of pure method of _Matrix::redistribute */
 
-    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistribution );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor, dmemo::DistributionPtr colDistribution );
 
     /* Implementation of pure method _Matrix::resize */
 

@@ -9,11 +9,11 @@ keeps these non-local values from other processor where each entry in the
 halo stands for a corresponding entry from other processors.
 
 .. figure:: _images/halo.* 
-    :width: 500px
+    :width: 800px
     :align: center
-    :alt: Halo
+    :alt: HaloUpdate
 
-   Halo as array of elements for non-local entries required from other processors.
+    Halo as array of elements for non-local entries required from other processors.
 
 The halo plan is a data structure that specifies the structure of the halo as well
 as how to exchange the corresponding values between the processors.
@@ -41,7 +41,7 @@ array, here 40 elements block distributed onto 4 processors.
     :align: center
     :alt: HaloPlan
 
-   Halo exchange plan with structure of the halo and communication plans for data exchange.
+    Halo exchange plan with structure of the halo and communication plans for data exchange.
 
 Such a halo exchange plan might be used to update the halo with the actual values
 from the local parts of other processors, i.e. each halo entry contains the actual value

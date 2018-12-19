@@ -43,7 +43,7 @@
 
 // scai internal libraries
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/sparsekernel/CSRUtils.hpp>
 
@@ -641,7 +641,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::redistribute( const Redistributor& redistributor, DistributionPtr colDistributionPtr )
+void SparseMatrix<ValueType>::redistribute( const RedistributePlan& redistributor, DistributionPtr colDistributionPtr )
 {
     SCAI_ASSERT_EQ_ERROR( getRowDistribution(), *redistributor.getSourceDistributionPtr(),
                           "redistributor does not match to actual distribution of this sparse matrix" );
@@ -739,9 +739,9 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
     else
     {
         SCAI_LOG_INFO( logger, "assign is redistribute of distributed matrix" )
-        Redistributor redistributor( getRowDistributionPtr(), otherDist );
+        RedistributePlan redistributor( getRowDistributionPtr(), otherDist );
         SCAI_LOG_INFO( logger,
-                       "Redistributor available: source halo = " << redistributor.getExchangeSourceSize()
+                       "RedistributePlan available: source halo = " << redistributor.getExchangeSourceSize()
                         << " target halo = " << redistributor.getExchangeTargetSize() )
         mLocalData->redistribute( otherLocalData, redistributor );
         SCAI_LOG_INFO( logger, "redistributed, now assign locally" )

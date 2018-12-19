@@ -36,7 +36,7 @@
 #include <scai/lama/storage/StorageMethods.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/dmemo/HaloExchangePlan.hpp>
 
 #include <scai/lama/io/FileIO.hpp>
@@ -877,7 +877,7 @@ void MatrixStorage<ValueType>::exchangeHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const Redistributor& redistributor )
+void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const RedistributePlan& redistributor )
 
 {
     if ( other.getFormat() == Format::CSR && other.getValueType() == getValueType() )
@@ -944,7 +944,7 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const Redistributor& redistributor )
+void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const RedistributePlan& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
     const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();

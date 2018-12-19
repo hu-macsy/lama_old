@@ -30,7 +30,7 @@
 #include <scai/partitioning/Partitioning.hpp>
 
 #include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -189,7 +189,7 @@ dmemo::DistributionPtr Partitioning::partitionIt(
 
     // build a new distribution by the new owners
 
-    dmemo::Redistributor redist( newLocalOwners, matrix.getRowDistributionPtr() );
+    dmemo::RedistributePlan redist( newLocalOwners, matrix.getRowDistributionPtr() );
 
     return redist.getTargetDistributionPtr();
 }

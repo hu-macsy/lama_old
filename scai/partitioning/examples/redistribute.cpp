@@ -29,7 +29,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
 using namespace scai;
@@ -71,7 +71,7 @@ int main( int, char** )
         }
     }
 
-    dmemo::Redistributor redist( newLocalOwners, sourceDistribution );
+    dmemo::RedistributePlan redist( newLocalOwners, sourceDistribution );
 
     v.redistribute( redist );
 

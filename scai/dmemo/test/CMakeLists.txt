@@ -27,13 +27,6 @@
  # @date 04.07.2017
 ###
 
-
-if ( USE_GRAPHPARTIONING AND ( METIS_FOUND OR PARMETIS_FOUND ) )
-    set ( MetisDistributionTest MetisDistributionTest )
-else  ()
-    set ( MetisDistributionTest )
-endif ()
-
 ### set this dir as lama source dir ###
 
 scai_project ( 
@@ -56,9 +49,8 @@ scai_project (
         GeneralDistributionTest
         GridDistributionTest
         SingleDistributionTest
-        ${MetisDistributionTest}
 
-        RedistributorTest
+        RedistributePlanTest
 
         dmemoTest
 

@@ -33,7 +33,7 @@
 // internal scai libraries
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/HaloExchangePlan.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
@@ -176,37 +176,25 @@ void StorageMethods<ValueType>::redistributeCSR(
     const HArray<IndexType>& sourceIA,
     const HArray<IndexType>& sourceJA,
     const HArray<ValueType>& sourceValues,
-    const Redistributor& redistributor )
+    const RedistributePlan& plan )
 {
-    SCAI_REGION( "Storage.redistributeCSR" )
-    const IndexType sourceNumRows = redistributor.getSourceLocalSize();
-    const IndexType targetNumRows = redistributor.getTargetLocalSize();
-    SCAI_ASSERT_EQUAL_ERROR( sourceNumRows, sourceIA.size() - 1 )
-    SCAI_LOG_INFO( logger, "redistributeCSR, #source rows = " << sourceNumRows << ", #target rows = " << targetNumRows )
-    // Redistribution of row sizes, requires size array
+    ContextPtr hostCtx = Context::getHostPtr();
+
+    // Step 1: redistributge sizes (NOT offsets) via redistribution plan
+
     HArray<IndexType> sourceSizes;
-    {
-        WriteOnlyAccess<IndexType> wSourceSizes( sourceSizes, sourceNumRows );
-        ReadAccess<IndexType> rSourceIA( sourceIA );
-        OpenMPCSRUtils::offsets2sizes( wSourceSizes.get(), rSourceIA.get(), sourceNumRows );
-        WriteOnlyAccess<IndexType> wTargetIA( targetIA, targetNumRows + 1 );
-    }
-    redistributor.redistribute( targetIA, sourceSizes );
-    // redistribution does not build ragged row plan by default
-    redistributor.buildRowPlans( targetIA, sourceSizes );
-    IndexType targetNumValues;
-    {
-        WriteAccess<IndexType> wTargetSizes( targetIA );
-        wTargetSizes.resize( targetNumRows + 1 );
-        targetNumValues = OpenMPCSRUtils::sizes2offsets( wTargetSizes.get(), targetNumRows );
-        SCAI_LOG_INFO( logger,
-                       "redistributeCSR: #source values = " << sourceJA.size() << ", #target values = " << targetNumValues )
-        // allocate target array with the correct size
-        WriteOnlyAccess<IndexType> wTargetJA( targetJA, targetNumValues );
-        WriteOnlyAccess<ValueType> wTargetValues( targetValues, targetNumValues );
-    }
-    redistributor.redistributeV( targetJA, targetIA, sourceJA, sourceIA );
-    redistributor.redistributeV( targetValues, targetIA, sourceValues, sourceIA );
+    CSRUtils::offsets2sizes( sourceSizes, sourceIA, hostCtx );
+    HArray<IndexType> targetSizes;
+    plan.redistribute( targetSizes, sourceSizes );
+
+    // Step 2: build new offset array for target, also needed for exchange of ja and values
+
+    CSRUtils::sizes2offsets( targetIA, targetSizes, hostCtx );
+    
+    // redistribute ja, and values using variant sizes version
+
+    plan.redistributeV( targetJA, targetIA, sourceJA, sourceIA );
+    plan.redistributeV( targetValues, targetIA, sourceValues, sourceIA );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -235,16 +223,16 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
 
     haloPlan.updateHaloDirect( targetSizes, sourceSizes, comm );
 
+    CSRUtils::sizes2offsets( targetIA, targetSizes, loc );
+
+    // now update JA and Values with ragged update
+
     SCAI_LOG_INFO( logger, "exchanged sizes of rows, build vPlans" )
 
     // now we build the variable communication plan for JA and Values
 
     auto provideV = haloPlan.getLocalCommunicationPlan().constructRagged( sourceSizes );
     auto requiredV = haloPlan.getHaloCommunicationPlan().constructRagged( targetSizes );
-
-    // row sizes of target will now become offsets
-
-    CSRUtils::sizes2offsets( targetIA, targetSizes, loc );
 
     const HArray<IndexType>& localIndexes = haloPlan.getLocalIndexes();
 
@@ -412,13 +400,35 @@ void _StorageMethods::buildHaloExchangePlan(
     HArray<IndexType>& haloJA,
     const Distribution& colDist )
 {
+    SCAI_REGION( "Storage.buildHaloExchangePlan" )
+
     const IndexType haloNumValues = haloJA.size();
 
     SCAI_LOG_INFO( logger, "build halo for " << haloNumValues << " non-local indexes" )
 
-    // double elements in haloJA will get same halo index
+    bool elimDoubleHere = true;
 
-    haloPlan = haloExchangePlanByRequiredIndexes( haloJA, colDist );
+    if ( elimDoubleHere )
+    {
+        // eliminate double elements in haloJA is more efficient here:
+        //  - sort + unique faster than using a map 
+
+        HArray<IndexType> requiredIndexes( haloJA );
+
+        {
+            SCAI_REGION( "Storage.elimDoubleRequired" )
+            auto wIndexes = hostWriteAccess( requiredIndexes );
+            std::sort( wIndexes.begin(), wIndexes.end() );
+            auto it = std::unique( wIndexes.begin(), wIndexes.end() );
+            wIndexes.resize( it - wIndexes.begin() );
+        }
+
+        haloPlan = haloExchangePlanByRequiredIndexes( requiredIndexes, colDist, false );
+    }
+    else
+    {
+        haloPlan = haloExchangePlanByRequiredIndexes( haloJA, colDist, true );
+    }
 
     SCAI_LOG_DEBUG( logger, "Halo plan = " << haloPlan )
 

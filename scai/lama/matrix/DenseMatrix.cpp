@@ -38,7 +38,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -1100,7 +1100,7 @@ void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::redistribute( const Redistributor& redistributor, DistributionPtr colDistributionPtr )
+void DenseMatrix<ValueType>::redistribute( const RedistributePlan& redistributor, DistributionPtr colDistributionPtr )
 {
     SCAI_ASSERT_EQ_ERROR( getRowDistribution(), *redistributor.getSourceDistributionPtr(),
                           "redistributor does not match to actual distribution of this vector" );
@@ -1245,11 +1245,11 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
         return;
     }
 
-// So we have to reorganize data, build a Redistributor
+// So we have to reorganize data, build a RedistributePlan
     DenseStorage<ValueType>& oldLocalData = getLocalStorage();
     SCAI_ASSERT_EQUAL_DEBUG( nCols, oldLocalData.getNumColumns() )
     DenseStorage<ValueType> newLocalData( rowDistribution->getLocalSize(), nCols );
-    Redistributor redistributor( rowDistribution, getRowDistributionPtr() ); // target, source distributions
+    RedistributePlan redistributor( rowDistribution, getRowDistributionPtr() ); // target, source distributions
     redistributor.redistributeN( newLocalData.getData(), oldLocalData.getValues(), nCols );
 // COMMON_THROWEXCEPTION( "redistribution of dense rows not yet available" )
     oldLocalData.swap( newLocalData );

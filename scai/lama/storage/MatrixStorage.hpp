@@ -64,7 +64,7 @@ namespace dmemo
 {
 class Distribution;
 class HaloExchangePlan;
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama
@@ -418,11 +418,11 @@ public:
      *
      */
 
-    virtual void redistribute( const _MatrixStorage& other, const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const _MatrixStorage& other, const dmemo::RedistributePlan& redistributor );
 
     /** Special case where other storage is CSR of same type avoids temporary CSR conversion. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor );
 
     /** Build a halo matrix with all rows of required indexes */
 

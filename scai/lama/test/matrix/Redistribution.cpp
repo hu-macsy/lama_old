@@ -31,7 +31,7 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/dmemo/HaloExchangePlan.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
         // Localize the matrix data according to the source distribution
         matrixStorage.localize( matrixStorage, *rowDist1 );
         SCAI_LOG_INFO( logger, matrixStorage << ": is local storage" );
-        Redistributor redistributor( rowDist2, rowDist1 );
+        RedistributePlan redistributor( rowDist2, rowDist1 );
         matrixStorage.redistribute( matrixStorage, redistributor );
         SCAI_LOG_INFO( logger, matrixStorage << ": is redistributed storage" );
         matrixStorage.replicate( matrixStorage, *rowDist2 );

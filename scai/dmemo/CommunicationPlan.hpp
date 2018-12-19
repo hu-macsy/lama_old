@@ -159,6 +159,11 @@ public:
      */
     void multiplyRagged( const IndexType quantities[] );
 
+    /**
+     *  Update this communication plan with variant sizes for each entry, using the offset array.
+     */
+    void multiplyOffsets( const IndexType offsets[] );
+
     /** Define a communication plan by sizes for each partition
      *
      *  @param quantities array of non-negative values, size is number of partitions
@@ -236,6 +241,10 @@ public:
     void extractPlan( const CommunicationPlan& oldPlan, const PartitionId p );
 
     CommunicationPlan constructRagged( const hmemo::HArray<IndexType>& sizes ) const;
+
+    CommunicationPlan constructV( const hmemo::HArray<IndexType>& offsets ) const;
+
+    CommunicationPlan constructN( const IndexType N ) const;
 
     /** Build a communication plan by sizes for each partition
      *

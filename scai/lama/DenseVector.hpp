@@ -50,7 +50,7 @@ namespace scai
 
 namespace dmemo
 {
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama
@@ -523,7 +523,7 @@ public:
 
     /** Implementation of pure method _Vector::redistribute */
 
-    virtual void redistribute( const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor );
 
     /** Implementation of pure method _Vector::resize */
 

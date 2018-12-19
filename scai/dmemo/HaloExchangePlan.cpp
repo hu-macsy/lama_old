@@ -32,6 +32,9 @@
 
 #include <scai/hmemo/HostReadAccess.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/utilskernel/TransferUtils.hpp>
+
+#include <scai/tracing.hpp>
 
 namespace scai
 {
@@ -156,6 +159,8 @@ void HaloExchangePlan::halo2GlobalV( HArray<IndexType>& globalIndexes, const HAr
 
 void HaloExchangePlan::global2HaloV( HArray<IndexType>& haloIndexes, const HArray<IndexType>& globalIndexes ) const
 {
+    SCAI_REGION( "HaloExchangePlan.global2HaloV" )
+
     const IndexType N = globalIndexes.size();
 
     auto rGlobal  = hostReadAccess( globalIndexes );
@@ -242,6 +247,8 @@ HaloExchangePlan HaloExchangePlan::constructByRequiredIndexes(
     const Distribution& distribution,
     const bool elimDouble )
 {
+    SCAI_REGION( "HaloExchangePlan.construct" )
+
     const Communicator& communicator = distribution.getCommunicator();
     const PartitionId NP = communicator.getSize();
 

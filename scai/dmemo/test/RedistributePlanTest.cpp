@@ -1,5 +1,5 @@
 /**
- * @file RedistributorTest.cpp
+ * @file RedistributePlanTest.cpp
  *
  * @license
  * Copyright (c) 2009-2018
@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Tests for the class Redistributor.
+ * @brief Tests for the class RedistributePlan.
  * @author Thomas Brandes
  * @date 14.02.2012
  */
@@ -34,7 +34,7 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 
@@ -53,23 +53,23 @@ using namespace common;
 
 /* --------------------------------------------------------------------- */
 
-struct RedistributorTestConfig
+struct RedistributePlanTestConfig
 {
-    RedistributorTestConfig()
+    RedistributePlanTestConfig()
     {
         comm = Communicator::getCommunicatorPtr();
     }
 
-    ~RedistributorTestConfig()
+    ~RedistributePlanTestConfig()
     {
     }
 
     CommunicatorPtr comm;
 };
 
-BOOST_FIXTURE_TEST_SUITE( RedistributorTest, RedistributorTestConfig )
+BOOST_FIXTURE_TEST_SUITE( RedistributePlanTest, RedistributePlanTestConfig )
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributorTest" );
+SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributePlanTest" );
 
 /* --------------------------------------------------------------------- */
 
@@ -92,8 +92,8 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
         }
     }
     HArray<ValueType> myData2( cyclicLocalSize );
-    Redistributor r1( distCyclic, distBlock );
-    Redistributor r2( distBlock, distCyclic );
+    RedistributePlan r1( distCyclic, distBlock );
+    RedistributePlan r2( distBlock, distCyclic );
     SCAI_LOG_DEBUG( logger, "redistribute 1" );
     r1.redistribute( myData2, myData1 );
     SCAI_LOG_DEBUG( logger, "redistribute 2" );
@@ -144,8 +144,8 @@ BOOST_AUTO_TEST_CASE( redistributorTest )
     auto sourceDist = std::make_shared<GeneralDistribution>( N, myIndexes1, true, comm );
     auto targetDist = std::make_shared<GeneralDistribution>( N, myIndexes2, true, comm );
 
-    Redistributor r1( targetDist, sourceDist );
-    Redistributor r2( newOwners, sourceDist );
+    RedistributePlan r1( targetDist, sourceDist );
+    RedistributePlan r2( newOwners, sourceDist );
 
     // both redistributions should be the same, we prove by redistribution of some data
 
@@ -172,61 +172,13 @@ BOOST_AUTO_TEST_CASE( redistributorTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( buildRowPlansTest )
-{
-    typedef SCAI_TEST_TYPE ValueType;
-    IndexType size = 10;
-    IndexType chunkSize = 1;
-    shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
-    shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
-    IndexType blockLocalSize = distBlock->getLocalSize();
-    IndexType cyclicLocalSize = distCyclic->getLocalSize();
-    HArray<ValueType> myData1( blockLocalSize );
-    {
-        WriteAccess<ValueType> data ( myData1 );
-
-        for ( IndexType i = 0; i < blockLocalSize; i++ )
-        {
-            data[i] = static_cast<ValueType>( 100 * comm->getRank() + i );
-        }
-    }
-    HArray<ValueType> myData2( cyclicLocalSize );
-
-    Redistributor r1( distCyclic, distBlock );
-    Redistributor r2( distBlock, distCyclic );
-
-    // For testing buildRowPlans we set the sizes just as 1
-
-    HArray<IndexType> targetSizes( myData2.size(), 1 );  // myData2 is target of r1
-    HArray<IndexType> sourceSizes( myData1.size(), 1 );  // myData1 is target of r1
-
-    r1.buildRowPlans( targetSizes, sourceSizes );
-
-    SCAI_LOG_DEBUG( logger, "redistribute 1" );
-    r1.redistribute( myData2, myData1 );
-    SCAI_LOG_DEBUG( logger, "redistribute 2" );
-    r2.redistribute( myData1, myData2 );
-
-    {
-        ReadAccess<ValueType> data ( myData1 );
-
-        for ( IndexType i = 0; i < blockLocalSize; i++ )
-        {
-            ValueType expected = static_cast<ValueType>( 100 * comm->getRank() + i );
-            SCAI_CHECK_CLOSE( data[i], expected, 1 );
-        }
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     IndexType size = 10;
     IndexType chunkSize = 1;
     shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
     shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
-    Redistributor r( distCyclic, distBlock );
+    RedistributePlan r( distCyclic, distBlock );
     std::ostringstream out;
     out << r ;
     BOOST_CHECK( out.str().length() >  0 );
@@ -246,7 +198,7 @@ BOOST_AUTO_TEST_CASE( redistributorConstructorFromNewLocalOwnersTest )
         std::vector<IndexType> local2global;
     };
 
-    const auto checkRedistributorAgainstExpected = [] ( const Redistributor & redist, const ExpectedResult & expected )
+    const auto checkRedistributePlanAgainstExpected = [] ( const RedistributePlan & redist, const ExpectedResult & expected )
     {
         BOOST_TEST( hostReadAccess( redist.getKeepSourceIndexes() ) == expected.keepSourceIndexes, per_element() );
         BOOST_TEST( hostReadAccess( redist.getKeepTargetIndexes() ) == expected.keepTargetIndexes, per_element() );
@@ -284,8 +236,8 @@ BOOST_AUTO_TEST_CASE( redistributorConstructorFromNewLocalOwnersTest )
         expected.exchangeTargetIndexes = { };
         expected.local2global = { 0, 1, 2, 3 };
 
-        const auto redist = Redistributor( newOwnersOfLocal, sourceDist );
-        checkRedistributorAgainstExpected( redist, expected );
+        const auto redist = RedistributePlan( newOwnersOfLocal, sourceDist );
+        checkRedistributePlanAgainstExpected( redist, expected );
     }
     else if ( numPartitions == 2 )
     {
@@ -322,9 +274,9 @@ BOOST_AUTO_TEST_CASE( redistributorConstructorFromNewLocalOwnersTest )
             expected.local2global = { 0, 1, 4, 6, 7 };
         }
 
-        const auto redist = Redistributor( newOwnersOfLocal, sourceDist );
+        const auto redist = RedistributePlan( newOwnersOfLocal, sourceDist );
 
-        checkRedistributorAgainstExpected( redist, expected );
+        checkRedistributePlanAgainstExpected( redist, expected );
     }
     else if ( numPartitions == 3 )
     {
@@ -370,9 +322,9 @@ BOOST_AUTO_TEST_CASE( redistributorConstructorFromNewLocalOwnersTest )
             expected.local2global = { 0, 1, 2, 4, 5, 7, 12 };
         }
 
-        const auto redist = Redistributor( newOwnersOfLocal, sourceDist );
+        const auto redist = RedistributePlan( newOwnersOfLocal, sourceDist );
 
-        checkRedistributorAgainstExpected( redist, expected );
+        checkRedistributePlanAgainstExpected( redist, expected );
     }
     else
     {

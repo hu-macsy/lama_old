@@ -38,7 +38,7 @@
 
 #include <scai/lama/storage/StorageMethods.hpp>
 
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/dmemo/HaloExchangePlan.hpp>
 
 
@@ -449,7 +449,7 @@ void CSRStorage<ValueType>::buildRowIndexes()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor )
+void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
 

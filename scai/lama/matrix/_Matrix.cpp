@@ -38,7 +38,7 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
@@ -603,7 +603,7 @@ void _Matrix::readFromFile( const std::string& fileName, CommunicatorPtr comm )
 
 /* ---------------------------------------------------------------------------------*/
 
-void _Matrix::redistribute( const dmemo::Redistributor& redistributor )
+void _Matrix::redistribute( const dmemo::RedistributePlan& redistributor )
 {
     if ( getColDistribution().isReplicated() ) 
     {
