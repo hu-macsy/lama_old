@@ -35,7 +35,8 @@ Class                    Description
 :ref:`NoCommunicator`    Default Communicator to be used on serial machines
 :ref:`MPICommunicator`   MPI Communicator
 :ref:`Distribution`      Mapping of an index range to a number of partitions
-:ref:`CommunicationPlan` Communication schedule for exchanging non-local values
+:ref:`CommunicationPlan` Number of elements to exchange betweeen processors
+:ref:`HaloPlan`          Communication schedule for exchanging non-local values
 ======================== ================================================================================
 
 .. toctree::
@@ -46,6 +47,7 @@ Class                    Description
    MPICommunicator
    Distribution
    CommunicationPlan
+   HaloPlan
 
 *******
 Example
