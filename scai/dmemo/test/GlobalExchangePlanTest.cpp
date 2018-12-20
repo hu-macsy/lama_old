@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE( buildTest4 )
     HArray<IndexType> recvValues;
     plan.exchange( recvValues, sendValues, *comm );
 
-    HArray<IndexType> returnValues( sendValues.size(), 0 );   // will be the same as sendValues
+    HArray<IndexType> returnValues( sendValues.size(), IndexType( 0 ) );   // will be the same as sendValues
     plan.exchangeBack( returnValues, recvValues, *comm );
    
     HArray<IndexType> perm;

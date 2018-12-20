@@ -40,8 +40,8 @@ int main( int, char** )
 {
     const IndexType N = 10;
 
-    auto sourceDistribution = blockDistribution( N );
-    auto targetDistribution = cyclicDistribution( N, 3 );
+    auto sourceDistribution = dmemo::blockDistribution( N );
+    auto targetDistribution = dmemo::cyclicDistribution( N, 3 );
    
     typedef DefaultReal ValueType;
 

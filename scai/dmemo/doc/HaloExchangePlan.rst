@@ -1,7 +1,7 @@
-.. _HaloPlan:
+.. _HaloExchangePlan:
 
-HaloPlan
-========
+HaloExchangePlan
+================
 
 For distributed arrays it is often the case that other processors need
 non-local values for their computations. A halo is a data structure that
@@ -39,7 +39,7 @@ array, here 40 elements block distributed onto 4 processors.
 .. figure:: _images/halo_plan.* 
     :width: 800px
     :align: center
-    :alt: HaloPlan
+    :alt: HaloExchangePlan
 
     Halo exchange plan with structure of the halo and communication plans for data exchange.
 

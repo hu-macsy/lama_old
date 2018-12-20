@@ -31,6 +31,8 @@
 
 #include <scai/lama/matrix/OperatorMatrix.hpp>
 
+#include <scai/tracing.hpp>
+
 namespace scai
 {
 

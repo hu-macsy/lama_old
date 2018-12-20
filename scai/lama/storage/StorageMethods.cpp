@@ -189,8 +189,13 @@ void StorageMethods<ValueType>::redistributeCSR(
 
     // Step 2: build new offset array for target, also needed for exchange of ja and values
 
-    CSRUtils::sizes2offsets( targetIA, targetSizes, hostCtx );
+    const IndexType targetNumValues = CSRUtils::sizes2offsets( targetIA, targetSizes, hostCtx );
     
+    targetJA.clear();
+    targetJA.resize( targetNumValues );
+    targetValues.clear();
+    targetValues.resize( targetNumValues );
+
     // redistribute ja, and values using variant sizes version
 
     plan.redistributeV( targetJA, targetIA, sourceJA, sourceIA );
@@ -231,8 +236,8 @@ void StorageMethods<ValueType>::exchangeHaloCSR(
 
     // now we build the variable communication plan for JA and Values
 
-    auto provideV = haloPlan.getLocalCommunicationPlan().constructRagged( sourceSizes );
-    auto requiredV = haloPlan.getHaloCommunicationPlan().constructRagged( targetSizes );
+    auto provideV = haloPlan.getLocalCommunicationPlan().constructRaggedBySizes( sourceSizes );
+    auto requiredV = haloPlan.getHaloCommunicationPlan().constructRaggedBySizes( targetSizes );
 
     const HArray<IndexType>& localIndexes = haloPlan.getLocalIndexes();
 

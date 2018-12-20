@@ -5,7 +5,7 @@ Distributions
 
 A distribution object is used to map data structures like vectors or matrices to the different processors
 of a distributed system. It stands for a mapping of N elements (range 0 to N-1, also called global indexes)
- to the processors of a corresponding communicator, so that each processor has a number of local indexes for 
+to the processors of a corresponding communicator, so that each processor has a number of local indexes for 
 which it is the owner.
 
 The class *Distribution* itself is an abstract base class with many pure methods that must be implemented by
@@ -13,12 +13,14 @@ the derived classes, especially operations to get the local indexes on a process
 for a set of global indexes.
 
 Distributons are always created on the heap and managed by shared pointers. Therefore different distributed
-data structure can share the mapping and the lifetime of the distribution ends with the lifetime of the last
+data structures can share the mapping and the lifetime of the distribution ends with the lifetime of the last
 object that uses it.
 
 .. code-block:: c++
 
-   auto dist = blockDistributon( N );
+   typedef std::shared_ptr<Distribution> DistributionPtr;
+
+   DistributionPtr dist( new BlockDistribution( N, comm ) );
    DenseVector<double> v1( dist );
    DenseVector<double> v2( dist );
    DenseMatrix<double> m( dist, dist );
@@ -49,6 +51,7 @@ the shared pointer object.
 .. code-block:: c++
 
    DistributionPtr dist( new BlockDistribution( N, comm ) );
+   auto dist = std::make_shared<BlockDistribution>( N, comm );
    auto dist = blockDistributon( N );
 
 Cyclic Distribution
@@ -90,7 +93,27 @@ The following example creates with three parts of size 1, 3 and 2 rows/columns:
     General block distribution of 11 elements onto 3 processors with sizes (3, 5, 3)
 
 Beside this constructor it is also possible to create a general block distribution by the local size
-or by a weight.
+or by a weight. The following example shows how to set individual weights for the processors
+by an environment variable and to use this weight for some kind of load distribution.
+
+.. code-block:: c++
+
+    const IndexType N = 1000;
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    float weight = 0.5;
+
+    common::Settings::setRank( comm->getRank() );
+    common::Settings::getEnvironment( weight, "SCAI_WEIGHT" );
+
+    auto dist = genBlockDistributionByWeight( N, weight, comm );
+
+.. code-block:: c++
+
+    export SCAI_WEIGHT=0.3,0.5,0.7
+    mpirun -np 3 ...
+
+By these values processor 0 will have 200 values, processor 1 333 and processor 2 467 values.
 
 GeneralDistribution
 ^^^^^^^^^^^^^^^^^^^
@@ -214,8 +237,21 @@ have exactly the same values for their incarnation.
 Methods for Distributions
 -------------------------
 
-In the following the most important methods of a distribution are shortly described and explained.
+In the following some important methods of a distribution are shortly described and explained.
 For a detailed description of the virtual methods of a distribution we refer to the reference documentation.
+
+Owned Indexes
+^^^^^^^^^^^^^
+
+All distributions provides a method to get an array with all global indexes that are owned by
+the corresponding processor. This method does never required any communication and can be called
+at any time.
+
+.. code-block:: c++
+
+    DistributionPtr dist = ...;
+    HArray<IndexType> ownedIndexes;
+    dist->getOwnedIndexes( ownedIndexes );
 
 Computation of Ownership
 ^^^^^^^^^^^^^^^^^^^^^^^^

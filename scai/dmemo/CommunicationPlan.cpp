@@ -112,7 +112,7 @@ void CommunicationPlan::multiplyConst( const IndexType n )
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::multiplyRagged( const IndexType quantities[] )
+void CommunicationPlan::multiplyRaggedBySizes( const IndexType sizes[] )
 {
     SCAI_LOG_INFO( logger, "extend plan with individual multiplicators: " << *this )
 
@@ -129,7 +129,7 @@ void CommunicationPlan::multiplyRagged( const IndexType quantities[] )
 
         for ( IndexType k = 0; k < entry.quantity; k++ )
         {
-            newQuantity += quantities[entry.offset + k];
+            newQuantity += sizes[entry.offset + k];
         }
 
         oldOffset += entry.quantity;
@@ -146,7 +146,7 @@ void CommunicationPlan::multiplyRagged( const IndexType quantities[] )
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::multiplyOffsets( const IndexType offsets[] )
+void CommunicationPlan::multiplyRaggedByOffsets( const IndexType offsets[] )
 {
     SCAI_LOG_INFO( logger, "extend plan with individual multiplicators: " << *this )
 
@@ -318,21 +318,21 @@ CommunicationPlan CommunicationPlan::buildByQuantities( const IndexType quantiti
 
 /* ----------------------------------------------------------------------- */
 
-CommunicationPlan CommunicationPlan::constructRagged( const hmemo::HArray<IndexType>& sizes ) const
+CommunicationPlan CommunicationPlan::constructRaggedBySizes( const hmemo::HArray<IndexType>& sizes ) const
 {
     SCAI_ASSERT_EQ_ERROR( totalQuantity(), sizes.size(), "serious mismatch" )
 
     CommunicationPlan planV( *this );
-    planV.multiplyRagged( hmemo::hostReadAccess( sizes ).get() );
+    planV.multiplyRaggedBySizes( hmemo::hostReadAccess( sizes ).get() );
     return planV;
 }
 
-CommunicationPlan CommunicationPlan::constructV( const hmemo::HArray<IndexType>& offsets ) const
+CommunicationPlan CommunicationPlan::constructRaggedByOffsets( const hmemo::HArray<IndexType>& offsets ) const
 {
     SCAI_ASSERT_EQ_ERROR( totalQuantity() + 1, offsets.size(), "serious mismatch" )
 
     CommunicationPlan planV( *this );
-    planV.multiplyOffsets( hmemo::hostReadAccess( offsets ).get() );
+    planV.multiplyRaggedByOffsets( hmemo::hostReadAccess( offsets ).get() );
     return planV;
 }
 

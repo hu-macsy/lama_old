@@ -133,7 +133,7 @@ public:
      *  @param object must have an iterable range with for quantities
      */
     template<typename T>
-    CommunicationPlan( const T& object );
+    inline explicit CommunicationPlan( const T& object );
 
     /** Define this communication plan by iterating over an object with quantities 
      *
@@ -151,18 +151,18 @@ public:
      */
     void multiplyConst( const IndexType n );
 
-    /** Update this communication plan 
-     *
-     *  @param[in] quantities must have mQuantity entries 
-     *
-     *  ToDo: example
+    /** 
+     *  @brief Build in-place a communication plan where where each communicated element is replaced
+     *         with an array whose size is individually for each element (ragged array, i.e. array of arrays)
+     * 
+     *  @param[in] sizes specifies for each entry to be communicated the size of its array
      */
-    void multiplyRagged( const IndexType quantities[] );
+    void multiplyRaggedBySizes( const IndexType sizes[] );
 
     /**
      *  Update this communication plan with variant sizes for each entry, using the offset array.
      */
-    void multiplyOffsets( const IndexType offsets[] );
+    void multiplyRaggedByOffsets( const IndexType offsets[] );
 
     /** Define a communication plan by sizes for each partition
      *
@@ -240,9 +240,9 @@ public:
 
     void extractPlan( const CommunicationPlan& oldPlan, const PartitionId p );
 
-    CommunicationPlan constructRagged( const hmemo::HArray<IndexType>& sizes ) const;
+    CommunicationPlan constructRaggedBySizes( const hmemo::HArray<IndexType>& sizes ) const;
 
-    CommunicationPlan constructV( const hmemo::HArray<IndexType>& offsets ) const;
+    CommunicationPlan constructRaggedByOffsets( const hmemo::HArray<IndexType>& offsets ) const;
 
     CommunicationPlan constructN( const IndexType N ) const;
 
@@ -274,6 +274,12 @@ template<typename T>
 CommunicationPlan::CommunicationPlan( const T& object )
 {
     defineByQuantities( object );
+}
+
+template<>
+inline CommunicationPlan::CommunicationPlan( const hmemo::HArray<IndexType>& object )
+{
+    defineByQuantities( hostReadAccess( object ) );
 }
 
 template<typename T>

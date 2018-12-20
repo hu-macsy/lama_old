@@ -42,6 +42,7 @@
 #include <scai/hmemo/HArray.hpp>
 #include <scai/utilskernel/TransferUtils.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
 
@@ -295,8 +296,16 @@ void RedistributePlan::redistributeV(
 
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
-    auto sourcePlanV = mExchangeSendPlan.constructV( sourceOffsets );
-    auto targetPlanV = mExchangeReceivePlan.constructV( targetOffsets );
+    hmemo::HArray<IndexType> sourceSendSizes;
+    hmemo::HArray<IndexType> receiveTargetSizes;
+
+    hmemo::ContextPtr hostCtx = hmemo::Context::getHostPtr();
+
+    sparsekernel::CSRUtils::gatherSizes( sourceSendSizes, sourceOffsets, mExchangeSourceIndexes, hostCtx );
+    sparsekernel::CSRUtils::gatherSizes( receiveTargetSizes, targetOffsets, mExchangeTargetIndexes, hostCtx );
+
+    auto sourcePlanV = mExchangeSendPlan.constructRaggedBySizes( sourceSendSizes );
+    auto targetPlanV = mExchangeReceivePlan.constructRaggedBySizes( receiveTargetSizes );
 
     hmemo::HArray<ValueType> sourceHalo( sourcePlanV.totalQuantity() );
     hmemo::HArray<ValueType> targetHalo( targetPlanV.totalQuantity() );

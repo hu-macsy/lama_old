@@ -3,7 +3,9 @@
 IMAGES = splitting block_distribution cyclic2_distribution genblock_distribution \
          general_distribution grid_distribution shift \
          compute_owners compute_owners_general \
-         communication_plan exchange_by_plan global_exchange \
+         communication_plan exchange_by_plan \
+         global_exchange global_exchange_plan \
+         redistribute_plan \
          halo halo_plan halo_update halo_reduce
 
 IMAGES_SVG = $(IMAGES:=.svg)

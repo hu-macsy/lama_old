@@ -38,6 +38,8 @@
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/OpenMP.hpp>

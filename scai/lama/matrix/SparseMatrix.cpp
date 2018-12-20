@@ -399,8 +399,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         // Before send of JA: translate back the local (row) indexes to global indexes
         getColDistribution().local2GlobalV( sendJA, sendJA );
 
-        auto sendDataPlan = sendSizesPlan.constructRagged( sendSizes );
-        auto recvDataPlan = recvSizesPlan.constructRagged( recvSizes );
+        auto sendDataPlan = sendSizesPlan.constructRaggedBySizes( sendSizes );
+        auto recvDataPlan = recvSizesPlan.constructRaggedBySizes( recvSizes );
 
         comm.exchangeByPlan( recvJA, recvDataPlan, sendJA, sendDataPlan );
         comm.exchangeByPlan( recvValues, recvDataPlan, sendValues, sendDataPlan );

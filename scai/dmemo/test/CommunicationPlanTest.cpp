@@ -40,6 +40,8 @@
 using namespace scai;
 using namespace dmemo;
 
+using hmemo::HArray;
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( CommunicationPlanTest )
@@ -245,6 +247,44 @@ BOOST_AUTO_TEST_CASE( multiplyTest )
     CommunicationPlan plan2( sizes );
 
     CHECK_COMMUNICATION_PLANS_EQUAL( plan1, plan2 )
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( constructNTest )
+{
+    const IndexType N = 3;
+
+    std::vector<IndexType> commSizes( { 0, 2, 1, 0, 3 } );
+    std::vector<IndexType> commSizesN( { 0 * N, 2 * N, 1 * N, 0 * N, 3 * N } );
+
+    CommunicationPlan plan( commSizes );
+    CommunicationPlan planExpected( commSizesN );
+
+    auto planN = plan.constructN( N );
+
+    CHECK_COMMUNICATION_PLANS_EQUAL( planExpected, planN )
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( raggedTest )
+{
+    HArray<IndexType> commSizes( { 0, 2, 1, 0, 3 } );      // sizes for original plan
+
+    HArray<IndexType> raggedSizes( { 2, 1, 3, 2, 0, 3 } );  // array of array sizes
+    HArray<IndexType> raggedOffsets( { 0, 2, 3, 6, 8, 8, 11 } );  // = sizes2Offsets( raggedSizes )
+
+    HArray<IndexType> raggedCommSizes( { 0, 2 + 1, 3, 0, 2 + 0 + 3 } );
+
+    CommunicationPlan plan( commSizes );
+    CommunicationPlan planExpected( raggedCommSizes );
+
+    auto plan1 = plan.constructRaggedBySizes( raggedSizes );
+    auto plan2 = plan.constructRaggedByOffsets( raggedOffsets );
+
+    CHECK_COMMUNICATION_PLANS_EQUAL( planExpected, plan1 )
+    CHECK_COMMUNICATION_PLANS_EQUAL( planExpected, plan2 )
 }
 
 /* --------------------------------------------------------------------- */
