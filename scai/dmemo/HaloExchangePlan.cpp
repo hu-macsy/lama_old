@@ -101,6 +101,26 @@ HaloExchangePlan::HaloExchangePlan(
 
 /* ---------------------------------------------------------------------- */
 
+HaloExchangePlan::HaloExchangePlan( 
+    HArray<IndexType> halo2GlobalIndexes,
+    HArray<IndexType> localIndexes,
+    CommunicationPlan haloCommPlan,
+    CommunicationPlan localCommPlan ) :
+
+    mHalo2GlobalIndexes( std::move( halo2GlobalIndexes ) ),
+    mLocalIndexes( std::move( localIndexes ) ),
+    mHaloCommPlan( std::move( haloCommPlan ) ),
+    mLocalCommPlan( std::move( localCommPlan ) )
+
+{
+    SCAI_ASSERT_EQ_ERROR( mHalo2GlobalIndexes.size(), mHaloCommPlan.totalQuantity(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( mLocalIndexes.size(), mLocalCommPlan.totalQuantity(), "serious mismatch" )
+    
+    updateMap( mGlobal2Halo, mHalo2GlobalIndexes );
+}
+
+/* ---------------------------------------------------------------------- */
+
 void HaloExchangePlan::splitUp(
     HArray<IndexType>& requiredIndexes,
     HArray<IndexType>& localIndexes,

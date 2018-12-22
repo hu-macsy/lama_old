@@ -100,6 +100,14 @@ public:
         CommunicationPlan localCommPlan,
         std::map<IndexType, IndexType> global2HaloMap );
 
+    /** Constructor without global2Halo map, will be built */
+
+    HaloExchangePlan( 
+        hmemo::HArray<IndexType> halo2GlobalIndexes,
+        hmemo::HArray<IndexType> localIndexes,
+        CommunicationPlan haloCommPlan, 
+        CommunicationPlan localCommPlan );
+
     /** Split up */
 
     void splitUp( hmemo::HArray<IndexType>& halo2GlobalIndexes,

@@ -208,14 +208,36 @@ BOOST_AUTO_TEST_CASE( buildTest )
 
 /* --------------------------------------------------------------------- */
 
-// function to get actual value in a global distributed array
-// can be computed on each processor so it can used for checks
-
+/** Simple function to set a value in a distributed array. 
+ *  It is used to verify correct values in the halo.
+ */
 template<typename ValueType>
 static ValueType globalValue( IndexType globalIndex )
 {
-    return 2 * globalIndex + 1;
+    return static_cast<ValueType>( 2 * globalIndex + 1 );
 }
+
+template<typename ValueType>
+static HArray<ValueType> distributedArray( const Distribution& dist )
+{
+    HArray<ValueType> localArray;  // local part of the distributed 'global' array
+
+    // use own scope for write access to make sure that access is closed before return
+
+    {   
+        IndexType localIndex = 0;   // running local index
+
+        for ( auto& entry : hostWriteOnlyAccess( localArray, dist.getLocalSize() ) )
+        {
+            entry = globalValue<ValueType>( dist.local2Global( localIndex++ ) );
+        }
+
+    }  // filled the local array with 'global' values
+
+    return localArray;    // each processor gets its local part
+}
+
+/* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( updateTest )
 {
@@ -229,16 +251,7 @@ BOOST_AUTO_TEST_CASE( updateTest )
 
     auto requiredIndexes = randomRequiredIndexes( *dist );
 
-    HArray<ValueType> localArray;  // local part of the distributed 'global' array
-
-    {   
-        IndexType localIndex = 0;   // running local index
-
-        for ( auto& entry : hostWriteOnlyAccess( localArray, dist->getLocalSize() ) )
-        {
-            entry = globalValue<ValueType>( dist->local2Global( localIndex++ ) );
-        }
-    }  // filled the local array with 'global' values
+    auto localArray = distributedArray<ValueType>( *dist );
 
     // Now build a halo exchange plan
 
@@ -249,6 +262,10 @@ BOOST_AUTO_TEST_CASE( updateTest )
     SCAI_LOG_DEBUG( logger, comm << ": now update halo " )
 
     plan.updateHalo( haloArray, localArray, comm );
+
+    BOOST_CHECK_EQUAL( haloArray.size(), plan.getHaloSize() );
+
+    SCAI_LOG_INFO( logger, "check updated halo, size = " << plan.getHaloSize() )
 
     // Now verify that we have received all required values correctly in the halo array
 
@@ -265,6 +282,131 @@ BOOST_AUTO_TEST_CASE( updateTest )
             BOOST_CHECK_EQUAL( val, expected );
         }
     }
+
+    HArray<ValueType> haloArray1;
+    HArray<ValueType> tmpArray;        // use this array for sending values
+    plan.updateHalo( haloArray1, localArray, comm, tmpArray );
+
+    BOOST_TEST( hostReadAccess( haloArray ) == hostReadAccess( haloArray1 ), per_element() );
+
+    HArray<ValueType> haloArray2;
+    plan.updateHaloDirect( haloArray2, tmpArray, comm );
+    BOOST_TEST( hostReadAccess( haloArray ) == hostReadAccess( haloArray2 ), per_element() );
+
+    HArray<ValueType> haloArray3;
+    std::unique_ptr<tasking::SyncToken> token1(
+       plan.updateHaloAsync( haloArray3, localArray, comm ) );
+ 
+    HArray<ValueType> haloArray4;
+    std::unique_ptr<tasking::SyncToken> token2(
+       plan.updateHaloDirectAsync( haloArray4, tmpArray, comm ) );
+
+    token1->wait();
+
+    BOOST_TEST( hostReadAccess( haloArray ) == hostReadAccess( haloArray3 ), per_element() );
+
+    token2->wait();
+
+    BOOST_TEST( hostReadAccess( haloArray ) == hostReadAccess( haloArray4 ), per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( updateByTest )
+{
+    typedef DefaultReal ValueType;
+
+    const IndexType N = 100;     // size of the global array
+    
+    auto dist = blockDistribution( N );  // block distribution on all available procs
+
+    const Communicator& comm = dist->getCommunicator();
+
+    HArray<IndexType> requiredIndexes( { 5, 13, N - 8, N - 1 } );
+
+    // Now build a halo exchange plan
+
+    auto plan = haloExchangePlanByRequiredIndexes( requiredIndexes, *dist );
+
+    // set local array to zero
+
+    HArray<ValueType> localArray( dist->getLocalSize(), ValueType( 0 ) );
+
+    HArray<ValueType> haloArray( plan.getHaloSize(), ValueType( 1 ) );
+ 
+    plan.updateByHalo( localArray, haloArray, common::BinaryOp::ADD, comm );
+
+    IndexType count = 0;  // verify that each required index is checked
+
+    {
+        auto rLocal = hostReadAccess( localArray );
+
+        ValueType expVal( comm.getSize() );  // every processor has had a halo copy
+
+        for ( const IndexType globalI : hostReadAccess( requiredIndexes ) )
+        {
+            const IndexType localI = dist->global2Local( globalI );
+
+            if ( localI != invalidIndex )
+            {
+                BOOST_CHECK_EQUAL( rLocal[localI], expVal );
+                count++;
+            }
+        }
+    }
+
+    count = comm.sum( count );
+  
+    BOOST_CHECK_EQUAL( count, requiredIndexes.size() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( moveTest )
+{
+    const IndexType N = 100;     // size of the global array
+    
+    auto dist = blockDistribution( N );  // block distribution on all available procs
+
+    auto requiredIndexes = randomRequiredIndexes( *dist );
+
+    auto plan = haloExchangePlanByRequiredIndexes( requiredIndexes, *dist );
+
+    // save the pointer of host incarnation of local indexes 
+
+    const IndexType* localIndexesHostPtr = hostReadAccess( plan.getLocalIndexes() ).get();
+
+    HaloExchangePlan plan1( std::move( plan ) );
+
+    BOOST_CHECK_EQUAL( localIndexesHostPtr, hostReadAccess( plan1.getLocalIndexes() ).get() );
+
+    HaloExchangePlan plan2;
+    plan2 = std::move( plan1 );
+
+    BOOST_CHECK_EQUAL( localIndexesHostPtr, hostReadAccess( plan2.getLocalIndexes() ).get() );
+
+    HaloExchangePlan plan3;
+    plan3.swap( plan2 );
+
+    BOOST_CHECK_EQUAL( localIndexesHostPtr, hostReadAccess( plan3.getLocalIndexes() ).get() );
+
+    CommunicationPlan haloPlan;
+    CommunicationPlan localPlan;
+    HArray<IndexType> haloIndexes;
+    HArray<IndexType> localIndexes;
+
+    plan3.splitUp( haloIndexes, localIndexes, haloPlan, localPlan );
+
+    BOOST_CHECK_EQUAL( localIndexesHostPtr, hostReadAccess( localIndexes ).get() );
+
+    HaloExchangePlan plan4( haloIndexes, localIndexes, haloPlan, localPlan );
+    plan4.clear();
+    BOOST_CHECK_EQUAL( plan4.getHaloSize(), 0 );
+    BOOST_CHECK_EQUAL( plan4.getLocalIndexes().size(), 0 );
+
+    HaloExchangePlan plan5( haloIndexes, localIndexes, haloPlan, localPlan );
+    plan5.purge();
+    BOOST_CHECK_EQUAL( plan5.getHaloSize(), 0 );
 }
 
 /* --------------------------------------------------------------------- */
