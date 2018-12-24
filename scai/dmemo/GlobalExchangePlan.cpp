@@ -39,14 +39,17 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( GlobalExchangePlan::logger, "GlobalExchangePlan" )
 
-GlobalExchangePlan::GlobalExchangePlan( const HArray<PartitionId>& target, const Communicator& comm )
+GlobalExchangePlan::GlobalExchangePlan( const HArray<PartitionId>& target, CommunicatorPtr comm ) :
+
+    mComm( comm )
+
 {
     HArray<IndexType> sendSizes;
 
-    utilskernel::HArrayUtils::bucketSortSizes( sendSizes, mSendPerm, target, comm.getSize() );
+    utilskernel::HArrayUtils::bucketSortSizes( sendSizes, mSendPerm, target, mComm->getSize() );
 
     mSendPlan = CommunicationPlan( hostReadAccess( sendSizes ) );
-    mRecvPlan = comm.transpose( mSendPlan );
+    mRecvPlan = mComm->transpose( mSendPlan );
 
     // instead of validIndexes( target, comm.getSize() )
 

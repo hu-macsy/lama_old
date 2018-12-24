@@ -176,7 +176,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
  
     // send the COO data to their owners and receive it
 
-    dmemo::globalExchange( ownedIA, ownedJA, ownedValues, ia, ja, values, owners, dist.getCommunicator() );
+    dmemo::globalExchange( ownedIA, ownedJA, ownedValues, ia, ja, values, owners, dist.getCommunicatorPtr() );
 
     dist.global2LocalV( ownedIA, ownedIA );   // translates global row indexes to local ones
 

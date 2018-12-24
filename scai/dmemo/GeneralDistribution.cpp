@@ -32,7 +32,7 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CommunicationPlan.hpp>
-#include <scai/dmemo/GlobalExchangePlan.hpp>
+#include <scai/dmemo/GlobalAddressingPlan.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
@@ -186,7 +186,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionNew(
 
         HArray<IndexType> myOldGlobalIndexes;
         dist.getOwnedIndexes( myOldGlobalIndexes );
-        dmemo::globalExchange( myNewGlobalIndexes, myOldGlobalIndexes, newOwners, *comm );
+        dmemo::globalExchange( myNewGlobalIndexes, myOldGlobalIndexes, newOwners, comm );
     }
 
     bool checkFlag = false;  // cannot be illegal if new owners has only valid indexes
@@ -436,33 +436,14 @@ void GeneralDistribution::computeBlockDistributedOwners( HArray<IndexType>& bloc
     BlockDistribution blockDist( globalSize, comm );
 
     const IndexType localBlockSize = blockDist.getLocalSize();
-    const IndexType lb             = blockDist.lb();
 
     HArrayUtils::setSameValue( blockDistributedOwners, localBlockSize, invalidPartition );
 
-    // each processor queries the owners of its range lb, ..., ub-1
+    // blockDistributedOwners[ ownedIndexes[i] ] = rank, global scatter
 
-    HArray<PartitionId> blockOwners;
+    GlobalAddressingPlan plan( ownedIndexes, blockDist );
 
-    blockDist.computeOwners( blockOwners, ownedIndexes );
- 
-    GlobalExchangePlan plan( blockOwners, *comm );
-
-    HArray<IndexType> receivedIndexes;
-
-    plan.exchange( receivedIndexes, ownedIndexes, *comm );
-
-    HArray<PartitionId> sources;  // sources[i] is the onwer of receivedIndexes[i]
-
-    plan.getSource( sources );  // sources[i] is the onwer of receivedIndexes[i]
-
-    // receivedIndexes are all values in my block range lb, ..., ub
-
-    HArrayUtils::compute( receivedIndexes, receivedIndexes, common::BinaryOp::SUB, lb );
-
-    bool unique = true;  // there should be no double values in receivedIndexes
-
-    HArrayUtils::scatter( blockDistributedOwners, receivedIndexes, unique, sources, common::BinaryOp::COPY );
+    plan.scatterOwner( blockDistributedOwners );
 
     // Sanitize check there must be no invalidPartition value for any global index
 
@@ -509,38 +490,12 @@ void GeneralDistribution::computeOwners(
 
     BlockDistribution blockDist( getGlobalSize(), getCommunicatorPtr() );
 
-    HArray<PartitionId> target;    // target processor that we will query for the owner
+    // owners[i] = blockDistribtedOwners[ indexes[i] ], global gather 
 
-    // get for each queried index the processor that knows the owner
-
-    blockDist.computeOwners( target, indexes );
-
-    const Communicator& comm = getCommunicator();
-
-    GlobalExchangePlan plan( target, comm );
-
-    SCAI_LOG_DEBUG( logger, "computeOwners: plan for queries ready." )
-
-    HArray<IndexType> queriedIndexes;  // that are queried indexes for which I know the owner
-
-    plan.exchange( queriedIndexes, indexes, comm );
-
-    SCAI_LOG_DEBUG( logger, "queries received: " << queriedIndexes )
-
-    HArrayUtils::compute( queriedIndexes, queriedIndexes, common::BinaryOp::SUB, blockDist.lb() );
-
-    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( queriedIndexes, blockDist.getLocalSize() ), "serious wrong index" )
-
-    SCAI_LOG_DEBUG( logger, "computeOwners: now compute answers" )
-
-    HArray<PartitionId> answerOwners;  // will take the owners of the queried indexes
-
-    HArrayUtils::gather( answerOwners, *mBlockDistributedOwners, queriedIndexes, common::BinaryOp::COPY );
-
-    SCAI_LOG_DEBUG( logger, "computeOwners: answers = " << answerOwners << ", exchange back" )
-
-    plan.exchangeBack( owners, answerOwners, comm );
-
+    GlobalAddressingPlan plan( indexes, blockDist );
+    
+    plan.gather( owners, *mBlockDistributedOwners );
+    
     SCAI_LOG_DEBUG( logger, "computeOwners done, owners = " << owners )
 }
 

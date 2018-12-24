@@ -51,69 +51,82 @@ using namespace hmemo;
 using namespace dmemo;
 using namespace common;
 
+using boost::test_tools::per_element;
+
 /* --------------------------------------------------------------------- */
 
-struct RedistributePlanTestConfig
-{
-    RedistributePlanTestConfig()
-    {
-        comm = Communicator::getCommunicatorPtr();
-    }
-
-    ~RedistributePlanTestConfig()
-    {
-    }
-
-    CommunicatorPtr comm;
-};
-
-BOOST_FIXTURE_TEST_SUITE( RedistributePlanTest, RedistributePlanTestConfig )
+BOOST_AUTO_TEST_SUITE( RedistributePlanTestConfig )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributePlanTest" );
+
+/* --------------------------------------------------------------------- */
+
+/** Simple function to define a value in a distributed array. 
+ *  It is used to verify correct values in the halo.
+ */
+template<typename ValueType>
+static ValueType globalValue( IndexType globalIndex )
+{
+    return static_cast<ValueType>( 2 * globalIndex + 1 );
+}
+
+template<typename ValueType>
+static HArray<ValueType> distributedArray( const Distribution& dist )
+{
+    HArray<ValueType> localArray;  // local part of the distributed 'global' array
+
+    // use own scope for write access to make sure that access is closed before return
+
+    {
+        IndexType localIndex = 0;   // running local index
+
+        for ( auto& entry : hostWriteOnlyAccess( localArray, dist.getLocalSize() ) )
+        {
+            entry = globalValue<ValueType>( dist.local2Global( localIndex++ ) );
+        }
+
+    }  // filled the local array with 'global' values
+
+    return localArray;    // each processor gets its local part
+}
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( redistributeTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
-    IndexType size = 10;
-    IndexType chunkSize = 1;
-    shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
-    shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
-    IndexType blockLocalSize = distBlock->getLocalSize();
-    IndexType cyclicLocalSize = distCyclic->getLocalSize();
-    HArray<ValueType> myData1( blockLocalSize );
-    {
-        WriteAccess<ValueType> data ( myData1 );
 
-        for ( IndexType i = 0; i < blockLocalSize; i++ )
-        {
-            data[i] = static_cast<ValueType>( 100 * comm->getRank() + i );
-        }
-    }
-    HArray<ValueType> myData2( cyclicLocalSize );
-    RedistributePlan r1( distCyclic, distBlock );
-    RedistributePlan r2( distBlock, distCyclic );
-    SCAI_LOG_DEBUG( logger, "redistribute 1" );
-    r1.redistribute( myData2, myData1 );
-    SCAI_LOG_DEBUG( logger, "redistribute 2" );
-    r2.redistribute( myData1, myData2 );
-    {
-        ReadAccess<ValueType> data ( myData1 );
+    const IndexType N = 100;
+    const IndexType CHUNK_SIZE = 2;
 
-        for ( IndexType i = 0; i < blockLocalSize; i++ )
-        {
-            ValueType expected = static_cast<ValueType>( 100 * comm->getRank() + i );
-            SCAI_CHECK_CLOSE( data[i], expected, 1 );
-        }
-    }
+    // just define two arbitrary distributons
+
+    auto sourceDist = blockDistribution( N );
+    auto targetDist = cyclicDistribution( N, CHUNK_SIZE );
+
+    // fill the 'distributed' arrays with 'same' values
+
+    const auto sourceArray = distributedArray<ValueType>( *sourceDist );
+    const auto expTargetArray = distributedArray<ValueType>( *targetDist );
+
+    RedistributePlan plan( targetDist, sourceDist );
+
+    HArray<ValueType> targetArray;
+    plan.redistribute( targetArray, sourceArray );
+    BOOST_TEST( hostReadAccess( expTargetArray ) == hostReadAccess( targetArray ), per_element() );
+
+    plan.reverse();
+
+    HArray<ValueType> newSourceArray;
+    plan.redistribute( newSourceArray, targetArray );
+    BOOST_TEST( hostReadAccess( sourceArray ) == hostReadAccess( newSourceArray ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( redistributorTest )
 {
-    using boost::test_tools::per_element;
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     IndexType size = comm->getSize();
     IndexType rank = comm->getRank();
@@ -174,11 +187,15 @@ BOOST_AUTO_TEST_CASE( redistributorTest )
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    IndexType size = 10;
-    IndexType chunkSize = 1;
-    shared_ptr<Distribution> distBlock( new BlockDistribution( size, comm ) );
-    shared_ptr<Distribution> distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
-    RedistributePlan r( distCyclic, distBlock );
+    const IndexType N = 100;
+    const IndexType CHUNK_SIZE = 2;
+
+    // just define two arbitrary distributons
+
+    auto sourceDist = blockDistribution( N );
+    auto targetDist = cyclicDistribution( N, CHUNK_SIZE );
+
+    RedistributePlan r( targetDist, sourceDist );
     std::ostringstream out;
     out << r ;
     BOOST_CHECK( out.str().length() >  0 );

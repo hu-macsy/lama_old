@@ -42,6 +42,7 @@ scai_project (
         DistributionTest
 
         GlobalExchangePlanTest
+        GlobalAddressingPlanTest
         HaloExchangePlanTest
 
         NoDistributionTest

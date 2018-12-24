@@ -44,13 +44,13 @@
 #include <memory>
 #include <algorithm>
 
-using namespace scai::hmemo;
-
-using scai::utilskernel::HArrayUtils;
-using scai::dmemo::GeneralDistribution;
-
 namespace scai
 {
+
+using namespace hmemo;
+
+using utilskernel::HArrayUtils;
+using dmemo::GeneralDistribution;
 
 using std::unique_ptr;
 
@@ -59,12 +59,7 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( RedistributePlan::logger, "RedistributePlan" )
 
-static HArray<IndexType> ownedGlobalIndexesForDist( const Distribution& dist )
-{
-    HArray<IndexType> indexes;
-    dist.getOwnedIndexes( indexes );
-    return indexes;
-}
+/* -------------------------------------------------------------------------- */
 
 // Partitions local indexes of the source distribution into "keep"
 // and "exchange", based on the new owner of each individual index.
@@ -139,72 +134,23 @@ RedistributePlan::RedistributePlan( DistributionPtr targetDistribution, Distribu
     SCAI_ASSERT_EQ_ERROR( sourceDistribution->getCommunicator(), targetDistribution->getCommunicator(),
                           "source and target distributions must have the same communicator" );
 
-    HArray<PartitionId> targetOwners;
+    // Each processor computes the new owners of owned indexes from source distribution
 
-    const auto commSize = sourceDistribution->getCommunicator().getSize();
-
-    if ( targetDistribution->hasAnyAddressing() || commSize <= 2 )
-    {
-        // Computing owners is cheap, so do so directly
-        HArray<PartitionId> sourceGlobalIndexes;
-        sourceDistribution->getOwnedIndexes( sourceGlobalIndexes );
-        targetDistribution->computeOwners( targetOwners, sourceGlobalIndexes );
-    }
-    else
-    {
-        // Building the necessary data structures for a RedistributePlan usually relies
-        // on determining where to send the data. For some distributions, computing owners is cheap,
-        // whereas for others (such as general distributions), this is an expensive process.
-        // In the case that computing owners directly is expensive, we can recover them in
-        // an asymptotically speaking far cheaper way by going through an intermediate
-        // distribution for which we *can* compute the owners cheaply (e.g. block, cyclic, ...).
-        //
-        // The approach below is attributed to Moritz von Looz-Corswarem, who
-        // pointed out the optimization opportunity to us, and provided source code and experimental
-        // results to show its efficacy. The code below is loosely based on his original code.
-
-        const auto globalSize = sourceDistribution->getGlobalSize();
-        const auto comm = sourceDistribution->getCommunicatorPtr();
-        const auto rank = comm->getRank();
-        const auto intermediateDist = std::make_shared<BlockDistribution>( globalSize, comm );
-
-        SCAI_LOG_INFO( logger, "build RedistributePlan via intermediate dist = " << *intermediateDist )
-
-        RedistributePlan targetToIntermediate( intermediateDist, targetDistribution );
-
-        // Note: source to intermediate first, then reverse
-        RedistributePlan intermediateToSource( intermediateDist, sourceDistribution );
-        intermediateToSource.reverse();
-
-        // In order to find out what the owners in target of the source global indexes are,
-        // we work our way backwards from target. We know that all local elements in target
-        // have owner equal to the rank, and since redistribution does not change the
-        // associated global index of the elements, we can simply redistribute the owners
-        // (which start out as all identical to rank) through the intermediate distribution
-        // and finally to the source in order to recover the desired new owner for
-        // each local source index.
-        HArray<PartitionId> ownersInTarget( targetDistribution->getLocalSize(), rank );
-        HArray<PartitionId> ownersInIntermediate;
-        targetToIntermediate.redistribute( ownersInIntermediate, ownersInTarget );
-
-        // Reuse storage in order to possibly avoid allocation (depending on relative sizes)
-        auto ownersInSource = std::move( ownersInTarget );
-        intermediateToSource.redistribute( ownersInSource, ownersInIntermediate );
-        targetOwners = std::move ( ownersInSource );
-    }
-
+    auto targetOwners = mTargetDistribution->owner( mSourceDistribution->ownedGlobalIndexes() );
 
     const auto targetGlobalIndexes = initializeFromNewOwners( targetOwners, *sourceDistribution );
 
     SCAI_ASSERT_DEBUG(
-        HArrayUtils::all ( targetGlobalIndexes, common::CompareOp::EQ, ownedGlobalIndexesForDist( *targetDistribution ) ),
+        HArrayUtils::all ( targetGlobalIndexes, common::CompareOp::EQ, targetDistribution->ownedGlobalIndexes() ),
         "Internal error: mismatch between expected global indexes and target distribution" );
 }
 
+RedistributePlan::RedistributePlan( 
+    const HArray< PartitionId >& newOwnersOfLocalElements, 
+    DistributionPtr sourceDistribution ) :
 
+    mSourceDistribution( sourceDistribution )
 
-RedistributePlan::RedistributePlan( const scai::hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution )
-    :   mSourceDistribution( sourceDistribution )
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" );
     SCAI_ASSERT_EQ_ERROR( newOwnersOfLocalElements.size(), sourceDistribution->getLocalSize(),
@@ -213,12 +159,15 @@ RedistributePlan::RedistributePlan( const scai::hmemo::HArray< PartitionId >& ne
     const auto targetGlobalIndexes = initializeFromNewOwners( newOwnersOfLocalElements, *sourceDistribution );
 
     mTargetDistribution = generalDistributionUnchecked( sourceDistribution->getGlobalSize(),
-                                                        targetGlobalIndexes,
+                                                        std::move( targetGlobalIndexes ),
                                                         sourceDistribution->getCommunicatorPtr() );
 }
 
 // Note: returns global target indexes
-HArray<IndexType> RedistributePlan::initializeFromNewOwners( const hmemo::HArray<PartitionId> & newOwnersOfLocalElements, const Distribution& sourceDist )
+
+HArray<IndexType> RedistributePlan::initializeFromNewOwners( 
+    const hmemo::HArray<PartitionId> & newOwnersOfLocalElements, 
+    const Distribution& sourceDist )
 {
     const auto sourceNumLocal = sourceDist.getLocalSize();
 
@@ -296,6 +245,8 @@ DistributionPtr RedistributePlan::getTargetDistributionPtr() const
 {
     return mTargetDistribution;
 }
+
+/* -------------------------------------------------------------------------- */
 
 void RedistributePlan::reverse()
 {

@@ -31,6 +31,7 @@
 
 #include <scai/lama/VectorAssembly.hpp>
 #include <scai/dmemo/GlobalExchangePlan.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
 #include <algorithm>
@@ -196,7 +197,7 @@ void VectorAssembly<ValueType>::buildLocalData(
         HArray<PartitionId> owners;
 
         dist.computeOwners( owners, localIA );
-        globalExchange( ia, values, localIA, localValues, owners, dist.getCommunicator() );
+        dmemo::globalExchange( ia, values, localIA, localValues, owners, dist.getCommunicatorPtr() );
          
         dist.global2LocalV( ia, ia );   // translates global indexes to local ones
     }

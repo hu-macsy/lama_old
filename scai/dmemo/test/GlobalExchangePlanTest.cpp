@@ -41,11 +41,11 @@ using namespace hmemo;
 
 /* --------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.GlobalExchangePlanTest" )
+BOOST_AUTO_TEST_SUITE( GlobalExchangePlanTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( GlobalExchangePlanTest )
+SCAI_LOG_DEF_LOGGER( logger, "Test.GlobalExchangePlanTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE( buildTest2 )
         expRecvPlan = CommunicationPlan( std::vector<IndexType>( { 3, 3 } ) );
     }
 
-    GlobalExchangePlan plan( targets, *comm );
+    GlobalExchangePlan plan( targets, comm );
    
     HArray<IndexType> perm;
     CommunicationPlan sendPlan;
@@ -166,13 +166,13 @@ BOOST_AUTO_TEST_CASE( buildTest4 )
         expRecvValues = HArray<PartitionId>( { 35, 30, 31 } );
     }
 
-    GlobalExchangePlan plan( targets, *comm );
+    GlobalExchangePlan plan( targets, comm );
 
     HArray<IndexType> recvValues;
-    plan.exchange( recvValues, sendValues, *comm );
+    plan.exchange( recvValues, sendValues );
 
     HArray<IndexType> returnValues( sendValues.size(), IndexType( 0 ) );   // will be the same as sendValues
-    plan.exchangeBack( returnValues, recvValues, *comm );
+    plan.exchangeBack( returnValues, recvValues );
    
     HArray<IndexType> perm;
     CommunicationPlan sendPlan;
