@@ -34,12 +34,15 @@ scai_project (
     SOURCES
 
         CommunicatorTest
+        CommunicatorStackTest
+
         CommunicationPlanTest
 
         DistributedTest
         DistributionTest
 
         GlobalExchangePlanTest
+        GlobalAddressingPlanTest
         HaloExchangePlanTest
 
         NoDistributionTest

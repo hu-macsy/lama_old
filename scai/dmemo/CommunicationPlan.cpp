@@ -270,6 +270,44 @@ void CommunicationPlan::getInfo( IndexType& quantity, IndexType& offset, Partiti
 
 /* ----------------------------------------------------------------------- */
 
+void CommunicationPlan::removeEntry( IndexType& quantity, IndexType& offset, const PartitionId p )
+{
+    // set initial values in case we do not find an entry for p
+
+    quantity = 0;
+    offset   = 0;
+
+    PartitionId count = 0;
+    bool done = false;
+
+    for ( PartitionId pid = 0; pid < size(); pid++ )
+    {
+        Entry& entry = mEntries[pid];
+
+        if ( entry.partitionId == p )
+        {
+            SCAI_ASSERT_ERROR( !done, "internal error, two entries for p = " << p )
+            quantity  += entry.quantity;
+            mQuantity -= entry.quantity;
+            offset    = entry.offset;
+            done      = true;
+        }
+        else if ( done )
+        {
+            entry.offset -= quantity;
+            mEntries[count++] = entry;
+        }
+        else
+        {
+            count++;
+        }
+    }
+ 
+    mEntries.resize( count );
+}
+
+/* ----------------------------------------------------------------------- */
+
 void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const PartitionId p )
 {
     mEntries.clear();

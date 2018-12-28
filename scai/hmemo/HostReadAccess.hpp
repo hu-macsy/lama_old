@@ -134,6 +134,36 @@ HostReadAccess<ValueType> hostReadAccess( const HArray<ValueType>& array )
     return HostReadAccess<ValueType>( array );
 }
 
+/**
+ * @param[in] heterogeneous array
+ * @return a string that containts the printed value
+ */
+template<typename ValueType>
+std::string printIt( const hmemo::HArray<ValueType>& array )
+{  
+   if ( array.size() == 0 )
+   {   
+       return "[]";
+   }
+
+   std::ostringstream strOut;
+   
+   strOut << "[";
+
+   for ( const auto v : hostReadAccess( array ) )
+   {   
+       if ( strOut.str().size() > 1 )
+       {  
+          strOut << ", ";
+       }
+       strOut << v;
+   }
+
+   strOut << "]";
+
+   return strOut.str();
+}
+
 }
 
 }

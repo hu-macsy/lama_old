@@ -50,7 +50,28 @@ class GlobalExchangePlan
 {
 public:
 
-    GlobalExchangePlan( const hmemo::HArray<PartitionId>& target, const Communicator& comm );
+    /**
+     *   Construct a plan by specifying a target processor for each element.
+     *
+     *   Note: if there is an invalid target specified it will be ignored.
+     */
+    GlobalExchangePlan( const hmemo::HArray<PartitionId>& target, CommunicatorPtr comm );
+
+    /**
+     *  Query the number of values for which a valid target was specified
+     */
+    IndexType size() const
+    {
+        return mSendPlan.size();
+    }
+
+    /**
+     *  Query the number of elements that specfied this processor as target
+     */
+    IndexType otherSize() const
+    {
+        return mRecvPlan.size();
+    }
 
     /** This method exchanges now data for which the plan was computed. 
      *
@@ -61,7 +82,7 @@ public:
      *  Note: getSource might be used to find from which processor the received data came. 
      */
     template<typename ValueType>
-    void exchange( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray, const Communicator& comm )
+    void exchange( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray )
     {
         if ( sendArray.size() != mSendPerm.size() )
         {
@@ -71,7 +92,7 @@ public:
 
         hmemo::HArray<ValueType> sortedSendArray;
         utilskernel::HArrayUtils::gather( sortedSendArray, sendArray, mSendPerm, common::BinaryOp::COPY );
-        comm.exchangeByPlan( recvArray, mRecvPlan, sortedSendArray, mSendPlan );
+        mComm->exchangeByPlan( recvArray, mRecvPlan, sortedSendArray, mSendPlan );
     } 
 
     /**
@@ -80,15 +101,18 @@ public:
      *  The received values match exactly the original values.
      */
     template<typename ValueType>
-    void exchangeBack( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray, const Communicator& comm )
+    void exchangeBack( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray, 
+                       const common::BinaryOp op = common::BinaryOp::COPY )
     {
         SCAI_ASSERT_EQ_ERROR( sendArray.size(), mRecvPlan.totalQuantity(), "serious mismatch" )
 
         hmemo::HArray<ValueType> recvArrayByProcs;
 
-        comm.exchangeByPlan( recvArrayByProcs, mSendPlan, sendArray, mRecvPlan );
+        mComm->exchangeByPlan( recvArrayByProcs, mSendPlan, sendArray, mRecvPlan );
 
-        utilskernel::HArrayUtils::scatter( recvArray, mSendPerm, true, recvArrayByProcs, common::BinaryOp::COPY );
+        bool unique = true;   // as mSendPerm is a permutation
+
+        utilskernel::HArrayUtils::scatter( recvArray, mSendPerm, unique, recvArrayByProcs, op );
     } 
 
     /** Get an array that contains for received values the processor id where it comes from
@@ -104,6 +128,8 @@ public:
 
 private:
 
+    CommunicatorPtr mComm;                // keep the communicator for convenience
+
     hmemo::HArray<IndexType> mSendPerm;   // permutation to sort the entries according to the targets
 
     CommunicationPlan mSendPlan;   // plan for sending the data to exchange
@@ -118,7 +144,6 @@ private:
  *  @param[out] recvValues values received from other processors
  *  @param[in]  sendValues values that will be sent to other processors
  *  @param[in]  target     same size as sendValues, contains for each entry the target processor
- *  @param[in]  comm       is the communicator used for exchanging data                  
  *
  *  Note: alias of recvValues and sendValues is allowed
  */
@@ -127,9 +152,9 @@ void globalExchange(
     hmemo::HArray<ValueType>& recvValues,
     const hmemo::HArray<ValueType>& sendValues,
     const hmemo::HArray<PartitionId>& target,
-    const Communicator& comm )
+    dmemo::CommunicatorPtr comm )
 {
-    if ( comm.getSize() < 2 )
+    if ( comm->getSize() < 2 )
     {
         recvValues = sendValues;
         return;
@@ -137,7 +162,7 @@ void globalExchange(
 
     GlobalExchangePlan plan( target, comm );
 
-    plan.exchange( recvValues, sendValues, comm );
+    plan.exchange( recvValues, sendValues );
 }
 
 /**
@@ -150,9 +175,9 @@ void globalExchange(
     const hmemo::HArray<ValueType1>& sendValues1,
     const hmemo::HArray<ValueType2>& sendValues2,
     const hmemo::HArray<PartitionId>& target,
-    const Communicator& comm ) 
+    CommunicatorPtr comm ) 
 {
-    if ( comm.getSize() < 2 )
+    if ( comm->getSize() < 2 )
     {
         recvValues1 = sendValues1;
         recvValues2 = sendValues2;
@@ -161,8 +186,8 @@ void globalExchange(
 
     GlobalExchangePlan plan( target, comm );
 
-    plan.exchange( recvValues1, sendValues1, comm );
-    plan.exchange( recvValues2, sendValues2, comm );
+    plan.exchange( recvValues1, sendValues1 );
+    plan.exchange( recvValues2, sendValues2 );
 }
 
 /**
@@ -177,9 +202,9 @@ void globalExchange(
     const hmemo::HArray<ValueType2>& sendValues2,
     const hmemo::HArray<ValueType3>& sendValues3,
     const hmemo::HArray<PartitionId>& target,
-    const Communicator& comm )
+    CommunicatorPtr comm )
 {
-    if ( comm.getSize() < 2 )
+    if ( comm->getSize() < 2 )
     {
         recvValues1 = sendValues1;
         recvValues2 = sendValues2;
@@ -189,9 +214,9 @@ void globalExchange(
 
     GlobalExchangePlan plan( target, comm );
 
-    plan.exchange( recvValues1, sendValues1, comm );
-    plan.exchange( recvValues2, sendValues2, comm );
-    plan.exchange( recvValues3, sendValues3, comm );
+    plan.exchange( recvValues1, sendValues1 );
+    plan.exchange( recvValues2, sendValues2 );
+    plan.exchange( recvValues3, sendValues3 );
 }
 
 }

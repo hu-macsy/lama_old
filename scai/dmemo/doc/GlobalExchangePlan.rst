@@ -3,8 +3,9 @@
 GlobalExchangePlan
 ==================
 
-A global exchange plan is a data structure that is typically used for communication of an array
-by specifying an owner array of the same size that tells exactly where each element has to
+A global exchange plan is a data structure specifies an irregular communication pattern
+for the elements of an array. Typically such a plan is built
+by specifying an target array that tells where each element has to
 go.
 
 .. code-block:: c++
@@ -14,7 +15,7 @@ go.
     GlobalExchangePlay plan( owners, comm );
     plan.exchange( otherData, data, comm );
 
-Therefore a global exchange plan has exactly three entries:
+A global exchange plan has exactly three entries:
 
  - a permuatation that is used to pack the data into contiguous sections for each processor
  - the communication schedule for sending the data
@@ -34,6 +35,13 @@ The permutation is used to scatter the received data in the final array.
 
     otherData = ... ;                           // prepare data to send back
     plan.exchangeBack( data, otherData, comm );
+
+GlobalAddressingPlan
+====================
+
+A GlobalAddressingPlan is an extension of a GlobalExchangePlan with an additional
+entry that tells how to match the data from other processors with the local data, 
+i.e. it tells for each entry how it matches with local entries.
 
 A typically use of a global exchange plan is for gathering data from a distributed array.
 

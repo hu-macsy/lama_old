@@ -58,6 +58,7 @@ scai_project (
         Distributed
         CommunicationPlan
 
+        GlobalAddressingPlan
         GlobalExchangePlan
 
         BlockDistribution

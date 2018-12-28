@@ -45,7 +45,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/GlobalExchangePlan.hpp>
+#include <scai/dmemo/GlobalAddressingPlan.hpp>
 #include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
@@ -1277,42 +1277,11 @@ void DenseVector<ValueType>::gather(
         return;
     }
 
-    const Communicator& comm = sourceDistribution.getCommunicator();
+    // otherwise we use a global exchange/addressing plan
 
-    // otherwise we have to set up a communication plan
+    GlobalAddressingPlan plan( index.getLocalValues(), sourceDistribution );
 
-    HArray<PartitionId> owners;
-
-    sourceDistribution.computeOwners( owners, index.getLocalValues() );
-
-    // set up required values by sorting the indexes corresponding to the owners via bucketsort
-
-    GlobalExchangePlan plan( owners, comm );
-
-    HArray<IndexType> sendIndexes;
-
-    plan.exchange( sendIndexes, index.getLocalValues(), comm );
-
-    // translate global sendIndexes to local indexes, all must be local
-
-    sourceDistribution.global2LocalV( sendIndexes, sendIndexes );
-
-    // exchange communication plan
-
-    HArray<ValueType> sendValues;  // values to send from my source values
-
-    HArrayUtils::gather( sendValues, source.getLocalValues(), sendIndexes, BinaryOp::COPY );
-
-    // send back via communication plan
-
-    if ( op == BinaryOp::COPY )
-    {
-        mLocalValues.resize( index.size() );
-    }
-
-    // ToDo: plan.exchangeBack( mLocalValues, sendValues, op, comm );
-
-    plan.exchangeBack( mLocalValues, sendValues, comm );
+    plan.gather( mLocalValues, source.getLocalValues(), op );
 
     assign( mLocalValues, index.getDistributionPtr() );
 }
@@ -1345,24 +1314,9 @@ void DenseVector<ValueType>::scatter(
         return;
     }
 
-    const Communicator& comm = targetDistribution.getCommunicator();
+    GlobalAddressingPlan plan( index.getLocalValues(), targetDistribution );
 
-    HArray<PartitionId> owners;
-
-    targetDistribution.computeOwners( owners, index.getLocalValues() );
-
-    HArray<ValueType> recvValues;
-    HArray<IndexType> recvIndexes;
-
-    globalExchange( recvValues, recvIndexes, source.getLocalValues(), index.getLocalValues(), owners, comm );
-
-    // translate global recvIndexes to local indexes, all must be local
-
-    targetDistribution.global2LocalV( recvIndexes, recvIndexes );
-
-    // Now scatter all received values
-
-    HArrayUtils::scatter( mLocalValues, recvIndexes, hasUniqueIndexes, recvValues, op, source.getContextPtr() );
+    plan.scatter( mLocalValues, source.getLocalValues(), op );
 }
 
 /* ------------------------------------------------------------------------- */

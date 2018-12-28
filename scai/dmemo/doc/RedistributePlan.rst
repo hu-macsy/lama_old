@@ -3,6 +3,22 @@
 RedistributePlan
 ================
 
+A redistribution of data is a very common operation for distributed memory programming,
+i.e. a distributed array with a source distribution becomes assigned to a distributed
+array with a target distribution. Usually, the new target distribution is given by
+the new owner for each local index that a processor owns in the current source distribution.
+
+.. figure:: _images/redistribution.*
+    :width: 700px
+    :align: center
+    :alt: Redistribution
+
+    Definition of a new distribution by new owners for the local indexes of the current one.
+
+A redistribute plan is now an object that describes the global permutation/communication
+pattern that is used for redistribution of distributed data from the source to the target 
+distribution.
+
 A redistribute plan is very close to a global exchange plan but has the following 
 differnces:
 
@@ -28,5 +44,6 @@ corresponding permutation can be used to unpack the redistributed data.
 
     Setting up a redistribution plan.
 
-The redistribute plan can be applied to redistribute vectors or matrices that have 
+The redistribute plan can be applied to redistribute multiple vectors and/or matrices that have 
 the corresponding source distribution and have afterwards the new target distribution.
+

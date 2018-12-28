@@ -260,6 +260,13 @@ public:
      */
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
+    hmemo::HArray<PartitionId> owner( const hmemo::HArray<IndexType>& globalIndexes ) const
+    {
+        hmemo::HArray<PartitionId> owners;
+        computeOwners( owners, globalIndexes );
+        return owners;
+    }
+
     /**
      * Get the owner of a global index, all processors call with same value.
      *
@@ -280,6 +287,16 @@ public:
      *  @param[out] myGlobalIndexes array with localSize 'global' indexes that are owned by this processor
      */
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
+
+    /**
+     *  @brief getOwnedIndexes as function that returns the array, for more convenient use
+     */
+    hmemo::HArray<IndexType> ownedGlobalIndexes() const
+    {
+        hmemo::HArray<IndexType> myGlobalIndexes;
+        getOwnedIndexes( myGlobalIndexes );        // calls the virtual function
+        return myGlobalIndexes;
+    }
 
     /** The following function verifies if the distribution is nothing else than a block
      *  or general block distribution.
