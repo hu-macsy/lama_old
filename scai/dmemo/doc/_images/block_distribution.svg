@@ -2,9 +2,9 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
 "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
-<!-- CreationDate: Thu Dec 20 17:04:52 2018 -->
+<!-- CreationDate: Fri Dec 28 10:12:53 2018 -->
 <!-- Magnification: 1.000 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="8.7in" height="2.1in" viewBox="1035 3813 10393 2464">
+<svg xmlns="http://www.w3.org/2000/svg" width="8.7in" height="2.1in" viewBox="1035 3813 10422 2464">
 <g style="stroke-width:.025in; stroke:black; fill:none">
 <!-- Line: box -->
 <rect x="1800" y="3825" width="600" height="600" rx="0" 
@@ -34,7 +34,7 @@ fill:#00ff00;
 <rect x="6000" y="3825" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="3000" y="3825" width="600" height="600" rx="0" 
@@ -58,13 +58,13 @@ fill:#00ff00;
 <rect x="7200" y="3825" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="6600" y="3825" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="1200" y="3825" width="600" height="600" rx="0" 
@@ -122,19 +122,19 @@ fill:#00ff00;
 <rect x="6450" y="5250" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="7050" y="5250" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="7650" y="5250" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="1650" y="5250" width="600" height="600" rx="0" 
@@ -179,7 +179,7 @@ fill:#ffff00;
 <!-- Text -->
 <text xml:space="preserve" x="3750" y="5025" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
 <!-- Text -->
-<text xml:space="preserve" x="8550" y="5700" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">ownedIndexes</text>
+<text xml:space="preserve" x="8550" y="5700" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">ownedGlobalIndexes</text>
 <!-- Text -->
 <text xml:space="preserve" x="6667" y="5662" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">8</text>
 <!-- Text -->

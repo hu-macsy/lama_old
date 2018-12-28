@@ -12,7 +12,7 @@ The class *Distribution* itself is an abstract base class with many pure methods
 the derived classes, especially operations to get the local indexes on a processor and to determine the owners
 for a set of global indexes.
 
-Distributons are always created on the heap and managed by shared pointers. Therefore different distributed
+Distributions are always created on the heap and managed by shared pointers. Therefore different distributed
 data structures can share the mapping and the lifetime of the distribution ends with the lifetime of the last
 object that uses it.
 
@@ -52,7 +52,7 @@ the shared pointer object.
 
    DistributionPtr dist( new BlockDistribution( N, comm ) );
    auto dist = std::make_shared<BlockDistribution>( N, comm );
-   auto dist = blockDistributon( N );
+   auto dist = blockDistribution( N );
 
 Cyclic Distribution
 ^^^^^^^^^^^^^^^^^^^
@@ -66,19 +66,24 @@ The *CyclicDistribution* creates stripes of the given chunk size and assigns the
 
     Cyclic(2) distribution of 11 elements onto 3 processors.
 
-You create a CyclicDistribution with the shown chunk size of '2' this way:
+Here are the different possibities how to create a cyclic distribution of N
+elements with a chunk size of 2:
     
 .. code-block:: c++
 
-   DistributionPtr cyclic( new CyclicDistribution( N, 2, comm ) );
+   DistributionPtr dist( new CyclicDistribution( N, 2, comm ) );
+   auto dist = std::make_shared<CyclicDistribution>( N, 2 );
+   auto dist = cyclicDistribution( N, 2, comm );
 
 General Block Distribution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The *GenBlockDistribution* create blocks of the given sizes and assigns them successivly to the processes. The sum of
-the sizes have to match the global size.
-
-The following example creates with three parts of size 1, 3 and 2 rows/columns:
+While the block distribution assigns each processor the same number of elements,
+the general block distribution allows for different block sizes and gives by this
+way more flexibility regarding load balancing.
+The *GenBlockDistribution* is specified by a local size for each available processor.
+The sum of the local sizes has to be the global size.
+Here is an example for a general block distribution with such different block sizes.
 
 .. code-block:: c++
 
@@ -113,12 +118,13 @@ by an environment variable and to use this weight for some kind of load distribu
     export SCAI_WEIGHT=0.3,0.5,0.7
     mpirun -np 3 ...
 
-By these values processor 0 will have 200 values, processor 1 333 and processor 2 467 values.
+In the above example processor 0 (with weight 0.3) owns the first 200 values, 
+processor 1 (weight 0.5) gets 333 and processor 2 (with weight 0.7) the last 467 values.
 
 GeneralDistribution
 ^^^^^^^^^^^^^^^^^^^
 
-With the *GeneralDistribution* a fully free distribution can be created. 
+With the *GeneralDistribution* any arbitrary distribution can be created. 
 Therefore, an array with the owner for each global index must be specified.
 The array must only be available on one processor (root).
 
@@ -149,7 +155,7 @@ An alternative constructor uses the individual sets of owned indexes on each pro
                  break;
     }
 
-    auto gen2 = generalDistribution>( N, myIndexes, comm );
+    auto gen2 = generalDistribution( N, myIndexes, comm );
 
 For the latter constructor the number of locally owned indexes must sum up to the global size and
 each global index must appear exactly once in the local array ``myIndexes`` on a processor. It is not possible
@@ -174,8 +180,8 @@ A *GridDistribution* stands for a block distribution of an n-dimenisonal grid in
 
 .. code-block:: c++
 
-    const IndexType N1 = 5;
-    const IndexType N2 = 4;
+    const IndexType N1 = 4;
+    const IndexType N2 = 5;
     Grid globalGrid( N1, N2 );
     Grid procGrid( 2, 2 );
     DistributionPtr gridDist( new GridDistribution( globalGrid, comm, procGrid ) );
@@ -198,7 +204,8 @@ Single Distribution
 ^^^^^^^^^^^^^^^^^^^
 
 A *SingleDistribution* stands for a mapping of a all data to one single processor, i.e. only one
-processor owns all the data.
+processor owns all the data. Such a distribution is used especially for input-output operations
+where only a single processor writes or reads the file.
     
 .. code-block:: c++
 
@@ -214,7 +221,7 @@ A *JoinedDistribuiton* is the concatenation of two mappings.
 
     auto dist1 = blockDistribution( N1 );
     auto dist2 = blockDistribution( N2 );
-    auto dist = joinedDistributions( dist1, dist2 );   // mapping for N1 + N2 elements
+    auto dist = joinedDistribution( dist1, dist2 );   // mapping for N1 + N2 elements
 
 Even if it stands on its own for a distribution, it becomes especially useful for joined data structures
 where the joined data is not built explicitly and exists only implicitly.
@@ -224,7 +231,7 @@ No Distribution
 
 Since there are cases you need to assign a *DistributionPtr* to a constructor or function, but you do not want to
 distribute the data (in one direction) you have the possibility to create a *NoDistribution*. It invokes that there is
-no distribution of the data and all processes have a local copy.
+no distribution of the data and all processors have a local copy.
 
 .. code-block:: c++
 
@@ -243,15 +250,19 @@ For a detailed description of the virtual methods of a distribution we refer to 
 Owned Indexes
 ^^^^^^^^^^^^^
 
-All distributions provides a method to get an array with all global indexes that are owned by
-the corresponding processor. This method does never required any communication and can be called
-at any time.
+All distributions provide a method to get an array with all global indexes that are owned by
+the corresponding processor. This method does never require any communication and can be called
+at any time individually by a processor.
 
 .. code-block:: c++
 
     DistributionPtr dist = ...;
     HArray<IndexType> ownedIndexes;
     dist->getOwnedIndexes( ownedIndexes );
+
+.. code-block:: c++
+
+    auto ownedIndexes = dist->ownedIndexes();
 
 Computation of Ownership
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -272,7 +283,7 @@ The following figure shows a typical example of such a call. Each processor call
 method with its individual set of requried indexes to get the owners.
 
 .. figure:: _images/compute_owners.* 
-    :width: 500px
+    :width: 600px
     :align: center
     :alt: ComputeOwnersBlock
 
@@ -280,9 +291,9 @@ method with its individual set of requried indexes to get the owners.
 
 While for most distributions it is a simple operation to compute the ownership, e.g. for a
 block distribution it is just an  integer divide operation, it can be rather complex for
-general distribution where it also involves communication.
+a general distribution where it also involves communication.
 
-One possible solution is to build on each a processor an array that contains the owner for
+One possible solution is to build on each processor an array that contains the owner for
 each global index. While this is the most efficient solution it has the big disadvantage that
 it might require too much memory, especially for a very large number of processors.
 

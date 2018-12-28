@@ -2,9 +2,9 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
 "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
-<!-- CreationDate: Wed Dec 19 09:14:50 2018 -->
+<!-- CreationDate: Fri Dec 28 10:12:53 2018 -->
 <!-- Magnification: 1.000 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="5.8in" height="2.2in" viewBox="1188 3588 6924 2689">
+<svg xmlns="http://www.w3.org/2000/svg" width="9.4in" height="2.2in" viewBox="1185 3588 11325 2689">
 <g style="stroke-width:.025in; stroke:black; fill:none">
 <!-- Text -->
 <text xml:space="preserve" x="1417" y="6262" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">0</text>
@@ -94,7 +94,7 @@ fill:#00ff00;
 <rect x="6300" y="5250" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Text -->
 <text xml:space="preserve" x="6517" y="5662" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">1</text>
@@ -102,7 +102,7 @@ fill:#ff0000;
 <rect x="6900" y="5250" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Text -->
 <text xml:space="preserve" x="7117" y="5662" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">6</text>
@@ -110,28 +110,10 @@ fill:#ff0000;
 <rect x="7500" y="5250" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Text -->
 <text xml:space="preserve" x="7717" y="5662" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">7</text>
-<!-- Line: box -->
-<rect x="3225" y="4500" width="2925" height="450" rx="0" 
-style="stroke:#000000;stroke-width:7;
-stroke-linejoin:miter; stroke-linecap:butt;
-fill:#00ff00;
-"/>
-<!-- Line: box -->
-<rect x="1200" y="4500" width="1800" height="450" rx="0" 
-style="stroke:#000000;stroke-width:7;
-stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ffff00;
-"/>
-<!-- Line: box -->
-<rect x="6300" y="4500" width="1800" height="450" rx="0" 
-style="stroke:#000000;stroke-width:7;
-stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
-"/>
 <!-- Line: box -->
 <rect x="2550" y="3600" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
@@ -178,19 +160,19 @@ fill:#00ff00;
 <rect x="1950" y="3600" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="4950" y="3600" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="5550" y="3600" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="3150" y="3600" width="600" height="600" rx="0" 
@@ -198,8 +180,6 @@ style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
 fill:#00ff00;
 "/>
-<!-- Text -->
-<text xml:space="preserve" x="4477" y="4837" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
 <!-- Text -->
 <text xml:space="preserve" x="1567" y="4012" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">0</text>
 <!-- Text -->
@@ -221,11 +201,17 @@ fill:#00ff00;
 <!-- Text -->
 <text xml:space="preserve" x="6967" y="4005" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">9</text>
 <!-- Text -->
-<text xml:space="preserve" x="2115" y="4837" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P0</text>
-<!-- Text -->
-<text xml:space="preserve" x="6840" y="4837" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P2</text>
-<!-- Text -->
 <text xml:space="preserve" x="3367" y="4012" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">3</text>
+<!-- Text -->
+<text xml:space="preserve" x="1200" y="4950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P0</text>
+<!-- Text -->
+<text xml:space="preserve" x="3300" y="4950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
+<!-- Text -->
+<text xml:space="preserve" x="6300" y="4950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P2</text>
+<!-- Text -->
+<text xml:space="preserve" x="8400" y="5625" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">ownedGlobalIndexes</text>
+<!-- Text -->
+<text xml:space="preserve" x="8250" y="4050" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">generalDistribution({1,2,0,...})</text>
 <!-- Text -->
 <text xml:space="preserve" x="3367" y="5662" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">0</text>
 </g>
