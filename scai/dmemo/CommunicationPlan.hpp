@@ -236,6 +236,14 @@ public:
      */
     void getInfo( IndexType& quantity, IndexType& offset, PartitionId p ) const;
 
+    /** @brief Remove an entry in the communication plan and get its values
+     *
+     *  @param[in] p is the processor for which entry is removed
+     *  @param[out] quantity is number of entries to communicate with p
+     *  @param[out] offset is the corresponding offset
+     */
+    void removeEntry( IndexType& offset, IndexType& size, const PartitionId p );
+
     /** @brief build a communnication plan from existing one for one processor only */
 
     void extractPlan( const CommunicationPlan& oldPlan, const PartitionId p );

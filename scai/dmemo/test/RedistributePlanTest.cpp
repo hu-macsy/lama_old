@@ -55,7 +55,7 @@ using boost::test_tools::per_element;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( RedistributePlanTestConfig )
+BOOST_AUTO_TEST_SUITE( RedistributePlanTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributePlanTest" );
 
@@ -67,7 +67,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributePlanTest" );
 template<typename ValueType>
 static ValueType globalValue( IndexType globalIndex )
 {
-    return static_cast<ValueType>( 2 * globalIndex + 1 );
+    // return static_cast<ValueType>( 2 * globalIndex + 1 );
+    return static_cast<ValueType>( globalIndex );
 }
 
 template<typename ValueType>
@@ -92,11 +93,40 @@ static HArray<ValueType> distributedArray( const Distribution& dist )
 
 /* --------------------------------------------------------------------- */
 
+template<typename ValueType>
+static HArray<ValueType> distributedDenseMatrix( const Distribution& dist, const IndexType N )
+{
+    HArray<ValueType> localArray;  // local part of the distributed 'global' array
+
+    // use own scope for write access to make sure that access is closed before return
+
+    {
+        IndexType localIndex = 0;   // running local row index
+        IndexType colIndex = 0;     // running column index
+
+        for ( auto& entry : hostWriteOnlyAccess( localArray, dist.getLocalSize() * N ) )
+        {
+            entry = ValueType( 2 * dist.local2Global( localIndex ) + 3 * colIndex );
+            colIndex++;
+            if ( colIndex == N )
+            {
+                colIndex = 0;
+                localIndex++;
+            }
+        }
+
+    }  // filled the local matrix with 'global' values
+
+    return localArray;    // each processor gets its local part
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( redistributeTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
 
-    const IndexType N = 100;
+    const IndexType N = 20;
     const IndexType CHUNK_SIZE = 2;
 
     // just define two arbitrary distributons
@@ -113,12 +143,52 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
     HArray<ValueType> targetArray;
     plan.redistribute( targetArray, sourceArray );
+
+    BOOST_REQUIRE_EQUAL( targetArray.size(), targetDist->getLocalSize() );
+
     BOOST_TEST( hostReadAccess( expTargetArray ) == hostReadAccess( targetArray ), per_element() );
 
     plan.reverse();
 
     HArray<ValueType> newSourceArray;
     plan.redistribute( newSourceArray, targetArray );
+    BOOST_TEST( hostReadAccess( sourceArray ) == hostReadAccess( newSourceArray ), per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( redistributeNTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 20;
+    const IndexType CHUNK_SIZE = 2;
+
+    const IndexType M = 4;
+
+    // just define two arbitrary distributons
+
+    auto sourceDist = blockDistribution( N );
+    auto targetDist = cyclicDistribution( N, CHUNK_SIZE );
+
+    // fill the 'distributed' arrays with 'same' values
+
+    const auto sourceArray = distributedDenseMatrix<ValueType>( *sourceDist, M );
+    const auto expTargetArray = distributedDenseMatrix<ValueType>( *targetDist, M );
+
+    RedistributePlan plan( targetDist, sourceDist );
+
+    HArray<ValueType> targetArray;
+    plan.redistributeN( targetArray, sourceArray, M );
+
+    BOOST_REQUIRE_EQUAL( targetArray.size(), targetDist->getLocalSize() * M );
+
+    BOOST_TEST( hostReadAccess( expTargetArray ) == hostReadAccess( targetArray ), per_element() );
+
+    plan.reverse();
+
+    HArray<ValueType> newSourceArray;
+    plan.redistributeN( newSourceArray, targetArray, M );
     BOOST_TEST( hostReadAccess( sourceArray ) == hostReadAccess( newSourceArray ), per_element() );
 }
 
@@ -201,7 +271,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     BOOST_CHECK( out.str().length() >  0 );
 }
 
-BOOST_AUTO_TEST_CASE( redistributorConstructorFromNewLocalOwnersTest )
+BOOST_AUTO_TEST_CASE( constructorTest )
 {
     using boost::test_tools::per_element;
 

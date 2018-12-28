@@ -77,6 +77,10 @@ public:
      */
     GlobalAddressingPlan( const hmemo::HArray<IndexType>& globalIndexes, const Distribution& dist );
 
+    GlobalAddressingPlan( const GlobalAddressingPlan& other ) = default;
+
+    GlobalAddressingPlan( GlobalAddressingPlan&& other ) = default;
+
     /**
      *  Apply the global addressing plan for a gathering of remote data
      *
@@ -102,7 +106,6 @@ public:
 
 private:
 
-    CommunicatorPtr mComm;                   // kept for convenience
     hmemo::HArray<IndexType> mLocalIndexes;  // localized global addresses from other processors
 };
 

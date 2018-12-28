@@ -356,6 +356,26 @@ BOOST_AUTO_TEST_CASE( getInfoTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( removeTest )
+{
+    // Idea: build a communication plan and call getInfo where quantity and offset are known
+
+    CommunicationPlan plan( HArray<IndexType>( { 2, 0, 0, 3, 1 } ) );
+
+    IndexType n = 0;
+    IndexType offset = 0;
+
+    plan.removeEntry( n, offset, 3 );
+
+    BOOST_CHECK_EQUAL( n, 3 );
+    BOOST_CHECK_EQUAL( offset, 2 );
+
+    CommunicationPlan expectedPlan( HArray<IndexType>( { 2, 0, 0, 0, 1 } ) );
+    CHECK_COMMUNICATION_PLANS_EQUAL( expectedPlan, plan )
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( extractPlanTest )
 {
     // Idea: build a communication plan and call getInfo where quantity and offset are known

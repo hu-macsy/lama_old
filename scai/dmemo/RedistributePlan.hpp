@@ -244,16 +244,20 @@ void RedistributePlan::redistribute( hmemo::HArray<ValueType>& targetArray, cons
         // make sure that target array has sufficient memory
         hmemo::WriteOnlyAccess<ValueType> target( targetArray, getTargetLocalSize() );
     }
+
     // allocate memory for source (provides) and target (required) halo
+
+    const Communicator& comm = mSourceDistribution->getCommunicator();
+
     hmemo::HArray<ValueType> sourceHalo( getExchangeSourceSize() );
     hmemo::HArray<ValueType> targetHalo( getExchangeTargetSize() );
-    SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mExchangeSourceIndexes.size() << " values" )
+
     utilskernel::HArrayUtils::gather( sourceHalo, sourceArray, mExchangeSourceIndexes, common::BinaryOp::COPY );
-    SCAI_LOG_DEBUG( logger, "copy: source -> target " << mKeepTargetIndexes.size() << " values" )
     utilskernel::TransferUtils::copy( targetArray, mKeepTargetIndexes, sourceArray, mKeepSourceIndexes );
-    exchangeHalo( targetHalo, sourceHalo );
-    SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mExchangeTargetIndexes.size() << " values" )
-    const bool uniqueIndexes = true;
+    comm.exchangeByPlan( targetHalo, mExchangeReceivePlan, sourceHalo, mExchangeSendPlan );
+
+    const bool uniqueIndexes = true;   // redistribution is always permutation without double indexes
+
     utilskernel::HArrayUtils::scatter( targetArray, mExchangeTargetIndexes, uniqueIndexes, targetHalo, common::BinaryOp::COPY );
 }
 
@@ -343,17 +347,15 @@ void RedistributePlan::exchangeHaloN(
     const IndexType n ) const
 {
     SCAI_REGION( "RedistributePlan.exchangeHaloN" )
+
     const Communicator& comm = mSourceDistribution->getCommunicator();
+
     // Communication plans are built by multiplication with n
-    CommunicationPlan requiredN( mExchangeReceivePlan );
-    requiredN.multiplyConst( n );
-    CommunicationPlan providesN( mExchangeSendPlan );
-    providesN.multiplyConst( n );
-    SCAI_LOG_DEBUG( logger, "requiredN ( n = " << n << "): " << requiredN )
-    SCAI_LOG_DEBUG( logger, "providesN ( n = " << n << "): " << providesN )
-    // use asynchronous communication to avoid deadlocks
-    comm.exchangeByPlan( targetHalo, requiredN, sourceHalo, providesN );
-    // synchronization is done implicitly at the end of this scope
+
+    auto recvPlanN = mExchangeReceivePlan.constructN( n );
+    auto sendPlanN = mExchangeSendPlan.constructN( n );
+
+    comm.exchangeByPlan( targetHalo, recvPlanN, sourceHalo, sendPlanN );
 }
 
 } /* end namespace dmemo */

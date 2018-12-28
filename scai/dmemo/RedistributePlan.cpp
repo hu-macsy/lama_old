@@ -34,6 +34,7 @@
 // local library
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GlobalExchangePlan.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
@@ -61,68 +62,6 @@ SCAI_LOG_DEF_LOGGER( RedistributePlan::logger, "RedistributePlan" )
 
 /* -------------------------------------------------------------------------- */
 
-// Partitions local indexes of the source distribution into "keep"
-// and "exchange", based on the new owner of each individual index.
-static void partitionSourceIndexes( HArray<IndexType> & keepLocalIndexes,
-                                    HArray<IndexType> & exchangeLocalIndexes,
-                                    const HArray<PartitionId> & newOwnersOfLocalElements,
-                                    const Distribution& sourceDist )
-{
-    SCAI_ASSERT_EQ_DEBUG( newOwnersOfLocalElements.size(), sourceDist.getLocalSize(), "sourceDist and newOwners must have same size" );
-    const auto rank = sourceDist.getCommunicator().getRank();
-    const auto numPartitions = sourceDist.getCommunicator().getSize();
-    const auto sourceNumLocal = sourceDist.getLocalSize();
-
-    const auto rNewOwners = hostReadAccess( newOwnersOfLocalElements );
-    auto wKeep = hostWriteOnlyAccess( keepLocalIndexes, sourceNumLocal );
-    auto wExchange = hostWriteOnlyAccess( exchangeLocalIndexes, sourceNumLocal );
-
-    IndexType numKeep = 0;
-    IndexType numExchange = 0;
-
-    for ( IndexType localSourceIndex = 0; localSourceIndex < sourceDist.getLocalSize(); ++localSourceIndex )
-    {
-        const auto newOwner = rNewOwners[localSourceIndex];
-        SCAI_ASSERT_VALID_INDEX( newOwner, numPartitions, "owner index out of range" );
-
-        if ( rank == newOwner )
-        {
-            wKeep[numKeep++] = localSourceIndex;
-        }
-        else
-        {
-            wExchange[numExchange++] = localSourceIndex;
-        }
-    }
-
-    wKeep.resize( numKeep );
-    wExchange.resize( numExchange );
-}
-
-template <typename ValueType>
-static HArray<ValueType> gather( const HArray<ValueType> & source, const HArray<IndexType> & indexes )
-{
-    HArray<ValueType> result;
-    HArrayUtils::gather( result, source, indexes, common::BinaryOp::COPY );
-    return result;
-}
-
-static HArray<IndexType> local2global( const HArray<IndexType> & localIndexes, const Distribution& dist )
-{
-    HArray<IndexType> globalIndexes;
-
-    auto wGlobal = hostWriteOnlyAccess( globalIndexes, localIndexes.size() );
-    auto rLocal = hostReadAccess( localIndexes );
-
-    std::transform( rLocal.begin(), rLocal.end(), wGlobal.begin(),
-                    [&dist] ( IndexType localIndex )
-    {
-        return dist.local2Global( localIndex );
-    } );
-
-    return globalIndexes;
-}
-
 RedistributePlan::RedistributePlan( DistributionPtr targetDistribution, DistributionPtr sourceDistribution ) : 
 
     mSourceDistribution( sourceDistribution ), 
@@ -140,7 +79,7 @@ RedistributePlan::RedistributePlan( DistributionPtr targetDistribution, Distribu
 
     const auto targetGlobalIndexes = initializeFromNewOwners( targetOwners, *sourceDistribution );
 
-    SCAI_ASSERT_DEBUG(
+    SCAI_ASSERT_ERROR(
         HArrayUtils::all ( targetGlobalIndexes, common::CompareOp::EQ, targetDistribution->ownedGlobalIndexes() ),
         "Internal error: mismatch between expected global indexes and target distribution" );
 }
@@ -163,58 +102,84 @@ RedistributePlan::RedistributePlan(
                                                         sourceDistribution->getCommunicatorPtr() );
 }
 
+/* -------------------------------------------------------------------------- */
+
+/** Help routine to extract 'local' indexes of a communication plan */
+
+static void splitSelf( HArray<IndexType>& local, 
+                       CommunicationPlan& plan, 
+                       HArray<IndexType>& permutation,
+                       const IndexType rank )
+{
+    IndexType size;
+    IndexType offset;
+
+    plan.removeEntry( size, offset, rank );
+
+    const IndexType n = permutation.size();
+
+    {
+        auto wLocal = hostWriteOnlyAccess( local, size );
+        auto wPermutation = hostWriteAccess( permutation );
+ 
+        for ( IndexType i = 0; i < size; ++i )
+        {
+            wLocal[i] = wPermutation[i + offset];
+        }
+
+        for ( IndexType i = offset; i + size < n; ++i )
+        {
+            wPermutation[i] = wPermutation[i + size];
+        }
+
+        wPermutation.resize( n - size );
+    }
+
+    SCAI_ASSERT_EQ_DEBUG( permutation.size(), plan.totalQuantity(), "serious mismatch" );
+}
+
 // Note: returns global target indexes
 
 HArray<IndexType> RedistributePlan::initializeFromNewOwners( 
-    const hmemo::HArray<PartitionId> & newOwnersOfLocalElements, 
+    const hmemo::HArray<PartitionId>& newOwners, 
     const Distribution& sourceDist )
 {
-    const auto sourceNumLocal = sourceDist.getLocalSize();
+    HArray<PartitionId> sourceGlobalIndexes = sourceDist.ownedGlobalIndexes();
 
-    SCAI_ASSERT_EQ_ERROR( sourceNumLocal, newOwnersOfLocalElements.size(),
+    SCAI_ASSERT_EQ_ERROR( sourceGlobalIndexes.size(), newOwners.size(),
                           "Array of owners must have size equal to number of local values in source distribution." );
 
-    HArray<IndexType> providedSourceIndexes;
-    partitionSourceIndexes( mKeepSourceIndexes, providedSourceIndexes, newOwnersOfLocalElements, sourceDist );
+    GlobalExchangePlan plan( newOwners, sourceDist.getCommunicatorPtr() );
 
-    const auto globalKeepIndexes = local2global ( mKeepSourceIndexes, sourceDist );
-    const auto globalProvidedIndexes = local2global( providedSourceIndexes, sourceDist );
-    const auto newOwnersOfProvided = gather( newOwnersOfLocalElements, providedSourceIndexes );
+    HArray<IndexType> inGlobalIndexes;
+    plan.exchange( inGlobalIndexes, sourceGlobalIndexes );
 
-    // We only put the exchange indexes into the Halo, as this might work considerably better when
-    // most elements are kept (present both in source and target dist). This means that the Halo is working
-    // with the index set given by our exchange indexes rather than local indexes of the source distribution
+    // targetGlobalIndexes = sort( inGlobalIndexes ), keep permutation
 
-    HArray<IndexType> sizes;
-    HArray<IndexType> perm;
-
-    const Communicator& comm = sourceDist.getCommunicator();
-    HArrayUtils::bucketSortSizes( sizes, perm, newOwnersOfProvided, comm.getSize() );
-
-    mExchangeSendPlan = CommunicationPlan( hostReadAccess( sizes ) );
-    mExchangeReceivePlan = comm.transpose( mExchangeSendPlan );
-
-    SCAI_LOG_INFO( logger, "RedistributePlan with new owners, send plan = " << mExchangeSendPlan )
-
-    HArray<IndexType> sortedGlobalProvidedIndexes;
-    HArrayUtils::gather( sortedGlobalProvidedIndexes, globalProvidedIndexes, perm, common::BinaryOp::COPY );
-
-    HArray<IndexType> requiredIndexes;
-    comm.exchangeByPlan( requiredIndexes, mExchangeReceivePlan, sortedGlobalProvidedIndexes, mExchangeSendPlan );
-
-    HArray<IndexType> sortedRequiredIndexes;
-    HArray<IndexType> sortPermutation;
-    HArrayUtils::sort( &sortPermutation, &sortedRequiredIndexes, requiredIndexes, true );
-
+    HArray<IndexType> sortPerm;
     HArray<IndexType> targetGlobalIndexes;
-    HArray<IndexType> mapFromExchangeToTarget;
-    HArrayUtils::mergeAndMap( targetGlobalIndexes, mapFromExchangeToTarget, mKeepTargetIndexes, sortedRequiredIndexes, globalKeepIndexes );
+    HArrayUtils::sort( &sortPerm, &targetGlobalIndexes, inGlobalIndexes, true );
 
-    // Repurpose the storage of sortedRequiredIndexes (same size and type as inversePerm) to further additional memory allocation
-    auto inversePerm = std::move( sortedRequiredIndexes );
-    HArrayUtils::inversePerm( inversePerm, sortPermutation );
-    mExchangeSourceIndexes = gather( providedSourceIndexes, perm );
-    mExchangeTargetIndexes = gather( mapFromExchangeToTarget, inversePerm );
+    // the inverse permutation tells us exactly where each of the incoming elements go
+    HArrayUtils::inversePerm( mExchangeTargetIndexes, sortPerm );
+
+    // move member variables of the exchange plan to here
+    plan.splitUp( mExchangeSourceIndexes, mExchangeSendPlan, mExchangeReceivePlan );
+
+    const PartitionId rank = sourceDist.getCommunicator().getRank();
+
+    // extract self communication, use own arrays for it
+
+    splitSelf( mKeepSourceIndexes, mExchangeSendPlan, mExchangeSourceIndexes, rank );
+    splitSelf( mKeepTargetIndexes, mExchangeReceivePlan, mExchangeTargetIndexes, rank );
+
+    SCAI_ASSERT_EQ_ERROR( mKeepSourceIndexes.size(), mKeepTargetIndexes.size(), "serious" )
+
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mKeepSourceIndexes, sourceDist.getLocalSize() ), "serious" )
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mExchangeSourceIndexes, sourceDist.getLocalSize() ), "serious" )
+
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mKeepTargetIndexes, targetGlobalIndexes.size() ), "serious" )
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mExchangeTargetIndexes, targetGlobalIndexes.size() ), "serious" )
 
     return targetGlobalIndexes;
 }
