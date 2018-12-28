@@ -222,7 +222,7 @@ public:
      * Attention: keep in mind that size() might be smaller than
      * the number of partitions involved.
      */
-    inline const Entry& operator[]( const PartitionId index ) const;
+    inline const Entry& operator[]( PartitionId index ) const;
 
     /** @brief Overrides the routine of base class Printable. */
 
@@ -234,7 +234,7 @@ public:
      *  @param[out] offset is the corresponding offset
      *  @param[in] p is the partition for which info is needed
      */
-    void getInfo( IndexType& quantity, IndexType& offset, PartitionId p ) const;
+    void getInfo( IndexType& quantity, IndexType& offset, const PartitionId p ) const;
 
     /** @brief Remove an entry in the communication plan and get its values
      *
@@ -242,7 +242,7 @@ public:
      *  @param[out] quantity is number of entries to communicate with p
      *  @param[out] offset is the corresponding offset
      */
-    void removeEntry( IndexType& offset, IndexType& size, const PartitionId p );
+    void removeEntry( IndexType& quantity, IndexType& offset, const PartitionId p );
 
     /** @brief build a communnication plan from existing one for one processor only */
 
@@ -331,7 +331,7 @@ PartitionId CommunicationPlan::size() const
     return static_cast<PartitionId>( mEntries.size() );
 }
 
-const CommunicationPlan::Entry& CommunicationPlan::operator[]( const PartitionId id ) const
+const CommunicationPlan::Entry& CommunicationPlan::operator[]( PartitionId id ) const
 {
     return mEntries.at( id );
 }

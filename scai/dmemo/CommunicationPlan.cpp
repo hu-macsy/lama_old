@@ -59,14 +59,14 @@ CommunicationPlan::CommunicationPlan() :
 
 /* ------------------------------------------------------------------------- */
 
-CommunicationPlan::CommunicationPlan( const IndexType quantities[], const PartitionId size )
+CommunicationPlan::CommunicationPlan( const IndexType quantities[], PartitionId size )
 {
     defineByQuantities( quantities, size );
 }
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::defineBySingleEntry( const IndexType quantity, const PartitionId partner )
+void CommunicationPlan::defineBySingleEntry( const IndexType quantity, PartitionId partner )
 {
     mQuantity = 0;
 
@@ -198,7 +198,7 @@ void CommunicationPlan::purge()
 
 /* ------------------------------------------------------------------------- */
 
-void CommunicationPlan::defineByQuantities( const IndexType quantities[], const PartitionId size )
+void CommunicationPlan::defineByQuantities( const IndexType quantities[], PartitionId size )
 {
     SCAI_LOG_INFO( logger, "define communication plan for " << size << " processors from array with quantities" )
 
@@ -270,7 +270,7 @@ void CommunicationPlan::getInfo( IndexType& quantity, IndexType& offset, Partiti
 
 /* ----------------------------------------------------------------------- */
 
-void CommunicationPlan::removeEntry( IndexType& quantity, IndexType& offset, const PartitionId p )
+void CommunicationPlan::removeEntry( IndexType& quantity, IndexType& offset, PartitionId p )
 {
     // set initial values in case we do not find an entry for p
 
@@ -308,7 +308,7 @@ void CommunicationPlan::removeEntry( IndexType& quantity, IndexType& offset, con
 
 /* ----------------------------------------------------------------------- */
 
-void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const PartitionId p )
+void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, PartitionId p )
 {
     mEntries.clear();
     mQuantity = 0;
@@ -347,7 +347,7 @@ void CommunicationPlan::writeAt( std::ostream& stream ) const
 
 /* ----------------------------------------------------------------------- */
 
-CommunicationPlan CommunicationPlan::buildByQuantities( const IndexType quantities[], const PartitionId size )
+CommunicationPlan CommunicationPlan::buildByQuantities( const IndexType quantities[], PartitionId size )
 {
     CommunicationPlan plan;
     plan.defineByQuantities( quantities, size );
