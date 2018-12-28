@@ -300,6 +300,10 @@ void RedistributePlan::redistributeV(
 
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
+    {
+        auto t = hmemo::hostWriteOnlyAccess<ValueType>( targetArray, targetOffsets[getTargetLocalSize()] );
+    }
+
     hmemo::HArray<IndexType> sourceSendSizes;
     hmemo::HArray<IndexType> receiveTargetSizes;
 

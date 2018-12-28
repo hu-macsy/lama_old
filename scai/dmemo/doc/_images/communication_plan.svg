@@ -2,7 +2,7 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
 "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
-<!-- CreationDate: Wed Dec 19 09:14:50 2018 -->
+<!-- CreationDate: Fri Dec 28 12:46:55 2018 -->
 <!-- Magnification: 1.000 -->
 <svg xmlns="http://www.w3.org/2000/svg" width="10.2in" height="5.0in" viewBox="738 3138 12284 6024">
 <g style="stroke-width:.025in; stroke:black; fill:none">
@@ -22,19 +22,13 @@ fill:#ffff00;
 <rect x="6150" y="4950" width="2550" height="1350" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="8850" y="4950" width="2550" height="1350" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
 fill:#00ffff;
-"/>
-<!-- Line: box -->
-<rect x="3450" y="3150" width="2550" height="1350" rx="0" 
-style="stroke:#000000;stroke-width:7;
-stroke-linejoin:miter; stroke-linecap:butt;
-fill:#00ff00;
 "/>
 <!-- Line: box -->
 <rect x="750" y="3150" width="2550" height="1350" rx="0" 
@@ -46,7 +40,7 @@ fill:#ffff00;
 <rect x="6150" y="3150" width="2550" height="1350" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="8850" y="3150" width="2550" height="1350" rx="0" 
@@ -55,10 +49,16 @@ stroke-linejoin:miter; stroke-linecap:butt;
 fill:#00ffff;
 "/>
 <!-- Line: box -->
+<rect x="3450" y="3150" width="2550" height="1350" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Line: box -->
 <rect x="4725" y="3825" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="4125" y="3825" width="600" height="600" rx="0" 
@@ -100,7 +100,7 @@ fill:#00ff00;
 <rect x="7425" y="3825" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="8025" y="3825" width="600" height="600" rx="0" 
@@ -124,7 +124,7 @@ fill:#ffff00;
 <rect x="10125" y="3825" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="10725" y="3825" width="600" height="600" rx="0" 
@@ -154,7 +154,7 @@ fill:#00ffff;
 <rect x="2025" y="3825" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="1425" y="3825" width="600" height="600" rx="0" 
@@ -184,7 +184,7 @@ fill:#00ffff;
 <rect x="3600" y="6750" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="3000" y="6750" width="600" height="600" rx="0" 
@@ -208,7 +208,7 @@ fill:#ffff00;
 <rect x="3600" y="7350" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="3000" y="7350" width="600" height="600" rx="0" 
@@ -250,7 +250,7 @@ fill:#00ff00;
 <rect x="3600" y="7950" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="4200" y="7950" width="600" height="600" rx="0" 
@@ -274,7 +274,7 @@ fill:#ffff00;
 <rect x="3600" y="8550" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="4200" y="8550" width="600" height="600" rx="0" 
@@ -304,7 +304,7 @@ fill:#00ffff;
 <rect x="2025" y="5625" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="1425" y="5625" width="600" height="600" rx="0" 
@@ -328,7 +328,7 @@ fill:#ffff00;
 <rect x="4725" y="5625" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="4125" y="5625" width="600" height="600" rx="0" 
@@ -370,7 +370,7 @@ fill:#00ff00;
 <rect x="7425" y="5625" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="8025" y="5625" width="600" height="600" rx="0" 
@@ -394,7 +394,7 @@ fill:#ffff00;
 <rect x="10125" y="5625" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="10725" y="5625" width="600" height="600" rx="0" 
@@ -424,7 +424,7 @@ fill:#00ffff;
 <rect x="6750" y="6750" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="6150" y="6750" width="600" height="600" rx="0" 
@@ -448,7 +448,7 @@ fill:#ffff00;
 <rect x="6750" y="7350" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="6150" y="7350" width="600" height="600" rx="0" 
@@ -490,7 +490,7 @@ fill:#00ff00;
 <rect x="6750" y="7950" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="7350" y="7950" width="600" height="600" rx="0" 
@@ -514,7 +514,7 @@ fill:#ffff00;
 <rect x="6750" y="8550" width="600" height="600" rx="0" 
 style="stroke:#000000;stroke-width:7;
 stroke-linejoin:miter; stroke-linecap:butt;
-fill:#ff0000;
+fill:#ffa1a1;
 "/>
 <!-- Line: box -->
 <rect x="7350" y="8550" width="600" height="600" rx="0" 
@@ -535,27 +535,27 @@ fill:#00ff00;
 <!-- Text -->
 <text xml:space="preserve" x="7567" y="8962" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">0</text>
 <!-- Text -->
-<text xml:space="preserve" x="4575" y="5400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
-<!-- Text -->
-<text xml:space="preserve" x="1875" y="5400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P0</text>
-<!-- Text -->
-<text xml:space="preserve" x="7275" y="5400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P2</text>
-<!-- Text -->
-<text xml:space="preserve" x="9975" y="5400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P3</text>
-<!-- Text -->
-<text xml:space="preserve" x="4575" y="3600" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
-<!-- Text -->
-<text xml:space="preserve" x="1875" y="3600" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P0</text>
-<!-- Text -->
-<text xml:space="preserve" x="7275" y="3600" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P2</text>
-<!-- Text -->
-<text xml:space="preserve" x="9975" y="3600" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P3</text>
-<!-- Text -->
 <text xml:space="preserve" x="11700" y="3900" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">send plan</text>
 <!-- Text -->
 <text xml:space="preserve" x="11700" y="5775" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">recv plan</text>
 <!-- Text -->
 <text xml:space="preserve" x="8550" y="7950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">transpose</text>
+<!-- Text -->
+<text xml:space="preserve" x="900" y="5400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P0</text>
+<!-- Text -->
+<text xml:space="preserve" x="3600" y="5400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
+<!-- Text -->
+<text xml:space="preserve" x="6300" y="5400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P2</text>
+<!-- Text -->
+<text xml:space="preserve" x="9000" y="5400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P3</text>
+<!-- Text -->
+<text xml:space="preserve" x="9000" y="3600" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P3</text>
+<!-- Text -->
+<text xml:space="preserve" x="6300" y="3600" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P2</text>
+<!-- Text -->
+<text xml:space="preserve" x="900" y="3600" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P0</text>
+<!-- Text -->
+<text xml:space="preserve" x="3600" y="3600" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
 <!-- Text -->
 <text xml:space="preserve" x="3742" y="4237" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">1</text>
 <!-- Text -->

@@ -46,32 +46,11 @@ namespace dmemo
 class Distribution;
 
 /** 
- *   Data structure that contains owner and local offsets for all 'global' indexes
-
-    // the following arrays will only be available if enableAnyAddressing has been called
-    // Note: if set the array mGlobal2Local is no more needed
-
-    // mutable hmemo::HArray<PartitionId> mAllOwners;         // will have globalSize entries on each processor
-    // mutable hmemo::HArray<IndexType> mAllLocalOffsets;     // local size on each partition
-    // mutable hmemo::HArray<IndexType> mAllLocal2Global;     // sorts elements into buckets
-    // mutable hmemo::HArray<IndexType> mAllGlobal2Local;     // sorts elements into buckets
-
-    // Example
-    // index       0    1    2    3   4    5    6    7   8   9   10   11   12
-    // mOwners:    0    1    2    0   2    0    1    0   0   1    1    2    2
-    // Offsets:    0                       5                 9                    13
-    // perm   :    0    3    5    7   8    1    6    9  10   2    4   11   12     local2Global
-    // perm'  :    0    5    9    1  10    2    6    3   4   7    8   11   12     global2Local
-    //
-    // Note: perm is identity iff we have a block distribution
+ *   Data structure that provides owner and local offsets for all 'global' indexes
  */
-
 struct COMMON_DLL_IMPORTEXPORT AnyAddressing
 {
-    hmemo::HArray<PartitionId> allOwners;         // will have globalSize entries on each processor
-    hmemo::HArray<IndexType> allLocalOffsets;     // local size on each partition
-    hmemo::HArray<IndexType> allLocal2Global;     // sorts elements into buckets
-    hmemo::HArray<IndexType> allGlobal2Local;     // inverse to allLocal2Global
+    /** Construct arrays for any addressing from an aribtrary distribution. */
 
     AnyAddressing( const Distribution& dist );
 
@@ -83,19 +62,57 @@ struct COMMON_DLL_IMPORTEXPORT AnyAddressing
 
     PartitionId owner( const IndexType globalIndex ) const
     {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, allOwners.size(), "illegal" )
         return allOwners[ globalIndex ];
     }
 
     IndexType localIndex( const IndexType globalIndex, const PartitionId owner ) const
     {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, allOwners.size(), "illegal" )
         // here the owner is important as local index  requires size offsets
         return allGlobal2Local[ globalIndex ] - allLocalOffsets[ owner ];
     }
 
     IndexType globalIndex( const IndexType localIndex, const PartitionId owner ) const
     {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( localIndex, localSize( owner ), "illegal" )
         return allLocal2Global[ localIndex + allLocalOffsets[ owner ] ];
     }
+
+private:
+
+    /** Array that contains for each global index the owner 
+     *
+     *  \code
+     *     allOwners = {  0,   1,   2,   0,  2,   0,   1,   0,  0,  1,   1,   2,   2 }
+     *  \endcode
+     */
+    hmemo::HArray<PartitionId> allOwners;         // will have globalSize entries on each processor
+
+    /** Running offsets for all local sizes on each processor */
+
+    hmemo::HArray<IndexType> allLocalOffsets;     // local size on each partition
+
+    /** Array that contains for each processor contiguously the owned indexes
+     *
+     *  \code
+     *     allOwners       = {  0,   1,   2,   0,  2,   0,   1,   0,  0,   1,   1,   2,   2  }
+     *     allLocal2Global = {  0,   3,   5,   7,  8 |  1,   6,   9,  10 | 2,   4,   11,  12 }
+     *     allLocalOffsets = {  0,                   ,  5,               , 9,               , 13 }
+     *  \endcode
+     */
+    hmemo::HArray<IndexType> allLocal2Global; 
+
+    /**
+     *   The inverse permutation to allLocal2Global.
+     *
+     *     allOwners       = {  0,   1,   2,   0,  2,   0,   1,   0,  0,   1,   1,   2,   2  }
+     *     allGlobal2Local = {  0,   5,   9,   1,  10,  2,   6,   3,  4,   7,   8,  11,   12 }
+     *
+     *     So for a global index k we get the owner by allOwners[k] and the local offset there
+     *     by allGlobal2Local[k] - allLocalOffsets[owner].
+     */
+    hmemo::HArray<IndexType> allGlobal2Local;
 };
 
 } /* end namespace dmemo */

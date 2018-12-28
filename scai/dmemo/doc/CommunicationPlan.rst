@@ -3,9 +3,12 @@
 CommunicationPlan
 =================
 
-The CommunicationPlan is one central data structure used in the dmemo module
-for irregular communication. It specifies for each other processor the number of entries
-that will be either sent to or received from it.
+The CommunicationPlan is the data structure used in the dmemo module
+for communication of contiguous sections between arbitrary processors.
+It specifies for each pair (p, q) of processors how many data is sent
+from processor p to processor q. It is built by a call on
+each processor with the number of quantities this processor wants to
+exchange with other processors.
 
 .. code-block:: c++
 
@@ -38,15 +41,17 @@ The following figure shows an example of a send and receive plan for four proces
 
 A communicator provides a method to exchange data between processors by using the 
 communication plans. The send and receive plan must match in the above sense that one
-it the transpose of the other one.
+it the transpose of the other one. 
 
 .. code-block:: c++
 
     comm.exchangeByPlan( recvArray, recvPlan, sendArray, sendPlan );
 
 .. figure:: _images/exchange_by_plan.* 
-    :width: 800px
+    :width: 700px
     :align: center
     :alt: ExchangeByPlan 
 
+The communication plans are used in more complex plans for arbitrary communication,
+e.g. GlobalExchangePlan, GlobalAddressingPlan, HaloPlan and RedistributePlan.
 

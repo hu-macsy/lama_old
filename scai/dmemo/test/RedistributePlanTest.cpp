@@ -38,6 +38,7 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/hmemo/HostReadAccess.hpp>
 
 #include <memory>
@@ -189,6 +190,103 @@ BOOST_AUTO_TEST_CASE( redistributeNTest )
 
     HArray<ValueType> newSourceArray;
     plan.redistributeN( newSourceArray, targetArray, M );
+    BOOST_TEST( hostReadAccess( sourceArray ) == hostReadAccess( newSourceArray ), per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+static HArray<IndexType> distributedOffsets( const Distribution& dist )
+{
+    const IndexType localN = dist.getLocalSize();
+
+    HArray<IndexType> localArray;  // local part of the distributed 'global' array
+
+    {
+        auto wLocal = hostWriteOnlyAccess( localArray, localN + 1 );
+
+        // use own scope for write access to make sure that access is closed before return
+
+        for ( IndexType localIndex = 0; localIndex < localN; ++localIndex )
+        {
+            wLocal[localIndex] = dist.local2Global( localIndex ) % 5;
+        }
+    }
+
+    localArray.resize( localN );
+
+    utilskernel::HArrayUtils::scan1( localArray );
+
+    return localArray;    // each processor gets its local part
+}
+
+template<typename ValueType>
+static HArray<ValueType> distributedRaggedArray( const Distribution& dist, const HArray<IndexType> offsets )
+{
+    HArray<ValueType> localRaggedArray;
+
+    const IndexType localN = dist.getLocalSize();
+
+    SCAI_ASSERT_EQ_ERROR( offsets.size(), localN + 1, "serious mismatch" )
+
+    {
+        auto rOffsets  = hostReadAccess( offsets );
+        auto wLocal    = hostWriteOnlyAccess( localRaggedArray, rOffsets[localN] );
+
+        IndexType localIndex = 0;
+
+        for ( IndexType i = 0; i < localN; ++i )
+        {
+            IndexType sizeI = rOffsets[i + 1] - rOffsets[i];
+            IndexType globalI = dist.local2Global( i );
+
+            for ( IndexType j = 0; j < sizeI; ++j )
+            {
+                wLocal[localIndex++] = globalI + 2 * j;
+            }
+        }
+
+        SCAI_ASSERT_EQ_ERROR( localIndex, rOffsets[localN], "serious mismatch" )
+    }
+
+    return localRaggedArray;
+}
+
+BOOST_AUTO_TEST_CASE( redistributeVTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    const IndexType N = 30;
+    const IndexType CHUNK_SIZE = 2;
+
+    // just define two arbitrary distributons
+
+    auto sourceDist = blockDistribution( N );
+    auto targetDist = cyclicDistribution( N, CHUNK_SIZE );
+
+    // fill the 'distributed' arrays with 'same' values
+
+    const auto sourceOffsets = distributedOffsets( *sourceDist );
+    SCAI_LOG_DEBUG( logger, "source offsets = " << printIt( sourceOffsets ) )
+
+    const auto targetOffsets = distributedOffsets( *targetDist );
+    SCAI_LOG_DEBUG( logger, "target offsets = " << printIt( targetOffsets ) )
+
+    const auto sourceArray = distributedRaggedArray<ValueType>( *sourceDist, sourceOffsets );
+    SCAI_LOG_DEBUG( logger, "source array = " << printIt( sourceArray ) )
+    const auto expTargetArray = distributedRaggedArray<ValueType>( *targetDist, targetOffsets );
+    SCAI_LOG_DEBUG( logger, "exp target array = " << printIt( expTargetArray ) )
+
+    RedistributePlan plan( targetDist, sourceDist );
+
+    HArray<ValueType> targetArray;
+    plan.redistributeV( targetArray, targetOffsets, sourceArray, sourceOffsets );
+
+    BOOST_TEST( hostReadAccess( expTargetArray ) == hostReadAccess( targetArray ), per_element() );
+
+    plan.reverse();
+
+    HArray<ValueType> newSourceArray;
+    plan.redistributeV( newSourceArray, sourceOffsets, targetArray, targetOffsets );
     BOOST_TEST( hostReadAccess( sourceArray ) == hostReadAccess( newSourceArray ), per_element() );
 }
 
