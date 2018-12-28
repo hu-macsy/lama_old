@@ -297,6 +297,38 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( findOwnerTest )
+{
+    const IndexType globalK = 6;   // element for which we find owner
+
+    TestDistributions allDist( 17 );
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        const auto& dist = *allDist[i];
+
+        // take the expected owner from the array version
+
+        auto owners = dist.owner( hmemo::HArray<IndexType>( { globalK } ) );
+        PartitionId expectedOwner = owners[0];
+
+        PartitionId owner = dist.findOwner( globalK );
+        BOOST_CHECK_EQUAL( expectedOwner, owner );
+
+        // force the use of the default method of base class
+        owner = dist.Distribution::findOwner( globalK );
+        BOOST_CHECK_EQUAL( expectedOwner, owner );
+
+        if ( dist.hasAnyAddressing() )
+        {
+            owner = dist.getAnyOwner( globalK );
+            BOOST_CHECK_EQUAL( expectedOwner, owner );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( computeOwnersTest )
 {
     TestDistributions allDist( 17 );

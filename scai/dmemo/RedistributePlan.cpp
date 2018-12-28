@@ -191,9 +191,9 @@ void RedistributePlan::writeAt( std::ostream& stream ) const
     stream << "RedistributePlan( ";
     stream << *mSourceDistribution << "->" << *mTargetDistribution;
     stream << ", " << getSourceLocalSize() << "->" << getTargetLocalSize();
-    stream << ", local:" << getNumLocalValues();
-    stream << ", source halo :" << getExchangeSourceSize();
-    stream << ", target halo :" << getExchangeTargetSize();
+    stream << ", keeps:" << mKeepSourceIndexes.size();
+    stream << ", source exchg :" << mExchangeSourceIndexes.size();
+    stream << ", target exchg :" << mExchangeTargetIndexes.size();
     stream << ")";
 }
 

@@ -29,9 +29,12 @@
 
 #pragma once
 
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/SingleDistribution.hpp>
+#include <scai/dmemo/JoinedDistribution.hpp>
 
 namespace scai
 {
@@ -121,6 +124,12 @@ public:
         PartitionId owner = comm->getSize() / 2;
 
         push_back( DistributionPtr( new SingleDistribution( globalSize, comm, owner ) ) );
+
+        const IndexType chunkSize = 3;
+        push_back( cyclicDistribution( globalSize, chunkSize, comm ) );
+
+        const IndexType n1 = globalSize / 3;   // position where we split
+        push_back( joinedDistribution( blockDistribution( globalSize - n1 , comm), blockDistribution( n1, comm ) ) );
     }
 
 private:

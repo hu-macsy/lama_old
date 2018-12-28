@@ -152,46 +152,25 @@ public:
         const hmemo::HArray<ValueType>& sourceArray,
         const hmemo::HArray<IndexType>& sourceOffsets ) const;
 
-    IndexType getExchangeSourceSize() const
-    {
-        return mExchangeSourceIndexes.size();
-    }
-    IndexType getExchangeTargetSize() const
-    {
-        return mExchangeTargetIndexes.size();
-    }
-
-    template<typename ValueType>
-    void exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const;
-
-    template<typename ValueType>
-    void exchangeHaloN(
-        hmemo::HArray<ValueType>& targetHalo,
-        const hmemo::HArray<ValueType>& sourceHalo,
-        const IndexType n ) const;
-
-    void buildVPlans( const IndexType haloSourceSizes[], const IndexType haloTargetSizes[] ) const;
-
     const hmemo::HArray<IndexType>& getKeepSourceIndexes() const
     {
         return mKeepSourceIndexes;
     }
-    ;
+
     const hmemo::HArray<IndexType>& getKeepTargetIndexes() const
     {
         return mKeepTargetIndexes;
     }
-    ;
+
     const hmemo::HArray<IndexType>& getExchangeSourceIndexes() const
     {
         return mExchangeSourceIndexes;
     }
-    ;
+
     const hmemo::HArray<IndexType>& getExchangeTargetIndexes() const
     {
         return mExchangeTargetIndexes;
     }
-    ;
 
     /** Reverse the RedistributePlan.
      *
@@ -208,10 +187,12 @@ private:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    /*
     IndexType getNumLocalValues() const
     {
         return static_cast<IndexType>( mKeepSourceIndexes.size() );
     }
+    */
 
     DistributionPtr mSourceDistribution;
     DistributionPtr mTargetDistribution;
@@ -240,17 +221,16 @@ template<typename ValueType>
 void RedistributePlan::redistribute( hmemo::HArray<ValueType>& targetArray, const hmemo::HArray<ValueType>& sourceArray ) const
 {
     SCAI_REGION( "RedistributePlan.redistribute" )
-    {
-        // make sure that target array has sufficient memory
-        hmemo::WriteOnlyAccess<ValueType> target( targetArray, getTargetLocalSize() );
-    }
 
-    // allocate memory for source (provides) and target (required) halo
+    targetArray.clear();                        // just invalidate all valid data
+    targetArray.resize( getTargetLocalSize() ); // resize it correctly
 
     const Communicator& comm = mSourceDistribution->getCommunicator();
 
-    hmemo::HArray<ValueType> sourceHalo( getExchangeSourceSize() );
-    hmemo::HArray<ValueType> targetHalo( getExchangeTargetSize() );
+    // allocate memory for source (provides) and target (required) that is exchanged
+
+    hmemo::HArray<ValueType> sourceHalo( mExchangeSourceIndexes.size() );
+    hmemo::HArray<ValueType> targetHalo( mExchangeTargetIndexes.size() );
 
     utilskernel::HArrayUtils::gather( sourceHalo, sourceArray, mExchangeSourceIndexes, common::BinaryOp::COPY );
     utilskernel::TransferUtils::copy( targetArray, mKeepTargetIndexes, sourceArray, mKeepSourceIndexes );
@@ -270,19 +250,29 @@ void RedistributePlan::redistributeN(
     IndexType n ) const
 {
     SCAI_REGION( "RedistributePlan.redistributeN" )
-    hmemo::ContextPtr loc = hmemo::Context::getHostPtr();
-    {
-        // make sure that target array has sufficient memory
-        hmemo::WriteOnlyAccess<ValueType> target( targetArray, loc, getTargetLocalSize() * n );
-    }
+
+    const Communicator& comm = mSourceDistribution->getCommunicator();
+
+    targetArray.clear();                            // just invalidate all valid data
+    targetArray.resize( getTargetLocalSize() * n ); // resize it correctly
+
     // allocate memory for source (provides) and target (required) halo
-    hmemo::HArray<ValueType> sourceHalo( n * getExchangeSourceSize() );
-    hmemo::HArray<ValueType> targetHalo( n * getExchangeTargetSize() );
+
+    hmemo::HArray<ValueType> sourceHalo( n * mExchangeSourceIndexes.size() );
+    hmemo::HArray<ValueType> targetHalo( n * mExchangeTargetIndexes.size() );
+
     SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mExchangeSourceIndexes.size() << " * " << n << " values" )
     utilskernel::TransferUtils::gatherN( sourceHalo, sourceArray, mExchangeSourceIndexes, n );
     SCAI_LOG_DEBUG( logger, "copy: source -> target " << mKeepTargetIndexes.size() << " * " << n << " values" )
     utilskernel::TransferUtils::copyN( targetArray, mKeepTargetIndexes, sourceArray, mKeepSourceIndexes, n );
-    exchangeHaloN( targetHalo, sourceHalo, n );
+
+    // Communication plans are built by multiplication with n
+
+    auto recvPlanN = mExchangeReceivePlan.constructN( n );
+    auto sendPlanN = mExchangeSendPlan.constructN( n );
+
+    comm.exchangeByPlan( targetHalo, recvPlanN, sourceHalo, sendPlanN );
+
     SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mExchangeTargetIndexes.size() << " * " << n << " values" )
     utilskernel::TransferUtils::scatterN( targetArray, mExchangeTargetIndexes, targetHalo, n );
 }
@@ -328,39 +318,6 @@ void RedistributePlan::redistributeV(
     utilskernel::TransferUtils::scatterV( targetArray, targetOffsets, mExchangeTargetIndexes, targetHalo );
 }
 
-/* ------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void RedistributePlan::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hmemo::HArray<ValueType>& sourceHalo ) const
-{
-    SCAI_REGION( "RedistributePlan.exchangeHalo" )
-    const Communicator& comm = mSourceDistribution->getCommunicator();
-    // use asynchronous communication to avoid deadlocks
-    std::unique_ptr<tasking::SyncToken> token (
-        comm.exchangeByPlanAsync( targetHalo, mExchangeReceivePlan, sourceHalo, mExchangeSendPlan ) );
-    token->wait();
-    // synchronization is done implicitly
-}
-
-/* ------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void RedistributePlan::exchangeHaloN(
-    hmemo::HArray<ValueType>& targetHalo,
-    const hmemo::HArray<ValueType>& sourceHalo,
-    const IndexType n ) const
-{
-    SCAI_REGION( "RedistributePlan.exchangeHaloN" )
-
-    const Communicator& comm = mSourceDistribution->getCommunicator();
-
-    // Communication plans are built by multiplication with n
-
-    auto recvPlanN = mExchangeReceivePlan.constructN( n );
-    auto sendPlanN = mExchangeSendPlan.constructN( n );
-
-    comm.exchangeByPlan( targetHalo, recvPlanN, sourceHalo, sendPlanN );
-}
 
 } /* end namespace dmemo */
 

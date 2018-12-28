@@ -739,11 +739,9 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
     else
     {
         SCAI_LOG_INFO( logger, "assign is redistribute of distributed matrix" )
-        RedistributePlan redistributor( getRowDistributionPtr(), otherDist );
-        SCAI_LOG_INFO( logger,
-                       "RedistributePlan available: source halo = " << redistributor.getExchangeSourceSize()
-                        << " target halo = " << redistributor.getExchangeTargetSize() )
-        mLocalData->redistribute( otherLocalData, redistributor );
+        RedistributePlan plan( getRowDistributionPtr(), otherDist );
+        SCAI_LOG_INFO( logger, "RedistributePlan: " << plan )
+        mLocalData->redistribute( otherLocalData, plan );
         SCAI_LOG_INFO( logger, "redistributed, now assign locally" )
         mLocalData->splitHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution(), NULL );
     }

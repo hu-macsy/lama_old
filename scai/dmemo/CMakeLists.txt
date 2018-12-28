@@ -61,16 +61,18 @@ scai_project (
         GlobalAddressingPlan
         GlobalExchangePlan
 
+        Distribution
+        NoDistribution
         BlockDistribution
         CyclicDistribution
-        Distribution
         GenBlockDistribution
         GeneralDistribution
         GridDistribution
-        HaloExchangePlan
-        NoDistribution
-        RedistributePlan
+        JoinedDistribution
         SingleDistribution
+
+        HaloExchangePlan
+        RedistributePlan
     )
 
 ### add subdirectories

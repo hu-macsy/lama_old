@@ -340,7 +340,9 @@ IndexType CyclicDistribution::getAnyGlobalIndex( const IndexType localIndex, con
     IndexType localChunk  = localIndex / mChunkSize;
     IndexType chunkPos    = localIndex - mChunkSize * localChunk; // pos in chunk
     IndexType globalChunk = localChunk * size + owner;
-    return globalChunk + chunkPos;
+    IndexType globalIndex = globalChunk * mChunkSize + chunkPos;
+ 
+    return globalIndex;
 }
 
 /* ---------------------------------------------------------------------- */
