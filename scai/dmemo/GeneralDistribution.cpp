@@ -441,7 +441,9 @@ void GeneralDistribution::computeBlockDistributedOwners( HArray<IndexType>& bloc
 
     // blockDistributedOwners[ ownedIndexes[i] ] = rank, global scatter
 
-    GlobalAddressingPlan plan( ownedIndexes, blockDist );
+    bool unique = true;  // no global index appears twice 'globally' seen
+
+    auto plan = globalAddressingPlan ( blockDist, ownedIndexes, unique );
 
     plan.scatterOwner( blockDistributedOwners );
 
@@ -492,7 +494,7 @@ void GeneralDistribution::computeOwners(
 
     // owners[i] = blockDistribtedOwners[ indexes[i] ], global gather 
 
-    GlobalAddressingPlan plan( indexes, blockDist );
+    auto plan = globalAddressingPlan( blockDist, indexes );
     
     plan.gather( owners, *mBlockDistributedOwners );
     

@@ -154,6 +154,36 @@ void DenseVector<ValueType>::fillLinearValues( const ValueType startValue, const
 
 /* ------------------------------------------------------------------------- */
 
+template <typename ValueType>
+void DenseVector<ValueType>::fillByFunction( ValueType ( *fillFunction ) ( IndexType ) )
+{
+    const Distribution& dist = getDistribution();
+
+    const IndexType localN = dist.getLocalSize();
+
+    auto wValues = hmemo::hostWriteOnlyAccess( mLocalValues, localN );
+
+    if ( dist.isReplicated() )
+    {
+        for ( IndexType i = 0; i < localN; ++i )
+        {
+            wValues[i] = fillFunction( i );
+        }
+    }
+    else
+    {
+        auto myGlobalIndexes = dist.ownedGlobalIndexes();
+        auto rIndexes = hmemo::hostReadAccess( myGlobalIndexes );
+
+        for ( IndexType i = 0; i < localN; ++i )
+        {
+            wValues[i] = fillFunction( rIndexes[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseVector<ValueType>::fillRandom( const IndexType bound )
 {
@@ -1279,7 +1309,7 @@ void DenseVector<ValueType>::gather(
 
     // otherwise we use a global exchange/addressing plan
 
-    GlobalAddressingPlan plan( index.getLocalValues(), sourceDistribution );
+    auto plan = globalAddressingPlan( sourceDistribution, index.getLocalValues() );
 
     plan.gather( mLocalValues, source.getLocalValues(), op );
 
@@ -1291,11 +1321,10 @@ void DenseVector<ValueType>::gather(
 template<typename ValueType>
 void DenseVector<ValueType>::scatter(
     const DenseVector<IndexType>& index,
+    const bool unique,
     const DenseVector<ValueType>& source,
     const BinaryOp op )
 {
-    bool hasUniqueIndexes = false;
-
     SCAI_ASSERT_EQ_ERROR( source.getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
 
     // get the owners of my local index values, relevant is distribution of this target vector
@@ -1309,12 +1338,12 @@ void DenseVector<ValueType>::scatter(
     {
         // so all involved arrays are replicated, we can do it just locally
 
-        HArrayUtils::scatter( mLocalValues, index.getLocalValues(), hasUniqueIndexes, source.getLocalValues(), op );
+        HArrayUtils::scatter( mLocalValues, index.getLocalValues(), unique, source.getLocalValues(), op );
 
         return;
     }
 
-    GlobalAddressingPlan plan( index.getLocalValues(), targetDistribution );
+    auto plan = globalAddressingPlan( targetDistribution, index.getLocalValues(), unique );
 
     plan.scatter( mLocalValues, source.getLocalValues(), op );
 }

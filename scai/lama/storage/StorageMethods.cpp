@@ -428,11 +428,11 @@ void _StorageMethods::buildHaloExchangePlan(
             wIndexes.resize( it - wIndexes.begin() );
         }
 
-        haloPlan = haloExchangePlanByRequiredIndexes( requiredIndexes, colDist, false );
+        haloPlan = haloExchangePlan( colDist, requiredIndexes, false );
     }
     else
     {
-        haloPlan = haloExchangePlanByRequiredIndexes( haloJA, colDist, true );
+        haloPlan = haloExchangePlan( colDist, haloJA, true );
     }
 
     SCAI_LOG_DEBUG( logger, "Halo plan = " << haloPlan )

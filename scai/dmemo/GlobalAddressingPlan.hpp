@@ -57,29 +57,49 @@ public:
 
     /** Construct a global addressing plan
      *
-     *  @param[in] indexes is a 'distributed' array of global indexes
-     *  @param[in] dist    is the distribution that specifies the mapping of the global indexes to local indexes
+     *  @param[in] dist           is the distribution that specifies the mapping of the global indexes to local indexes
+     *  @param[in] globalIndexes  is a 'distributed' array of global indexes
+     *  @param[in] unique         might be set true if there is no double value among 'all' global indexes
      *
-     *  Even if indexes is also a distributed array its distribution does not matter here because
+     *  Be careful that dist is not the distribution of the array globalIndexes.
+     *  Even if globalindexes is also a distributed array its distribution does not matter here because
      *  only the local parts are needed.
      *
-     *  ToDo: explain what happens if there are illegal global indexes
+     *  Note:
      *  
-     *   - global indexes out of range will be ignored
+     *   - global indexes out of range (dist.getGlobalSize()) will be ignored
      *   - if size() < globalIndexes.size() we know that values were out of range
      *
      *   \code
-     *       GlobalAddressingPlan plan( myIndexes, dist );
+     *       auto plan = globalAddressingPlan( myGlobalIndexes, dist );
      *       const Communicator& comm = dist.getCommunicator();
-     *       SCAI_ASSERT_EQ_ERROR( comm.sum( myIndexes.size(), comm.sum( plan.size() ),
+     *       SCAI_ASSERT_EQ_ERROR( comm.sum( myGlobalIndexes.size(), comm.sum( plan.size() ),
      *                             "illegal indexes" )
      *   \endcode
      */
-    GlobalAddressingPlan( const hmemo::HArray<IndexType>& globalIndexes, const Distribution& dist );
+    static GlobalAddressingPlan globalAddressingPlan( 
+        const Distribution& dist, 
+        const hmemo::HArray<IndexType>& globalIndexes, 
+        const bool unique = false );
+    
+    /** Constructor of a plan by its member variables 
+     *
+     *  @param[in] plan is a global exchange plan
+     *  @param[in] localIndexes give the indexes for the local part of a distributed array
+     *  @param[in] unique if true there are no double values in the array localIndexes
+     *
+     *  The flag unique is only used for optimization in the scatter operation. It might be set true
+     *  if is guaranteed that among 'all' global indexes no entry appears twice.
+     */
+    GlobalAddressingPlan( GlobalExchangePlan plan, hmemo::HArray<IndexType> localIndexes, bool unique = false );
 
     GlobalAddressingPlan( const GlobalAddressingPlan& other ) = default;
 
     GlobalAddressingPlan( GlobalAddressingPlan&& other ) = default;
+
+    GlobalAddressingPlan& operator=( const GlobalAddressingPlan& other ) = default;
+
+    GlobalAddressingPlan& operator=( GlobalAddressingPlan&& other ) = default;
 
     /**
      *  Apply the global addressing plan for a gathering of remote data
@@ -107,7 +127,24 @@ public:
 private:
 
     hmemo::HArray<IndexType> mLocalIndexes;  // localized global addresses from other processors
+
+    bool mUnique;    // if true there are no double entries in mLocalIndexes
 };
+
+/** 
+ *   Provide GlobalAddressingPlan::globalAddressingPlan as free function
+ */
+inline GlobalAddressingPlan globalAddressingPlan( 
+    const Distribution& dist, 
+    const hmemo::HArray<IndexType>& globalIndexes, 
+    const bool unique = false )
+{
+    return GlobalAddressingPlan::globalAddressingPlan( dist, globalIndexes, unique );
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Inline/template methods for GlobalAddressingPlan                         */
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void GlobalAddressingPlan::gather( 
@@ -123,7 +160,7 @@ void GlobalAddressingPlan::gather(
 
     // send back via communication plan
 
-    SCAI_ASSERT_GE_ERROR( localArray.size(), size(), "target array too small" )
+    SCAI_ASSERT_GE_ERROR( localArray.size(), sendSize(), "target array too small" )
 
     exchangeBack( localArray, sendValues, op );
 }
@@ -136,7 +173,7 @@ void GlobalAddressingPlan::scatter(
 {
     hmemo::HArray<ValueType> recvData;
     exchange( recvData, localArray );
-    utilskernel::HArrayUtils::scatter( remoteArray, mLocalIndexes, false, recvData, op );
+    utilskernel::HArrayUtils::scatter( remoteArray, mLocalIndexes, mUnique, recvData, op );
 }
 
 }

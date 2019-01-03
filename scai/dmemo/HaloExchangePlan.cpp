@@ -262,9 +262,9 @@ void HaloExchangePlan::updateMap(
 
 /* ---------------------------------------------------------------------- */
 
-HaloExchangePlan HaloExchangePlan::constructByRequiredIndexes( 
-    const HArray<IndexType>& requiredIndexes, 
+HaloExchangePlan HaloExchangePlan::haloExchangePlan( 
     const Distribution& distribution,
+    const HArray<IndexType>& globalIndexes, 
     const bool elimDouble )
 {
     SCAI_REGION( "HaloExchangePlan.construct" )
@@ -274,14 +274,14 @@ HaloExchangePlan HaloExchangePlan::constructByRequiredIndexes(
 
     HArray<PartitionId> owners;
 
-    distribution.computeOwners( owners, requiredIndexes );
+    distribution.computeOwners( owners, globalIndexes );
 
     std::map<IndexType,IndexType> globalMap;  // used for mapping global indexes to halo indexes
 
     if ( elimDouble )
     {
         // eliminate double indexes by setting their owner to invalid, uses std::map
-        buildMap( globalMap, owners, requiredIndexes, NP ); 
+        buildMap( globalMap, owners, globalIndexes, NP ); 
     }
 
     // sort the required indexes by the owners via bucket sort, bucket sizes will be used for communication plan
@@ -295,7 +295,7 @@ HaloExchangePlan HaloExchangePlan::constructByRequiredIndexes(
 
     HArray<IndexType> sortedRequiredIndexes;
 
-    utilskernel::HArrayUtils::gather( sortedRequiredIndexes, requiredIndexes, perm, common::BinaryOp::COPY );
+    utilskernel::HArrayUtils::gather( sortedRequiredIndexes, globalIndexes, perm, common::BinaryOp::COPY );
 
     CommunicationPlan haloCommPlan = CommunicationPlan( hostReadAccess( sizes ) );
     CommunicationPlan localCommPlan = communicator.transpose( haloCommPlan );

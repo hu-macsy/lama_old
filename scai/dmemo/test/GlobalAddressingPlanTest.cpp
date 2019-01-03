@@ -51,17 +51,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GlobalAddressingPlanTest" )
 
 /* --------------------------------------------------------------------- */
 
-/** Simple function to define a value in a distributed array. 
- *  It is used to verify correct values in the halo.
+/** 
+ *   Help function to create a distributed array
+ *
+ *   @param[in] dist is the distribution of the array
+ *   @param[in] fill is a function that returns for a global index the value
+ *   @returns   the local part owned by this processor of the distributed array
  */
 template<typename ValueType>
-static ValueType globalValue( IndexType globalIndex )
-{
-    return static_cast<ValueType>( 2 * globalIndex + 1 );
-}
-
-template<typename ValueType>
-static HArray<ValueType> distributedArray( const Distribution& dist )
+static HArray<ValueType> distributedArray( const Distribution& dist, ValueType ( *fill )( IndexType ) )
 {
     HArray<ValueType> localArray;  // local part of the distributed 'global' array
 
@@ -72,7 +70,7 @@ static HArray<ValueType> distributedArray( const Distribution& dist )
 
         for ( auto& entry : hostWriteOnlyAccess( localArray, dist.getLocalSize() ) )
         {
-            entry = globalValue<ValueType>( dist.local2Global( localIndex++ ) );
+            entry = fill( dist.local2Global( localIndex++ ) );
         }
 
     }  // filled the local array with 'global' values
@@ -96,7 +94,9 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
     HArray<ValueType> localArray;
 
-    HArray<ValueType> remoteArray = distributedArray<ValueType>( *dist );
+    auto fillArray = []( IndexType k ) { return ValueType( 2 * k + 1 ); };
+
+    HArray<ValueType> remoteArray = distributedArray<ValueType>( *dist, fillArray );
 
     HArray<ValueType> expArray;  // will contain expected gathered values
 
@@ -109,11 +109,11 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
         for ( const auto index : hostReadAccess( indexes )  )
         {
-            expected[ i++ ] = globalValue<ValueType>( index );
+            expected[ i++ ] = fillArray( index );
         }
     }
 
-    GlobalAddressingPlan plan( indexes, *dist );
+    auto plan = globalAddressingPlan( *dist, indexes );
 
     localArray.resize( m );
     plan.gather( localArray, remoteArray );
@@ -136,10 +136,14 @@ BOOST_AUTO_TEST_CASE( scatterTest )
     auto dist1 = cyclicDistribution( N, 2 );
     auto indexes = dist1->ownedGlobalIndexes();
 
-    HArray<ValueType> localArray = distributedArray<ValueType>( *dist1 );
-    HArray<ValueType> expArray   = distributedArray<ValueType>( *dist );
+    // define a fill function for the distributed array
 
-    GlobalAddressingPlan plan( indexes, *dist );
+    auto fillArray = []( IndexType k ) { return ValueType( 2 * k + 1 ); };
+
+    HArray<ValueType> localArray = distributedArray<ValueType>( *dist1, fillArray );
+    HArray<ValueType> expArray   = distributedArray<ValueType>( *dist, fillArray );
+
+    auto plan = globalAddressingPlan( *dist, indexes );
 
     HArray<ValueType> remoteArray( dist->getLocalSize(), ValueType( 0 ) );
 

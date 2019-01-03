@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
 
         {
             HArrayRef<IndexType> haloIndexes( requiredIndexes );  // does not copy values
-            haloPlan = haloExchangePlanByRequiredIndexes( haloIndexes, *rowDist );
+            haloPlan = haloExchangePlan( *rowDist, haloIndexes );
         }
 
         unique_ptr<MatrixStorage<ValueType> > haloMatrix( matrixStorage.newMatrixStorage() );

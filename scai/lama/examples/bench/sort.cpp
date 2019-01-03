@@ -158,7 +158,7 @@ static void bench( const IndexType N )
     // in contrary to gather the scatter method requires an allocated array
 
     Xcomp.allocate( Xsave.getDistributionPtr() );
-    Xcomp.scatter( perm, X );
+    Xcomp.scatter( perm, true, X );
 
     if ( debug )
     {

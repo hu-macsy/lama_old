@@ -266,9 +266,9 @@ public:
 
     /** Constructor function as static version for more convenient logging */
 
-    static HaloExchangePlan constructByRequiredIndexes( 
-        const hmemo::HArray<IndexType>& requiredIndexes, 
+    static HaloExchangePlan haloExchangePlan( 
         const class Distribution& distribution,
+        const hmemo::HArray<IndexType>& globalIndexes, 
         const bool elimDouble );
 
 private:
@@ -364,7 +364,7 @@ bool HaloExchangePlan::isEmpty() const
  *  \code
  *      auto dist = blockDistribution( N );
  *      auto requiredIndexes = HArray<IndexType>( { ... } );  // global indexes of required data
- *      auto plan = haloExchangePlanByRequiredIndexes( requiredIndexes, *dist );
+ *      auto plan = haloExchangePlan( *dist, requiredIndexes );
  *      ...
  *      HArray<ValueType> localArray( dist->getLocalSize(), ... );   // distributed globalArray
  *      HArray<ValueType> haloArray( plan.getHaloSize() );           // halo part
@@ -373,12 +373,12 @@ bool HaloExchangePlan::isEmpty() const
  *      // for a global index g haloArray[ plan.global2Halo(g) ] contains globalArray[g]
  *  \endcode
  */
-inline HaloExchangePlan haloExchangePlanByRequiredIndexes( 
-    const hmemo::HArray<IndexType>& requiredIndexes, 
+inline HaloExchangePlan haloExchangePlan( 
     const class Distribution& distribution,
+    const hmemo::HArray<IndexType>& globalIndexes, 
     const bool elimDouble = true )
 {
-    return HaloExchangePlan::constructByRequiredIndexes( requiredIndexes, distribution, elimDouble );
+    return HaloExchangePlan::haloExchangePlan( distribution, globalIndexes, elimDouble );
 }
 
 } /* end namespace dmemo */

@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE( buildTest2 )
         expRecvPlan = CommunicationPlan( std::vector<IndexType>( { 3, 3 } ) );
     }
 
-    GlobalExchangePlan plan( targets, comm );
+    auto plan = globalExchangePlan( targets, comm );
    
     HArray<IndexType> perm;
     CommunicationPlan sendPlan;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( buildTest4 )
         expRecvValues = HArray<PartitionId>( { 35, 30, 31 } );
     }
 
-    GlobalExchangePlan plan( targets, comm );
+    auto plan = globalExchangePlan( targets, comm );
 
     HArray<IndexType> recvValues;
     plan.exchange( recvValues, sendValues );

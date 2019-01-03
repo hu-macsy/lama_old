@@ -129,16 +129,16 @@ BOOST_AUTO_TEST_CASE( exampleTest )
 
     auto blockDist = genBlockDistribution( localSize, comm );
 
-    auto haloExchangePlan = haloExchangePlanByRequiredIndexes( requiredIndexes, *blockDist );
+    auto plan = haloExchangePlan( *blockDist, requiredIndexes );
     
-    BOOST_TEST( hostReadAccess( expHalo2GlobalIndexes ) == hostReadAccess( haloExchangePlan.getHalo2GlobalIndexes()), per_element() );
-    BOOST_TEST( hostReadAccess( expProvidesIndexes ) == hostReadAccess( haloExchangePlan.getLocalIndexes()), per_element() );
+    BOOST_TEST( hostReadAccess( expHalo2GlobalIndexes ) == hostReadAccess( plan.getHalo2GlobalIndexes()), per_element() );
+    BOOST_TEST( hostReadAccess( expProvidesIndexes ) == hostReadAccess( plan.getLocalIndexes()), per_element() );
 
     CommunicationPlan expRequiredPlan( hostReadAccess( expHaloSizes ) );
     CommunicationPlan expProvidesPlan( hostReadAccess( expProvidesSizes ) );
 
-    CHECK_COMMUNICATION_PLANS_EQUAL( expRequiredPlan, haloExchangePlan.getHaloCommunicationPlan() );
-    CHECK_COMMUNICATION_PLANS_EQUAL( expProvidesPlan, haloExchangePlan.getLocalCommunicationPlan() );
+    CHECK_COMMUNICATION_PLANS_EQUAL( expRequiredPlan, plan.getHaloCommunicationPlan() );
+    CHECK_COMMUNICATION_PLANS_EQUAL( expProvidesPlan, plan.getLocalCommunicationPlan() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE( buildTest )
 
     // Now build a halo exchange plan
 
-    auto plan = haloExchangePlanByRequiredIndexes( requiredIndexes, *dist );
+    auto plan = haloExchangePlan( *dist, requiredIndexes );
 
     SCAI_LOG_INFO( logger, comm << ": halo exchange plan = " << plan )
 
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE( updateTest )
 
     // Now build a halo exchange plan
 
-    auto plan = haloExchangePlanByRequiredIndexes( requiredIndexes, *dist );
+    auto plan = haloExchangePlan( *dist, requiredIndexes );
 
     HArray<ValueType> haloArray;
  
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE( updateByTest )
 
     // Now build a halo exchange plan
 
-    auto plan = haloExchangePlanByRequiredIndexes( requiredIndexes, *dist );
+    auto plan = haloExchangePlan( *dist, requiredIndexes );
 
     // set local array to zero
 
@@ -370,7 +370,7 @@ BOOST_AUTO_TEST_CASE( moveTest )
 
     auto requiredIndexes = randomRequiredIndexes( *dist );
 
-    auto plan = haloExchangePlanByRequiredIndexes( requiredIndexes, *dist );
+    auto plan = haloExchangePlan( *dist, requiredIndexes );
 
     // save the pointer of host incarnation of local indexes 
 
@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
     auto dist = blockDistribution( 15 );
     auto requiredIndexes = randomRequiredIndexes( *dist );
 
-    auto halo1 = haloExchangePlanByRequiredIndexes( requiredIndexes, *dist );
+    auto halo1 = haloExchangePlan( *dist, requiredIndexes );
 
     HaloExchangePlan halo2( halo1 );  // COPY constructor
 

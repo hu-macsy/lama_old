@@ -135,7 +135,7 @@ HostReadAccess<ValueType> hostReadAccess( const HArray<ValueType>& array )
 }
 
 /**
- * @param[in] heterogeneous array
+ * @param[in] array is the heterogeneous array whose content will be printed as a string
  * @return a string that containts the printed value
  */
 template<typename ValueType>

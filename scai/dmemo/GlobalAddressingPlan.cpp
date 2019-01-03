@@ -42,19 +42,31 @@ using utilskernel::HArrayUtils;
 namespace dmemo
 {
 
-GlobalAddressingPlan::GlobalAddressingPlan( 
+GlobalAddressingPlan::GlobalAddressingPlan( GlobalExchangePlan plan, HArray<IndexType> localIndexes, const bool unique ) :
 
-    const HArray<IndexType>& globalIndexes, 
-    const Distribution& dist ) :
-
-    GlobalExchangePlan( dist.owner( globalIndexes ), dist.getCommunicatorPtr() )
-
+    GlobalExchangePlan( std::move( plan ) ),
+    mLocalIndexes( std::move( localIndexes ) ),
+    mUnique( unique )
 {
-    // use the built exchange plan to send the required global indexes to the processors
-    exchange( mLocalIndexes, globalIndexes );
+    SCAI_ASSERT_EQ_ERROR( mLocalIndexes.size(), recvSize(), "serious mismatch" )
+}
 
-    // the global indexes required from the other processors will now be localized
-    dist.global2LocalV( mLocalIndexes, mLocalIndexes );
+GlobalAddressingPlan GlobalAddressingPlan::globalAddressingPlan( 
+    const Distribution& dist,
+    const hmemo::HArray<IndexType>& globalIndexes, 
+    const bool unique )
+{
+    auto exchangePlan = globalExchangePlan( dist.owner( globalIndexes ), dist.getCommunicatorPtr() );
+
+    HArray<IndexType> localIndexes;
+
+    exchangePlan.exchange( localIndexes, globalIndexes );
+
+    dist.global2LocalV( localIndexes, localIndexes );
+
+    // ToDo: verify in debug mode that if unique is true there are no double entries in localIndexes
+
+    return GlobalAddressingPlan( std::move( exchangePlan ), std::move( localIndexes ), unique );
 }
 
 void GlobalAddressingPlan::scatterOwner( HArray<PartitionId>& targetArray )

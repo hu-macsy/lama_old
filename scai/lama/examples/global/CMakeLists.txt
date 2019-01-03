@@ -27,28 +27,25 @@
  # @date 02.12.2015
 ###
 
-## Add lama include directory for all examples 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
 
-include_directories( "${CMAKE_CURRENT_BINARY_DIR}/../include" )
+foreach ( executable gather )
 
-add_subdirectory ( bench )
-add_subdirectory ( global )
-add_subdirectory ( labelrank )
-add_subdirectory ( mandelbrot )
-add_subdirectory ( stencil )
-add_subdirectory ( nbody )
-add_subdirectory ( tutorial )
-add_subdirectory ( io )
-add_subdirectory ( image )
-add_subdirectory ( tasking )
+    scai_add_example( EXECUTABLE ${executable}.exe 
+                      FILES      ${executable}.cpp )
+
+endforeach ( executable )
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-# copy the script to run all examples
-scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-## copy Makefile from source directory, not configured here
+## install examples sources
 
-install ( FILES       ${CMAKE_CURRENT_SOURCE_DIR}/Makefile 
+install ( FILES       ${EXAMPLE_FILES} ${HEADER}
           DESTINATION ${INSTALL_EXAMPLE_DIR} )

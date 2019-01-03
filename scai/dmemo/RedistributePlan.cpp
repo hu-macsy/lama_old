@@ -149,7 +149,7 @@ HArray<IndexType> RedistributePlan::initializeFromNewOwners(
     SCAI_ASSERT_EQ_ERROR( sourceGlobalIndexes.size(), newOwners.size(),
                           "Array of owners must have size equal to number of local values in source distribution." );
 
-    GlobalExchangePlan plan( newOwners, sourceDist.getCommunicatorPtr() );
+    auto plan = globalExchangePlan( newOwners, sourceDist.getCommunicatorPtr() );
 
     HArray<IndexType> inGlobalIndexes;
     plan.exchange( inGlobalIndexes, sourceGlobalIndexes );

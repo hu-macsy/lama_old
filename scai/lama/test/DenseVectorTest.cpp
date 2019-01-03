@@ -859,13 +859,13 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
                 BOOST_CHECK_THROW(
                 {
-                    target.scatter( index, source, common::BinaryOp::ADD );
+                    target.scatter( index, false, source, common::BinaryOp::ADD );
                 }, common::Exception );
 
                 continue;
             }
 
-            target.scatter( index, source, common::BinaryOp::ADD );
+            target.scatter( index, false, source, common::BinaryOp::ADD );
 
             hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
 

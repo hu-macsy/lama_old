@@ -39,25 +39,48 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( GlobalExchangePlan::logger, "GlobalExchangePlan" )
 
-GlobalExchangePlan::GlobalExchangePlan( const HArray<PartitionId>& target, CommunicatorPtr comm ) :
+/* --------------------------------------------------------------------------- */
 
-    mComm( comm )
+GlobalExchangePlan::GlobalExchangePlan(
 
+    HArray<IndexType> sendPermutation,
+    CommunicationPlan sendPlan,
+    CommunicationPlan recvPlan,
+    CommunicatorPtr   comm ) :
+
+    mComm( comm ),
+    mSendPerm( std::move( sendPermutation ) ),
+    mSendPlan( std::move( sendPlan ) ),
+    mRecvPlan( std::move( recvPlan ) )
+{
+    SCAI_ASSERT_EQ_ERROR( mSendPerm.size(), mSendPlan.totalQuantity(), "serious mismatch" )
+
+    // no verification that receive plan is transpose of send plan
+}
+
+/* --------------------------------------------------------------------------- */
+
+GlobalExchangePlan GlobalExchangePlan::globalExchangePlan( const HArray<PartitionId>& target, CommunicatorPtr comm )
 {
     HArray<IndexType> sendSizes;
+    HArray<IndexType> sendPerm;
 
-    utilskernel::HArrayUtils::bucketSortSizes( sendSizes, mSendPerm, target, mComm->getSize() );
+    utilskernel::HArrayUtils::bucketSortSizes( sendSizes, sendPerm, target, comm->getSize() );
 
-    mSendPlan = CommunicationPlan( hostReadAccess( sendSizes ) );
-    mRecvPlan = mComm->transpose( mSendPlan );
+    auto sendPlan = CommunicationPlan( hostReadAccess( sendSizes ) );
+    auto recvPlan = comm->transpose( sendPlan );
 
     // instead of validIndexes( target, comm.getSize() )
 
-    if ( mSendPlan.totalQuantity() < target.size() )
+    if ( sendPlan.totalQuantity() < target.size() )
     {
-        SCAI_LOG_WARN( logger, "Some values in target array are out-of-range" )
+        SCAI_LOG_WARN( logger, *comm << ": some values in target array are out-of-range" )
     } 
+
+    return GlobalExchangePlan( std::move( sendPerm ), std::move( sendPlan ), std::move( recvPlan ), comm );
 }
+
+/* --------------------------------------------------------------------------- */
 
 void GlobalExchangePlan::getSource( HArray<PartitionId>& source )
 {
