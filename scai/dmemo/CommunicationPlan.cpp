@@ -356,6 +356,15 @@ CommunicationPlan CommunicationPlan::buildByQuantities( const IndexType quantiti
 
 /* ----------------------------------------------------------------------- */
 
+CommunicationPlan CommunicationPlan::buildSingle( const IndexType quantity, const PartitionId p )
+{
+    CommunicationPlan plan;
+    plan.defineBySingleEntry( quantity, p );
+    return plan;
+}
+
+/* ----------------------------------------------------------------------- */
+
 CommunicationPlan CommunicationPlan::constructRaggedBySizes( const hmemo::HArray<IndexType>& sizes ) const
 {
     SCAI_ASSERT_EQ_ERROR( totalQuantity(), sizes.size(), "serious mismatch" )

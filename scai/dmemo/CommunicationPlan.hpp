@@ -267,6 +267,13 @@ public:
      */
     static CommunicationPlan buildByQuantities( const IndexType quantities[], const PartitionId size );
 
+    /** Build a communication plan with a single entry.
+     *
+     *  @param quantity  number of entries to communicate with partner p 
+     *  @param p         is the only processor for which communication is done
+     */
+    static CommunicationPlan buildSingle( const IndexType quantity, const PartitionId p );
+
 private:
 
     std::vector<Entry> mEntries; //!< vector of entries

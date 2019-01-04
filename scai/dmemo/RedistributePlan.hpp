@@ -165,6 +165,15 @@ public:
         return mExchangeTargetIndexes;
     }
 
+    IndexType getExchangeSourceSize() const
+    {
+        return mExchangeSourceIndexes.size();
+    }
+    IndexType getExchangeTargetSize() const
+    {
+        return mExchangeTargetIndexes.size();
+    }
+
     /** Reverse the RedistributePlan.
      *
      * Has the same effect as redistributing with RedistributePlan( source, target ), except
