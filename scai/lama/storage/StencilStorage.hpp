@@ -338,18 +338,16 @@ public:
      *  a CSRStroage. Furthermore, colDist must be a grid distribution that fits 
      *  to the grid of this stencil storage.
      */
-
     virtual void splitHalo(
-        MatrixStorage<ValueType>& /* localData */,
-        MatrixStorage<ValueType>& /* haloData */,
-        dmemo::Halo& /* halo */,
+        MatrixStorage<ValueType>&  /* localData */,
+        MatrixStorage<ValueType>&  /* haloData */,
+        dmemo::HaloExchangePlan&   /* haloPlan */,
         const dmemo::Distribution& /* colDist */,
         const dmemo::Distribution* /* rowDist */ ) const
     {
-        COMMON_THROWEXCEPTION( "print unsupported" )
+        COMMON_THROWEXCEPTION( "illegal operation for StencilStorage" )
     }
     
-
     /** General routine to build a CSR version of this stroage
      *
      *  @param[out] ia is the CSR offset array

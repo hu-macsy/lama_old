@@ -69,7 +69,7 @@ int main()
     const IndexType localM = targetDist->getLocalSize();
 
     HArray<IndexType> csrIA;
-    utilskernel::HArrayUtils::setSequence( csrIA, 0, 1, localM + 1 );
+    utilskernel::HArrayUtils::setSequence<IndexType>( csrIA, 0, 1, localM + 1 );
     HArray<IndexType> csrJA( indexes.getLocalValues() );
     HArray<ValueType> csrValues( localM, ValueType( 1 ) );
 

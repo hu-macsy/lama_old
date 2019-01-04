@@ -3,6 +3,9 @@
 HaloExchangePlan
 ================
 
+Halo
+^^^^
+
 For distributed arrays it is often the case that other processors need
 non-local values for their computations. A halo is a data structure that
 keeps these non-local values from other processor where each entry in the 
@@ -15,13 +18,16 @@ halo stands for a corresponding entry from other processors.
 
     Halo as array of elements for non-local entries required from other processors.
 
+Halo Exchange Plan
+^^^^^^^^^^^^^^^^^^
+
 The halo plan is a data structure that specifies the structure of the halo as well
 as how to exchange the corresponding values between the processors.
 The halo plan is built by the required indexes for an array with a given distribution.
 
 .. code-block:: c++
 
-     auto haloExchangePlan = haloExchangePlanByRequiredIndexes( requiredIndexes, distribution );
+     auto plan = haloExchangePlan( distribuiton, requiredIndexes );
 
 The halo exchange plan contains the following individual information on each processor:
 
@@ -43,6 +49,23 @@ array, here 40 elements block distributed onto 4 processors.
 
     Halo exchange plan with structure of the halo and communication plans for data exchange.
 
+The HaloExchangePlan is very similiar to a GlobalAddressingPlan, so here are the differences:
+
+- The halo is organized in contiguous sections for non-local data from each other processor
+  so updata of the halo does not require any unpacking of data from other processors.
+- Therefore the pack permutation is replaced by the array halo2GlobalIndexes
+- It contains a hash map to get for a global index its corresponding halo index.
+
+.. code-block:: c++
+
+    halo2GlobalIndexes[ packPerm ] = requiredIndexes;
+
+Furthermore, a halo is usually built by only non-local indexes. Even if a halo might also
+contain copies of local data, this causes overhead and is not the intention of the halo.
+
+Halo Update
+^^^^^^^^^^^
+
 Such a halo exchange plan might be used to update the halo with the actual values
 from the local parts of other processors, i.e. each halo entry contains the actual value
 of the 'global' array.
@@ -59,7 +82,7 @@ The corresponding code is as follows:
 The following figure shows the halo arrays with updated values.
 
 .. figure:: _images/halo_update.* 
-    :width: 800px
+    :width: 600px
     :align: center
     :alt: HaloUpdate
 
@@ -77,12 +100,15 @@ plan.
      comm.exchangeByPlan( haloArray, haloPlan.getHaloCommunicationPlan(),
                           sendArray, haloPlan.getLocalCommunicationPlan() );
 
+Halo Reduce
+^^^^^^^^^^^
+
 A halo plan can also be used to write back halo values to the corresponding positions
 of the local counterparts. The communication is exactly in the reverse order: sending
 data with the halo communication plan, receiving with the local communication plan
 and scattering the received values in the local array. As a local entry might have
 a halo counterpart on multiple processors, a reduction operation has to be specified
-how to combine these mutliple values.
+how to reduce these mutliple values.
 
 .. code-block:: c++
 
@@ -91,7 +117,7 @@ how to combine these mutliple values.
 
 
 .. figure:: _images/halo_reduce.* 
-    :width: 800px
+    :width: 600px
     :align: center
     :alt: HaloReduce
 

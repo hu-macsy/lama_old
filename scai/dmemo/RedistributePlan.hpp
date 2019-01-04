@@ -74,7 +74,6 @@ public:
      *
      *  The global size of both distributions must be the same.
      */
-
     RedistributePlan( DistributionPtr targetDistribution, DistributionPtr sourceDistribution );
 
     /**
@@ -88,24 +87,18 @@ public:
      * which might output exactly such a list of new owners. In these cases, the necessary communication required
      * to create a RedistributePlan may sometimes be significantly reduced.
      *
-     * @param[in] newOwnersOfLocalElements A map from local elements in `sourceDistribution` to the partition indices (with respect to the communicator)
-     *                                     of their new owners. In particular, `newOwnersOfLocalElements[i]` corresponds to the new owner of the element
-     *                                     with local index `i` in `sourceDistribution`. Every partitition ID must be in the range [0, N) where N is the
-     *                                     number of partitions in the communicator.
-     * @param[in] sourceDistribution       The source distribution from which to redistribute elements.
+     * @param[in] newOwners array with new owner for currently owned global indexes
+     * @param[in] sourceDistribution  The source distribution from which to redistribute elements.
+     *
+     *  *  newOwners.size() == sourceDistribution.getLocalSize()
+     *  *  newOwners[i] is new owner of sourceDistribution.local2Global( i ), 
      */
-    RedistributePlan( const hmemo::HArray< PartitionId >& newOwnersOfLocalElements, DistributionPtr sourceDistribution );
+    RedistributePlan( const hmemo::HArray<PartitionId>& newOwners, DistributionPtr sourceDistribution );
 
     /** Getter needed for distributions */
 
     DistributionPtr getTargetDistributionPtr() const;
-
     DistributionPtr getSourceDistributionPtr() const;
-
-    IndexType getSourceLocalSize() const
-    {
-        return mSourceDistribution->getLocalSize();
-    }
 
     IndexType getTargetLocalSize() const
     {
@@ -182,17 +175,15 @@ public:
 
 private:
 
-    hmemo::HArray<IndexType> initializeFromNewOwners( const hmemo::HArray< PartitionId > & newOwnersOfLocalElements,
-            const Distribution& sourceDist );
+    /**
+     *  @param[in] sourceDist source distribution is the current distribution 
+     *  @param[in] newOwners array with new owner for currently owned indexes
+     */
+    hmemo::HArray<IndexType> initializeFromNewOwners( 
+        const Distribution& sourceDist,
+        const hmemo::HArray< PartitionId >& newOwners );
 
     virtual void writeAt( std::ostream& stream ) const;
-
-    /*
-    IndexType getNumLocalValues() const
-    {
-        return static_cast<IndexType>( mKeepSourceIndexes.size() );
-    }
-    */
 
     DistributionPtr mSourceDistribution;
     DistributionPtr mTargetDistribution;
@@ -249,6 +240,8 @@ void RedistributePlan::redistributeN(
     const hmemo::HArray<ValueType>& sourceArray,
     IndexType n ) const
 {
+    using utilskernel::TransferUtils;
+
     SCAI_REGION( "RedistributePlan.redistributeN" )
 
     const Communicator& comm = mSourceDistribution->getCommunicator();
@@ -262,9 +255,9 @@ void RedistributePlan::redistributeN(
     hmemo::HArray<ValueType> targetHalo( n * mExchangeTargetIndexes.size() );
 
     SCAI_LOG_DEBUG( logger, "gather: sourceHalo " << mExchangeSourceIndexes.size() << " * " << n << " values" )
-    utilskernel::TransferUtils::gatherN( sourceHalo, sourceArray, mExchangeSourceIndexes, n );
+    TransferUtils::gatherN( sourceHalo, sourceArray, mExchangeSourceIndexes, n );
     SCAI_LOG_DEBUG( logger, "copy: source -> target " << mKeepTargetIndexes.size() << " * " << n << " values" )
-    utilskernel::TransferUtils::copyN( targetArray, mKeepTargetIndexes, sourceArray, mKeepSourceIndexes, n );
+    TransferUtils::copyN( targetArray, mKeepTargetIndexes, sourceArray, mKeepSourceIndexes, n );
 
     // Communication plans are built by multiplication with n
 
@@ -274,7 +267,7 @@ void RedistributePlan::redistributeN(
     comm.exchangeByPlan( targetHalo, recvPlanN, sourceHalo, sendPlanN );
 
     SCAI_LOG_DEBUG( logger, "scatter: targetHalo " << mExchangeTargetIndexes.size() << " * " << n << " values" )
-    utilskernel::TransferUtils::scatterN( targetArray, mExchangeTargetIndexes, targetHalo, n );
+    TransferUtils::scatterN( targetArray, mExchangeTargetIndexes, targetHalo, n );
 }
 
 /* ------------------------------------------------------------------------------- */
@@ -286,6 +279,8 @@ void RedistributePlan::redistributeV(
     const hmemo::HArray<ValueType>& sourceArray,
     const hmemo::HArray<IndexType>& sourceOffsets ) const
 {
+    using utilskernel::TransferUtils;
+
     SCAI_REGION( "RedistributePlan.redistributeV" )
 
     const Communicator& comm = mSourceDistribution->getCommunicator();
@@ -308,14 +303,14 @@ void RedistributePlan::redistributeV(
     hmemo::HArray<ValueType> sourceHalo( sourcePlanV.totalQuantity() );
     hmemo::HArray<ValueType> targetHalo( targetPlanV.totalQuantity() );
 
-    utilskernel::TransferUtils::gatherV( sourceHalo, sourceArray, sourceOffsets, mExchangeSourceIndexes );
+    TransferUtils::gatherV( sourceHalo, sourceArray, sourceOffsets, mExchangeSourceIndexes );
 
-    utilskernel::TransferUtils::copyV( targetArray, targetOffsets, mKeepTargetIndexes,
-                                       sourceArray, sourceOffsets, mKeepSourceIndexes );
+    TransferUtils::copyV( targetArray, targetOffsets, mKeepTargetIndexes,
+                          sourceArray, sourceOffsets, mKeepSourceIndexes );
 
     comm.exchangeByPlan( targetHalo, targetPlanV, sourceHalo, sourcePlanV );
 
-    utilskernel::TransferUtils::scatterV( targetArray, targetOffsets, mExchangeTargetIndexes, targetHalo );
+    TransferUtils::scatterV( targetArray, targetOffsets, mExchangeTargetIndexes, targetHalo );
 }
 
 

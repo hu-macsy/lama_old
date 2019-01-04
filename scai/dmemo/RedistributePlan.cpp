@@ -70,32 +70,38 @@ RedistributePlan::RedistributePlan( DistributionPtr targetDistribution, Distribu
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" )
     SCAI_ASSERT_ERROR( targetDistribution, "target distribution is not allowed to be null" )
+
     SCAI_ASSERT_EQ_ERROR( sourceDistribution->getCommunicator(), targetDistribution->getCommunicator(),
                           "source and target distributions must have the same communicator" );
 
     // Each processor computes the new owners of owned indexes from source distribution
 
-    auto targetOwners = mTargetDistribution->owner( mSourceDistribution->ownedGlobalIndexes() );
+    auto newOwners = targetDistribution->owner( sourceDistribution->ownedGlobalIndexes() );
 
-    const auto targetGlobalIndexes = initializeFromNewOwners( targetOwners, *sourceDistribution );
+    const auto targetGlobalIndexes = initializeFromNewOwners( *sourceDistribution, newOwners );
 
     SCAI_ASSERT_ERROR(
         HArrayUtils::all ( targetGlobalIndexes, common::CompareOp::EQ, targetDistribution->ownedGlobalIndexes() ),
         "Internal error: mismatch between expected global indexes and target distribution" );
 }
 
+/* -------------------------------------------------------------------------- */
+
 RedistributePlan::RedistributePlan( 
-    const HArray< PartitionId >& newOwnersOfLocalElements, 
+    const HArray< PartitionId >& newOwners,
     DistributionPtr sourceDistribution ) :
 
     mSourceDistribution( sourceDistribution )
 
 {
     SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" );
-    SCAI_ASSERT_EQ_ERROR( newOwnersOfLocalElements.size(), sourceDistribution->getLocalSize(),
-                          "size of new owners must be equal to local size of distribution" );
 
-    const auto targetGlobalIndexes = initializeFromNewOwners( newOwnersOfLocalElements, *sourceDistribution );
+    SCAI_ASSERT_EQ_ERROR( newOwners.size(), sourceDistribution->getLocalSize(),
+                          "new owner for each owned index required" );
+
+    // Note: illegal partition ids in newOwners will be identified later
+
+    const auto targetGlobalIndexes = initializeFromNewOwners( *sourceDistribution, newOwners );
 
     mTargetDistribution = generalDistributionUnchecked( sourceDistribution->getGlobalSize(),
                                                         std::move( targetGlobalIndexes ),
@@ -138,11 +144,11 @@ static void splitSelf( HArray<IndexType>& local,
     SCAI_ASSERT_EQ_DEBUG( permutation.size(), plan.totalQuantity(), "serious mismatch" );
 }
 
-// Note: returns global target indexes
+/* -------------------------------------------------------------------------- */
 
 HArray<IndexType> RedistributePlan::initializeFromNewOwners( 
-    const hmemo::HArray<PartitionId>& newOwners, 
-    const Distribution& sourceDist )
+    const Distribution& sourceDist,
+    const hmemo::HArray<PartitionId>& newOwners )
 {
     HArray<PartitionId> sourceGlobalIndexes = sourceDist.ownedGlobalIndexes();
 
@@ -190,7 +196,6 @@ void RedistributePlan::writeAt( std::ostream& stream ) const
 {
     stream << "RedistributePlan( ";
     stream << *mSourceDistribution << "->" << *mTargetDistribution;
-    stream << ", " << getSourceLocalSize() << "->" << getTargetLocalSize();
     stream << ", keeps:" << mKeepSourceIndexes.size();
     stream << ", source exchg :" << mExchangeSourceIndexes.size();
     stream << ", target exchg :" << mExchangeTargetIndexes.size();
@@ -199,16 +204,14 @@ void RedistributePlan::writeAt( std::ostream& stream ) const
 
 /* -------------------------------------------------------------------------- */
 
-DistributionPtr RedistributePlan::getSourceDistributionPtr() const
-{
-    return mSourceDistribution;
-}
-
-/* -------------------------------------------------------------------------- */
-
 DistributionPtr RedistributePlan::getTargetDistributionPtr() const
 {
     return mTargetDistribution;
+}
+
+DistributionPtr RedistributePlan::getSourceDistributionPtr() const
+{
+    return mSourceDistribution;
 }
 
 /* -------------------------------------------------------------------------- */
