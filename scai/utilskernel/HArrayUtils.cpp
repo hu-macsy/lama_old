@@ -522,6 +522,23 @@ void HArrayUtils::gather(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+HArray<ValueType> HArrayUtils::gatherF(
+    const HArray<ValueType>& source,
+    const HArray<IndexType>& indexes,
+    const ContextPtr prefLoc )
+{
+    HArray<ValueType> target;
+
+    // gather op can only be copy, otherwise target must have already the right size/capacity.
+
+    gather( target, source, indexes, common::BinaryOp::COPY, prefLoc );
+
+    return target;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename TargetValueType, typename SourceValueType>
 void HArrayUtils::scatter(
     HArray<TargetValueType>& target,
@@ -2708,6 +2725,10 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<IndexType>&,                            \
             const hmemo::HArray<IndexType>&,                            \
             const BinaryOp,                                             \
+            const hmemo::ContextPtr );                                  \
+    template HArray<ValueType> HArrayUtils::gatherF<ValueType>(         \
+            const hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<IndexType>&,                            \
             const hmemo::ContextPtr );                                  \
     template void HArrayUtils::setVal<ValueType>(                       \
             hmemo::HArray<ValueType>&,                                  \

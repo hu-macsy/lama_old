@@ -64,7 +64,6 @@ namespace dmemo
  *  the halo with actual values from the owning processors that provide the data.
  *
  */
-
 class COMMON_DLL_IMPORTEXPORT HaloExchangePlan: public common::Printable
 {
 public:
@@ -152,10 +151,20 @@ public:
         const hmemo::HArray<ValueType>& sourceArray, 
         const Communicator& comm ) const;
 
+    /** Provide updateHalo with a new haloArray, just for convenience 
+     *
+     *  This function with result argument is not recommended for multiple calls
+     *  where it is more efficient to reuse objects that have capacity like HArray.
+     */
+    template<typename ValueType>
+    hmemo::HArray<ValueType> updateHaloF(
+        const hmemo::HArray<ValueType>& sourceArray, 
+        const Communicator& comm ) const;
+
     /**
      *  same as updateHalo but provides a temporary array that takes the send buffer
      *
-     *  Optimized version that avoids the allocation of an additional array for the send buffer.
+     *  Optimized version that reuses an allocated array for the send buffer.
      */
     template<typename ValueType>
     void updateHalo( 
@@ -169,6 +178,15 @@ public:
      *
      *  Splitting update in gather and send is required when communication is overlapped
      *  with an update of the local data, so gathering of data must be done before.
+     * 
+     *  \code
+     *     haloPlan.update( haloArray, sourceArray, comm, tmpSend );  
+     *     // split it up as follows:
+     *     utilskernel::HArrayUtils::gather( tmpSend, sourceArray, haloPlan.getLocalIndexes() );
+     *     ....  // set up some asynchronous stuff
+     *     haloPlan.updateDirect[Async]( haloArray, tmpSend, comm );
+     *  \endcode
+     *
      */
     template<typename ValueType>
     void updateHaloDirect( 
@@ -207,9 +225,15 @@ public:
 
     HaloExchangePlan& operator=( HaloExchangePlan&& other ) = default;
 
+    /** Getter for communication plan used into/from hala */
+
     inline const CommunicationPlan& getHaloCommunicationPlan() const;
 
+    /** Getter for local communication plan used for local part of distributed array */
+
     inline const CommunicationPlan& getLocalCommunicationPlan() const;
+
+    /** Getter for local indexes referring to local elements of distributed array used in other halos */
 
     inline const hmemo::HArray<IndexType>& getLocalIndexes() const;
 
@@ -297,9 +321,9 @@ private:
     CommunicationPlan mLocalCommPlan;   // is the transpose of mHaloCommPlan
 
     // This is an additional data structure to map the required global to halo indexes
-    // mGlobal2Halo[mHalo2GlobalIndexes[i]] = i
+    // mGlobal2Halo[mHalo2GlobalIndexes[i]] = i, 0 <= i < haloSize()
 
-    std::map<IndexType, IndexType> mGlobal2Halo;
+    std::map<IndexType, IndexType> mGlobal2Halo;  //!< inverse to mHalo2Global
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -360,10 +384,10 @@ bool HaloExchangePlan::isEmpty() const
     return ( mHaloCommPlan.totalQuantity() == 0 ) && ( mLocalCommPlan.totalQuantity() == 0 );
 }
 
-/** Build a halo by an array of (unsorted) required indexes 
+/** Build a halo exchange plan by an array of (unsorted) global indexes 
  *
- *  @param[in]  requiredIndexes are global indexes for required values from other processors
- *  @param[in]  distribution is the mapping to find owners and local indexes 
+ *  @param[in]  globalIndexes are global indexes for required values from other processors
+ *  @param[in]  distribution is the mapping to find owners and map global to local indexes 
  *  @param[in]  elimDouble if true double entries in requiredIndexes are recognized
  *  @returns    the HaloExchangePlan object that contains (sorted) required and provides indexes and exchange plans
  *
@@ -382,7 +406,7 @@ bool HaloExchangePlan::isEmpty() const
  *      ...
  *      HArray<ValueType> localArray( dist->getLocalSize(), ... );   // distributed globalArray
  *      HArray<ValueType> haloArray( plan.getHaloSize() );           // halo part
- *      plan.update( haloArray, localArray );
+ *      plan.updateHalo( haloArray, localArray );
  *      // for a halo index k haloArray[ k ] contains globalArray[ plan.halo2Global(k) ]
  *      // for a global index g haloArray[ plan.global2Halo(g) ] contains globalArray[g]
  *  \endcode

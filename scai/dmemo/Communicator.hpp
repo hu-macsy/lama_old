@@ -763,6 +763,14 @@ public:
         const hmemo::HArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
+    /** exchangeByPlan as function with result argument for convenience. */
+
+    template<typename ValueType>
+    void exchangeByPlanF(
+        const CommunicationPlan& recvPlan,
+        const hmemo::HArray<ValueType>& sendArray,
+        const CommunicationPlan& sendPlan ) const;
+
     /** Asynchronous exchange of HArrays. */
 
     template<typename ValueType>

@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE( exampleTest )
         expProvidesIndexes = HArray<IndexType>( { 0, 1, 1, 3 } );
     }
 
-    auto blockDist = genBlockDistribution( localSize, comm );
+    auto blockDist = genBlockDistributionBySize( localSize, comm );
 
     auto plan = haloExchangePlan( *blockDist, requiredIndexes );
     

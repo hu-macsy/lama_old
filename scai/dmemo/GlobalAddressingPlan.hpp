@@ -104,14 +104,22 @@ public:
     /**
      *  Apply the global addressing plan for a gathering of remote data
      *
-     *  @param[out] localArray is my local part of a 'distributed' array, size must be same to globalIndexes
+     *  @param[in,out] localArray is my local part of a 'distributed' array, size must be same to globalIndexes
      *  @param[in] remoteArray is my local part of the array that is remotely accessed
+     *
+     *  Note: for op == BinaryOp::COPY localArray is only out argument and will be resized correctly.
      */
     template<typename ValueType>
     void gather( 
         hmemo::HArray<ValueType>& localArray, 
         const hmemo::HArray<ValueType>& remoteArray, 
         const common::BinaryOp op = common::BinaryOp::COPY );
+
+    /**
+     *  @brief Provide gather method as function with result argument for convenience.
+     */
+    template<typename ValueType>
+    hmemo::HArray<ValueType> gatherF( const hmemo::HArray<ValueType>& remoteArray );
 
     template<typename ValueType>
     void scatter( 
@@ -152,18 +160,21 @@ void GlobalAddressingPlan::gather(
     const hmemo::HArray<ValueType>& remoteArray, 
     const common::BinaryOp op )
 {
-    hmemo::HArray<ValueType> sendValues;
-
     // gather the values as required by global indexes used to build this plan
 
-    utilskernel::HArrayUtils::gather( sendValues, remoteArray, mLocalIndexes, common::BinaryOp::COPY );
+    auto sendValues = utilskernel::HArrayUtils::gatherF( remoteArray, mLocalIndexes );
 
     // send back via communication plan
 
-    SCAI_ASSERT_GE_ERROR( localArray.size(), sendSize(), "target array too small" )
+    if ( op != common::BinaryOp::COPY )
+    {
+        SCAI_ASSERT_GE_ERROR( localArray.size(), sendSize(), "local array as target array too small" )
+    }
 
     exchangeBack( localArray, sendValues, op );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void GlobalAddressingPlan::scatter( 

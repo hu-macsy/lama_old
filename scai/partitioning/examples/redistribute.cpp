@@ -71,7 +71,7 @@ int main( int, char** )
         }
     }
 
-    dmemo::RedistributePlan redist( newLocalOwners, sourceDistribution );
+    auto redist = dmemo::redistributePlanByNewOwners( newLocalOwners, sourceDistribution );
 
     v.redistribute( redist );
 

@@ -203,8 +203,8 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
         // Localize the matrix data according to the source distribution
         matrixStorage.localize( matrixStorage, *rowDist1 );
         SCAI_LOG_INFO( logger, matrixStorage << ": is local storage" );
-        RedistributePlan redistributor( rowDist2, rowDist1 );
-        matrixStorage.redistribute( matrixStorage, redistributor );
+        auto plan = redistributePlanByNewDistribution( rowDist2, rowDist1 );
+        matrixStorage.redistribute( matrixStorage, plan );
         SCAI_LOG_INFO( logger, matrixStorage << ": is redistributed storage" );
         matrixStorage.replicate( matrixStorage, *rowDist2 );
         SCAI_LOG_INFO( logger, matrixStorage << ": is global/replicated storage" );

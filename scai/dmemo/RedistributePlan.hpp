@@ -67,33 +67,24 @@ class COMMON_DLL_IMPORTEXPORT RedistributePlan: public common::Printable
 {
 public:
 
-    /** Build an object by the source and target distribution.
+    /** Constructor of a redistribute plan with existing plans and pack/unpack indexes. 
      *
-     *  @param[in] targetDistribution  the new distribution
-     *  @param[in] sourceDistribution  the old distribution
+     *  @param[in] targetDistribution specifies the target distribution 
+     *  @param[in] unpackTargetPerm specifies how to unpack the incoming data, size == targetDistribution.getLocalSize()
+     *  @param[in] recvTargetPlan is plan for incoming data, totalQuantity == targetDistribution.getLocalSize()
+     *  @param[in] targetDistribution specifies the source distribution 
+     *  @param[in] packSourcePerm specifies how to pack the local data, size == sourceDistribution.getLocalSize()
+     *  @param[in] sendSourcePlan is plan to send the local data packed in contiguous sections for other processors
      *
-     *  The global size of both distributions must be the same.
+     *  Global size of source and target distribution must be exactly the same, and they must have the same communicator.
      */
-    RedistributePlan( DistributionPtr targetDistribution, DistributionPtr sourceDistribution );
-
-    /**
-     * Build a RedistributePlan by a source distribution and a list of owners.
-     *
-     * By supplying the new owners instead of the target distribution, the expensive operation
-     * of computing owners for elements can be avoided. The target distribution is instead built
-     * as part of the construction of the RedistributePlan.
-     *
-     * This is only useful in some cases - for example when integrating with external redistribution software,
-     * which might output exactly such a list of new owners. In these cases, the necessary communication required
-     * to create a RedistributePlan may sometimes be significantly reduced.
-     *
-     * @param[in] newOwners array with new owner for currently owned global indexes
-     * @param[in] sourceDistribution  The source distribution from which to redistribute elements.
-     *
-     *  *  newOwners.size() == sourceDistribution.getLocalSize()
-     *  *  newOwners[i] is new owner of sourceDistribution.local2Global( i ), 
-     */
-    RedistributePlan( const hmemo::HArray<PartitionId>& newOwners, DistributionPtr sourceDistribution );
+    RedistributePlan( 
+        DistributionPtr targetDistribution,   
+        hmemo::HArray<IndexType> unpackTargetPerm, 
+        CommunicationPlan recvTargetPlan, 
+        DistributionPtr sourceDistribution,
+        hmemo::HArray<IndexType> packSourcePerm, 
+        CommunicationPlan sendSourcePlan );
 
     /** Getter needed for distributions */
 
@@ -182,15 +173,20 @@ public:
      */
     void reverse();
 
+    /**
+     *  Help routine to reset the target distribution in the plan with a simpler one
+     */
+    void resetTargetDistribution( DistributionPtr targetDistribution );
+
 private:
 
-    /**
-     *  @param[in] sourceDist source distribution is the current distribution 
-     *  @param[in] newOwners array with new owner for currently owned indexes
-     */
-    hmemo::HArray<IndexType> initializeFromNewOwners( 
-        const Distribution& sourceDist,
-        const hmemo::HArray< PartitionId >& newOwners );
+    /** Help routine to extract 'local' indexes of a communication plan */
+
+    static void splitSelf(  
+        hmemo::HArray<IndexType>& local,
+        CommunicationPlan& plan,
+        hmemo::HArray<IndexType>& permutation,
+        const IndexType rank );
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -214,6 +210,38 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
+
+/* ------------------------------------------------------------------------------- */
+/*  Free functions to construct a RedistributePlan                                 */
+/* ------------------------------------------------------------------------------- */
+
+/** Build an object by the source and target distribution.
+ *
+ *  @param[in] targetDistribution  the new distribution
+ *  @param[in] sourceDistribution  the old distribution
+ *
+ *  The global size of both distributions must be the same.
+ */
+RedistributePlan redistributePlanByNewDistribution( DistributionPtr targetDistribution, DistributionPtr sourceDistribution );
+
+/**
+ * Build a RedistributePlan by a source distribution and the new owners for the owned elements of source distribution.
+ *
+ * By supplying the new owners instead of the target distribution, the expensive operation
+ * of computing owners for elements can be avoided. The target distribution is instead built
+ * as part of the construction of the RedistributePlan.
+ *
+ * This is only useful in some cases - for example when integrating with external redistribution software,
+ * which might output exactly such a list of new owners. In these cases, the necessary communication required
+ * to create a RedistributePlan may sometimes be significantly reduced.
+ *
+ * @param[in] newOwners array with new owner for currently owned global indexes
+ * @param[in] sourceDistribution  The source distribution from which to redistribute elements.
+ *
+ *  *  newOwners.size() == sourceDistribution.getLocalSize()
+ *  *  newOwners[i] is new owner of sourceDistribution.local2Global( i ), 
+ */
+RedistributePlan redistributePlanByNewOwners( const hmemo::HArray<PartitionId>& newOwners, DistributionPtr sourceDistribution );
 
 /* ------------------------------------------------------------------------------- */
 

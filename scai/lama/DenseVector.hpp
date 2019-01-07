@@ -486,7 +486,7 @@ public:
     /** Scattering values from another vector into this vector
      *
      *  @param[in] index  specifies positions where to update values
-     *  @param[in] bool   might be set true if no entry appears twice in index (global view)
+     *  @param[in] unique might be set true if no entry appears twice in index (global view)
      *  @param[in] source values that are scattered
      *  @param[in] op     specifies how to combine elements with existing ones
      *

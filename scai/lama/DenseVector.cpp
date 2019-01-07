@@ -631,7 +631,7 @@ void DenseVector<ValueType>::sortImpl(
 
     // Create the new general block distribution
 
-    auto newDist = dmemo::genBlockDistribution( newLocalSize, distribution.getCommunicatorPtr() );
+    auto newDist = dmemo::genBlockDistributionBySize( newLocalSize, distribution.getCommunicatorPtr() );
 
     if ( out )
     {
@@ -1722,8 +1722,8 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
         // so we have now really a redistibution, build a RedistributePlan
 
         HArray<ValueType> newLocalValues( distribution->getLocalSize() );
-        RedistributePlan redistributor( distribution, getDistributionPtr() ); // target, source distributions
-        redistributor.redistribute( newLocalValues, mLocalValues );
+        const auto plan = redistributePlanByNewDistribution( distribution, getDistributionPtr() );
+        plan.redistribute( newLocalValues, mLocalValues );
         mLocalValues.swap( newLocalValues );
         setDistributionPtr( distribution );
     }

@@ -474,7 +474,7 @@ void _Matrix::readFromPartitionedFile( const std::string& myPartitionFileName, C
 
     // We assume a general block distribution
 
-    DistributionPtr rowDist = genBlockDistribution( localSize, comm );
+    DistributionPtr rowDist = genBlockDistributionBySize( localSize, comm );
 
     // make sure that all processors have the same number of columns
 

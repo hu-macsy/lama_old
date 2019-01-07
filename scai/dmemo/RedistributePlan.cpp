@@ -62,60 +62,13 @@ SCAI_LOG_DEF_LOGGER( RedistributePlan::logger, "RedistributePlan" )
 
 /* -------------------------------------------------------------------------- */
 
-RedistributePlan::RedistributePlan( DistributionPtr targetDistribution, DistributionPtr sourceDistribution ) : 
-
-    mSourceDistribution( sourceDistribution ), 
-    mTargetDistribution( targetDistribution )
-
-{
-    SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" )
-    SCAI_ASSERT_ERROR( targetDistribution, "target distribution is not allowed to be null" )
-
-    SCAI_ASSERT_EQ_ERROR( sourceDistribution->getCommunicator(), targetDistribution->getCommunicator(),
-                          "source and target distributions must have the same communicator" );
-
-    // Each processor computes the new owners of owned indexes from source distribution
-
-    auto newOwners = targetDistribution->owner( sourceDistribution->ownedGlobalIndexes() );
-
-    const auto targetGlobalIndexes = initializeFromNewOwners( *sourceDistribution, newOwners );
-
-    SCAI_ASSERT_ERROR(
-        HArrayUtils::all ( targetGlobalIndexes, common::CompareOp::EQ, targetDistribution->ownedGlobalIndexes() ),
-        "Internal error: mismatch between expected global indexes and target distribution" );
-}
-
-/* -------------------------------------------------------------------------- */
-
-RedistributePlan::RedistributePlan( 
-    const HArray< PartitionId >& newOwners,
-    DistributionPtr sourceDistribution ) :
-
-    mSourceDistribution( sourceDistribution )
-
-{
-    SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" );
-
-    SCAI_ASSERT_EQ_ERROR( newOwners.size(), sourceDistribution->getLocalSize(),
-                          "new owner for each owned index required" );
-
-    // Note: illegal partition ids in newOwners will be identified later
-
-    const auto targetGlobalIndexes = initializeFromNewOwners( *sourceDistribution, newOwners );
-
-    mTargetDistribution = generalDistributionUnchecked( sourceDistribution->getGlobalSize(),
-                                                        std::move( targetGlobalIndexes ),
-                                                        sourceDistribution->getCommunicatorPtr() );
-}
-
-/* -------------------------------------------------------------------------- */
-
 /** Help routine to extract 'local' indexes of a communication plan */
 
-static void splitSelf( HArray<IndexType>& local, 
-                       CommunicationPlan& plan, 
-                       HArray<IndexType>& permutation,
-                       const IndexType rank )
+void RedistributePlan::splitSelf( 
+    HArray<IndexType>& local, 
+    CommunicationPlan& plan, 
+    HArray<IndexType>& permutation,
+    const IndexType rank )
 {
     IndexType size;
     IndexType offset;
@@ -146,19 +99,116 @@ static void splitSelf( HArray<IndexType>& local,
 
 /* -------------------------------------------------------------------------- */
 
-HArray<IndexType> RedistributePlan::initializeFromNewOwners( 
-    const Distribution& sourceDist,
-    const hmemo::HArray<PartitionId>& newOwners )
+RedistributePlan::RedistributePlan( 
+    DistributionPtr targetDistribution,   
+    hmemo::HArray<IndexType> unpackTargetPerm, 
+    CommunicationPlan recvTargetPlan, 
+    DistributionPtr sourceDistribution,
+    hmemo::HArray<IndexType> packSourcePerm,  
+    CommunicationPlan sendSourcePlan ) :
+
+    mSourceDistribution( sourceDistribution ),
+    mTargetDistribution( targetDistribution ),
+  
+    mExchangeSourceIndexes( std::move( packSourcePerm ) ),
+    mExchangeTargetIndexes( std::move( unpackTargetPerm ) ),
+
+    mExchangeSendPlan( std::move( sendSourcePlan ) ),
+    mExchangeReceivePlan( std::move( recvTargetPlan ) )
 {
-    HArray<PartitionId> sourceGlobalIndexes = sourceDist.ownedGlobalIndexes();
+    // make some checks right at the beginning
+
+    SCAI_ASSERT_EQ_ERROR( mSourceDistribution->getGlobalSize(), mTargetDistribution->getGlobalSize(), 
+                          "redistribute only possible with same sizes" )
+
+    SCAI_ASSERT_EQ_ERROR( mSourceDistribution->getCommunicator(), mTargetDistribution->getCommunicator(), 
+                          "redistribute only for distributions with same communicator" )
+
+    SCAI_ASSERT_EQ_ERROR( mExchangeTargetIndexes.size(), mTargetDistribution->getLocalSize(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( mExchangeReceivePlan.totalQuantity(), mExchangeTargetIndexes.size(), "serious mismatch" )
+
+    SCAI_ASSERT_EQ_ERROR( mExchangeSourceIndexes.size(), mSourceDistribution->getLocalSize(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( mExchangeSendPlan.totalQuantity(), mExchangeSourceIndexes.size(), "serious mismatch" )
+
+    // just split up the local part, i.e. the data that is kept by this processor
+
+    const PartitionId rank = mSourceDistribution->getCommunicator().getRank();
+
+    // extract self communication, use own arrays for it
+
+    splitSelf( mKeepSourceIndexes, mExchangeSendPlan, mExchangeSourceIndexes, rank );
+    splitSelf( mKeepTargetIndexes, mExchangeReceivePlan, mExchangeTargetIndexes, rank );
+
+    SCAI_ASSERT_EQ_DEBUG( mExchangeReceivePlan.totalQuantity(), mExchangeTargetIndexes.size(), "serious mismatch" )
+    SCAI_ASSERT_EQ_DEBUG( mExchangeSendPlan.totalQuantity(), mExchangeSourceIndexes.size(), "serious mismatch" )
+
+    SCAI_ASSERT_EQ_DEBUG( mKeepSourceIndexes.size(), mKeepTargetIndexes.size(), "serious mismatch" )
+
+    SCAI_ASSERT_EQ_DEBUG( mExchangeSourceIndexes.size() + mKeepSourceIndexes.size(), 
+                          mSourceDistribution->getLocalSize(), "serious mismatch" )
+
+    SCAI_ASSERT_EQ_DEBUG( mExchangeTargetIndexes.size() + mKeepTargetIndexes.size(), 
+                          mTargetDistribution->getLocalSize(), "serious mismatch" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+RedistributePlan redistributePlanByNewDistribution( 
+
+    DistributionPtr targetDistribution, 
+    DistributionPtr sourceDistribution ) 
+
+{
+    SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" )
+    SCAI_ASSERT_ERROR( targetDistribution, "target distribution is not allowed to be null" )
+
+    // get the new owners of owned indexes from source distribution
+
+    auto newOwners = targetDistribution->owner( sourceDistribution->ownedGlobalIndexes() );
+
+    auto plan = redistributePlanByNewOwners( newOwners, sourceDistribution );
+
+    // the new target distribution in the plan is a GeneralDistribution that must be the same
+    // but we replace it with the original one that might be simpler 
+
+    plan.resetTargetDistribution( targetDistribution );
+
+    return plan;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void RedistributePlan::resetTargetDistribution( DistributionPtr targetDistribution )
+{
+    SCAI_ASSERT_ERROR(
+        HArrayUtils::all ( targetDistribution->ownedGlobalIndexes(), 
+                           common::CompareOp::EQ, 
+                           mTargetDistribution->ownedGlobalIndexes() ),
+
+        "mismatch of new target distribution" )
+
+    mTargetDistribution = targetDistribution;
+}
+
+/* -------------------------------------------------------------------------- */
+
+RedistributePlan redistributePlanByNewOwners( 
+    const HArray< PartitionId >& newOwners,
+    DistributionPtr sourceDistribution ) 
+{
+    SCAI_ASSERT_ERROR( sourceDistribution, "source distribution is not allowed to be null" );
+
+    SCAI_ASSERT_EQ_ERROR( newOwners.size(), sourceDistribution->getLocalSize(),
+                          "new owner for each owned index required" );
+
+    auto sourceGlobalIndexes = sourceDistribution->ownedGlobalIndexes();
 
     SCAI_ASSERT_EQ_ERROR( sourceGlobalIndexes.size(), newOwners.size(),
                           "Array of owners must have size equal to number of local values in source distribution." );
 
-    auto plan = globalExchangePlan( newOwners, sourceDist.getCommunicatorPtr() );
+    auto plan = globalExchangePlan( newOwners, sourceDistribution->getCommunicatorPtr() );
 
-    HArray<IndexType> inGlobalIndexes;
-    plan.exchange( inGlobalIndexes, sourceGlobalIndexes );
+    auto inGlobalIndexes = plan.exchangeF( sourceGlobalIndexes );
 
     // targetGlobalIndexes = sort( inGlobalIndexes ), keep permutation
 
@@ -166,28 +216,28 @@ HArray<IndexType> RedistributePlan::initializeFromNewOwners(
     HArray<IndexType> targetGlobalIndexes;
     HArrayUtils::sort( &sortPerm, &targetGlobalIndexes, inGlobalIndexes, true );
 
-    // the inverse permutation tells us exactly where each of the incoming elements go
-    HArrayUtils::inversePerm( mExchangeTargetIndexes, sortPerm );
+    // the sorted incoming global indexes give the new 'GeneralDistribution', no further checks required
+
+    auto targetDistribution = generalDistributionUnchecked( 
+        sourceDistribution->getGlobalSize(),
+        std::move( targetGlobalIndexes ),
+        sourceDistribution->getCommunicatorPtr() );
+
+    // the inverse permutation tells us exactly where each of the incoming elements go, use it for plan
+
+    HArray<IndexType> unpackTargetPerm;
+    HArrayUtils::inversePerm( unpackTargetPerm, sortPerm );
 
     // move member variables of the exchange plan to here
-    plan.splitUp( mExchangeSourceIndexes, mExchangeSendPlan, mExchangeReceivePlan );
 
-    const PartitionId rank = sourceDist.getCommunicator().getRank();
+    CommunicationPlan sendPlan;
+    CommunicationPlan recvPlan;
+    HArray<IndexType> sourcePackPerm;
 
-    // extract self communication, use own arrays for it
+    plan.splitUp( sourcePackPerm, sendPlan, recvPlan );
 
-    splitSelf( mKeepSourceIndexes, mExchangeSendPlan, mExchangeSourceIndexes, rank );
-    splitSelf( mKeepTargetIndexes, mExchangeReceivePlan, mExchangeTargetIndexes, rank );
-
-    SCAI_ASSERT_EQ_ERROR( mKeepSourceIndexes.size(), mKeepTargetIndexes.size(), "serious" )
-
-    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mKeepSourceIndexes, sourceDist.getLocalSize() ), "serious" )
-    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mExchangeSourceIndexes, sourceDist.getLocalSize() ), "serious" )
-
-    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mKeepTargetIndexes, targetGlobalIndexes.size() ), "serious" )
-    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( mExchangeTargetIndexes, targetGlobalIndexes.size() ), "serious" )
-
-    return targetGlobalIndexes;
+    return RedistributePlan( targetDistribution, std::move( unpackTargetPerm ), std::move( recvPlan ),
+                             sourceDistribution, std::move( sourcePackPerm ), std::move( sendPlan ) );
 }
 
 /* -------------------------------------------------------------------------- */

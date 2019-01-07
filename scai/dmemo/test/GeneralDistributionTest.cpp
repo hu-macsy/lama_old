@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE( redistConstructorTest )
 
         SCAI_LOG_DEBUG( logger, "redistribute, dist = " << dist << ", owners = " << owners )
 
-        auto gdist = generalDistributionNew( dist, owners );
+        auto gdist = generalDistributionByNewOwners( dist, owners );
         auto cdist = cyclicDistribution( N, 1, comm );
 
         BOOST_REQUIRE_EQUAL( gdist->getLocalSize(), cdist->getLocalSize() );
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE( buildByOwnersTest )
         }
     }
 
-    auto dist = generalDistributionByOwners( owners, root, comm );
+    auto dist = generalDistributionBySingleOwners( owners, root, comm );
 
     // now prove that each processor has the right local values
 
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE( buildByOwnersFailTest )
 
     BOOST_CHECK_THROW(
     {
-        dist = generalDistributionByOwners( owners, root, comm );
+        dist = generalDistributionBySingleOwners( owners, root, comm );
     }, common::Exception );
 }
 

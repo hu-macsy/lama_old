@@ -721,11 +721,11 @@ void MatrixCreator::buildReplicatedDiag(
 
     // we will take a general block distribution for the rows
 
-    dmemo::DistributionPtr rowDist = genBlockDistribution( nChunks * storage.getNumRows(), comm );
+    dmemo::DistributionPtr rowDist = genBlockDistributionBySize( nChunks * storage.getNumRows(), comm );
 
     // we will take also a general block distribution for the columns to avoid the translation into global indexes
 
-    dmemo::DistributionPtr colDist = genBlockDistribution( nChunks * storage.getNumColumns(), comm );
+    dmemo::DistributionPtr colDist = genBlockDistributionBySize( nChunks * storage.getNumColumns(), comm );
 
     SCAI_LOG_DEBUG( logger, *comm << ": row dist = " << *rowDist )
     SCAI_LOG_DEBUG( logger, *comm << ": col dist = " << *colDist )
@@ -780,7 +780,7 @@ void MatrixCreator::buildReplicated( SparseMatrix<ValueType>& matrix,
 
     // we will take a general block distribution
 
-    dmemo::DistributionPtr rowDist = dmemo::genBlockDistribution( nLocal, comm );
+    dmemo::DistributionPtr rowDist = dmemo::genBlockDistributionBySize( nLocal, comm );
     dmemo::DistributionPtr colDist = dmemo::noDistribution( storage.getNumColumns() * nRepeatCol  );
 
     SCAI_LOG_DEBUG( logger, *comm << ": rowDist for replicated matrix = " << *rowDist )

@@ -110,7 +110,7 @@ public:
 
         PartitionId root = 0;
 
-        push_back( generalDistributionByOwners( owners, root, comm ) );
+        push_back( generalDistributionBySingleOwners( owners, root, comm ) );
 
         // Create a general block distribution with different weights on each processor
 

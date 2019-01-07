@@ -146,6 +146,15 @@ public:
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
+     *  Gathering as function with result argument for more convenient usage.
+     */
+    template<typename ValueType>
+    static hmemo::HArray<ValueType> gatherF(
+        const hmemo::HArray<ValueType>& source,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /**
      *  @brief Gathering (unstructured read of values) for sparse data, typed version
      */
     template<typename TargetValueType, typename SourceValueType>

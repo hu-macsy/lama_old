@@ -123,7 +123,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionUnchecked(
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GeneralDistribution> generalDistributionByOwners(
+std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
     const HArray<PartitionId>& owners,
     const PartitionId root,
     CommunicatorPtr comm ) 
@@ -161,7 +161,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionByOwners(
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GeneralDistribution> generalDistributionNew(
+std::shared_ptr<GeneralDistribution> generalDistributionByNewOwners(
     const Distribution& dist,
     const hmemo::HArray<PartitionId>& newOwners )
 {
@@ -321,7 +321,7 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
 
     // Each processor has a contiguous part, but verify that it is in the same order
 
-    auto genBlock = genBlockDistribution( localSize, comm );
+    auto genBlock = genBlockDistributionBySize( localSize, comm );
 
     IndexType lb;
     IndexType ub;

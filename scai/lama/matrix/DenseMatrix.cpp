@@ -1249,8 +1249,9 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
     DenseStorage<ValueType>& oldLocalData = getLocalStorage();
     SCAI_ASSERT_EQUAL_DEBUG( nCols, oldLocalData.getNumColumns() )
     DenseStorage<ValueType> newLocalData( rowDistribution->getLocalSize(), nCols );
-    RedistributePlan redistributor( rowDistribution, getRowDistributionPtr() ); // target, source distributions
-    redistributor.redistributeN( newLocalData.getData(), oldLocalData.getValues(), nCols );
+    // build a plan to redistriube target <- source distribution
+    auto plan = redistributePlanByNewDistribution( rowDistribution, getRowDistributionPtr() ); 
+    plan.redistributeN( newLocalData.getData(), oldLocalData.getValues(), nCols );
 // COMMON_THROWEXCEPTION( "redistribution of dense rows not yet available" )
     oldLocalData.swap( newLocalData );
     this->setDistributionPtr( rowDistribution );

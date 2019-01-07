@@ -241,9 +241,16 @@ std::shared_ptr<GeneralDistribution> generalDistributionUnchecked(
  *  @param[in] root is the processor that has the valid copy of owners, must be same value on all processors
  *  @param[in] comm specifies the processor set used for the distribution
  *
- *  The method must be called by all processors of comm at the same time. 
+ *  The method must be called by all processors of comm at the same time with the same root. Only the root
+ *  processor has to provide the owners argument.
+ *
+ *  \code
+ *     // the following two function calls give exactly the same result/distribution
+ *     auto dist = generalDistributionBySingleOwners( owners, root, comm )
+ *     auto dist = generalDistributionByNewOwners( SingleDistribution( root, comm ), owners ) );
+ *  \endcode
  */
-std::shared_ptr<GeneralDistribution> generalDistributionByOwners( 
+std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners( 
     const hmemo::HArray<PartitionId>& owners, 
     const PartitionId root, 
     CommunicatorPtr comm );
@@ -260,7 +267,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionByOwners(
  *    - newOwners.size() == dist.getLocalSize()
  *    - 0 <= newOwners[i] < dist.getCommunicator().getSize()
  */
-std::shared_ptr<GeneralDistribution> generalDistributionNew( 
+std::shared_ptr<GeneralDistribution> generalDistributionByNewOwners( 
     const Distribution& dist,
     const hmemo::HArray<PartitionId>& newOwners );
 

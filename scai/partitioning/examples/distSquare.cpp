@@ -112,12 +112,12 @@ int main ( int argc, char* argv[] )
     double time = common::Walltime::get();
 
     SCAI_REGION_START( "user.buildRedistributePlan" )
-    dmemo::RedistributePlan redist( newLocalOwners, dist );
+    auto plan = dmemo::redistributePlanByNewOwners( newLocalOwners, dist );
     SCAI_REGION_END( "user.buildRedistributePlan" )
 
     time = common::Walltime::get() - time;
 
-    DistributionPtr newDist = redist.getTargetDistributionPtr();
+    DistributionPtr newDist = plan.getTargetDistributionPtr();
 
 
     std::cout << "new target distribution = " << *newDist << std::endl;
@@ -134,7 +134,7 @@ int main ( int argc, char* argv[] )
 
     time = common::Walltime::get();
 
-    x.redistribute( redist );
+    x.redistribute( plan );
 
     time = common::Walltime::get() - time;
 
@@ -145,7 +145,7 @@ int main ( int argc, char* argv[] )
 
     {
         SCAI_REGION( "user.redistMatrix" )
-        matrix.redistribute( redist, newDist );
+        matrix.redistribute( plan, newDist );
     }
 
     time = common::Walltime::get() - time;

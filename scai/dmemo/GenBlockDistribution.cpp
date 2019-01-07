@@ -71,12 +71,13 @@ GenBlockDistribution::GenBlockDistribution( std::unique_ptr<IndexType[]>&& offse
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GenBlockDistribution> genBlockDistribution( const IndexType localSize, CommunicatorPtr comm )
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+    const IndexType localSize, 
+    CommunicatorPtr comm )
 {
     SCAI_ASSERT_DEBUG( comm, "Null pointer for commmunicator" )
 
     PartitionId size = comm->getSize();
-    PartitionId rank = comm->getRank();
 
     std::unique_ptr<IndexType[]> offsets( new IndexType[ size + 1 ] );
 
@@ -87,7 +88,7 @@ std::shared_ptr<GenBlockDistribution> genBlockDistribution( const IndexType loca
     comm->gather( allLocalSizes, 1, 0, &localSize );
     comm->bcast( allLocalSizes, size, 0 );
 
-    SCAI_ASSERT_EQ_DEBUG( allLocalSizes[rank], localSize, "wrongly gathered values" )
+    SCAI_ASSERT_EQ_DEBUG( allLocalSizes[comm->getRank()], localSize, "wrongly gathered values" )
 
     // sizes to offsets, e.g.  0  5  3  4  1  ->  0  5  8  12 13
 
@@ -101,8 +102,21 @@ std::shared_ptr<GenBlockDistribution> genBlockDistribution( const IndexType loca
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GenBlockDistribution> genBlockDistribution( const std::vector<IndexType>& localSizes,
-                                                            CommunicatorPtr comm )
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+    const IndexType globalSize,
+    const IndexType localSize, 
+    CommunicatorPtr comm )
+{
+    auto dist = genBlockDistributionBySize( localSize, comm );
+    SCAI_ASSERT_EQUAL( dist->getGlobalSize(), globalSize, "local sizes do not sum up to expected global size" )
+    return dist;
+}
+
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySizes( 
+    const std::vector<IndexType>& localSizes,
+    CommunicatorPtr comm )
 {
     SCAI_ASSERT_DEBUG( comm, "Null pointer for commmunicator" )
 

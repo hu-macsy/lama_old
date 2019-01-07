@@ -1153,6 +1153,19 @@ void Communicator::exchangeByPlan(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void Communicator::exchangeByPlanF(
+    const CommunicationPlan& recvPlan,
+    const hmemo::HArray<ValueType>& sendArray,
+    const CommunicationPlan& sendPlan ) const
+{
+    HArray<ValueType> recvArray;
+    exchangeByPlan( recvArray, recvPlan, sendArray, sendPlan );
+    return recvArray;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 SyncToken* Communicator::exchangeByPlanAsync(
     hmemo::HArray<ValueType>& recvArray,
     const CommunicationPlan& recvPlan,

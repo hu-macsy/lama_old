@@ -140,8 +140,8 @@ void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float w
 
         const PartitionId root = 0;
 
-        auto rowDist = generalDistributionByOwners( rowOwners, root, comm );
-        auto colDist = generalDistributionByOwners( colOwners, root, comm );
+        auto rowDist = generalDistributionBySingleOwners( rowOwners, root, comm );
+        auto colDist = generalDistributionBySingleOwners( colOwners, root, comm );
 
         matrix.redistribute( rowDist, colDist );
     }
@@ -187,11 +187,9 @@ dmemo::DistributionPtr Partitioning::partitionIt(
 
     squarePartitioning( newLocalOwners, matrix, processorWeights );
 
-    // build a new distribution by the new owners
+    // build a new 'general' distribution by the new owners
 
-    dmemo::RedistributePlan redist( newLocalOwners, matrix.getRowDistributionPtr() );
-
-    return redist.getTargetDistributionPtr();
+    return dmemo::generalDistributionByNewOwners( matrix.getRowDistribution(), newLocalOwners );
 }
 
 /* ------  Constructors  ------------------------------------------------ */

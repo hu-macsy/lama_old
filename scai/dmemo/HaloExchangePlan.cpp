@@ -356,6 +356,17 @@ void HaloExchangePlan::updateHalo(
 /* ---------------------------------------------------------------------- */
 
 template<typename ValueType>
+HArray<ValueType> HaloExchangePlan::updateHaloF(
+    const HArray<ValueType>& localArray,
+    const Communicator& comm ) const
+{
+    auto sendValues = utilskernel::HArrayUtils::gatherF( localArray, mLocalIndexes );
+    return comm.exchangeByPlanF( mHaloCommPlan, sendValues, mLocalCommPlan );
+}
+
+/* ---------------------------------------------------------------------- */
+
+template<typename ValueType>
 void HaloExchangePlan::updateHaloDirect(
     HArray<ValueType>& haloArray,
     const HArray<ValueType>& sendArray,

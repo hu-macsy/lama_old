@@ -120,6 +120,11 @@ public:
     template<typename ValueType>
     void exchange( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray );
 
+    /** Provide exchange as a function for convenience. */
+
+    template<typename ValueType>
+    hmemo::HArray<ValueType> exchangeF( const hmemo::HArray<ValueType>& sendArray );
+
     /**
      *  If the plan was used to query values from other processors this routine is helpful to
      *  answer this query by using the same communication plans in the other direction.
@@ -275,6 +280,14 @@ void GlobalExchangePlan::exchange( hmemo::HArray<ValueType>& recvArray, const hm
     utilskernel::HArrayUtils::gather( sortedSendArray, sendArray, mSendPerm, common::BinaryOp::COPY );
     mComm->exchangeByPlan( recvArray, mRecvPlan, sortedSendArray, mSendPlan );
 } 
+
+template<typename ValueType>
+hmemo::HArray<ValueType> GlobalExchangePlan::exchangeF( const hmemo::HArray<ValueType>& sendArray )
+{
+    hmemo::HArray<ValueType> recvArray;
+    exchange( recvArray, sendArray );
+    return recvArray;
+}
 
 template<typename ValueType>
 void GlobalExchangePlan::exchangeBack( 

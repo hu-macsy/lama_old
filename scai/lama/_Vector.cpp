@@ -233,7 +233,7 @@ void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, C
 
     // we have no distribution so assume a general block distribution
 
-    auto vectorDist = dmemo::genBlockDistribution( localSize, comm );
+    auto vectorDist = dmemo::genBlockDistributionBySize( localSize, comm );
 
     setDistributionPtr( vectorDist );   // distribution matches size of local part
 }

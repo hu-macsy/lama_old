@@ -37,6 +37,7 @@
 #include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
+#include <scai/dmemo/test/distributedArray.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/hmemo/HostReadAccess.hpp>
@@ -70,26 +71,6 @@ static ValueType globalValue( IndexType globalIndex )
 {
     // return static_cast<ValueType>( 2 * globalIndex + 1 );
     return static_cast<ValueType>( globalIndex );
-}
-
-template<typename ValueType>
-static HArray<ValueType> distributedArray( const Distribution& dist )
-{
-    HArray<ValueType> localArray;  // local part of the distributed 'global' array
-
-    // use own scope for write access to make sure that access is closed before return
-
-    {
-        IndexType localIndex = 0;   // running local index
-
-        for ( auto& entry : hostWriteOnlyAccess( localArray, dist.getLocalSize() ) )
-        {
-            entry = globalValue<ValueType>( dist.local2Global( localIndex++ ) );
-        }
-
-    }  // filled the local array with 'global' values
-
-    return localArray;    // each processor gets its local part
 }
 
 /* --------------------------------------------------------------------- */
@@ -137,10 +118,12 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
     // fill the 'distributed' arrays with 'same' values
 
-    const auto sourceArray = distributedArray<ValueType>( *sourceDist );
-    const auto expTargetArray = distributedArray<ValueType>( *targetDist );
+    auto fillArray = []( IndexType k ) { return ValueType( 2 * k + 1 ); };
 
-    RedistributePlan plan( targetDist, sourceDist );
+    const auto sourceArray = distributedArray<ValueType>( *sourceDist, fillArray );
+    const auto expTargetArray = distributedArray<ValueType>( *targetDist, fillArray );
+
+    auto plan = redistributePlanByNewDistribution( targetDist, sourceDist );
 
     HArray<ValueType> targetArray;
     plan.redistribute( targetArray, sourceArray );
@@ -177,7 +160,7 @@ BOOST_AUTO_TEST_CASE( redistributeNTest )
     const auto sourceArray = distributedDenseMatrix<ValueType>( *sourceDist, M );
     const auto expTargetArray = distributedDenseMatrix<ValueType>( *targetDist, M );
 
-    RedistributePlan plan( targetDist, sourceDist );
+    auto plan = redistributePlanByNewDistribution( targetDist, sourceDist );
 
     HArray<ValueType> targetArray;
     plan.redistributeN( targetArray, sourceArray, M );
@@ -241,7 +224,7 @@ static HArray<ValueType> distributedRaggedArray( const Distribution& dist, const
 
             for ( IndexType j = 0; j < sizeI; ++j )
             {
-                wLocal[localIndex++] = globalI + 2 * j;
+                wLocal[localIndex++] = static_cast<ValueType>( globalI + 2 * j );
             }
         }
 
@@ -276,7 +259,7 @@ BOOST_AUTO_TEST_CASE( redistributeVTest )
     const auto expTargetArray = distributedRaggedArray<ValueType>( *targetDist, targetOffsets );
     SCAI_LOG_DEBUG( logger, "exp target array = " << printIt( expTargetArray ) )
 
-    RedistributePlan plan( targetDist, sourceDist );
+    auto plan = redistributePlanByNewDistribution( targetDist, sourceDist );
 
     HArray<ValueType> targetArray;
     plan.redistributeV( targetArray, targetOffsets, sourceArray, sourceOffsets );
@@ -325,8 +308,8 @@ BOOST_AUTO_TEST_CASE( redistributorTest )
     auto sourceDist = std::make_shared<GeneralDistribution>( N, myIndexes1, true, comm );
     auto targetDist = std::make_shared<GeneralDistribution>( N, myIndexes2, true, comm );
 
-    RedistributePlan r1( targetDist, sourceDist );
-    RedistributePlan r2( newOwners, sourceDist );
+    auto r1 = redistributePlanByNewDistribution( targetDist, sourceDist );
+    auto r2 = redistributePlanByNewOwners( newOwners, sourceDist );
 
     // both redistributions should be the same, we prove by redistribution of some data
 
@@ -363,7 +346,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     auto sourceDist = blockDistribution( N );
     auto targetDist = cyclicDistribution( N, CHUNK_SIZE );
 
-    RedistributePlan r( targetDist, sourceDist );
+    auto r = redistributePlanByNewDistribution( targetDist, sourceDist );
     std::ostringstream out;
     out << r ;
     BOOST_CHECK( out.str().length() >  0 );
@@ -421,7 +404,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
         expected.exchangeTargetIndexes = { };
         expected.local2global = { 0, 1, 2, 3 };
 
-        const auto redist = RedistributePlan( newOwnersOfLocal, sourceDist );
+        const auto redist = redistributePlanByNewOwners( newOwnersOfLocal, sourceDist );
         checkRedistributePlanAgainstExpected( redist, expected );
     }
     else if ( numPartitions == 2 )
@@ -459,7 +442,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
             expected.local2global = { 0, 1, 4, 6, 7 };
         }
 
-        const auto redist = RedistributePlan( newOwnersOfLocal, sourceDist );
+        const auto redist = redistributePlanByNewOwners( newOwnersOfLocal, sourceDist );
 
         checkRedistributePlanAgainstExpected( redist, expected );
     }
@@ -507,7 +490,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
             expected.local2global = { 0, 1, 2, 4, 5, 7, 12 };
         }
 
-        const auto redist = RedistributePlan( newOwnersOfLocal, sourceDist );
+        const auto redist = redistributePlanByNewOwners( newOwnersOfLocal, sourceDist );
 
         checkRedistributePlanAgainstExpected( redist, expected );
     }

@@ -55,7 +55,7 @@ int main( int, char** )
         std::cout << "v[ " << i << " ] = " << x << std::endl;
     }
 
-    dmemo::RedistributePlan redist( targetDistribution, sourceDistribution );
+    auto redist = dmemo::redistributePlanByNewDistribution( targetDistribution, sourceDistribution );
 
     v.redistribute( redist );
 

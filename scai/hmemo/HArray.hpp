@@ -230,6 +230,11 @@ public:
     HArray( std::initializer_list<ValueType> init, ContextPtr context = Context::getHostPtr() );
 
     /**
+     * @brief Construct an instance of HArray form a vector 
+     */
+    HArray( const std::vector<ValueType>& vector, ContextPtr context = Context::getHostPtr() );
+
+    /**
      * @brief Destructor, releases all used resources.
      */
     virtual ~HArray();
@@ -531,6 +536,17 @@ HArray<ValueType>::HArray( std::initializer_list<ValueType> init, ContextPtr con
     // to the data, so this should be safe!
     const ValueType* data = init.begin();
     _HArray::_setRawData( init.size(), data );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template <typename ValueType>
+HArray<ValueType>::HArray( const std::vector<ValueType>& values, ContextPtr context ) :
+
+    _HArray( 0, sizeof( ValueType ) )
+{
+    touch( context );
+    _HArray::_setRawData( values.size(), values.data() );
 }
 
 /* ---------------------------------------------------------------------------------*/
