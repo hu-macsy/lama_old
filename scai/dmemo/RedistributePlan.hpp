@@ -72,7 +72,7 @@ public:
      *  @param[in] targetDistribution specifies the target distribution 
      *  @param[in] unpackTargetPerm specifies how to unpack the incoming data, size == targetDistribution.getLocalSize()
      *  @param[in] recvTargetPlan is plan for incoming data, totalQuantity == targetDistribution.getLocalSize()
-     *  @param[in] targetDistribution specifies the source distribution 
+     *  @param[in] sourceDistribution specifies the source distribution 
      *  @param[in] packSourcePerm specifies how to pack the local data, size == sourceDistribution.getLocalSize()
      *  @param[in] sendSourcePlan is plan to send the local data packed in contiguous sections for other processors
      *
@@ -250,6 +250,8 @@ RedistributePlan redistributePlanByNewDistribution( DistributionPtr targetDistri
 RedistributePlan redistributePlanByNewOwners( const hmemo::HArray<PartitionId>& newOwners, DistributionPtr sourceDistribution );
 
 /* ------------------------------------------------------------------------------- */
+/*  Implemention of template methods for redistribution                            */
+/* ------------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void RedistributePlan::redistribute( hmemo::HArray<ValueType>& targetArray, const hmemo::HArray<ValueType>& sourceArray ) const
@@ -366,6 +368,7 @@ void RedistributePlan::redistributeV(
     TransferUtils::scatterV( targetArray, targetOffsets, mExchangeTargetIndexes, targetHalo );
 }
 
+/* ------------------------------------------------------------------------------- */
 
 } /* end namespace dmemo */
 

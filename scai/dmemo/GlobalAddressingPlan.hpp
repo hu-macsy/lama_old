@@ -93,12 +93,24 @@ public:
      */
     GlobalAddressingPlan( GlobalExchangePlan plan, hmemo::HArray<IndexType> localIndexes, bool unique = false );
 
+    /**
+     * Default copy constructor is enabled.
+     */
     GlobalAddressingPlan( const GlobalAddressingPlan& other ) = default;
 
+    /**
+     * Default move constructor is enabled.
+     */
     GlobalAddressingPlan( GlobalAddressingPlan&& other ) = default;
 
+    /**
+     * Default assignment copy is enabled.
+     */
     GlobalAddressingPlan& operator=( const GlobalAddressingPlan& other ) = default;
 
+    /**
+     * Default move assignment is enabled.
+     */
     GlobalAddressingPlan& operator=( GlobalAddressingPlan&& other ) = default;
 
     /**
@@ -106,20 +118,16 @@ public:
      *
      *  @param[in,out] localArray is my local part of a 'distributed' array, size must be same to globalIndexes
      *  @param[in] remoteArray is my local part of the array that is remotely accessed
+     *  @param[in] op specifies how to combine the gathered values with the existing values.
      *
-     *  Note: for op == BinaryOp::COPY localArray is only out argument and will be resized correctly.
+     *  Note: also for op == BinaryOp::COPY the localArray should have been allocated with 
+     *        sufficient size as the plan might have been built with illegal global indexes.
      */
     template<typename ValueType>
     void gather( 
         hmemo::HArray<ValueType>& localArray, 
         const hmemo::HArray<ValueType>& remoteArray, 
         const common::BinaryOp op = common::BinaryOp::COPY );
-
-    /**
-     *  @brief Provide gather method as function with result argument for convenience.
-     */
-    template<typename ValueType>
-    hmemo::HArray<ValueType> gatherF( const hmemo::HArray<ValueType>& remoteArray );
 
     template<typename ValueType>
     void scatter( 

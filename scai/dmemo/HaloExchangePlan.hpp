@@ -295,20 +295,6 @@ public:
         const hmemo::HArray<IndexType>& globalIndexes, 
         const bool elimDouble );
 
-    /** Help routuine used for geographer, provided by Moritz Loos */
-
-    static HaloExchangePlan coarsenHalo(
-        const Distribution& coarseDistribution, 
-        const HaloExchangePlan& halo, 
-        const hmemo::HArray<IndexType>& localFineToCoarse, 
-        const hmemo::HArray<IndexType>& haloFineToCoarse );
-
-    static HaloExchangePlan buildWithPartner(
-        const Distribution& distribution,
-        const hmemo::HArray<IndexType>& requiredIndexes,
-        const hmemo::HArray<IndexType>& providedIndexes,
-        const PartitionId partner );
-    
 private:
 
     // Indexes for required values and values to provide are stored in HArrays

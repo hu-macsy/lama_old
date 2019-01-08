@@ -179,9 +179,16 @@ protected:
      */
     std::unordered_map<IndexType, IndexType> mGlobal2Local;
 
-    /** Block distributed array of owners (used for compute owners and for sanity check)
+    /** 
+     *  Block distributed array of owners (used for compute owners and for sanity check)
      *
-     *  In the global view the array mBlockDistributedOwners[i] contains the owner of index i.
+     *  The approach of using an intermediate block distributed array of owners 
+     *  is attributed to Moritz von Looz-Corswarem, who
+     *  pointed out the optimization opportunity to us, and provided source code and experimental
+     *  results to show its efficacy.
+     *
+     *  The block distributed array of owners is built only on demand. This can be eiter for
+     *  calling a constructor with sanity check or when there are owners to be computed.
      */
     mutable std::unique_ptr<hmemo::HArray<PartitionId>> mBlockDistributedOwners;
 
