@@ -132,6 +132,15 @@ public:
      */
     void scatterOwner( hmemo::HArray<PartitionId>& targetArray );
 
+    /** 
+     *  Split up for member variables, so the data might be used for other purposes
+     */
+    void splitUp( 
+        hmemo::HArray<IndexType>& sendIndexes, 
+        CommunicationPlan& sendPlan, 
+        CommunicationPlan& recvPlan,
+        hmemo::HArray<IndexType>& recvIndexes );
+
 private:
 
     hmemo::HArray<IndexType> mLocalIndexes;  // localized global addresses from other processors

@@ -12,7 +12,7 @@ keeps these non-local values from other processor where each entry in the
 halo stands for a corresponding entry from other processors.
 
 .. figure:: _images/halo.* 
-    :width: 800px
+    :width: 600px
     :align: center
     :alt: HaloUpdate
 
@@ -27,7 +27,7 @@ The halo plan is built by the required indexes for an array with a given distrib
 
 .. code-block:: c++
 
-     auto plan = haloExchangePlan( distribuiton, requiredIndexes );
+     auto plan = haloExchangePlan( distribution, requiredIndexes );
 
 The halo exchange plan contains the following individual information on each processor:
 
@@ -43,7 +43,7 @@ The following figure shows an example of a halo exchange plan for a distributed
 array, here 40 elements block distributed onto 4 processors.
 
 .. figure:: _images/halo_plan.* 
-    :width: 800px
+    :width: 600px
     :align: center
     :alt: HaloExchangePlan
 

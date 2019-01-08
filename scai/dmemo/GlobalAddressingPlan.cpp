@@ -82,6 +82,21 @@ void GlobalAddressingPlan::scatterOwner( HArray<PartitionId>& targetArray )
     HArrayUtils::scatter( targetArray, mLocalIndexes, unique, sources, common::BinaryOp::COPY );
 }
 
+void GlobalAddressingPlan::splitUp(
+    HArray<IndexType>& sendIndexes,
+    CommunicationPlan& sendPlan,
+    CommunicationPlan& recvPlan,
+    HArray<IndexType>& recvIndexes )
+{
+    // split up for member variables of base class
+
+    GlobalExchangePlan::splitUp( sendIndexes, sendPlan, recvPlan );
+
+    // and move the new member variable
+
+    recvIndexes = std::move( mLocalIndexes );
+}
+
 }
 
 }

@@ -111,6 +111,12 @@ public:
     template<typename ValueType>
     void redistribute( hmemo::HArray<ValueType>& targetArray, const hmemo::HArray<ValueType>& sourceArray ) const;
 
+    /**
+     *  Redistribute as function version.
+     */ 
+    template<typename ValueType>
+    hmemo::HArray<ValueType> redistributeF( const hmemo::HArray<ValueType>& sourceArray ) const;
+
     /** Redistribution of a distributed vector as HArrays.
      *
      *  @param[out] targetArray  vector in target distribution
@@ -267,6 +273,16 @@ void RedistributePlan::redistribute( hmemo::HArray<ValueType>& targetArray, cons
     const bool uniqueIndexes = true;   // redistribution is always permutation without double indexes
 
     utilskernel::HArrayUtils::scatter( targetArray, mExchangeTargetIndexes, uniqueIndexes, targetHalo, common::BinaryOp::COPY );
+}
+
+/* ------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+hmemo::HArray<ValueType> RedistributePlan::redistributeF( const hmemo::HArray<ValueType>& sourceArray ) const
+{
+    hmemo::HArray<ValueType> targetArray;
+    RedistributePlan::redistribute( targetArray, sourceArray );
+    return targetArray;
 }
 
 /* ------------------------------------------------------------------------------- */

@@ -154,6 +154,42 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( redistributeTest )
+{
+    typedef DefaultReal ValueType;
+
+    const IndexType N  = 100;
+
+    auto sourceDistribution = blockDistribution( N );
+    auto targetDistribution = cyclicDistribution( N, 3 );
+
+    // define source distributed array and expected target distributed array
+
+    auto fillArray = []( IndexType k ) { return ValueType( 2 * k * k + 3 * k + 1 ); };
+
+    HArray<ValueType> source = distributedArray<ValueType>( *sourceDistribution, fillArray );
+    HArray<ValueType> expTarget = distributedArray<ValueType>( *targetDistribution, fillArray );
+  
+    // plan1 : gathering from source distribution
+
+    auto plan1 = globalAddressingPlan( *sourceDistribution, targetDistribution->ownedGlobalIndexes() );
+    HArray<ValueType> target1( targetDistribution->getLocalSize(), ValueType( 0 ) );
+    plan1.gather( target1, source, common::BinaryOp::COPY );
+
+    BOOST_TEST( hostReadAccess( target1 ) == hostReadAccess( expTarget ), boost::test_tools::per_element() );
+
+    // plan2 : scattering into target distribution
+
+    auto plan2 = globalAddressingPlan( *targetDistribution, sourceDistribution->ownedGlobalIndexes() );
+
+    HArray<ValueType> target2( targetDistribution->getLocalSize(), ValueType( 0 ) );
+    plan2.scatter( target2, source, common::BinaryOp::COPY );
+
+    BOOST_TEST( hostReadAccess( target2 ) == hostReadAccess( expTarget ), boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 
 /* --------------------------------------------------------------------- */

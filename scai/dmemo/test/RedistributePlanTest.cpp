@@ -34,7 +34,9 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
+
 #include <scai/dmemo/RedistributePlan.hpp>
+#include <scai/dmemo/GlobalAddressingPlan.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/dmemo/test/distributedArray.hpp>
@@ -354,8 +356,6 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
-    using boost::test_tools::per_element;
-
     // Helper struct to make assigning test data for individual processors simpler
     struct ExpectedResult
     {
@@ -498,6 +498,55 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     {
         BOOST_TEST_MESSAGE( "No test data for " << numPartitions << " partitions." );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( globalConstructorTest )
+{
+    typedef DefaultReal ValueType;
+
+    const IndexType N  = 100;
+
+    auto sourceDistribution = blockDistribution( N );
+    auto targetDistribution = cyclicDistribution( N, 3 );
+
+    // define source distributed array and expected target distributed array
+
+    auto fillArray = []( IndexType k ) { return ValueType( 2 * k * k + 3 * k + 1 ); };
+
+    HArray<ValueType> source = distributedArray<ValueType>( *sourceDistribution, fillArray );
+    HArray<ValueType> expTarget = distributedArray<ValueType>( *targetDistribution, fillArray );
+
+    // build global addressing plan for scattering
+
+    auto globalPlan = globalAddressingPlan( *targetDistribution, sourceDistribution->ownedGlobalIndexes() );
+
+    CommunicationPlan sourceCommPlan, targetCommPlan;
+    HArray<IndexType> sourcePerm, targetPerm;
+
+    globalPlan.splitUp( sourcePerm, sourceCommPlan, targetCommPlan, targetPerm );
+
+    RedistributePlan redistPlan( targetDistribution, std::move( targetPerm ), std::move( targetCommPlan ),
+                                 sourceDistribution, std::move( sourcePerm ), std::move( sourceCommPlan ) );
+
+    auto target = redistPlan.redistributeF( source );
+
+    BOOST_TEST( hostReadAccess( target ) == hostReadAccess( expTarget ), per_element() );
+
+    // test vice versa
+
+    target.purge();
+
+    globalPlan = globalAddressingPlan( *sourceDistribution, targetDistribution->ownedGlobalIndexes() );
+    globalPlan.splitUp( targetPerm, targetCommPlan, sourceCommPlan, sourcePerm );
+
+    redistPlan = RedistributePlan( targetDistribution, std::move( targetPerm ), std::move( targetCommPlan ),
+                                   sourceDistribution, std::move( sourcePerm ), std::move( sourceCommPlan ) );
+
+    target = redistPlan.redistributeF( source );
+
+    BOOST_TEST( hostReadAccess( target ) == hostReadAccess( expTarget ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */

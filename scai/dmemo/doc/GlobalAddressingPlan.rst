@@ -127,4 +127,50 @@ if elements might be updated more than once, additional (atomic) synchronization
 for parallel updates. For global scattering on distributed data, the flag can be set when
 building the plan.
 
+Redistribution
+^^^^^^^^^^^^^^
 
+A redistribution of data is a very common operation for distributed memory programming,
+i.e. a distributed array with a source distribution becomes assigned to a distributed
+array with a target distribution.
+
+.. code-block:: c++
+
+    HArray<ValueType> sourceArray = ...;   // local part of distributed array via sourceDist
+    HArray<ValueType> targetArray;         // becomes local part of distributed array via targetDist
+ 
+    globalAssign( targetArray, targetDist, sourceArray, sourceDist );
+
+
+Actually it is straightforward to implement this operation by using a global addressing plan.
+The first possibility is to gather the new local target data from the 'distributed' source array.
+
+.. code-block:: c++
+
+    // targetArray[i] = sourceArray[targetDist.local2Global(i)]
+    auto plan = globalAddressingPlan( sourceDist, targetDist.ownedGlobalIndexes() );
+    plan.gather( targetArray, sourceArray );
+
+But it can be implemented also via a global scatter operation, where each local source data is
+scattered into the 'distributed' target array.
+
+.. code-block:: c++
+
+    // targetArray[sourceDist.local2Global(i)] = sourceArray[i]
+    auto plan = GlobalAddressingPlan( targetDist, sourceDist.ownedGlobalIndexes() );
+    plan.scatter( targetArray, sourceArray );
+
+Actually the both plans are just the reverse of each other which is obvious as the
+plans represent global permutations that are exactly inverse to each other.
+The following figure shows an example of a GlobalAddressingPlan used for a permutation.
+
+
+.. figure:: _images/global_redistribute.*
+    :width: 700px
+    :align: center
+    :alt: Global redistribute.
+
+    Redistribution with a Global Addressing Plan
+
+Nevertheless, there will be an own plan data structure for redistribution that is optimized 
+for local data movement, i.e. that avoids self communication.
