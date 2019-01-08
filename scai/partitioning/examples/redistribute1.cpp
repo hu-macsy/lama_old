@@ -22,14 +22,14 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./partitioning/examples/redistribute1.cpp
+ * @brief Example of using a redistribute plan for redistribution of a vector.
  * @author Thomas Brandes
  * @date 10.05.2016
  */
 
 #include <scai/lama.hpp>
 
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 
@@ -38,12 +38,10 @@ using namespace lama;
 
 int main( int, char** )
 {
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
-
     const IndexType N = 10;
 
-    dmemo::DistributionPtr sourceDistribution( new dmemo::BlockDistribution( N, comm ) );
-    dmemo::DistributionPtr targetDistribution( new dmemo::CyclicDistribution( N, 3, comm ) );
+    auto sourceDistribution = dmemo::blockDistribution( N );
+    auto targetDistribution = dmemo::cyclicDistribution( N, 3 );
    
     typedef DefaultReal ValueType;
 
@@ -57,7 +55,7 @@ int main( int, char** )
         std::cout << "v[ " << i << " ] = " << x << std::endl;
     }
 
-    dmemo::Redistributor redist( targetDistribution, sourceDistribution );
+    auto redist = dmemo::redistributePlanByNewDistribution( targetDistribution, sourceDistribution );
 
     v.redistribute( redist );
 

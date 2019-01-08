@@ -45,6 +45,8 @@
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/partitioning/Partitioning.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <memory>
 
 using namespace scai;

@@ -38,6 +38,8 @@
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/OpenMP.hpp>
@@ -156,7 +158,7 @@ static void bench( const IndexType N )
     // in contrary to gather the scatter method requires an allocated array
 
     Xcomp.allocate( Xsave.getDistributionPtr() );
-    Xcomp.scatter( perm, X );
+    Xcomp.scatter( perm, true, X );
 
     if ( debug )
     {

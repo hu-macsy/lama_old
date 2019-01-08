@@ -37,7 +37,6 @@
 
 // internal scai libraries
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
@@ -51,7 +50,7 @@ namespace scai
 
 namespace dmemo
 {
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama
@@ -276,6 +275,13 @@ public:
      */
     void fillLinearValues( const ValueType startValue, const ValueType inc );
 
+    /**
+     * @brief This method fills an allocated vector by a function
+     *
+     * @param[in] fillFunction is a function that returns for a global index the value
+     */
+    void fillByFunction( ValueType ( *fillFunction ) ( IndexType ) );
+
     /** Sort all elements of this vector.
      *
      *  Currently, sorting is only possible on block distributed vectors.
@@ -480,6 +486,7 @@ public:
     /** Scattering values from another vector into this vector
      *
      *  @param[in] index  specifies positions where to update values
+     *  @param[in] unique might be set true if no entry appears twice in index (global view)
      *  @param[in] source values that are scattered
      *  @param[in] op     specifies how to combine elements with existing ones
      *
@@ -487,6 +494,7 @@ public:
      */
     virtual void scatter(
         const DenseVector<IndexType>& index,
+        const bool unique,
         const DenseVector<ValueType>& source,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
@@ -524,7 +532,7 @@ public:
 
     /** Implementation of pure method _Vector::redistribute */
 
-    virtual void redistribute( const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor );
 
     /** Implementation of pure method _Vector::resize */
 
@@ -623,6 +631,29 @@ DenseVector<ValueType> linearDenseVector(
     DenseVector<ValueType> result( ctx );
     result.allocate( distribution );
     result.fillLinearValues( startValue, inc );
+    return result;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> fillDenseVector(
+    dmemo::DistributionPtr distribution, 
+    ValueType value,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> result( ctx );
+    result.setSameValue( distribution, value );
+    return result;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> fillDenseVector(
+    dmemo::DistributionPtr distribution, 
+    ValueType ( *fillFunction ) ( IndexType ),
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> result( ctx );
+    result.allocate( distribution );
+    result.fillByFunction( fillFunction );
     return result;
 }
 

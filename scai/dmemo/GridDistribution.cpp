@@ -347,7 +347,7 @@ IndexType GridDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
-void GridDistribution::local2global( IndexType globalGridPos[], const IndexType localGridPos[] ) const
+void GridDistribution::local2Global( IndexType globalGridPos[], const IndexType localGridPos[] ) const
 {
     for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
     {
@@ -357,7 +357,7 @@ void GridDistribution::local2global( IndexType globalGridPos[], const IndexType 
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GridDistribution::local2global( const IndexType localIndex ) const
+IndexType GridDistribution::local2Global( const IndexType localIndex ) const
 {
     IndexType localGridPos[SCAI_GRID_MAX_DIMENSION];
 
@@ -365,14 +365,14 @@ IndexType GridDistribution::local2global( const IndexType localIndex ) const
 
     IndexType globalGridPos[SCAI_GRID_MAX_DIMENSION];
 
-    local2global( globalGridPos, localGridPos );
+    local2Global( globalGridPos, localGridPos );
 
     return mGlobalGrid.linearPos( globalGridPos );
 }
 
 /* ---------------------------------------------------------------------- */
 
-bool GridDistribution::global2local( IndexType localGridPos[], const IndexType globalGridPos[] ) const
+bool GridDistribution::global2Local( IndexType localGridPos[], const IndexType globalGridPos[] ) const
 {
     bool isLocal = true;
 
@@ -392,7 +392,7 @@ bool GridDistribution::global2local( IndexType localGridPos[], const IndexType g
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GridDistribution::global2local( const IndexType globalIndex ) const
+IndexType GridDistribution::global2Local( const IndexType globalIndex ) const
 {
     IndexType globalGridPos[SCAI_GRID_MAX_DIMENSION];
 
@@ -400,7 +400,7 @@ IndexType GridDistribution::global2local( const IndexType globalIndex ) const
 
     IndexType localGridPos[SCAI_GRID_MAX_DIMENSION];
 
-    bool isLocal = global2local( localGridPos, globalGridPos );
+    bool isLocal = global2Local( localGridPos, globalGridPos );
 
     if ( !isLocal )
     {
@@ -442,7 +442,7 @@ void GridDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexe
 
     for ( IndexType i = 0; i < nLocal; ++i )
     {
-        wGlobalIndexes[i] = local2global( i );
+        wGlobalIndexes[i] = local2Global( i );
     }
 }
 
@@ -575,7 +575,7 @@ std::string GridDistribution::createValue()
     return getId();
 }
 
-Distribution* GridDistribution::create( const DistributionArguments arg )
+DistributionPtr GridDistribution::create( const DistributionArguments arg )
 {
     SCAI_LOG_INFO( logger, "create" )
 
@@ -610,11 +610,11 @@ Distribution* GridDistribution::create( const DistributionArguments arg )
 
     if ( size1 == 1 )
     {
-        return new GridDistribution( Grid1D( globalSize ), arg.communicator );
+        return std::make_shared<GridDistribution>( Grid1D( globalSize ), arg.communicator );
     }
     else
     {
-        return new GridDistribution( Grid2D( size1, size2 ), arg.communicator );
+        return std::make_shared<GridDistribution>( Grid2D( size1, size2 ), arg.communicator );
     }
 }
 

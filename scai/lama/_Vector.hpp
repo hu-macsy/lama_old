@@ -61,7 +61,7 @@ namespace scai
 
 namespace dmemo
 {
-class Redistributor;    // forward declaration
+class RedistributePlan;    // forward declaration
 }
 
 namespace lama
@@ -570,7 +570,7 @@ public:
      *        must hold before the call, this->getDistribution() == redistributor.getTargetDistribution()
      *        is valid after the call.
      */
-    virtual void redistribute( const dmemo::Redistributor& redistributor ) = 0;
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor ) = 0;
 
     /**
      * @brief Resize this vector with a new passed distribution.

@@ -38,7 +38,7 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
@@ -411,7 +411,7 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
 
     if ( n > 0 )
     {
-        first = distribution->local2global( 0 );   // first global index
+        first = distribution->local2Global( 0 );   // first global index
     }
 
     _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
@@ -474,9 +474,7 @@ void _Matrix::readFromPartitionedFile( const std::string& myPartitionFileName, C
 
     // We assume a general block distribution
 
-    IndexType globalSize = comm->sum( localSize );
-
-    DistributionPtr rowDist( new GenBlockDistribution( globalSize, localSize, comm ) );
+    DistributionPtr rowDist = genBlockDistributionBySize( localSize, comm );
 
     // make sure that all processors have the same number of columns
 
@@ -605,7 +603,7 @@ void _Matrix::readFromFile( const std::string& fileName, CommunicatorPtr comm )
 
 /* ---------------------------------------------------------------------------------*/
 
-void _Matrix::redistribute( const dmemo::Redistributor& redistributor )
+void _Matrix::redistribute( const dmemo::RedistributePlan& redistributor )
 {
     if ( getColDistribution().isReplicated() ) 
     {

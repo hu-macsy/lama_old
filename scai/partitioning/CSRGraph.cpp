@@ -149,7 +149,7 @@ void CSRGraph<IdxType>::buildByCSRSparseMatrix( const CSRSparseMatrix<ValueType>
 
     const lama::CSRStorage<ValueType>& localStorage = matrix.getLocalStorage();
     const lama::CSRStorage<ValueType>& haloStorage = matrix.getHaloStorage();
-    const Halo& haloSchedule = matrix.getHalo();
+    const HaloExchangePlan& haloPlan = matrix.getHaloExchangePlan();
 
     // local2global for local IA, halo2global for halo JA
 
@@ -203,7 +203,7 @@ void CSRGraph<IdxType>::buildByCSRSparseMatrix( const CSRSparseMatrix<ValueType>
 
     // Make halo exchange 
 
-    HArray<IndexType> providesGlobalIndexes( haloSchedule.getProvidesIndexes() );
+    HArray<IndexType> providesGlobalIndexes( haloPlan.getLocalIndexes() );
 
     // add myOffset so the column indexes have the correct numbering
   
@@ -213,14 +213,7 @@ void CSRGraph<IdxType>::buildByCSRSparseMatrix( const CSRSparseMatrix<ValueType>
 
     // translate the provides to global indexes by adding myOffset
      
-    if ( !haloSchedule.isEmpty() )
-    {
-        SCAI_LOG_DEBUG( logger, "exchange halo, here global column indexes: send is " << haloSchedule.getProvidesPlan()
-                                << ", recv is " << haloSchedule.getRequiredPlan() )
-
-        comm.exchangeByPlan( requiredGlobalIndexes, haloSchedule.getRequiredPlan(), 
-                             providesGlobalIndexes, haloSchedule.getProvidesPlan() );
-    }
+    haloPlan.updateHaloDirect( requiredGlobalIndexes, providesGlobalIndexes, comm );
 
     SCAI_LOG_DEBUG( logger, comm << ": gather translates now" )
 

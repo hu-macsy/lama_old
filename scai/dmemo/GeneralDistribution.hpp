@@ -35,6 +35,7 @@
 // local library
 #include <scai/hmemo/HArray.hpp>
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/AnyAddressing.hpp>
 
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
@@ -63,37 +64,20 @@ public:
     /** Constructor of a general distribution where each processor knows it indexes.
      *
      *  \param globalSize is the size of the distributed range
-     *  \param myGlobalIndexes contains all indexes of range owned by this partition
-     *  \param communicator partitions on which the range is distributed.
+     *  \param myGlobalIndexes contains all indexes owned by this processor
+     *  \param checkFlag if true there will be global checks to verify correct entries in myGlobalIndexes
+     *  \param communicator specifies the set of processors for the distribution
      *
      *  Important: each global index from 0 to globalSize-1 must appear exactly once in
-     *  the vector myGlobalIndexes on one partition.
+     *  the array myGlobalIndexes on one partition. This will be verified if checkFlag is set.
+     *
+     *  The entries in myGlobalIndexes might be in any order and will be sorted in ascending order.
      */
     GeneralDistribution(
         const IndexType globalSize,
-        const hmemo::HArray<IndexType>& myGlobalIndexes,
+        hmemo::HArray<IndexType> myGlobalIndexes,
+        bool checkFlag,
         const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
-
-    /** This constructor creates a general distribution by an array containing the owner for each element
-     *
-     *  @param[in] owners array with ower for each element, 0 <= owners[i] < communicator->size()
-     *  @param[in] communicator that specifies the processor array for distribution
-     *
-     *  // Note: owners must only be valid on host processor
-     */
-    GeneralDistribution(
-        const hmemo::HArray<PartitionId>& owners,
-        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
-
-    /** This constructor creates a general distribution from an existing distribution and an
-     *  owners array locally for each processor.
-     *
-     *  @param[in] other is the given distribution
-     *  @param[in] owners contains the new owner for each of the local indexes.
-     */
-    GeneralDistribution(
-        const Distribution& other,
-        const hmemo::HArray<PartitionId>& owners );
 
     virtual ~GeneralDistribution();
 
@@ -105,17 +89,17 @@ public:
 
     virtual IndexType getLocalSize() const;
 
-    /** Implementation of pure method Distribution::local2global */
+    /** Implementation of pure method Distribution::local2Global */
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
 
-    /** Implementation of pure method Distribution::global2local */
+    /** Implementation of pure method Distribution::global2Local */
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
-    /** Override Distribution::global2localV */
+    /** Override Distribution::global2LocalV with a more efficient version */
 
-    virtual void global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
+    virtual void global2LocalV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize.
      *
@@ -188,30 +172,27 @@ protected:
 
     hmemo::HArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
 
-    // the following hash map is more efficient than a binary search in mLocal2Global
-
+    /** 
+     * Hash map to find for a global index the local index (if owned by this processor)
+     *
+     * Note: this solution is more efficient than a binary search in mLocal2Global.
+     */
     std::unordered_map<IndexType, IndexType> mGlobal2Local;
 
-    // Block distributed array of owners (used for compute owners and for sanity check)
+    /** Block distributed array of owners (used for compute owners and for sanity check)
+     *
+     *  In the global view the array mBlockDistributedOwners[i] contains the owner of index i.
+     */
+    mutable std::unique_ptr<hmemo::HArray<PartitionId>> mBlockDistributedOwners;
 
-    hmemo::HArray<PartitionId> mBlockDistributedOwners;
+    /** An object for any addressing is only allocated if enableAnyAddressing is called.
+     *  As this might be called for a constructed const object, it has to be mutable.
+     */
+    mutable std::unique_ptr<AnyAddressing> mAnyAddressing;
 
-    // the following arrays will only be available if enableAnyAddressing has been called
-    // Note: if set the array mGlobal2Local is no more needed
-
-    mutable hmemo::HArray<PartitionId> mAllOwners;
-    mutable hmemo::HArray<IndexType> mAllLocalOffsets;     // local size on each partition
-    mutable hmemo::HArray<IndexType> mAllLocal2Global;     // sorts elements into buckets
-    mutable hmemo::HArray<IndexType> mAllGlobal2Local;     // sorts elements into buckets
-
-    // Example
-    // index       0    1    2    3   4    5    6    7   8   9   10   11   12
-    // mOwners:    0    1    2    0   2    0    1    0   0   1    1    2    2
-    // Offsets:    0                       5                 9                    13
-    // perm   :    0    3    5    7   8    1    6    9  10   2    4   11   12     local2global
-    // perm'  :    0    5    9    1  10    2    6    3   4   7    8   11   12     global2local
-    //
-    // Note: perm is identity iff we have a block distribution
+    /** Determine block-distributed ownership, i.e. mBlockDistributedOwners */
+ 
+    void enableBlockDistributedOwners() const;
 
 private:
 
@@ -221,14 +202,74 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
+    /** Help routine that computes the map from global indexes to local indexes */
+
     void fillIndexMap();
 
-    /** Determine block-distributed ownership, i.e. mBlockDistributedOwners */
- 
-    void setBlockDistributedOwners();
+    static void computeBlockDistributedOwners( hmemo::HArray<IndexType>& blockDistributedOwners,
+                                               const IndexType globalSize,
+                                               const hmemo::HArray<IndexType>& ownedIndexes,
+                                               CommunicatorPtr comm );
 };
 
-typedef std::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
+/** Constructor of a general distribution here as a function for convenience
+ *
+ *  @param[in] globalSize is the size of the distributed range
+ *  @param[in] myGlobalIndexes contains all indexes of range owned by this processor
+ *  @param[in] comm specifies the set of processors for the distribution
+ *
+ *  The method must be called by all processors of comm at the same time. 
+ */
+std::shared_ptr<GeneralDistribution> generalDistribution( 
+    const IndexType globalSize,
+    hmemo::HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/** Constructor of a general distribution here as a function for convenience
+ *
+ *  Same as generalDistribution but it does not involve any checks and 
+ *  and any global communication.
+ */
+std::shared_ptr<GeneralDistribution> generalDistributionUnchecked( 
+    const IndexType globalSize,
+    hmemo::HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/** This function creates a general distribution by an array containing the owner for each element
+ *
+ *  @param[in] owners array with owner for each element, 0 <= owners[i] < communicator->size()
+ *  @param[in] root is the processor that has the valid copy of owners, must be same value on all processors
+ *  @param[in] comm specifies the processor set used for the distribution
+ *
+ *  The method must be called by all processors of comm at the same time with the same root. Only the root
+ *  processor has to provide the owners argument.
+ *
+ *  \code
+ *     // the following two function calls give exactly the same result/distribution
+ *     auto dist = generalDistributionBySingleOwners( owners, root, comm )
+ *     auto dist = generalDistributionByNewOwners( SingleDistribution( root, comm ), owners ) );
+ *  \endcode
+ */
+std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners( 
+    const hmemo::HArray<PartitionId>& owners, 
+    const PartitionId root, 
+    CommunicatorPtr comm );
+
+/** 
+ *  This function creates a new general distributuion by an existing one and a mapping of the
+ *  local elements to new owners. 
+ *
+ *  @param[in] dist is the actual distribution
+ *  @param[in] newOwners contains the new owner for each of the local indexes.
+ *
+ *  The following conditions must hold:
+ *
+ *    - newOwners.size() == dist.getLocalSize()
+ *    - 0 <= newOwners[i] < dist.getCommunicator().getSize()
+ */
+std::shared_ptr<GeneralDistribution> generalDistributionByNewOwners( 
+    const Distribution& dist,
+    const hmemo::HArray<PartitionId>& newOwners );
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
@@ -241,7 +282,8 @@ const hmemo::HArray<IndexType>& GeneralDistribution::getMyIndexes() const
 
 const hmemo::HArray<PartitionId>& GeneralDistribution::getMyBlockDistributedOwners() const
 {
-    return mBlockDistributedOwners;
+    enableBlockDistributedOwners();
+    return *mBlockDistributedOwners;
 }
 
 const char* GeneralDistribution::getKind() const

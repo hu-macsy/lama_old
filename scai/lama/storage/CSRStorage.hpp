@@ -38,10 +38,14 @@
 
 // scai libraries
 #include <scai/hmemo/HArray.hpp>
-#include <scai/dmemo/Redistributor.hpp>
 
 namespace scai
 {
+
+namespace dmemo
+{
+    class RedistributePlan;
+}
 
 namespace lama
 {
@@ -514,14 +518,14 @@ public:
 
     /** Redistribution of CSR avoids unnecessary conversions. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor );
 
     /** Override splitHalo with version that avoids unnecessary conversions. */
 
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        dmemo::Halo& halo,
+        dmemo::HaloExchangePlan& haloPlan,
         const dmemo::Distribution& colDist,
         const dmemo::Distribution* rowDist ) const;
 
@@ -530,7 +534,7 @@ public:
      *
      *  This solution is more efficient as temporary CSR data is completely avoided.
      */ 
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns );
 
     /**
      *   This routine builds compressed sparse column format data.

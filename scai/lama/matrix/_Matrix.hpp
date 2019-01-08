@@ -339,12 +339,12 @@ public:
      *  This call is more efficient than redistribute( redistributor.getTargetDistributionPtr(), colDistribution )
      *  as the communication schedule is already available and can be reused.
      */
-    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr ) = 0;
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor, dmemo::DistributionPtr colDistributionPtr ) = 0;
 
     /**
      *  @brief Redistribute this matrix with a redistribution, columns are eiter replicated or have same dist as rows
      */
-    virtual void redistribute( const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor );
 
     /**
      *  @brief Resize a given matrix.

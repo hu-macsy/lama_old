@@ -164,7 +164,7 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
 
-    virtual void redistribute( const dmemo::Redistributor&, dmemo::DistributionPtr)
+    virtual void redistribute( const dmemo::RedistributePlan&, dmemo::DistributionPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

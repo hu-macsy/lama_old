@@ -38,7 +38,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -1100,7 +1100,7 @@ void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::redistribute( const Redistributor& redistributor, DistributionPtr colDistributionPtr )
+void DenseMatrix<ValueType>::redistribute( const RedistributePlan& redistributor, DistributionPtr colDistributionPtr )
 {
     SCAI_ASSERT_EQ_ERROR( getRowDistribution(), *redistributor.getSourceDistributionPtr(),
                           "redistributor does not match to actual distribution of this vector" );
@@ -1170,7 +1170,7 @@ void DenseMatrix<ValueType>::localize(
 
     for ( IndexType irow = 0; irow < numLocalRows; ++irow )
     {
-        const IndexType globalRow = rowDistribution.local2global( irow );
+        const IndexType globalRow = rowDistribution.local2Global( irow );
         SCAI_LOG_TRACE( logger, "set local row " << irow << " with global row " << globalRow )
 
         for ( IndexType j = 0; j < numColumns; ++j )
@@ -1245,12 +1245,13 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
         return;
     }
 
-// So we have to reorganize data, build a Redistributor
+// So we have to reorganize data, build a RedistributePlan
     DenseStorage<ValueType>& oldLocalData = getLocalStorage();
     SCAI_ASSERT_EQUAL_DEBUG( nCols, oldLocalData.getNumColumns() )
     DenseStorage<ValueType> newLocalData( rowDistribution->getLocalSize(), nCols );
-    Redistributor redistributor( rowDistribution, getRowDistributionPtr() ); // target, source distributions
-    redistributor.redistributeN( newLocalData.getData(), oldLocalData.getValues(), nCols );
+    // build a plan to redistriube target <- source distribution
+    auto plan = redistributePlanByNewDistribution( rowDistribution, getRowDistributionPtr() ); 
+    plan.redistributeN( newLocalData.getData(), oldLocalData.getValues(), nCols );
 // COMMON_THROWEXCEPTION( "redistribution of dense rows not yet available" )
     oldLocalData.swap( newLocalData );
     this->setDistributionPtr( rowDistribution );
@@ -1372,7 +1373,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
         if ( rowOwner == comm.getRank() )
         {
-            IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+            IndexType localRowIndex = getRowDistribution().global2Local( globalRowIndex );
             mData[0]->getRow( values, localRowIndex );
         }
 
@@ -1385,7 +1386,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
     if ( rowOwner == comm.getRank() )
     {
-        IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+        IndexType localRowIndex = getRowDistribution().global2Local( globalRowIndex );
 
         SCAI_ASSERT_EQ_ERROR( static_cast<IndexType>( mData.size() ), np, "illegal column data" )
 
@@ -1393,7 +1394,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
         HArray<ValueType> recvBuffer;
 
         CommunicationPlan sendPlan;
-        auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );  // nothing to receive
+        auto recvPlan = CommunicationPlan::buildByQuantities( nullptr, 0 );  // nothing to receive
 
         for ( PartitionId p = 0; p < comm.getSize(); ++p )
         {
@@ -1409,7 +1410,7 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
              
                 if ( sendBuffer.size() )
                 {
-                    sendPlan.singleEntry( p, sendBuffer.size() );
+                    sendPlan.defineBySingleEntry( sendBuffer.size(), p );
                     comm.exchangeByPlan( recvBuffer, recvPlan, sendBuffer, sendPlan );
                 }
             }
@@ -1423,10 +1424,10 @@ void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType glo
 
         IndexType size = getColDistribution().getLocalSize();
 
-        auto sendPlan = CommunicationPlan::buildBySizes( NULL, 0 );
-        auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );
+        CommunicationPlan sendPlan;     // zero plan
+        CommunicationPlan recvPlan;     // becomes singe entry plan
 
-        recvPlan.singleEntry( rowOwner, size );
+        recvPlan.defineBySingleEntry( size, rowOwner ); // single entry plan
 
         SCAI_LOG_DEBUG( logger, comm << ": getRow, recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
 
@@ -1844,7 +1845,7 @@ ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 
     if ( getRowDistribution().isLocal( i ) )
     {
-        const IndexType iLocal = getRowDistribution().global2local( i );
+        const IndexType iLocal = getRowDistribution().global2Local( i );
 
         PartitionId owner = 0;
         IndexType  jLocal = invalidIndex;
@@ -1880,7 +1881,7 @@ void DenseMatrix<ValueType>::setValue(
 {
     const Distribution& distributionRow = getRowDistribution();
 
-    const IndexType iLocal = distributionRow.global2local( i );
+    const IndexType iLocal = distributionRow.global2Local( i );
 
     if ( iLocal == invalidIndex )
     {

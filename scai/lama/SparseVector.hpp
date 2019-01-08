@@ -37,7 +37,6 @@
 
 // internal scai libraries
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Halo.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
@@ -436,7 +435,7 @@ public:
 
     /** Implementation of pure method _Vector::redistribute */
 
-    virtual void redistribute( const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor );
 
     /** Implementation of pure method _Vector::resize */
 

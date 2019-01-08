@@ -39,6 +39,7 @@
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -106,17 +107,17 @@ int main ( int argc, char* argv[] )
 
     FileIO::write( newLocalOwners, filename );
 
-    // Now build a Redistributor that contains permutation and communicaton pattern
+    // Now build a RedistributePlan that contains permutation and communicaton pattern
 
     double time = common::Walltime::get();
 
-    SCAI_REGION_START( "user.buildRedistributor" )
-    dmemo::Redistributor redist( newLocalOwners, dist );
-    SCAI_REGION_END( "user.buildRedistributor" )
+    SCAI_REGION_START( "user.buildRedistributePlan" )
+    auto plan = dmemo::redistributePlanByNewOwners( newLocalOwners, dist );
+    SCAI_REGION_END( "user.buildRedistributePlan" )
 
     time = common::Walltime::get() - time;
 
-    DistributionPtr newDist = redist.getTargetDistributionPtr();
+    DistributionPtr newDist = plan.getTargetDistributionPtr();
 
 
     std::cout << "new target distribution = " << *newDist << std::endl;
@@ -133,7 +134,7 @@ int main ( int argc, char* argv[] )
 
     time = common::Walltime::get();
 
-    x.redistribute( redist );
+    x.redistribute( plan );
 
     time = common::Walltime::get() - time;
 
@@ -144,7 +145,7 @@ int main ( int argc, char* argv[] )
 
     {
         SCAI_REGION( "user.redistMatrix" )
-        matrix.redistribute( redist, newDist );
+        matrix.redistribute( plan, newDist );
     }
 
     time = common::Walltime::get() - time;

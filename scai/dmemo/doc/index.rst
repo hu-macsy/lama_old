@@ -28,24 +28,32 @@ Contents
 
 Here is a list of provided classes of the DMemo library
 
-======================== ================================================================================
-Class                    Description
-======================== ================================================================================
-:ref:`Communicator`      Base class for communication between different partitions
-:ref:`NoCommunicator`    Default Communicator to be used on serial machines
-:ref:`MPICommunicator`   MPI Communicator
-:ref:`Distribution`      Mapping of an index range to a number of partitions
-:ref:`CommunicationPlan` Communication schedule for exchanging non-local values
-======================== ================================================================================
+=========================== ================================================================================
+Class                       Description
+=========================== ================================================================================
+:ref:`Communicator`         Base class for communication between different partitions
+:ref:`NoCommunicator`       Default Communicator to be used on serial machines
+:ref:`MPICommunicator`      MPI Communicator
+:ref:`Distribution`         Mapping of an index range to a number of partitions
+:ref:`CommunicationPlan`    Number of contiguous elements to exchange betweeen processors
+:ref:`GlobalExchangePlan`   Communication schedule for global exchange 
+:ref:`GlobalAddressingPlan` Communication schedule for gathering from and scattering into distributed data
+:ref:`RedistributePlan`     Communication schedule for global redistribution of data
+:ref:`HaloExchangePlan`     Communication schedule for update of halo/shadow values
+=========================== ================================================================================
 
 .. toctree::
    :hidden:
 
-   Distribution
    Communicator
-   CommunicationPlan
    NoCommunicator
    MPICommunicator
+   Distribution
+   CommunicationPlan
+   GlobalExchangePlan
+   GlobalAddressingPlan
+   RedistributePlan
+   HaloExchangePlan
 
 *******
 Example

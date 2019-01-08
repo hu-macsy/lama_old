@@ -22,12 +22,32 @@ between neighbored processors.
 * The method is a template method for different value types of the array.
 * The method must be called by all processors of the communicator (SPMD mode) 
 
-.. figure:: _images/shift.svg
+.. figure:: _images/shift.*
     :width: 500px
     :align: center
     :alt: ShiftArray
 
     Shifting a heterogeneous array within a communicator.
+
+The following example is a more complicated one where arbitrary data might
+be exchanged between processors. For each value of an array the new owner is 
+specified.
+
+.. code-block:: c++
+
+   HArray<ValueType> sendArray( ... );  // values to be exchanged
+   HArray<PartitionId> onwers( ... );   // tell for each send element where to go
+
+   hmemo::HArray<ValueType> recvArray;  // colllects the values from other processors
+
+   dmemo::globalExchange( recvArray, sendArray, owners, comm );
+
+.. figure:: _images/global_exchange.*
+    :width: 700px
+    :align: center
+    :alt: Global exchange.
+
+    Exchanging arbitrary values between processors.
 
 Per default, communication takes only place between host memory, i.e. read access
 for the send array and write access for the received array use both the Host context.
@@ -79,7 +99,7 @@ color argument.
 
 All processors with the same color will build a new communicator. 
 
-.. figure:: _images/splitting.svg
+.. figure:: _images/splitting.*
     :width: 500px
     :align: center
     :alt: CommunicatorSplit

@@ -109,7 +109,7 @@ int main()
 
     hmemo::HArrayRef<IndexType> indexes( myGlobalIndexes );
 
-    auto dist = std::make_shared<GeneralDistribution>( N, indexes, comm );
+    auto dist = generalDistribution( N, indexes, comm );
 
     a.redistribute( dist, dist );
 
@@ -130,7 +130,7 @@ int main()
     {
         std::cout << " " << rowRead[j];
 
-        if ( rowRead[j] != mv( irow, dist->local2global( j ) ) )
+        if ( rowRead[j] != mv( irow, dist->local2Global( j ) ) )
         {
             std::cout << " Error";
             errors++;

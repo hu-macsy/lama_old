@@ -32,6 +32,8 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // internal scai libraries
+#include <scai/dmemo/HaloExchangePlan.hpp>
+
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
 #include <scai/sparsekernel/ELLUtils.hpp>
 #include <scai/sparsekernel/CSRUtils.hpp>
@@ -1151,9 +1153,9 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void ELLStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+void ELLStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns )
 {   
-    halo.halo2Global( mJA );
+    haloPlan.halo2GlobalV( mJA, mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
 }
 

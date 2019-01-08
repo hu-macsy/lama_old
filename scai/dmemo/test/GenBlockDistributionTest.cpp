@@ -61,7 +61,7 @@ struct GenBlockDistributionTestConfig
             }
         }
 
-        dist = genBlockDistribution( 2 * ( rank + 1 ), comm );
+        dist = genBlockDistributionBySize( 2 * ( rank + 1 ), comm );
     }
 
     ~GenBlockDistributionTestConfig()
@@ -89,20 +89,59 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
     hmemo::HArray<IndexType> indexes;
-    hmemo::HArray<PartitionId> owners;
 
     utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
-    dist->computeOwners( owners, indexes );
+    auto owners = dist->owner( indexes );
 
-    BOOST_REQUIRE_EQUAL( globalSize, owners.size() );
-    BOOST_REQUIRE_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
+    BOOST_TEST( hostReadAccess( owners ) == theOwners, boost::test_tools::per_element() );
+}
 
-    // now check for correct owners
+/* --------------------------------------------------------------------- */
 
-    for ( IndexType i = 0; i < globalSize; i++ )
+BOOST_AUTO_TEST_CASE( genBlockByWeightTest )
+{
+    const IndexType N = 24;
+  
+    auto comm = Communicator::getCommunicatorPtr();
+
+    bool  even   = comm->getRank() % 2 == 0;
+    float weight = even ? 1.0f : 2.0f ;
+
+    if ( comm->getRank() > 3 ) 
     {
-        BOOST_CHECK_EQUAL( theOwners[i], owners[i] );
+        weight = 0.0f;
+    }
+
+    auto dist = genBlockDistributionByWeight( N, weight, comm );
+
+    if ( comm->getSize() == 1 )
+    {
+        IndexType expLocalSize = N;
+        BOOST_CHECK_EQUAL( expLocalSize, dist->getLocalSize() );
+    }
+    else if ( comm->getSize() == 2 )
+    {
+        IndexType expLocalSize = even ? N / 3 : 2 * N / 3; 
+        BOOST_CHECK_EQUAL( expLocalSize, dist->getLocalSize() );
+    }
+    else if ( comm->getSize() == 3 )
+    {
+        IndexType expLocalSize = even ?  N / 4 : 2 * N / 4;
+        BOOST_CHECK_EQUAL( expLocalSize, dist->getLocalSize() );
+    }
+    else 
+    {
+        IndexType expLocalSize = even ?  N / 6 : 2 * N / 6;
+
+        if ( comm->getRank() > 3 )
+        {
+            expLocalSize = 0;
+        }
+
+        SCAI_LOG_DEBUG( logger, *comm << ": exp local size = " << expLocalSize << " for dist = " << *dist )
+
+        BOOST_CHECK_EQUAL( expLocalSize, dist->getLocalSize() );
     }
 }
 
@@ -121,8 +160,8 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 
     IndexType globalSize = size * ( size + 1 );
 
-    auto dist1 = genBlockDistribution( mlocalSizes, comm );
-    auto dist2 = genBlockDistribution( static_cast<IndexType>( 2 * ( rank + 1 ) ), comm );
+    auto dist1 = genBlockDistributionBySizes( mlocalSizes, comm );
+    auto dist2 = genBlockDistributionBySize( static_cast<IndexType>( 2 * ( rank + 1 ) ), comm );
 
     BOOST_CHECK_EQUAL( dist1->getGlobalSize(), globalSize );
     BOOST_CHECK_EQUAL( dist2->getGlobalSize(), globalSize );
@@ -141,13 +180,12 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    IndexType globalSize = comm->getSize();
     IndexType localSize = 1;
 
-    DistributionPtr genblockdist1( new GenBlockDistribution( globalSize, localSize, comm ) );
+    auto genblockdist1 = genBlockDistributionBySize( localSize, comm );
     DistributionPtr genblockdist2( genblockdist1 );
-    DistributionPtr genblockdist3( new GenBlockDistribution( globalSize, localSize, comm ) );
-    DistributionPtr genblockdist4( new GenBlockDistribution( 2 * globalSize, 2 * localSize, comm ) );
+    auto genblockdist3 = genBlockDistributionBySize( localSize, comm );
+    auto genblockdist4 = genBlockDistributionBySize( 2 * localSize, comm );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist2 ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );

@@ -30,7 +30,7 @@
 #include <scai/partitioning/Partitioning.hpp>
 
 #include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -137,8 +137,11 @@ void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float w
 
     {
         SCAI_REGION( "partitioning.rect_redist" )
-        DistributionPtr rowDist( new GeneralDistribution( rowOwners, comm ) );
-        DistributionPtr colDist( new GeneralDistribution( colOwners, comm ) );
+
+        const PartitionId root = 0;
+
+        auto rowDist = generalDistributionBySingleOwners( rowOwners, root, comm );
+        auto colDist = generalDistributionBySingleOwners( colOwners, root, comm );
 
         matrix.redistribute( rowDist, colDist );
     }
@@ -184,11 +187,9 @@ dmemo::DistributionPtr Partitioning::partitionIt(
 
     squarePartitioning( newLocalOwners, matrix, processorWeights );
 
-    // build a new distribution by the new owners
+    // build a new 'general' distribution by the new owners
 
-    dmemo::Redistributor redist( newLocalOwners, matrix.getRowDistributionPtr() );
-
-    return redist.getTargetDistributionPtr();
+    return dmemo::generalDistributionByNewOwners( matrix.getRowDistribution(), newLocalOwners );
 }
 
 /* ------  Constructors  ------------------------------------------------ */

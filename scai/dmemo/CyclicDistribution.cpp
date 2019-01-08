@@ -163,7 +163,7 @@ IndexType CyclicDistribution::getPartitionSize( const PartitionId partition ) co
 
 /* ---------------------------------------------------------------------- */
 
-IndexType CyclicDistribution::local2global( const IndexType localIndex ) const
+IndexType CyclicDistribution::local2Global( const IndexType localIndex ) const
 {
     IndexType size = mCommunicator->getSize();
     IndexType rank = mCommunicator->getRank();
@@ -178,7 +178,7 @@ IndexType CyclicDistribution::local2global( const IndexType localIndex ) const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType CyclicDistribution::allGlobal2local( const IndexType globalIndex ) const
+IndexType CyclicDistribution::allGlobal2Local( const IndexType globalIndex ) const
 {
     IndexType size = mCommunicator->getSize();
     IndexType globalChunkIndex = globalIndex / mChunkSize;
@@ -191,16 +191,33 @@ IndexType CyclicDistribution::allGlobal2local( const IndexType globalIndex ) con
 
 /* ---------------------------------------------------------------------- */
 
-IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
+IndexType CyclicDistribution::global2Local( const IndexType globalIndex ) const
 {
     if ( isLocal( globalIndex ) )
     {
-        return allGlobal2local( globalIndex );
+        return allGlobal2Local( globalIndex );
     }
     else
     {
         return invalidIndex;
     }
+
+    /*
+    IndexType size = mCommunicator->getSize();
+    IndexType rank = mCommunicator->getRank();
+    IndexType globalChunkIndex = globalIndex / mChunkSize;
+    IndexType localChunkIndex = globalChunkIndex / size;
+
+    if ( globalChunkIndex - localChunkIndex * size == rank )
+    {
+        // so it is my chunk
+        return globalIndex - ( globalChunkIndex - localChunkIndex ) * mChunkSize;
+    }
+    else
+    {
+        return invalidIndex;
+    }
+    */
 }
 
 /* ---------------------------------------------------------------------- */
@@ -323,7 +340,9 @@ IndexType CyclicDistribution::getAnyGlobalIndex( const IndexType localIndex, con
     IndexType localChunk  = localIndex / mChunkSize;
     IndexType chunkPos    = localIndex - mChunkSize * localChunk; // pos in chunk
     IndexType globalChunk = localChunk * size + owner;
-    return globalChunk + chunkPos;
+    IndexType globalIndex = globalChunk * mChunkSize + chunkPos;
+ 
+    return globalIndex;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -367,14 +386,14 @@ std::string CyclicDistribution::createValue()
     return getId();
 }
 
-Distribution* CyclicDistribution::create( const DistributionArguments arg )
+DistributionPtr CyclicDistribution::create( const DistributionArguments arg )
 {
     if ( arg.matrix != NULL )
     {
         SCAI_LOG_WARN( logger, "matrix argument ignored to create CYCLIC distribution" )
     }
 
-    return new CyclicDistribution( arg.globalSize, 1, arg.communicator );
+    return std::make_shared<CyclicDistribution>( arg.globalSize, 1, arg.communicator );
 }
 
 } /* end namespace dmemo */

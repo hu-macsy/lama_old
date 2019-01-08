@@ -60,7 +60,7 @@ namespace dmemo
 {
 class Distribution;
 class Halo;
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama

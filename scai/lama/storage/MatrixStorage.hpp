@@ -63,8 +63,8 @@ class SyncToken;
 namespace dmemo
 {
 class Distribution;
-class Halo;
-class Redistributor;
+class HaloExchangePlan;
+class RedistributePlan;
 }
 
 namespace lama
@@ -284,7 +284,7 @@ public:
     virtual void joinHalo(
         const MatrixStorage<ValueType>& localData,
         const MatrixStorage<ValueType>& haloData,
-        const dmemo:: Halo& halo,
+        const dmemo::HaloExchangePlan& halo,
         const dmemo::Distribution& colDist );
 
     /** Splitting of matrix storage for halo
@@ -299,7 +299,7 @@ public:
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        dmemo::Halo& halo,
+        dmemo::HaloExchangePlan& halo,
         const dmemo::Distribution& colDist,
         const dmemo::Distribution* rowDist ) const;
 
@@ -311,7 +311,7 @@ public:
      *  exchange schedule.
      */
 
-    virtual void buildHalo( dmemo::Halo& halo, const dmemo::Distribution& colDist );
+    virtual void buildHalo( dmemo::HaloExchangePlan& halo, const dmemo::Distribution& colDist );
 
     /** This method translates the halo column indexes back to global indexes 
      * 
@@ -320,7 +320,7 @@ public:
      * 
      *  The default implementation uses CSR storage to globalize the indexes.
      */
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& halo, const IndexType globalNumColumns );
 
     /**
      * @brief This method removes all zero elements of a sparse storage, i.e. only entries whose absolute
@@ -418,16 +418,16 @@ public:
      *
      */
 
-    virtual void redistribute( const _MatrixStorage& other, const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const _MatrixStorage& other, const dmemo::RedistributePlan& redistributor );
 
     /** Special case where other storage is CSR of same type avoids temporary CSR conversion. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor );
 
     /** Build a halo matrix with all rows of required indexes */
 
     virtual void exchangeHalo(
-        const dmemo::Halo& halo,
+        const dmemo::HaloExchangePlan& haloPlan,
         const MatrixStorage<ValueType>& matrix,
         const dmemo::Communicator& comm );
 

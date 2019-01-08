@@ -176,7 +176,7 @@ protected:
 
     using SparseMatrix<ValueType>::mLocalData;
     using SparseMatrix<ValueType>::mHaloData;
-    using SparseMatrix<ValueType>::mHalo;
+    using SparseMatrix<ValueType>::mHaloExchangePlan;
 
 private:
 

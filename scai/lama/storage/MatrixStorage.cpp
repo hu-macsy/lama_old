@@ -36,8 +36,8 @@
 #include <scai/lama/storage/StorageMethods.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
-#include <scai/dmemo/Halo.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 
 #include <scai/lama/io/FileIO.hpp>
 
@@ -372,7 +372,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::joinHalo(
     const MatrixStorage<ValueType>& localData,
     const MatrixStorage<ValueType>& haloData,
-    const Halo& halo,
+    const HaloExchangePlan& haloPlan,
     const Distribution& colDist )
 {
     SCAI_REGION( "Storage.joinHalo" )
@@ -386,33 +386,20 @@ void MatrixStorage<ValueType>::joinHalo(
     HArray<ValueType> localValues;
     localData.buildCSRData( localIA, localJA, localValues );
     SCAI_LOG_DEBUG( logger, "local CSR: ia = " << localIA << ", ja = " << localJA << ", values = " << localValues )
-    // map back the local indexes to global column indexes
-    {
-        IndexType numValues = localJA.size();
-        WriteAccess<IndexType> ja( localJA );
 
-        for ( IndexType i = 0; i < numValues; i++ )
-        {
-            ja[i] = colDist.local2global( ja[i] );
-        }
-    }
+    // map back the local indexes to global column indexes, is done in place
+    colDist.local2GlobalV( localJA, localJA );
+
     HArray<IndexType> haloIA;
     HArray<IndexType> haloJA;
     HArray<ValueType> haloValues;
     haloData.buildCSRData( haloIA, haloJA, haloValues );
     SCAI_LOG_DEBUG( logger, "halo CSR: ia = " << haloIA << ", ja = " << haloJA << ", values = " << haloValues )
-    // map back the halo indexes to global column indexes
-    // this mapping is given by the array of required indexes
-    {
-        IndexType numValues = haloJA.size();
-        WriteAccess<IndexType> ja( haloJA );
-        ReadAccess<IndexType> halo2global( halo.getRequiredIndexes() );
 
-        for ( IndexType i = 0; i < numValues; i++ )
-        {
-            ja[i] = halo2global[ja[i]];
-        }
-    }
+    // map back the halo indexes to global column indexes, is done in place
+
+    haloPlan.halo2GlobalV( haloJA, haloJA ); 
+
     HArray<IndexType> outIA;
     HArray<IndexType> outJA;
     HArray<ValueType> outValues;
@@ -489,7 +476,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::splitHalo(
     MatrixStorage<ValueType>& localData,
     MatrixStorage<ValueType>& haloData,
-    Halo& halo,
+    HaloExchangePlan& halo,
     const Distribution& colDist,
     const Distribution* rowDist ) const
 {
@@ -515,7 +502,7 @@ void MatrixStorage<ValueType>::splitHalo(
         }
 
         haloData.allocate( getNumRows(), 0 );
-        halo = Halo(); // empty halo schedule
+        halo = HaloExchangePlan(); // empty halo schedule
         return;
     }
 
@@ -548,9 +535,9 @@ void MatrixStorage<ValueType>::splitHalo(
     SCAI_LOG_INFO( logger,
                    *this << ": split into " << localJA.size() << " local non-zeros " " and " << haloJA.size() << " halo non-zeros" )
     const IndexType localNumColumns = colDist.getLocalSize();
-    IndexType haloNumColumns; // will be available after remap
     // build the halo by the non-local indexes
-    _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );
+    _StorageMethods::buildHaloExchangePlan( halo, haloJA, colDist );
+    IndexType haloNumColumns = halo.getHaloSize();
     SCAI_LOG_INFO( logger, "build halo: " << halo )
     localData.setCSRData( numRows, localNumColumns, localIA, localJA, localValues );
     localData.check( "local part after split" );
@@ -565,7 +552,7 @@ void MatrixStorage<ValueType>::splitHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDist )
+void MatrixStorage<ValueType>::buildHalo( HaloExchangePlan& halo, const Distribution& colDist )
 {
     SCAI_LOG_INFO( logger, *this << ": build halo according to column distribution " << colDist )
     SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), colDist.getGlobalSize() )
@@ -573,9 +560,9 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
     HArray<IndexType> haloJA; // global columns, all non-local
     HArray<ValueType> haloValues;
     buildCSRData( haloIA, haloJA, haloValues );
-    IndexType haloNumColumns; // will be available after remap
     // build the halo by the non-local indexes
-    _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );
+    _StorageMethods::buildHaloExchangePlan( halo, haloJA, colDist );
+    IndexType haloNumColumns = halo.getHaloSize();
     setCSRData( getNumRows(), haloNumColumns, haloIA, haloJA, haloValues );
     check( "halo part after split" );
     SCAI_LOG_INFO( logger, "Result of buildHalo: " << "halo storage = " << *this << ", halo = " << halo )
@@ -605,7 +592,7 @@ void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+void MatrixStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns )
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
@@ -613,7 +600,7 @@ void MatrixStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, co
 
     buildCSRData( csrIA, csrJA, csrValues );
 
-    halo.halo2Global( csrJA );
+    haloPlan.halo2GlobalV( csrJA, csrJA );   // globalize column indexes in place
 
     setCSRData( getNumRows(), globalNumColumns, csrIA, csrJA, csrValues );
 }
@@ -868,7 +855,7 @@ RealType<ValueType> MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<V
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::exchangeHalo(
-    const Halo& halo,
+    const HaloExchangePlan& haloPlan,
     const MatrixStorage<ValueType>& matrix,
     const Communicator& comm )
 {
@@ -882,7 +869,7 @@ void MatrixStorage<ValueType>::exchangeHalo(
     HArray<IndexType> targetJA;
     HArray<ValueType> targetValues;
     StorageMethods<ValueType>::exchangeHaloCSR( targetIA, targetJA, targetValues, sourceIA, sourceJA, sourceValues,
-            halo, comm );
+            haloPlan, comm );
     const IndexType targetNumRows = targetIA.size() - 1;
     setCSRData( targetNumRows, numColumns, targetIA, targetJA, targetValues );
 }
@@ -890,7 +877,7 @@ void MatrixStorage<ValueType>::exchangeHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const Redistributor& redistributor )
+void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const RedistributePlan& redistributor )
 
 {
     if ( other.getFormat() == Format::CSR && other.getValueType() == getValueType() )
@@ -957,7 +944,7 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const Redistributor& redistributor )
+void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const RedistributePlan& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
     const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();

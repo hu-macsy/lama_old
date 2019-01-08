@@ -1179,7 +1179,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
 
     IndexType numBuckets = 5;
 
-    HArrayUtils::bucketSort( offsets, perm, emptyArray, numBuckets, loc );
+    HArrayUtils::bucketSortOffsets( offsets, perm, emptyArray, numBuckets, loc );
 
     BOOST_CHECK_EQUAL( perm.size(), IndexType( 0 ) );
     BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
@@ -1189,7 +1189,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     HArray<IndexType> array( n, vals, loc );
     numBuckets = HArrayUtils::max( array ) + 1;
 
-    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+    HArrayUtils::bucketSortOffsets( offsets, perm, array, numBuckets, loc );
 
     BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
     BOOST_CHECK_EQUAL( perm.size(), n );
@@ -1201,7 +1201,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     // number of buckets = 1, so only two values array[i] == 0 are taken
 
     numBuckets = 1;
-    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+    HArrayUtils::bucketSortOffsets( offsets, perm, array, numBuckets, loc );
     BOOST_CHECK_EQUAL( perm.size(), IndexType( 2 ) );
 }
 
@@ -1221,20 +1221,16 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
 
     BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
 
-    IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
-    const IndexType n = sizeof( vals ) / sizeof( IndexType );
-    HArray<IndexType> array( n, vals, loc );
+    HArray<IndexType> array( { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 }, loc );
 
     numBuckets = HArrayUtils::max( array ) + 1;
     HArrayUtils::bucketCount( sizes, array, numBuckets, loc );
     BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
-    BOOST_CHECK_EQUAL( HArrayUtils::sum( sizes ), n );
+    BOOST_CHECK_EQUAL( HArrayUtils::sum( sizes ), array.size() );
 
-    BOOST_CHECK_EQUAL( IndexType( 4 ), numBuckets );
-    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[0] );
-    BOOST_CHECK_EQUAL( IndexType( 4 ), sizes[1] );
-    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[2] );
-    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[3] );
+    HArray<IndexType> expSizes( { 2, 4, 2, 2 } );
+
+    BOOST_TEST( hostReadAccess( sizes ) == hostReadAccess( expSizes ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */

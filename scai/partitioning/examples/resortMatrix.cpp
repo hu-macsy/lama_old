@@ -97,8 +97,8 @@ int main( int narg, const char* argv[] )
     HArray<IndexType> rowOffsets;   // offset array required as temporary, will not be used later
     HArray<IndexType> colOffsets;   // offset array required as temporary, will not be used later
 
-    HArrayUtils::bucketSort( rowOffsets, rowPermutation, rowDist, np_row );
-    HArrayUtils::bucketSort( colOffsets, colPermutation, colDist, np_col );
+    HArrayUtils::bucketSortOffsets( rowOffsets, rowPermutation, rowDist, np_row );
+    HArrayUtils::bucketSortOffsets( colOffsets, colPermutation, colDist, np_col );
 
     std::cout << "Bucketsort rows, offsets = " << rowOffsets << ", perm = " << rowPermutation << std::endl;
     std::cout << "Bucketsort cols, offsets = " << colOffsets << ", perm = " << colPermutation << std::endl;

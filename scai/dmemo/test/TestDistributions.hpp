@@ -29,9 +29,12 @@
 
 #pragma once
 
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/SingleDistribution.hpp>
+#include <scai/dmemo/JoinedDistribution.hpp>
 
 namespace scai
 {
@@ -105,13 +108,15 @@ public:
             }
         }
 
-        push_back( std::make_shared<GeneralDistribution>( owners, comm ) );
+        PartitionId root = 0;
+
+        push_back( generalDistributionBySingleOwners( owners, root, comm ) );
 
         // Create a general block distribution with different weights on each processor
 
         float weight = static_cast<float>( comm->getRank() + 1 );
 
-        push_back( std::make_shared<GenBlockDistribution>( globalSize, weight, comm ) );
+        push_back( genBlockDistributionByWeight( globalSize, weight, comm ) );
 
         // Create a single distributon, not on first processor
         //  1 -> 0, 2 ->1, 3 -> 1, 4 -> 2
@@ -119,6 +124,12 @@ public:
         PartitionId owner = comm->getSize() / 2;
 
         push_back( DistributionPtr( new SingleDistribution( globalSize, comm, owner ) ) );
+
+        const IndexType chunkSize = 3;
+        push_back( cyclicDistribution( globalSize, chunkSize, comm ) );
+
+        const IndexType n1 = globalSize / 3;   // position where we split
+        push_back( joinedDistribution( blockDistribution( globalSize - n1 , comm), blockDistribution( n1, comm ) ) );
     }
 
 private:

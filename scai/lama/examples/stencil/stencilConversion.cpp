@@ -36,11 +36,13 @@
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
+
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GridDistribution.hpp>
 #include <scai/dmemo/NoCommunicator.hpp>
 
-// import common 
+#include <scai/tracing.hpp>
+
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 

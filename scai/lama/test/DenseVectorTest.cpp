@@ -761,26 +761,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE ( gatherTest, ValueType, scai_array_test_types )
 {
-    ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2, 3 };
-    ValueType indexValues[]  = { 3, 4, 1, 0, 6, 2 };
-    ValueType targetValues[] = { 8, 1, 9, 5, 3, 4 };
+    DenseVector<ValueType> source( HArray<ValueType>( { 5, 9, 4, 8, 1, 2, 3 } ) );
+    DenseVector<IndexType> index( HArray<IndexType>( { 3, 4, 1, 0, 6, 2 } ) );
 
-    const IndexType m  = sizeof( sourceValues ) / sizeof( ValueType );
-    const IndexType n  = sizeof( indexValues ) / sizeof( ValueType );
-    const IndexType n1 = sizeof( targetValues ) / sizeof( ValueType );
+    HArray<ValueType> expTargetValues( { 8, 1, 9, 5, 3, 4 } );
 
-    BOOST_REQUIRE_EQUAL( n, n1 );
-
-    DenseVector<ValueType> source;
-    hmemo::HArray<ValueType> sourceArray( m, sourceValues );
-    source.assign( sourceArray );
-
-    DenseVector<IndexType> index;
-    hmemo::HArray<ValueType> indexArray( n, indexValues );
-    index.assign( indexArray );
-
-    dmemo::TestDistributions sourceDistributions( m );
-    dmemo::TestDistributions indexDistributions( n );
+    dmemo::TestDistributions sourceDistributions( source.size() );
+    dmemo::TestDistributions indexDistributions( index.size() );
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
@@ -804,17 +791,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( gatherTest, ValueType, scai_array_test_types )
             BOOST_CHECK_EQUAL( target.getDistribution(), index.getDistribution() );
             BOOST_CHECK_EQUAL( target.getDistribution().getLocalSize(), target.getLocalValues().size() );
 
-            hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
+            auto rTarget = hostReadAccess( target.getLocalValues() );
+            auto rExpTarget = hostReadAccess( expTargetValues );
 
-            for ( IndexType i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < target.size(); ++i )
             {
-                IndexType localIndex = target.getDistribution().global2local( i );
+                IndexType localIndex = target.getDistribution().global2Local( i );
 
                 if ( localIndex != invalidIndex )
                 {
-                    BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
+                    BOOST_CHECK_MESSAGE( rTarget[localIndex] == rExpTarget[i],
                                          *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
-                                         << " must be equal to targetValues[" << i << "] = " << targetValues[i] );
+                                         << " must be equal to targetValues[" << i << "] = " << rExpTarget[i] );
                 }
             }
         }
@@ -871,19 +859,19 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
                 BOOST_CHECK_THROW(
                 {
-                    target.scatter( index, source, common::BinaryOp::ADD );
+                    target.scatter( index, false, source, common::BinaryOp::ADD );
                 }, common::Exception );
 
                 continue;
             }
 
-            target.scatter( index, source, common::BinaryOp::ADD );
+            target.scatter( index, false, source, common::BinaryOp::ADD );
 
             hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
 
             for ( IndexType i = 0; i < n; ++i )
             {
-                IndexType localIndex = target.getDistribution().global2local( i );
+                IndexType localIndex = target.getDistribution().global2Local( i );
 
                 if ( localIndex != invalidIndex )
                 {

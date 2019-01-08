@@ -31,12 +31,12 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+#include <scai/dmemo/CommunicationPlan.hpp>
+
 // base classes
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/Factory.hpp>
 #include <scai/common/Printable.hpp>
-
-#include <scai/dmemo/CommunicationPlan.hpp>
 
 // internal scai libraris
 #include <scai/hmemo.hpp>
@@ -76,9 +76,9 @@ namespace dmemo
 
 class Distribution;
 
-class Halo;
-
 class Communicator;
+
+class CommunicationPlan;
 
 typedef std::shared_ptr<const Communicator> CommunicatorPtr;
 
@@ -146,6 +146,10 @@ public:
      */
 
     static CommunicatorPtr getCommunicatorPtr();
+
+    /** Get the current/actual communicator. */
+
+    static const Communicator& getCurrent();
 
     /** Get a default communicator from the factory.
      *
@@ -290,6 +294,14 @@ public:
         return CommunicatorPtr( splitIt( color, key ) );
     }
 
+    /** Build a new communication plan that is the inverse of plan
+     *
+     *  processor[p].plan->entry[q].quantity  = processor[q].entry[p].quantity
+     *
+     *  Note: this is just an all to all communication
+     */
+    CommunicationPlan transpose( const CommunicationPlan& plan ) const; 
+
     /* @brief Exchange of data between all processors by communication plans.
      *
      *  @param[out] recvVals   buffer for data received from other processors
@@ -368,13 +380,26 @@ public:
     /* @brief Scatter of an array of values from root to all other processors.
      *
      *  @param[out]   myVals values that I receive
-     *  @param[in]    n      number of elements in vector val
+     *  @param[in]    n      number of elements in vector myVals
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    allVals values for all processors (size must be sum(sizes) )
      *  @param[in]    sizes   number of total values for all processors
      */
     template<typename ValueType>
     void scatterV( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[], const IndexType sizes[] ) const;
+
+    /* @brief Scatter of an array of values from root to all other processors.
+     *
+     *  @param[out]   myVals values that I receive
+     *  @param[in]    root   processor that has values for all processors
+     *  @param[in]    allVals values for all processors ( only root )
+     *  @param[in]    sizes   number of values for each processor ( only root )
+     */
+    template<typename ValueType>
+    void scatterVArray( hmemo::HArray<ValueType>& myVals, 
+                        const PartitionId root, 
+                        const hmemo::HArray<ValueType>& allVals, 
+                        const hmemo::HArray<IndexType>& sizes ) const;
 
     virtual void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
                                const void* allVals, const IndexType sizes[], const common::ScalarType stype ) const = 0;
@@ -738,6 +763,14 @@ public:
         const hmemo::HArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
 
+    /** exchangeByPlan as function with result argument for convenience. */
+
+    template<typename ValueType>
+    void exchangeByPlanF(
+        const CommunicationPlan& recvPlan,
+        const hmemo::HArray<ValueType>& sendArray,
+        const CommunicationPlan& sendPlan ) const;
+
     /** Asynchronous exchange of HArrays. */
 
     template<typename ValueType>
@@ -746,29 +779,6 @@ public:
         const CommunicationPlan& recvPlan,
         const hmemo::HArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;
-
-    /** @brief Update of halo array via Halo object.
-     *
-     *  @tparam     ValueType             arithmetic type of involved arrays
-     *  @param[out] haloValues    will contain the non-local values from other processors
-     *  @param[in]  localValues   is the local part of the array on each processor
-     *  @param[in]  halo is the   Halo object containing all information about exchange
-     *
-     *  This method is not virtual but will use the pure virtual methods of base classes.
-     */
-    template<typename ValueType>
-    void updateHalo(
-        hmemo::HArray<ValueType>& haloValues,
-        const hmemo::HArray<ValueType>& localValues,
-        const Halo& halo ) const;
-
-    /** @brief Asynchronous update of halo array via Halo object. */
-
-    template<typename ValueType>
-    tasking::SyncToken* updateHaloAsync(
-        hmemo::HArray<ValueType>& haloValues,
-        const hmemo::HArray<ValueType>& localValues,
-        const Halo& halo ) const;
 
     /** @brief Shift on LAMA arrays.
      *

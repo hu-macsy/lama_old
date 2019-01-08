@@ -89,13 +89,13 @@ public:
      */
     virtual IndexType getBlockDistributionSize() const;
 
-    /** Implementation of pure method Distribution::local2global */
+    /** Implementation of pure method Distribution::local2Global */
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
 
-    /** Implementation of pure method Distribution::global2local */
+    /** Implementation of pure method Distribution::global2Local */
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
     virtual bool isEqual( const Distribution& other ) const;
 
@@ -135,7 +135,7 @@ public:
 
     /** Static method required for create to use in Distribution::Register */
 
-    static Distribution* create( const DistributionArguments args );
+    static DistributionPtr create( const DistributionArguments args );
 
     /** Static method required for Distribution::Register */
 

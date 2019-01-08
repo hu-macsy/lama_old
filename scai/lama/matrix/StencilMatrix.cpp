@@ -186,11 +186,11 @@ void StencilMatrix<ValueType>::define( dmemo::DistributionPtr dist, const Stenci
     SCAI_LOG_DEBUG( logger, "haloStorage, haloIA = " << haloIA )
     SCAI_LOG_DEBUG( logger, "haloStorage, haloJA = " << haloJA )
 
-    IndexType haloNumColumns;
+    _StorageMethods::buildHaloExchangePlan( mHaloExchangePlan, haloJA, *gridDist );
 
-    _StorageMethods::buildHalo( mHalo, haloJA, haloNumColumns, *gridDist );
+    IndexType haloNumColumns = mHaloExchangePlan.getHaloSize();
 
-    SCAI_LOG_DEBUG( logger, "halo = " << mHalo )
+    SCAI_LOG_DEBUG( logger, "haloPlan = " << mHaloExchangePlan )
 
     haloStorage->setCompressThreshold( 0.5 );
     haloStorage->allocate( haloIA.size() - 1, haloNumColumns );
@@ -326,12 +326,12 @@ void StencilMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) cons
         if ( storage.getValueType() == getValueType() )
         {
             MatrixStorage<ValueType>& typedStorage = static_cast<MatrixStorage<ValueType>&>( storage );
-            typedStorage.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
+            typedStorage.joinHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution() );
         }     
         else
         {
             CSRStorage<ValueType> tmp; 
-            tmp.joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
+            tmp.joinHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution() );
             storage = tmp;
         }
     }

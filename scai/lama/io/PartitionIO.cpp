@@ -287,13 +287,14 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
         IndexType localSize;
         hmemo::ReadAccess<IndexType> rSizes( localSizes );
         comm->scatter( &localSize, 1, MASTER, rSizes.get() );
-        dist.reset( new GenBlockDistribution ( globalSize, localSize, comm ) );
+        dist = genBlockDistributionBySize( localSize, comm );
+        SCAI_ASSERT_EQ_ERROR( globalSize, dist->getGlobalSize(), "serious mismatch" )
     }
     else
     {
         // general distribution can be
 
-        dist.reset( new GeneralDistribution( owners, comm ) );
+        dist = generalDistributionBySingleOwners( owners, MASTER, comm );
     }
 
     return dist;
@@ -332,9 +333,9 @@ DistributionPtr PartitionIO::readPDistribution( const string& inFileName, Commun
 
     IndexType globalSize = comm->sum( myIndexes.size() );
 
-    DistributionPtr dist( new GeneralDistribution( globalSize, myIndexes, comm ) );
+    // use in any case the version of construction with global checks
 
-    return dist;
+    return generalDistribution( globalSize, myIndexes, comm );
 }
 
 /* --------------------------------------------------------------------------------- */

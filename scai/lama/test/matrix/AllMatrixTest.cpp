@@ -38,7 +38,7 @@
 
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/common/TypeTraits.hpp>
@@ -1002,11 +1002,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_ty
 
                 matrix.redistribute( dist1, colDist );
 
-                dmemo::Redistributor redistributor( dist2, dist1 );
+                auto plan = dmemo::redistributePlanByNewDistribution( dist2, dist1 );
 
-                SCAI_LOG_DEBUG( logger, "redistributor = " << redistributor << ", applied to " << matrix )
+                SCAI_LOG_DEBUG( logger, "redistribute plan = " << plan << ", applied to " << matrix )
 
-                matrix.redistribute( redistributor );
+                matrix.redistribute( plan );
 
                 matrix1->redistribute( dist2, colDist );
 

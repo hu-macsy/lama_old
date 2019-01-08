@@ -37,6 +37,8 @@
 
 #include <scai/lama/matrix/all.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>

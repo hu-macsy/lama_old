@@ -45,7 +45,8 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/GlobalAddressingPlan.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/tracing.hpp>
@@ -149,6 +150,36 @@ void DenseVector<ValueType>::fillLinearValues( const ValueType startValue, const
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
     HArrayUtils::setScalar( mLocalValues, inc, BinaryOp::MULT, context );
     HArrayUtils::setScalar( mLocalValues, startValue, BinaryOp::ADD, context );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template <typename ValueType>
+void DenseVector<ValueType>::fillByFunction( ValueType ( *fillFunction ) ( IndexType ) )
+{
+    const Distribution& dist = getDistribution();
+
+    const IndexType localN = dist.getLocalSize();
+
+    auto wValues = hmemo::hostWriteOnlyAccess( mLocalValues, localN );
+
+    if ( dist.isReplicated() )
+    {
+        for ( IndexType i = 0; i < localN; ++i )
+        {
+            wValues[i] = fillFunction( i );
+        }
+    }
+    else
+    {
+        auto myGlobalIndexes = dist.ownedGlobalIndexes();
+        auto rIndexes = hmemo::hostReadAccess( myGlobalIndexes );
+
+        for ( IndexType i = 0; i < localN; ++i )
+        {
+            wValues[i] = fillFunction( rIndexes[i] );
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -471,7 +502,7 @@ void DenseVector<ValueType>::sortImpl(
         {
             // due to block distribution we need only global index of first one
 
-            const IndexType globalLow = distribution.local2global( 0 );
+            const IndexType globalLow = distribution.local2Global( 0 );
             HArrayUtils::setScalar( *localPerm, globalLow, common::BinaryOp::ADD );
         }
 
@@ -533,8 +564,8 @@ void DenseVector<ValueType>::sortImpl(
 
     // make communication plans for sending data and receiving data
 
-    auto sendPlan = dmemo::CommunicationPlan::buildBySizes( quantities.get(), numPartitions );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto sendPlan = dmemo::CommunicationPlan::buildByQuantities( quantities.get(), numPartitions );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
 
@@ -600,7 +631,7 @@ void DenseVector<ValueType>::sortImpl(
 
     // Create the new general block distribution
 
-    auto newDist = std::make_shared<dmemo::GenBlockDistribution>( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() );
+    auto newDist = dmemo::genBlockDistributionBySize( newLocalSize, distribution.getCommunicatorPtr() );
 
     if ( out )
     {
@@ -746,7 +777,7 @@ ValueType DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     ValueType myValue = 0;
 
-    const IndexType localIndex = getDistribution().global2local( globalIndex );
+    const IndexType localIndex = getDistribution().global2Local( globalIndex );
 
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " ) -> local : " << localIndex )
 
@@ -773,7 +804,7 @@ void DenseVector<ValueType>::setValue( const IndexType globalIndex, const ValueT
 
     SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
 
-    const IndexType localIndex = getDistribution().global2local( globalIndex );
+    const IndexType localIndex = getDistribution().global2Local( globalIndex );
 
     SCAI_LOG_TRACE( logger, *this << ": set @g " << globalIndex << " is @l " << localIndex << " : " << value )
 
@@ -1276,77 +1307,11 @@ void DenseVector<ValueType>::gather(
         return;
     }
 
-    const Communicator& comm = sourceDistribution.getCommunicator();
+    // otherwise we use a global exchange/addressing plan
 
-    // otherwise we have to set up a communication plan
+    auto plan = globalAddressingPlan( sourceDistribution, index.getLocalValues() );
 
-    HArray<PartitionId> owners;
-
-    sourceDistribution.computeOwners( owners, index.getLocalValues() );
-
-    // set up required values by sorting the indexes corresponding to the owners via bucketsort
-
-    const PartitionId size = comm.getSize();
-
-    HArray<IndexType> offsets;  // used to allocate the communication plan
-
-    HArray<IndexType> perm;     // used to sort required indexes and to scatter the gathered values
-
-    HArrayUtils::bucketSort( offsets, perm, owners, size );
-
-    SCAI_ASSERT_EQ_DEBUG( offsets.size(), size + 1, "wrong offsets" )
-    SCAI_ASSERT_EQ_DEBUG( perm.size(), owners.size(), "illegal perm" )
-
-    HArray<IndexType> requiredIndexes;  // local index values sorted by owner
-
-    HArrayUtils::gather( requiredIndexes, index.getLocalValues(), perm, BinaryOp::COPY );
-
-    // exchange communication plans
-
-    auto recvPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), size );
-    auto sendPlan = recvPlan.transpose( comm );
-
-    SCAI_LOG_DEBUG( logger, comm << ": recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
-
-    HArray<IndexType> sendIndexes;
-
-    comm.exchangeByPlan( sendIndexes, sendPlan, requiredIndexes, recvPlan );
-
-    // translate global sendIndexes to local indexes, all must be local
-
-    {
-        WriteAccess<IndexType> wSendIndexes( sendIndexes );
-
-        for ( IndexType i = 0; i < sendIndexes.size(); ++i )
-        {
-            IndexType localIndex = sourceDistribution.global2local( wSendIndexes[i] );
-            SCAI_ASSERT_NE_DEBUG( localIndex, invalidIndex, "got required index " << wSendIndexes[i] << " but I'm not owner" )
-            wSendIndexes[i] = localIndex;
-        }
-    }
-
-    // exchange communication plan
-
-    HArray<ValueType> sendValues;  // values to send from my source values
-
-    HArrayUtils::gather( sendValues, source.getLocalValues(), sendIndexes, BinaryOp::COPY );
-
-    // send via communication plan
-
-    HArray<ValueType> recvValues;
-
-    comm.exchangeByPlan( recvValues, recvPlan, sendValues, sendPlan );
-
-    if ( op == BinaryOp::COPY )
-    {
-        mLocalValues.resize( perm.size() );
-    }
-
-    // required indexes were sorted according to perm, using inverse perm here via scatter
-
-    bool isUnique = false;
-
-    HArrayUtils::scatter( mLocalValues, perm, isUnique, recvValues, op );
+    plan.gather( mLocalValues, source.getLocalValues(), op );
 
     assign( mLocalValues, index.getDistributionPtr() );
 }
@@ -1356,11 +1321,10 @@ void DenseVector<ValueType>::gather(
 template<typename ValueType>
 void DenseVector<ValueType>::scatter(
     const DenseVector<IndexType>& index,
+    const bool unique,
     const DenseVector<ValueType>& source,
     const BinaryOp op )
 {
-    bool hasUniqueIndexes = false;
-
     SCAI_ASSERT_EQ_ERROR( source.getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
 
     // get the owners of my local index values, relevant is distribution of this target vector
@@ -1374,67 +1338,14 @@ void DenseVector<ValueType>::scatter(
     {
         // so all involved arrays are replicated, we can do it just locally
 
-        HArrayUtils::scatter( mLocalValues, index.getLocalValues(), hasUniqueIndexes, source.getLocalValues(), op );
+        HArrayUtils::scatter( mLocalValues, index.getLocalValues(), unique, source.getLocalValues(), op );
 
         return;
     }
 
-    const Communicator& comm = targetDistribution.getCommunicator();
+    auto plan = globalAddressingPlan( targetDistribution, index.getLocalValues(), unique );
 
-    HArray<PartitionId> owners;
-
-    targetDistribution.computeOwners( owners, index.getLocalValues() );
-
-    // set up provided values by sorting the indexes corresponding to the owners via bucketsort
-
-    const PartitionId size = comm.getSize();
-
-    HArray<IndexType> offsets;  // used to allocate the communication plan
-
-    HArray<IndexType> perm;     // used to sort required indexes and to scatter the gathered values
-
-    HArrayUtils::bucketSort( offsets, perm, owners, size );
-
-    SCAI_ASSERT_EQ_DEBUG( offsets.size(), size + 1, "Internal error: wrong offsets" )
-    SCAI_ASSERT_EQ_ERROR( perm.size(), owners.size(), "Illegal size for permutation, most likely due to out-of-range index values" )
-
-    HArray<IndexType> sendIndexes;  // local index values sorted by owner
-
-    HArray<ValueType> sendValues;   // local source values sorted same as index values
-
-    HArrayUtils::gather( sendIndexes, index.getLocalValues(), perm, BinaryOp::COPY );
-
-    HArrayUtils::gather( sendValues, source.getLocalValues(), perm, BinaryOp::COPY );
-
-    // exchange communication plans
-
-    auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), size );
-    auto recvPlan = sendPlan.transpose( comm );
-
-    SCAI_LOG_DEBUG( logger, comm << ": sendPlan = " << sendPlan << ", recvPlan = " << recvPlan )
-
-    HArray<IndexType> recvIndexes;
-    HArray<ValueType> recvValues;
-
-    comm.exchangeByPlan( recvIndexes, recvPlan, sendIndexes, sendPlan );
-    comm.exchangeByPlan( recvValues, recvPlan, sendValues, sendPlan );
-
-    // translate global recvIndexes to local indexes, all must be local
-
-    {
-        WriteAccess<IndexType> wRecvIndexes( recvIndexes );
-
-        for ( IndexType i = 0; i < recvIndexes.size(); ++i )
-        {
-            IndexType localIndex = targetDistribution.global2local( wRecvIndexes[i] );
-            SCAI_ASSERT_NE_DEBUG( localIndex, invalidIndex, "got required index " << wRecvIndexes[i] << " but I'm not owner" )
-            wRecvIndexes[i] = localIndex;
-        }
-    }
-
-    // Now scatter all received values
-
-    HArrayUtils::scatter( mLocalValues, recvIndexes, hasUniqueIndexes, recvValues, op, source.getContextPtr() );
+    plan.scatter( mLocalValues, source.getLocalValues(), op );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1801,18 +1712,18 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else
     {
-        // each element has exactly one old and one new owner, here we use a Redistributor
+        // each element has exactly one old and one new owner, here we use a RedistributePlan
 
         SCAI_LOG_DEBUG( logger, *this << " will be redistributed to " << *distribution )
 
         SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
                               "redistribute only within same communicator / processor set" )
 
-        // so we have now really a redistibution, build a Redistributor
+        // so we have now really a redistibution, build a RedistributePlan
 
         HArray<ValueType> newLocalValues( distribution->getLocalSize() );
-        Redistributor redistributor( distribution, getDistributionPtr() ); // target, source distributions
-        redistributor.redistribute( newLocalValues, mLocalValues );
+        const auto plan = redistributePlanByNewDistribution( distribution, getDistributionPtr() );
+        plan.redistribute( newLocalValues, mLocalValues );
         mLocalValues.swap( newLocalValues );
         setDistributionPtr( distribution );
     }
@@ -1853,7 +1764,7 @@ void DenseVector<ValueType>::resize( DistributionPtr distribution )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseVector<ValueType>::redistribute( const Redistributor& redistributor )
+void DenseVector<ValueType>::redistribute( const RedistributePlan& redistributor )
 {
     SCAI_ASSERT_EQ_ERROR( getDistribution(), *redistributor.getSourceDistributionPtr(), 
                           "redistributor does not match to actual distribution of this vector" );

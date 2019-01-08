@@ -42,9 +42,9 @@ namespace scai
 namespace dmemo
 {
 class Communicator;
-class Halo;
+class HaloExchangePlan;
 class Distribution;
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama
@@ -54,10 +54,9 @@ class COMMON_DLL_IMPORTEXPORT _StorageMethods
 {
 public:
 
-    static void buildHalo(
-        class dmemo::Halo& halo,
+    static void buildHaloExchangePlan(
+        class dmemo::HaloExchangePlan& haloPlan,
         hmemo::HArray<IndexType>& haloJA,
-        IndexType& haloSize,
         const dmemo::Distribution& colDist );
 
 protected:
@@ -129,16 +128,14 @@ public:
         const hmemo::HArray<IndexType>& sourceIA,
         const hmemo::HArray<IndexType>& sourceJA,
         const hmemo::HArray<ValueType>& sourceValues,
-        const dmemo::Redistributor& redistributor );
+        const dmemo::RedistributePlan& redistributor );
 
     /** Exchange rows by halo.
      *
-     *  TODO[doxy] Complete Description.
-     *
      *  @param[out]  targetIA, targetJA, targetValues contain the new CSR storage
      *  @param[in]   sourceIA, sourceJA, sourceValues contains the original CSR storage
-     *  @param[in]   halo
-     *  @param[in]   comm
+     *  @param[in]   haloPlan used for data exchange
+     *  @param[in]   comm     specifies the involved processors
      */
 
     static void exchangeHaloCSR(
@@ -148,7 +145,7 @@ public:
         const hmemo::HArray<IndexType>& sourceIA,
         const hmemo::HArray<IndexType>& sourceJA,
         const hmemo::HArray<ValueType>& sourceValues,
-        const dmemo::Halo& halo,
+        const dmemo::HaloExchangePlan& haloPlan,
         const dmemo::Communicator& comm );
 
     /** Splitting CSR storage.

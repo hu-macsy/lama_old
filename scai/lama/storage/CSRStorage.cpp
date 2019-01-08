@@ -37,9 +37,9 @@
 #include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
-#include <scai/lama/Scalar.hpp>
 
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 
 
 // internal scai libraries
@@ -209,12 +209,12 @@ template<typename ValueType>
 void CSRStorage<ValueType>::print( std::ostream& stream ) const
 {
     using std::endl;
+
     stream << "CSRStorage " << getNumRows() << " x " << getNumColumns() << ", #values = " << getNumValues() << endl;
 
-    ContextPtr host = Context::getHostPtr();
-    ReadAccess<IndexType> ia( mIA, host );
-    ReadAccess<IndexType> ja( mJA, host );
-    ReadAccess<ValueType> values( mValues, host );
+    auto ia = hostReadAccess<IndexType>( mIA );
+    auto ja = hostReadAccess<IndexType>( mJA );
+    auto values = hostReadAccess<ValueType>( mValues );
 
     for ( IndexType i = 0; i < getNumRows(); i++ )
     {
@@ -449,7 +449,7 @@ void CSRStorage<ValueType>::buildRowIndexes()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor )
+void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
 
@@ -1177,7 +1177,7 @@ template<typename ValueType>
 void CSRStorage<ValueType>::splitHalo(
     MatrixStorage<ValueType>& localData,
     MatrixStorage<ValueType>& haloData,
-    dmemo::Halo& halo,
+    dmemo::HaloExchangePlan& haloPlan,
     const dmemo::Distribution& colDist,
     const dmemo::Distribution* rowDist ) const
 {
@@ -1198,7 +1198,7 @@ void CSRStorage<ValueType>::splitHalo(
         }
 
         haloData.allocate( getNumRows(), 0 );
-        halo = Halo(); // empty halo schedule
+        haloPlan.clear();
         return;
     }
 
@@ -1228,26 +1228,26 @@ void CSRStorage<ValueType>::splitHalo(
     SCAI_LOG_INFO( logger,
                    *this << ": split into " << localNumValues << " local non-zeros " " and " << haloNumValues << " halo non-zeros" )
     const IndexType localNumColumns = colDist.getLocalSize();
-    IndexType haloNumColumns; // will be available after remap
     // build the halo by the non-local indexes
-    _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );
-    SCAI_LOG_INFO( logger, "build halo: " << halo )
+    _StorageMethods::buildHaloExchangePlan( haloPlan, haloJA, colDist );
+    const IndexType haloNumColumns = haloPlan.getHaloSize();
+    SCAI_LOG_INFO( logger, "build halo plan: " << haloPlan )
     localData.setCSRData( numRows, localNumColumns, localIA, localJA, localValues );
     localData.check( "local part after split" );
     // halo data is expected to have many empty rows, so enable compressing with row indexes
     haloData.setCompressThreshold( 0.5 );
     haloData.setCSRData( numRows, haloNumColumns, haloIA, haloJA, haloValues );
     haloData.check( "halo part after split" );
-    SCAI_LOG_INFO( logger,
-                   "Result of split: local storage = " << localData << ", halo storage = " << haloData << ", halo = " << halo )
+    SCAI_LOG_INFO( logger, "Result of split: local storage = " << localData 
+                           << ", halo storage = " << haloData << ", halo plan = " << haloPlan )
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+void CSRStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns )
 {
-    halo.halo2Global( mJA );
+    haloPlan.halo2GlobalV( mJA, mJA );
     _MatrixStorage::setDimension( getNumRows(), globalNumColumns );
 }
 

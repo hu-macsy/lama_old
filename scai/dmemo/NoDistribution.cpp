@@ -76,14 +76,14 @@ IndexType NoDistribution::getLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType NoDistribution::local2global( const IndexType localIndex ) const
+IndexType NoDistribution::local2Global( const IndexType localIndex ) const
 {
     return localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType NoDistribution::global2local( const IndexType globalIndex ) const
+IndexType NoDistribution::global2Local( const IndexType globalIndex ) const
 {
     return globalIndex;
 }
@@ -162,11 +162,11 @@ void NoDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<In
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-Distribution* NoDistribution::create( const DistributionArguments arg )
+DistributionPtr NoDistribution::create( const DistributionArguments arg )
 {
     // Note: weight argument is not used here
     //       same is true for matrix, commonunicationPtr
-    return new NoDistribution( arg.globalSize );
+    return std::make_shared<NoDistribution>( arg.globalSize );
 }
 
 const char* NoDistribution::getId()

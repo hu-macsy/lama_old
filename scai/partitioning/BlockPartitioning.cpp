@@ -92,7 +92,7 @@ void BlockPartitioning::rectangularPartitioning(
 
     for ( IndexType i = 0; i < numLocalRows; ++i )
     {
-        IndexType globalI = rowDist.local2global( i );
+        IndexType globalI = rowDist.local2Global( i );
         wRowMapping[i] = globalI / rowBlockSize;
     }
 
@@ -100,7 +100,7 @@ void BlockPartitioning::rectangularPartitioning(
 
     for ( IndexType j = 0; j < numLocalCols; ++j )
     {
-        IndexType globalJ = colDist.local2global( j );
+        IndexType globalJ = colDist.local2Global( j );
         wColMapping[j] = globalJ / colBlockSize;
     }
 }
@@ -157,8 +157,8 @@ void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float we
     // Block partitioning : just create a 'general' block distribution
     // Note: this does not take the connections into account 
 
-    auto rowDist = std::make_shared<GenBlockDistribution>( numRows, weight, comm );
-    auto colDist = std::make_shared<GenBlockDistribution>( numColumns, weight, comm );
+    auto rowDist = genBlockDistributionByWeight( numRows, weight, comm );
+    auto colDist = genBlockDistributionByWeight( numColumns, weight, comm );
 
     matrix.redistribute( rowDist, colDist );
 }

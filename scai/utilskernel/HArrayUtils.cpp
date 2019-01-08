@@ -522,6 +522,23 @@ void HArrayUtils::gather(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+HArray<ValueType> HArrayUtils::gatherF(
+    const HArray<ValueType>& source,
+    const HArray<IndexType>& indexes,
+    const ContextPtr prefLoc )
+{
+    HArray<ValueType> target;
+
+    // gather op can only be copy, otherwise target must have already the right size/capacity.
+
+    gather( target, source, indexes, common::BinaryOp::COPY, prefLoc );
+
+    return target;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename TargetValueType, typename SourceValueType>
 void HArrayUtils::scatter(
     HArray<TargetValueType>& target,
@@ -556,6 +573,8 @@ void HArrayUtils::scatter(
         SCAI_ASSERT_EQ_ERROR( 0, indexes.size(), "scatter on empty array" )
         return;
     }
+
+    SCAI_ASSERT_EQ_ERROR( indexes.size(), source.size(), "serious mismatch for scatter" )
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                        "illegal scatter index, target has size " << target.size() )
@@ -1715,7 +1734,7 @@ void HArrayUtils::sortSparseEntries(
 /* --------------------------------------------------------------------------- */
 
 template<typename BucketType>
-void HArrayUtils::bucketSort(
+void HArrayUtils::bucketSortOffsets(
     HArray<IndexType>& offsets,
     HArray<IndexType>& perm,
     const HArray<BucketType>& array,
@@ -1760,6 +1779,32 @@ void HArrayUtils::bucketSort(
 
     WriteOnlyAccess<IndexType> wPerm( perm, loc, total );
     sortInBuckets[loc]( wPerm, sizes, nb, bucketMap, n );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename BucketType>
+void HArrayUtils::bucketSortSizes(
+    HArray<IndexType>& sizes,
+    HArray<IndexType>& perm,
+    const HArray<BucketType>& array,
+    const BucketType nb,
+    ContextPtr prefLoc )
+{
+    bucketSortOffsets( sizes, perm, array, nb, prefLoc );
+
+    const IndexType numBuckets = nb;
+
+    SCAI_ASSERT_EQ_ERROR( sizes.size(), numBuckets + 1, "serious mismatch" )
+
+    auto wSizes = hostWriteAccess( sizes );
+
+    for ( IndexType i = 0; i < numBuckets; i++ )
+    {
+        wSizes[i] = wSizes[i + 1] - wSizes[i];
+    }
+
+    wSizes.resize( numBuckets );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2681,6 +2726,10 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<IndexType>&,                            \
             const BinaryOp,                                             \
             const hmemo::ContextPtr );                                  \
+    template HArray<ValueType> HArrayUtils::gatherF<ValueType>(         \
+            const hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<IndexType>&,                            \
+            const hmemo::ContextPtr );                                  \
     template void HArrayUtils::setVal<ValueType>(                       \
             hmemo::HArray<ValueType>&,                                  \
             const IndexType,                                            \
@@ -2951,7 +3000,14 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 
-template void HArrayUtils::bucketSort(
+template void HArrayUtils::bucketSortOffsets(
+    hmemo::HArray<IndexType>& offsets,
+    hmemo::HArray<IndexType>& perm,
+    const hmemo::HArray<IndexType>& array,
+    const IndexType nb,
+    hmemo::ContextPtr prefLoc );
+
+template void HArrayUtils::bucketSortSizes(
     hmemo::HArray<IndexType>& offsets,
     hmemo::HArray<IndexType>& perm,
     const hmemo::HArray<IndexType>& array,

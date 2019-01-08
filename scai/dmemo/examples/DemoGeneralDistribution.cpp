@@ -55,7 +55,9 @@ int main()
 
     HArray<IndexType> owners( globalSize );
 
-    if ( comm->getRank() == 0 )
+    const PartitionId root = 0;
+
+    if ( comm->getRank() == root )
     {
         // create random number owners, only host is relevant
 
@@ -73,7 +75,7 @@ int main()
         }
     }
 
-    DistributionPtr dist ( new GeneralDistribution( owners, comm ) );
+    DistributionPtr dist = generalDistributionBySingleOwners( owners, root, comm );
 
     std::cout << *comm << ", dist = " << *dist << std::endl;
 }

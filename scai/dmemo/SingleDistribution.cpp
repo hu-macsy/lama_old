@@ -110,14 +110,14 @@ IndexType SingleDistribution::getMaxLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType SingleDistribution::local2global( const IndexType localIndex ) const
+IndexType SingleDistribution::local2Global( const IndexType localIndex ) const
 {
     return localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType SingleDistribution::global2local( const IndexType globalIndex ) const
+IndexType SingleDistribution::global2Local( const IndexType globalIndex ) const
 {
     IndexType localIndex = invalidIndex;
 
@@ -239,13 +239,13 @@ std::string SingleDistribution::createValue()
     return getId();
 }
 
-Distribution* SingleDistribution::create( const DistributionArguments arg )
+DistributionPtr SingleDistribution::create( const DistributionArguments arg )
 {
     SCAI_LOG_INFO( logger, "create" )
 
     // by default we create one where processor 0 is owner
 
-    return new SingleDistribution( arg.globalSize, arg.communicator, 0 );
+    return std::make_shared<SingleDistribution>( arg.globalSize, arg.communicator, 0 );
 }
 
 } /* end namespace dmemo */

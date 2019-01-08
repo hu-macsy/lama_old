@@ -2,38 +2,10 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
 "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
-<!-- CreationDate: Mon Nov 26 09:07:43 2018 -->
+<!-- CreationDate: Tue Jan  8 11:14:26 2019 -->
 <!-- Magnification: 1.000 -->
 <svg xmlns="http://www.w3.org/2000/svg" width="6.0in" height="1.5in" viewBox="738 6588 7224 1824">
 <g style="stroke-width:.025in; stroke:black; fill:none">
-<!-- Line -->
-<polyline points="4059,7189
-4569,7635
-" style="stroke:#000000;stroke-width:7;
-stroke-linejoin:miter; stroke-linecap:butt;
-"/>
-<!-- Arrowhead on XXXpoint 4059 7189 - 4670 7723-->
-<polygon points="4547 7655
-4658 7712
-4587 7610
-4547 7655
-
-" style="stroke:#000000;stroke-width:7;
-fill:#000000;"/>
-<!-- Line -->
-<polyline points="5868,7178
-6378,7624
-" style="stroke:#000000;stroke-width:7;
-stroke-linejoin:miter; stroke-linecap:butt;
-"/>
-<!-- Arrowhead on XXXpoint 5868 7178 - 6479 7712-->
-<polygon points="6356 7644
-6467 7701
-6396 7599
-6356 7644
-
-" style="stroke:#000000;stroke-width:7;
-fill:#000000;"/>
 <!-- Line: box -->
 <rect x="900" y="6750" width="1500" height="1650" rx="0" 
 style="stroke:#000000;stroke-width:7;
@@ -143,6 +115,34 @@ stroke-linejoin:miter; stroke-linecap:butt;
 2849 7723
 2778 7621
 2738 7666
+
+" style="stroke:#000000;stroke-width:7;
+fill:#000000;"/>
+<!-- Line -->
+<polyline points="4059,7189
+4569,7635
+" style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 4059 7189 - 4670 7723-->
+<polygon points="4547 7655
+4658 7712
+4587 7610
+4547 7655
+
+" style="stroke:#000000;stroke-width:7;
+fill:#000000;"/>
+<!-- Line -->
+<polyline points="5868,7178
+6378,7624
+" style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 5868 7178 - 6479 7712-->
+<polygon points="6356 7644
+6467 7701
+6396 7599
+6356 7644
 
 " style="stroke:#000000;stroke-width:7;
 fill:#000000;"/>

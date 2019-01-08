@@ -335,6 +335,12 @@ int main( int argc, const char* argv[] )
 
         cout << "matrix = " << matrix << endl;
 
+        if ( matrix.getMatrixKind() == MatrixKind::SPARSE )
+        {
+            auto spMatrix = static_cast<const SparseMatrix<ValueType>&>( matrix );
+            cout << "halo plan = " << spMatrix.getHaloExchangePlan() << endl;
+        }
+
         inMatrix.clear();
         double matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
 

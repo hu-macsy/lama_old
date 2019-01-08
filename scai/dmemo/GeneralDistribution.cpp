@@ -31,6 +31,8 @@
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CommunicationPlan.hpp>
+#include <scai/dmemo/GlobalAddressingPlan.hpp>
 
 // internal scai libraries
 #include <scai/hmemo/WriteAccess.hpp>
@@ -66,221 +68,130 @@ const char GeneralDistribution::theCreateValue[] = "GENERAL";
 
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
-    const HArray<IndexType>& myIndexes,
-    const CommunicatorPtr communicator ) :
+    HArray<IndexType> myIndexes,
+    bool checkFlag,
+    const CommunicatorPtr comm ) :
 
-    Distribution( globalSize, communicator )
+    Distribution( globalSize, comm ),
+    mLocal2Global( std::move( myIndexes ) )
 
 {
     SCAI_LOG_INFO( logger, "GeneralDistribution( size = " << globalSize
-                   << ", myIndexes = " << myIndexes.size() << ", comm = " << *communicator )
+                   << ", myIndexes = " << myIndexes.size() << ", comm = " << *comm )
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
-    // make a copy of the indexes and sort them ascending = true, perm not needed
-
-    HArrayUtils::sort( NULL, &mLocal2Global, myIndexes, true );
-
     // Note: the constructor is completely local, but make some consistency check now
 
-    IndexType nLocal = myIndexes.size();
+    IndexType nLocal = mLocal2Global.size();
 
-    SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
+    SCAI_ASSERT_EQ_ERROR( mGlobalSize, comm->sum( nLocal ), "illegal general distribution" )
+
+    // sort the array ascending, should be very fast if already sorted
+
+    HArrayUtils::sort( NULL, &mLocal2Global, mLocal2Global, true );
 
     fillIndexMap();
-    setBlockDistributedOwners();
+
+    if ( checkFlag )
+    {
+        // this method also verifies that each global index appears only once
+
+        enableBlockDistributedOwners();
+    }
 }
 
 /* ---------------------------------------------------------------------- */
 
-GeneralDistribution::GeneralDistribution(
+std::shared_ptr<GeneralDistribution> generalDistribution( 
+    const IndexType globalSize,
+    HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr comm )
+{
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), true, comm );
+}
+
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<GeneralDistribution> generalDistributionUnchecked( 
+    const IndexType globalSize,
+    HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr comm )
+{
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), false, comm );
+}
+
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
     const HArray<PartitionId>& owners,
-    const CommunicatorPtr communicator ) :
-
-    Distribution( 0, communicator )
-
+    const PartitionId root,
+    CommunicatorPtr comm ) 
 {
-    using namespace hmemo;
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
 
-    ContextPtr ctx = Context::getHostPtr();
+    SCAI_ASSERT_VALID_INDEX_ERROR( root, size, "illegal root processor specified" )
 
-    PartitionId rank = mCommunicator->getRank();
-    PartitionId size = mCommunicator->getSize();
+    IndexType globalSize;
 
-    if ( rank == MASTER )
+    if ( rank == root )
     {
-        mGlobalSize = owners.size();
+        globalSize = owners.size();
     }
 
-    mCommunicator->bcast( &mGlobalSize, 1, MASTER );
+    comm->bcast( &globalSize, 1, root );
 
-    SCAI_LOG_DEBUG( logger, *mCommunicator << ": global size = " << mGlobalSize )
+    HArray<IndexType> localSizes;         // only defined by root
+    HArray<IndexType> sortedIndexes;      // only defined by root
 
-    HArray<IndexType> localSizes;
-    HArray<IndexType> localOffsets;
-
-    // count in localSizes for each partition the owners
-    // owners = [ 0, 1, 2, 1, 2, 1, 0 ] -> sizes = [2, 3, 2 ]
-    // sizes.sum() == owners.size()
-
-    if ( rank == MASTER )
+    if ( rank == root )
     {
-        HArrayUtils::bucketCount( localSizes, owners, size );
-        IndexType lsum = HArrayUtils::sum( localSizes );
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
-    }
-    else
-    {
-        // all other procs intialize localSizes with a dummy value to avoid read access of uninitialized array
-        HArrayUtils::setOrder( localSizes, 1 );
+        HArrayUtils::bucketSortSizes( localSizes, sortedIndexes, owners, size );
     }
 
-    IndexType localSize;
+    HArray<IndexType> myGlobalIndexes;
 
-    // scatter partition sizes
+    comm->scatterVArray( myGlobalIndexes, root, sortedIndexes, localSizes );
 
-    {
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": before scatter, localSizes = " << localSizes )
-        ReadAccess<IndexType> rSizes( localSizes );
-        mCommunicator->scatter( &localSize, 1, MASTER, rSizes.get() );
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatter, localSize = " << localSize )
-    }
+    bool checkFlag = false;  // no check required
 
-    SCAI_LOG_DEBUG( logger, *mCommunicator << ": owns " << localSize << " of " << mGlobalSize << " elements" )
-
-    if ( rank == MASTER )
-    {
-        localOffsets.reserve( ctx, size + 1 );
-        localOffsets = localSizes;
-        HArrayUtils::scan1( localOffsets );
-        SCAI_LOG_DEBUG( logger, "scan done, sum = " << localOffsets[ size ] )
-    }
-
-    // Now resort 0, ..., n - 1 according to the owners
-
-    HArray<IndexType> sortedIndexes;
-
-    if ( rank == MASTER )
-    {
-        SCAI_LOG_DEBUG( logger, "reorder for indexes" )
-
-        ContextPtr loc = Context::getHostPtr();
-
-        static LAMAKernel<UtilKernelTrait::sortInBuckets<PartitionId> > sortInBuckets;
-
-        sortInBuckets.getSupportedContext( loc );
-
-        WriteOnlyAccess<IndexType> wIndexes( sortedIndexes, loc, mGlobalSize );
-        WriteAccess<IndexType> wOffsets( localOffsets, loc );
-        ReadAccess<PartitionId> rOwners( owners, loc );
-
-        sortInBuckets[loc]( wIndexes, wOffsets, size, rOwners, mGlobalSize );
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": initialize sortedIndexes " )
-
-        // all other procs intialize sortedIndexes with a dummy value to avoid read access of uninitialized array
-        HArrayUtils::setOrder( sortedIndexes, 1 );
-    }
-
-    WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, localSize );
-
-    {
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": before scatterV, sortedIndexes = " << sortedIndexes  )
-        ReadAccess<IndexType> rIndexes( sortedIndexes );
-        ReadAccess<IndexType> rSizes( localSizes );
-        mCommunicator->scatterV( wLocal2Global.get(), localSize, MASTER, rIndexes.get(), rSizes.get() );
-        SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatterV, sortedIndexes = " << sortedIndexes )
-    }
-
-    wLocal2Global.release();
-
-    fillIndexMap();
-    setBlockDistributedOwners();
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), checkFlag, comm );
 }
 
 /* ---------------------------------------------------------------------- */
 
-GeneralDistribution::GeneralDistribution(
-    const Distribution& other,
-    const HArray<PartitionId>& owners ) :
-
-    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
-
+std::shared_ptr<GeneralDistribution> generalDistributionByNewOwners(
+    const Distribution& dist,
+    const hmemo::HArray<PartitionId>& newOwners )
 {
-    SCAI_LOG_INFO( logger, "GeneralDistribution( dist = " << other << ", new local owners =  " << owners )
+    const IndexType globalSize = dist.getGlobalSize();
 
-    SCAI_ASSERT_EQ_DEBUG( other.getLocalSize(), owners.size(), "serious size mismatch" )
+    CommunicatorPtr comm = dist.getCommunicatorPtr();
 
-    const IndexType nLocal = owners.size();
+    const IndexType NP = comm->getSize();
 
-    const Communicator& comm = *mCommunicator;
+    SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( newOwners, NP ), "illegal owners, #processors = " << NP )
 
-    const PartitionId numPartitions = comm.getSize();
+    HArray<IndexType> myNewGlobalIndexes;  // new global indexes for this processor
 
-    if ( numPartitions == 1 )
+    if ( NP == 1 )
     {
-        // owners[i] == 0 for al i, mLocal2Global = { 0, 1, ..., globalSize - 1 }
-
-        SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( owners, 1 ), "illegal owners, #partitions = " << numPartitions )
-
-        HArrayUtils::setOrder( mLocal2Global, nLocal );
-
-        fillIndexMap();
-        setBlockDistributedOwners();
-
-        return;
-    }
-
-    // make a bucket sort with owners
-
-    HArray<IndexType> offsets;    // number of elements for each bucket/partition
-    HArray<IndexType> perm;       // permutation to resort in buckets
-
-    HArrayUtils::bucketSort( offsets, perm, owners, mCommunicator->getSize() );
-
-    HArray<IndexType> sortedIndexes;    // current indexes resorted according the buckets
-
-    if ( other.getKind() == GeneralDistribution::theCreateValue )
-    {
-        SCAI_ASSERT_DEBUG( dynamic_cast<const GeneralDistribution*>( &other ), "no general dist" )
-        const GeneralDistribution& otherGen = reinterpret_cast<const GeneralDistribution&>( other );
-        HArrayUtils::gather( sortedIndexes, otherGen.getMyIndexes(), perm, common::BinaryOp::COPY );
+        SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( newOwners, NP ), "illegal owners, #partitions = " << NP )
+        HArrayUtils::setOrder( myNewGlobalIndexes, globalSize );
     }
     else
     {
-        HArray<IndexType> currentIndexes;
-        other.getOwnedIndexes( currentIndexes );
-        HArrayUtils::gather( sortedIndexes, currentIndexes, perm, common::BinaryOp::COPY );
+        // use a global exchange plan, returns exactly the new global indexes (unsorted) on each processor 
+
+        HArray<IndexType> myOldGlobalIndexes;
+        dist.getOwnedIndexes( myOldGlobalIndexes );
+        dmemo::globalExchange( myNewGlobalIndexes, myOldGlobalIndexes, newOwners, comm );
     }
 
-    // make communication plans for sending data and receiving to exchange
+    bool checkFlag = false;  // cannot be illegal if new owners has only valid indexes
 
-    auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), numPartitions );
-    auto recvPlan = sendPlan.transpose( comm );
-
-    SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
-
-    // we just receive all the values in mLocal2Global
-
-    IndexType newLocalSize = recvPlan.totalQuantity();
-
-    HArray<IndexType> myNewIndexes;
-
-    {
-        WriteOnlyAccess<IndexType> recvVals( myNewIndexes, newLocalSize );
-        ReadAccess<IndexType> sendVals( sortedIndexes );
-        comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
-    }
-
-    // Important: the new local indexes must be sorted
-    // Note: actually it would be sufficient to have a mergesort
-
-    HArrayUtils::sort( NULL, &mLocal2Global, myNewIndexes, true );
-
-    fillIndexMap();
-    setBlockDistributedOwners();
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myNewGlobalIndexes ), checkFlag, comm );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -320,7 +231,7 @@ void GeneralDistribution::fillIndexMap()
 
     SCAI_LOG_INFO( logger, "fillHashMap, #local indexes = " << nLocal )
 
-    // add local indexes into unordered_map
+    // add my owned global indexes into unordered_map, [globalIndex : localIndex] 
 
     auto rIndexes = hostReadAccess( mLocal2Global );
 
@@ -332,14 +243,14 @@ void GeneralDistribution::fillIndexMap()
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GeneralDistribution::local2global( const IndexType localIndex ) const
+IndexType GeneralDistribution::local2Global( const IndexType localIndex ) const
 {
     return mLocal2Global[localIndex];
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
+IndexType GeneralDistribution::global2Local( const IndexType globalIndex ) const
 {
     // do a binary search in the array of global indexes for entries owned by this partition
     // return HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
@@ -358,9 +269,9 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 
 /* ---------------------------------------------------------------------- */
 
-void GeneralDistribution::global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
+void GeneralDistribution::global2LocalV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
 {
-    SCAI_REGION( "Distribution.General.global2localV" )
+    SCAI_REGION( "Distribution.General.global2LocalV" )
 
     IndexType nnz = globalIndexes.size();
 
@@ -372,7 +283,7 @@ void GeneralDistribution::global2localV( hmemo::HArray<IndexType>& localIndexes,
     for ( IndexType i = 0; i < nnz; ++i )
     {
         // avoid virtual call by calling method of this class directly
-        wLocal[i] = GeneralDistribution::global2local( rGlobal[i] );
+        wLocal[i] = GeneralDistribution::global2Local( rGlobal[i] );
     }
 
     // do a binary search in the array of global indexes for entries owned by this partition
@@ -410,12 +321,12 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
 
     // Each processor has a contiguous part, but verify that it is in the same order
 
-    GenBlockDistribution genBlock( mGlobalSize, localSize, comm );
+    auto genBlock = genBlockDistributionBySize( localSize, comm );
 
     IndexType lb;
     IndexType ub;
 
-    genBlock.getLocalRange( lb, ub );
+    genBlock->getLocalRange( lb, ub );
 
     isBlocked = true;
 
@@ -513,72 +424,34 @@ static void setOwners( HArray<PartitionId>& owners, const HArray<IndexType>& ind
 
 /* ---------------------------------------------------------------------- */
 
-void GeneralDistribution::setBlockDistributedOwners()
+void GeneralDistribution::computeBlockDistributedOwners( HArray<IndexType>& blockDistributedOwners,
+                                                         const IndexType globalSize, 
+                                                         const HArray<IndexType>& ownedIndexes, 
+                                                         CommunicatorPtr comm )
 {
     SCAI_REGION( "Distribution.General.blockDistOwners" )
 
     // get my range for block distribution of size
 
-    BlockDistribution blockDist( getGlobalSize(), getCommunicatorPtr() );
-
-    const Communicator& comm = getCommunicator();
-    const PartitionId   np   = comm.getSize();
-
-    hmemo::ContextPtr hostCtx = hmemo::Context::getHostPtr();
+    BlockDistribution blockDist( globalSize, comm );
 
     const IndexType localBlockSize = blockDist.getLocalSize();
-    const IndexType myLB           = blockDist.lb();
 
-    HArrayUtils::setSameValue( mBlockDistributedOwners, localBlockSize, invalidPartition, hostCtx );
+    HArrayUtils::setSameValue( blockDistributedOwners, localBlockSize, invalidPartition );
 
-    // get Owners of myIndexes according to the block distribution
+    // blockDistributedOwners[ ownedIndexes[i] ] = rank, global scatter
 
-    HArray<PartitionId> blockOwners;
-    blockDist.computeOwners( blockOwners, mLocal2Global );
+    bool unique = true;  // no global index appears twice 'globally' seen
 
-    // bucketSort of the owners
+    auto plan = globalAddressingPlan ( blockDist, ownedIndexes, unique );
 
-    HArray<IndexType> perm;
-    HArray<IndexType> offsets;
-
-    HArrayUtils::bucketSort( offsets, perm, blockOwners, np );
-
-    HArray<IndexType> sendIndexes;
-
-    HArrayUtils::gather( sendIndexes, mLocal2Global, perm, common::BinaryOp::COPY );
-
-    auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
-    auto recvPlan = sendPlan.transpose( comm );
-
-    SCAI_LOG_DEBUG( logger, comm << ": query owners send plan: " << sendPlan )
-    SCAI_LOG_DEBUG( logger, comm << ": query owners recv plan: " << recvPlan )
-
-    HArray<IndexType> receivedIndexes;
-
-    comm.exchangeByPlan( receivedIndexes, recvPlan, sendIndexes, sendPlan );
-
-    {
-        auto wLocalOwners = hmemo::hostWriteAccess( mBlockDistributedOwners );
-        auto rGlobalIndexes = hmemo::hostReadAccess( receivedIndexes );
-
-        for ( PartitionId k = 0; k < recvPlan.size(); k++ )
-        {
-            CommunicationPlan::Entry entry = recvPlan[k];
-
-            for ( IndexType i = 0; i < entry.quantity; ++i )
-            {
-                IndexType localIndex = rGlobalIndexes[entry.offset + i] - myLB;
-                SCAI_ASSERT_VALID_INDEX_DEBUG( localIndex, localBlockSize, "serious problem" )
-                wLocalOwners[localIndex] = entry.partitionId;
-            }
-        }
-    }
+    plan.scatterOwner( blockDistributedOwners );
 
     // Sanitize check there must be no invalidPartition value for any global index
 
-    bool okay = HArrayUtils::allScalar( mBlockDistributedOwners, common::CompareOp::NE, invalidPartition );
+    bool okay = HArrayUtils::allScalar( blockDistributedOwners, common::CompareOp::NE, invalidPartition );
 
-    okay = comm.all( okay );
+    okay = comm->all( okay );
 
     if ( !okay )
     {
@@ -588,106 +461,44 @@ void GeneralDistribution::setBlockDistributedOwners()
 
 /* ---------------------------------------------------------------------- */
 
+void GeneralDistribution::enableBlockDistributedOwners() const
+{
+    SCAI_LOG_INFO( logger, "enableBlockDistributedOwners" )
+
+    if ( mBlockDistributedOwners.get() )
+    {
+        return;
+    }
+
+    mBlockDistributedOwners.reset( new HArray<PartitionId>() );
+    computeBlockDistributedOwners( *mBlockDistributedOwners, getGlobalSize(), mLocal2Global, getCommunicatorPtr() );
+}
+
+/* ---------------------------------------------------------------------- */
+
 void GeneralDistribution::computeOwners(
     hmemo::HArray<PartitionId>& owners, 
     const hmemo::HArray<IndexType>& indexes ) const
 {
-    const bool localDebug = false;
+    enableBlockDistributedOwners();
+
+    SCAI_LOG_INFO( logger, "computeOwners for indexes = " << indexes )
 
     SCAI_REGION( "Distribution.General.computeOwners" )
 
-    HArrayUtils::setSameValue( owners, indexes.size(), invalidPartition, Context::getHostPtr() );
+    // initialize the array with invalidPartition, so we can easily identify non-available owners
+
+    HArrayUtils::setSameValue( owners, indexes.size(), invalidPartition );
 
     BlockDistribution blockDist( getGlobalSize(), getCommunicatorPtr() );
 
-    const Communicator& comm = getCommunicator();
-    const PartitionId   np   = comm.getSize();
+    // owners[i] = blockDistribtedOwners[ indexes[i] ], global gather 
 
-    HArray<PartitionId> blockIndexOwners;
-
-    // get for each queried index the processor that knows the owner
-
-    blockDist.computeOwners( blockIndexOwners, indexes );
-
-    // bucketSort of the owners
-
-    HArray<IndexType> perm;
-    HArray<IndexType> offsets;
-
-    HArrayUtils::bucketSort( offsets, perm, blockIndexOwners, np );
-
-    HArray<IndexType> sendIndexes;
-
-    HArrayUtils::gather( sendIndexes, indexes, perm, common::BinaryOp::COPY );
-
-    if ( localDebug )
-    {
-        auto rIndexes = hostReadAccess( sendIndexes );
-        for ( IndexType i = 0; i < sendIndexes.size(); ++i )
-        {
-            std::cout << comm << ": queryIndex[ " << i << " ] = " << rIndexes[i] << std::endl;
-        }
-    }
-
-    auto sendPlan = CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
-    auto recvPlan = sendPlan.transpose( comm );
-
-    SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
-    SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )
-
-    HArray<IndexType> receivedIndexes;
-
-    comm.exchangeByPlan( receivedIndexes, recvPlan, sendIndexes, sendPlan );
-
-    if ( localDebug )
-    {
-        auto rIndexes = hostReadAccess( receivedIndexes );
-        for ( IndexType i = 0; i < receivedIndexes.size(); ++i )
-        {
-            std::cout << comm << ": queriedIndex[ " << i << " ] = " << rIndexes[i] << std::endl;
-        }
-    }
-
-    HArrayUtils::compute( receivedIndexes, receivedIndexes, common::BinaryOp::SUB, blockDist.lb() );
-
-    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( receivedIndexes, blockDist.getLocalSize() ), "serious wrong index" )
-
-    HArray<PartitionId> sendOwners;  // will take the owners of the queried indexes
-
-    HArrayUtils::gather( sendOwners, mBlockDistributedOwners, receivedIndexes, common::BinaryOp::COPY );
-
-    if ( localDebug )
-    {
-        auto rIndexes = hostReadAccess( receivedIndexes );
-        auto rOwners  = hostReadAccess( sendOwners );
-
-        for ( IndexType i = 0; i < receivedIndexes.size(); ++i )
-        {
-            std::cout << comm << ": queriedIndex[ " << i << " ] = " << rIndexes[i] 
-                      << " has owner " << rOwners[i] << std::endl;
-        }
-    }
-
-    HArray<PartitionId> recvOwners;  // will receive the owners for the queried indexes
-
-    comm.exchangeByPlan( recvOwners, sendPlan, sendOwners, recvPlan );
-
-    if ( localDebug )
-    {
-        auto rIndexes = hostReadAccess( sendIndexes );
-        auto rOwners  = hostReadAccess( recvOwners );
-        auto rPerm    = hostReadAccess( perm );
-        for ( IndexType i = 0; i < sendIndexes.size(); ++i )
-        {
-            std::cout << comm << ": queriedIndex[ " << i << " ] = " << rIndexes[i] 
-                      << " from pos " << rPerm[i] 
-                      << " has owner " << rOwners[i] << std::endl;
-        }
-    }
-
-    // now set the owner for each queried global index
-
-    HArrayUtils::scatter( owners, perm, true, recvOwners, common::BinaryOp::COPY );
+    auto plan = globalAddressingPlan( blockDist, indexes );
+    
+    plan.gather( owners, *mBlockDistributedOwners );
+    
+    SCAI_LOG_DEBUG( logger, "computeOwners done, owners = " << owners )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -750,75 +561,55 @@ void GeneralDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInd
 
 bool GeneralDistribution::hasAnyAddressing() const
 {
-    return mAllOwners.size() > 0;
+    return mAnyAddressing.get() != nullptr;
 }
 
 void GeneralDistribution::enableAnyAddressing() const
 {
-    if ( mAllOwners.size() > 0 )
+    if ( mAnyAddressing.get() ) 
     {
-        // already computed, but just verify correct sizes
-
-        SCAI_ASSERT_EQ_DEBUG( mAllOwners.size(), getGlobalSize(), "serious mismatch" )
-        SCAI_ASSERT_EQ_DEBUG( mAllLocalOffsets.size(), getCommunicator().getSize() + 1, "serious mismatch" )
-        SCAI_ASSERT_EQ_DEBUG( mAllLocal2Global.size(), getGlobalSize(), "serious mismatch" )
-        SCAI_ASSERT_EQ_DEBUG( mAllGlobal2Local.size(), getGlobalSize(), "serious mismatch" )
-
         return;   // already done
     }
 
-    // compute mAllOwners
-
-    HArray<IndexType> indexes;   // will contain all column indexes to get all owners
-
-    HArrayUtils::setOrder( indexes, mGlobalSize );
-
-    Distribution::computeOwners( mAllOwners, indexes );
-
-    // bucket sort the owners, gives offsets and permutation to block values according to owners
-
-    HArrayUtils::bucketSort( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
-    HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2local
+    mAnyAddressing.reset( new AnyAddressing( *this ) );
 }
 
 /* ---------------------------------------------------------------------- */
 
 IndexType GeneralDistribution::getAnyLocalSize( const PartitionId rank ) const
 {
-    SCAI_ASSERT( mAllLocalOffsets.size() > 0, "any addressing not enabled" )
+    SCAI_ASSERT( mAnyAddressing.get(), "any addressing not enabled" )
 
-    return mAllLocalOffsets[ rank + 1] - mAllLocalOffsets[rank];
+    return mAnyAddressing->localSize( rank );
 }
 
 /* ---------------------------------------------------------------------- */
 
 PartitionId GeneralDistribution::getAnyOwner( const IndexType globalIndex ) const
 {
-    SCAI_ASSERT( mAllOwners.size() > 0, "any addressing not enabled" )
+    SCAI_ASSERT( mAnyAddressing.get(), "any addressing not enabled" )
 
-    return mAllOwners[ globalIndex ];
+    return mAnyAddressing->owner( globalIndex );
 }
 
 /* ---------------------------------------------------------------------- */
 
 IndexType GeneralDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
 {
-    SCAI_ASSERT( mAllGlobal2Local.size() > 0, "any addressing not enabled" )
+    SCAI_ASSERT( mAnyAddressing.get(), "any addressing not enabled" )
 
-    // here the owner is important as local index  requires size offsets
+    // here the owner is important as local index requires size offsets
 
-    return mAllGlobal2Local[ globalIndex ] - mAllLocalOffsets[ owner ];
+    return mAnyAddressing->localIndex( globalIndex, owner );
 }
 
 /* ---------------------------------------------------------------------- */
 
 IndexType GeneralDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const
 {
-    SCAI_ASSERT( mAllGlobal2Local.size() > 0, "any addressing not enabled" )
+    SCAI_ASSERT( mAnyAddressing.get(), "any addressing not enabled" )
 
-    // here the owner is important as local index  requires size offsets
-
-    return mAllLocal2Global[ localIndex + mAllLocalOffsets[ owner ] ];
+    return mAnyAddressing->globalIndex( localIndex, owner );
 }
 
 } /* end namespace dmemo */

@@ -39,6 +39,8 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/DenseVector.hpp>
 
+#include <scai/dmemo/HaloExchangePlan.hpp>
+
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
@@ -548,7 +550,7 @@ public:
      *
      * @return   reference to the halo of the distributed matrix
      */
-    const dmemo::Halo& getHalo() const;
+    const dmemo::HaloExchangePlan& getHaloExchangePlan() const;
 
     /* Implementation of method writeAt for sparse matrix. */
 
@@ -576,7 +578,7 @@ public:
 
     /* Implementation of pure method of _Matrix::redistribute */
 
-    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistribution );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor, dmemo::DistributionPtr colDistribution );
 
     /* Implementation of pure method _Matrix::resize */
 
@@ -649,7 +651,7 @@ protected:
 
     std::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
 
-    dmemo::Halo mHalo; //!< Exchange plans for halo part due to column distribution
+    dmemo::HaloExchangePlan mHaloExchangePlan; //!< Exchange plans for halo part due to column distribution
 
     /**
      * @brief Set this matrix = alpha * A + beta * B

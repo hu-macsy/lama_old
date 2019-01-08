@@ -43,7 +43,7 @@
 
 // scai internal libraries
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/sparsekernel/CSRUtils.hpp>
 
@@ -153,7 +153,9 @@ SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( SparseMatrix&& othe
 
     std::swap( mLocalData, other.mLocalData );
     std::swap( mHaloData, other.mHaloData );
-    std::swap( mHalo, other.mHalo );          // not yet mHalo = std::move( other.mHalo );
+
+    // mHaloExchangePlan == std::move( other.mHaloExchangePlan );
+    mHaloExchangePlan.swap( other.mHaloExchangePlan );
 
     // leave the other matrix in a consistent zero matrix
 
@@ -225,7 +227,7 @@ SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other ) :
 {
     mLocalData = shared_ptr<MatrixStorage<ValueType> >( other.getLocalStorage().copy() );
     mHaloData  = shared_ptr<MatrixStorage<ValueType> >( other.getHaloStorage().copy() );
-    mHalo      = other.getHalo();
+    mHaloExchangePlan  = other.getHaloExchangePlan();
 
     this->setCommunicationKind( other.getCommunicationKind() );
     this->setContextPtr( other.getContextPtr() );
@@ -250,7 +252,7 @@ void SparseMatrix<ValueType>::clear()
     _Matrix::setReplicatedMatrix( 0, 0 );
     mLocalData->clear();
     mHaloData->clear();
-    mHalo.clear();
+    mHaloExchangePlan.clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -261,7 +263,7 @@ void SparseMatrix<ValueType>::purge()
     _Matrix::setReplicatedMatrix( 0, 0 );
     mLocalData->purge();
     mHaloData->purge();
-    mHalo.clear();
+    mHaloExchangePlan.clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -276,7 +278,7 @@ void SparseMatrix<ValueType>::allocate( DistributionPtr distribution, Distributi
     IndexType localColSize = colDistribution->getLocalSize();
     mLocalData->allocate( localSize, localColSize );
     mHaloData->allocate( localSize, colDistribution->getGlobalSize() );
-    mHalo.clear();
+    mHaloExchangePlan.clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -287,7 +289,7 @@ void SparseMatrix<ValueType>::allocate( const IndexType numRows, const IndexType
     _Matrix::setReplicatedMatrix( numRows, numColumns );
     mLocalData->allocate( numRows, numColumns );
     mHaloData->allocate( numRows, 0 );
-    mHalo.clear();
+    mHaloExchangePlan.clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -311,7 +313,7 @@ void SparseMatrix<ValueType>::assign( const _Matrix& matrix )
         DistributionPtr rowDist = matrix.getRowDistributionPtr();
         _Matrix::setDistributedMatrix( rowDist, colDist );
         matrix.buildLocalStorage( *mLocalData ); // local storage with all columns
-        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, *colDist, NULL );
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHaloExchangePlan, *colDist, NULL );
     }
 }
 
@@ -353,7 +355,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         mLocalData->assignTranspose( matrix.getLocalStorage() );
         SCAI_LOG_DEBUG( logger, "transposed local storage, is = " << *mLocalData )
         mHaloData->allocate( getRowDistribution().getLocalSize(), 0 );
-        mHalo.clear();
+        mHaloExchangePlan.clear();
         SCAI_LOG_DEBUG( logger, "transposed halo storage, is = " << *mHaloData )
     }
     else if ( getRowDistribution().isReplicated() )
@@ -382,45 +384,32 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         CSRUtils::offsets2sizes( sendSizes, sendIA, Context::getHostPtr() );
         SCAI_LOG_DEBUG( logger, "sendSizes with " << sendSizes.size() << " entries" )
         HArray<IndexType> recvSizes;
-        const Halo& matrixHalo = matrix.getHalo();
+        const HaloExchangePlan& matrixHalo = matrix.getHaloExchangePlan();
         SCAI_ASSERT_EQUAL_DEBUG( sendSizes.size(), matrix.getHaloStorage().getNumColumns() )
         // send all other processors the number of columns
         const Communicator& comm = getRowDistribution().getCommunicator();
         // Use communication plans of halo in inverse manner to send col sizes
-        const CommunicationPlan& sendSizesPlan = matrixHalo.getRequiredPlan();
-        const CommunicationPlan& recvSizesPlan = matrixHalo.getProvidesPlan();
+        const CommunicationPlan& sendSizesPlan = matrixHalo.getHaloCommunicationPlan();
+        const CommunicationPlan& recvSizesPlan = matrixHalo.getLocalCommunicationPlan();
         comm.exchangeByPlan( recvSizes, recvSizesPlan, sendSizes, sendSizesPlan );
         ContextPtr contextPtr = Context::getHostPtr();
         // Now we know the sizes, we can pack the data
         HArray<IndexType> recvJA;
         HArray<ValueType> recvValues;
         // Before send of JA: translate back the local (row) indexes to global indexes
-        {
-            const Distribution& dist = getColDistribution();
-            const IndexType nJA = sendJA.size();
-            WriteAccess<IndexType> ja( sendJA, contextPtr );
+        getColDistribution().local2GlobalV( sendJA, sendJA );
 
-            for ( IndexType jj = 0; jj < nJA; ++jj )
-            {
-                ja[jj] = dist.local2global( ja[jj] );
-            }
-        }
-        // Build the communication plan for sparse data
-        {
-            ReadAccess<IndexType> sendColSizes( sendSizes, contextPtr );
-            ReadAccess<IndexType> recvColSizes( recvSizes, contextPtr );
-            CommunicationPlan sendDataPlan( sendSizesPlan );
-            sendDataPlan.multiplyRagged( sendColSizes.get() );
-            CommunicationPlan recvDataPlan( recvSizesPlan );
-            recvDataPlan.multiplyRagged( recvColSizes.get() );
-            comm.exchangeByPlan( recvJA, recvDataPlan, sendJA, sendDataPlan );
-            comm.exchangeByPlan( recvValues, recvDataPlan, sendValues, sendDataPlan );
-        }
+        auto sendDataPlan = sendSizesPlan.constructRaggedBySizes( sendSizes );
+        auto recvDataPlan = recvSizesPlan.constructRaggedBySizes( recvSizes );
+
+        comm.exchangeByPlan( recvJA, recvDataPlan, sendJA, sendDataPlan );
+        comm.exchangeByPlan( recvValues, recvDataPlan, sendValues, sendDataPlan );
+
         // Now we have to build the halo by merging the rows of all received data
         HArray<IndexType> haloRowSizes;
         HArray<IndexType> haloJA;
         HArray<ValueType> haloValues;
-        const HArray<IndexType>& rowIndexes = matrixHalo.getProvidesIndexes();
+        const HArray<IndexType>& rowIndexes = matrixHalo.getLocalIndexes();
         const IndexType mNumLocalRows = getRowDistribution().getLocalSize();
         {
             // allocate rowSizes as offset array to avoid reallocation
@@ -433,7 +422,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         CSRUtils::sizes2offsets( haloRowSizes, haloRowSizes, Context::getHostPtr() );
         mHaloData->setCSRData( mNumLocalRows, getNumColumns(), haloRowSizes, haloJA, haloValues );
         // Now build a new halo and localize columns in mHaloData
-        mHaloData->buildHalo( mHalo, getColDistribution() );
+        mHaloData->buildHalo( mHaloExchangePlan, getColDistribution() );
     }
 }
 
@@ -467,7 +456,7 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
         mHaloData->clear();
     }
 
-    mHalo = matrix.getHalo();
+    mHaloExchangePlan = matrix.getHaloExchangePlan();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -482,7 +471,7 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage )
     // TODO: allow flexibility regarding the context, e.g. format conversion should be done on GPU
     mLocalData->assign( storage );
     mHaloData->allocate( numRows, 0 ); // empty halo storage, halo
-    mHalo.clear();
+    mHaloExchangePlan.clear();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -499,7 +488,7 @@ void SparseMatrix<ValueType>::assignLocal( const _MatrixStorage& storage, Distri
    
     mLocalData->assign( storage );
     mHaloData->allocate( numRows, 0 );
-    mHalo.clear();
+    mHaloExchangePlan.clear();
 
     SCAI_LOG_INFO( logger, "assignLocal done: " << *this );
 }
@@ -531,12 +520,12 @@ void SparseMatrix<ValueType>::assignDistribute( const _MatrixStorage& storage, D
     if ( allLocal )
     {
         // each processor has exactly its local part
-        typedStorage->splitHalo( *mLocalData, *mHaloData, mHalo, *colDist, NULL );
+        typedStorage->splitHalo( *mLocalData, *mHaloData, mHaloExchangePlan, *colDist, NULL );
     }
     else if ( allGlobal )
     {
         // we also localize the rows of the matrix
-        typedStorage->splitHalo( *mLocalData, *mHaloData, mHalo, *colDist, rowDist.get() );
+        typedStorage->splitHalo( *mLocalData, *mHaloData, mHaloExchangePlan, *colDist, rowDist.get() );
     }
     else
     {
@@ -572,7 +561,7 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
         // temporary local storage with joined columns needed before
 
         shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->newMatrixStorage() );
-        tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
+        tmp->joinHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution() );
         storage = *tmp;
     }
 }
@@ -585,7 +574,7 @@ void SparseMatrix<ValueType>::swap( SparseMatrix<ValueType>& other )
     _Matrix::swapMatrix( other );
     std::swap( mLocalData, other.mLocalData );
     std::swap( mHaloData, other.mHaloData );
-    std::swap( mHalo, other.mHalo );
+    std::swap( mHaloExchangePlan, other.mHaloExchangePlan );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -633,9 +622,9 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
     else
     {
         SCAI_LOG_DEBUG( logger, "remove halo, join local = " << *mLocalData << " and halo = " << *mHaloData )
-        mLocalData->joinHalo( *mLocalData, *mHaloData, mHalo, *oldColDistributionPtr );
+        mLocalData->joinHalo( *mLocalData, *mHaloData, mHaloExchangePlan, *oldColDistributionPtr );
         mHaloData->allocate( mLocalData->getNumRows(), 0 );
-        mHalo.clear();
+        mHaloExchangePlan.clear();
         SCAI_LOG_INFO( logger, "removed column distribution / halo, local data = " << *mLocalData )
     }
 
@@ -652,7 +641,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::redistribute( const Redistributor& redistributor, DistributionPtr colDistributionPtr )
+void SparseMatrix<ValueType>::redistribute( const RedistributePlan& redistributor, DistributionPtr colDistributionPtr )
 {
     SCAI_ASSERT_EQ_ERROR( getRowDistribution(), *redistributor.getSourceDistributionPtr(),
                           "redistributor does not match to actual distribution of this sparse matrix" );
@@ -729,7 +718,7 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
     if ( *otherDist == getRowDistribution() )
     {
         SCAI_LOG_INFO( logger, "same row distribution, assign local" )
-        otherLocalData.splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+        otherLocalData.splitHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution(), NULL );
     }
     else if ( otherDist->isReplicated() )
     {
@@ -737,26 +726,24 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
         SCAI_LOG_INFO( logger, "assign by distribute of replicated data, compute halo" )
         // just split the global replicated data according to
         // column + row distribution of this matrix
-        otherLocalData.splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), getRowDistributionPtr().get() );
+        otherLocalData.splitHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution(), getRowDistributionPtr().get() );
     }
     else if ( getRowDistribution().isReplicated() )
     {
         SCAI_LOG_INFO( logger, "Replication of distributed matrix storage: " << otherLocalData )
         mLocalData->replicate( otherLocalData, *otherDist );
         SCAI_LOG_INFO( logger, "Replicated local storage: " << *mLocalData )
-        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution(), NULL );
         SCAI_LOG_INFO( logger, "Splitted storage: local = " << *mLocalData << ", halo = " << *mHaloData )
     }
     else
     {
         SCAI_LOG_INFO( logger, "assign is redistribute of distributed matrix" )
-        Redistributor redistributor( getRowDistributionPtr(), otherDist );
-        SCAI_LOG_INFO( logger,
-                       "Redistributor available: source halo = " << redistributor.getExchangeSourceSize()
-                        << " target halo = " << redistributor.getExchangeTargetSize() )
-        mLocalData->redistribute( otherLocalData, redistributor );
+        auto plan = redistributePlanByNewDistribution( getRowDistributionPtr(), otherDist );
+        SCAI_LOG_INFO( logger, "RedistributePlan: " << plan )
+        mLocalData->redistribute( otherLocalData, plan );
         SCAI_LOG_INFO( logger, "redistributed, now assign locally" )
-        mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );
+        mLocalData->splitHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution(), NULL );
     }
 }
 
@@ -799,8 +786,8 @@ void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const In
     // get halo part
 
     mHaloData->getRow( tmpRow, localRowIndex );
-    const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::scatter( row, haloIndexes, true, tmpRow, common::BinaryOp::COPY );
+    const HArray<IndexType>& halo2GlobalIndexes = mHaloExchangePlan.getHalo2GlobalIndexes();
+    HArrayUtils::scatter( row, halo2GlobalIndexes, true, tmpRow, common::BinaryOp::COPY );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -881,7 +868,7 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
         {
             // owner gets the sparse row from local data (no halo data) and broadcasts it
 
-            IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+            IndexType localRowIndex = getRowDistribution().global2Local( globalRowIndex );
             mLocalData->getSparseRow( indexes, values, localRowIndex );
         }
 
@@ -897,7 +884,7 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
 
     if ( owner == comm.getRank() )
     {
-        IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+        IndexType localRowIndex = getRowDistribution().global2Local( globalRowIndex );
 
         HArray<ValueType> sendData;
         HArray<ValueType> recvData; 
@@ -909,8 +896,8 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
         // communicate halo row to other processors corresponding schedule
         // is inverse halo exchange
 
-        const auto recvPlan = CommunicationPlan::buildBySizes( NULL, 0 );  // empty, nothing to receive
-        const CommunicationPlan& sendPlan = mHalo.getRequiredPlan();  // only this matters here
+        const auto recvPlan = CommunicationPlan::buildByQuantities( nullptr, 0 );  // empty, nothing to receive
+        const CommunicationPlan& sendPlan = mHaloExchangePlan.getHaloCommunicationPlan();  // only this matters here
 
         SCAI_LOG_DEBUG( logger, comm << ": owner recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
 
@@ -930,8 +917,8 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
         HArray<ValueType> recvData; 
 
         CommunicationPlan recvPlan;
-        recvPlan.extractPlan( mHalo.getProvidesPlan(), owner );
-        auto sendPlan = CommunicationPlan::buildBySizes( NULL, 0 );                    // empty, nothing to send
+        recvPlan.extractPlan( mHaloExchangePlan.getLocalCommunicationPlan(), owner );
+        auto sendPlan = CommunicationPlan::buildByQuantities( nullptr, 0 );                    // empty, nothing to send
 
         SCAI_LOG_DEBUG( logger, comm << ": not owner recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
 
@@ -942,12 +929,12 @@ void SparseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType gl
         IndexType n;
         IndexType offset;   // for haloIndexes belonging to owner partition
 
-        mHalo.getProvidesPlan().getInfo( n, offset, owner );
+        mHaloExchangePlan.getLocalCommunicationPlan().getInfo( n, offset, owner );
 
         {
             WriteOnlyAccess<IndexType> wIndexes( indexes, n );
             WriteOnlyAccess<ValueType> wValues( values, n );
-            ReadAccess<IndexType> rIndexes( mHalo.getProvidesIndexes() );
+            ReadAccess<IndexType> rIndexes( mHaloExchangePlan.getLocalIndexes() );
             ReadAccess<ValueType> rData( recvData );
           
             IndexType count = 0;  // counts the non-zero values only
@@ -1007,7 +994,7 @@ void SparseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType
     SCAI_ASSERT_EQ_DEBUG( 0, rowIndexes.size(), "allocate of spCol did not clear" );
     SCAI_ASSERT_EQ_DEBUG( 0, rowValues.size(), "allocate of spCol did not clear" );
 
-    IndexType jLocal = getColDistribution().global2local( globalColIndex );
+    IndexType jLocal = getColDistribution().global2Local( globalColIndex );
 
     if ( invalidIndex != jLocal )
     {
@@ -1017,7 +1004,7 @@ void SparseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType
     }
     else
     {
-        IndexType jHalo = mHalo.global2halo( globalColIndex );
+        IndexType jHalo = mHaloExchangePlan.global2Halo( globalColIndex );
 
         if ( invalidIndex != jHalo )
         {
@@ -1054,21 +1041,15 @@ void SparseMatrix<ValueType>::getLocalRowSparse( HArray<IndexType>& indexes, HAr
 
     mLocalData->getSparseRow( indexes1, values1, localRowIndex );
 
-    // translate local indexes to global indexes
+    // translate local indexes to global indexes in-place
    
-    {
-        WriteAccess<IndexType> rIndexes( indexes1 );
-        for ( IndexType jj = 0; jj < indexes1.size(); ++jj )
-        {
-            rIndexes[jj] = distributionCol.local2global( rIndexes[jj] );
-        }
-    }
+    distributionCol.local2GlobalV( indexes1, indexes1 );
 
     mHaloData->getSparseRow( haloIndexes2, values2, localRowIndex );
 
     // translate halo indexes to global indexes
 
-    const HArray<IndexType>& haloGlobalIndexes = mHalo.getRequiredIndexes();
+    const HArray<IndexType>& haloGlobalIndexes = mHaloExchangePlan.getHalo2GlobalIndexes();
 
     HArrayUtils::gather( indexes2, haloGlobalIndexes, haloIndexes2, common::BinaryOp::COPY );
 
@@ -1118,8 +1099,8 @@ void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
 
     // set halo part
 
-    const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::gather( tmpRow, row, haloIndexes, common::BinaryOp::COPY );
+    const HArray<IndexType>& halo2GlobalIndexes = mHaloExchangePlan.getHalo2GlobalIndexes();
+    HArrayUtils::gather( tmpRow, row, halo2GlobalIndexes, common::BinaryOp::COPY );
     mHaloData->setRow( tmpRow, localRowIndex, op );
 }
 
@@ -1130,7 +1111,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
 {
     SCAI_REGION( "Mat.Sp.getLocalCol" )
 
-    IndexType jLocal = getColDistribution().global2local( globalColIndex );
+    IndexType jLocal = getColDistribution().global2Local( globalColIndex );
 
     const IndexType localRowSize = getRowDistribution().getLocalSize();
 
@@ -1140,7 +1121,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
     }
     else
     {
-        IndexType jHalo = mHalo.global2halo( globalColIndex );
+        IndexType jHalo = mHaloExchangePlan.global2Halo( globalColIndex );
 
         if ( invalidIndex != jHalo )
         {
@@ -1166,7 +1147,7 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 
     SCAI_ASSERT_EQ_ERROR( column.size(), localRowSize, "serious size mismatch of local column" )
 
-    IndexType jLocal = getColDistribution().global2local( colIndex );
+    IndexType jLocal = getColDistribution().global2Local( colIndex );
 
     ReadAccess<ValueType> colAccess( column );
 
@@ -1176,7 +1157,7 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
     }
     else
     {
-        IndexType jHalo = mHalo.global2halo( colIndex );
+        IndexType jHalo = mHaloExchangePlan.global2Halo( colIndex );
 
         if ( invalidIndex != jHalo )
         {
@@ -1326,21 +1307,15 @@ void SparseMatrix<ValueType>::reduceImpl(
              return;
         }
         
-        HArray<ValueType> haloResult;
+        const Communicator& comm = getColDistribution().getCommunicator();
 
-        if ( !mHalo.isEmpty() )
-        {
-            const Communicator& comm = getColDistribution().getCommunicator();
-            HArray<ValueType> haloData;
-            haloData.setSameValue( mHaloData->getNumColumns(), ValueType( 0 ) );
-            mHaloData->reduce( haloData, 1, reduceOp, elemOp );
-            comm.exchangeByPlan( haloResult, mHalo.getProvidesPlan(), haloData, mHalo.getRequiredPlan() );
-        }
+        HArray<ValueType> haloData;
+        haloData.setSameValue( mHaloData->getNumColumns(), ValueType( 0 ) );
+        mHaloData->reduce( haloData, 1, reduceOp, elemOp );
 
-        if ( haloResult.size() > 0 )
-        {
-            HArrayUtils::scatter( v.getLocalValues(), mHalo.getProvidesIndexes(), false, haloResult, reduceOp );
-        }
+        // send the halo data to other processors and reduce it there
+
+        mHaloExchangePlan.updateByHalo( v.getLocalValues(), haloData, reduceOp, comm );
 
         return;
     }
@@ -1382,15 +1357,16 @@ void SparseMatrix<ValueType>::scaleColumns( const DenseVector<ValueType>& scaleY
 
     // Note: the communication pattern is the same as for matrixTimesVector
 
-    if ( !mHalo.isEmpty() )
+    if ( !mHaloExchangePlan.isEmpty() )
     {
-        HArrayUtils::gather( mTempSendValues, localValues, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
-
         HArray<ValueType>& haloValues = scaleY.getHaloValues();   // reuse buffer
 
         const Communicator& comm = getColDistribution().getCommunicator();
 
-        comm.exchangeByPlan( haloValues, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
+        // get the non-local values from other processors
+
+        mHaloExchangePlan.updateHalo( haloValues, localValues, comm, mTempSendValues );
+
         mHaloData->scaleColumns( haloValues );
     }
 }
@@ -1473,7 +1449,7 @@ void SparseMatrix<ValueType>::disassemble(
 
     storage.assign( *mHaloData );
     
-    auto halo2global = hostReadAccess( mHalo.getRequiredIndexes() );
+    auto halo2global = hostReadAccess( mHaloExchangePlan.getHalo2GlobalIndexes() );
 
     {
         auto ia     = hostReadAccess( storage.getIA() );
@@ -1652,7 +1628,7 @@ void SparseMatrix<ValueType>::binaryOpSparse(
     {
          // there is no halo and no halo storage 
          mHaloData->allocate( getNumRows(), 0 );
-         mHalo.clear();
+         mHaloExchangePlan.clear();
     }
     else
     {
@@ -1666,18 +1642,18 @@ void SparseMatrix<ValueType>::binaryOpSparse(
          HArray<ValueType> csrValues;
 
          matrixA.mHaloData->buildCSRData( csrIA, csrJA, csrValues );
-         matrixA.mHalo.halo2Global( csrJA );
+         matrixA.mHaloExchangePlan.halo2GlobalV( csrJA, csrJA );
          CSRStorage<ValueType> haloA( numRows, numCols, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
 
          matrixB.mHaloData->buildCSRData( csrIA, csrJA, csrValues );
-         matrixB.mHalo.halo2Global( csrJA );
+         matrixB.mHaloExchangePlan.halo2GlobalV( csrJA, csrJA );
          CSRStorage<ValueType> haloB( numRows, numCols, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
 
          mHaloData->binaryOp( haloA, op, haloB );
  
          // now build Halo from this result storage
 
-         mHaloData->buildHalo( mHalo, getColDistribution() );
+         mHaloData->buildHalo( mHaloExchangePlan, getColDistribution() );
     }
 }
 
@@ -1707,7 +1683,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
     {
          // there is no halo and no halo storage 
          mHaloData->allocate( getNumRows(), 0 );
-         mHalo.clear();
+         mHaloExchangePlan.clear();
     }
     else
     {
@@ -1721,18 +1697,18 @@ void SparseMatrix<ValueType>::matrixPlusMatrixSparse(
          HArray<ValueType> csrValues;
 
          A.mHaloData->buildCSRData( csrIA, csrJA, csrValues );
-         A.mHalo.halo2Global( csrJA );
+         A.mHaloExchangePlan.halo2GlobalV( csrJA, csrJA );
          CSRStorage<ValueType> haloA( numRows, numCols, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
 
          B.mHaloData->buildCSRData( csrIA, csrJA, csrValues );
-         B.mHalo.halo2Global( csrJA );
+         B.mHaloExchangePlan.halo2GlobalV( csrJA, csrJA );
          CSRStorage<ValueType> haloB( numRows, numCols, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
 
          mHaloData->matrixPlusMatrix( alpha, haloA, beta, haloB );
  
          // now build Halo from this result storage
 
-         mHaloData->buildHalo( mHalo, getColDistribution() );
+         mHaloData->buildHalo( mHaloExchangePlan, getColDistribution() );
     }
 }
 
@@ -1749,8 +1725,8 @@ void SparseMatrix<ValueType>::compress( const RealType<ValueType> eps )
 
          // rebuild the Halo schedule as entries might have been deleted
 
-         mHaloData->globalizeHaloIndexes( mHalo, getColDistribution().getGlobalSize() );
-         mHaloData->buildHalo( mHalo, getColDistribution() );
+         mHaloData->globalizeHaloIndexes( mHaloExchangePlan, getColDistribution().getGlobalSize() );
+         mHaloData->buildHalo( mHaloExchangePlan, getColDistribution() );
     }
 }
 
@@ -1819,14 +1795,14 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     {
         CSRStorage<ValueType> haloB; // take CSR format, avoids additional conversions
         // get all needed rows of B, communication plan given by halo schedule of A
-        haloB.exchangeHalo( A.getHalo(), B.getLocalStorage(), A.getRowDistribution().getCommunicator() );
+        haloB.exchangeHalo( A.getHaloExchangePlan(), B.getLocalStorage(), A.getRowDistribution().getCommunicator() );
         // local = alpha * A_local * B_local + alpha * A_halo * B_halo + C_local
         mLocalData->matrixTimesMatrix( alpha, *A.mHaloData, haloB, static_cast<ValueType>( 1.0 ), *mLocalData );
     }
 
     // replicated columns, so no halo
     mHaloData->allocate( getNumRows(), 0 );
-    mHalo.clear();
+    mHaloExchangePlan.clear();
     SCAI_LOG_DEBUG( logger, "Context lhs after mult " << * ( mLocalData->getContextPtr() ) )
 }
 
@@ -1850,38 +1826,9 @@ void SparseMatrix<ValueType>::haloOperationSync(
 {
     const Communicator& comm = getColDistribution().getCommunicator();
 
-    if ( !mHalo.isEmpty() )
     {
-        // gather local values of X needed by other processors
-        if ( mHalo.getProvidesIndexes().size() > 0 )
-        {
-            // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
-            SCAI_REGION( "Mat.Sp.syncGatherHalo" )
-            SCAI_LOG_INFO( logger,
-                           comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-            HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
-            // Note: send values might be fetched to the host by halo exchange
-        }
-
-        {
-            SCAI_REGION( "Mat.Sp.syncExchangeHalo" )
-            SCAI_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
-            comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
-        }
-
-        if ( haloX.size() > 0 )
-        {
-            SCAI_REGION( "Mat.Sp.syncPrefetchHalo" )
-            SCAI_LOG_INFO( logger,
-                           comm << ": prefetch " << haloX.size() << " halo values of X to : " << * ( mHaloData->getContextPtr() ) );
-            // During the local computation we prefetch already haloX where it is need
-            haloX.prefetch( mHaloData->getContextPtr() );
-        }
-    }
-    else
-    {
-        SCAI_LOG_INFO( logger, "No halo update needed." )
-        haloX.clear(); // sets size to 0, but does not free allocated memory
+        SCAI_REGION( "Mat.Sp.updateHalo" )
+        mHaloExchangePlan.updateHalo( haloX, localX, comm, mTempSendValues );
     }
 
     {
@@ -1932,20 +1879,9 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
 
     const Communicator& comm = getColDistribution().getCommunicator();
 
-    HArray<ValueType> haloResult;  // compute the values for other processors
+    haloF( mHaloData.get(), haloX, localX );
 
-    if ( !mHalo.isEmpty() )
-    {
-        haloF( mHaloData.get(), haloX, localX );
-
-        SCAI_LOG_INFO( logger, comm << ": haloX = " << haloX << ", halo = " << mHalo )
-
-        // send other processors their values, use inverse schedule of halo
-
-        comm.exchangeByPlan( haloResult, mHalo.getProvidesPlan(), haloX, mHalo.getRequiredPlan() );
-
-        SCAI_LOG_DEBUG( logger, comm << ": now exchanged: haloResult = " << haloResult )
-    }
+    SCAI_LOG_INFO( logger, comm << ": haloX = " << haloX << ", halo = " << mHaloExchangePlan )
 
     {
         SCAI_REGION( "Mat.Sp.syncLocal" )
@@ -1958,12 +1894,9 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
         localF( mLocalData.get(), localResult, localX );
     }
 
-    // Now we have to add the received values from other processors
+    // Now add to the local result the halo values computed by other processors
 
-    if ( haloResult.size() > 0 )
-    {
-        HArrayUtils::scatter( localResult, mHalo.getProvidesIndexes(), false, haloResult, common::BinaryOp::ADD );
-    }
+    mHaloExchangePlan.updateByHalo( localResult, haloX, common::BinaryOp::ADD, comm );
 
     SCAI_LOG_DEBUG( logger, "invHaloOpSync done" )
 }
@@ -1991,23 +1924,24 @@ void SparseMatrix<ValueType>::haloOperationAsyncComm(
 
     std::unique_ptr<tasking::SyncToken> token;
 
-    if ( !mHalo.isEmpty() )
+    if ( !mHaloExchangePlan.isEmpty() )
     {
         // gather local values of X needed by other processors
-        if ( mHalo.getProvidesIndexes().size() > 0 )
         {
             // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
             SCAI_REGION( "Mat.Sp.gatherHalo" )
+
             SCAI_LOG_INFO( logger,
-                           comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-            HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
-            // Note: send values might be fetched to the host by halo exchange
+                           comm << ": gather local values of X to provide on " << *localX.getValidContext() );
+
+            // valid context of gathered data will be same as localX
+
+            HArrayUtils::gather( mTempSendValues, localX, mHaloExchangePlan.getLocalIndexes(), common::BinaryOp::COPY );
         }
 
         {
             SCAI_REGION( "Mat.Sp.asyncExchangeHalo" )
-            SCAI_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
-            token.reset( comm.exchangeByPlanAsync( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() ) );
+            token.reset( mHaloExchangePlan.updateHaloDirectAsync( haloX, mTempSendValues, comm ) );
         }
     }
     else
@@ -2062,14 +1996,14 @@ void SparseMatrix<ValueType>::haloOperationAsyncLocal(
 
     // We might receive vaules but do not send them, so the halo might be none empty but provides indexes are.
 
-    if ( mHalo.getProvidesIndexes().size() > 0 )
+    if ( mHaloExchangePlan.getLocalIndexes().size() > 0 )
     {
         SCAI_REGION( "Mat.Sp.gatherHalo" )
         // gather of halo data cannot be overlapped with local computations on a device
         // Note: gather will be done where denseX is available
         SCAI_LOG_INFO( logger, 
-                       comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-        HArrayUtils::gather( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
+                       comm << ": gather " << mHaloExchangePlan.getLocalIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
+        HArrayUtils::gather( mTempSendValues, localX, mHaloExchangePlan.getLocalIndexes(), common::BinaryOp::COPY );
         // prefetch needed otherwise sending will block until local computation has finished
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
@@ -2085,16 +2019,9 @@ void SparseMatrix<ValueType>::haloOperationAsyncLocal(
 
     // during local computation we exchange halo and prefetch all needed halo data
 
-    if ( !mHalo.isEmpty() )
     {
         SCAI_REGION( "Mat.Sp.exchangeHalo" )
-        SCAI_LOG_INFO( logger, comm << ": halo exchange with : " << mHalo );
-        comm.exchangeByPlan( haloX, mHalo.getRequiredPlan(), mTempSendValues, mHalo.getProvidesPlan() );
-        SCAI_LOG_DEBUG( logger, "Exchange halo done." )
-    }
-    else
-    {
-        haloX.clear();   // very important to set size of X back to 0
+        mHaloExchangePlan.updateHaloDirect( haloX, mTempSendValues, comm );
     }
 
     // start now transfer of the halo values of X to halo context where it is needed
@@ -2450,14 +2377,14 @@ RealType<ValueType> SparseMatrix<ValueType>::maxDiffNormImpl( const SparseMatrix
     if ( !getColDistribution().isReplicated() )
     {
         tmp1.reset( new CSRStorage<ValueType>() );
-        tmp1->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution() );
+        tmp1->joinHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution() );
         myLocalStorage = tmp1.get();
     }
 
     if ( !other.getColDistribution().isReplicated() )
     {
         tmp2.reset( new CSRStorage<ValueType>() );
-        tmp2->joinHalo( *other.mLocalData, *other.mHaloData, other.mHalo, other.getColDistribution() );
+        tmp2->joinHalo( *other.mLocalData, *other.mHaloData, other.mHaloExchangePlan, other.getColDistribution() );
         otherLocalStorage = tmp2.get();
     }
 
@@ -2523,12 +2450,12 @@ ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 
     ValueType myValue = static_cast<ValueType>( 0 );
 
-    const IndexType iLocal = distributionRow.global2local( i );
+    const IndexType iLocal = distributionRow.global2Local( i );
 
     if ( iLocal != invalidIndex )
     {
         SCAI_LOG_TRACE( logger, "row " << i << " is local " << iLocal )
-        IndexType jLocal = distributionCol.global2local( j );
+        IndexType jLocal = distributionCol.global2Local( j );
 
         if ( invalidIndex != jLocal )
         {
@@ -2538,7 +2465,7 @@ ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
         }
         else
         {
-            jLocal = mHalo.global2halo( j );
+            jLocal = mHaloExchangePlan.global2Halo( j );
 
             if ( invalidIndex != jLocal )
             {
@@ -2566,7 +2493,7 @@ void SparseMatrix<ValueType>::setValue(
 {
     const Distribution& distributionRow = getRowDistribution();
 
-    const IndexType iLocal = distributionRow.global2local( i );
+    const IndexType iLocal = distributionRow.global2Local( i );
 
     if ( iLocal == invalidIndex )
     {
@@ -2575,7 +2502,7 @@ void SparseMatrix<ValueType>::setValue(
 
     const Distribution& distributionCol = getColDistribution();
 
-    IndexType jLocal = distributionCol.global2local( j );
+    IndexType jLocal = distributionCol.global2Local( j );
 
     if ( invalidIndex != jLocal )
     {
@@ -2583,7 +2510,7 @@ void SparseMatrix<ValueType>::setValue(
     }
     else
     {
-        jLocal = mHalo.global2halo( j );
+        jLocal = mHaloExchangePlan.global2Halo( j );
 
         if ( invalidIndex != jLocal )
         {
@@ -2599,9 +2526,9 @@ void SparseMatrix<ValueType>::setValue(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const Halo& SparseMatrix<ValueType>::getHalo() const
+const HaloExchangePlan& SparseMatrix<ValueType>::getHaloExchangePlan() const
 {
-    return mHalo;
+    return mHaloExchangePlan;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2669,7 +2596,7 @@ void SparseMatrix<ValueType>::setIdentity( DistributionPtr dist )
     const IndexType localNumRows = getRowDistributionPtr()->getLocalSize();
     mLocalData->setIdentity( localNumRows );
     mHaloData->allocate( localNumRows, 0 );
-    mHalo.clear(); // no exchange needed
+    mHaloExchangePlan.clear(); // no exchange needed
     SCAI_LOG_INFO( logger, *this << ": identity" )
 }
 
@@ -2697,7 +2624,7 @@ void SparseMatrix<ValueType>::assignDiagonal( const Vector<ValueType>& diagonal 
     }
 
     mHaloData->allocate( localNumRows, 0 );
-    mHalo.clear(); // no exchange needed
+    mHaloExchangePlan.clear(); // no exchange needed
 
     SCAI_LOG_INFO( logger, *this << ": identity" )
 }

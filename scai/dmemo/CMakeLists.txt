@@ -50,23 +50,29 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
+        AnyAddressing
+
         Communicator
         CommunicatorStack
         NoCommunicator
         Distributed
         CommunicationPlan
 
+        GlobalAddressingPlan
+        GlobalExchangePlan
+
+        Distribution
+        NoDistribution
         BlockDistribution
         CyclicDistribution
-        Distribution
         GenBlockDistribution
         GeneralDistribution
         GridDistribution
-        Halo
-        HaloBuilder
-        NoDistribution
-        Redistributor
+        JoinedDistribution
         SingleDistribution
+
+        HaloExchangePlan
+        RedistributePlan
     )
 
 ### add subdirectories

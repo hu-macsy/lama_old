@@ -146,6 +146,15 @@ public:
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
+     *  Gathering as function with result argument for more convenient usage.
+     */
+    template<typename ValueType>
+    static hmemo::HArray<ValueType> gatherF(
+        const hmemo::HArray<ValueType>& source,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /**
      *  @brief Gathering (unstructured read of values) for sparse data, typed version
      */
     template<typename TargetValueType, typename SourceValueType>
@@ -688,8 +697,16 @@ public:
      */
 
     template<typename BucketType>
-    static void bucketSort(
+    static void bucketSortOffsets(
         hmemo::HArray<IndexType>& offsets,
+        hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<BucketType>& array,
+        const BucketType nb,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename BucketType>
+    static void bucketSortSizes(
+        hmemo::HArray<IndexType>& sizes,
         hmemo::HArray<IndexType>& perm,
         const hmemo::HArray<BucketType>& array,
         const BucketType nb,

@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( createTest )
 
     DistributionPtr bdist ( GridDistribution::create( DistributionArguments( comm, globalSize, NULL, 1.0 ) ) );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
-    bdist.reset( Distribution::getDistributionPtr( "GRID", comm, globalSize ) );
+    bdist = Distribution::getDistributionPtr( "GRID", comm, globalSize );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
 }
 
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
             if ( p == rank )
             {
                 BOOST_CHECK( dist->isLocal( pos ) );
-                BOOST_CHECK_EQUAL( dist->global2local( pos ), i );
+                BOOST_CHECK_EQUAL( dist->global2Local( pos ), i );
             }
             else
             {

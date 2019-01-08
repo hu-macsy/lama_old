@@ -450,7 +450,7 @@ public:
      *
      *  This solution is more efficient as we need only update of the column data
      */
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns );
 
     /** Implementation of MatrixStorage::matrixPlusMatrix for ELL */
 
