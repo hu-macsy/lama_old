@@ -118,12 +118,12 @@ public:
      *  Note: getSource might be used to find from which processor the received data came. 
      */
     template<typename ValueType>
-    void exchange( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray );
+    void exchange( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray ) const;
 
     /** Provide exchange as a function for convenience. */
 
     template<typename ValueType>
-    hmemo::HArray<ValueType> exchangeF( const hmemo::HArray<ValueType>& sendArray );
+    hmemo::HArray<ValueType> exchangeF( const hmemo::HArray<ValueType>& sendArray ) const;
 
     /**
      *  If the plan was used to query values from other processors this routine is helpful to
@@ -134,13 +134,13 @@ public:
     void exchangeBack( 
         hmemo::HArray<ValueType>& recvArray, 
         const hmemo::HArray<ValueType>& sendArray, 
-        const common::BinaryOp op = common::BinaryOp::COPY );
+        const common::BinaryOp op = common::BinaryOp::COPY ) const;
 
     /** Get an array that contains for received values the processor id where it comes from
      *
      *  Usually this array is only needed in very special situations.
      */
-    void getSource( hmemo::HArray<PartitionId>& source );
+    void getSource( hmemo::HArray<PartitionId>& source ) const;
 
     /** 
      *  Split up for member variables, so the data might be used for other purposes
@@ -268,7 +268,7 @@ void globalExchange(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void GlobalExchangePlan::exchange( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray )
+void GlobalExchangePlan::exchange( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray ) const
 {
     if ( sendArray.size() != mSendPerm.size() )
     {
@@ -282,7 +282,7 @@ void GlobalExchangePlan::exchange( hmemo::HArray<ValueType>& recvArray, const hm
 } 
 
 template<typename ValueType>
-hmemo::HArray<ValueType> GlobalExchangePlan::exchangeF( const hmemo::HArray<ValueType>& sendArray )
+hmemo::HArray<ValueType> GlobalExchangePlan::exchangeF( const hmemo::HArray<ValueType>& sendArray ) const
 {
     hmemo::HArray<ValueType> recvArray;
     exchange( recvArray, sendArray );
@@ -293,7 +293,7 @@ template<typename ValueType>
 void GlobalExchangePlan::exchangeBack( 
     hmemo::HArray<ValueType>& recvArray, 
     const hmemo::HArray<ValueType>& sendArray, 
-    const common::BinaryOp op )
+    const common::BinaryOp op ) const
 {
     SCAI_ASSERT_EQ_ERROR( sendArray.size(), mRecvPlan.totalQuantity(), "serious mismatch" )
 

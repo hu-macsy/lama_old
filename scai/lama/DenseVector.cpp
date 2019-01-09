@@ -1284,7 +1284,7 @@ void DenseVector<IndexType>::buildComplex( const Vector<IndexType>& x, const Vec
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::gather(
+void DenseVector<ValueType>::gatherInto(
     const DenseVector<ValueType>& source,
     const DenseVector<IndexType>& index,
     const BinaryOp op )
@@ -1293,27 +1293,70 @@ void DenseVector<ValueType>::gather(
     {
         SCAI_ASSERT_EQ_ERROR( getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
     }
+    else
+    {
+        mLocalValues.clear();
+        mLocalValues.resize( index.getDistribution().getLocalSize() );
+    }
 
-    const Distribution& sourceDistribution = source.getDistribution();
+    const Distribution& remoteDistribution = source.getDistribution();
 
-    if ( sourceDistribution.isReplicated() )
+    if ( remoteDistribution.isReplicated() )
     {
         // we can just do it locally and are done
 
         HArrayUtils::gather( mLocalValues, source.getLocalValues(), index.getLocalValues(), op );
+    }
+    else
+    {
+        // otherwise we use a global exchange/addressing plan for remote access of source
 
-        assign( mLocalValues, index.getDistributionPtr() );
-
-        return;
+        auto plan = dmemo::globalAddressingPlan( remoteDistribution, index.getLocalValues() );
+        plan.gather( mLocalValues, source.getLocalValues(), op );
     }
 
-    // otherwise we use a global exchange/addressing plan
-
-    auto plan = globalAddressingPlan( sourceDistribution, index.getLocalValues() );
-
-    plan.gather( mLocalValues, source.getLocalValues(), op );
-
     assign( mLocalValues, index.getDistributionPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::gatherFrom(
+    DenseVector<ValueType>& target,
+    const DenseVector<IndexType>& index,
+    const BinaryOp op ) const
+{
+    HArray<ValueType> localTargetValues;
+    DistributionPtr targetDist;
+
+    target.splitUp( targetDist, localTargetValues ); 
+
+    if ( op != BinaryOp::COPY )
+    {
+        SCAI_ASSERT_EQ_ERROR( *targetDist, index.getDistribution(), "target/index vector must have same distribution" )
+    }
+    else
+    {
+        localTargetValues.clear();
+        localTargetValues.resize( index.getDistribution().getLocalSize() );
+    }
+
+    const Distribution& remoteDistribution = getDistribution();
+
+    if ( remoteDistribution.isReplicated() )
+    {
+        // we can just do it locally and are done
+        HArrayUtils::gather( localTargetValues, getLocalValues(), index.getLocalValues(), op );
+    }
+    else
+    {
+        // otherwise we use a global exchange/addressing plan
+
+        auto plan = dmemo::globalAddressingPlan( remoteDistribution, index.getLocalValues() );
+        plan.gather( localTargetValues, getLocalValues(), op );
+    } 
+
+    target = DenseVector<ValueType>( index.getDistributionPtr(), std::move( localTargetValues ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1343,7 +1386,57 @@ void DenseVector<ValueType>::scatter(
         return;
     }
 
-    auto plan = globalAddressingPlan( targetDistribution, index.getLocalValues(), unique );
+    auto plan = dmemo::globalAddressingPlan( targetDistribution, index.getLocalValues(), unique );
+
+    plan.scatter( mLocalValues, source.getLocalValues(), op );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+dmemo::GlobalAddressingPlan DenseVector<ValueType>::globalAddressingPlan(
+    const DenseVector<IndexType>& index,
+    const bool unique )
+{
+    const Distribution& remoteDistribution = getDistribution();
+    const Distribution& localDistribution = index.getDistribution();
+
+    SCAI_ASSERT_EQ_ERROR( remoteDistribution.isReplicated(), localDistribution.isReplicated(),
+                          "scatter: either all arrays are replicated or all are distributed" )
+
+    const auto& myIndexes = index.getLocalValues();
+
+    dmemo::GlobalAddressingPlan plan = dmemo::globalAddressingPlan( remoteDistribution, myIndexes, unique );
+
+    // verify that there were no out-of-range indexes
+
+    SCAI_ASSERT_EQ_ERROR( plan.sendSize(), myIndexes.size(), "index vector has illegal indexes" )
+
+    return plan;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::gatherByPlan(
+    DenseVector<ValueType>& target,
+    const dmemo::GlobalAddressingPlan& plan,
+    const common::BinaryOp op ) const
+{
+    SCAI_ASSERT_EQ_ERROR( plan.sendSize(), target.getDistribution().getLocalSize(), "serious mismatch" )
+    plan.gather( target.getLocalValues(), mLocalValues, op );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::scatterByPlan(
+    const dmemo::GlobalAddressingPlan& plan,
+    const DenseVector<ValueType>& source,
+    const common::BinaryOp op )
+{
+    // plan does not contain any information about remote distribution for which it was built
+    // so we have here no checks that plan matches
 
     plan.scatter( mLocalValues, source.getLocalValues(), op );
 }

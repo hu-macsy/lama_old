@@ -82,7 +82,7 @@ GlobalExchangePlan GlobalExchangePlan::globalExchangePlan( const HArray<Partitio
 
 /* --------------------------------------------------------------------------- */
 
-void GlobalExchangePlan::getSource( HArray<PartitionId>& source )
+void GlobalExchangePlan::getSource( HArray<PartitionId>& source ) const
 {
     const IndexType N = mRecvPlan.totalQuantity();  // size of received array
 

@@ -62,7 +62,7 @@ int main()
     auto source  = fillDenseVector<ValueType>( sourceDist, fillSource );
     
     DenseVector<ValueType> target( targetDist, ValueType( 0 ) );
-    target.gather( source, indexes, common::BinaryOp::COPY );
+    source.gatherFrom( target, indexes, common::BinaryOp::COPY );
 
     SCAI_ASSERT_EQ_ERROR( target.getDistribution(), indexes.getDistribution(), "serious error" );
 
@@ -85,9 +85,9 @@ int main()
 
     std::cout << "maxDiff = " << maxDiff << std::endl;
 
-    auto plan = dmemo::globalAddressingPlan( *sourceDist, indexes.getLocalValues() );
-    auto target2 = fillDenseVector<ValueType>( targetDist, 0 );
-    plan.gather( target2.getLocalValues(), source.getLocalValues(), common::BinaryOp::COPY );
+    auto plan = source.globalAddressingPlan( indexes );
+    auto target2 = fillDenseVector<ValueType>( targetDist, ValueType( 0 ) );
+    source.gatherByPlan( target2, plan, common::BinaryOp::COPY );
 
     auto maxDiff2 = target.maxDiffNorm( target2 );
 
@@ -99,7 +99,7 @@ int main()
 
     for ( IndexType k = 0; k < NITER; ++k )
     {
-        target.gather( source, indexes, common::BinaryOp::COPY );
+        source.gatherFrom( target, indexes, common::BinaryOp::COPY );
     }
 
     timeV = Walltime::get() - timeV;

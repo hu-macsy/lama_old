@@ -69,7 +69,7 @@ GlobalAddressingPlan GlobalAddressingPlan::globalAddressingPlan(
     return GlobalAddressingPlan( std::move( exchangePlan ), std::move( localIndexes ), unique );
 }
 
-void GlobalAddressingPlan::scatterOwner( HArray<PartitionId>& targetArray )
+void GlobalAddressingPlan::scatterOwner( HArray<PartitionId>& targetArray ) const
 {
     HArray<PartitionId> sources;  // will be same size as local indexes
 
