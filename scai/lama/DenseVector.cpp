@@ -1326,6 +1326,7 @@ void DenseVector<ValueType>::gatherFrom(
     const DenseVector<IndexType>& index,
     const BinaryOp op ) const
 {
+    SCAI_REGION( "Vector.Dense.gather" )
     HArray<ValueType> localTargetValues;
     DistributionPtr targetDist;
 
@@ -1368,6 +1369,8 @@ void DenseVector<ValueType>::scatter(
     const DenseVector<ValueType>& source,
     const BinaryOp op )
 {
+    SCAI_REGION( "Vector.Dense.scatter" )
+
     SCAI_ASSERT_EQ_ERROR( source.getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
 
     // get the owners of my local index values, relevant is distribution of this target vector

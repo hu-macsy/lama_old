@@ -29,6 +29,8 @@
 
 #include <scai/dmemo/GlobalExchangePlan.hpp>
 
+#include <scai/tracing.hpp>
+
 namespace scai
 {
 
@@ -62,6 +64,8 @@ GlobalExchangePlan::GlobalExchangePlan(
 
 GlobalExchangePlan GlobalExchangePlan::globalExchangePlan( const HArray<PartitionId>& target, CommunicatorPtr comm )
 {
+    SCAI_REGION( "GlobalExchangePlan.construct" )
+
     HArray<IndexType> sendSizes;
     HArray<IndexType> sendPerm;
 
