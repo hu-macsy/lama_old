@@ -96,6 +96,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( scaleTest )
+{
+    typedef DefaultReal ValueType;
+
+    const IndexType N1 = 5;
+    const IndexType N2 = 8;
+    const IndexType N3 = 4;
+
+    common::Grid3D grid( N1, N2, N3 );
+
+    common::Stencil3D<ValueType> stencil( 7 ); // take 7-point stencil
+
+    ValueType factor = 0.1;
+
+    StencilStorage<ValueType> storage1( grid, stencil );
+    StencilStorage<ValueType> storage2( storage1 );
+
+    storage1.scale( factor );
+
+    const IndexType N = N1 * N2 * N3;
+    HArray<ValueType> x;
+    ValueType inc = ValueType( 1 ) / ValueType( N);
+    HArrayUtils::setSequence<ValueType>( x, 0, inc, N );
+
+    ValueType alpha = 1;
+    ValueType beta  = 0;
+
+    HArray<ValueType> result1;
+    HArray<ValueType> result2;
+
+    storage1.matrixTimesVector( result1, alpha, x, beta, x, common::MatrixOp::NORMAL );
+    storage2.matrixTimesVector( result2, alpha * factor, x, beta, x, common::MatrixOp::NORMAL );
+
+    auto eps = common::TypeTraits<ValueType>::small();
+
+    BOOST_CHECK( HArrayUtils::maxDiffNorm( result1, result2)  < eps );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( convertTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N1 = 5;
